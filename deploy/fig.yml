@@ -1,0 +1,48 @@
+# dns:
+#   image: nicgrayson/boot2docker-dns:latest
+#   volumes:
+#     - dns:/data
+#   ports:
+#     - "53:53"
+#     - "53:53/udp"
+
+# lb:
+#   image: dockerfile/haproxy:latest
+#   dns: 172.17.42.1
+#   volumes:
+#     - haproxy:/haproxy-override
+#   ports:
+#     - "80:80"
+#   links:
+#     - dns
+
+mongo:
+  image: mongo:latest
+  # dns: 172.17.42.1
+  # volumes:
+  #   - mongo:/mongo
+  # ports:
+  #   - "27017:27017"
+  # links:
+  #   - lb
+
+redis:
+  image: redis:latest
+  # dns: 172.17.42.1
+  # volumes:
+  #   - mongo:/mongo
+  # ports:
+  #   - "6379:6379"
+  # links:
+  #   - lb
+
+scot:
+  # image: sandia/scot:latest
+  build: .
+  # dns: 172.17.42.1
+  ports:
+    - "127.0.0.1:8080:443"
+  links:
+    # - lb
+    - mongo
+    - redis

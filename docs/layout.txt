@@ -1,0 +1,87 @@
+bin/
+    scripts, executables that run stand alone (not part of the webservice)
+    Ex: bots, import scripts, export scripts, etc.
+
+docs/
+    text files that form documentation for SCOT
+    
+etc/
+    configuration files for Scot.  Logging and the Scot application currently
+
+lib/
+    Perl library Hierarchy
+
+    Scot.pm - the top level mojolicious application library containing route info
+
+    Scot/
+        the top level of the Scot:: modules
+
+        Bot/
+            modules for use by scot bots
+
+        Controller/
+            modules for handling routes defined in Scot.pm
+
+        Model/
+            modules describing the data model for Scot data types
+
+        Util/
+            authentication, database, and other general utility modules
+
+public/
+    Static served files by mojolicious
+    # see https://github.com/angular/angular-seed -> public == app
+
+    css/
+        css files for scot, and frameworks
+
+    img/
+        images used by SCOT
+
+    fonts/
+        Any fonts used by the CSS go here
+
+    lib/
+        javascript 3rd party libraries 
+
+        angular/
+            angular libraries go here
+
+        bootstrap/
+            bootstrap stuff
+
+        jquery/
+            jquery stuff
+
+    js/
+        javascript that we create for scot including angular scaffolding
+        controllers.js  -> app controllers
+        filters.js      -> custom angular
+        services.js     -> angular
+        widgets.js      -> angular
+
+    config/
+        config files for Testacular test suite
+        testacular.conf.js
+        testacular-e2e.conf.js
+
+    scripts/
+        scripts to run the test suite
+
+    test/   
+        test files and libraries
+        e2e/
+        lib/
+            angular/
+        unit/
+
+script/
+    usually holds the mojolicious startup script
+
+t/
+    tests, tests, tests of mojolicious back end
+
+templates/
+    templates used for rendering data that was passed through mojolicious
+
+

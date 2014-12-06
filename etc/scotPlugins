@@ -1,0 +1,42 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:             scotPlugins
+# Required-Start:       $local_fs $syslog
+# Required-Stop:        $local_fs $syslog
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    Start Scot Server
+# Description:          Start Scot Server
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+
+CMD="(cd /opt/sandia/webapps/scot3/bin && /usr/bin/perl plugins.pl)"
+
+case "$1" in
+    start)
+        echo -n "Starting $APP: "
+        eval $CMD &
+        ;;
+    stop)
+        echo -n "Stopping $DESC: "
+        PID=`cat /opt/sandia/webapps/scot3/scotPlugins.pid`
+        if [ -z $PID ]
+        then
+            echo "No PID file. using pkill"
+            pkill plugins.pl
+        else 
+            kill $PID
+        fi
+        ;;
+    restart)
+        $0 stop
+        $0 start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+exit 0

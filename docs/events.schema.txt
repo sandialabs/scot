@@ -1,0 +1,34 @@
+Event Schemas
+
+inossue = integer number of seconds since unix epoch
+
+events
+{
+    _id         :   mongo assigned guid,
+    event_id    :   SCOT assigned integer,
+    created     :   inossue,
+    updated     :   inossue,
+    closed      :   inossue,
+    status      :   string " open | closed ", 
+    tags        :   [ "tag1", "tag2", ... ],
+    sources     :   [ "sourcename1", "sourcename2", ... ],
+    labels      :   [ "label1", "label1", ... ],
+    files       :   [ file_oid1, file_oid2, ... ],
+    subject     :   "subject string",
+    entries     :   [ entry_oid1, entry_oid2, ... ],
+    incidents   :   [ incident_oid1, incident_oid2, ... ],
+    alerts      :   [ alert_oid1, alert_oid2, alert_oid3, ...],
+    permissions :   {
+        read        :   [ "group1", "group2", ... ],
+        modify      :   [ "group3", ... ],
+    },
+    history     :   [
+        {
+            who     :   "username string",
+            when    :   inossue,
+            what    :   "string describing action",
+        },...
+    ],
+}
+    
+

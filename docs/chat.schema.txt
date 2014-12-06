@@ -1,0 +1,14 @@
+Chat Schemas
+
+inossue = integer number of seconds since unix epoch
+
+chat
+{
+    _id         :   mongo assigned guid,
+    room        :   "string",
+    when        :   inossue,
+    who         :   "string chat handle",
+    what        :   "string what was said",
+}
+    
+

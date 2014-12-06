@@ -1,0 +1,8 @@
+% layout 'default';
+% title 'SCOT Confirm Navigation';
+
+<center><div style="background-color: red; margin-top:20px; border-radius:5px; border:1px solid #444; box-shadow: 0px 0px 5px black; width:50%; margin:auto;">
+<h2>WARNING</h2>
+<h3>You are about to leave SCOT, visiting external websites may tip your hand to an attacker.</h3><hr> 
+<h3><a href="<%= $url %>">Continue on to <%= $url %> </a></h3>
+</div></center>

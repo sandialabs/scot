@@ -1,0 +1,44 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:             scot3
+# Required-Start:       $local_fs $syslog
+# Required-Stop:        $local_fs $syslog
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    Start Scot Server
+# Description:          Start Scot Server
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+
+CMD="/opt/sandia/webapps/scot3/bin/start_scot.sh"
+
+case "$1" in
+    start)
+        echo -n "Starting $APP: "
+        rm -f /tmp/nytprof.out.*
+        eval $CMD &
+        ;;
+    stop)
+        echo -n "Stopping $DESC: "
+        PID=`cat /opt/sandia/webapps/scot3/scot.pid`
+        if [ -z $PID ]
+        then
+            echo "No PID file. using pkill"
+            pkill starman
+        else 
+            kill $PID
+        fi
+        ;;
+    restart)
+        $0 stop
+        $0 start
+        service apache2 restart
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+esac
+exit 0

@@ -1,0 +1,18 @@
+<html>
+    <head>
+        <style  type="text/css">
+            .node {
+                stroke: #fff;
+                stroke-width: 1.5px;
+            }
+            .link {
+                stroke: #999;
+                stroke-opacity: .6
+            }
+        </style>
+    </head>
+    <body>
+        <h2>Enity Event Graph</h2>
+        <%= content %>
+    </body>
+</html>

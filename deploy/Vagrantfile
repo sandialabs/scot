@@ -1,0 +1,77 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+$INSTALL_DOCKER = <<SCRIPT
+echo "alias dl='docker ps -l -q'" >> ~/.bashrc
+echo "alias delc='docker rm `docker ps --no-trunc -a -q`'" >> ~/.bashrc
+echo "alias delcc='docker kill $(docker ps -q) ; docker rm $(docker ps -a -q)'" >> ~/.bashrc
+echo "alias deli='docker images | grep "<none>" | awk '\''{print $3}'\'' | xargs docker rmi'" >> ~/.bashrc
+curl -sSL https://get.docker.io/ubuntu/ | sudo sh
+sudo sh -c "echo 'export http_proxy="http://YOUR_PROXY_HERE:80/"' > /etc/default/docker"
+sudo service docker restart
+sudo docker build -t sandia/scotbase /vagrant/deploy/SCOT Base Image/Dockerfile
+sudo docker build -t sandia/scot /vagrant/Dockerfile
+SCRIPT
+
+# $INSTALL_DOCKER_CENTOS = <<SCRIPT
+# sudo rpm -iUvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+# sudo yum update -y
+# sudo yum -y install docker-io
+# sudo sh -c "echo 'export http_proxy="http://YOUR_PROXY_HERE:80/"' > /etc/default/docker"
+# # sudo HTTP_PROXY=http://YOUR_PROXY_HERE:80 docker -d
+# sudo service docker start
+# sudo chkconfig docker on
+# sudo docker pull ubuntu:latest
+# sudo docker images
+# SCRIPT
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  # All Vagrant configuration is done here. The most common configuration
+  # options are documented and commented below. For a complete reference,
+  # please see the online documentation at vagrantup.com.
+
+  # Every Vagrant virtual environment requires a box to build off of.
+  config.vm.box = "ubuntu/trusty64"
+
+  # Disable automatic box update checking. If you disable this, then
+  # boxes will only be checked for updates when the user runs
+  # `vagrant box outdated`. This is not recommended.
+  config.vm.box_check_update = false
+
+  # Set up proxy config for guest OS
+  if Vagrant.has_plugin?("vagrant-proxyconf")
+    config.proxy.http     = "http://YOUR_PROXY_HERE:80/"
+    config.proxy.https    = "http://YOUR_PROXY_HERE:80/"
+    config.proxy.no_proxy = "localhost,127.0.0.1,.example.com"
+    config.apt_proxy.http  = "http://YOUR_PROXY_HERE:80/"
+    config.apt_proxy.https = "http://YOUR_PROXY_HERE:80/"
+  end
+
+  config.vm.provider "virtualbox" do |vb|
+    # Don't boot with headless mode
+    vb.gui = false
+    # Use VBoxManage to customize the VM. For example to change memory:
+    vb.customize ["modifyvm", :id, "--memory", "4096"]
+  end
+
+  # Provision VM with the `script` this will install docker on the host and try
+  # and add the Sandia SSL Intercept cert to the host so that docker can pull
+  # this images.
+  config.vm.provision "shell", inline: $INSTALL_DOCKER
+
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine. In the example below,
+  # accessing "localhost:8080" will access port 443 on the guest machine.
+  config.vm.network "forwarded_port", guest: 443, host: 8080
+  # For MongoDB
+  config.vm.network "forwarded_port", guest: 27018, host: 27017, auto_correct: true
+
+  # If you want to use CentOS instead
+  # config.vm.define "centos" do |centos|
+  #   centos.vm.box = "chef/centos-6.5"
+  #   centos.vm.provision "shell", inline: $INSTALL_DOCKER_CENTOS
+  # end
+end

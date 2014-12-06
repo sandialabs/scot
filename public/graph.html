@@ -1,0 +1,182 @@
+<html>
+	<head>
+		<style type="text/css">
+            path.link {
+                fill: none;
+                stroke: #666;
+                stroke-width: 1.5px;
+            }
+            circle {
+                fill:   #ccc;
+                stroke: #333;
+                stroke-width: 1.5px;
+            }
+            text {
+                font: 12px san-serif;
+                stroke: blue;
+                pointer-events: none;
+                text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1ps 0 0 #fff;
+            }
+            
+		</style>
+	</head>
+	<body>
+        <script src="/libs/jquery.min.js"></script>
+        <script src="/libs/d3.min.js"></script>
+		<h2>Entity Event Relationships</h2>
+        Event: <input id="node-id" name="node-id" type="number" value="4444">
+        Depth: <input id="depth" name="depth" type="number" value="3">
+
+        <script>
+            var links   = [];
+
+            jQuery(document).ready(
+                function() {
+                    var nodeId  = $("#node-id").val();
+                    var depth   = $("#depth").val();
+                    var url     = "/scot/meta/ee_graph?event_id="+nodeId+"&depth="+depth;
+                    $.ajax({
+                        url:    url,
+                        success:    function (response) {
+                            links   = response;
+                            init_graph();
+                        }
+                    });
+                }
+            );
+
+            function init_graph() {
+                var nodes   = {};
+
+                links.forEach(function(link) {
+                    link.source = nodes[link.source]||(nodes[link.source] = {name: link.source});
+                    link.target = nodes[link.target]||(nodes[link.target] = {name: link.target});
+                });
+
+                var width   = 1000,
+                    height  = 800;
+
+                var force   = d3.layout.force()
+                                .nodes(d3.values(nodes))
+                                .links(links)
+                                .size([width, height])
+                                .linkDistance(100)
+                                .charge(-300)
+                                .on("tick", tick)
+                                .start();
+
+                var svg     = d3.select("body")
+                                .append("svg")
+                                .attr("width", width)
+                                .attr("height", height);
+
+                svg.append("defs").selectAll("marker")
+                    .data(["eelink"])
+                    .enter().append("marker")
+                    .attr("id", function(d) { return d; })
+                    .attr("viewBox", "0 -5 10 10")
+                    .attr("refX", 15)
+                    .attr("refY", -1.5)
+                    .attr("markerWidth", 6)
+                    .attr("markerHeight", 6)
+                    .attr("orient", "auto")
+                    .append("path")
+                    .attr("d", "M0,-5L10,0L0,5");
+
+                /*
+                var vis     = svg.append("g")
+                                 .call(d3.behavior.zoom()
+                                 .on("zoom", rescale))
+                                 .on("dblclick.zoom", null)
+                                 .append("g")
+                                 .on("mousemove", mousemove)
+                                 .on("mousedown", mousedown)
+                                 .on("mouseup", mouseup);
+                vis.append("rect")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .attr("fill", 'white');
+                */
+
+
+                var path    = svg.append("g")
+                                .selectAll("path")
+                                .data(force.links())
+                                .enter()
+                                .append("path")
+                                .attr("class", function(d) { 
+                                        return "link";
+                                })
+                                .attr("maker-end", function(d) { return "url(#end)"; });
+
+                var circle  = svg.append("g")
+                                .selectAll("circle")
+                                .data(force.nodes())
+                                .enter()
+                                .append("circle")
+                                .attr("r", 6)
+                                .on("click", click)
+                                .on("dblclick", dblclick)
+                                .call(force.drag);
+
+                var text    = svg.append("g")
+                                .selectAll("text")
+                                .data(force.nodes())
+                                .enter()
+                                .append("text")
+                                .attr("x", 8)
+                                .attr("y", ".31em")
+                                .text(function(d) { return d.name; });
+
+                function tick() {
+                    path.attr("d", linkArc);
+                    circle.attr("transform", transform);
+                    text.attr("transform", transform);
+                }
+            }
+
+            function linkArc(d) {
+                var dx  = d.target.x - d.source.x,
+                    dy  = d.target.y - d.source.y,
+                    dr  = Math.sqrt(dx * dx + dy * dy)*4;
+                return "M" + d.source.x + "," + d.source.y +
+                    "A" + dr + "," + dr +
+                    " 0 0,1 " + d.target.x + "," + d.target.y;
+            }
+
+            function transform(d) {
+                return "translate(" + d.x + "," + d.y + ")";
+            }
+
+            function click() {
+                d3.select(this).select("text").transition()
+                    .duration(750)
+                    .attr("x", 22)
+                    .style("fill", "steelblue")
+                    .style("stroke", "lightsteelblue")
+                    .style("stroke-width", ".5px")
+                    .style("font", "20px sans-serif");
+                d3.select(this).select("circle").transition()
+                    .duration(750)
+                    .attr("r", 16)
+                    .style("fill", "lightsteelblue");
+            }
+
+            function dblclick() {
+                d3.select(this).select("circle").transition()
+                    .duration(750)
+                    .attr("r", 6)
+                    .style("fill", "#ccc");
+                d3.select(this).select("text").transition()
+                    .duration(750)
+                    .attr("x", 12)
+                    .style("stroke", "none")
+                    .style("fill", "black")
+                    .style("stroke", "none")
+                    .style("font", "20px sans-serif");
+            }
+
+    </script>
+    </body>
+</html>
+

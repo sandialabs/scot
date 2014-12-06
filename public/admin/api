@@ -1,0 +1,59 @@
+//SERVICES
+GET /scot/admin/service
+-Status of all services
+=This will be used to populate list of services on admin page & get service status updates
+GET /scot/admin/service/:service_name
+-Status of specific service
+=Once a service is altered (stop, start, restart), ActiveMQ wil send a service update message
+=we then use this to get the new status of the service mentioned in the ActiveMQ message
+PUT /scot/admin/service/:service_name/:action
+-Alter (stop, start, restart) a service
+=Used to stop, start, or restart a service when an admin click the appreopreate button
+
+//BACKUP & RESTORE
+GET /scot/admin/backup
+-List of recent backups stored on server
+=Populate list of backups on we UI
+GET /scot/admin/backup/:backup_id
+-Download a backup (admins only)
+=When the user selects a back to download, this is the URL used to retrieve it
+PUT /scot/admin/restore
+-Restore all SCOT data from a previous backup (zip file)
+=User selects the zip file in the web UI and this uploads it to SCOT & erforms the refresh
+
+//AUTH 
+GET /scot/admin/auth
+-LDAP / Active Directory connection information (SANS PASSWORD) & latest status (connected or error & details)
+=Used when admin page is 
+PUT /scot/admin/auth
+-Update LDAP/AD config
+-Attempts to connect to LDAP/AD using new config & returns success or failure in JSON doc
+=Used when someone updates the LDAP/AD config through the WebUI and they get feedback to see if their config worked
+
+//ALERT COLLECTORS
+GET /scot/admin/collector
+-All alert collectors and their configs
+=Display collector info on web ui
+PUT /scot/admin/collector
+-Update config for all collectors
+=Any update to a collector config will re-send config for all collectors
+
+//LOGGING
+GET /scot/admin/logging
+-Logging configuration (remote or local), servername, port, UDP/TCP, TLS, etc.
+PUT /scot/admin/logging
+-Update logging configuration
+
+//CRON
+GET /scot/admin/cron
+-All services that are set to run at certain intervals (GeoIP update, Backup, etc)
+PUT /scot/admin/cron
+-Update services to run, and when
+
+//IPs/CIDRs/ASNs belonging to user
+GET /scot/admin/cidr
+-Get the ASNs, IP ranges, and CIDRs that belong to the company using SCOT
+PUT /scot/admin/cir
+-Update the idendifiers for IPs owned by scot user
+=Used to determine when to show local flag, and what icon to use
+

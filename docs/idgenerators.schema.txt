@@ -1,0 +1,8 @@
+ID Generators
+
+idgenerators 
+{
+    _id         :   mongo oid,
+    collection  :   "string collection name",
+    lastid      :   integer last used,
+}

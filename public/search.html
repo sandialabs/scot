@@ -1,0 +1,26 @@
+<html>
+<head>
+ <link rel="stylesheet"  href="/styles.less"></link>
+ <link rel="stylesheet"  href="/libs/jquery.dataTables.css"></link>
+ <link rel="stylesheet"  href="/libs/jquery.dataTables_themeroller.css"></link>
+ <script src="/libs/jquery.min.js"></script>
+ <script src="/libs/jquery.dataTables.js"></script>
+ <script src="/libs/jquery.dataTables.columnFilter.js"></script>
+ <script src="/libs/html5shiv.js"></script>
+ <script src="/libs/polyfill/object.keys.js"></script>
+ <script src="/search.js"></script>
+ <script>
+   $(document).ready(function() {
+     var hash = window.location.hash;
+     if(hash.length > 4) {
+       hash = hash.substring(1);
+       submit_search(hash, true);
+     } else {
+       $('body').html("<center><h1>Your search must be at least 4 characters long (e.x. 'test', not 'tes')</h1></center>");
+     }
+   });
+ </script>
+</head>
+<body id="results">
+</body>
+</html>
