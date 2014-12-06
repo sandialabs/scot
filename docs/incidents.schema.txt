@@ -1,0 +1,67 @@
+Incidents Schemas
+
+inossue = integer number of seconds since unix epoch
+
+incidents
+{
+    _id         :   mongo assigned guid,
+    incident_id :   SCOT assigned integer,
+    owner       :   "username string",
+    created     :   inossue,
+    occurred    :   inossue,
+    discovered  :   inossue,
+    reported    :   inossue,
+    updated     :   inossue,
+    closed      :   inossue,
+    description :   "description string",
+    status      :   string " open | closed ", 
+    type        :   "string of DOE type",
+    category    :   "string of DOE category",
+    sensitivity :   "string of DOE sensitivity",
+    files       :   [ file_oid1, file_oid2, ... ],
+    affected    :   int of number of systems affected,
+    critical_infrastucture      :   "string of critical infra affected",
+    security_category           :   "string of security category",
+    lost        :   {
+        encrypted   : boolean,  # was drive/files encrypted
+        password    : boolean,  # was drive/files password protected
+        other       : string,   # explanation to doe
+    },
+    pii         :   {
+        affected        :   int,            # number afected,
+        notified        :   boolean,        # have affected been notified,
+        employee_type   :   "typestring",   # was a contractor or federal empl
+    },
+    ipaddresses :   [ ipaddr1, ipaddr2, ... ],
+    operatingsys:   [ os1, os2, ... ],
+    method      :   "string describing method of detection",
+    attackers   :   {
+        ipaddresses     : [ ip1, ip2,... ],
+        proto           : [ proto1, proto2, ... ],
+        domains         : [ domain1, domain2, ...],
+        countries       : [ countr1, country2, ...],
+        method          : "string describing hack method",
+        motive          : "string describing perpatrators and motivations",
+        code            : "trojan/malware code name",
+        spoof           : "evidence of spoofing",
+    },
+    impact      :   {
+        assessment  :   "string describing impact",
+        actions     :   "string describing actions taken",
+    },
+    notifications   :   [ "who was notified string1", ... ],
+    doe_report_id   :   "string",
+    permissions :   {
+        read        :   [ "group1", "group2", ... ],
+        modify      :   [ "group3", ... ],
+    },
+    history     :   [
+        {
+            who     :   "username string",
+            when    :   inossue,
+            what    :   "string describing action",
+        },...
+    ],
+}
+    
+

@@ -1,0 +1,40 @@
+Alert Schemas
+
+inossue = integer number of seconds since unix epoch
+
+alerts
+{
+    _id         :   mongo assigned guid,
+    alert_id    :   SCOT assigned integer,
+    alertgroup  :   alertgroup_id,                          # to which this alert belongs
+    status      :   string " new | closed | promoted  | revisit ", 
+    when        :   inossue,                                # user changable time
+    created     :   inossue,                                # immutable time of alert creation
+    updated     :   inossue,                                # immutable time of last update
+    sources     :   [ "sourcename1", "sourcename2", ... ], # tag about the source of the alert
+    tags        :   [ "tag1", "tag2", ... ],               # human entered
+    viewed_by   :   [ 
+        {
+            username: {
+                when: inossue,
+                count: int,
+                from: ipaddr_string
+            }
+        },...
+    ],
+    files       :   [ file_oid1, file_oid2, ... ],
+    subject     :   "subject string",
+    body        :   "body text string",
+    summary_entry_id    : entry_id,
+    guide_id    :   guid_id,                            # link to guide for this alert
+    event_id    :   when promoted contains the event_id,
+    readgroups  :   [ "group1", "group2", ... ],
+    modifygroups :   [ "group3", ... ],
+    triage_ranking  : number,
+    triage_feedback : bool,
+    triage_probs    : {
+        attr1: val1,...
+    }
+}
+    
+

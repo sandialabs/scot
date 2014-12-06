@@ -1,0 +1,14 @@
+/var/log/scot.*.log {
+    daily
+    missingok
+    rotate 5
+    compress
+    notifempty
+}
+/var/log/error.*.log {
+    daily
+    missingok
+    rotate 5
+    compress
+    notifempty
+}

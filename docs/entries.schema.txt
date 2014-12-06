@@ -1,0 +1,30 @@
+Entry Schemas
+
+inossue = integer number of seconds since unix epoch
+
+entries
+{
+    _id         :   mongo assigned guid,
+    parent      :   mongo_guid of parent entry,
+    target_id   :   SCOT assigned integer,
+    target_oid  :   mongo guid of associated entry,
+    target_type :   the entity type this entry is associated to (event, alert)
+    owner       :   "username string",
+    status      :   string " open | complete " only present if a task item, 
+    when        :   inossue,
+    created     :   inossue,
+    updated     :   inossue,
+    completed   :   inossue and only present if a task item,
+    text        :   "text of entry string",
+    permissions :   {
+        read        :   [ "group1", "group2", ... ],
+        modify      :   [ "group3", ... ],
+    },
+    history     :   [
+        {
+            who     :   "username string",
+            when    :   inossue,
+            what    :   "string describing action",
+        },...
+    ],
+}

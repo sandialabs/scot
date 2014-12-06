@@ -1,0 +1,18 @@
+Collections
+
+activity        :   logs of scot activity
+alerts          :   store incoming alerts to the scot system
+chat            :   chat saved for posterity
+checklists      :   predefined task lists 
+entries         :   comment boxes for events
+events          :   store the event records
+files           :   files uploaded to scot
+guides          :   guidance records for an alert type
+handler         :   who is, was, or will be incident handler
+idgenerators    :   hacky way to generate sequential integers for collections
+incidents       :   doe reported incident records
+sources         :   sources used and frequency and where used
+tags            :   tags used and frequency and where used
+users           :   user info and prefs
+
+Schemas for each collection are documented in collection_name.schema.txt files.

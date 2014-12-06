@@ -1,0 +1,61 @@
+% layout 'sigma';
+% title 'Event Entity Graph';
+
+Event Id: <input id="node-id" name="node-id" type="text" value="<%= $event_id %>">
+Depth: <input id="depth" name="depth" type="text" value="<%= $depth %>">
+<div id="gcontainer"></div>
+
+<script src="/libs/sigma.min.js"></script>
+<script src="/libs/sigmaplugins/sigma.parsers.json.min.js"></script>
+<script src="/libs/sigmaplugins/sigma.layout.forceAtlas2.min.js"></script>
+<script src="/libs/jquery.min.js"></script>
+
+<script>
+    var nodeId = $('#node-id').val();
+    var depth = $('#depth').val();
+    var g   = {
+        nodes:  [],
+        edges:  []
+    };
+    var s   = new sigma({
+        graph: g,
+        container: 'gcontainer',
+        renderer: {
+            container: document.getElementById('gcontainer'),
+            type: 'canvas'
+        },
+        settings:   {
+            minNodeSize:    8,
+            maxNodeSize:    16,
+        }
+    });
+
+        if ( typeof n === 'undefined' ) {
+            n = nodeId;
+        }
+        if ( typeof d === 'undefined' ) {
+            d = depth;
+        }
+        var url = "/scot/meta/ee_graph?event_id="+n+"&depth="+d;
+
+        sigma.parsers.json( 
+            url,
+            s,
+            function() {
+                var     i,
+                        nodes   = s.graph.nodes(),
+                        len     = nodes.length;
+
+                for ( i=0; i < len; i++ ) {
+                    nodes[i].x  = Math.random();
+                    nodes[i].y  = Math.random();
+                    nodes[i].size = s.graph.degree(nodes[i].id);
+                    nodes[i].color= nodes[i].center ? '#333':'#666';
+                }
+
+                s.refresh();
+                s.startForceAtlas2();
+            }
+        );
+
+</script>

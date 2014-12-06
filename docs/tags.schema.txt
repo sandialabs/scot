@@ -1,0 +1,24 @@
+Tag Schemas
+
+There are tags and then there are "tags".  
+Previously in scot2 we had two types of tags tags and sources.  
+In the future, we may have "labels" (machine generated tags) and who
+knows what else.  
+That being the case, the tags collection will have records that track
+the tag type instead of having a different collection for each tagtype.
+
+tags
+{
+    _id         :   mongo assigned guid,
+    type        :   string representation of type name "tag|source|label"
+    text        :   "the tag string",
+    count       :   total integer number of times used
+    applies     :   [
+        {
+            type: "alerts, events, etc.",
+            oid : oid of type,
+        },...
+    ]
+}
+    
+

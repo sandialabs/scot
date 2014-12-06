@@ -1,0 +1,25 @@
+Files Schemas
+
+inossue = integer number of seconds since unix epoch
+
+files
+{
+    _id         :   mongo assigned guid,
+    filename    :   "string filename",
+    content_type:   "string",
+    link        :   [
+        {
+            collection  :   "string",
+            oid         :   mongo_oid,
+        },...
+    ],
+    length      :   integer size,
+    md5         :   "string md5 hexhash as calculated by mongo",
+    uploaded    :   ISODate, # as set by mongo
+    permissions :   {
+        read        :   [ "group1", "group2", ... ],
+        modify      :   [ "group3", ... ],
+    },
+}
+    
+

@@ -1,0 +1,135 @@
+<html>
+	<head>
+		<script src="/libs/jquery.min.js"></script>
+		<script src="/libs/d3.min.js"></script>
+		<script src="/libs/c3.min.js"></script>
+        <script src="/libs/bootstrap.min.js"></script>
+        <script src="/libs/jquery.datepick.js"></script>
+		<style type="text/css">
+		</style>
+        <link href="/c3.css" rel="stylesheet" type="text/css">
+        <link href="/libs/jquery.datepick.css" rel="stylesheet" type="text/css">
+	</head>
+	<body>
+		<h2>SCOT Reports</h2>
+		<script>
+            jQuery(document).ready(function() {
+                $('#start-date').datepick();
+                $('#end-date').datepick();
+
+                $.ajax({
+                    type:   'get',
+                    url:    '/scot/meta/get_avail_reports',
+                    success: complete_report_selector,
+                    error:  function(data, status) {
+                        alert("Failed to get available reports: "+status);
+                    }
+                });
+                $("#report-form").submit(function(event) {
+                    var form    = $(this);
+                    var data    = build_params(form);
+                    $.ajax({
+                        type:   'put',
+                        url:    '/scot/meta/report',
+                        data:   data,
+                        success: display_report_data,
+                        error:  function(data,status) {
+                            alert("Failed to get report: "+status);
+                        }
+                    });
+                    event.preventDefault();
+                });
+            });
+
+            function complete_report_selector(data, status) {
+                // get an array of report types 
+                // stuff them into the select field
+                $.each(data, function(index, obj) {
+                    var name    = obj.name;
+                    var report  = obj.report;
+                    $('#report-type')
+                        .append($('<option></option>')
+                            .attr("value", report)
+                            .text(name));
+                });
+            }
+
+            function display_report_data(data, status) {
+                // get report from server in json format
+                // initialize graphing and display
+                var chart = c3.generate({
+                    bindto: '#chart',
+                    data: {
+                        x:  'x',
+                        columns: [
+                            data.columns[0],
+                            data.columns[1]
+                        ],
+                        type: 'area-spline'
+                    },
+                    axis: {
+                        x: {
+                            type: 'timeseries',
+                            tick: {
+                                format: '%Y-%m'
+                            }
+                        }
+                    }
+                });
+            }
+
+            function build_params(form) {
+                var sd = $('#start-date').val().split('/');
+                var ed = $('#end-date').val().split('/');
+                var start_epoch = new Date(sd[2], sd[0]-1, sd[1]).getTime()/1000;
+                var end_epoch = new Date(ed[2], ed[0]-1, ed[1]).getTime()/1000;
+                var report      = $('#report-type').val();
+                console.log( 'start_epoch is '+start_epoch);
+                console.log( 'end_epoch   is '+end_epoch);
+                console.log( 'report      is '+report);
+                var data = {
+                    start_epoch:  start_epoch,
+                    end_epoch:    end_epoch,
+                    report: report,
+                };
+                return JSON.stringify(data);
+            }
+
+		</script>
+        <form   id="report-form"
+                class="form-horizontal"
+                role="form">
+            <div class="form-group">
+                <div class="form-group">
+                    <label  for="report-type"
+                            class="col-lg-4 control-label">
+                    Report Type
+                    </label>
+                    <div class="col-lg-8">
+                        <select id="report-type">
+                            <!-- fill this in by ajax call -->
+                        </select>
+                    </div>
+                    <label  for="start-date"
+                            class="col-lg-4 control-label">
+                    Start Date
+                    </label>
+                    <div class="col-lg-8">
+                        <input id="start-date"></input>
+                    </div>
+                    <label  for="end-date"
+                            class="col-lg-4 control-label">
+                    End Date
+                    </label>
+                    <div class="col-lg-8">
+                        <input id="end-date"></input>
+                    </div>
+                </div>
+            </div>
+            <button id="display-btn" type="submit" class="btn btn-primary">
+            Display
+            </button>
+        </form>
+        <div id="chart"></div>
+	</body>
+</html>

@@ -1,0 +1,19 @@
+User Schemas
+
+inossue = integer number of seconds since unix epoch
+
+users
+{
+    _id                 :   mongo assigned guid,
+    username            :   "string id of the user",
+    tzpref              :   "string timezone pref UTC | EST5EDT |...",
+    lastvisit           :   inossue,
+    last_activity_check :   inossue,
+    theme               :   "string theme identifier",
+    flair               :   {
+        flair_item  : boolean,
+        ...,
+    },
+}
+    
+

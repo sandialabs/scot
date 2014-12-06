@@ -1,0 +1,56 @@
+<html>
+	<head>
+		<style type="text/css">
+			#container {
+				max-width: 2500px;
+				height: 100%;
+				margin: auto;	
+			}
+		</style>
+	</head>
+	<body>
+		<h2>Entity Event Relationships</h2>
+		<div id="container"></div>
+		<script src="/libs/sigma.min.js"></script>
+		<script src="/libs/sigmaplugins/sigma.parsers.json.min.js"></script>
+		<script src="/libs/sigmaplugins/sigma.layout.forceAtlas2.min.js"></script>
+		<script src="/libs/jquery.min.js"></script>
+		<script>
+			var g	= {
+				nodes: [],
+				edges: [],
+			};
+			var s	= new sigma({
+				graph: g,
+				container: 'container',
+				renderer: {
+					container: document.getElementById('container'),
+					type: 'canvas'
+				},
+				settings: {
+					minNodeSize: 8,
+					maxNodeSize: 16,
+				}
+			});
+			sigma.parsers.json('/scot/meta/ee_graph?start=200&end=220',
+						s,
+						function() {
+							var i,
+								nodes = s.graph.nodes(),
+								len = nodes.length;
+							for (i = 0; i < len; i++ ) {
+								nodes[i].x	= Math.random();
+								nodes[i].y	= Math.random();
+								nodes[i].size	= s.graph.degree(nodes[i].id);
+								nodes[i].color	= nodes[i].center ? '#333' : '#666';
+							}
+							s.refresh();
+							s.startForceAtlas2();
+						}
+					);
+				
+				
+		</script>
+		<hr>
+	</body>
+</html>

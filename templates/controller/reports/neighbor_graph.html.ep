@@ -1,0 +1,79 @@
+% layout 'd3';
+% title 'Event Entity Graph';
+
+<script src="/libs/jquery.min.js"></script>
+<script src="/libs/d3.min.js"></script>
+
+
+Event Id: <input id="node-id" name="node-id" type="text" value="<%= $event_id %>">
+Depth: <input id="depth" name="depth" type="text" value="<%= $depth %>">
+
+<script>
+    var nodeId = $('#node-id').val();
+    var depth = $('#depth').val();
+    var width   = 1000,
+        height  = 1000,
+        margin  = { top: -5, right: -5, bottom: -5, left: -5};
+
+    if ( typeof n === 'undefined' ) {
+        n = nodeId;
+    }
+    if ( typeof d === 'undefined' ) {
+        d = depth;
+    }
+    var url = "/scot/meta/ee_graph?event_id="+n+"&depth="+d;
+
+    var color   = d3.scale.category20();
+
+//    var zoom    = d3.behavior.zoom()
+ //                   .scaleExtent([1,10])
+  //                  .on("zoom", zoomed);
+
+    var force   = d3.layout.force()
+                    .charge(-120)
+                    .linkDistance(30)
+                    .size([width, height]);
+
+    var svg     = d3.select("body")
+                    .append("svg")
+                    .attr("width", width)
+                    .attr("height", height);
+//                    .append("g")
+ //                   .attr("transform", "translate("+margin.left+","+margin.right+")")
+  //                  .call(zoom);
+
+//    var container = svg.append("g");
+
+    d3.json(url, function(error, graph) {
+        force.nodes(graph.nodes).links(graph.links).start();
+        var link = svg.selectAll(".link")
+                      .data(graph.links)
+                      .enter().append("line")
+                      .attr("class", "link")
+                      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+        var node = svg.selectAll(".node")
+                      .data(graph.nodes)
+                      .enter().append("circle")
+                      .attr("r", 10)
+                      .style("fill", function(d) { 
+                        console.log(d); color(d.group); });
+
+        node.append("title").text(function(d) { return d.name; } );
+        force.on("tick", function() {
+            link.attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+            node.attr("cx", function(d) { return d.x; })
+                .attr("cy", function(d) { return d.y; });
+        });
+    });
+
+    function zoomed() {
+        container.attr("transform", "translate(" + 
+                        d3.event.translate + ")scale(" +
+                        d3.event.scale + ")" );
+    }
+
+
+</script>
