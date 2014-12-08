@@ -6,8 +6,6 @@ RUN echo '#!/bin/sh\nexit 101' > /usr/sbin/policy-rc.d && \
     chmod +x /usr/sbin/policy-rc.d
 
 # Set proxy settings (if your environment requires it)
-ENV http_proxy http://YOUR_PROXY_HERE:80
-ENV https_proxy http://YOUR_PROXY_HERE:80
 
 # Install `gosu` for easy step-down from root
 RUN apt-get -qq update && apt-get install -yq curl \
