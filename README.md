@@ -2,6 +2,11 @@
 Sandia Cyber Omni Tracker
 =========================
 
+Documentation and Install
+-------------------------
+Read our [documentation](http://scot.readthedocs.org/en/latest/install.html) at Read The Docs.
+
+
 Overview
 --------
 
