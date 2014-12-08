@@ -6,8 +6,8 @@ RUN echo '#!/bin/sh\nexit 101' > /usr/sbin/policy-rc.d && \
     chmod +x /usr/sbin/policy-rc.d
 
 # Set proxy settings (if your environment requires it)
-ENV http_proxy http://PROXY_SERVER_HERE:80
-ENV https_proxy http://PROXY_SERVER_HERE:80
+#ENV http_proxy http://PROXY_SERVER_HERE:80
+#ENV https_proxy http://PROXY_SERVER_HERE:80
 
 RUN \
   apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10 && \
