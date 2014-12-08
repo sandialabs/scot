@@ -1,4 +1,4 @@
-FROM sandia/scotbase:latest
+FROM sandywater/scotbase:latest
 MAINTAINER Josh Maine, jmaine@sandia.gov
 
 # Prevent daemon start during install
