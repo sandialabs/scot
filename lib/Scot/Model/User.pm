@@ -127,7 +127,7 @@ has lockouts => (
 
 has attempts => (
     is      => 'rw',
-    isa     => 'Int',
+    isa     => 'Maybe[Int]',
     required    =>  0,
     metaclass   => 'MooseX::MetaDescription::Meta::Attribute',
     description => {
