@@ -33,6 +33,7 @@ RUN cd /scot && /scot/install_scot3.sh && rm -rf /scot
 
 VOLUME ["/opt/sandia/webapps/scot3/public"]
 
-EXPOSE 443 80
+EXPOSE 443
+EXPOSE 80
 
 CMD ["/usr/bin/supervisord"]

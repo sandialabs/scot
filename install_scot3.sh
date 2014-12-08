@@ -51,11 +51,13 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 #curl http://getscot.sandia.gov &>/dev/null
-wget -qO- http://getscot.sandia.gov &>/dev/null
-if [ "$?" != 0 ]; then
-   echo "Couldn't reach the internet, and SCOT needs an internet connection to install.  Do you use a proxy?.  If so, remember to add the proxy to /etc/apt/apt.conf since APT doesn't respect HTTP_PROXY env variables"
-   echo "Exiting..."
-   exit;
+if [[ $DOCKERINSTALL != "True" ]]; then
+   wget -qO- http://getscot.sandia.gov &>/dev/null
+   if [ "$?" != 0 ]; then
+      echo "Couldn't reach the internet, and SCOT needs an internet connection to install.  Do you use a proxy?.  If so, remember to add the proxy to /etc/apt/apt.conf since APT doesn't respect HTTP_PROXY env variables"
+      echo "Exiting..."
+      exit;
+   fi
 fi
 
 INSTMODE=''
@@ -336,11 +338,16 @@ mkdir -p /data/db
 # --logappend  Ensure mongod appends new entries to the end of the logfile. We create it first so that the below tail always finds something
 
 if [[ $DOCKERINSTALL == "True" ]]; then
+  echo '' > /var/log/mongodb/mongod.log
+  chown mongodb /var/log/mongodb/mongod.log
+  chgrp mongodb /var/log/mongodb/mongod.log
   /usr/bin/mongod  --quiet --logpath /var/log/mongodb/mongod.log --logappend &
 else
   echo -e "${yellow}Restarting mongod service${NC}"
   service mongod stop
   echo '' > /var/log/mongodb/mongod.log
+  chown mongodb /var/log/mongodb/mongod.log
+  chgrp mongodb /var/log/mongodb/mongod.log
   service mongod start
 fi
 
