@@ -10,27 +10,27 @@
 
 1. Install [Docker](https://www.docker.io/).
 
-2. Download [trusted build](https://index.docker.io/u/sandia/scot) from public [Docker Registry](https://index.docker.io/): `docker pull sandia/scot`
+2. Download [trusted build](https://index.docker.io/u/sandialabs/scot) from public [Docker Registry](https://index.docker.io/): `docker pull sandialabs/scot`
 
 #### Alternatively, build an image from Dockerfile
 ```bash
-$ docker build -t sandia/scot github.com/sandia/scot
+$ docker build -t sandialabs/scot github.com/sandialabs/scot
 ```
 
 ### To Build
 
 ```bash
-$ git clone https://github.com/sandia/scot.git
+$ git clone https://github.com/sandialabs/scot.git
 $ cd scot/deploy/ScotBaseImage
-$ sudo docker build -t sandia/scotbase .
+$ sudo docker build -t sandialabs/scotbase .
 $ cd ../.. (to the scot root folder)
-$ sudo docker build -t sandia/scot .
+$ sudo docker build -t sandialabs/scot .
 ```
 
 ### To Run
 
 ```bash
-$ sudo docker run -d --restart always -p 443:443 --name scot sandia/scot
+$ sudo docker run -d --restart always -p 443:443 -p 80:80 --name scot sandialabs/scot
 ```
 > NOTE: This is running with the `--restart always` flag which means the docker daemon will restart it when the host is rebooted
 
@@ -47,7 +47,7 @@ $ boot2docker up
 
 #### Usage
 ```bash
-$ docker run --name scot -p 443:443 -p 80:80 -d sandia/scot
+$ docker run --name scot -p 443:443 -p 80:80 -d sandialabs/scot
 ```
 As a convience you can add the **boot2docker** IP to you **/etc/hosts** file:
 ```bash
@@ -71,7 +71,7 @@ $ docker run --name scot -d [OPTIONS] sandialabs/scot:latest
 ### To Develop on Mac
 ```bash
 $ cd <scot_src_root_directory>
-$ docker run --name scot -v $(pwd)/public:/opt/sandia/webapps/scot3/public:ro -p 443:443 -p 80:80 -d sandia/scot
+$ docker run --name scot -v $(pwd)/public:/opt/sandia/webapps/scot3/public:ro -p 443:443 -p 80:80 -d sandialabs/scot
 ```
 Running the container in this way will mount the *SCOT* **public** folder from the OSX host into the container as a read only folder.  
 Allowing you to make changes to the UI from your Mac and then refresh your browser to see the changes reflected inside the container.
@@ -94,7 +94,7 @@ $ docker exec -it scot tail -f /var/log/scot.prod.log
 ```
 #### Contribute to the SCOT team (PLEASE!)
 ```bash
-$ git request-pull v3.4 https://github.com/sandia/scot master
+$ git request-pull v3.4 https://github.com/sandialabs/scot master
 ```
 #### For Fun
 ```bash
@@ -122,7 +122,7 @@ $ alias docker='echo "WE HAVE TO GO DEEPER"; mpg123 -q http://inception.davepedu
 ### To Build
 
 ```bash
-$ git clone https://github.com/sandia/scot.git
+$ git clone https://github.com/sandialabs/scot.git
 $ cd scot/deploy
 $ vagrant up
 ```
@@ -150,7 +150,7 @@ $ sudo docker ps -a
 # List all running docker containers
 $ sudo docker ps -a
 CONTAINER ID        IMAGE                COMMAND                CREATED             STATUS              PORTS                             NAMES
-e73bf10923e7        sandia/scot:latest   "/usr/bin/supervisor"   17 minutes ago      Up 17 minutes       0.0.0.0:443->443/tcp   scot
+e73bf10923e7        sandialabs/scot:latest   "/usr/bin/supervisor"   17 minutes ago      Up 17 minutes       0.0.0.0:443->443/tcp   scot
 # To enter the running scot container
 $ sudo docker exec -it e73bf10923e7 bash
 # We now are essentially sshed into the running scot container
