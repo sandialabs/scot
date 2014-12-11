@@ -36,6 +36,14 @@ has 'regexmap'  => (
     },
 );
 
+has 'regexorder'    => (
+    is          => 'rw',
+    isa         => 'ArrayRef',
+    traits      => ['Array'],
+    required    => 1,
+    builder     => '_build_proc_order',
+);
+
 has     'suffix'   => (
     is          => 'ro',
     isa         => 'Domain::PublicSuffix',
@@ -55,18 +63,20 @@ sub _build_suffix {
     return        Domain::PublicSuffix->new({ data_file => $self->suffixfile});
 }
 
-Readonly my $DOMAIN_REGEX_2 => qr{
-    \b(?<!@)
+Readonly my $DOMAIN_REGEX => qr{
+    \b
+#    (?<!\w*\.\w*[@=])
     (?=.{4,255})
     (
         (?:[a-zA-Z0-9-]{1,63}(?<!-)\.)+
-        [a-zA-Z]{2,63}
+        [a-zA-Z]{2,63}(?![=@])
     )\b
 }xms;
 
-Readonly my $DOMAIN_REGEX => qr{
+Readonly my $DOMAIN_REGEX_2 => qr{
     \b
-    (?<!@)(?!.*(?:\(|exe|docx|rar|pdf|txt|doc|ppt|pptx|pl|py|html|htm|php|jar|zip))
+    (?<!@)
+    (?!.*(?:\(|exe|docx|rar|pdf|txt|doc|ppt|pptx|pl|py|html|htm|php|jar|zip))
     (
         (?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+
         (?:com|org|net|edu|gov|[a-zA-Z]{2,6})
@@ -105,8 +115,8 @@ Readonly my $FILE_REGEX => qr{
 
 Readonly my $EMAIL_REGEX    => qr{
     (
-        [a-z0-9!#$%&'*+/?^_`{|}~-]+             # one or more of these
-        (?:\.[a-z0-9!#$%&'*+/?^_`{|}~-]+)*      # zero or more of these
+        [a-z0-9!#$%&'*+\/?^_`{|}~-]+             # one or more of these
+        (?:\.[a-z0-9!#$%&'*+\/?^_`{|}~-]+)*      # zero or more of these
         @
         (?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+  # domain before tld
         (?:[A-Z]{2}|com|org|net|edu|gov|
@@ -171,6 +181,22 @@ sub _build_proclist {
     };
 }
 
+sub _build_proc_order {
+    my $self    = shift;
+    my @order   = qw(
+        email
+        ipaddr
+        md5
+        sha1
+        sha256
+        scotfile
+        snumber
+        files
+        domain
+    );
+    return \@order;
+}
+
 
 =item C<process_html>
 
@@ -207,6 +233,9 @@ sub process_html {
     $tree->delete; # prevent memory leaks
 
     $log->debug("HTML:".$entities{flair});
+	
+	# remove duplicates from $entities->{entities}
+	$self->remove_duplicate_entities(\%entities);
 
     return \%entities;
 }
@@ -354,10 +383,12 @@ sub get_new_content {
         }
         else {
             $log->debug(" "x$level."Type was undefined, implies partial match...");
+            push @content,$pre_match, $match;
         }
 
         if ( $remaining_indicies == 0 ) {
             $log->debug(" "x$level."That was the last...");
+            $log->debug(" "x$level."appending $post_match");
             push @content, $post_match;
         }
 
@@ -509,7 +540,7 @@ sub get_entities {
 
     $log->debug(" "x$level."Getting Entities...");
 
-    foreach my $type ( $self->get_types ) {
+    foreach my $type ( @{$self->regexorder} ) {
         my $regex   = $self->get_regex($type);
         my @matches = uniq( $text =~ m/$regex/g );
         if ( $type  eq "files" ) {
@@ -523,6 +554,24 @@ sub get_entities {
         }
     }
     return @entities;
+}
+
+sub remove_duplicate_entities {
+    my $self        = shift;
+	my $db_href		= shift;
+	my $orig_aref	= $db_href->{entities};
+    my @entities    = ();
+
+    my %seen_value;
+    my %seen_type;
+
+    foreach my $tuple (@{$orig_aref}) {
+        next if ( $seen_value{$tuple->{value}} and $seen_type{$tuple->{type}});
+        push @entities, $tuple;
+        $seen_value{$tuple->{value}}++;
+        $seen_type{$tuple->{type}}++;
+    }
+    $db_href->{entities} = \@entities;
 }
 
 sub second_domain_check {
@@ -573,12 +622,12 @@ sub get_match_indicies {
     my %seen_start;
     my %seen_end;
 
-    foreach my $type ( $self->get_types ) {
+    foreach my $type ( @{$self->regexorder} ) {
         my $regex   = $self->get_regex($type);
         @ss         = ();
         $text       =~ m/$regex$indexre(?!)/;
         foreach my $aref (@ss) {
-            if ( $seen_start{$aref->[0]} and $seen_end{$aref->[1]} ) {
+            if ( $seen_start{$aref->[0]} or $seen_end{$aref->[1]} ) {
                 $log->debug(" "x$level."duplicate indicies dropped");
             }
             else {
@@ -590,5 +639,6 @@ sub get_match_indicies {
     }
     return @indicies;
 }
+
 
 1;
