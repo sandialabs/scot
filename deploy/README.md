@@ -59,6 +59,15 @@ $ echo $(boot2docker ip) dockerhost | sudo tee -a /etc/hosts
   * **user:** `admin`
   * **password:** `admin`
 
+#### Upgrading
+To update SCOT, simply stop the container and pull the latest version from the docker index.
+
+```bash
+$ docker stop scot
+$ docker pull sandialabs/scot:latest
+$ docker run --name scot -d [OPTIONS] sandialabs/scot:latest
+```
+
 ### To Develop on Mac
 ```bash
 $ cd <scot_src_root_directory>
