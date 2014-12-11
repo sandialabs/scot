@@ -2,6 +2,11 @@
 Sandia Cyber Omni Tracker
 =========================
 
+SCOT Online Demo
+----------------
+Give SCOT a try <a href="https://54.70.180.65">here</a> with the username admin/admin
+
+
 Documentation and Install
 -------------------------
 Read our [documentation](http://scot.readthedocs.org/en/latest/install.html) at Read The Docs.
