@@ -6,6 +6,8 @@ RUN echo '#!/bin/sh\nexit 101' > /usr/sbin/policy-rc.d && \
     chmod +x /usr/sbin/policy-rc.d
 
 # Set proxy settings (if your environment requires it)
+#ENV http_proxy http://PROXY_SERVER_HERE:80
+#ENV https_proxy http://PROXY_SERVER_HERE:80
 
 # Install `gosu` for easy step-down from root
 RUN apt-get -qq update && apt-get install -yq curl \
@@ -13,13 +15,6 @@ RUN apt-get -qq update && apt-get install -yq curl \
   && chmod +x /usr/local/bin/gosu \
   && apt-get purge -y --auto-remove curl \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# # Install SCOT Dependancies
-# RUN \
-#   apt-get -q update && \
-#   apt-get install -y dialog libmagic-dev make perlmagick perltidy perl-doc groff perl perl-base perl-modules perlmagick perltidy libgssapi-krb5-2 libkrb5support0 libkrb5-3 gcc lynx curl git-core java-common apache2 libapache2-mod-proxy-html libapache2-mod-rpaf libimlib2-dev libimlib2 starman libgeoip-dev default-jre cpanminus  --no-install-recommends && \
-#   apt-get clean && \
-#   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install SCOT Dependancies
 RUN buildDeps='gcc git-core make'; \

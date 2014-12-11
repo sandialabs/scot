@@ -50,15 +50,19 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-#curl http://getscot.sandia.gov &>/dev/null
+# The Docker installer only has curl installed and Ubuntu only has wget installed by default
 if [[ $DOCKERINSTALL != "True" ]]; then
    wget -qO- http://getscot.sandia.gov &>/dev/null
-   if [ "$?" != 0 ]; then
-      echo "Couldn't reach the internet, and SCOT needs an internet connection to install.  Do you use a proxy?.  If so, remember to add the proxy to /etc/apt/apt.conf since APT doesn't respect HTTP_PROXY env variables"
-      echo "Exiting..."
-      exit;
-   fi
+else
+  curl http://getscot.sandia.gov &>/dev/null
 fi
+
+if [ "$?" != 0 ]; then
+  echo "Couldn't reach the internet, and SCOT needs an internet connection to install.  Do you use a proxy?.  If so, remember to add the proxy to /etc/apt/apt.conf since APT doesn't respect HTTP_PROXY env variables"
+  echo "Exiting..."
+  exit;
+fi
+
 
 INSTMODE=''
 MODE='production'
@@ -339,8 +343,9 @@ mkdir -p /data/db
 
 if [[ $DOCKERINSTALL == "True" ]]; then
   echo '' > /var/log/mongodb/mongod.log
-  chown mongodb /var/log/mongodb/mongod.log
-  chgrp mongodb /var/log/mongodb/mongod.log
+  chown -R mongodb /var/log/mongodb/mongod.log /data/db
+  chgrp mongodb /var/log/mongodb/mongod.log /data/db
+
   /usr/bin/mongod  --quiet --logpath /var/log/mongodb/mongod.log --logappend &
 else
   echo -e "${yellow}Restarting mongod service${NC}"
@@ -348,6 +353,7 @@ else
   echo '' > /var/log/mongodb/mongod.log
   chown mongodb /var/log/mongodb/mongod.log
   chgrp mongodb /var/log/mongodb/mongod.log
+
   service mongod start
 fi
 
@@ -370,7 +376,11 @@ if [ "$MONGOADMIN" == "0" ] || [ "$RESETDB" == "1" ] ; then
     set='$set'
     HASH=`$DEVDIR/bin/passwd.pl admin`
     mongo scotng-prod $DEVDIR/etc/admin_user.js
+    mongo scotng-prod --eval "printjson(db.users.findOne())"
     mongo scotng-prod --eval "db.users.update({username:'admin'}, {$set:{hash:'$HASH'}})"
+    mongo scotng-prod --eval "printjson(db.users.findOne())"
+    chown -R mongodb /var/log/mongodb/mongod.log /data/db
+    ls -al /var/log/mongodb/mongod.log /data/db
     MONGOADMIN=$(mongo scotng-prod --eval "printjson(db.users.count({username:'admin'}))" --quiet)
     if [[ $MONGOADMIN == 1 ]]; then
       echo -e "${blue}admin/admin account successfuly added.${NC}"
