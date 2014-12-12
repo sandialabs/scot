@@ -10,6 +10,17 @@ Documentation and Install
 -------------------------
 Read our [documentation](http://scot.readthedocs.org/en/latest/install.html) at Read The Docs.
 
+Contact US
+----------
+Vulnerabilities
+: Email us <scot-dev@sandia.gov> 
+
+Bugs / Enhancements
+: Use our GitHub issue tracking
+
+Collaboration
+: Email us <scot-dev@sandia.gov>
+
 
 Overview
 --------
