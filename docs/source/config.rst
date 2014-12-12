@@ -5,6 +5,6 @@ Once you install SCOT, you are good to go, but you may want to add new users, sc
 * :ref:`Update SSL Certificates <ssl>`
 * :ref:`Configure Auth (LDAPs or Local Users) <auth>`
 * :ref:`Schedule Backups <backups>`
-* :ref:`Recieve Alerts <alerts>`
+* :ref:`Alerts <alerts>`
 
 

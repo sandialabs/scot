@@ -1,15 +1,15 @@
 Why SCOT?
 =========
-Lets see why SCOT is so popular...
+Let's see why SCOT is so popular...
 
 Philosophy
 ^^^^^^^^^^
 
-When Sandia’s IR team was looking for a system to capture our work product, we had a great deal of experience with other products.  We had tried RT, and its IR extensions, TRAC and Remedy.  We also worked with several large SEIMS.  All of these tools failed to be adopted by the team for various reasons.  For some the complexity of the tool prevented an already overloaded team from utilizing it.  For other tools, there was a mismatch between how the tool wanted the team to work and the reality of how our IR process worked.
-From these frustrations SCOT was developed to these principles:
 
-  * SCOT should be require minimal training to use and understand.
-  * SCOT should always aim to improve the effectiveness and efficiency of the IR analyst.
+When Sandia’s IR team was looking for a system to capture its work product, they already had a great deal of experience with existing products. RT and its IR extensions, TRAC and Remedy were products that had been tested, along with several large SEIMS. For various reasons, none of these tools were adopted by the team. For some, the complexity of the tool prevented an already overloaded team from utilizing it. For others, there was a mismatch between what would be required of the team in order to use it and the reality of how the current IR process worked. From these frustrations and to fill the IR team’s need, SCOT was developed with these principles in mind:
+
+  * SCOT should require minimal training to use and understand
+  * SCOT should aim to always improve the effectiveness and efficiency of the IR analyst
 
 Why Use SCOT
 ^^^^^^^^^^^^
