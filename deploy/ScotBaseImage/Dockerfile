@@ -10,6 +10,7 @@ RUN echo '#!/bin/sh\nexit 101' > /usr/sbin/policy-rc.d && \
 #ENV https_proxy http://PROXY_SERVER_HERE:80
 
 # Install `gosu` for easy step-down from root
+USER root
 RUN apt-get -qq update && apt-get install -yq curl \
   && curl -o /usr/local/bin/gosu -SL 'https://github.com/tianon/gosu/releases/download/1.1/gosu' \
   && chmod +x /usr/local/bin/gosu \
@@ -23,9 +24,16 @@ RUN buildDeps='gcc git-core make'; \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+RUN groupadd -r nonroot \
+  && useradd -r -g nonroot -d /home/nonroot -s /sbin/nologin -c "Nonroot User" nonroot \
+  && mkdir /home/nonroot \
+  && chown -R nonroot:nonroot /home/nonroot
+
 # Install Perl Modules
-ADD install_perl_mods.sh /
-RUN chmod 755 /install_perl_mods.sh
+USER nonroot
+WORKDIR /home/nonroot
+ADD install_perl_mods.sh /home/nonroot/
+RUN chmod 755 /home/nonroot/install_perl_mods.sh
 RUN \
-  /install_perl_mods.sh && \
+  /home/nonroot/install_perl_mods.sh && \
   apt-get purge -y --auto-remove gcc git-core make
