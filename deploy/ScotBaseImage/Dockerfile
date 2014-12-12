@@ -24,16 +24,17 @@ RUN buildDeps='gcc git-core make'; \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN groupadd -r nonroot \
-  && useradd -r -g nonroot -d /home/nonroot -s /sbin/nologin -c "Nonroot User" nonroot \
+RUN groupadd -r nonroot -g 433 \
+  && useradd -u 431 -r -g nonroot -d /home/nonroot -s /sbin/nologin -c "Nonroot User" nonroot \
   && mkdir /home/nonroot \
   && chown -R nonroot:nonroot /home/nonroot
 
 # Install Perl Modules
-USER nonroot
-WORKDIR /home/nonroot
 ADD install_perl_mods.sh /home/nonroot/
+RUN chown nonroot /home/nonroot/install_perl_mods.sh
+USER nonroot
+# WORKDIR /home/nonroot
 RUN chmod 755 /home/nonroot/install_perl_mods.sh
 RUN \
-  /home/nonroot/install_perl_mods.sh && \
+  sudo /home/nonroot/install_perl_mods.sh && \
   apt-get purge -y --auto-remove gcc git-core make
