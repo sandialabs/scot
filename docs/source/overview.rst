@@ -6,7 +6,6 @@
 Overview
 ================================
 
-Cyber security incident response can be a dynamic and unpredictable undertaking.  What starts out as a simple alert may lead a team down a rabbit hole full of surprises. The Sandia Cyber Omni Tracker, SCOT, is a cyber security incident response management system, designed by cyber security incident responders, that provides a new approach to manage security alerts, coordinate team efforts, capture team knowledge, and analyze data for deeper patterns.  SCOT integrates with existing security applications to provide a consistent, easy to use interface that enhances analyst effectiveness. 
-
+Cyber security incident response can be a dynamic and unpredictable process. What starts out as a simple alert may lead a team down a rabbit hole full of surprises. The Sandia Cyber Omni Tracker, SCOT, is a cyber security incident response (IR) management system designed by cyber security incident responders to provide a new approach for managing security alerts, including coordinating team efforts, capturing team knowledge, and analyzing data for deeper patterns. SCOT integrates with existing security applications to provide a consistent, easy to use interface that enhances analyst effectiveness.
 
 

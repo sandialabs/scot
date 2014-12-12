@@ -1,30 +1,31 @@
 
 Navigation
 ^^^^^^^^^^
-The header of the page provides navigation to the various segments of SCOT.
+The header of the main page provides navigation to the various segments of SCOT.
 
 .. figure:: _static/images/navigation_bar.png
    :width: 100 %
    :alt: Navigation Bar
 
-SCOT is split into three main sections, **Intel**, **Alerts**, and **Events**.  Each section consists of a grid on the top, and the details view on the bottom.
+SCOT is split into three main sections: **Intel**, **Alerts**, and **Events**.  Each section consists of a grid on the top and the details view on the bottom.
 
 .. image:: _static/images/scot-top-bottom.png
    :width: 100 %
    :alt: SCOT grid and detail pannels
 
-The Grid on the top lists documents you can view/edit, and the document itself is viewed and edited in the details pane on the bottom.
+The Grid on the top lists documents you can view/edit; and the document itself is viewed and edited in the details pane on the bottom.
 
-You will spend most of your time in one of these three sections (Intel, Alerts, Events), so lets go over them quickly.
+You will spend most of your time in one of these three sections (Intel, Alerts, Events), so let's go over them quickly.
 
 Intel |gears|
 #############
-The intel section of SCOT is where you, the user will put threat intel information possibly relevant to protecting your network.  If you enable it, SCOT will automatically pull in several common opensource threat intel feeds.  This intel section is useful for everyone in your team to have a centralized place to review threat intel information.  Additionally, SCOT will automatically extract IOCs (IPs, Domains, Hashes, Emails, etc.) from this threat intel data and alert you to its presence elsewhere in SCOT.
+
+The intel section of SCOT is where you, the user, will put threat intel information of potential relevance to protecting your network. If you enable it, SCOT will automatically pull in several common opensource threat intel feeds. The benefit of this intel section is that everyone on your team will have a centralized place to review threat intel information. Additionally, SCOT will automatically extract IOCs (IPs, Domains, Hashes, Emails, etc.) from this threat intel data and alert you to its presence elsewhere in SCOT.
 
 Alerts |question|
 #################
 
-Anytime you have a high confidence alert that you need an analyst to review, this is where you put it.  The Alert section allows your team to know who has triaged which alert(s) in real time.  Like the intel section, it extracts IOCs and shows correlation information inline.  This allows you to instantly tell if anyone on your team has previously investigated a domain, IP, file and review that research.
+Anytime you have a high confidence alert that needs reviewing by an analyst, this is where you will put it. The Alert section provides real time data about who on your team has triaged which alert(s). Like the intel section, it extracts IOCs and shows correlation information inline. This allows you to instantly tell if anyone on your team has previously investigated a domain, IP, or file, and to review that research.
 
 Events |exclamation|
 ####################
@@ -33,7 +34,8 @@ Here is where you will send most of your time during an investigation of a possi
 
 The Rest
 ########
-Lets go over whats on the right hand side of the navigation bar
+
+Let's go over what's on the right hand side of the navigation bar
 
 * :ref:`Name of the current Incident Handler/Incident Commander <incident_handler>`
 * |notebook| :ref:`Scratchpad for quick lookup/correlation <scratchpad>`

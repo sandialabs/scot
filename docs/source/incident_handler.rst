@@ -7,7 +7,7 @@ Some teams have the concept of an Incident Commander AKA Incident Handler, which
 
 IMAGE OF INCIDENT HANDLER HERE
 
-If you click on the current Incident Commander's name, you are brought to a calendar page, where you can define the incident handler schedule.
+If you click on the current Incident Commander's name, you are brought to a calendar page where you can define the incident handler schedule.
 
 IMAGE OF INCIDENT HANDLER CALENDAR HERE.
 

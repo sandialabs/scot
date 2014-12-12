@@ -1,7 +1,7 @@
 Installing SCOT
 ================================
 
-We've made installing SCOT a snap, follow these simple instructions and you'll be running in no time.
+We've made installing SCOT a snap; follow these simple instructions and you'll be running in no time.
 
 Minimum System Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -32,6 +32,8 @@ You can install via Source or Docker(coming soon)
 
   * docker pull sandia/scot
   * docker run sandia/scot
+
+.. _upgrade:
 
 Upgrading
 ^^^^^^^^^
