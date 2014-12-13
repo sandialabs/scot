@@ -31,10 +31,10 @@ RUN groupadd -r nonroot -g 433 \
 
 # Install Perl Modules
 ADD install_perl_mods.sh /home/nonroot/
-RUN chown nonroot /home/nonroot/install_perl_mods.sh
-USER nonroot
-# WORKDIR /home/nonroot
 RUN chmod 755 /home/nonroot/install_perl_mods.sh
+RUN chown -R nonroot:nonroot /home/nonroot
+USER nonroot
+WORKDIR /home/nonroot
 RUN \
-  sudo /home/nonroot/install_perl_mods.sh && \
+  ./install_perl_mods.sh && \
   apt-get purge -y --auto-remove gcc git-core make
