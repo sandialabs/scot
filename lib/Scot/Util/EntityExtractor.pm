@@ -323,6 +323,7 @@ sub has_splunk_ip_pattern {
     return undef;
 }
 
+
 sub get_new_content {
     my $self    = shift;
     my $text    = shift;
@@ -354,6 +355,7 @@ sub get_new_content {
 
         $log->debug(" "x$level."$remaining_indicies remain to be processed");
         $log->debug(" "x$level."start = $start end = $end length = $length");
+        $log->debug(" "x$level."Content is ".Dumper(@content));
 
         $remaining_indicies--;
         my $pre_match   = substr $text, $last, ($start - $last);
@@ -379,12 +381,13 @@ sub get_new_content {
             else {
                 push @content, $self->do_span($db_href, $type, $match);
             }
-            $last   = $end;
         }
         else {
             $log->debug(" "x$level."Type was undefined, implies partial match...");
-            push @content,$pre_match, $match;
+            $log->debug(" "x$level."content is ".Dumper(@content));
+            push @content, $pre_match, $match;
         }
+        $last   = $end;
 
         if ( $remaining_indicies == 0 ) {
             $log->debug(" "x$level."That was the last...");
