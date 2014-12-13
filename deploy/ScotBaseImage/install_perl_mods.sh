@@ -18,7 +18,7 @@ do
     DOCRES=`perldoc -l $PACKAGE 2>/dev/null`
     if [[ -z "$DOCRES" ]]; then
        echo -e "${blue}Installing perl module $PACKAGE ${NC}"
-       if [ "$PACKAGE" = "MongoDB" ]; then
+       if [ "$PACKAGE" = "MongoDB" || "$PACKAGE" = "Crypt::PBKDF2"]; then
           cpanm $PACKAGE --force
        else
           cpanm $PACKAGE
