@@ -1,6 +1,6 @@
 package Scot::Model::Alert;
 
-use lib '../../lib';
+use lib '../../../lib';
 use strict;
 use warnings;
 use v5.10;
@@ -730,7 +730,7 @@ sub update_alertgroup {
 
     $log->debug("updating alertgroup");
 
-    my $alertgroup_object   = $self->get_my_alertgroup;
+    my $alertgroup_object   = $self->get_my_alertgroup($mongo);
 
     $alertgroup_object->log     ($log);
     $alertgroup_object->add_alert($self->alert_id);
@@ -752,8 +752,7 @@ matches in the db.  returns the ref to that object.
 
 sub get_my_alertgroup {
     my $self            = shift;
-    my $env             = $self->env;
-    my $mongo           = $env->mongo;
+    my $mongo           = shift;
     my $alertgroup_id   = $self->alertgroup;
     my $log             = $self->log;
     my $alertgroup_object;

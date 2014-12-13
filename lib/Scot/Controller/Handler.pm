@@ -701,7 +701,8 @@ sub create  {
                 # $object->update_data_derrived_from_body;
             }
             if ( ref($object) eq "Scot::Model::Alert" ) {
-                $object->extract_entities;
+                $log->debug(" ENV IS ",{filter=>\&Dumper,value=>$env});
+                #$object->extract_entities;
             }
             # alert group might need something
             # events incidents should not 
@@ -1081,6 +1082,7 @@ sub update  {
     my $timer   = $env->get_timer("PUT /$thing/$id");
 
     $log->debug("Attempting to update $thing $id");
+    $log->debug("ENV IS DEFINED") if ( defined($env));
 
     if ( $thing =~ /user/i ) { 
         $self->render(
@@ -1173,6 +1175,8 @@ sub update  {
 
                 if ( $obj_type eq "Scot::Model::Alert" ) {
                     $object->update_alertgroup($mongo);
+                    #$log->debug(" ENV IS ",{filter=>\&Dumper,value=>$env});
+                    $object->env($env);
                     $object->extract_entities;
                 }
 
