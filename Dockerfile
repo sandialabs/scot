@@ -1,6 +1,8 @@
 FROM sandialabs/scotbase
 MAINTAINER Josh Maine, jmaine@sandia.gov
 
+USER root
+
 # Prevent daemon start during install
 RUN echo '#!/bin/sh\nexit 101' > /usr/sbin/policy-rc.d && \
     chmod +x /usr/sbin/policy-rc.d
