@@ -35,6 +35,6 @@ RUN chmod 755 /home/nonroot/install_perl_mods.sh
 RUN chown -R nonroot:nonroot /home/nonroot
 USER nonroot
 WORKDIR /home/nonroot
-RUN \
-  ./install_perl_mods.sh && \
-  apt-get purge -y --auto-remove gcc git-core make
+RUN ./install_perl_mods.sh
+# USER root
+# RUN apt-get purge -y --auto-remove gcc git-core make
