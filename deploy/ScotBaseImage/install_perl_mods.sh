@@ -30,8 +30,8 @@ do
     fi
 done
 
-echo -e "${yellow}Cleaning out .cpan folder...${NC}"
-rm -rf $HOME/.cpan/build/*              \
-       $HOME/.cpan/sources/authors/id   \
-       $HOME/.cpan/cpan_sqlite_log.*    \
-       /tmp/cpan_install_*.txt
+# echo -e "${yellow}Cleaning out .cpan folder...${NC}"
+# rm -rf $HOME/.cpan/build/*              \
+#        $HOME/.cpan/sources/authors/id   \
+#        $HOME/.cpan/cpan_sqlite_log.*    \
+#        /tmp/cpan_install_*.txt
