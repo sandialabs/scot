@@ -37,5 +37,5 @@ VOLUME ["/opt/sandia/webapps/scot3/public"]
 
 EXPOSE 443
 EXPOSE 80
-USER nonroot
+# USER nonroot
 CMD ["/usr/bin/supervisord"]
