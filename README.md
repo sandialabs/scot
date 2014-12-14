@@ -2,6 +2,10 @@
 Sandia Cyber Omni Tracker
 =========================
 
+
+![version](http://img.shields.io/badge/version-3.3-orange.svg?style=flat)
+[![Documentation Status][docs-badge]](http://scot.readthedocs.org/en/latest/)
+![license](http://img.shields.io/badge/license-Apache%202-red.svg?style=flat)
 [![Circle CI](https://circleci.com/gh/sandialabs/scot.svg?style=svg)](https://circleci.com/gh/sandialabs/scot)
 
 SCOT Online Demo
@@ -55,3 +59,5 @@ Competitive Advantage
 Sandia's incident response team realized several advantages using SCOT over other solutions.  SCOT's ease of use eliminated the steep learning curve of traditional SIEMS and captured team knowledge much more effectively.  Designed for cyber security, SCOT allows the IR team to enter data easily, instead of struggling to conform to a ticketing system designed for other purposes.  While workflow systems handle linear workflows easily, SCOT is purpose built for the looping nature of cyber security investigations.  SCOT also solves the challenges of keeping wikis, spreadsheets and documents up-to-date and accessible to an IR team.  While top-notch analysts may be able to keep everything in their brains, SCOT will capture their knowledge for when they go on vacation or to other employment.
 
 ![Scot-venn](https://raw.githubusercontent.com/sandialabs/scot/master/docs/scot-venn.png)
+
+[docs-badge]: https://readthedocs.org/projects/scot/badge/?version=latest
