@@ -5,6 +5,7 @@ machine:
 dependencies:
   override:
     - docker info
+    - docker build -t sandialabs/scotbase deploy/ScotBaseImage
     - docker build -t sandialabs/scot .
 
 test:
