@@ -26,5 +26,5 @@ RUN buildDeps='gcc git-core make'; \
 # Install Perl Modules
 ADD install_perl_mods.sh /
 RUN chmod 755 /install_perl_mods.sh
-RUN install_perl_mods.sh \
+RUN /install_perl_mods.sh \
   && apt-get purge -y --auto-remove gcc git-core make
