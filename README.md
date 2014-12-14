@@ -6,7 +6,9 @@ Sandia Cyber Omni Tracker
 
 SCOT Online Demo
 ----------------
-Give SCOT a try <a href="https://54.245.95.189">here</a> with the username admin/admin. For this demo, the app is reverted every hour on the hour.  We are currently using a self signed cert for the demo, but that will change in the next few days.
+Give SCOT a try [here](https://54.245.95.189) with the **username**: `admin`/ **password**: `admin`
+
+> ###### For this demo, the app is reverted every hour on the hour.  We are currently using a self signed cert for the demo, but that will change in the next few days.
 
 Documentation and Install
 -------------------------
