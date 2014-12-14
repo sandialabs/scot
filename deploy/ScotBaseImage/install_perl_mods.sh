@@ -9,16 +9,13 @@ NC='\e[0m' # No Color
 
 echo -e "${yellow}Installing Perl Modules...${NC}"
 
-HOME=$(pwd)
-cpanm --local-lib=~/perl5 local::lib && eval $(perl -I ~/perl5/lib/perl5/ -Mlocal::lib)
-
 for PACKAGE in "Curses::UI" "Number::Bytes::Human" "Sys::RunAlone" "Parallel::ForkManager" "DBI" "Encode" "FileHandle" "File::Slurp" "File::Temp" "File::Type" "Geo::IP" "HTML::Entities" "HTML::Scrubber" "HTML::Strip" "HTML::StripTags" "JSON" "Log::Log4perl" "Mail::IMAPClient" "Mail::IMAPClient::BodyStructure" "MongoDB" "MongoDB::GridFS" "MongoDB::GridFS::File" "MongoDB::OID" "Moose" "Moose::Role" "Moose::Util::TypeConstraints" "Net::Jabber::Bot" "Net::LDAP" "Net::SMTP::TLS" "Readonly" "Time::HiRes" "Mojo" "MojoX::Log::Log4perl" "MooseX::MetaDescription::Meta::Attribute" "DateTime::Format::Natural" "Net::STOMP::Client" "IPC::Run" "XML::Smart" "Config::Auto" "Data::GUID" "Redis" "File::LibMagic" "Courriel" "List::Uniq" "Domain::PublicSuffix" "Crypt::PBKDF2" "Config::Crontab" "HTML::TreeBuilder HTML::FromText" "DateTime::Cron::Simple" "HTML::FromText" "IO::Prompt"
 
 do
     DOCRES=`perldoc -l $PACKAGE 2>/dev/null`
     if [[ -z "$DOCRES" ]]; then
        echo -e "${blue}Installing perl module $PACKAGE ${NC}"
-       if [ "$PACKAGE" = "MongoDB" || "$PACKAGE" = "Crypt::PBKDF2"]; then
+       if [ "$PACKAGE" = "MongoDB" ]; then
           cpanm $PACKAGE --force
        else
           cpanm $PACKAGE
@@ -30,8 +27,8 @@ do
     fi
 done
 
-# echo -e "${yellow}Cleaning out .cpan folder...${NC}"
-# rm -rf $HOME/.cpan/build/*              \
-#        $HOME/.cpan/sources/authors/id   \
-#        $HOME/.cpan/cpan_sqlite_log.*    \
-#        /tmp/cpan_install_*.txt
+echo -e "${yellow}Cleaning out .cpan folder...${NC}"
+rm -rf $HOME/.cpan/build/*              \
+       $HOME/.cpan/sources/authors/id   \
+       $HOME/.cpan/cpan_sqlite_log.*    \
+       /tmp/cpan_install_*.txt
