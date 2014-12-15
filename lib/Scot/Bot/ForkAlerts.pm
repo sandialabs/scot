@@ -7,7 +7,7 @@ use v5.10;
 use Scot::Env;
 use Scot::Util::Imap;
 use Scot::Util::Mongo;
-use Scot::Util::Phantom;
+# use Scot::Util::Phantom;
 use Scot::Util::EntityExtractor;
 use Scot::Util::ActiveMQ;
 use Mail::IMAPClient;
@@ -33,12 +33,12 @@ use namespace::autoclean;
 use Data::Dumper;
 use Parallel::ForkManager;
 
-$| = 1; #don't buffer output 
+$| = 1; #don't buffer output
 
-has 'env'  => (    
-    is          => 'ro', 
+has 'env'  => (
+    is          => 'ro',
     isa         => 'Scot::Env',
-    required    => 1,  
+    required    => 1,
 );
 
 has imap  => (
@@ -123,7 +123,7 @@ sub run  {
         my $pid = $taskmanager->start and next;
 
         if ($pid == 0) {
-            # need to give each child their own taker instance 
+            # need to give each child their own taker instance
             # for the db connections not be closed by each instance
             my $chldenv      = Scot::Env->new(
                 config_file => $env->config_file,
@@ -135,8 +135,8 @@ sub run  {
 
             my $class   = $task->{parserclass};
 	    if($class =~ /^js::/) {
-                (my $junk, my $parser_id)  = split('::', $class,2); 
-  	        $task->{'parser_id'} = $parser_id; 
+                (my $junk, my $parser_id)  = split('::', $class,2);
+  	        $task->{'parser_id'} = $parser_id;
                 $class="Scot::Bot::Parser::Js";
             }
             my $parser  = $class->new($task);
@@ -266,5 +266,3 @@ sub already_processed {
 
 
 1;
-
-                
