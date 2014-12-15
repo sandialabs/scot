@@ -7,7 +7,7 @@ OPEN SOURCE Version.
 this module is glue to hold SCOT together.
 Bots can include this to get the entire scot environment
 Mojolicious controllers can include this to do the same
-This will replace a bunch of helpers in Scot.pm and 
+This will replace a bunch of helpers in Scot.pm and
 the Tasker.pm module.
 
 =cut
@@ -47,7 +47,7 @@ use Moose;
 
 =over 4
 
-=item C<config_file> 
+=item C<config_file>
 
 the full path to the SCOT config file. (perl format)
 
@@ -265,7 +265,7 @@ sub _build_redis {
 
 =item C<ldap>
 
-The ldap attribute holds a reference to a Scot::Util::Ldap object.  
+The ldap attribute holds a reference to a Scot::Util::Ldap object.
 Not always needed.  going to make this lazy, so should instantiate unless needed.
 Might want to profile this behavior though to be sure.
 
@@ -336,6 +336,7 @@ sub _build_imap {
         log         => $self->log,
         email_acct  => $account,
         mongo       => $mongo,
+        env         => $self,
     );
     return $imap;
 }
@@ -403,7 +404,7 @@ my $timer = $env->timer("foo")
 ...later...
 my $elapsed_seconds = &$timer;
 
- who says perl can't do cool things.  
+ who says perl can't do cool things.
 
 =cut
 
@@ -529,7 +530,7 @@ sub deplural {
 
 =item C<get_model_class_from_collection>
 
-give it a collection and get the Scot::Model::Class 
+give it a collection and get the Scot::Model::Class
 
 Here's the rule:
     Collection names are plural and all lowercase
@@ -547,7 +548,7 @@ sub get_model_class {
 
 =item C<update_activity_log(I<$href>)>
 
-this function allows you to update the audits collection in 
+this function allows you to update the audits collection in
 a consistent way.   The href is expected to contain:
 {
     data    => {
@@ -642,14 +643,14 @@ sub send_amq_message {
         $amq_msg->{target_type} = $orig_hash->{target_type};
         $amq_msg->{target_id}   = $orig_hash->{target_id};
     }
-    # disabled, need to use once refactor sorts out message inconsistancies 
+    # disabled, need to use once refactor sorts out message inconsistancies
     # so currently this whole function does nothing!
     # $activemq->send("activity", $amq_msg);
 }
 
 =item C<map_thing_to_collection>
 
-give it a thing (alert, event, etc.) name and get the 
+give it a thing (alert, event, etc.) name and get the
 mongo collection that stores it.
 
 in future, consider making this a class method on the model.
@@ -686,4 +687,3 @@ sub map_thing_to_collection {
 
 
 1;
-
