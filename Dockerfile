@@ -31,6 +31,7 @@ ENV DOCKERINSTALL True
 # Run SCOT Installer
 RUN cd /scot && /scot/install_scot3.sh && rm -rf /scot
 COPY deploy/scotamq.xml /opt/sandia/webapps/activemq/conf/scotamq.xml
+RUN chown activemq /opt/sandia/webapps/activemq/conf/scotamq.xml
 
 # ENTRYPOINT ["/docker-entrypoint.sh"]
 
