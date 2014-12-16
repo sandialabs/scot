@@ -3,10 +3,10 @@ Sandia Cyber Omni Tracker
 =========================
 
 
-![version](http://img.shields.io/badge/version-3.3-orange.svg?style=flat)
+![version](http://img.shields.io/badge/version-3.3-orange.svg)
 [![Documentation Status][docs-badge]](http://scot.readthedocs.org/en/latest/)
-![license](http://img.shields.io/badge/license-Apache%202-red.svg?style=flat)
-[![Circle CI](https://circleci.com/gh/sandialabs/scot.svg?style=svg)](https://circleci.com/gh/sandialabs/scot)
+[![license](http://img.shields.io/badge/license-Apache%202-red.svg)](https://github.com/sandialabs/scot/blob/master/LICENSE)
+[![Circle CI](https://circleci.com/gh/sandialabs/scot.svg?style=shield&circle-token=1f0dc7e770297ca791738bf0a40d5c89c577fc39)](https://circleci.com/gh/sandialabs/scot)
 
 SCOT Online Demo
 ----------------
@@ -56,4 +56,4 @@ Contact US
 
 **Collaboration:** <mailto:scot-dev@sandia.gov>
 
-[docs-badge]: https://readthedocs.org/projects/scot/badge/?version=latest
+[docs-badge]: http://img.shields.io/badge/docs-latest-brightgreen.svg
