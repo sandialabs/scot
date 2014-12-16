@@ -8,11 +8,14 @@ build:
     #       sudo apt-get install -y python-pip
     #       sudo pip install -r requirements.txt
     - script:
+        name: docker version
+        code: sudo docker -v
+    - script:
         name: build container
         code: sudo docker build -t sandialabs/scot .
     - script:
         name: test container
-        code: sudo docker exec -t scot perl /opt/sandia/webapps/scot3/t/all.t
+        code: sudo docker run sandialabs/scot /bin/bash -c "/tests.sh; if [ "\$?" == "$EXPECTED_EXIT_CODE" ]; then exit 0; else exit 1; fi"
     - script:
         name: run container
         code: sudo docker run -d -p 80:80 -p 443:443 sandialabs/scot; sleep 40
