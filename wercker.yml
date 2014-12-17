@@ -15,7 +15,7 @@ build:
         code: sudo docker build -t sandialabs/scot .
     - script:
         name: test container
-        code: sudo docker run sandialabs/scot /bin/bash -c "/tests.sh; if [ "\$?" == "$EXPECTED_EXIT_CODE" ]; then exit 0; else exit 1; fi"
+        code: sudo docker run sandialabs/scot /bin/bash -c "/tests.sh; if [ "\$?" == "0" ]; then exit 0; else exit 1; fi"
     - script:
         name: run container
         code: sudo docker run -d -p 80:80 -p 443:443 sandialabs/scot; sleep 40
