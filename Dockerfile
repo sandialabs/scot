@@ -32,7 +32,8 @@ ENV DOCKERINSTALL True
 RUN cd /scot && /scot/install_scot3.sh && rm -rf /scot
 COPY deploy/tests.sh /tests.sh
 COPY deploy/scotamq.xml /opt/sandia/webapps/activemq/conf/scotamq.xml
-RUN chown activemq /opt/sandia/webapps/activemq/conf/scotamq.xml
+RUN chown activemq /opt/sandia/webapps/activemq/conf/scotamq.xml \
+  && chmod 755 /tests.sh
 
 # ENTRYPOINT ["/docker-entrypoint.sh"]
 
