@@ -91,6 +91,7 @@ function ajaxFlipServer(settings) {
 */
 
 
+// when adding a new entry, scroll to it.
 jQuery.fn.scrollMinimal = function() {
   var cParentTop =  this.parent().offset().top;
   var cTop = this.offset().top - cParentTop;
@@ -115,6 +116,7 @@ function select2_clicked(e) {
 /*$(document).ajaxError(function(event, jqxhr, settings, exception) {
    ajaxFlipServer(settings);
 });*/
+
 $.ajax({
     type: 'GET',
     contentType: "application/json",
@@ -122,6 +124,7 @@ $.ajax({
 }).done(function(response) {
     username = response.user;
 });
+
 $(document).ready(function(f) {
     setInterval(function() {
     $('.clickTabs').toggleClass('glow');
@@ -159,9 +162,12 @@ $(document).ready(function(f) {
         tags: [""],
         tokenSeparators: [",", " "]
     });
+
     locationHashChanged();
+
+    // hot key functionality
     //grid_filter_updated(true);
-$('body').keydown(function(event) {
+    $('body').keydown(function(event) {
          var key = String.fromCharCode(event.which);
          if(key == 'F' ) {
                if(!event.target.className.contains('entry-body-inner') && event.target.nodeName != "INPUT" && event.target.nodeName != "TEXTAREA") {
@@ -171,14 +177,18 @@ $('body').keydown(function(event) {
             ctrlDown = true;
         }
     });
-$('body').keyup(function(event) {
-  if(!event.shiftKey) {
-    ctrlDown = false;
-  }
-});
+
+    // are you holding the shift key down
+    // ctrlDown is a legacy name
+    $('body').keyup(function(event) {
+        if(!event.shiftKey) {
+            ctrlDown = false;
+        }
+    });
 
 
-
+    // more hot keys
+    // just for top grid
     $('#TopPane').keydown(function(event) {
         switch (event.keyCode) {
             case 40: //down
@@ -213,6 +223,9 @@ $('body').keyup(function(event) {
 
         }
     });
+
+    // jquery function created to prevent 
+    // sending an ajax call after every key press
     $('#subjectEditor').keyup(
 		$.debounce(1000, update_subject)
 
@@ -234,6 +247,7 @@ $('body').keyup(function(event) {
        }
 }*/
 
+// lib function - perform a deep copy
 function deepCopy(obj) {
     if (Object.prototype.toString.call(obj) === '[object Array]') {
         var out = [], i = 0, len = obj.length;
@@ -253,7 +267,7 @@ function deepCopy(obj) {
 }
 
 
-var sort_col = new Array();
+var sort_col = new Array(); // current sort column(s)
 sort_col['alert'] = 'created';
 sort_col['event'] = 'updated';
 var sort_direction = new Array();
@@ -262,6 +276,7 @@ sort_direction['event'] = -1;
 var previous_filter = new Object();
 var grid_page = new Array();
 var filter = {};
+// called as part of preview
 function grid_filter_updated(initial_load, start) {
     if(filter[top_mode] == undefined) {
        filter[top_mode] = {};
@@ -272,16 +287,16 @@ function grid_filter_updated(initial_load, start) {
            var filter_name = $(filter_inp).attr('name');
            if(jQuery.inArray(filter_name, filter_names) >= 0) {
              $('#filter_'+filter_name).val(filter[top_mode][filter_name]);
-	   } else {
+	    } else {
              $(filter_inp).val('');
            }
         });
 	//load from filter[top_mode] back into inputs
        if(grid_page[top_mode] != undefined) {
-	   $('#current_page').val(grid_page[top_mode]);
+	        $('#current_page').val(grid_page[top_mode]);
         } else {
            $('#current_page').val(0);
-	}
+	    }
     }
     var strings = ['subject', 'owner', 'status', 'source'];
     var nums = ['alert_id', 'alertgroup_id', 'event_id', 'doe_report_id', 'incident_id', 'view_count'];
@@ -382,6 +397,7 @@ function grid_filter_updated(initial_load, start) {
 
 }
 
+// render columns to determine width with sorting error and set as minimum
 function adjust_grid_header_widths(cols) {
   $(cols).each(function(index, column) {
   var displayName = column;
@@ -395,6 +411,7 @@ function adjust_grid_header_widths(cols) {
     var property = 'min-width';
     var ruleClass = '.'+column;
     var updated_rule = false;
+    // modify the css stylesheet 
     for (var s = 0; s < document.styleSheets.length; s++) {
         var sheet = document.styleSheets[s];
             var rules = sheet.cssRules ? sheet.cssRules : sheet.rules;
@@ -572,7 +589,7 @@ function render_grid_row(f) {
             if (cellVal == undefined) {
                 cellVal = f['alert_id'];
             }
-        } else if (cols[i] == 'viewcount') {
+        } else if (cols[i] == 'viewcount') { // account for variety in server
             if (cellVal == undefined) {
 		if(f['view_count'] != undefined) {
                   cellVal = f['view_count'];
@@ -595,6 +612,7 @@ function render_grid_row(f) {
     return tmpTr;
 }
 
+// data = response
 function grid_update_ajax_response(data, status, headers, config, start, initial_load, date_cols) {
     var cols = column_types[top_mode]; //Array of strings, names of columns
 
@@ -627,11 +645,13 @@ function grid_update_ajax_response(data, status, headers, config, start, initial
 }
 
 function loadIframe(obj) {
+   // can't resize from inside iframe so see what size it needs
    resizeIframe(obj);
+   // look for links and change external links to our confirmation page
     $(obj.contentDocument.body).find('a').each(function(index, link) {
        if($.isUrlExternal(link.href)) {
-	  $(link).attr('href', '/scot/confirm/'+btoa(link));
-	}
+        $(link).attr('href', '/scot/confirm/'+btoa(link));
+	    }
     });
     $(obj.contentDocument.body).find('a').attr('target', '_blank'); //Normal links will open in a new tab/window
     $(obj.contentDocument.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>'); //Entitites have an iframe to target.  Couldn't be in ancestor without allowing top navigation which is possibly dangerous
@@ -649,6 +669,7 @@ function resizeIframe(iframe) {
     ifr.parent().height(hei+5);
 }
 
+// click for more: when entry is big
 function set_entry_overflow(obj, type) {
   if(type == 'button') {
     $(obj).find('.entry-body-inner').each(function(index, inner_body) {
@@ -664,9 +685,10 @@ function set_entry_overflow(obj, type) {
         
         });
     }
-    }
+}
 
-    function render_entry(parent_id, entryin) {
+// main important function... handles html of all entries
+function render_entry(parent_id, entryin) {
         var entry = entryin;
         if (entry.task == undefined) {
             entry.task = {
@@ -732,7 +754,9 @@ function set_entry_overflow(obj, type) {
         }
 
         return entry_dom;
-    }
+}
+
+    //library
     jQuery.fn.center = function() {
         this.css("position", "absolute");
         this.css("top", Math.max(0, (($(window).height() - $(this).outerHeight()) / 2) +
@@ -742,6 +766,7 @@ function set_entry_overflow(obj, type) {
         return this;
     }
 
+    //library
     function showLoadingGif() {
         $('#BottomPane').append('<img id="loadingGif" style="width:100px; height:100px;" src="loading.gif"></img>');
         $('#loadingGif').center();
@@ -750,6 +775,7 @@ function set_entry_overflow(obj, type) {
     }
     var prev_cmd_tag = '';
 
+    // called on ready
     function populate_tags(tags) {
         $("#event_tags2").val(tags);
         $("#event_tags2").select2({
@@ -764,6 +790,7 @@ function set_entry_overflow(obj, type) {
             });
         });
 
+        // TODO: need to change to update_neutral when Intel is added
         $("#write_permissions").on("change", function(e) {
             var write = $("#write_permissions").select2('val');
             update_event({
@@ -801,6 +828,7 @@ function set_entry_overflow(obj, type) {
         });
     }
 
+    //no longer used, but useful for future
     function render_alert_body_vert(entry) {
         var keys = Object.keys(entry);
         var result = $('<div class="alertTable"></div>')
@@ -821,7 +849,7 @@ function set_entry_overflow(obj, type) {
         content += '<link rel="stylesheet" type="text/css" href="sandbox.css"></link>';
         var ifr = $('<iframe id="alert_html" sandbox="allow-same-origin" style="overflow-y:hidden; border:0px solid transparent;  width:100%;"></iframe>').attr('srcdoc', content);
         $(ifr).data('alert_id', alerts[0].alert_id);
-        pentry(ifr, flairdata);
+        pentry(ifr, flairdata); // pentry should be named "entry ready"
 
         return ifr;
     }
@@ -861,6 +889,7 @@ function set_entry_overflow(obj, type) {
             theadrow.append(key);
         });
 
+        // experimetal
         var valColor = new Object();
         var valCount = new Object();
 
@@ -966,9 +995,12 @@ function set_entry_overflow(obj, type) {
     }
 
 
+    //similar to pentry
+    // extracts entity spans and allows clicks inside iframe
     function handle_entity(entity, flairdata, bindclick) {
                         var entity_type = $(entity).data('entity-type');
                         var entity_value = $(entity).data('entity-value');
+                        // #event_id is legacy, could be called just id 
                         var id = $('#event_id').html();
                         $(entity).unbind('click');
                 if(bindclick) {
@@ -976,13 +1008,14 @@ function set_entry_overflow(obj, type) {
                 }
                         if (flairdata != undefined && flairdata[entity_value] != undefined) {
                             if (flairdata[entity_value].block_data != undefined && flairdata[entity_value].block_data.type != undefined) {
+                                // append image to span
                                 var type = flairdata[entity_value].block_data.type;
                     if(type != 'allowed' && type != 'whitelist') {
                                 $(entity).append('<img class="noselect" src="/images/flair/'+type+'.png"></img>');
                     }
                             }
                             ref_text = '';
-                            var types = ['event', 'alert'];
+                            var types = ['event', 'alert']; // TODO: , 'intel'
                             $(types).each(function(index, type) {
                                 if (flairdata[entity_type] != undefined && flairdata[entity_type][type + 's'] != undefined) {
                                     flairdata[entity_value][type + 's'].each(function(index, item) {
@@ -992,6 +1025,7 @@ function set_entry_overflow(obj, type) {
                             });
                             var reference_count = (flairdata[entity_value].alerts_count + flairdata[entity_value].events_count + flairdata[entity_value].intel_count);
                             if (reference_count > 1) {
+                                // noselect prevents copying in copy paste 
                                 var circle = $('<span class="noselect">').attr('alt', ref_text).attr('title', ref_text);
                                 circle.addClass('circleNumber');
                     circle.addClass('extras');
@@ -1042,6 +1076,7 @@ function set_entry_overflow(obj, type) {
     }
     }
 
+    // green alert grid details highlighting stuff
     function enableDataRowSelection() {
     var dt = $('#BottomPane').find('tbody');
     if(dt.length  == 0) {
@@ -1060,6 +1095,7 @@ function set_entry_overflow(obj, type) {
         });
     }
 
+    //library
     function findPos(obj) {
         var curleft = curtop = 0;
         if (obj.offsetParent) {
@@ -1073,6 +1109,8 @@ function set_entry_overflow(obj, type) {
     }
 
 
+    //library
+    // find the position of item
     function findPosRelativeToViewport(obj) {
         var pos= findPos(obj);
         //var root= document.compatMode=='BackCompat'? document.body : document.documentElement;
@@ -1081,6 +1119,10 @@ function set_entry_overflow(obj, type) {
         return pos;
     }
 
+
+    // due to iframe can't just bind a click on an entity
+    // so look for color change (that css allows in iframe)
+    // when we see red, the user clicked
 
     function checkFlairHover(iframe) {
     if(iframe.contentDocument != null) {
@@ -1093,6 +1135,7 @@ function set_entry_overflow(obj, type) {
             var vaa = findPosRelativeToViewport(entity);
 
             var tmp = $(entity).get(0);
+            // where to create popup
             var height = ($(tmp).height() / 2);
             var left = $(tmp).width() + $(entity).offset().left;
             //while($(tmp).parent().size() > 0) {
@@ -1108,6 +1151,7 @@ function set_entry_overflow(obj, type) {
             }
 
         });
+        // detect clicks outside of entity popup and clear popup
         var iframebg = $(iframe.contentDocument.body).css('background-color');
         if((iframebg != "rgba(0, 0, 0, 0)") && (iframebg != 'transparent')) {
             $('.qtip').remove();
@@ -1118,31 +1162,33 @@ function set_entry_overflow(obj, type) {
     }
 
 
+// big function that does lots
+// called on every iframe after initial load /and or change
 
-    function pentry(ifr, flairdata) {
-        $(ifr).find('iframe').addBack('iframe').load(function() {
-                    var iframe = this;
-            var ext = ($('#BottomPane').width() - $(iframe.contentDocument.body).width()) < 200 && bottom_mode == 'alert' ? 20 : 0;
-                    $(iframe).height($(iframe.contentDocument.documentElement).height() + ext);
-                    $(iframe).parent().height($(iframe.contentDocument.documentElement).height()+5 );
-                $(iframe).mouseenter(function() {
-            var intervalID = setInterval(checkFlairHover, 100, iframe);
-            $(iframe).data('intervalID', intervalID);
-            console.log('Now watching iframe ' + intervalID);
+function pentry(ifr, flairdata) {
+    $(ifr).find('iframe').addBack('iframe').load(function() {
+        var iframe = this;
+        var ext = ($('#BottomPane').width() - $(iframe.contentDocument.body).width()) < 200 && bottom_mode == 'alert' ? 20 : 0;
+        $(iframe).height($(iframe.contentDocument.documentElement).height() + ext);
+        $(iframe).parent().height($(iframe.contentDocument.documentElement).height()+5 );
+        $(iframe).mouseenter(function() {
+        var intervalID = setInterval(checkFlairHover, 100, iframe);
+        $(iframe).data('intervalID', intervalID);
+        console.log('Now watching iframe ' + intervalID);
+        });
+            $(iframe).mouseleave(function() {
+            var intervalID = $(this).data('intervalID');
+            window.clearInterval(intervalID);
+            console.log('No longer watching iframe ' + intervalID);
             });
-                $(iframe).mouseleave(function() {
-                var intervalID = $(this).data('intervalID');
-                window.clearInterval(intervalID);
-                console.log('No longer watching iframe ' + intervalID);
-                });
 
-                $(iframe.contentDocument.body).find('.entity').each(function(index, entity) {
-                    handle_entity(entity, flairdata);
-                });
+            $(iframe.contentDocument.body).find('.entity').each(function(index, entity) {
+                handle_entity(entity, flairdata);
+            });
 
-                set_entry_overflow($(iframe).parent().parent(), 'button');
-                });
-    }
+            set_entry_overflow($(iframe).parent().parent(), 'button');
+    });
+}
 
 
     function display_entries(entries, summary_entry_id, flairdata) {
@@ -1239,28 +1285,30 @@ function set_entry_overflow(obj, type) {
     }
 
 
+    // kind of main()
     function preview(type, id, entry_id) {
 
-        globalFlairState = true;
+        globalFlairState = true;    // turning flair on or off for a thing
         alert_mode = type;
         editing_reference_count = 0;
         current_id = id;
         try {
-            ajaxPreview.abort();
+            ajaxPreview.abort();    // aborts previous ajax call and load 
         } catch (e) {}
         try {
             ajaxPreviewHelper.abort();
         } catch (e) {}
         if($('#event_id').html() == current_id && previous_type == bottom_mode) {
-        $('#BottomPane').scrollTo($('#entry_' + entry_id + '_outer'), 500);
+        $('#BottomPane').scrollTo($('#entry_' + entry_id + '_outer'), 500); // take you directly to entry
         return 0;
         }
         if($('#edit_toolbar:visible').length>0) {
-        if(!confirm('You have unsaved entries, and if you continue they may be lost.  Continue?')) {
-            window.history.back();
-        return -1;
+            if(!confirm('You have unsaved entries, and if you continue they may be lost.  Continue?')) {
+                window.history.back();
+                return -1;
+            }
         }
-        }
+
         var title = type.charAt(0) + '-' + id;
         window.document.title = title.charAt(0).toUpperCase() + title.slice(1);
         $('#BottomPane').empty();

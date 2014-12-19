@@ -261,6 +261,11 @@ the web app.
             ->to    ( 'controller-home#home' )
             ->name   ( 'homestats');
 
+    $scot   ->route ( '/flair' )
+            ->via   ( 'post' )
+            ->to    ( 'controller-flair#scratchpad' )
+            ->name  ( 'scratchpad' );
+
     $scot   ->route ( '/game/:type' )
             ->via   ( 'get' )
             ->to    ( 'controller-home#game' )

@@ -13,11 +13,11 @@ function scratchpad_updated() {
   console.log(scratchpad_html);
   $.ajax({
     type: 'POST',
-    url:  '/flair',
+    url:  '/scot/flair',
     contentType: 'application/x-www-form-urlencoded',
     data: {input: scratchpad_html},
   }).done(function(a,b,response) {
-    console.log(response.responseText);
+    console.log('responseText:'+response.responseText);
     var JSONresponse = JSON.parse(response.responseText);
     $('#results').html('');
     $('#flaired').html(JSONresponse.flair);
@@ -37,7 +37,7 @@ function populate_flair_data(entities) {
     traditional: false,
     data: {'match': '{"entity_value":'+entity_values_str+'}'}
   }).done(function(response) {
-     console.log(response);
+     console.log('/scot/entity response:'+response);
      render_results(response.data, entity_values);
   });
 }
@@ -49,17 +49,19 @@ function render_results(results, unique_entity_values) {
   $('#results').append('Unique entites:<br>');
   //$('#results').html('<pre>'+$.dump(results)+'</pre>');
   $(results).each(function(index, result) {
-     var result_events = Object.keys(result.events);
-     num_items[result.value] = result_events.length;
-     if(result_events.length < 100) {
-     $(result_events).each(function(event_index, event) {
-       if(events[event] == undefined) {
-          subjects[event] = result.events[event].subject;;
-	  events[event] = new Array();
-       }
-       events[event].push(result.value); 
-     });
-     }
+     if (  result.events != undefined ) {
+        var result_events = Object.keys(result.events);
+        num_items[result.value] = result_events.length;
+        if(result_events.length < 100) {
+        $(result_events).each(function(event_index, event) {
+        if(events[event] == undefined) {
+            subjects[event] = result.events[event].subject;;
+        events[event] = new Array();
+        }
+        events[event].push(result.value); 
+        });
+        }
+    }
   });
   var unique = $('<table border=1></table>');
   $(unique_entity_values).each(function(index, entity) {
