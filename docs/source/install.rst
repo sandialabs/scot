@@ -11,7 +11,7 @@ Minimum System Requirements
 * 4GB Ram
 * 100GB Disk
 
-Docker (Coming Soon)
+Docker (beta)
 
 * RHEL 6/7
 * MacOSX (boot2docker)
@@ -28,7 +28,7 @@ You can install via Source or Docker(coming soon)
   * cd scot
   * bash install_scot3
 
-* Docker (coming soon)
+* Docker (beta)
 
   * docker pull sandialabs/scot
   * docker run sandialabs/scot
@@ -42,7 +42,7 @@ Upgrading
    * git pull
    * bash install_scot3
 
-* Docker (coming soon)
+* Docker (beta)
    * docker pull sandialabs/scot
    * docker reload sandialabs/scot
    
@@ -57,5 +57,5 @@ Uninstallation
    * sudo crontab -e #remove all the scot stuff
    * a bunch of other stuff....
 
-* Docker (coming soon)
+* Docker (beta)
    * docker destroy sandialabs/scot
