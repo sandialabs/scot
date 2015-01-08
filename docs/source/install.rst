@@ -20,7 +20,7 @@ Docker (beta)
 Initial Installation
 ^^^^^^^^^^^^^^^^^^^^
 
-You can install via Source or Docker(coming soon)
+You can install via Source or Docker(beta)
 
 * Source (Ubuntu only)
 
