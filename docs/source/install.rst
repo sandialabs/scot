@@ -30,8 +30,8 @@ You can install via Source or Docker(coming soon)
 
 * Docker (coming soon)
 
-  * docker pull sandia/scot
-  * docker run sandia/scot
+  * docker pull sandialabs/scot
+  * docker run sandialabs/scot
 
 .. _upgrade:
 
@@ -43,8 +43,11 @@ Upgrading
    * bash install_scot3
 
 * Docker (coming soon)
-   * docker pull sandia/scot
-   * docker reload sandia/scot
+   * docker pull sandialabs/scot
+   * docker reload sandialabs/scot
+   
+   NOTE: you will need to manual backup the SCOT database, move the backup file out of the container, and then move
+   the backup file back into the container after upgrading and then perform an manual restore.
 
 Uninstallation
 ^^^^^^^^^^^^^^
@@ -55,4 +58,4 @@ Uninstallation
    * a bunch of other stuff....
 
 * Docker (coming soon)
-   * docker destroy sandia/scot
+   * docker destroy sandialabs/scot
