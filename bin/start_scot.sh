@@ -1,6 +1,7 @@
 #!/bin/sh
 
 
+PATH=/usr/local/bin:$PATH
 PLACKUP=`which plackup`
 BASE="/opt/sandia/webapps/scot3"
 DIR="$BASE/script"
@@ -18,6 +19,10 @@ OPTS="daemon -s Starman --daemonize --listen 127.0.0.1:5100 --user scot --group 
 
 if [ ! -e $PLACKUP ]; then
     PLACKUP="/usr/bin/plackup"
+fi
+
+if [ ! -e $PLACKUP ]; then
+    PLACKUP="/usr/local/bin/plackup"
 fi
 
 
