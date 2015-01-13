@@ -371,7 +371,7 @@ done
 MONGOADMIN=$(mongo scotng-prod --eval "printjson(db.users.count({username:'admin'}))" --quiet)
 
 if [ "$MONGOADMIN" == "0" ] || [ "$RESETDB" == "1" ] ; then
-  if [ $DOCKERINSTALL == "True" ]; then
+  if [ $DOCKERINSTALL == "True" ] || [ $MODE == "test" ]; then
     echo -e "${green}Installing with docker${NC}"
     # Create SCOT admin account for initial setup
     echo "Add default admin/admin account to mongoDB..."
