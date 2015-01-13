@@ -60,5 +60,4 @@ env: PERL_CPANM_OPT="--notest --force --skip-satisfied"
 #   - cpanm "Proc::PID::File"
 install: "sudo ./install_scot3.sh -m test"
 script: "cd /opt/sandia/webapps/scot3/t/ && perl /opt/sandia/webapps/scot3/t/all.t"
-# after_success:
-#     "curl --ftp-create-dirs -T uploadfilename -u $FTP_USER:$FTP_PASSWORD ftp://sitename.com/directory/myfile"
+after_success: $DEPLOY
