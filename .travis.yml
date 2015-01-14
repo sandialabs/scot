@@ -46,7 +46,7 @@ before_install:
   - cpanm "Config::Auto"
   - cpanm "Data::GUID"
   - cpanm "Redis"
-  - cpanm "File::LibMagic"
+  # - cpanm "File::LibMagic"
   - cpanm "Courriel"
   - cpanm "List::Uniq"
   - cpanm "Domain::PublicSuffix"
