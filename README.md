@@ -23,7 +23,7 @@ Overview
 
 The Sandia Cyber Omni Tracker (SCOT) is a cyber security incident response management system and knowledge base. Designed by cyber security incident responders, SCOT provides a new approach to manage security alerts, analyze data for deeper patterns, coordinate team efforts, and capture team knowledge.  SCOT integrates with existing security applications to provide a consistent, easy to use interface that enhances analyst effectiveness.
 
-![Scot-flow](https://raw.githubusercontent.com/sandialabs/scot/master/docs/scot-where.png)
+![Scot-flow](https://raw.githubusercontent.com/sandialabs/scot/master/docs/scot-where.jpg)
 
 Customer Need
 -------------
