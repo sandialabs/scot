@@ -1,7 +1,8 @@
 language: perl
 cache:
   - apt
-  - cpanm
+  directories:
+    - /home/travis/.cpanm
 perl:
   - "5.18"
 # env: PERL_CPANM_OPT="--notest --force"
@@ -34,7 +35,7 @@ before_install:
   - cpanm "Moose"
   - cpanm "Moose::Role"
   - cpanm "Moose::Util::TypeConstraints"
-  - cpanm "Net::Jabber::Bot"
+  # - cpanm "Net::Jabber::Bot"
   - cpanm "Net::LDAP"
   - cpanm "Net::SMTP::TLS"
   - cpanm "Readonly"
