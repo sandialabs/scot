@@ -1,7 +1,7 @@
 #!/bin/bash
 
 /usr/bin/supervisord &
-sleep 40;
+sleep 80;
 # COUNTER=0
 # grep -q 'waiting for connections on port' /var/log/mongodb/mongod.log
 # while [[ $? -ne 0 && $COUNTER -lt 100 ]] ; do
