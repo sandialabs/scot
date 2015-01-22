@@ -1,4 +1,7 @@
 language: perl
+cache:
+  - apt
+  - cpanm
 perl:
   - "5.18"
 # env: PERL_CPANM_OPT="--notest --force"
