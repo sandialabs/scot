@@ -15,7 +15,7 @@ before_install:
   - cpanm "File::Slurp"
   - cpanm "File::Temp"
   - cpanm "File::Type"
-  - cpanm "Geo::IP"
+  # - cpanm "Geo::IP"
   - cpanm "HTML::Entities"
   - cpanm "HTML::Scrubber"
   - cpanm "HTML::Strip"
