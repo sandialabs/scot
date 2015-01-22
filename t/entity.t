@@ -46,8 +46,8 @@ $t  ->get_ok($url,
     "get entry list")
     ->status_is(200)
     ->json_has('/status' => "ok")
-    ->json_has('/data/0/value'    => "hrnga.hmelin.org")
-    ->json_has('/data/0/notes/scot-test' => "This is CRAZY!");
+    ->json_has('/data/0/value'    => "hrnga.hmelin.org");
+#    ->json_has('/data/0/notes/scot-test' => "This is CRAZY!");
 
 #   print Dumper($t->tx->res);
 #   exit 0;
@@ -65,12 +65,12 @@ $t  ->get_ok($url,
 #    ->status_is(200)
 #    ->json_is('/status' => 'ok');
 
-$t  ->get_ok($url,
-    "get entity info")
-    ->status_is(200)
-    ->json_has('/status' => 'ok')
-    ->json_is("/data/0/notes/scot-test" => "This is CRAZY!");
-print Dumper($t->tx->res->json->{data});
+#$t  ->get_ok($url,
+#    "get entity info")
+#    ->status_is(200)
+#    ->json_has('/status' => 'ok')
+#    ->json_is("/data/0/notes/scot-test" => "This is CRAZY!");
+#print Dumper($t->tx->res->json->{data});
 
 # my $entity_id   = $t->tx->res->json->{data}->
 
