@@ -237,7 +237,7 @@ $t      ->post_ok(
         ->json_is('/status' => 'ok');
 
 my $entry_10        = $t->tx->res->json->{id};
-my $entry_10_html   = q|<html><head></head><body><p>this file foo.bar is cool. <span class="entity file" data-entity-type="file" data-entity-value="foo.exe">foo.exe</span> is not</body></html>|;
+my $entry_10_html   = q|<html><head></head><body><p>this file <span class="entity domain" data-entity-type="domain" data-entity-value="foo.bar">foo.bar</span> is cool. <span class="entity file" data-entity-type="file" data-entity-value="foo.exe">foo.exe</span> is not</body></html>|;
 $t      ->get_ok("/scot/entry/$entry_10")
         ->status_is(200)
         ->json_is("/data/body_flaired" => $entry_10_html);
