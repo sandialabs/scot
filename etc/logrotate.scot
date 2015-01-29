@@ -4,6 +4,7 @@
     rotate 5
     compress
     notifempty
+    copytruncate
 }
 /var/log/error.*.log {
     daily
