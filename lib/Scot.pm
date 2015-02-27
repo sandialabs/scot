@@ -239,7 +239,7 @@ the web app.
 
     # make sure that we have passed authentication
 
-    my $scot    = $r->bridge('/scot')->to('util-a3#check');
+    my $scot    = $r->under('/scot')->to('util-a3#check');
 
 =back
 
