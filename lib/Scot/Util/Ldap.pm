@@ -82,15 +82,27 @@ sub connect {
 
 =cut
 
+=item B<is_configured>
+
+this rudimentary check, looks for a config stanza 
+if defined assume we have configured something
+
+=cut
+
 sub is_configured {
   my $self     = shift;
   my $log      = $self->log;
   my $config   = $self->config;
 
   $log->debug("Config is ", { filter => \&Dumper, value => $config->{ldap} });
-
-  return defined($config->{ldap}->{configured});
+  return defined($config->{ldap});
 }
+
+=item B<is_disabled>
+
+Admin.pm has disabled LDAP
+
+=cut
 
 sub is_disabled {
     my $self    = shift;
@@ -139,6 +151,7 @@ sub authenticate_user {
 
    my $ldapconf= $config->{ldap};
    my $basedn  = $ldapconf->{searches}->{users_groups}->{base};
+# TODO: remove uid hardcoding
    my $binddn  = 'uid='.$user.','.$basedn;
 
 
