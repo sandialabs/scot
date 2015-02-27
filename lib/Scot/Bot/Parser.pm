@@ -97,7 +97,7 @@ sub log_creation {
     $log->debug("Subject is : ".$subject);
 }
 
-sub  trim { my $s = shift; $s =~ s/^\s+|\s+$//g; return $s };
+sub  trim { my $s = shift; return unless $s; $s =~ s/^\s+|\s+$//g; return $s };
 
 sub create_alerts {
     my $self        = shift;
@@ -122,7 +122,7 @@ sub create_alerts {
         plain   => $msg_href->{body_plain},
     };
 
-    my $trimmed_html = trim($body->{'html'});
+    my $trimmed_html = (defined($body->{'html'})) ? trim($body->{'html'}) : '';
     if(!defined($body->{html}) || $trimmed_html eq '') {
         my $t2h = HTML::FromText->new ({
             paras => 1,   

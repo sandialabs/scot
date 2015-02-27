@@ -110,7 +110,7 @@ Readonly my $FILE_REGEX => qr{
          wma|aif|avi|flv|m4v|mov|swf|bmp|gif|psd|eps|ps|svg|sql|
          db|kml|xhtml|ttf|otf|ico|ini|7z|deb|gz|pkg|rpm|dmg|bin|
          iso|cpp|h|sh|py|pl|bak|tmp|torrent|msi|ics|rb)
-    )
+    )\b
 }xms;
 
 Readonly my $EMAIL_REGEX    => qr{
@@ -260,6 +260,8 @@ sub walk_tree {
     $element->normalize_content;
     my @content = $element->content_list;
 
+    my %content_changes;
+
     for ( my $index = 0; $index < scalar(@content); $index++ ) {
 
         if ( ref $content[$index] ) {
@@ -277,9 +279,14 @@ sub walk_tree {
                 $level,
             );
             if ( scalar(@new_content) ) {
-                $element->splice_content($index, 1, @new_content);
+		$content_changes{$index} = \@new_content
             }
         }
+    }
+
+    # Apply content updates at the end, in reverse order, so that the index position is correct and the html doesn't get munged
+    foreach my $index (sort {$b <=> $a} keys %content_changes) {
+        $element->splice_content($index, 1, @{$content_changes{$index}});
     }
 }
 
