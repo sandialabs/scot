@@ -16,6 +16,10 @@ Give SCOT a try [here](https://52.12.122.162) with the **username**: `admin`/ **
 
 > ###### For this demo, the app is reverted every hour on the hour.  We are currently using a self signed cert for the demo, but that will change in the next few days.
 
+SCOT Mailing List
+-----------------
+Send e-mail to majordomo@sandia.gov with body of "subscribe scot-users"
+
 Documentation and Install
 -------------------------
 Read our [documentation](http://scot.readthedocs.org/en/latest/install.html) at Read The Docs.
