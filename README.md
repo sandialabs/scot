@@ -56,6 +56,8 @@ Sandia's incident response team realized several advantages using SCOT over othe
 
 Contact US
 ----------
+**News and Discussion**: <mailto:scot-users@sandia.gov>
+
 **Vulnerabilities**: <mailto:scot-dev@sandia.gov>
 
 **Bugs/Feature Requests**: Use our GitHub [issue](https://github.com/sandialabs/scot/issues) tracking
