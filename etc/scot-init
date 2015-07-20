@@ -15,7 +15,7 @@
 
 CMD="/opt/sandia/webapps/scot3/bin/start_scot.sh"
 
-OS=`lsb -i | cut -s -f2`
+OS=`lsb_release -i | cut -s -f2`
 
 if [[ $OS == "RedHatEnterpriseServer" ]];then
     APACHE="httpd"

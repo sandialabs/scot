@@ -184,7 +184,7 @@ EOF
             yum install httpd dialog mongodb-org redis GeoIP perl-Geo-IP perl-Curses java-1.7.0-openjdk krb5-libs krb5-devel mod_ssl openssl redhat-lsb -y
 
             echo "=== starting redis"
-            service start redis
+            service redis start 
             chkconfig redis on
 
             export RPMFILEDEVEL=`rpm -qa file-devel`
@@ -218,7 +218,7 @@ EOF
         fi
 
         echo  "=== Installing Perl Modules"
-        for PACKAGE in  "Try::Tiny" "Curses::UI" "Number::Bytes::Human" "Sys::RunAlone" "Parallel::ForkManager" "DBI" "Encode" "FileHandle" "File::Slurp" "File::Temp" "File::Type" "Geo::IP" "HTML::Entities" "HTML::Scrubber" "HTML::Strip" "HTML::StripTags" "JSON" "Log::Log4perl" "Mail::IMAPClient" "Mail::IMAPClient::BodyStructure" "MongoDB" "MongoDB::GridFS" "MongoDB::GridFS::File" "MongoDB::OID" "Moose" "Moose::Role" "Moose::Util::TypeConstraints" "Net::LDAP" "Net::SMTP::TLS" "Readonly" "Time::HiRes" "Mojo" "MojoX::Log::Log4perl" "MooseX::MetaDescription::Meta::Attribute" "DateTime::Format::Natural" "Net::STOMP::Client" "IPC::Run" "XML::Smart" "Config::Auto" "Data::GUID" "Redis" "File::LibMagic" "Courriel" "List::Uniq" "Domain::PublicSuffix" "Crypt::PBKDF2" "Config::Crontab" "HTML::TreeBuilder HTML::FromText" "DateTime::Cron::Simple" "HTML::FromText" "IO::Prompt" "Proc::PID::File" "DateTime::Format::Strptime" "HTTP::Server::Simple::PSGI" "EV" "Test::Mojo" 
+        for PACKAGE in  "Try::Tiny" "Curses::UI" "Number::Bytes::Human" "Sys::RunAlone" "Parallel::ForkManager" "DBI" "Encode" "FileHandle" "File::Slurp" "File::Temp" "File::Type" "Geo::IP" "HTML::Entities" "HTML::Scrubber" "HTML::Strip" "HTML::StripTags" "JSON" "Log::Log4perl" "Mail::IMAPClient" "Mail::IMAPClient::BodyStructure" "MongoDB" "MongoDB::GridFS" "MongoDB::GridFS::File" "MongoDB::OID" "Moose" "Moose::Role" "Moose::Util::TypeConstraints" "Net::LDAP" "Net::SMTP::TLS" "Readonly" "Time::HiRes" "Mojo" "MojoX::Log::Log4perl" "MooseX::MetaDescription::Meta::Attribute" "DateTime::Format::Natural" "Net::STOMP::Client" "IPC::Run" "XML::Smart" "Config::Auto" "Data::GUID" "Redis" "File::LibMagic" "Courriel" "List::Uniq" "Domain::PublicSuffix" "Crypt::PBKDF2" "Config::Crontab" "HTML::TreeBuilder" "DateTime::Cron::Simple" "HTML::FromText" "IO::Prompt" "Proc::PID::File" "DateTime::Format::Strptime" "HTTP::Server::Simple::PSGI" "EV" "Test::Mojo" 
         do
             DOCRES=`perldoc -l $PACKAGE 2>/dev/null`
             if [[ -z "$DOCRES" ]]; then
