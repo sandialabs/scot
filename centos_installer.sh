@@ -135,11 +135,10 @@ if [[ $DOCKERINSTALL != "true" ]]; then
 
     if [[ $INSTMODE != "SCOTONLY" ]]; then
 
-        if [[ $OS == "RedHatEnterpriseServer" ]];then
-            echo "=== RedHat installation"
-            # create the yum stanza for mongodb
-            echo "=== creating yum stanza for mongodb"
-            cat <<- EOF > /etc/yum.repos.d/mongodb.repo
+        echo "=== CentOS installation"
+        # create the yum stanza for mongodb
+        echo "=== creating yum stanza for mongodb"
+        cat <<- EOF > /etc/yum.repos.d/mongodb.repo
 [mongodb]
 name=MongoDB Repository
 baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64/
@@ -147,58 +146,66 @@ gpgcheck=0
 enabled=1
 EOF
 
-            echo "=== Installing yum packages"
-            # yum update
-            yum install wget git -y
-            yum groupinstall "Development Tools" -y
-            yum install file-devel
+        echo "=== Installing yum packages"
+        # yum update
+        yum install wget git -y
+        yum groupinstall "Development Tools" -y
+        yum install file-devel
 
-            export ISEPEL=`yum repolist 2>/dev/null | grep -i epel`
-            if [ "$ISEPEL" == "" ]; then
-                # see https://troubleshootguru.wordpress.com/2014/11/19/how-to-install-redis-on-a-centos-6-5-centos-7-0-server-2/
-                wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-                rpm -Uvh epel-release-6*.rpm
-            fi
+        export ISEPEL=`yum repolist 2>/dev/null | grep -i epel`
+        if [ "$ISEPEL" == "" ]; then
+            # see https://troubleshootguru.wordpress.com/2014/11/19/how-to-install-redis-on-a-centos-6-5-centos-7-0-server-2/
+            wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+            rpm -Uvh epel-release-6*.rpm
+        fi
 
-            if hash perl 2>/dev/null; then
-                echo "=== perl is installed"
-            else 
-                yum install perl perl-Net-SSLeay
-            fi
+        if hash perl 2>/dev/null; then
+            echo "=== perl is installed"
+        else 
+            yum install perl perl-Net-SSLeay
+        fi
 
-            if hash cpanm 2>/dev/null; then
-                echo "=== cpanm is installed"
-            else
-                yum install perl-devel
-                yum install perl-CPAN
-                curl -L http://cpanmin.us | perl - --sudo App::cpanminus
-            fi
+        if hash cpanm 2>/dev/null; then
+            echo "=== cpanm is installed"
+        else
+            echo "=== install perl cpan and cpanm"
+            yum install perl-devel
+            yum install perl-CPAN
+            curl -L http://cpanmin.us | perl - --sudo App::cpanminus
+        fi
 
-            yum install httpd dialog mongodb-org redis GeoIP perl-Geo-IP perl-Curses java-1.7.0-openjdk krb5-libs krb5-devel mod_ssl openssl -y
+        yum install httpd dialog mongodb-org redis GeoIP perl-Geo-IP perl-Curses java-1.7.0-openjdk krb5-libs krb5-devel mod_ssl openssl -y
 
-            echo "=== starting redis"
-            service redis start 
-            chkconfig redis on
+        echo "=== starting redis"
+        service redis start 
+        chkconfig redis on
 
-            export RPMFILEDEVEL=`rpm -qa file-devel`
-            if [ "$RPMFILEDEVEL" == "" ]; then
-                wget http://mirror.centos.org/centos/$OSVERSION/os/x86_64/Packages/file-devel-5.11-21.el7.x86_64.rpm
-                rpm -i file-devel-5.11-21.el7.x86_64.rpm
-                rm -f file-devel-5.11-21.el7.x86_64.rpm
-            fi
-        fi 
-    fi
+        export RPMFILEDEVEL=`rpm -qa file-devel`
+        if [ "$RPMFILEDEVEL" == "" ]; then
+            wget http://mirror.centos.org/centos/$OSVERSION/os/x86_64/Packages/file-devel-5.11-21.el7.x86_64.rpm
+            rpm -i file-devel-5.11-21.el7.x86_64.rpm
+            rm -f file-devel-5.11-21.el7.x86_64.rpm
+        fi
+    fi 
 fi
 
-    for PACKAGE in "PSGI" "Plack" "CGI::PSGI" "CGI::PSGI" "CGI::Emulate::PSGI" "CGI::Compile" "HTTP::Server::Simple::PSGI" "Starman" "Starlet" 
+    for PACKAGE in "PSGI" "Plack" "CGI::PSGI" "CGI::PSGI" "CGI::Emulate::PSGI" "CGI::Compile" "HTTP::Server::Simple::PSGI" "Starman" "Starlet" "JSON" "Curses::UI" "Number::Bytes::Human" "Sys::RunAlone" "Parallel::ForkManager" "DBI" "Encode" "FileHandle" "File::Slurp" "File::Temp" "File::Type" "Geo::IP" "HTML::Entities" "HTML::Scrubber" "HTML::Strip" "HTML::StripTags" "JSON" "Log::Log4perl" "Mail::IMAPClient" "Mail::IMAPClient::BodyStructure" "MongoDB" "MongoDB::GridFS" "MongoDB::GridFS::File" "MongoDB::OID" "Moose" "Moose::Role" "Moose::Util::TypeConstraints" "Net::Jabber::Bot" "Net::LDAP" "Net::SMTP::TLS" "Readonly" "Time::HiRes" "Mojo" "MojoX::Log::Log4perl" "MooseX::MetaDescription::Meta::Attribute" "DateTime::Format::Natural" "Net::STOMP::Client" "IPC::Run" "XML::Smart" "Config::Auto" "Data::GUID" "Redis" "File::LibMagic" "Courriel" "List::Uniq" "Domain::PublicSuffix" "Crypt::PBKDF2" "Config::Crontab" "HTML::TreeBuilder" "HTML::FromText" "DateTime::Cron::Simple" "HTML::FromText" "IO::Prompt" "Proc::PID::File" "Test::Mojo" "Log::Log4perl" "File::Slurp"
     do
-        $CPANM $PACKAGE
+        DOCRES=`perldoc -l $PACKAGE 2>/dev/null`
+        if [[ -z "$DOCRES" ]]; then
+            echo "Installing perl module $PACKAGE"
+            if [ "$PACKAGE" = "MongoDB" ]; then
+                cpanm $PACKAGE --force
+            else
+                cpanm $PACKAGE
+            fi
+        fi
     done
 
 echo "=== Configuring Apache"
 
 # NOT SURE THIS IS NEEDED.  HELP NEEDED HERE OPEN SOURCE FRIENDS
-#    echo "!!! WARNING: Apache Configuration on Redhat is funky !!!"
+#    echo "!!! WARNING: Apache Configuration on CentOS is funky !!!"
 #    echo "!!! The install script will disable the existing "
 #    echo "!!! /etc/httpd/conf.d/*.conf scripts by appending a .noscot to them"
 #    echo "!!! if you need to renable them, just rename them by removeing the .noscot"
