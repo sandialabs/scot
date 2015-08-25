@@ -15,11 +15,9 @@ echo ""
 echo "Determining OS..."
 echo ""
 
-OSSTR=`./etc/determine_os.sh`
 
-echo "Looks like a $OSSTR system"
-
-DISTRO=`echo $OSSTR | cut -s -f 2`
+DISTRO=`./etc/determine_os.sh | cut -s -f 2`
+echo "Looks like a $DISTRO based system"
 
 if [[ $DISTRO == "RedHat" ]]; then
     if ! hash lsb_release 2>/dev/null; then
