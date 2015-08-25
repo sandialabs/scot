@@ -15,9 +15,26 @@ echo ""
 echo "Determining OS..."
 echo ""
 
-CENT=`cat /etc/issue* | grep CentOS`
+# Determine OS platform
+# see http://unix.stackexchange.com/questions/92199/how-can-i-reliably-get-the-operating-systems-name
 
-if [[ "x$CENT" != "x" ]]; then
+UNAME=$(uname | tr "[:upper:]" "[:lower:]")
+# If Linux, try to determine specific distribution
+if [ "$UNAME" == "linux" ]; then
+    # If available, use LSB to identify distribution
+    if [ -f /etc/lsb-release -o -d /etc/lsb-release.d ]; then
+        export DISTRO=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'//)
+        # Otherwise, use release info file
+    else
+        export DISTRO=$(ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb" | cut -d'/' -f3 | cut -d'-' -f1 | cut -d'_' -f1)
+    fi
+fi
+# For everything else (or if above failed), just use generic identifier
+[ "$DISTRO" == "" ] && export DISTRO=$UNAME
+unset UNAME
+
+
+if [[ "$DISTRO" == "CentOS" ]]; then
     echo "CentOS detected..."
     ./centos_installer.sh
     exit 0
