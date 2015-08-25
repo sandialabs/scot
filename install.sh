@@ -15,41 +15,32 @@ echo ""
 echo "Determining OS..."
 echo ""
 
-# Determine OS platform
-# see http://unix.stackexchange.com/questions/92199/how-can-i-reliably-get-the-operating-systems-name
+OSSTR=`./etc/determine_os.sh`
 
-UNAME=$(uname | tr "[:upper:]" "[:lower:]")
-# If Linux, try to determine specific distribution
-if [ "$UNAME" == "linux" ]; then
-    # If available, use LSB to identify distribution
-    if [ -f /etc/lsb-release -o -d /etc/lsb-release.d ]; then
-        export DISTRO=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'//)
-        # Otherwise, use release info file
-    else
-        export DISTRO=$(ls -d /etc/[A-Za-z]*[_-][rv]e[lr]* | grep -v "lsb" | cut -d'/' -f3 | cut -d'-' -f1 | cut -d'_' -f1)
+echo "Looks like a $OSSTR system"
+
+DISTRO=`echo $OSSTR | cut -s -f 2`
+
+if [[ $DISTRO == "RedHat" ]]; then
+    if ! hash lsb_release 2>/dev/null; then
+        # ubuntu should have this, but surprisingly
+        # redhat/centos/fedora? might not have this installed!
+        yum install redhat-lsb
     fi
-fi
-# For everything else (or if above failed), just use generic identifier
-[ "$DISTRO" == "" ] && export DISTRO=$UNAME
-unset UNAME
-
-
-if [[ "$DISTRO" == "CentOS" ]]; then
-    echo "CentOS detected..."
-    ./centos_installer.sh
-    exit 0
-fi
-
-if ! hash lsb_release 2>/dev/null; then
-    # ubuntu should have this, but surprisingly
-    # redhat might not have this installed!
-    yum install redhat-lsb
 fi
 
 OS=`lsb_release -i | cut -s -f 2`
 OSVERSION=`lsb_release -r | cut -s -f2 | cut -d. -f 1`
 
-echo "$OS : $OSVERSION detected..."
+echo "LSB results = $OS : $OSVERSION"
+
+if [[ "$OS" == "CentOS" ]]; then
+    echo "CentOS detected..."
+    ./centos_installer.sh
+    exit 0
+fi
+
+
 
 if [[ "$OS" == "Ubuntu" ]]; then
     ./ubuntu_installer.sh
