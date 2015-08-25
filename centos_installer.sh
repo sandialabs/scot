@@ -70,7 +70,7 @@ if [ "$?" != 0 ]; then
     exit 3
 fi
 
-yum install redhat-lsb
+yum install redhat-lsb -y
 
 OS=`lsb_release -i | cut -s -f2`
 OSVERSION=`lsb_release -r | cut -s -f2 | cut -d. -f 1`
@@ -150,7 +150,8 @@ EOF
         # yum update
         yum install wget git -y
         yum groupinstall "Development Tools" -y
-        yum install file-devel
+        yum install file-devel -y
+        yum install openssl-devel libcurl-devel -y
 
         export ISEPEL=`yum repolist 2>/dev/null | grep -i epel`
         if [ "$ISEPEL" == "" ]; then
@@ -162,15 +163,15 @@ EOF
         if hash perl 2>/dev/null; then
             echo "=== perl is installed"
         else 
-            yum install perl perl-Net-SSLeay
+            yum install perl perl-Net-SSLeay -y
         fi
 
         if hash cpanm 2>/dev/null; then
             echo "=== cpanm is installed"
         else
             echo "=== install perl cpan and cpanm"
-            yum install perl-devel
-            yum install perl-CPAN
+            yum install perl-devel -y
+            yum install perl-CPAN -y
             curl -L http://cpanmin.us | perl - --sudo App::cpanminus
         fi
 
@@ -271,7 +272,7 @@ mkdir -p "$BACKUPDIR"
 chown scot:scot "$BACKUPDIR"
 
 echo "=== Installing SCOT3 service into init.d"
-cp $DEVDIR/etc/scot-init /etc/init.d/scot3
+cp $DEVDIR/etc/scot-centos-init /etc/init.d/scot3
 chmod +x /etc/init.d/scot3
 sed -i 's=/opt/sandia/webapps/scot3='$INSTDIR'=g' /etc/init.d/scot3
 
@@ -360,7 +361,8 @@ echo "=== Starting Scot"
 
 MYIP=`ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'`
 echo "=== Restarting apache..."
-    service httpd restart
+#    service httpd restart
+/etc/init.d/httpd restart
 
 echo "=== installing start scripts"
     chkconfig scot3 on
@@ -411,6 +413,8 @@ if [ "$MONGOADMIN" == "0" ] || [ "$RESETDB" == "1" ] ; then
             $DEVDIR/bin/init_db.pl $PASSWORD
         fi
 fi
+
+/etc/init.d/scot3 restart
 
 echo "========================"
 echo "==  Install Finished  =="
