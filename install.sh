@@ -23,6 +23,12 @@ if [[ "x$CENT" != "x" ]]; then
     exit 0
 fi
 
+if ! hash lsb_release 2>/dev/null; then
+    # ubuntu should have this, but surprisingly
+    # redhat might not have this installed!
+    yum install redhat-lsb
+fi
+
 OS=`lsb_release -i | cut -s -f1`
 OSVERSION=`lsb_release -r | cut -s -f2 | cut -d. -f 1`
 
