@@ -16,7 +16,7 @@ echo "Determining OS..."
 echo ""
 
 
-DISTRO=`./etc/determine_os.sh | cut -s -f 2`
+DISTRO=`./etc/determine_os.sh | cut -d ' ' -f 2`
 echo "Looks like a $DISTRO based system"
 
 if [[ $DISTRO == "RedHat" ]]; then
