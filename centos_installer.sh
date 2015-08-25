@@ -4,6 +4,7 @@
 ### Unified Installer for SCOT
 ### 
 ### installs scot for the following OS/types
+### Tested on
 ### CentOS 6.7
 ###
 

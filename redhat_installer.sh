@@ -229,7 +229,7 @@ echo "=== Configuring Apache"
 #    echo "!!! if you need to renable them, just rename them by removeing the .noscot"
     for file in /etc/httpd/conf.d/*.conf
     do
-        if [[ $file != "/etc/httpd/conf.d/scot.conf" ]]; then
+        if [[ $file != "/etc/httpd/conf.d/scot.conf" && $file != "/etc/httpd/conf.d/ssl.conf" ]]; then
             mv $file $file.noscot
         fi
     done
