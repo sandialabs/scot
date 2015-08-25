@@ -29,7 +29,7 @@ if ! hash lsb_release 2>/dev/null; then
     yum install redhat-lsb
 fi
 
-OS=`lsb_release -i | cut -s -f1`
+OS=`lsb_release -i | cut -s -f 2`
 OSVERSION=`lsb_release -r | cut -s -f2 | cut -d. -f 1`
 
 echo "$OS : $OSVERSION detected..."
