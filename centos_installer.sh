@@ -226,7 +226,11 @@ MYHOSTNAME=`hostname`
         echo "=== Copying SCOT reverse proxy config"
 
         if [ ! -e $REVPROXY ]; then
-            REVPROXY=$DEVDIR/etc/scot-revproxy-local-rh.conf
+            if [[ $OSVERSION == "7" ]]; then
+                REVPROXY=$DEVDIR/etc/scot-revproxy-local.conf
+            else 
+                REVPROXY=$DEVDIR/etc/scot-revproxy-local-rh.conf
+            fi
         fi
 
         cp $REVPROXY /etc/httpd/conf.d/scot.conf
