@@ -34,19 +34,19 @@ echo "LSB results = $OS : $OSVERSION"
 
 if [[ "$OS" == "CentOS" ]]; then
     echo "CentOS detected..."
-    ./centos_installer.sh
+    ./bin/centos_installer.sh
     exit 0
 fi
 
 
 
 if [[ "$OS" == "Ubuntu" ]]; then
-    ./ubuntu_installer.sh
+    ./bin/ubuntu_installer.sh
     exit 0
 fi
 
 if [[ "$OS" == *"RedHat"* ]]; then
-    ./redhat_installer.sh
+    ./bin/redhat_installer.sh
     exit 0
 fi
 

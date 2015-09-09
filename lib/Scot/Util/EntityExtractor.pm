@@ -22,7 +22,12 @@ has 'log'       => (
     is          => 'ro',
     isa         => 'Object',
     required    => 1,
+    builder     => '_get_logger',
 );
+
+sub _get_logger {
+    return Log::Log4perl->get_logger("Scot");
+}
 
 has 'regexmap'  => (
     is          => 'rw',
@@ -56,6 +61,7 @@ has 'suffixfile'    => (
     is          => 'ro',
     isa         => 'Str',
     required    => '1',
+    default     => '../../etc/effective_tld_names.dat',
 );
 
 sub _build_suffix {
@@ -110,7 +116,7 @@ Readonly my $FILE_REGEX => qr{
          wma|aif|avi|flv|m4v|mov|swf|bmp|gif|psd|eps|ps|svg|sql|
          db|kml|xhtml|ttf|otf|ico|ini|7z|deb|gz|pkg|rpm|dmg|bin|
          iso|cpp|h|sh|py|pl|bak|tmp|torrent|msi|ics|rb)
-    )\b
+    )
 }xms;
 
 Readonly my $EMAIL_REGEX    => qr{
@@ -197,6 +203,12 @@ sub _build_proc_order {
     return \@order;
 }
 
+sub process_entry {
+    my $self    = shift;
+    my $href    = shift;
+    my $html    = $href->{body};
+    return $self->process_html($html);
+}
 
 =item C<process_html>
 
@@ -260,8 +272,6 @@ sub walk_tree {
     $element->normalize_content;
     my @content = $element->content_list;
 
-    my %content_changes;
-
     for ( my $index = 0; $index < scalar(@content); $index++ ) {
 
         if ( ref $content[$index] ) {
@@ -279,14 +289,9 @@ sub walk_tree {
                 $level,
             );
             if ( scalar(@new_content) ) {
-		$content_changes{$index} = \@new_content
+                $element->splice_content($index, 1, @new_content);
             }
         }
-    }
-
-    # Apply content updates at the end, in reverse order, so that the index position is correct and the html doesn't get munged
-    foreach my $index (sort {$b <=> $a} keys %content_changes) {
-        $element->splice_content($index, 1, @{$content_changes{$index}});
     }
 }
 
@@ -648,6 +653,64 @@ sub get_match_indicies {
         }
     }
     return @indicies;
+}
+
+sub process_alert {
+    my $self        = shift;
+    my $inhref      = shift;
+    my $parsed      = shift;
+
+    my $outhref     = {};
+    my @entities    = ();
+    my @plaintxts   = ();
+
+    my $env     = Scot::Env->instance;
+    my $mongo   = $env->mongo;
+
+    my $entity_collection   = $mongo->collection("Entity");
+
+    # TODO: enable this when implemented
+    # my $search_collection   = $mongo->collection("Search");
+    
+    TUPLE:          # alert->data = { key => value, ... }
+    while ( my ( $key, $value ) = each %{$inhref} ) {
+        my $encoded = $value;
+        $encoded = encode_entities($value) if ( defined $parsed );
+
+        # special case: look for message_id in alert data and treat it
+        # as an entity.  TODO: should be pulled out into a potential list
+        # of key names that are stored in the db so user can create their
+        # own list
+
+        if ( $key =~ /^message_id$/i ) {
+            $outhref->{$key} = $value;
+            push @entities, { value => $value, type => "message_id" };
+            next TUPLE;
+        }
+
+        my $ee_href = $self->process_html($encoded);
+        my $flair   = $ee_href->{flair};
+        my $plain   = $ee_href->{plain};
+        my $e_aref  = $ee_href->{entities};
+
+        $outhref->{$key} = $flair;
+        push @plaintxts, $plain;
+
+        my %seen;
+        foreach my $ent_href ( @{$e_aref} ) {
+            unless ( defined $seen{$ent_href->{value}} ) {
+                push @entities, $ent_href;
+                $seen{$ent_href->{value}}++;
+            }
+        }
+    }
+
+    # TODO: implement this in Scot::Collection::Search
+    # send plain text to search service
+    # my $all_plain_txts = join(' ', @plaintxts);
+    # $search->add_alert_text($alertobj, $all_plain_txts);
+
+    return $outhref, \@entities;
 }
 
 

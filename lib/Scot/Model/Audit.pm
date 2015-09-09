@@ -1,224 +1,88 @@
 package Scot::Model::Audit;
 
-use lib '../../lib';
-use strict;
-use warnings;
-use v5.10;
+use lib '../../../lib';
 use Moose;
-use Moose::Util::TypeConstraints;
-use Data::Dumper;
 use namespace::autoclean;
 
-=head1 Scot::Model::Audit
+=head1 Name
 
-=head2 DESCRIPTION
+Scot::Model::Alert
 
- Scot::Model::Audit - a moose obj rep of a Scot Audit log record
- Definition of an Audit
+=head1 Description
+
+The model of an audit record
 
 =cut
 
 extends 'Scot::Model';
-
-
-=head2 Roles Consumed
-
-    'Scot::Roles::Loggable',
-    'Scot::Roles::Dumpable', 
-    'Scot::Roles::Hashable',
-
-=cut
-
-with (  
-    'Scot::Roles::Loggable',
-    'Scot::Roles::Dumpable', 
-    'Scot::Roles::Hashable',
+with    qw(
+    Meerkat::Role::Document
+    Scot::Role::Data
 );
 
-=head2 Attributes
+=head1 Attributes
 
 =over 4
 
-=item C<id>
+=item B<who>
 
- the integer id for the audit record
-
-=cut
-
-has audit_id          => (
-    is          => 'rw',
-    isa         => 'Int',
-    required    =>  0,
-    metaclass   => 'MooseX::MetaDescription::Meta::Attribute',
-    description => {
-        serializable    => 1,
-        gridviewable    => 1
-    },
-);
-
-=item C<idfield>
-
- since my integer id fields in models include the model name in them 
- instead of just "id", this field gives us an easy way to figure out
- what the id attribute is.  We can debate the original choice later...
+who is doing the doing
 
 =cut
 
-has idfield    => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    =>  1,
-    default     => 'audit_id',
-    metaclass   => 'MooseX::MetaDescription::Meta::Attribute',
-    description => {
-        serializable    => 0,
-    },
-);
-
-=item C<collection>
-
- easy way to keep track of object to collection mapping.  
-
-=cut
-
-has collection => (
+has who  => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default     => 'audits',
-    metaclass   => 'MooseX::MetaDescription::Meta::Attribute',
-    description => {
-        serializable    => 0,
-    },
+    default     => 'unknown',
 );
 
+=item B<when>
 
-=item C<who>
-
- who is doing
+when it happened
 
 =cut
 
-has who         => (
-    is          =>  'rw',
-    isa         =>  'Str',
-    required    =>  1,
-    default     => 'new',
-    metaclass   => 'MooseX::MetaDescription::Meta::Attribute',
-    description => {
-        serializable    => 1,
-        gridviewable    => 1,
-    },
+has when  => (
+    is          => 'ro',
+    isa         => 'Epoch',
+    required    => 1,
+    default     => sub { time(); },
 );
 
-=item C<what>
+=item B<what>
 
- string describing the audit record
+what happened
 
 =cut
 
-has what        => (
-    is          => 'rw',
+has what    => (
+    is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    metaclass   => 'MooseX::MetaDescription::Meta::Attribute',
-    description => {
-        gridviewable    => 1,
-        serializable    => 1
-    },
+    default     => '',
 );
 
-=item C<when>
+=item B<data>
 
-    time hires since epoch
+any data we wish to store
+from Scot::Role::Data
 
 =cut
 
-has when        => (
-    is          =>  'rw',
-    isa         =>  'Num',
-    required    =>  1,
-    builder     => '_timestamp',
-    metaclass   => 'MooseX::MetaDescription::Meta::Attribute',
-    description => {
-        serializable    => 1,
-        gridviewable    => 1,
-    },
-);
-
-# =item C<type>
-# 
-#  string describing the type of audit record
-#  -- not sure if needed
-# 
-# =cut
-
-#has type     => (
-#    is          => 'rw',
-#    isa         => 'Str',
-#    required    => 1,
-#    metaclass   => 'MooseX::MetaDescription::Meta::Attribute',
-#    description => {
-#        gridviewable    => 1,
-#        serializable    => 1
-#    },
-#);
-
-
-=item C<data>
-
- data hashref of the audit record
-
-=cut
-
-has data        => (
-    is          =>  'rw',
-    isa         =>  'HashRef',
-    traits      =>  ['Hash'],
-    required    =>  0,
-    metaclass   => 'MooseX::MetaDescription::Meta::Attribute',
-    description => {
-        serializable    => 1
-    },
-);
-
-
-sub _build_empty_array {
-    my $self    = shift;
-    return [];
-}
 
 __PACKAGE__->meta->make_immutable;
-
 1;
 
-__END__
-
 =back
 
-=head1 COPYRIGHT
+=head1 Copyright
 
-Copyright (c) 2013.  Sandia National Laboratories
+Copyright (c) 2014 Sandia National Laboratories.
 
-=cut
+=head1 Author
 
-=head1 AUTHOR
-
-Todd Bruner.  tbruner@sandia.gov.  505-844-9997.
+Todd Bruner.  
 
 =cut
-
-=head1 SEE ALSO
-
-=cut
-
-=over 4
-
-=item L<Scot::Controller::Handler>
-
-=item L<Scot::Util::Mongo>
-
-=item L<Scot::Model>
-
-=back
-
+    

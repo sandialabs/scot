@@ -1,413 +1,371 @@
 package Scot::Util::Aaa;
 
-# Authenticate
-# Authorize
-# Audit^H^H^H^H^HAwesome
-
-use v5.10;
+use lib '../../../lib';
+use v5.18;
 use strict;
 use warnings;
 
-use lib '../../../lib';
 use MIME::Base64;
-use Time::HiRes qw(usleep nanosleep);
 use Net::LDAP;
-use Data::Dumper;
 use Digest::SHA qw(sha512_hex);
 use Crypt::PBKDF2;
-
-# use Log::Log4perl::Appender;
-# use Log::Log4perl::Appender::File;
 use Scot::Model::User;
 
 use base 'Mojolicious::Controller';
 
-# login catches when a user type "scotng.sandia.gov" into the browser
-# or if they only type "scotng.sandia.gov/scot"
+=item B<check>
 
-sub login {
-    my $self    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
- 
-    my $return_href = {};
-    if($self->check) {
-        $return_href = {status => 'ok'};
-    } else {
-        $return_href = {status => 'fail'};
-    }
-    $self->render( json => $return_href );
-    
-}
+Get called on every route under /scot
+Does only one thing: Check for the presence of the 
+the user variable in the session cookie.
+That is only set if user has authenticated.
 
-sub get_xid {
-    # in case we need some kind of transaction identifier in future
-    # could use Data::GUID or somekind of generator in mongo
-    return 0;
-}
-
-sub ldap_auth {
-    my $self        = shift;
-    my $user        = shift;
-    my $password    = shift;
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $log         = $env->log;
-    my $ldap        = $env->ldap;
-
-    #TODO: Check password
-    
-    if ($ldap->authenticate_user($user, $password)) {
-
-        $log->debug("authenticated user $user");
-
-        my $groups = $ldap->get_users_groups($user);
-
-        $log->debug("$user is in these groups: " . Dumper($groups));
-
-        my $object      = $mongo->read_one_document({
-            collection  => 'users',
-            match_ref   => {'username' => $user},
-        });
-
-        if(!defined($user)) {
-            my $user_obj    = Scot::Model::User->new({
-                username    => $user,
-                lastvisit   => $env->now(),
-                theme       => "default",
-                flair       => "on",
-                display_orientation => "horizontal",
-            });
-            $mongo->create_document($user_obj);
-        }
-
-        $self->session(
-            user    => $user,
-            tz      => $self->get_timezone($user),
-            groups  => $groups,
-        );
-        return 1;
-    }
-    return 0;
-}
-
-sub local_auth {
-    my $self      = shift;
-    my $env       = $self->env;
-    my $log       = $env->log;
-    my $mongo     = $env->mongo;
-    my $user      = shift;
-    my $password  = shift;
-    
-    my $obj   = $mongo->read_one_document({
-        collection  => "users",
-        match_ref   => { username   => $user },
-    });
-#         $log->debug('user query reponse' . Dumper($obj));
-
-    if (defined $obj) {
-
-        $log->debug('User exists, lets see if they have the right password');
-
-        my $mHash = $obj->hash;
-
-        $log->debug("mHash is ".Dumper($mHash));
-
-        if ( defined ($mHash) && $mHash ne '' ) {
-
-            $log->debug("Local Hash defined, validating...");
-
-            my $pbkdf2 = Crypt::PBKDF2->new(
-                hash_class  => 'HMACSHA2',
-                hash_args   => { sha_size => 512 },
-                iterations  => 10000,
-                salt_len    => 15,
-            );
-
-            if(($pbkdf2->validate($mHash, $password))) {
-
-                $log->debug("User has correct password, ".
-                            "lets see if they are active");
-
-                if($obj->active) {
-
-                    $log->debug("User: $user is Active");
-
-                    my $groups = $obj->groups;
-                    # $log->debug("User in groups " . Dumper($groups));
-                    $self->session(
-                        user   => $user,
-                        tz     => 'N/A',
-                        groups => $groups,
-                    );
-                    return 1;
-                } 
-            } 
-        } 
-    }
-    $log->debug("Local Auth failed");
-    return undef;
-}
-
-sub respond_401 {
-  my $self = shift;
-  $self->res->headers->www_authenticate('Basic realm="SCOT"');
-  $self->respond_to(
-          any => {
-            json => { error => 'Invalid authentication token.' },
-            status => 401
-          }
-       );
-}
-
-# this is the function called by the bridge route
-# we will use it to see if the user has authenticated to apache
-# and to "audit" write to an access log
+=cut
 
 sub check {
     my $self    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $mode    = $env->{mode};
-    my $path    = $self->req->url->path;
+    my $mongo   = $env->mongo;
+    my $user    = $self->session('user');
+    
+    $log->trace("Checking Login Status");
 
-    my $basicauth   = $self->req->headers->header('authorization');
-    my $authuser    = $self->req->headers->header('authuser');
-    # $log->debug("HEADERS".Dumper($self->req->headers));
+    if (defined $user) {
+        # TODO: update last use records for user
+        return 1;
+    }
+    # TODO: need to cache original URL so we can redirect to it
+    # after auth
 
-    my $user        = $self->session('user');
-    my $mongo       = $env->mongo;
-    my $json        = $self->get_json;
-    my $authmode    = $env->config->{$mode}->{authmode};
-
-    $log->debug("authmod is ". $authmode);
-
-    my $method = 'ldap';
-    # $log->debug(Dumper($env));
-
-    if ($authmode eq "test") {
-        my $groups_aref = $env->config->{development}->{test_groups};
-        $self->session( 
-            user    => "scot-test", 
-            groups  => $groups_aref,
-            tz      => "MST7MDT" 
+    # if testing, do away with pesky auth
+    if ($ENV{'scot_mode'} eq "testing") {
+        $log->warn('SCOT is in INSECURE testing mode!');
+        $self->session(
+            user        => "test",
+            groups      => [qw(ir testing)],
+            secure      => 1,
+            expiration  => 3600 * 4,
         );
         return 1;
     }
 
-    if (!(defined $user)) {
-        # user has not been previously authenticated
-
-        $log->debug("User not previously authenticated...");
-
-        if ( defined($basicauth) || 
-            (defined($json) && defined($json->{'user'}))) { 
-            # basic auth or form submittal
-
-            $log->debug("Basic auth or json submittal");
-
-            my $user;
-            my $password;
-
-            if (defined($basicauth)) {
-	            (my $junk, $basicauth)  = split(/ /, $basicauth);
-                $basicauth              = decode_base64($basicauth);
-                ($user, $password)      = split(/:/, $basicauth);
-                $log->debug("basicauth yields user = $user");
-            } 
-            else {
-                    $user       = $json->{'user'};
-                    $password   = $json->{'pass'};
-            }
-
-            if(!($user =~ m/^[a-zA-Z0-9_]+$/)) {
-                # check for valid chars only in username
-                $log->error("Invalid username chars detected");
-                usleep(rand(1000000)); #sleep up to a second on incorrect login
-                $self->respond_401;      
-                return 0;
-            }
-            my $obj     = $mongo->read_one_document({
-               collection  => "users",
-               match_ref   => { username   => $user },
-            });
-            my $max_attempts = 10;
-            my $result          = 0;
-
-            if( defined($obj) && $
-                obj->attempts > $max_attempts) {
-
-                if(($env->now() - $obj->last_login_attempt) < 
-                    (10 ** $obj->lockouts)) { 
-                    $log->error('Denying user auth via local auth '.
-                                '(but not ldap), since they reached '.
-                                'limit of tries, user must wait ' . 
-                                (10 ** $obj->lockouts) . 
-                                ' seconds before their next login attempt');
-                } 
-                else { 
-                    $log->debug('Resetting login attempt counter since lockout time has elapsed');
-                    $obj->attempts(1);
-                    $mongo->update_document($obj);
-                    # Only try to validate locally if the user exists
-                    $result = $self->local_auth($user, $password); 
-                }
-            }
-            my $ldap_configured = $env->ldap->is_configured();
-
-            $log->debug("LDAP IS Configured") if $ldap_configured;
-
-            if( $ldap_configured && $result != 1 ) {
-                # local didn't work so check ldap if configured
-                $log->debug("localauth failed so trying ldap");
-                $result = $self->ldap_auth($user, $password);
-            } 
-            else {
-               $log->debug('LDAP Not configured, only doing local user auth');
-            }
-
-            if($result == 1) {
-                Log::Log4perl::MDC->put("user", $user);
-                if ( defined $obj ) {
-                    $obj->attempts(0);
-                    $obj->lockouts(0);
-                    $mongo->update_document($obj);
-                }
-            } 
-            else {
-                if(defined($obj)) {
-                   $obj->attempts($obj->attempts + 1);
-                   if($obj->attempts == ($max_attempts + 1)) {
-                      $obj->lockouts($obj->lockouts + 1);
-                   }
-                   $obj->last_login_attempt($env->now());
-                   $mongo->update_document($obj);
-                }
-                $log->error("local and ldap both failed");
-                usleep(rand(1000000)); #sleep up to a second on incorrect login
-                $self->respond_401;
-                return 0;
-            }
-       } 
-       else {
-          $self->respond_401;
-          return 0;
-       }
-    } 
-    else {
-        Log::Log4perl::MDC->put("user", $user);
-    }
-    return 1;
+    $self->redirect_to('/login');
 }
 
-sub is_permitted_group {
-    my $self        = shift;
-    my $group_aref  = shift;
-    my $path        = shift;
-    my $env         = $self->env;
-    my $log         = $env->log;
+=item B<login>
 
-    $path = lc($path);
-    #if user is trying to access an admin url (begins with /admin) make sure they are in the admin group
-    if ( index($path, '/scot/admin') == 0) {
-        if( scalar( grep /admin/,@$group_aref ) ) {
-            $log->debug("Admin in da' house!");
-            return 1;
-        } 
+This will render the login in page
+
+=cut
+
+sub login {
+    my $self    = shift;
+    $self->render();
+}
+
+=item B<logout>
+
+You can now expire you session cookie!
+Log out has been achieved
+
+=cut
+
+sub logout {
+    my $self    = shift;
+    $self->session(expires => 1);
+}
+
+=item B<auth>
+
+this gets called by posting the form rendered in the login method
+if you auth, you get a session cookie
+if not, no scot for you
+
+=cut
+
+# need to put some rate limiter in here and or lock outs
+
+sub auth {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $path    = $self->req->url->path;
+
+    $log->trace("Authentication Check Begins");
+
+    my $user    = $self->param('user');
+    my $pass    = $self->param('pass');
+
+    unless ( defined $user and defined $pass ) {
+        return $self->failed_auth(
+            "Undefined user or pass",
+            $user, 
+            $pass);
+    }
+
+    if ( $self->is_test_mode ) {
+        $log->trace("TEST MODE");
+        $self->session(
+            user        => $env->test_user,
+            groups      => $env->test_groups,
+            secure      => 1,
+            expiration  => 3600 * 4,
+        );
+        return;
+    }
+
+    if ( $self->has_invalid_user_chars($user) ) {
+        return $self->failed_auth("Invalid chars in username", $user);
+    }
+
+    if ( length($pass) > 32 or length($user) > 32) {
+        return $self->failed_auth(
+            "Pass or User was longer than 32 chars",
+            $user, 
+            $pass);
+    }
+
+    if ( defined( $self->env->ldap ) ) {
+        $log->trace("attempting ldap auth for user $user");
+        if ( $self->ldap_authenticates($user, $pass) ) {
+            return $self->sucessful_auth($user);;
+        }
         else {
-            return undef;
+            # not returning here because LDAP could fail
+            # on a local only account, so you get one more shot
+            $log->error("Failed LDAP AUTH, will attempt Local Auth");
         }
     }
 
-    #Check if the user is in the SCOT group for normal pages
-    if ( scalar( grep /scot/,@$group_aref ) ) {
-        $log->debug("welcome to the club");
+    $log->trace("Attempting local authentication for $user");
+    if ( $self->local_authenticates($user, $pass) ) {
+        return $self->sucessful_auth($user);
+    }
+
+    return $self->failed_auth(
+        "ALL attempts to authenticate $user failed",
+        $user,
+        $pass);
+}
+
+sub failed_auth {
+    my $self    = shift;
+    my $msg     = shift;
+    my $user    = shift;
+    my $pass    = shift;
+    my $log     = $self->env->log;
+
+    $log->error("FAILED AUTH: $msg");
+    $log->debug("User: $user Pass: $pass");
+
+    $self->flash("Invalid Login");
+    $self->redirect_to('/login');
+    return;
+}
+
+sub sucessful_auth {
+    my $self    = shift;
+    my $user    = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("User $user sucessfully authenticated");
+
+    $self->update_user_sucess($user);
+    $self->session( 
+        user        => $user, 
+        groups      => $self->get_user_groups($user),
+        secure      => 1,
+        expiration  => 3600 * 4,
+    );
+
+    $self->redirect_to('/scot/html/home'); # place holder until I put in
+                                            # way to go to last url
+    return;
+}
+
+sub get_user_groups {
+    my $self    = shift;
+    my $user    = shift;
+    my $env     = $self->env;
+
+    if ( $env->ldap ) {
+        return $env->ldap->get_users_groups($user);
+    }
+    else {
+        my $mongo       = $env->mongo;
+        my $collection  = $mongo->collection('User');
+        my $user        = $collection->find_one(username => $user);
+        return $user->groups;
+    }
+}
+
+sub ldap_authenticates {
+    my $self    = shift;
+    my $user    = shift;
+    my $pass    = shift;
+
+    my $ldap    = $self->env->ldap;
+    my $log     = $self->env->log;
+
+    unless (defined $ldap) {
+        $log->error("LDAP is not defined!");
+        return 0;
+    }
+
+    unless ($ldap->is_configured) {
+        $log->error("LDAP not configured!");
+        return 0;
+    }
+
+    return 0 unless ( $ldap->authenticate_user($user, $pass) ); 
+
+    $log->debug("LDAP has authenticated user $user");
+
+    my $groups  = $ldap->get_scot_groups($user);
+
+    $self->session(
+        user    => $user,
+        groups  => $groups,
+    );
+    return 1;
+}
+
+sub update_user_sucess {
+    my $self    = shift;
+    my $user    = shift;
+    my $mongo   = $self->env->mongo;
+    my $log     = $self->env->log;
+
+    $log->trace("Updating User $user Authentication Sucess");
+
+    my $collection  = $mongo->collection("user");
+    my $userobj     = $collection->find_one({username => $user});
+
+    if ( defined $userobj ) { 
+        $log->trace("User object $user retrieved");
+        $userobj->update_set( attempts => 0);
+        $userobj->update_set( lockouts => 0);
+        $userobj->update_set( lastvisit=> $self->env->now);
+    }
+    else {
+        $log->error("User $user not in DB.  Assuming New User");
+        eval {
+            $userobj    = $collection->create(
+                username    => $user,
+                lastvisit   => $self->env->now,
+                theme       => 'default',
+                flair       => 'on',
+                display_orientation => 'horizontal',
+                attempts    => 0,
+            );
+        };
+        if ($@) {
+            $log->error("Failed to create User $user! $@");
+        }
+    }
+}
+
+sub local_authenticates {
+    my $self        = shift;
+    my $username    = shift;
+    my $pass        = shift;
+    my $mongo       =  $self->env->mongo;
+    my $log         =  $self->env->log;
+
+    $log->trace("Local Authentication for $username");
+
+    my $collection  = $mongo->collection('user');
+    my $user        = $collection->find_one( username => $username );
+
+    return 0 unless defined($user);
+
+    $log->trace("User is in Database...");
+
+    my $phash   = $user->hash;
+
+    return 0 unless defined($phash);
+    return 0 if ($phash eq '');
+
+    $log->trace('User has a password hash...');
+
+    my $pbkdf2  = Crypt::PBKDF2->new(
+        hash_class  => 'HMACSHA2',
+        hash_args   => { sha_size   => 512 },
+        iterationss => 10000,
+        salt_len    => 15,
+    );
+
+    return 0 unless ( $pbkdf2->validate($phash, $pass) );
+
+    $log->trace("Password matches Hash...");
+
+    return 0 unless ( $user->active );
+
+    $log->trace("user $user is active...");
+
+    my $groups  = $user->groups;
+
+    $self->session(
+        user    => $user,
+        groups  => $groups,
+    );
+    return 1;
+}
+
+sub update_user_failure {
+    my $self        = shift;
+    my $username    = shift;
+    my $mongo       = $self->env->mongo;
+    my $log         = $self->env->log;
+
+    $log->trace("Updating User $username failure to authenticate");
+
+    my $collection  = $mongo->collection('user');
+    my $user        = $collection->find_one(username    => $username);
+
+    if ( $user ) {
+        $user->update_inc(attempts => 1);
+        if ( $user->attempts > 10) {
+            $user->update_inc(lockouts => 1);
+        }
+        $user->update_set(last_login_attempt => $self->env->now);
+    }
+    else {
+        $log->error("Unknown user $user failed attempted authentication!");
+    }
+}
+
+sub has_invalid_user_chars {
+    my $self    = shift;
+    my $user    = shift;
+    unless ( $user =~ m/^[a-zA-Z0-9_]+$/ ) {
+        $self->env->log->error("Invalid username chars detected! $user");
+        $self->respond_401;
         return 1;
     }
     return undef;
 }
 
-sub update_user_activity {
-    my $self    = shift;
-    my $user    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
-
-    $log->debug("update user activity");
-
-# scot 2 way.  maybe we should write something similar in mongo.pm
-#    $self->db->users->update(
-#        { username  => $user },
-#        { '$set'    => { lastvisit  => $self->now() } },
-#        { safe      => 1,   upsert  => 1 },
-#    );
-
-    my $obj     = $mongo->read_one_document({
-    #    'log'       => $log,
-        collection  => "users",
-        match_ref   => { username   => $user },
-    });
-    if (defined $obj) {
-        $obj->lastvisit($env->now());
-        $mongo->update_document($obj);
-    }
-    else {
-        $log->error("No matching User, creating user record");
-        my $user_obj    = Scot::Model::User->new({
-            username    => $user,
-            lastvisit   => $env->now(),
-            theme       => "default",
-            flair       => "on",
-            display_orientation => "horizontal",
-        });
-        $mongo->create_document($user_obj);
-    }
-}
-
-sub get_timezone {
-    my $self    = shift;
-    my $user    = shift;
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
-    my $uobj    = $mongo->read_one_document({
-        collection  => "users",
-        match_ref   => { username => $user },
-    });
-    if ($uobj) {
-        return $uobj->tzpref;
-    }
-    return "MST7MDT";
-}
-
-sub get_jabber_password {
+sub is_test_mode {
     my $self        = shift;
-    my $username    = shift;
-    return undef unless $username;
-    my $filename    = "/opt/sandia/webapps/scot3/jabber/$username";
+    my $env         = $self->env;
+    my $mode        = $env->mode;
+    my $authmode    = $env->authmode;
 
-    # If no password file exists, or password is older than 1 hours, 
-    # replace with new password
-    if ( (! -e $filename) || ((time - ((stat($filename))[9])) > 3600) ) {
-        open FILE, ">$filename";
-        print FILE createPassword(15); #Generate 15 character random password 
-        close FILE; 
+    $env->log->debug("Mode is $mode AUTHMODE is $authmode");
+
+    if ($authmode eq "test" ) {
+        $env->log->debug("TEST MODE : user is scot-test");
+        my $groups  = $env->get_test_groups();
+        $self->session(
+            user    => "scot-test",
+            groups  => $groups,
+            tz      => "MST7MDT",
+        );
+        return 1;
     }
-    open FILE, "<$filename"; #read password from file
-    my $result = <FILE>;
-    close FILE;    
-    return $result;
+    return undef;
 }
-
-sub createPassword {
-    my $length = shift;
-    my $available = 'abcdefghijkmnpqrstuvwxyz23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-    my $password = "";
-    while (length($password) < $length) {
-        $password .= substr($available, (int(rand(length($available)))), 1);
-    }
-    return $password
-} 
-
 
 1;

@@ -5,7 +5,13 @@ use Moose::Util::TypeConstraints;
 
 =head1 Scot::Types
 
-Moose custom types for use within Scot
+custom moose types for use within scot
+
+=cut
+
+=item B<Epoch>
+
+integer > 0 that will represent the seconds since the unix epoch
 
 =cut
 
@@ -14,19 +20,43 @@ as      'Int',
 where   { $_ >= 0 };
 
 coerce  'Epoch',
-from    'Str', via     { $_ + 0 },
-from    'Num', via     { int($_); };
+from    'Str', via  { $_ + 0 },
+from    'Num', via  { int($_); };
 
-subtype 'iid',
+=item B<IID>
+
+integer > 0 used in iid attribute for model instances
+
+=cut
+
+subtype 'IID',
 as      'Int',
 where   { $_ >= 0 };
 
-coerce  'iid',
-from    'Str', via     { $_ + 0 },
-from    'Num', via  { int($_) };
+coerce  'IID',
+from    'Str', via  { $_ + 0 },
+from    'Num', via  { int($_); };
 
-coerce 'Num',
-    from 'Str', via { $_ + 0 };
+coerce  'Num',
+from    'Str', 
+via     { $_ + 0 };
 
+=item B<alert_status>
+
+Valid statuses for Alerts/Alertgroups
+
+=cut
+
+enum 'alert_status', [qw(open closed promoted)];
+
+=item B<event_status>
+
+Valid Statuses for Events
+
+=cut
+
+enum 'event_status', [ qw(open closed monitored) ];
 
 1;
+
+
