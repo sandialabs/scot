@@ -98,12 +98,12 @@ sub _build_db_handle {
     $log->info("---- name:    ".$dbconf->{db_name});
     $log->info("---- user:    ".$dbconf->{user});
 
-    my $connection  = MongoDB::Connection->new(@connection_options);
-    $connection->authenticate(
-        $dbconf->{db_name},
-        $dbconf->{user},
-        $dbconf->{pass},
-    );
+    my $connection  = MongoDB::MongoClient->new(@connection_options);
+#    $connection->authenticate(
+#        $dbconf->{db_name},
+#        $dbconf->{user},
+#        $dbconf->{pass},
+#    );
 
     return $connection->get_database($dbconf->{db_name});
 }
