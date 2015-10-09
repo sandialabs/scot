@@ -18,8 +18,7 @@ extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
     Scot::Role::Hashable
-    Scot::Role::Owner
-    Scot::Role::Permittable
+    Scot::Role::Permission
     Scot::Role::Subject
     Scot::Role::Updated
     Scot::Role::Views

@@ -309,4 +309,55 @@ sub now {
     return time();
 }
 
+sub get_user {
+    my $self    = shift;
+    my $api     = shift;
+    my $user    = $api->session('user');
+
+    unless ( defined $user ) {
+        if ( $self->authmode eq "test" ) {
+            $self->log->debug("In authmod of test, setting username to test");
+            $user   = "test";
+        }
+        else {
+            my $msg = "Error: Owner not provided by session variable, did you log in?";
+            $self->log->error($msg);
+            return undef;
+        }
+    }
+    return $user;
+}
+
+sub get_epoch_cols {
+    my $self    = shift;
+    my @cols    = qw(
+        when
+        updated
+        created
+        occurred
+    );
+    return wantarray ? @cols : \@cols;
+}
+
+sub get_int_cols {
+    my $self    = shift;
+    my @cols    = qw(
+        views
+    );
+    return wantarray ? @cols : \@cols;
+}
+
+sub get_req_array {
+    my $self    = shift;
+    my $json    = shift;
+    my $type    = shift;
+    my @tags    = ();
+
+    if ( defined $json->{$type} ) {
+        push @tags, @{$json->{$type}};
+        delete $json->{$type};
+    }
+    return @tags;
+}
+
 1;

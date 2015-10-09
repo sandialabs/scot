@@ -30,39 +30,30 @@ Create an event and from a POST to the handler
 
 sub create_from_api {
     my $self    = shift;
-    my $api     = shift;
+    my $request = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $env     = $env;
 
     $log->trace("Create Event from API");
 
-    my $build_href  = $api->get_request_params->{params};
-    
-    my @tags;
-    if ( defined ( $build_href->{tags} ) ) {
-        push @tags, @{ $build_href->{tags} };
-        delete $build_href->{tags};
+    my $user    = $request->{user};
+    my $json    = $request->{request}->{json};
+
+    my @tags    = $env->get_req_array($json, "tags");
+    my @sources = $env->get_req_array($json, "sources");
+
+    if ( defined $json->{from_alerts} ) {
+        $self->process_alerts($request);
     }
 
-    my @sources;
-    if ( defined ( $build_href->{sources} ) ) { 
-        push @sources, @{ $build_href->{sources} };
-        delete $build_href->{sources};
-    }
+    my $entry_body = $request->{entry};
+    delete $request->{entry};
 
-    if ( defined $build_href->{from_alerts} ) {
-        $self->process_alerts($build_href);
-    }
-
-    my $entry_body = $build_href->{entry};
-    delete $build_href->{entry};
-
-    my $event   = $self->create($build_href);
+    my $event   = $self->create($json);
 
     unless ($event) {
         $log->error("ERROR creating Event from ",
-            { filter => \&Dumper, value => $build_href});
+            { filter => \&Dumper, value => $request});
         return undef;
     }
 
@@ -121,7 +112,8 @@ sub create_alert_entry {
         summary     => 0,
         body        => $body,
     };
-    my $entry   = $entrycol->create_via_alert_promotion($entry_href);
+    my $entrycol    = $mongo->collection('Entry');
+    my $entry       = $entrycol->create_via_alert_promotion($entry_href);
 
 }
 
@@ -129,6 +121,7 @@ sub add_to_body {
     my $self    = shift;
     my $body    = shift;
     my $alert   = shift;
+    my $id      = $alert->id;
     $body .= "<h4>Alert $id</h4>" . 
                 "<table class=\"alert_in_entry\"><tr>".
                 "  <th>ID</th>";
@@ -210,9 +203,9 @@ sub build_from_alerts {
     $build_href->{status}   = "open" unless $build_href->{status};
     $build_href->{owner}    = $handler->session('user') 
         unless $build_href->{owner};
-    $build_href->{readgroups} = $env->default_groups->{readgroups}
+    $build_href->{readgroups} = $env->default_groups->{read}
         unless $build_href->{readgroups};
-    $build_href->{modifygroups} = $env->default_groups->{modifygroups}
+    $build_href->{modifygroups} = $env->default_groups->{modify}
         unless $build_href->{modifygroups};
     $build_href->{alerts} = \@alert_ids;
     delete $build_href->{from_alerts};
@@ -231,5 +224,6 @@ sub build_from_alerts {
 
     return $event;
 }
+
 
 1;

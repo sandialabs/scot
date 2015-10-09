@@ -1,6 +1,8 @@
 package Scot::Collection::Intel;
 use lib '../../../lib';
 use Moose 2;
+use Data::Dumper;
+
 extends 'Scot::Collection';
 with    qw(
     Scot::Role::GetByAttr
@@ -26,25 +28,37 @@ Create an event and from a POST to the handler
 =cut
 
 
-sub create_from_handler {
+sub create_from_api {
     my $self    = shift;
-    my $handler = shift;
-    my $log     = $handler->env->log;
-    my $env     = $handler->env;
+    my $request = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
 
     $log->trace("Custom create in Scot::Collection::Intel");
 
-    my $build_href  = $handler->get_build_href;
+    my $json    = $request->{request}->{json};
+    my $user    = $request->{user};
 
-    $build_href->{owner}        = $handler->session('user');
-    unless ( $build_href->{readgroups} ) {
-        $build_href->{readgroups}   = $env->default_groups->{readgroups};
+    my @tags    = $env->get_req_array($json, "tags");
+    my @sources = $env->get_req_array($json, "sources");
+
+    unless ( $json->{readgroups} ) {
+        $json->{groups}->{read}   = $env->default_groups->{read};
     }
-    unless ( $build_href->{modifygroups} ) {
-        $build_href->{modifygroups} = $env->default_groups->{modifygroups};
+    unless ( $json->{modifygroups} ) {
+        $json->{groups}->{modify} = $env->default_groups->{modify};
     }
 
-    my $intel   = $self->create($build_href);
+    my $intel   = $self->create($json);
+
+    my $id  = $intel->id;
+
+    if ( scalar(@sources) > 0 ) {
+        $self->upsert_targetables("Source", "intel", $id, @sources);
+    }
+    if ( scalar(@tags) > 0 ) {
+        $self->upsert_targetables("Tag", "intel", $id, @tags);
+    }
 
     return $intel;
 

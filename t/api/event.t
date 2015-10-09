@@ -5,6 +5,7 @@ use lib '../../lib';
 use Test::More;
 use Test::Mojo;
 use Data::Dumper;
+use Mojo::JSON qw(decode_json encode_json);
 
 $ENV{'scot_mode'}   = "testing";
 my @defgroups       = ( 'ir', 'testing' );
@@ -14,6 +15,7 @@ my $t   = Test::Mojo->new('Scot');
 $t  ->post_ok  ('/scot/api/v2/event'  => json => {
         subject => "Test Event 1",
         source  => "firetest",
+        status  => 'open',
 #        readgroups  => $defgroups,
 #        modifygroups=> $defgroups,
     })
@@ -23,14 +25,16 @@ $t  ->post_ok  ('/scot/api/v2/event'  => json => {
 my $event_id = $t->tx->res->json->{id};
 
 $t  ->get_ok("/scot/api/v2/event/$event_id")
-    ->status_is(200);
+    ->status_is(200)
+    ->json_is('/id'     => $event_id)
+    ->json_is('/owner'  => 'scot-adm')
+    ->json_is('/status'  => 'open')
+    ->json_is('/subject' => 'Test Event 1');
 
 
- print Dumper($t->tx->res->json);
- done_testing();
- exit 0;
 
-$t  ->post_ok('/scot/entry' => json => {
+
+$t  ->post_ok('/scot/api/v2/entry' => json => {
         body        => "Entry 1 on Event $event_id",
         target_id   => $event_id,
         target_type => "event",
@@ -40,12 +44,17 @@ $t  ->post_ok('/scot/entry' => json => {
     ->status_is(200)
     ->json_is('/status' => 'ok');
 
+my $entry1 = $t->tx->res->json->{id};
 
-$t  ->get_ok("/scot/event/$event_id")
+$t  ->get_ok("/scot/api/v2/event/$event_id")
     ->status_is(200)
-    ->json_is('/data/entries/0/body_plaintext' => "Entry 1 on Event $event_id");
+    ->json_is('/id' => $event_id)
+    ->json_is('/owner'  => 'scot-adm')
+    ->json_is('/status'  => 'open')
+    ->json_is('/subject'    => 'Test Event 1');
 
-$t  ->post_ok  ('/scot/event'  => json =>{
+
+$t  ->post_ok  ('/scot/api/v2/event'  => json =>{
         subject => "Test Event 2",
         source  => "foobar",
         readgroups  => $defgroups,
@@ -57,16 +66,15 @@ $t  ->post_ok  ('/scot/event'  => json =>{
 
 my $event_2 = $t->tx->res->json->{id};
 
-my $json    = Mojo::JSON->new;
-my $cols    = $json->encode([qw(event_id updated created)]);
-my $filter  = $json->encode({event_id   => [ $event_id, $event_2 ]});
-my $grid    = $json->encode({sort_ref   => { 'event_id' => -1 } });
-my $url = "/scot/event?columns=$cols&filters=$filter&grid=$grid";
+my $cols    = encode_json([qw(event_id updated created)]);
+my $filter  = encode_json({id   => {'$in' => [ $event_id, $event_2 ]}});
+my $grid    = encode_json({'id' => -1});
+my $url = "/scot/api/v2/event?columns=$cols&match=$filter&sort=$grid";
 
 $t  ->get_ok($url, "Get Event List" )
     ->status_is(200)
-    ->json_is('/data/0/event_id'    => $event_2)
-    ->json_is('/data/1/event_id'    => $event_id);
+    ->json_is('/records/0/id'    => $event_2)
+    ->json_is('/records/1/id'    => $event_id);
 
 
 my $update2time = $t->tx->res->json->{data}->[1]->{updated};
@@ -75,22 +83,28 @@ sleep 1;
 print "waking from sleep\n";
 
 my $tx  = $t->ua->build_tx(
-    PUT => "/scot/event/$event_2" => json => {
+    PUT => "/scot/api/v2/event/$event_2" => json => {
     owner   => "boombaz",
-    status  => "closed",
 });
 $t  ->request_ok($tx)
-    ->status_is(200)
-    ->json_is('/status' => 'ok');
+    ->status_is(403);
 
-$t  ->get_ok("/scot/event/$event_2")
+$tx  = $t->ua->build_tx(
+    PUT     => "/scot/api/v2/event/$event_2" => json => {
+    status  => "closed",
+});
+
+$t  ->request_ok($tx)
     ->status_is(200)
-    ->json_is('/data/owner'     => "boombaz")
-    ->json_is('/data/status'    => "closed");
+    ->json_is('/status' => 'successfully updated');
+
+$t  ->get_ok("/scot/api/v2/event/$event_2")
+    ->status_is(200)
+    ->json_is('/status'    => "closed");
 
 isnt $t->tx->res->json->{updated}, $update2time, "update time change";
 
-$t  ->post_ok  ('/scot/event'  => json => {
+$t  ->post_ok  ('/scot/api/v2/event'  => json => {
         subject => "Test Event 3",
         source  => "deltest" ,
         readgroups  => $defgroups,
@@ -99,13 +113,15 @@ $t  ->post_ok  ('/scot/event'  => json => {
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
+    
 my $event_3 = $t->tx->res->json->{id};
 
-$t  ->delete_ok("/scot/event/$event_3" => {} => "Event Deletion")
+$t  ->delete_ok("/scot/api/v2/event/$event_3")
     ->status_is(200)
     ->json_is('/status' => 'ok');
 
-$t  ->post_ok('/scot/entry'    => json => {
+
+$t  ->post_ok('/scot/api/v2/entry'    => json => {
         body        => "The fifth symphony",
         target_id   => $event_id,
         target_type => "event",
@@ -116,60 +132,30 @@ $t  ->post_ok('/scot/entry'    => json => {
     ->status_is(200)
     ->json_is('/status' => 'ok');
 
-$t  ->get_ok("/scot/event/$event_id")
+my $entry2  = $t->tx->res->json->{id};
+
+$t  ->get_ok("/scot/api/v2/event/$event_id/entry")
     ->status_is(200)
-    ->json_is('/data/entries/1/body_plaintext' => "The fifth symphony");
-# XXX
-# print Dumper($t->tx->res);
-# done_testing();
-# exit 0;
+    ->json_is('/totalRecordCount' => 2)
+    ->json_is('/records/0/id'   => $entry1)
+    ->json_is('/records/1/id'   => $entry2);
 
 my $tx  = $t->ua->build_tx(
-    PUT =>"/scot/event/$event_id" => json =>{
-    cmd   => "addtag",
-    tags  => ["foo"],
+    PUT =>"/scot/api/v2/event/$event_id" => json =>{
+    tags  => ["foo","boo"],
 });
 
 $t  ->request_ok($tx)
     ->status_is(200)
-    ->json_is('/status' => 'ok');
+    ->json_is('/status' => 'successfully updated');
 
 
-my $tx  = $t->ua->build_tx(
-    PUT => "/scot/event/$event_id" => json =>{
-    cmd   => "addtag",
-    tags  => ["boo"],
-});
-$t  ->request_ok($tx)
+$t->get_ok("/scot/api/v2/event/$event_id")
     ->status_is(200)
-    ->json_is('/status' => 'ok');
+    ->json_is('/tags/1' => "boo")
+    ->json_is('/tags/0' => "foo");
 
-$t->get_ok("/scot/event/$event_id")
-    ->status_is(200)
-    ->json_is('/data/tags/0' => "boo")
-    ->json_is('/data/tags/1' => "foo");
-
-my $tx  = $t->ua->build_tx(
-    PUT => "/scot/event/1" => json =>{
-    cmd   => "rmtag",
-    tags  => ["foo"],
-});
-$t  ->request_ok($tx)
-    ->status_is(200)
-    ->json_is('/status' => 'ok');
-
-$t->get_ok("/scot/event/$event_id")
-    ->status_is(200)
-    ->json_is('/data/tags/0' => "boo");
-
-my $json    = Mojo::JSON->new;
-my $jfilter = $json->encode({ limit => 100, sort_ref => { subject => 1}});
-
-
-done_testing();
-exit 0;
-
- print Dumper($t->tx->res->json);
+#  print Dumper($t->tx->res->json);
  done_testing();
  exit 0;
 

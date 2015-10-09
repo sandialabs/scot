@@ -145,8 +145,8 @@ sub get_subthing {
     if ( $class->meta->does_role("Scot::Role::Targets") ) {
         $log->trace("$class does Targets, retrieving...");
         $cursor = $collection->find({
-            target_id   => $id + 0,
-            target_type => $thing,
+            'targets.target_id'  => $id + 0,
+            'targets.target_type' => $thing,
         });
         return $cursor;
     }
@@ -180,11 +180,11 @@ sub get_group_permissions {
     }
     unless ($rgflag) {
         $log->trace("adding default readgroups");
-        push @$aref, "readgroups" => $env->default_groups->{readgroups};
+        push @$aref, "readgroups" => $env->default_groups->{read};
     }
     unless ($mgflag) {
         $log->trace("adding default modifygroups");
-        push @$aref, "modifygroups" => $env->default_groups->{modifygroups};
+        push @$aref, "modifygroups" => $env->default_groups->{modify};
     }
 
 }

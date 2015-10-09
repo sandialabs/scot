@@ -20,7 +20,7 @@ with    qw(
     Scot::Role::Targets
     Scot::Role::Updated
     Scot::Role::Hashable
-    Scot::Role::Permittable
+    Scot::Role::Permission
     Scot::Role::When
     Scot::Role::Body
 );

@@ -24,10 +24,11 @@ with    qw(
     Meerkat::Role::Document
     Scot::Role::Events
     Scot::Role::Hashable
-    Scot::Role::Owner
-    Scot::Role::Permittable
+    Scot::Role::Permission
     Scot::Role::Subject
+    Scot::Role::Tags
     Scot::Role::Type
+    Scot::Role::Updated
 );
 
 enum 'valid_status', [ qw(open closed) ];
@@ -72,7 +73,7 @@ has [qw(occurred discovered reported)]  => (
     is          => 'ro',
     isa         => 'Epoch',
     required    => 1,
-    default     => sub { time(); },
+    default     => 0,
 );
 
 =item B<subject>

@@ -20,10 +20,11 @@ with    qw(
     Scot::Role::Alerts
     Scot::Role::Hashable
     Scot::Role::Incidents
-    Scot::Role::Owner
-    Scot::Role::Permittable
+    Scot::Role::Permission
     Scot::Role::Status
     Scot::Role::Subject
+    Scot::Role::Tags
+    Scot::Role::Updated
     Scot::Role::Views
     Scot::Role::When
 );

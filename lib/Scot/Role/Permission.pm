@@ -42,6 +42,14 @@ sub is_permitted {
     my $self            = shift;
     my $operation       = shift;
     my $users_groups    = shift;
+    my $env             = Scot::Env->instance;
+    my $log             = $env->log;
+
+    my $perm_href   = $self->groups;
+    my $perm_aref   = $perm_href->{$operation};
+
+    $log->debug("Permitted groups for $operation: " . 
+                join(',', @{$perm_aref}) );
 
     foreach my $group ( @$users_groups ) {
         if ( grep { /^$group$/ } @{$self->groups->{$operation}} ) {
@@ -54,14 +62,14 @@ sub is_permitted {
 sub is_readable {
     my $self                = shift;
     my $users_groups        = shift;
-    return is_permitted("read", $users_groups);
+    return $self->is_permitted("read", $users_groups);
     
 }
 
 sub is_modifiable {
     my $self            = shift;
     my $users_groups    = shift;
-    return is_permitted("read", $users_groups);
+    return $self->is_permitted("modify", $users_groups);
 }
 
 1;

@@ -13,6 +13,7 @@ Perform the CRUD operations based on JSON input and provide JSON output
 
 use Data::Dumper;
 use Try::Tiny;
+use Mojo::JSON qw(decode_json encode_json);
 use strict;
 use warnings;
 use base 'Mojolicious::Controller';
@@ -34,7 +35,19 @@ sub create {
 
     $log->trace("Handler is processing a POST (create) from $user");
 
-    my $thing   = $self->stash('thing');
+    my $req_href    = $self->get_request_params;
+    #   req_href = {
+    # collection  => "collection name",
+    # id          => $int_id,
+    # subthing    => $if_it_exists,
+    # user        => $username,
+    # request     => {
+    #     params  => $href_of_params_from_web_request,
+    #     json    => $href_of_json_submitted
+    # }
+    
+
+    my $thing   = $req_href->{collection};
     my $colname = ucfirst($thing);
 
     unless ($colname) {
@@ -66,7 +79,7 @@ sub create {
         return;
     }
 
-    my $object  = $collection->create_from_api($self);
+    my $object  = $collection->create_from_api($req_href);
 
     unless ( defined $object ) {
         $self->do_error(400, {
@@ -133,7 +146,28 @@ sub get_many {
     $log->trace("Handler is processing a GET MANY request from $user");
 
     my $req_href    = $self->get_request_params;
+    #   req_href = {
+    # collection  => "collection name",
+    # id          => $int_id,
+    # subthing    => $if_it_exists,
+    # user        => $username,
+    # request     => {
+    #     params  => $href_of_params_from_web_request,
+    #     json    => $href_of_json_submitted
+    # }
+    # where params or json is
+    #  {
+    #    match : { mongo json match query },
+    #    sort  : { mongo sorting },
+    #    columns: [ col1, ... ], # display only these columns
+    #    limit: x,
+    #    offset: y
+    #  }
+
+    $log->debug("Request = ", {filter=>\&Dumper, value=>$req_href});
+
     my $col_name    = $req_href->{collection};
+
     my $collection;
     my $match_ref;
 
@@ -152,7 +186,16 @@ sub get_many {
         return;
     }
 
-    $match_ref   = $self->build_match_ref($req_href);
+    $match_ref   = $req_href->{request}->{params}->{match} // 
+                   $req_href->{request}->{json}->{match};
+                   
+    unless ( $match_ref ) {
+        $log->debug("Empty match_ref! Easy, peasey");
+        $match_ref  = {};
+    }
+    else {
+        $log->debug("Looking for $col_name matching ",{filter=>\&Dumper, value=>$match_ref});
+    }
 
     my $cursor      = $collection->find($match_ref);
     my $total       = $cursor->count;
@@ -163,6 +206,7 @@ sub get_many {
         $self->nothing_matching_error($match_ref);
         return;
     }
+    
         
     if ( my $sort_opts = $self->build_sort_opts($req_href) ) {
         $cursor->sort($sort_opts);
@@ -192,8 +236,11 @@ sub get_many {
         totalRecordCount    => $total
     });
 
+    delete $req_href->{request}; # hack to kil error when '$' appears in match ref
+
     $self->audit("get_many", $req_href);
 }
+
 
 # this was a workaround for a bug in Meerkat
 #sub mypack {
@@ -402,6 +449,8 @@ sub update {
     my $id          = $req_href->{id};
     my $col_name    = $req_href->{collection};
 
+    $log->debug("Request = ", { filter =>\&Dumper, value => $req_href});
+
     unless ( $self->id_is_valid($id) ) {
         $self->do_error(400, {
             error_msg   => "Invalid integer id: $id"
@@ -430,34 +479,27 @@ sub update {
 
     my $object  = $collection->find_iid($id);
 
-    if ( $object->meta->does_role("Scot::Role::Permittable") ) {
+    if ( $object->meta->does_role("Scot::Role::Permission") ) {
         my $users_groups    = $self->session('groups');
         unless ( $object->is_modifiable($users_groups) ) {
-            $self->modify_not_permitted_error;
+            $self->modify_not_permitted_error($object, $users_groups);
             return;
         }
         $log->trace("Update is permittable");
-    }
-
-
-    if ( ref($object) eq "Scot::Model::Entry" ) {
-        $self->do_task_checks($req_href);
-    }
-
-    if ( $object->meta->does_role("Scot::Role::Ownable") ) {
         # only admin can change ownership, unless this is an task entry
         # and then you can only take ownership
-        if ( $req_href->{params}->{owner} ) {
+        my $newowner    = $req_href->{request}->{params}->{owner} // 
+                          $req_href->{request}->{json}->{owner};
+
+        if ( $newowner ) {
             # the request wants to change the owner
             if ( $self->ownership_change_permitted($req_href, $object) ) {
                 $log->warn("Ownership change of ".ref($object)." ".$object->id .
-                            " from ".$object->owner." to ".
-                            $req_href->{params}->{owner});
+                            " from ".$object->owner." to ".  $newowner);
             }
             else {
                 $log->error("Non permitted ownership change! ".
-                            ref($object) . " ". $object->id . " to ".
-                            $req_href->{params}->{owner});
+                            ref($object) . " ". $object->id . " to ".  $newowner);
                 $self->do_error(403, {
                     error_msg   => "Insufficient privilege to complete request"
                 });
@@ -469,14 +511,14 @@ sub update {
         }
     }
 
-    my %update;
-    foreach my $key ( keys %{$req_href->{params}} ) {
-        my $value       = $req_href->{params}->{$key};
-        $update{$key}   = $value;
-    }
-    $update{updated} = $env->now();
 
-    $log->trace("Updating" . ref($object) . "id = ".$object->id . " with ",
+    if ( ref($object) eq "Scot::Model::Entry" ) {
+        $self->do_task_checks($req_href);
+    }
+
+    my %update = $self->build_update_doc($req_href);
+
+    $log->trace("Updating " . ref($object) . " id = ".$object->id . " with ",
         { filter =>\&Dumper, value => \%update});
 
     unless ( $object->update({ '$set' => \%update }) ) {
@@ -496,6 +538,39 @@ sub update {
     });
 
     $self->audit("update_thing", $req_href);
+}
+
+sub build_update_doc {
+    my $self    = shift;
+    my $request = shift;
+    my $params  = $request->{request}->{params};
+    my $json    = $request->{request}->{json};
+    my %update  = ();
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    $log->trace("Building Update command");
+
+    if ( defined $params ) {
+
+        $log->trace("Params are present...");
+
+        foreach my $key ( keys %{$params} ) {
+            my $value       = $params->{$key};
+            $update{$key}   = $value;
+        }
+    }
+    if (defined $json) {
+
+        $log->trace("JSON is present...");
+
+        foreach my $key ( keys %{$json} ) {
+            $update{$key}   = $json->{$key};
+        }
+    }
+    $update{updated} = $env->now();
+    $log->debug("Update command is: ",{filter=>\&Dumper, value=>\%update});
+    return wantarray ? %update : \%update;
 }
 
 sub do_task_checks {
@@ -590,9 +665,19 @@ sub delete {
 
     $log->trace("Handler is processing a DELETE ONE request by $user");
 
+    #
+    # delete actually just moves the data to the deleted collection
+    # UNLESS, $req_href->{request}->{params}->{purge} is true
+    # and then it is truly deleted from the collection (no undo)
+    # if the user is an admin
+    #
+
     my $req_href    = $self->get_request_params;
     my $id          = $req_href->{id};
     my $col_name    = $req_href->{collection};
+
+    my $purge       = $req_href->{request}->{param}->{purge} // 
+                      $req_href->{request}->{json}->{purge};
 
     unless ( $self->id_is_valid($id) ) {
         $self->do_error(400, {
@@ -604,7 +689,7 @@ sub delete {
     my $collection;
 
     try {
-        $collection  = $mongo->collection($col_name);
+        $collection  = $mongo->collection(ucfirst($col_name));
     }
     catch {
         $self->do_error(400, {
@@ -633,13 +718,13 @@ sub delete {
     if ( $object->meta->does_role("Scot::Role::Permittable") ) {
         my $users_groups    = $self->session('groups');
         unless ( $object->is_modifiable($users_groups) ) {
-            $self->modify_not_permitted_error;
+            $self->modify_not_permitted_error($object, $users_groups);
             return;
         }
     }
 
 
-    if  ( $req_href->{purge} and $self->user_is_admin ) {
+    if  ( $purge and $self->user_is_admin ) {
         $log->warn( "Object is being purged.", 
                     { filter=>\&Dumper, value => $object->as_hash});
     } 
@@ -983,11 +1068,13 @@ sends a 403 to client with error message
 sub modify_not_permitted_error {
     my $self    = shift;
     my $obj     = shift;
+    my $users_groups    = shift;
     my $log     = $self->env->log;
     my $user    = $self->session('user');
 
-    $log->error("User $user attempted to access ". ref($obj) . " ".
-                $obj->id . "modifygroups [ ".join(',', $obj->all_modifygroups) 
+    $log->error("User $user [". join(',', @{$users_groups}). 
+                "] attempted to access ". ref($obj) . " ".
+                $obj->id . " modifygroups [ ".join(',', @{$obj->groups->{modify}}) 
                 ."]");
     $self->do_error(403, {
         error_msg   => "Modify Not Permitted"
@@ -1011,71 +1098,6 @@ sub nothing_matching_error {
     });
 }
 
-=item B<build_match_ref($href)>
-
-builds a hash of key value pairs that will be used to query the
-mongodb for a document.  $href is a hash ref from request, and we
-specifically are looking at the href withing $href->{params}
-
-=cut
-
-sub build_match_ref {
-    my $self    = shift;
-    my $href    = shift;
-    my $params  = $href->{params};
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my %match;
-
-    if ( defined $params->{gridfilter} ) {
-
-        $log->trace("gridfilter detected");
-        
-        foreach my $href (@{$params->{gridfilter}}) {
-            my ($column, $filter ) = each %{$href};
-            next unless (defined $column);
-
-            if ( $self->is_epoch_column($column) ) {
-                $log->trace("epoch column detected");
-                my ($start,$end) = split(/::/, $filter, 2);
-                $params->{$column} = {
-                    '$gte'  => $start + 0,
-                    '$lte'  => $end + 0, 
-                };
-            }
-            elsif ( $self->is_int_column($column) ) {
-                $log->trace("int column detected");
-                $params->{$column} = $filter +0;
-            }
-            else{
-                $params->{$column} = $filter;
-            }
-        }
-        delete $params->{gridfilter};
-    }
-
-    foreach my $key ( keys %$params ) {
-        next if $key eq "sorts";
-        next if $key eq "fields";
-        next if $key eq "offset";
-        next if $key eq "limit";
-        next if $key eq "all";
-        next if $key eq "page";
-        next if $key eq "perpage";
-        next if $key eq "filter_end";
-        if ( $self->is_epoch_column($key) ) {
-            $match{$key} = $params->{$key};
-        }
-        elsif ( $self->is_int_column($key) ) {
-            $match{$key} = $params->{$key}+0;
-        }
-        else {
-            $match{$key} = qr/$params->{$key}/;
-        }
-    }
-    $self->env->log->debug("Matching: ", {filter=>\&Dumper, value=>\%match});
-    return \%match;
-}
 
 =item B<build_sort_opts($href)>
 
@@ -1090,19 +1112,13 @@ $href->{sorts} = [
 sub build_sort_opts {
     my $self    = shift;
     my $href    = shift;
-    my $params  = $href->{params};
-    my $aref    = $params->{sorts};
-    my %sort;
+    my $request = $href->{request};
+    my $params  = $request->{params};
+    my $json    = $request->{json};
 
-    foreach my $sorthref ( @$aref ) {
-        my ( $col, $dir) = each %$sorthref;
-        $sort{$col} = $dir + 0;
-    }
-    if (scalar(keys %sort) > 0) {
-        return \%sort;
-    }
-    
-    return undef;
+    my $sorthref    = $params->{sort} // $json->{sort};
+    return $sorthref;
+
 }
 
 =item B<build_limit($href)>
@@ -1114,8 +1130,11 @@ Get the limit value
 sub build_limit {
     my $self    = shift;
     my $href    = shift;
-    my $params  = $href->{params};
-    my $limit   = $params->{limit}//$params->{perpage};
+    my $request = $href->{request};
+    my $params  = $request->{params};
+    my $json    = $request->{json};
+
+    my $limit   = $params->{limit} // $json->{limit};
     return $limit;
 }
 
@@ -1128,8 +1147,10 @@ get the offset value
 sub build_offset {
     my $self        = shift;
     my $href        = shift;
-    my $params      = $href->{params};
-    return $params->{offset};
+    my $request     = $href->{request};
+    my $params      = $request->{params};
+    my $json        = $request->{json};
+    return $params->{offset} // $json->{offset};
 }
 
 =item B<build_fields($href)>
@@ -1185,7 +1206,36 @@ sub disambiguate {
 =item B<get_request_params>
 
 Examine the request from the webserver and stuff the params and json
-into an HREF
+into an HREF = {
+    collection  => "collection name",
+    id          => $int_id,
+    subthing    => $if_it_exists,
+    user        => $username,
+    request     => {
+        params  => $href_of_params_from_web_request,
+        json    => $href_of_json_submitted
+    }
+
+json for a get many looks like
+{
+    match: {
+        '$or' : [
+            {
+                col1: { '$in': [ val1, val2, ... ] },
+                col2: "foobar"
+            },
+            {
+                col3: "boombaz"
+            }
+        ]
+    },
+    sort: { 
+        updated => -1,
+    }
+    limit: 10,
+    offset: 200
+}
+
 
 =cut 
 
@@ -1194,49 +1244,40 @@ sub get_request_params  {
     my $env     = $self->env;
     my $log     = $env->log;
 
-    my $req     = $self->req->params->to_hash;
+    my $params  = $self->req->params->to_hash;
     my $json    = $self->req->json;
 
-    my $input_href;
+    $log->trace("params => ", { filter => \&Dumper, value => $params });
+    $log->trace("json   => ", { filter => \&Dumper, value => $json });
 
-    if ( defined $req ) {
-        foreach my $key ( keys %$req ) {
-            my $value   = $req->{$key};
-            my $lckey   = lc($key);
-            if ( $key eq "id" or $key eq "offset" or $key eq "limit") {
-                $input_href->{$lckey}    = $value + 0;
-                next;
+    if ( $params ) {
+        $log->trace("Checking Params for JSON values");
+        foreach my $key (keys %{$params}) {
+            $log->trace("param ". Dumper($key) ." = ", {filter=>\&Dumper, value => $params->{$key}});
+            my $parsedjson;
+            eval {
+                $parsedjson = decode_json($params->{$key});
+            };
+            if ($@) {
+                $log->debug("no json detected, keeping data...");
+                $parsedjson = $params->{$key}; # not really json!
             }
-            if ( $key =~ /sorts\[/ ) {
-                # need to put check in for +- before field name
-                (my $column = $key) =~ s/sorts\[(.*)\]/$1/;
-                push @{$input_href->{sorts}}, { $column => $value };
-                next;
-            }
-            if ( $key eq "fields" ) {
-                $input_href->{$lckey} = $value;
-                next;
-            }
-            $input_href->{$lckey} = $self->disambiguate($value);
+            $params->{$key} = $parsedjson;
         }
     }
 
-    # implicit trumping of json input over parameter data
-    if ( defined $json ) {
-        foreach my $key ( keys %$json ) {
-            my $lckey   = lc($key);
-            $input_href->{$lckey} = $json->{$key};
-        }
-    }
-
-    my $data = {
+    my %request = (
         collection  => $self->stash('thing'),
         id          => $self->stash('id'),
         subthing    => $self->stash('subthing'),
-        params      => $input_href,
-    };
-    $log->debug("Input: ", { filter => \&Dumper, value => $data });
-    return $data;
+        user        => $self->session('user'),
+        request     => {
+            params  => $params,
+            json    => $json,
+        },
+    );
+
+    return wantarray ? %request : \%request;
 }
 
 sub thread_entries {
@@ -1244,6 +1285,8 @@ sub thread_entries {
     my $cursor  = shift;
     my $env     = $self->env;
     my $log     = $env->log;
+
+    $log->debug("Threading ". $cursor->count . " entries...");
 
     my @threaded    = ();
     my %where       = ();
@@ -1519,7 +1562,33 @@ sub mypack {
         return $thing;
     }
 }
+
+sub is_epoch_column {
+    my $self    = shift;
+    my $col     = shift;
+    my $env     = $self->env;
+    my $log     = $self->env->log;
+
+    my $count   = grep { /$col/ } $env->get_epoch_cols;
+
+    if ( $count and $count > 0 ) {
+        return 1;
+    }
+    return undef;
+}
+
+sub is_int_column {
+    my $self    = shift;
+    my $col     = shift;
+    my $env     = $self->env;
     
+    my $count   = grep { /$col/ } $env->get_int_cols;
+
+    if ( $count and $count > 0 ) {
+        return 1;
+    }
+    return undef;
+}
 
 
 1;

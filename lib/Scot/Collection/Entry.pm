@@ -1,24 +1,31 @@
 package Scot::Collection::Entry;
+
 use lib '../../../lib';
 use Moose 2;
+use Data::Dumper;
+
 extends 'Scot::Collection';
+
 with    qw(
     Scot::Role::GetTargeted
     Scot::Role::GetByAttr
     Scot::Role::GetTagged
 );
 
-sub create_from_handler {
+sub create_from_api {
     my $self    = shift;
-    my $handler = shift;
-    my $env     = $handler->env;
+    my $request = shift;
+
+    my $env     = $self->env;
     my $log     = $env->log;
+    my $mongo   = $env->mongo;
 
     $log->trace("Custom create in Scot::Collection::Entry");
 
-    my $build_href  = $handler->get_request_params->{params};
-    my $target_type = $build_href->{target_type};
-    my $target_id   = $build_href->{target_id};
+    my $json    = $request->{request}->{json};
+
+    my $target_type = $json->{target_type};
+    my $target_id   = $json->{target_id};
 
     unless ( defined $target_type ) {
         $log->error("Error: Must provide a target type");
@@ -34,27 +41,29 @@ sub create_from_handler {
         };
     }
 
-    my $entry_collection    = $handler->env->mongo->collection("Entry");
-    my $entity_collection   = $handler->env->mongo->collection("Entity");
+    $json->{targets}    = [ {
+        target_id   => $target_id,
+        target_type => $target_type,
+    } ];
 
-    $build_href->{task} = $self->validate_task($handler, $build_href->{task});
+    delete $json->{target_id};
+    delete $json->{target_type};
 
-    unless ( $build_href->{readgroups} ) {
-        $build_href->{readgroups} = $env->default_groups->{readgroups};
+    my $entry_collection    = $mongo->collection("Entry");
+    my $entity_collection   = $mongo->collection("Entity");
+
+    $request->{task} = $self->validate_task($request);
+
+    unless ( $request->{readgroups} ) {
+        $json->{readgroups} = $env->default_groups->{read};
     }
-    unless ( $build_href->{modifygroups} ) {
-        $build_href->{modifygroups} = $env->default_groups->{modifygroups};
+    unless ( $request->{modifygroups} ) {
+        $json->{modifygroups} = $env->default_groups->{modify};
     }
 
-    my $entitydb = $env->entity_extractor->process_entry($build_href);
+    $log->debug("Creating entry with: ", { filter=>\&Dumper, value => $json});
 
-    $build_href->{body_flaired}     = $entitydb->{flair};
-    $build_href->{body_plaintext}   = $entitydb->{text};
-    my $ent_aref                    = $entitydb->{entities};
-
-    my $entry_obj   = $entry_collection->create($build_href);
-
-    $entity_collection->update_entities_from_entry($entry_obj, $ent_aref);
+    my $entry_obj   = $entry_collection->create($json);
 
     return $entry_obj;
 
@@ -75,10 +84,10 @@ sub create_via_alert_promotion {
 
 sub validate_task {
     my $self    = shift;
-    my $handler = shift;
     my $href    = shift;
+    my $json    = $href->{request}->{json};
 
-    unless ( defined $href ) {
+    unless ( defined $json->{task} ) {
         # if task isn't set that is ok and valid
         return {};
     }
@@ -86,14 +95,14 @@ sub validate_task {
     # however, if it is set, we need to make sure it has 
     # { when => x, who => user, status => y }
 
-    unless ( defined $href->{when} ) {
-        $href->{when} = $handler->env->now();
+    unless ( defined $json->{task}->{when} ) {
+        $href->{when} = $self->env->now();
     }
 
-    unless ( defined $href->{who} ) {
-        $href->{who}    = $handler->session('user');
+    unless ( defined $json->{task}->{who} ) {
+        $href->{who}    = $href->{user};
     }
-    unless ( defined $href->{status} ) {
+    unless ( defined $json->{task}->{status} ) {
         $href->{status} = "open";
     }
     return $href;

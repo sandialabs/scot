@@ -86,8 +86,8 @@ has data_with_flair => (
 =item B<columns>
 
 the columns parsed from the data
+not sure this is needed in scot like it was in vast
 
-=cut
 
 has columns     => (
     is          => 'ro',
@@ -96,6 +96,8 @@ has columns     => (
     required    => 1,
     default     => sub {[]},
 );
+
+=cut
 
 
 =item B<events>

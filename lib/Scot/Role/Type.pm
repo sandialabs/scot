@@ -8,7 +8,7 @@ The string representation of a "type" attribute
 
 =cut
 
-has status => (
+has type => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,

@@ -22,7 +22,7 @@ Custom collection operations for Alertgroups
 
 =over 4
 
-=item B<create_from_api($handler_ref)>
+=item B<create_from_api($request_href)>
 
 Create an alertgroup and sub alerts from a POST to the handler
 
@@ -30,31 +30,42 @@ Create an alertgroup and sub alerts from a POST to the handler
 
 sub create_from_api {
     my $self    = shift;
-    my $handler = shift;
+    my $href    = shift;
     my $env     = $self->env;
     my $mongo   = $env->mongo;
-    my $log     = $handler->env->log;
+    my $log     = $env->log;
 
     $log->trace("Create Alertgroup");
 
-    my $build_href  = $handler->get_request_params->{params};
-    my $alert_data  = $build_href->{data};
-    delete $build_href->{data};
-    my $tag_aref    = $build_href->{tags};
-    delete $build_href->{tags};
+    # alertgroup creation will receive the following in the json portion of the request
+    # request => {
+    #    message_id  => '213123',
+    #    subject     => 'subject',
+    #    data       => [ { ... href structure ...      }, { ... } ... ],
+    #    tags       => [],
+    #    sources    => [],
+    # }
 
-    my $alertgroup  = $self->create($build_href);
+    my $request = $href->{request}->{json};
+
+    my $data    = $request->{data};
+    delete $request->{data};
+
+    my $tags    = $request->{tags};
+    delete $request->{tags};
+
+    my $alertgroup  = $self->create($request);
 
     unless ( defined $alertgroup ) {
         $log->error("Failed to create Alertgroup with data ",
-                    { filter => \&Dumper, value => $build_href});
+                    { filter => \&Dumper, value => $request});
         return undef;
     }
 
     my $id          = $alertgroup->id;
 
-    if ( scalar(@$tag_aref) > 0 ) {
-        foreach my $tag (@$tag_aref) {
+    if ( defined $tags && scalar(@$tags) > 0 ) {
+        foreach my $tag (@$tags) {
             my $tag = $mongo->collection('Tag')->add_tag_to("alertgroup",$id, $tag);
         }
     }
@@ -65,14 +76,16 @@ sub create_from_api {
     my $open_count      = 0;
     my $closed_count    = 0;
     my $promoted_count  = 0;
+    my %columns         = ();
             
-    foreach my $alert_href (@$alert_data) {
+    foreach my $alert_href (@$data) {
+
         my $chref   = {
             data        => $alert_href,
             alertgroup  => $id,
             status      => 'open',
-            columns     => $build_href->{columns},
         };
+
         my $alert = $mongo->collection("Alert")->create($chref);
 
         unless ( defined $alert ) {
@@ -81,7 +94,9 @@ sub create_from_api {
             next;
         }
 
-        $env->amq->send_amq_notification("creation", $alert);
+        # not sure we need a notification for every alert, maybe just alertgroup
+        # alert triage may want this at some point though
+        # $env->amq->send_amq_notification("creation", $alert);
 
         $alert_count++;
         $open_count++       if ( $alert->status eq "open" );
