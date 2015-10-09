@@ -13,6 +13,7 @@ my $harness = TAP::Harness->new(\%args);
    $harness->runtests(
         './env.t',
         './alertgroup.t',
+        './checklist.t',
 #        './alert.t',
         './event.t',
         './entry.t',
@@ -20,7 +21,7 @@ my $harness = TAP::Harness->new(\%args);
         './incident.t',
 #        './task.t',
 #        './flair.t',
-#        './guide.t',
+        './guide.t',
 #        './entity.t',
 #        './promote.t',
     );

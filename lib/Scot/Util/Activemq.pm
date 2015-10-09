@@ -148,7 +148,14 @@ sub send_amq_notification {
     my $self    = shift;
     my $type    = shift; # creation, update, delete
     my $obj     = shift;
-    my $user    = $obj->owner;
+    my $user;
+    if ($obj->meta->does_role("Scot::Role::Permission") || 
+        $obj->meta->does_role("Scot::Role::Owner")) {
+       $user = $obj->owner;
+    }
+    else {
+        $user = '';
+    }
     my $thing   = $obj->get_collection_name;
 
     my $href    = {

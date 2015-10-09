@@ -25,28 +25,45 @@ Create an event and from a POST to the handler
 =cut
 
 
-sub create_from_handler {
+sub create_from_api {
     my $self    = shift;
-    my $handler = shift;
-    my $log     = $handler->env->log;
-    my $env     = $handler->env;
+    my $request = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
 
     $log->trace("Custom create in Scot::Collection::Guide");
 
-    my $build_href  = $handler->get_build_href;
+    my $json    = $request->{request}->{json};
+    my $user    = $request->{user};
 
-    $build_href->{owner}        = $handler->session('user');
-    unless ( $build_href->{readgroups} ) {
-        $build_href->{readgroups}   = $env->default_groups->{readgroups};
+    my @entries = @{$json->{entry}};
+    delete $json->{entry};
+
+    unless ( $json->{group}->{read} ) {
+        $json->{group}->{read}   = $env->default_groups->{read};
     }
-    unless ( $build_href->{modifygroups} ) {
-        $build_href->{modifygroups} = $env->default_groups->{modifygroups};
+    unless ( $json->{group}->{modify} ) {
+        $json->{group}->{modify} = $env->default_groups->{modify};
     }
 
-    my $guide   = $self->create($build_href);
+    my $guide   = $self->create($json);
+
+    if ( scalar(@entries) > 0 ) {
+        my $mongo   = $env->mongo;
+        my $ecoll   = $mongo->collection('Entry');
+        foreach my $entry ( @entries ) {
+            $entry->{targets}   = [ 
+                {
+                    target_id   => $guide->id,
+                    target_type => "guide",
+                }
+            ];
+            $entry->{owner} = $entry->{owner} // $request->{user};
+            my $obj = $ecoll->create($entry);
+        }
+    }
 
     return $guide;
-
 }
 
 

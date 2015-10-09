@@ -55,10 +55,10 @@ sub create_from_api {
     $request->{task} = $self->validate_task($request);
 
     unless ( $request->{readgroups} ) {
-        $json->{readgroups} = $env->default_groups->{read};
+        $json->{groups}->{read} = $env->default_groups->{read};
     }
     unless ( $request->{modifygroups} ) {
-        $json->{modifygroups} = $env->default_groups->{modify};
+        $json->{groups}->{modify} = $env->default_groups->{modify};
     }
 
     $log->debug("Creating entry with: ", { filter=>\&Dumper, value => $json});
