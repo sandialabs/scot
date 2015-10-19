@@ -566,6 +566,24 @@ sub update {
                 return;
             }
         }
+
+        my $unpromote = $self->get_unpromote($req_href);
+
+        if ( $unpromote ) {
+
+            if ( $self->unpromote_thing($req_href, $object, $unpromote) ) {
+                $self->do_render({
+                    id      => $object->id,
+                    status  => "successfully unpromoted",
+                });
+                return;
+            }
+            else {
+                $log->error("Failed Unpromotion");
+                $self->do_error(444, { error_msg => "Unpromotion failure" } );
+                return;
+            }
+        }
     }
 
     my %update = $self->build_update_doc($req_href);
@@ -638,151 +656,17 @@ sub get_promotion_id {
     return undef;
 }
 
-sub unpromote_thing {
+sub get_unpromote {
     my $self    = shift;
     my $req     = shift;
-    my $object  = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
 
-    my $colname = lcfirst((split(/::/, ref($object)))[-1]);
-
-    $log->trace("Unpromoting $colname ".$object->id);
-
-    # object is the thing that was promoted, but now needs to be unpromoted
-    my $data        = $req->{request};
-    my $promoted_to = $data->{params}->{promoted_to} // $data->{json}->{promoted_to};
-
-    if ( ref($promoted_to) eq "HASH" ) {
-        if ( $promoted_to->{type} and $promoted_to->{id} ) {
-            $log->debug("Unpromoting a specific link", { filter=>\&Dumper, value=>$promoted_to});
-        }
-        else {
-            $log->warn("No promotion target, will delete all promotions");
-            undef $promoted_to;
-        }
+    if ( $req->{request}->{params}->{unpromote} ) {
+        return $req->{params}->{unpromote};
     }
-    else {
-        undef $promoted_to;
+    if ( $req->{request}->{json}->{unpromote} ) {
+        return $req->{request}->{json}->{unpromote};
     }
-
-
-    if ($colname eq "alert") {
-        
-        my $mongocmd    = {};
-        # remove the "to" 
-
-        my $calcstatus  = $object->status;
-        if ( $object->promoted_count == 1 ) {
-            $calcstatus = "open";
-        }
-        my $to  = $object->promotions->{to};
-
-        if ( $promoted_to ) {
-            $mongocmd   = {
-                '$pull' => {'promotions.to'  => $promoted_to},
-                '$set'  => { 
-                    updated    => $env->now,
-                    status     => $calcstatus,
-                },
-                '$inc'  => {
-                    promoted_count => -1,
-                    open_count     => 1,
-                }
-            };
-        } 
-        else {
-            $mongocmd   = { 
-                '$set'  => { 
-                    'promotions.to' => [],
-                    updated         => $env->now(),
-                    promoted_count  => 0,
-                },
-                '$inc'  => {
-                    open_count  => $object->promoted_count,
-                },
-            };
-        }
-        if ($object->update($mongocmd)) {
-            $log->debug("update promotions.to field");
-        }
-        else {
-            $log->error("Failed to update promotions.to!");
-        }
-
-        # remove the "from" from the referenced object
-        my $type        = $promoted_to->{type} // "event";
-        my $pcolname    = ucfirst($type);
-        my $pcol    = $mongo->collection($pcolname);
-        my $cmd     = {
-            '$pull' => { 'promotions.from' => { type => $colname, id => $object->id }}
-        };
-
-        if ( $promoted_to ) {
-            my $pobj    = $pcol->find_iid($promoted_to->{id});
-            if ( $pobj->update($cmd) ) {
-                $log->debug("Removed promotion from promtions.from");
-            }
-            else {
-                $log->warn("Unable to update promoted object and remove promotions.from");
-            }
-        }
-        else {
-            foreach my $id (@$to) {
-                my $pobj    = $pcol->find_iid($id);
-                if ( $pobj->update($cmd) ) {
-                    $log->debug("Removed promotion from promtions.from");
-                }
-                else {
-                    $log->warn("Unable to update promoted object and remove promotions.from");
-                }
-            }
-        }
-    }
-
-    if ($colname eq "event") {
-        my $mongocmd    = {
-            '$pull' => { 'promotions.to' => $promoted_to },
-            '$set'  => { 
-                updated => $env->now,
-                status  => "open",
-            }
-        };
-        my $to          = $object->promotions->{from};
-
-        my $type        = $promoted_to->{type} // "incident";
-        my $pcolname    = ucfirst($type);
-        my $pcol        = $mongo->collection($pcolname);
-        my $pobj       = $pcol->find_iid($object->id);
-
-        if ($object->update($mongocmd)) {
-            $log->debug("Unpromoted $colname");
-        }
-        else {
-            $log->warn("Failed to unpromote $colname");
-        }
-
-        my $cmd = {
-            '$pull' => { 
-                'promotions.from'  => {
-                    type    => $colname, 
-                    id => $object->id 
-                }
-            },
-            '$set'  => {
-                updated => $env->now,
-                status  => 'open',
-            },
-        };
-
-        if ($pobj->update($cmd)) {
-            $log->debug("Unpromotee $pcolname");
-        }
-        else {
-            $log->warn("Failed to unpromote $pcolname");
-        }
-    }
+    return undef;
 }
 
 
@@ -1869,5 +1753,144 @@ sub is_int_column {
     return undef;
 }
 
+sub unpromote_thing {
+    my $self    = shift;
+    my $req     = shift;
+    my $object  = shift;
+    my $pid     = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+
+    my $colname = lcfirst((split(/::/, ref($object)))[-1]);
+
+    $log->trace("Unpromoting $colname ".$object->id);
+
+    # object is the thing that was promoted, but now needs to be unpromoted
+
+    if ($colname eq "alert") {
+        
+        my $mongocmd    = {};
+        # remove the "to" 
+
+        my $calcstatus  = $object->status;
+        if ( $object->promoted_count == 1 ) {
+            $calcstatus = "open";
+        }
+        my $to  = $object->promotions->{to};
+
+        if ( $pid =~ /^\d+$/ ) {
+            $mongocmd   = {
+                '$pull' => {
+                    'promotions.to'  => { 
+                        type => "event", 
+                        id => $pid 
+                    }
+                },
+                '$set'  => { 
+                    updated    => $env->now,
+                    status     => $calcstatus,
+                },
+                '$inc'  => {
+                    promoted_count => -1,
+                    open_count     => 1,
+                }
+            };
+        } 
+        else {
+            $mongocmd   = { 
+                '$set'  => { 
+                    'promotions.to' => [],
+                    updated         => $env->now(),
+                    promoted_count  => 0,
+                },
+                '$inc'  => {
+                    open_count  => $object->promoted_count,
+                },
+            };
+        }
+        if ($object->update($mongocmd)) {
+            $log->debug("update promotions.to field");
+        }
+        else {
+            $log->error("Failed to update promotions.to!");
+        }
+
+        # remove the "from" from the referenced object
+        my $type        = "event";
+        my $pcolname    = ucfirst($type);
+        my $pcol    = $mongo->collection($pcolname);
+        my $cmd     = {
+            '$pull' => { 'promotions.from' => { type => $colname, id => $object->id }}
+        };
+
+        if ( $pid =~ /^\d+$/ ) {
+            my $pobj    = $pcol->find_iid($pid);
+            if ( $pobj->update($cmd) ) {
+                $log->debug("Removed promotion from promtions.from");
+            }
+            else {
+                $log->warn("Unable to update promoted object and remove promotions.from");
+            }
+        }
+        else {
+            # unpromote all!
+            foreach my $id (@$to) {
+                my $pobj    = $pcol->find_iid($id);
+                if ( $pobj->update($cmd) ) {
+                    $log->debug("Removed promotion from promtions.from");
+                }
+                else {
+                    $log->warn("Unable to update promoted object and remove promotions.from");
+                }
+            }
+        }
+    }
+
+    if ($colname eq "event") {
+        my $mongocmd    = {
+            '$pull' => { 'promotions.to' => {
+                type    => "incident", id => $pid }
+            },
+            '$set'  => { 
+                updated => $env->now,
+                status  => "open",
+            }
+        };
+        my $to          = $object->promotions->{from};
+
+        my $type        = "incident";
+        my $pcolname    = ucfirst($type);
+        my $pcol        = $mongo->collection($pcolname);
+        my $pobj       = $pcol->find_iid($pid);
+
+        if ($object->update($mongocmd)) {
+            $log->debug("Unpromoted $colname");
+        }
+        else {
+            $log->warn("Failed to unpromote $colname");
+        }
+
+        my $cmd = {
+            '$pull' => { 
+                'promotions.from'  => {
+                    type    => $colname, 
+                    id => $object->id 
+                }
+            },
+            '$set'  => {
+                updated => $env->now,
+                status  => 'open',
+            },
+        };
+
+        if ($pobj->update($cmd)) {
+            $log->debug("Unpromotee $pcolname");
+        }
+        else {
+            $log->warn("Failed to unpromote $pcolname");
+        }
+    }
+}
 
 1;
