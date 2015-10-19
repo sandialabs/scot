@@ -25,6 +25,7 @@ with    qw(
     Scot::Role::Events
     Scot::Role::Hashable
     Scot::Role::Permission
+    Scot::Role::Promotable
     Scot::Role::Subject
     Scot::Role::Tags
     Scot::Role::Type
@@ -37,10 +38,10 @@ enum 'valid_status', [ qw(open closed) ];
 
 =over 4
 
-=item B<events>
+=item B<promotable>
 
-array of events that generated this incident
-frm Scot::Role::Events
+events that generated this incident
+frm Scot::Role::Promotable
 
 =cut
 

@@ -18,30 +18,48 @@ Custom collection operations for Files
 
 =over 4
 
-=item B<create_from_handler($handler_ref)>
+=item B<create_from_api($request)>
 
-Create an event and from a POST to the handler
+Create an handler and from a POST to the handler
 
 =cut
 
 
-sub create_from_handler {
+sub create_from_api {
     my $self    = shift;
-    my $handler = shift;
-    my $log     = $handler->env->log;
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
 
     $log->trace("Custom create in Scot::Collection::Handler");
 
-    my $build_href  = $handler->get_build_href;
+    my $json    = $href->{request}->{json};
+    my $params  = $href->{request}->{params};
 
-    if ( defined $build_href->{from_alerts} ) {
-        return $self->build_from_alerts($handler, $build_href);
-    }
+    my $build_href  = $json // $params;
 
-    my $event   = $self->create($build_href);
+    my $handler   = $self->create($build_href);
 
-    return $event;
-
+    return $handler;
 }
+
+sub get_handler {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $when    = shift // $env->now();
+    
+    $when = $env->now() if ($when == 1);
+
+    my $match   = {
+        start   => { '$lte' => $when },
+        end     => { '$gte' => $when },
+    };
+
+    my $handler = $self->find_one($match);
+
+    return $handler;
+}
+
 
 1;

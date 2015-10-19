@@ -17,10 +17,9 @@ The model of an individual event
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
-    Scot::Role::Alerts
     Scot::Role::Hashable
-    Scot::Role::Incidents
     Scot::Role::Permission
+    Scot::Role::Promotable
     Scot::Role::Status
     Scot::Role::Subject
     Scot::Role::Tags
@@ -46,20 +45,12 @@ the status of the event, from Scot::Role::Status
 
 =cut
 
-=item B<alerts>
+=item B<promotable>
 
-the integer id of the alerts that started this event
-from Scot::Role::Alerts
-
-=cut
-
-
-=item B<incidents>
-
-the incident(s) that this event was promoted to
-from Scot::Role::Incidents
+Tracks promotion, see Scot::Role::Promotable
 
 =cut
+
 
 __PACKAGE__->meta->make_immutable;
 1;

@@ -168,6 +168,7 @@ sub get_many {
 
     my $col_name    = $req_href->{collection};
 
+
     my $collection;
     my $match_ref;
 
@@ -183,6 +184,29 @@ sub get_many {
     unless (defined $collection) {
         $self->do_error(400, {
             error_msg => "No collection matching $col_name" });
+        return;
+    }
+
+    if ( $col_name eq "handler"  and defined $req_href->{request}->{params}->{current}) {
+        my $handler_obj = $collection->get_handler($req_href->{request}->{params}->{current});
+        if ( $handler_obj ) {
+            my $hash    = $handler_obj->as_hash;
+            $self->do_render({
+                records             => $hash,
+                queryRecordCount    => 1,
+                totalRecordCount    => 1,
+            });
+        }
+        else {
+            $self->do_render({
+                records         => {
+                    username    => 'unassigned',
+                },
+                queryRecordCount    => 1,
+                totalRecordCount    => 1,
+            });
+        }
+        $self->audit("get_current_handler", $req_href);
         return;
     }
 
@@ -516,6 +540,34 @@ sub update {
         $self->do_task_checks($req_href);
     }
 
+    if ( $object->meta->does_role("Scot::Role::Promotable") ) {
+        # check for a promotion
+        # promote => 'new'  === create new next object up heirarchy
+        # promote => int    === add thing to existing object
+
+
+        my $promote_id  = $self->get_promotion_id($req_href);
+
+        if ( defined $promote_id ) {
+            $log->trace("Promotion Detected");
+            # create the promotion object
+            if (my $pid = $self->promote_thing($req_href, $promote_id, $col_name, $object)) {
+                $log->debug("Promoted $col_name");
+                $self->do_render({
+                    id      => $object->id,
+                    status  => "successfully promoted",
+                    pid     => $pid,
+                });
+                return;
+            }
+            else {
+                $log->error("Failed Promotion!");
+                $self->do_error(444, { error_msg => "Promotion Failed" });
+                return;
+            }
+        }
+    }
+
     my %update = $self->build_update_doc($req_href);
 
     $log->trace("Updating " . ref($object) . " id = ".$object->id . " with ",
@@ -573,15 +625,384 @@ sub build_update_doc {
     return wantarray ? %update : \%update;
 }
 
+sub get_promotion_id {
+    my $self    = shift;
+    my $req     = shift;
+    
+    if ( $req->{request}->{params}->{promote} ) {
+        return $req->{request}->{params}->{promote};
+    }
+    if ( $req->{request}->{json}->{promote} ) {
+        return $req->{request}->{json}->{promote};
+    }
+    return undef;
+}
+
+sub unpromote_thing {
+    my $self    = shift;
+    my $req     = shift;
+    my $object  = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+
+    my $colname = lcfirst((split(/::/, ref($object)))[-1]);
+
+    $log->trace("Unpromoting $colname ".$object->id);
+
+    # object is the thing that was promoted, but now needs to be unpromoted
+    my $data        = $req->{request};
+    my $promoted_to = $data->{params}->{promoted_to} // $data->{json}->{promoted_to};
+
+    if ( ref($promoted_to) eq "HASH" ) {
+        if ( $promoted_to->{type} and $promoted_to->{id} ) {
+            $log->debug("Unpromoting a specific link", { filter=>\&Dumper, value=>$promoted_to});
+        }
+        else {
+            $log->warn("No promotion target, will delete all promotions");
+            undef $promoted_to;
+        }
+    }
+    else {
+        undef $promoted_to;
+    }
+
+
+    if ($colname eq "alert") {
+        
+        my $mongocmd    = {};
+        # remove the "to" 
+
+        my $calcstatus  = $object->status;
+        if ( $object->promoted_count == 1 ) {
+            $calcstatus = "open";
+        }
+        my $to  = $object->promotions->{to};
+
+        if ( $promoted_to ) {
+            $mongocmd   = {
+                '$pull' => {'promotions.to'  => $promoted_to},
+                '$set'  => { 
+                    updated    => $env->now,
+                    status     => $calcstatus,
+                },
+                '$inc'  => {
+                    promoted_count => -1,
+                    open_count     => 1,
+                }
+            };
+        } 
+        else {
+            $mongocmd   = { 
+                '$set'  => { 
+                    'promotions.to' => [],
+                    updated         => $env->now(),
+                    promoted_count  => 0,
+                },
+                '$inc'  => {
+                    open_count  => $object->promoted_count,
+                },
+            };
+        }
+        if ($object->update($mongocmd)) {
+            $log->debug("update promotions.to field");
+        }
+        else {
+            $log->error("Failed to update promotions.to!");
+        }
+
+        # remove the "from" from the referenced object
+        my $type        = $promoted_to->{type} // "event";
+        my $pcolname    = ucfirst($type);
+        my $pcol    = $mongo->collection($pcolname);
+        my $cmd     = {
+            '$pull' => { 'promotions.from' => { type => $colname, id => $object->id }}
+        };
+
+        if ( $promoted_to ) {
+            my $pobj    = $pcol->find_iid($promoted_to->{id});
+            if ( $pobj->update($cmd) ) {
+                $log->debug("Removed promotion from promtions.from");
+            }
+            else {
+                $log->warn("Unable to update promoted object and remove promotions.from");
+            }
+        }
+        else {
+            foreach my $id (@$to) {
+                my $pobj    = $pcol->find_iid($id);
+                if ( $pobj->update($cmd) ) {
+                    $log->debug("Removed promotion from promtions.from");
+                }
+                else {
+                    $log->warn("Unable to update promoted object and remove promotions.from");
+                }
+            }
+        }
+    }
+
+    if ($colname eq "event") {
+        my $mongocmd    = {
+            '$pull' => { 'promotions.to' => $promoted_to },
+            '$set'  => { 
+                updated => $env->now,
+                status  => "open",
+            }
+        };
+        my $to          = $object->promotions->{from};
+
+        my $type        = $promoted_to->{type} // "incident";
+        my $pcolname    = ucfirst($type);
+        my $pcol        = $mongo->collection($pcolname);
+        my $pobj       = $pcol->find_iid($object->id);
+
+        if ($object->update($mongocmd)) {
+            $log->debug("Unpromoted $colname");
+        }
+        else {
+            $log->warn("Failed to unpromote $colname");
+        }
+
+        my $cmd = {
+            '$pull' => { 
+                'promotions.from'  => {
+                    type    => $colname, 
+                    id => $object->id 
+                }
+            },
+            '$set'  => {
+                updated => $env->now,
+                status  => 'open',
+            },
+        };
+
+        if ($pobj->update($cmd)) {
+            $log->debug("Unpromotee $pcolname");
+        }
+        else {
+            $log->warn("Failed to unpromote $pcolname");
+        }
+    }
+}
+
+
+sub promote_thing {
+    my $self    = shift;
+    my $req     = shift;
+    my $pid     = shift;
+    my $colname = shift;
+    my $object  = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $href;
+    my $data    = $req->{request};
+    my $user    = $self->session('user');
+
+    $log->trace("Attempting promotion...");
+
+    my $promotion_collection = $self->get_promotion_collection($colname);
+
+    unless ( $promotion_collection ) {
+        $log->error("$colname is not promotable or already at max promotion");
+        return undef;
+    }
+
+    my $pobj;
+    my $pcol    = $mongo->collection(ucfirst($promotion_collection)); 
+    my $newhref = {};
+    my $subject = $data->{params}->{subject} // $data->{json}->{subject};
+
+    if ( $pid =~ /\d+/ ) {
+
+        $log->trace("Promoting to existing $promotion_collection");
+
+        my $pobj    = $pcol->find_iid($pid);
+        unless ($pobj) {
+            $log->error("Can not promote to non existant id: $pid for $promotion_collection");
+            return undef;
+        }
+        $pobj->update({
+            '$set'  => {
+                updated     => $env->now,
+            },
+            '$addToSet' => { 
+                'promotions.from'  => { type => $colname, id => $object->id }
+            },
+        });
+        unless ($object->update({
+                '$set'  => {
+                    updated     => $env->now,
+                    status      => 'promoted',
+                },
+                '$addToSet' => {
+                    'promotions.to' => { type => $promotion_collection, id => $pobj->id }
+                },
+            }) ) {
+            $log->warn("failed to update $colname object with promotion status");
+        }
+        else {
+            $env->amq->send_amq_notification("update", $object, $user);
+            if ( $promotion_collection eq "event" ) {
+                $mongo->collection('Alertgroup')->refresh_data($object->alertgroup);
+                my $agobj = $mongo->collection('Alertgroup')->find_iid($object->alertgroup);
+                $env->amq->send_amq_notification("update", $agobj, $user);
+            }
+        }
+        return $pobj->id;
+    }
+
+    # OK, getting hear means we are creating a new promotion object
+
+    if ( $promotion_collection eq "event" ) {
+        # this kind of promotion can have a subject and an initial entry specified
+
+        $log->trace("Promoting to a new event");
+
+        my $agobj = $mongo->collection('Alertgroup')->find_iid($object->alertgroup);
+
+        unless ($subject) {
+            $subject    = $agobj->subject;
+        }
+
+        my $pobj    = $pcol->create({
+            subject => $subject,
+            status  => "open",
+            promotions  => {
+                from    => [ { type => "alert", id => $object->id } ],
+            },
+        });
+
+        unless ( $pobj ) {
+            $log->error("Failed to create $promotion_collection object!");
+            return undef;
+        }
+        $env->amq->send_amq_notification("create", $pobj, $user);
+        
+        my $entrybody = $data->{params}->{entrybody} // 
+                        $data->{json}->{entrybody};
+        my $summary   = $data->{params}->{summary} //
+                        $data->{json}->{summary};
+
+        if ( $entrybody) {
+            # need to create an entry;
+            my $entry   = $mongo->collection("Entry")->create({
+                body        => $entrybody,
+                target_id   => $pobj->id,
+                target_type => $promotion_collection,
+                summary     => $summary ? 1 : 0,
+            });
+
+            unless ($entry) {
+                $log->warn("failed to create the entry with body $entrybody");
+            }
+            else {
+                $env->amq->send_amq_notification("create", $entry, $user);
+            }
+        }
+
+        unless ($object->update({
+            '$set'  => {
+                updated     => $env->now,
+                status      => 'promoted',
+            },
+            '$addToSet' => {
+                'promotions.to' => { type => $promotion_collection, id => $pobj->id }
+            },
+        }) ) {
+            $log->warn("Failed to update $colname object with promotion status");
+        }
+        else {
+            $mongo->collection('Alertgroup')->refresh_data($object->alertgroup);
+            $env->amq->send_amq_notification("update", $object, $user);
+            $env->amq->send_amq_notification("update", $agobj, $user);
+        }
+        return $pobj->id;
+    }
+
+    # must be an event to incident transition
+
+    $log->trace("Promoting to an incident");
+
+    unless ($subject) {
+        $subject    = $object->subject;
+    }
+
+    my $reportable  = $data->{params}->{reportable} //
+                      $data->{json}->{reportable};
+    my $chref   = {
+        reportable  => $reportable ? 1 : 0,
+        subject     => $subject,
+        promotions  => {
+            from    => [ { type => "event", id => $object->id } ],
+            to      => [],
+        },
+    };
+    my $category    = $data->{params}->{category} //
+                      $data->{json}->{category};
+    $chref->{category} = $category if (defined $category);
+
+    my $sensitivity   = $data->{params}->{sensitivity} //
+                      $data->{json}->{sensitivity};
+    $chref->{sensitivity} = $sensitivity if (defined $sensitivity);
+
+    my $occurred    = $data->{params}->{occurred} //
+                      $data->{json}->{occurred};
+    $chref->{occurred} = $occurred if (defined $occurred);
+
+    my $discovered  = $data->{params}->{discovered} //
+                      $data->{json}->{discovered};
+    $chref->{discovered} = $occurred if (defined $discovered);
+
+    my $incident    = $mongo->collection('Incident')->create($chref);
+
+    unless ( $incident ) {
+        $log->error("Failed to create $promotion_collection object!");
+        return undef;
+    }
+    $env->amq->send_amq_notification("create", $incident, $user);
+
+    unless ( $object->update({
+        '$set'  => {
+            updated => $env->now(),
+            status  => "promoted",
+        },
+        '$addToSet' => {
+            'promotions.to'   => { type => $promotion_collection, id => $incident->id }
+        },
+    }) ) {
+        $log->warn("Failed to update $colname object with promotion status!");
+    }
+    $env->amq->send_amq_notification("update", $object, $user);
+    return $incident->id;
+}
+
+sub get_promotion_collection {
+    my $self    = shift;
+    my $name    = shift;
+    
+    if ($name eq "alert") {
+        return "event";
+    }
+    if ($name eq "event") {
+        return "incident";
+    }
+    return undef;
+}
+
 sub do_task_checks {
     my $self        = shift;
     my $req_href    = shift;
     my $user        = $self->session('user');
+    my $env         = $self->env;
+    my $log         = $env->log;
 
     my $key;
     my $status;
-    my $now = $self->env->now();
-    my $params  = $req_href->{params};
+    my $now = $env->now();
+    my $params  = $req_href->{request}->{json} // $req_href->{request}->{params} ;
+
+    $log->debug("Checking For Task Changes: ", { filter =>\&Dumper, value=>$params });
 
     if ( defined $params->{make_task} ) {
         $key = "make_task";
@@ -1355,32 +1776,6 @@ sub autocomplete {
 
 =cut
 
-sub promote {
-    my $self    = shift;
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
-
-    my $req_href    = $self->get_request_params;
-    my $id          = $req_href->{params}->{id};  # array ref
-    my $col_name    = $req_href->{collection};
-
-    my $collection  = $mongo->collection(ucfirst($col_name));
-    my $cursor      = $collection->find({id => {'$in' => $id}});
-
-    if ( $col_name eq "alertgroup" ) {
-        # should be rare, waiting to implement    
-    }
-
-    if ( $col_name eq "alert" ) {
-        # promote an alert to an event
-        $self->promote_alert($cursor);
-    }
-
-    if ( $col_name eq "event" ) {
-        # promote an event to an incident
-        $self->promote_event($cursor);
-    }
-}
 
 sub get_alertgroup_subject {
     my $self    = shift;
@@ -1395,122 +1790,6 @@ sub get_alertgroup_subject {
     return "please create a subject";
 }
 
-sub promote_alert {
-    my $self    = shift;
-    my $cursor  = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
-
-    my $alert   = $cursor->next;
-    my $subject = $self->get_alertgroup_subject($alert);
-
-    my $href    = {
-        subject     => $subject,
-        alerts      => [ $alert->id ],
-        owner       => $self->session('user'),
-        when        => $env->now(),
-        readgroups  => $env->default_groups->{readgroups},
-        modifygroups=> $env->default_groups->{modifygroups},
-    };
-    my $procol  = $mongo->collection('Event');
-    my $event   = $procol->create($href);
-
-    unless ($event) {
-        $log->error("Failed to create EVENT during promotion!");
-        $self->do_error(400, {
-            error_msg => "Failed to create Event during alert promotion!"
-        });
-        return undef;
-    }
-
-    # reversing normal while loop semantics here because this will allow 
-    # the case where the Cursor has only one alert in it.
-    do {
-        my $entryhref   = {
-            target_id       => $event->id,
-            target_type     => "event",
-            updated         => $env->now(),
-            when            => $env->now(),
-            readgroups      => $event->readgroups,
-            modifygroups    => $event->modifygroups,
-            body            => $self->html_alert_data($alert),
-        };
-        my $entrycol    = $mongo->collection('Entry');
-        my $entry       = $entrycol->create($entryhref);
-
-        unless ($entry) {
-            $log->error("Failed to create Event ".$event->id." first entry");
-            $self->do_error(400, {
-                error_msg => "Entry creation failed for promotion of alert ".
-                $alert->id. " to event ". $event->id });
-            return undef;
-        }
-        $event->update_add(alerts => $alert->id);
-    } while ( $alert = $cursor->next );
-
-    $self->do_render({
-        action  => 'promote alert',
-        status  => 'ok',
-        id      => $event->id,
-        thing   => "event",
-    });     
-
-    $self->audit("promote_alert", {
-        thing   => "event",
-        id      => $event->id,
-    });
-}
-
-sub promote_event {
-    my $self    = shift;
-    my $cursor  = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
-
-    my @events  = $cursor->all;
-    my @eids    = map { $_->id } @events;
-    my $event   = $events[0];
-    my $subject = $event->subject;
-
-    my $rg  = defined ($event->readgroups) 
-        ? $event->readgroups 
-        : $env->defaultgroups->{readgroups};
-    my $mg  = defined ($event->modifygroups) 
-        ? $event->modifygroups 
-        : $env->defaultgroups->{modifygroups};
-
-    my $incidenthref    = {
-        owner       => $self->session('user'),
-        readgroups  => $rg,
-        modifygroups=> $mg,
-        events      => \@eids,
-        subject     => $event->subject,
-    };
-
-    my $inc_collection  = $mongo->collection('Incident');
-    my $incident        = $inc_collection->create($incidenthref);
-
-    unless ($incident) {
-        $log->error("Failed to create Incident during promotion!");
-        $self->do_error(400, {
-            error_msg => "Failed to create Incident during Event promotion!"
-        });
-        return undef;
-    }
-
-    $self->do_render({
-        action      => 'promote event',
-        status      => 'ok',
-        id          => $incident->id,
-        thing       => 'incident',
-    });
-    $self->audit("promote_event", {
-        thing   => "incident",
-        id      => $incident->id,
-    });
-}
 
 sub html_alert_data {
     my $self    = shift;

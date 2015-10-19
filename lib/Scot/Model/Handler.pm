@@ -18,6 +18,7 @@ The incident handler that is
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
+    Scot::Role::Hashable
     Scot::Role::Username
 );
 
