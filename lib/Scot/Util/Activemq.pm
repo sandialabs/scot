@@ -156,10 +156,11 @@ sub send_amq_notification {
     else {
         $user = '';
     }
+
     my $thing   = $obj->get_collection_name;
 
     my $href    = {
-        dest    => $thing,
+        dest    => "/topic/". $thing,
         id      => $obj->id,
         type    => $type,
         user    => $user,
@@ -177,7 +178,9 @@ sub subscribe {
     my $id      = shift;
     $self->stomp_handle->subscribe(
         destination     => "/topic/".$dest,
-        id              => $id);
+        id              => $id,
+        ack             => "client",
+    );
 }
 
 sub get_message {

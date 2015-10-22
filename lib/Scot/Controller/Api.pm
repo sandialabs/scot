@@ -540,6 +540,14 @@ sub update {
         $self->do_task_checks($req_href);
     }
 
+    if ( $object->meta->does_role("Scot::Role::Entitiable") ) {
+        my $json    = $req_href->{request}->{json};
+        if ( defined $json->{entities} ) {
+            my $ecol    = $mongo->collection('Entity');
+            $ecol->update_entities_from_entry($object, $json->{entities});
+        }
+    }
+
     if ( $object->meta->does_role("Scot::Role::Promotable") ) {
         # check for a promotion
         # promote => 'new'  === create new next object up heirarchy

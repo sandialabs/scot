@@ -28,6 +28,11 @@ $stomp->subscribe(
     id          => "alert_queue",
     ack         => "client",
 );
+$stomp->subscribe(
+    destination => "/topic/entry", 
+    id          => "entry_queue",
+    ack         => "client",
+);
 
 $stomp->wait_for_frames(callback => sub {
     my $self    = shift;

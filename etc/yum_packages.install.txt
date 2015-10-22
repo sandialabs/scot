@@ -1,0 +1,13 @@
+httpd
+dialog
+mongodb-org
+redis
+GeoIP
+perl-Geo-IP
+perl-Curses
+java-1.7.0-openjdk
+krb5-libs
+krb5-devel
+mod_ssl
+openssl
+redhat-lsb

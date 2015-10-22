@@ -12,7 +12,7 @@ has parsed => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
-    default     => 1,
+    default     => 0,
 );
 
 1;

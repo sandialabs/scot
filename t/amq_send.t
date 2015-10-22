@@ -5,6 +5,7 @@ use lib '../../lib';
 
 #use Test::More;
 use Data::Dumper;
+use JSON;
 use Net::STOMP::Client;
 
 $ENV{'scot_mode'} = "testing";
@@ -15,16 +16,18 @@ my $stomp = Net::STOMP::Client->new(
 );
 $stomp->connect();
 
-for (my $i = 1; $i < 10; $i++) {
+
+    my $href    = {
+            id          => 192,
+            type        => "alert",
+            user        => "foobar",
+        };
+
+    my $json    = encode_json $href;
 
     $stomp->send(
         destination => "/topic/alert",
-        body        => "Message # $i",
+        body        => $json,
     );
 
-}
-$stomp->send(
-    destination => "/topic/alert",
-    body        => "quit",
-);
 $stomp->disconnect();
