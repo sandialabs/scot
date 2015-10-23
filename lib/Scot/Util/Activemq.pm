@@ -128,13 +128,13 @@ sub send {
     my $json    = encode_json($href);
     my $amq     = $self->stomp_handle;
 
-    $log->trace("Sending AMQ message to /topic/$dest");
+    $log->trace("Sending AMQ message to $dest");
     $log->trace(Dumper($json));
 
 
     eval {
         $amq->send(
-            destination     => "/topic/".$dest,
+            destination     => $dest,
             body            => $json,
             'amq-msg-type'  => "text",
         );
@@ -162,7 +162,8 @@ sub send_amq_notification {
     my $href    = {
         dest    => "/topic/". $thing,
         id      => $obj->id,
-        type    => $type,
+        type    => $thing,
+        action  => $type,
         user    => $user,
     };
 

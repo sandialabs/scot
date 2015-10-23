@@ -34,6 +34,7 @@ sub create_from_api {
     my $env     = $self->env;
     my $mongo   = $env->mongo;
     my $log     = $env->log;
+    my $amq     = $env->amq;
 
     $log->trace("Create Alertgroup");
 
@@ -93,6 +94,8 @@ sub create_from_api {
                          { filter => \&Dumper, value => $chref });
             next;
         }
+
+        $amq->send_amq_notification("creation", $alert);
 
         # not sure we need a notification for every alert, maybe just alertgroup
         # alert triage may want this at some point though

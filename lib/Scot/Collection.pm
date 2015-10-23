@@ -123,6 +123,7 @@ sub get_subthing {
     my $cursor;
 
     $log->trace("GET SUBTHING /$thing/$id/$subthing");
+    $log->trace("db is ".$mongo->database_name);
 
     try {
         $collection  = $mongo->collection(ucfirst($subthing));

@@ -33,7 +33,9 @@ sub create {
     my $mongo   = $env->mongo;
     my $user    = $self->session('user');
 
+    $log->trace("------------");
     $log->trace("Handler is processing a POST (create) from $user");
+    $log->trace("------------");
 
     my $req_href    = $self->get_request_params;
     #   req_href = {
@@ -421,6 +423,8 @@ sub get_subthing {
         return;
     }
 
+    $log->trace("Subthing cursor has ".$cursor->count." items");
+
     my @things;
     if ( $subthing eq "entry" ) {
         @things = $self->thread_entries($cursor);
@@ -429,6 +433,8 @@ sub get_subthing {
         # @things = map { $self->mypack($_) } $cursor->all;
         @things = $cursor->all;
     }
+
+    $log->trace("Records are ",{ filter => \&Dumper, value =>\@things});
 
     $self->do_render({
         records => \@things,
@@ -467,7 +473,9 @@ sub update {
     my $log     = $env->log;
     my $user    = $self->session('user');
 
+    $log->trace("------------");
     $log->trace("API is processing a PUT update request from $user");
+    $log->trace("------------");
 
     my $req_href    = $self->get_request_params;
     my $id          = $req_href->{id};
@@ -541,10 +549,15 @@ sub update {
     }
 
     if ( $object->meta->does_role("Scot::Role::Entitiable") ) {
+        $log->debug("object is Entitiable, checking for discovered entities");
         my $json    = $req_href->{request}->{json};
-        if ( defined $json->{entities} ) {
+        my $earef   = $json->{entities};
+        delete $json->{entities};
+
+        if ( scalar(@$earef) > 0 ) {
+            $log->debug("we have some!");
             my $ecol    = $mongo->collection('Entity');
-            $ecol->update_entities_from_entry($object, $json->{entities});
+            $ecol->update_entities_from_target($object, $json->{entities});
         }
     }
 
@@ -910,12 +923,14 @@ sub do_task_checks {
         $status = "closed";
     }
 
-    delete $params->{$key};
-    $params->{task} = {
-        who     => $user,
-        when    => $now,
-        status  => $status,
-    };
+    if ( $key ne '' ) {
+        delete $params->{$key};
+        $params->{task} = {
+            who     => $user,
+            when    => $now,
+            status  => $status,
+        };
+    }
 }
 
 sub ownership_change_permitted {

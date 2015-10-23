@@ -25,6 +25,7 @@ use Mojo::UserAgent;
 use Scot::Env;
 use Scot::Util::EntityExtractor;
 use AnyEvent::STOMP::Client;
+use HTML::Entities;
 use strict;
 use warnings;
 
@@ -45,12 +46,15 @@ has extractor   => (
     is          => 'ro',
     isa         => 'Scot::Util::EntityExtractor',
     required    => 1,
+    lazy        => 1,
     builder     => '_get_entity_extractor',
 );
 
 sub _get_entity_extractor {
     my $self    = shift;
-    return Scot::Util::EntityExtractor->new();
+    return Scot::Util::EntityExtractor->new({
+        log => $self->env->log,
+    });
 };
 
 has base_url    => (
@@ -90,6 +94,8 @@ sub run {
             my $url     = $self->base_url . "/$type/$id";
             my $ua      = Mojo::UserAgent->new;
 
+            $log->debug("Getting $url");
+
             # do a REST GET of that thing
             my $tx  = $ua->get($url);
 
@@ -97,23 +103,18 @@ sub run {
 
             my $record  = $tx->res->json;
 
-            $log->debug("Response: ", { filter => \&Dumper, value => $record });
+            $log->debug("GET Response: ", { filter => \&Dumper, value => $record });
 
+            if ( $record->{parsed} ) {
+                $log->debug("Already flaired!");
+                return;
+            }
 
             if ( $type eq "alert" ) {
                 $self->process_alert($record);
+                return;
             }
-            else {
-                $self->process_entry($record);
-            }
-
-            $log->debug("flairdata is ", { filter =>\&Dumper, value=>$flairdata });
-
-            # save via REST PUT
-            # my $tx  = $ua->put($url => json => $flairdata);
-
-            #if ( $tx->res->json->{s
-
+            $self->process_entry($record);
         }
     );
 
@@ -136,6 +137,7 @@ sub process_alert  {
     while ( my ( $key, $value ) = each %{$data} ) {
 
         my $encoded = encode_entities($value);
+        $encoded = '<html>'.$encoded.'</html>';
 
         if ( $key =~ /^message_id$/i ) {
             $flair->{$key} = $value;
@@ -146,6 +148,7 @@ sub process_alert  {
             next TUPLE;
         }
 
+# note self on monday.  this isn't working find out why.
         my $eehref  = $extractor->process_html($encoded);
 
         $flair->{$key} = $eehref->{flair};
@@ -166,6 +169,7 @@ sub process_alert  {
     my $tx  = $ua->put($url => json => {
         data_with_flair => $flair,
         entities        => \@entities,
+        parsed          => 1,
     });
 }
 
@@ -177,16 +181,26 @@ sub process_entry {
     my $log         = $env->log;
     my $ua      = Mojo::UserAgent->new;
 
+    my $id  = $record->{id};
+
+    $log->trace("Processing Entry $id");
+
     my $data    = $record->{body};
 
     my $eehref  = $extractor->process_html($data);
 
-    my $url = $self->base_url."/entry/$record->{id}";
-    my $tx  = $ua->put($url => json => {
+    my $url = $self->base_url."/entry/$id";
+
+    my $json    = {
+        parsed      => 1,
         body_plain  => $eehref->{text},
         body_flair  => $eehref->{flair},
         entities    => $eehref->{entities},
-    });
+    };
+
+    $log->debug("Putting: ", { filter => \&Dumper, value => $json});
+
+    my $tx  = $ua->put($url => json => $json);
     
 
 }

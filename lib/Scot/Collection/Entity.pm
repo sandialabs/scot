@@ -32,88 +32,74 @@ sub get_entity_data_for {
     return $cursor;
 }
 
-sub update_entities_from_entry {
+sub update_entities_from_target {
     my $self        = shift;
-    my $entry_obj   = shift;
-    my $ent_aref    = shift; # [ { type=>t, value=>v },... ]
+    my $target      = shift;
+    my $entities    = shift;
+    my $env         = $self->env;
+    my $log         = $self->env->log;
 
-    my $this_type   = "entry";
-    my $this_id     = $entry_obj->id;
-    my $target_type = $entry_obj->target_type;
-    my $target_id   = $entry_obj->target_id;
-    my $timestamp   = $entry_obj->updated;
+    my $type        = $target->get_collection_name; # entry or alert
 
-    ENTITY:
-    foreach my $ent_href (@{$ent_aref}) {
-        my $value   = $ent_href->{value};
-        my $type    = $ent_href->{type};
-        my $entity  = $self->find_one({value => $value, type => $type});
+    unless ($type eq "entry" or $type eq "alert") {
+        $log->warn("Type of $type is not supported as target");
+    }
 
-        if ( defined $entity ) {
-            $entity->update_add( targets => { 
-                target_type => $target_type,
-                target_id   => $target_id,
-            });
-            $entity->update_add( targets => {
-                target_type => $this_type,
-                target_id   => $this_id,
-            });
-            $entity->update_add( occurred   => $timestamp);
-            next ENTITY;
+    my $id  = $target->id;
+
+    $log->trace("Updating Entity with target $type $id info");
+
+    foreach my $entity (@$entities) {
+        $log->trace("working on entity ", { filter =>\&Dumper, value => $entity});
+        my $value   = $entity->{value};
+        my $type    = $entity->{type};
+        my $eobj    = $self->find_one({value => $value, type => $type});
+
+        my $thref   = {
+            target_type => $type,
+            target_id   => $id,
+        };
+
+        if ( defined $eobj   ) {
+            if ( $eobj->update_push( targets => $thref ) ) {
+                $log->trace("Updated Entity $value");
+            }
+            else {
+                $log->error("Failed to update Entitity $value (".$eobj->id.")");
+                $log->error("Target was ", { filter => \&Dumper, value => $thref });
+            }
         }
-        $entity = $self->create({
-            value   => $value,
-            type    => $type,
-            targets => [
-                {target_type => $target_type, target_id => $target_id}
-            ],
-            when    => [ $timestamp ],
-            classes => [],
-            occurred => [ $timestamp ],
-        });
+        else {
+            $log->trace("Entity $value is NEW!");
+            my $timestamp   = $env->now();
+            my $ehref   = {
+                value   => $value,
+                type    => $type,
+                targets => [ $thref ],
+                when    => [ $timestamp ],
+                classes => [],
+                occurred => [ $timestamp ],
+            };
+            if ( $type  eq "alert" ) {
+                push @{$ehref->{targets}},{ 
+                    target_type => 'alertgroup', target_id => $target->alertgroup 
+                };
+            }
+
+            $eobj   = $self->create($ehref);
+
+            unless ( $eobj ) {
+                $log->error("Failed to create entity with ",
+                            { filter => \&Dumper, value => $ehref } );
+            }
+            else {
+                $log->trace("Created new entity $value");
+            }
+        }
     }
 }
 
-sub update_entities_from_alert {
-    my $self        = shift;
-    my $alertobj    = shift; 
-    my $ent_aref    = shift; # [ {type=>t,value=>v}, ... ]
 
-    my $alertgroup  = $alertobj->alertgroup;
-    my $id          = $alertobj->id;
-    my $timestamp   = $alertobj->updated;
-
-    my $mongo   = $self->meerkat;
-    my $col     = $mongo->collection("Entity");
-
-    ENTITY:
-    foreach my $ent_href ( @{$ent_aref} ) {
-
-        my $value   = $ent_href->{value};
-        my $type    = $ent_href->{type};
-        my $entobj  = $col->find_one({value => $value, type => $type});
-
-        if ( defined $entobj ) {
-            $entobj->update_add( targets => { target_type   => "alertgroup",
-                                            target_id     => $alertgroup } );
-            $entobj->update_add( targets => { target_type   => "alert",
-                                            target_id     => $id });
-            $entobj->update_add( when    => $timestamp );
-            next ENTIIY;
-        }
-
-        $entobj = $col->create({
-            value   => $value,
-            type    => $type,
-            targets => [
-                {target_type => "alertgroup", target_id => $alertgroup},
-                {target_type => "alert",      target_id => $id},
-            ],
-            when    => [ $timestamp ],
-            classes => [],
-        });
-    }
-}
 
 # use get_targeted instead (same code)
 sub get_entities {

@@ -3,11 +3,13 @@
 use strict;
 use warnings;
 use lib '../lib';
+use lib '../../lib';
 use v5.18;
 use Scot::Env;
 use Scot::Controller::Flair;
 
-$ENV{scot_mode} = "testing";
+$ENV{scot_mode}     = "testing";
+$ENV{scot_log_file} = "/tmp/flairer.log";
 
 my $env     = Scot::Env->new({
     mongo_config    =>  {

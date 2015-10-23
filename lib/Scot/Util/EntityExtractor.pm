@@ -9,7 +9,9 @@ use Readonly;
 use List::Uniq ':all';
 use HTML::TreeBuilder 5 -weak;
 use Domain::PublicSuffix;
+use Mozilla::PublicSuffix qw(public_suffix);
 use Data::Dumper;
+use Net::IDN::Encode ':all';
 
 use Moose;
 use namespace::autoclean;
@@ -22,12 +24,7 @@ has 'log'       => (
     is          => 'ro',
     isa         => 'Object',
     required    => 1,
-    builder     => '_get_logger',
 );
-
-sub _get_logger {
-    return Log::Log4perl->get_logger("Scot");
-}
 
 has 'regexmap'  => (
     is          => 'rw',
@@ -39,14 +36,6 @@ has 'regexmap'  => (
         get_types   => 'keys',
         get_regex   => 'get',
     },
-);
-
-has 'regexorder'    => (
-    is          => 'rw',
-    isa         => 'ArrayRef',
-    traits      => ['Array'],
-    required    => 1,
-    builder     => '_build_proc_order',
 );
 
 has     'suffix'   => (
@@ -61,7 +50,7 @@ has 'suffixfile'    => (
     is          => 'ro',
     isa         => 'Str',
     required    => '1',
-    default     => '../../etc/effective_tld_names.dat',
+    default     => "../../../etc/effective_tld_names.dat",
 );
 
 sub _build_suffix {
@@ -69,20 +58,18 @@ sub _build_suffix {
     return        Domain::PublicSuffix->new({ data_file => $self->suffixfile});
 }
 
-Readonly my $DOMAIN_REGEX => qr{
-    \b
-#    (?<!\w*\.\w*[@=])
+Readonly my $DOMAIN_REGEX_2 => qr{
+    \b(?<!@)(?!\d+\.\d+)
     (?=.{4,255})
     (
         (?:[a-zA-Z0-9-]{1,63}(?<!-)\.)+
-        [a-zA-Z]{2,63}(?![=@])
+        [a-zA-Z0-9-]{2,63}
     )\b
 }xms;
 
-Readonly my $DOMAIN_REGEX_2 => qr{
+Readonly my $DOMAIN_REGEX => qr{
     \b
-    (?<!@)
-    (?!.*(?:\(|exe|docx|rar|pdf|txt|doc|ppt|pptx|pl|py|html|htm|php|jar|zip))
+    (?<!@)(?!.*(?:\(|exe|docx|rar|pdf|txt|doc|ppt|pptx|pl|py|html|htm|php|jar|zip))
     (
         (?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+
         (?:com|org|net|edu|gov|[a-zA-Z]{2,6})
@@ -110,19 +97,14 @@ Readonly my $SNUMBER_REGEX => qr{
 Readonly my $FILE_REGEX => qr{
 	(
         [a-zA-Z0-9\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\%\.\+\~\_]+\.
-        (exe|pdf|txt|scr|doc|docx|ppt|pptx|pl|py|html|htm|
-         php|jsp|jar|rar|zip|png|jpg|odt|msg|pages|tex|wpd|
-         wps|csv|dat|pps|tar|tgz|xml|vcf|aif|m4a|m3u|mp3|wav|
-         wma|aif|avi|flv|m4v|mov|swf|bmp|gif|psd|eps|ps|svg|sql|
-         db|kml|xhtml|ttf|otf|ico|ini|7z|deb|gz|pkg|rpm|dmg|bin|
-         iso|cpp|h|sh|py|pl|bak|tmp|torrent|msi|ics|rb)
+        (exe|pdf|txt|scr|doc|docx|ppt|pptx|pl|py|html|htm|php|jsp|jar|rar|zip)
     )
-}xms;
+}xims;
 
 Readonly my $EMAIL_REGEX    => qr{
     (
-        [a-z0-9!#$%&'*+\/?^_`{|}~-]+             # one or more of these
-        (?:\.[a-z0-9!#$%&'*+\/?^_`{|}~-]+)*      # zero or more of these
+        [a-z0-9!#$%&'*+/?^_`{|}~-]+             # one or more of these
+        (?:\.[a-z0-9!#$%&'*+/?^_`{|}~-]+)*      # zero or more of these
         @
         (?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+  # domain before tld
         (?:[A-Z]{2}|com|org|net|edu|gov|
@@ -130,30 +112,30 @@ Readonly my $EMAIL_REGEX    => qr{
                     aero|asia|jobs|museum)      # tld
         \b
     )
-}xms;
+}xims;
 
 Readonly my $FQDN_REGEX  => qr{
         [a-zA-Z0-9\-_\.]+                  # one or more of these
         \.(com|org|net|edu|gov|
             mil|biz|info|mobi|name|
             aero|asia|jobs|museum|[A-Za-z]{2})(?![a-zA-Z])   # tld 
-}xms;
+}xims;
 
 Readonly my $MD5_REGEX  => qr{
         \b
-        (?!.*\@\b)([0-9a-f]{32})      # thirty two "hex" chars
+        (?!.*\@\b)([0-9a-fA-F]{32})      # thirty two "hex" chars
         \b
 }xms;
 
 Readonly my $SHA1_REGEX => qr{
         \b                  # word boundary
-        ([0-9a-f]{40})      # 40 hex chars
+        ([0-9a-fA-F]{40})      # 40 hex chars
         \b
 }xms;
 
 Readonly my $SHA256_REGEX => qr{
         \b
-        ([0-9a-f]{64})      # 64 hex chars
+        ([0-9a-fA-F]{64})      # 64 hex chars
         \b      
 }xms;
 
@@ -172,6 +154,9 @@ Readonly my $IP_REGEX   => qr{
     (?!\.)\b
 }xms;
 
+Readonly my $GOOGLE_ANALYTICS_REGEX => qr{
+    (__utma=\d{9}\.(\d{9})\.\d{10}\.\d{10}\.\d{10}\.\d+\;)
+}xms;
 
 sub _build_proclist {
     return { 
@@ -183,32 +168,11 @@ sub _build_proclist {
         "scotfile"  => $SCOT_FILES_REGEX,
         "snumber"   => $SNUMBER_REGEX,
         "files"     => $FILE_REGEX,
-        "domain"    => $DOMAIN_REGEX,
+        "domain"    => $DOMAIN_REGEX_2,
+	    "googleanalytics" => $GOOGLE_ANALYTICS_REGEX
     };
 }
 
-sub _build_proc_order {
-    my $self    = shift;
-    my @order   = qw(
-        email
-        ipaddr
-        md5
-        sha1
-        sha256
-        scotfile
-        snumber
-        files
-        domain
-    );
-    return \@order;
-}
-
-sub process_entry {
-    my $self    = shift;
-    my $href    = shift;
-    my $html    = $href->{body};
-    return $self->process_html($html);
-}
 
 =item C<process_html>
 
@@ -245,9 +209,6 @@ sub process_html {
     $tree->delete; # prevent memory leaks
 
     $log->debug("HTML:".$entities{flair});
-	
-	# remove duplicates from $entities->{entities}
-	$self->remove_duplicate_entities(\%entities);
 
     return \%entities;
 }
@@ -335,7 +296,6 @@ sub has_splunk_ip_pattern {
     return undef;
 }
 
-
 sub get_new_content {
     my $self    = shift;
     my $text    = shift;
@@ -367,7 +327,6 @@ sub get_new_content {
 
         $log->debug(" "x$level."$remaining_indicies remain to be processed");
         $log->debug(" "x$level."start = $start end = $end length = $length");
-        $log->debug(" "x$level."Content is ".Dumper(@content));
 
         $remaining_indicies--;
         my $pre_match   = substr $text, $last, ($start - $last);
@@ -376,7 +335,6 @@ sub get_new_content {
 
         $log->debug(" "x$level."pre  : $pre_match");
         $log->debug(" "x$level."Match: $match");
-        $log->debug(" "x$level."post : $post_match");
 
         my $type    = $self->get_entity_type($match, @entities); 
 
@@ -393,17 +351,14 @@ sub get_new_content {
             else {
                 push @content, $self->do_span($db_href, $type, $match);
             }
+            $last   = $end;
         }
         else {
             $log->debug(" "x$level."Type was undefined, implies partial match...");
-            $log->debug(" "x$level."content is ".Dumper(@content));
-            push @content, $pre_match, $match;
         }
-        $last   = $end;
 
         if ( $remaining_indicies == 0 ) {
             $log->debug(" "x$level."That was the last...");
-            $log->debug(" "x$level."appending $post_match");
             push @content, $post_match;
         }
 
@@ -439,7 +394,7 @@ sub add_domain {
     }
 }
 
-sub do_domains  {
+sub do_domains_old  {
     my $self    = shift;
     my $db_href = shift;
     my $domain  = shift;
@@ -481,6 +436,86 @@ sub do_domains  {
         $element->push_content($self->do_domains($db_href, $right));
         return $element;
     }
+}
+
+sub do_domains {
+    my $self    = shift;
+    my $db_href = shift;
+    my $domain  = shift;
+    my $log     = $self->log;
+
+    $log->trace("Processing the domain name $domain begins");
+
+    my @parts   = reverse(split(/\./, $domain));
+    my $j       = shift @parts;
+    my $k       = shift @parts;
+
+    my $punyxlate;
+    my $tld;
+
+    if ($j =~ /xn--/ ) {
+        $log->debug("PUNY CODE detected!");
+        $punyxlate  = domain_to_unicode($j);
+        $log->debug("Unicode version: $punyxlate");
+        $tld    = $j;
+        unshift @parts, $k;
+    }
+    else {
+        $tld     = join('.', $k, $j);
+    }
+
+    my $root = '';
+    if ( $punyxlate ) {
+        $root = public_suffix($punyxlate);
+        unless ($root) {
+            $self->log("darn, public suffix didn't work..");
+            $root   = public_suffix($tld);
+        }
+    }
+    else {
+        $root = public_suffix($tld);
+    }
+
+    if ( defined($root) ) {
+        $log->debug("Mozilla thinks tld is $root");
+    }
+    $log->trace("TLD is $tld");
+
+    while ( defined($root) and $root ne $tld ) {
+        my $next    = shift @parts // '';
+        last if ($next eq '');
+        $tld    = $next . "." . $tld;
+        $log->debug(" %%%%%%% TLD didn't match, adjusting to $tld");
+    }
+
+    $self->add_domain($db_href, $tld);
+
+    my $tld_element = HTML::Element->new(
+        'span',
+        'class'             => 'entity domain tld',
+        'entity-data-type'  => 'domain',
+        'entity-data-value' => $tld,
+    );
+    $tld_element->push_content($tld);
+
+    my $last_element    = $tld_element;
+    my $last_domain     = $tld;
+
+    foreach my $next_part (@parts) {
+        my $this_domain = $next_part . '.' . $last_domain;
+        $self->add_domain($db_href, $this_domain);
+        my $element = HTML::Element->new(
+            'span',
+            'class'             => 'entity domain',
+            'entity-data-type'  => 'domain',
+            'entity-data-value' => $this_domain,
+        );
+        $element->push_content($next_part . '.');
+        $element->push_content($last_element);
+        $last_element = $element;
+        $last_domain  = $this_domain;
+    }
+    return $last_element;
 }
 
 sub do_emails {
@@ -555,14 +590,11 @@ sub get_entities {
 
     $log->debug(" "x$level."Getting Entities...");
 
-    foreach my $type ( @{$self->regexorder} ) {
+    foreach my $type ( $self->get_types ) {
         my $regex   = $self->get_regex($type);
         my @matches = uniq( $text =~ m/$regex/g );
         if ( $type  eq "files" ) {
             push @entities, $self->filter_files(@matches);
-        }
-        elsif ( $type eq "domain") {
-            push @entities, $self->second_domain_check(@matches);
         }
         else {
             push @entities, map { { value => $_, type => $type } } @matches;
@@ -570,45 +602,6 @@ sub get_entities {
     }
     return @entities;
 }
-
-sub remove_duplicate_entities {
-    my $self        = shift;
-	my $db_href		= shift;
-	my $orig_aref	= $db_href->{entities};
-    my @entities    = ();
-
-    my %seen_value;
-    my %seen_type;
-
-    foreach my $tuple (@{$orig_aref}) {
-        next if ( $seen_value{$tuple->{value}} and $seen_type{$tuple->{type}});
-        push @entities, $tuple;
-        $seen_value{$tuple->{value}}++;
-        $seen_type{$tuple->{type}}++;
-    }
-    $db_href->{entities} = \@entities;
-}
-
-sub second_domain_check {
-    my $self    = shift;
-    my @domains = @_;
-    my @good    = ();
-    my $log     = $self->log;
-
-    $log->debug("Doing secondary domain check");
-    
-    foreach my $domain (@domains) {
-        $log->debug("checking $domain");
-        my $root    = $self->suffix->get_root_domain($domain);
-        if ($root) {
-            $log->debug("root is $root");
-            push @good, { value => $domain, type => "domain" };
-        }
-    }
-    return @good;
-}
-
-
 
 sub filter_files {
     my $self    = shift;
@@ -637,12 +630,12 @@ sub get_match_indicies {
     my %seen_start;
     my %seen_end;
 
-    foreach my $type ( @{$self->regexorder} ) {
+    foreach my $type ( $self->get_types ) {
         my $regex   = $self->get_regex($type);
         @ss         = ();
         $text       =~ m/$regex$indexre(?!)/;
         foreach my $aref (@ss) {
-            if ( $seen_start{$aref->[0]} or $seen_end{$aref->[1]} ) {
+            if ( $seen_start{$aref->[0]} and $seen_end{$aref->[1]} ) {
                 $log->debug(" "x$level."duplicate indicies dropped");
             }
             else {
@@ -654,64 +647,5 @@ sub get_match_indicies {
     }
     return @indicies;
 }
-
-sub process_alert {
-    my $self        = shift;
-    my $inhref      = shift;
-    my $parsed      = shift;
-
-    my $outhref     = {};
-    my @entities    = ();
-    my @plaintxts   = ();
-
-    my $env     = Scot::Env->instance;
-    my $mongo   = $env->mongo;
-
-    my $entity_collection   = $mongo->collection("Entity");
-
-    # TODO: enable this when implemented
-    # my $search_collection   = $mongo->collection("Search");
-    
-    TUPLE:          # alert->data = { key => value, ... }
-    while ( my ( $key, $value ) = each %{$inhref} ) {
-        my $encoded = $value;
-        $encoded = encode_entities($value) if ( defined $parsed );
-
-        # special case: look for message_id in alert data and treat it
-        # as an entity.  TODO: should be pulled out into a potential list
-        # of key names that are stored in the db so user can create their
-        # own list
-
-        if ( $key =~ /^message_id$/i ) {
-            $outhref->{$key} = $value;
-            push @entities, { value => $value, type => "message_id" };
-            next TUPLE;
-        }
-
-        my $ee_href = $self->process_html($encoded);
-        my $flair   = $ee_href->{flair};
-        my $plain   = $ee_href->{plain};
-        my $e_aref  = $ee_href->{entities};
-
-        $outhref->{$key} = $flair;
-        push @plaintxts, $plain;
-
-        my %seen;
-        foreach my $ent_href ( @{$e_aref} ) {
-            unless ( defined $seen{$ent_href->{value}} ) {
-                push @entities, $ent_href;
-                $seen{$ent_href->{value}}++;
-            }
-        }
-    }
-
-    # TODO: implement this in Scot::Collection::Search
-    # send plain text to search service
-    # my $all_plain_txts = join(' ', @plaintxts);
-    # $search->add_alert_text($alertobj, $all_plain_txts);
-
-    return $outhref, \@entities;
-}
-
 
 1;
