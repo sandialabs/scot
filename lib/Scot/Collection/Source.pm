@@ -19,7 +19,7 @@ sub create_from_handler {
     my $build_href  = $handler->get_request_params->{params};
     my $target_type = $build_href->{target_type};
     my $target_id   = $build_href->{target_id};
-    my $name        = $build_href->{name};
+    my $value        = $build_href->{value};
 
     unless ( defined $target_type ) {
         $log->error("Error: must provide a target type");
@@ -31,17 +31,17 @@ sub create_from_handler {
         return { error_msg => "Sources must have a target_id defined"};
     }
 
-    unless ( defined $name ) {
-        $log->error("Error: must provide the source as the name param");
-        return { error_msg => "No Source name provided" };
+    unless ( defined $value ) {
+        $log->error("Error: must provide the source as the value param");
+        return { error_msg => "No Source value provided" };
     }
 
     my $source_collection  = $handler->env->mongo->collection("Source");
-    my $source_obj         = $source_collection->find_one({ name => $name });
+    my $source_obj         = $source_collection->find_one({ value => $value });
 
     unless ( defined $source_obj ) {
         $source_obj    = $source_collection->create({
-            name    => $name,
+            value    => $value,
             targets => [{
                 type    => $target_type,
                 id      => $target_id,
@@ -54,7 +54,13 @@ sub create_from_handler {
             id      => $target_id,
         });
     }
-    $source_obj->update_add( occurred => $env->now );
+
+    $env->mongo->collection("History")->add_history_entry({
+        who     => "api",
+        what    => "source created for $target_type : $target_id",
+        when    => $env->now,
+        targets => [ { target_id => $source_obj->id, target_type => "source" } ],
+    });
 
     return $source_obj;
 
@@ -84,9 +90,9 @@ sub get_source_completion {
     my $string  = shift;
     my @results = ();
     my $cursor  = $self->find({
-        name    => /$string/
+        value    => /$string/
     });
-    @results    = map { $_->name } $cursor->all;
+    @results    = map { $_->value } $cursor->all;
     return wantarray ? @results : \@results;
 }
 
@@ -99,10 +105,10 @@ sub add_source_to {
 
     my $env = $handler->env;
 
-    my $source_obj         = $self->find_one({ name => $source });
+    my $source_obj         = $self->find_one({ value => $source });
     unless ( defined $source_obj ) {
         $source_obj    = $self->create({
-            name    => $source,
+            value    => $source,
             targets => [{
                 type    => $thing,
                 id      => $id,
@@ -115,7 +121,14 @@ sub add_source_to {
             id      => $id,
         });
     }
-    $source_obj->update_add( occurred => $env->now );
+
+    $env->mongo->collection("History")->add_history_entry({
+        who     => "api",
+        what    => "source cite added $thing : $id",
+        when    => $env->now,
+        targets => [ { target_id => $source_obj->id, target_type => "source" } ],
+    });
+
 
     return $source_obj;
 }

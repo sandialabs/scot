@@ -6,6 +6,7 @@ use strict;
 use warnings;
 
 use Moose 2;
+use Data::Dumper;
 use Type::Params qw/compile/;
 use Try::Tiny;
 use Types::Standard qw/slurpy :types/;
@@ -51,6 +52,26 @@ override 'create' => sub {
 
     return $obj;
 };
+
+sub exact_create {
+    state $check        = compile( Object, slurpy ArrayRef );
+    my ($self, $args)   = $check->(@_);
+    my $env = $self->env;
+    my $log = $self->env->log;
+
+    $log->trace("In exact create");
+
+    my @args    = ( ref $args->[0] eq 'HASH' ? %{$args->[0]} : @$args );
+    if ( $self->class->meta->does_role("Scot::Role::Permittable") ) {
+        $log->trace("Checking for group permissions !!!!!!!");
+        $self->get_group_permissions(\@args);
+    }
+
+    my $obj = $self->class->new( @args, _collection => $self );
+    $self->_save($obj);
+
+    return $obj;
+}
 
 override '_build_collection_name'    => sub {
     my ($self)  = @_;
@@ -149,6 +170,10 @@ sub get_subthing {
             'targets.target_id'  => $id + 0,
             'targets.target_type' => $thing,
         });
+#        $cursor = $self->get_targets(
+#            target_id   => $id + 0,
+#            target_type => $thing,
+#        );
         return $cursor;
     }
 
@@ -156,6 +181,20 @@ sub get_subthing {
     # and that it holds the matching ID
 
     $cursor = $collection->find({$thing => $id + 0});
+    return $cursor;
+}
+
+sub get_targets {
+    my $self    = shift;
+    my %params  = @_;
+    my $id      = $params{target_id};
+    my $thing   = $params{target_type};
+    my $search  = {
+        'targets.target_type' => $thing,
+        'targets.target_id'   => $id,
+    };
+    $self->env->log->debug("get targets: ",{ filter =>\&Dumper, value => $search});
+    my $cursor  = $self->find($search);
     return $cursor;
 }
 

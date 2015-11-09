@@ -195,6 +195,14 @@ sub _build_logger {
     return $log;
 }
 
+# move this eventually to a database configuration item
+has tor_url => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'http://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=132.175.81.4',
+);
+
 sub BUILD {
     my $self    = shift;
     my $log     = $self->log;
@@ -265,12 +273,12 @@ sub get_module_conf {
     
     my $collection  = $mongo->collection('Config');
     my $config_obj  = $collection->find_one({
-        class       => $class,
+        module       => $class,
     });
     unless ($config_obj) {
         return {};
     }
-    return $config_obj->as_hash;
+    return $config_obj->item;
 }
 
 =item C<get_timer(I<$title>)>

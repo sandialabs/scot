@@ -89,6 +89,11 @@ get JSON that was submitted with the web request
 
     my $scot    = $r->under('/scot')->to('util-aaa#check');
 
+    $scot   ->route ('/api/v2/command/:action')
+            ->via   ('put')
+            ->to    ('controller-api#do_command')
+            ->name  ('do_command');
+
     $scot   ->route ('/api/v2/:thing')
             ->via   ('post')
             ->to    ('controller-api#create')

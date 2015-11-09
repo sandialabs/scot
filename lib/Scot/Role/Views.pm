@@ -11,16 +11,34 @@ The number of times the consuming model has been viewed
 
 
 has views  => (
-    is          => 'rw',
+    is          => 'ro',
     isa         => 'Int',
     required    => 1,
     default     => 0,
 );
 
-sub increment_views {
+# array of { who => $a, when => $b, where => $c }
+
+has view_history => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    traits      => ['Hash'],
+    required    => 1,
+    default     => sub {{}},
+);
+
+sub add_view {
     my $self    = shift;
-    my $amount  = shift // 1;
-    $self->update_inc( views => $amount );
+    my $user    = shift;
+    my $ipaddr  = shift;
+    my $when    = shift;
+
+    $self->update({
+        '$inc'  => { views => 1 },
+        '$set'  => {
+            "view_history.$user" =>  { when => $when, where => $ipaddr }
+        },
+    });
 }
 
 

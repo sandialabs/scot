@@ -17,7 +17,6 @@ The model of an individual alert
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
-    Scot::Role::Occurred
     Scot::Role::Targets
 );
 
@@ -25,13 +24,13 @@ with    qw(
 
 =over 4
 
-=item B<name>
+=item B<value>
 
 the name of the source
 
 =cut
 
-has name  => (
+has value  => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,

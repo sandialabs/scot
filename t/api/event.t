@@ -142,7 +142,7 @@ $t  ->get_ok("/scot/api/v2/event/$event_id/entry")
 
 my $tx  = $t->ua->build_tx(
     PUT =>"/scot/api/v2/event/$event_id" => json =>{
-    tags  => ["foo","boo"],
+    tag  => ["foo","boo"],
 });
 
 $t  ->request_ok($tx)
@@ -150,10 +150,10 @@ $t  ->request_ok($tx)
     ->json_is('/status' => 'successfully updated');
 
 
-$t->get_ok("/scot/api/v2/event/$event_id")
+$t->get_ok("/scot/api/v2/event/$event_id/tag")
     ->status_is(200)
-    ->json_is('/tags/1' => "boo")
-    ->json_is('/tags/0' => "foo");
+    ->json_is('/records/0/value' => "foo")
+    ->json_is('/records/1/value' => "boo");
 
 #  print Dumper($t->tx->res->json);
  done_testing();

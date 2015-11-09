@@ -45,13 +45,16 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
            "Get alertgroup $alertgroup_id" )
   ->status_is(200)
   ->json_is('/subject'      => 'test message 1')
-  ->json_is('/views'   => 0)
+  ->json_is('/views'   => 1)
   ->json_is('/alert_count'  => 2);
 
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
            "seeing if views increases")
     ->status_is(200)
-    ->json_is('/views' => 1);
+    ->json_is('/views' => 2) # two gets = 2 views
+    ->json_is('/view_history/test/where'    => '127.0.0.1');
+
+
 
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
     "Getting alerts in alertgroup")

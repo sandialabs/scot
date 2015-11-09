@@ -122,6 +122,7 @@ sub create_from_api {
 sub refresh_data {
     my $self    = shift;
     my $id      = shift;
+    my $user    = shift // "api";
 
     my $alertgroup  = $self->find_iid($id);
 
@@ -140,6 +141,7 @@ sub refresh_data {
             alert_count     => $count{total},
         }
     });
+    $self->env->amq->send_amq_notification("update", $alertgroup, $user);
 }
 
 

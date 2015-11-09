@@ -17,7 +17,6 @@ The model of an individual Tag
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
-    Scot::Role::Occurred
     Scot::Role::Targets
 );
 
@@ -25,13 +24,13 @@ with    qw(
 
 =over 4
 
-=item B<text>
+=item B<value>
 
 the text that makes up the tag
 
 =cut
 
-has text  => (
+has value  => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,

@@ -21,7 +21,7 @@ sub create_from_handler {
     my $build_href  = $handler->get_request_params->{params};
     my $target_type = $build_href->{target_type};
     my $target_id   = $build_href->{target_id};
-    my $text        = $build_href->{text};
+    my $value        = $build_href->{value};
 
     unless ( defined $target_type ) {
         $log->error("Error: must provide a target type");
@@ -33,17 +33,17 @@ sub create_from_handler {
         return { error_msg => "Tags must have a target_id defined"};
     }
 
-    unless ( defined $text ) {
-        $log->error("Error: must provide the tag as the text param");
-        return { error_msg => "No Tag text provided" };
+    unless ( defined $value ) {
+        $log->error("Error: must provide the tag as the value param");
+        return { error_msg => "No Tag value provided" };
     }
 
     my $tag_collection  = $handler->env->mongo->collection("Tag");
-    my $tag_obj         = $tag_collection->find_one({ text => $text });
+    my $tag_obj         = $tag_collection->find_one({ value => $value });
 
     unless ( defined $tag_obj ) {
         $tag_obj    = $tag_collection->create({
-            text    => $text,
+            value    => $value,
             targets => [{
                 type    => $target_type,
                 id      => $target_id,
@@ -56,7 +56,13 @@ sub create_from_handler {
             id      => $target_id,
         });
     }
-    $tag_obj->update_add( occurred => $env->now );
+
+    $env->mongo->collection("History")->add_history_entry({
+        who     => "api",
+        what    => "tag applied to $target_type : $target_id",
+        when    => $env->now(),
+        targets => [ { target_id => $tag_obj->id, target_type => "tag" } ],
+    });
 
     return $tag_obj;
 
@@ -86,9 +92,9 @@ sub get_tag_completion {
     my $string  = shift;
     my @results = ();
     my $cursor  = $self->find({
-        text    => /$string/
+        value    => /$string/
     });
-    @results    = map { $_->text } $cursor->all;
+    @results    = map { $_->value } $cursor->all;
     return wantarray ? @results : \@results;
 }
 
@@ -100,23 +106,28 @@ sub add_tag_to {
 
     my $env = $self->env;
 
-    my $tag_obj         = $self->find_one({ text => $tag });
+    my $tag_obj         = $self->find_one({ value => $tag });
     unless ( defined $tag_obj ) {
         $tag_obj    = $self->create({
-            text    => $tag,
+            value    => $tag,
             targets => [{
-                type    => $thing,
-                id      => $id,
+                target_type    => $thing,
+                target_id      => $id + 0,
             }],
         });
     }
     else {
         $tag_obj->update_add( targets => {
-            type    => $thing,
-            id      => $id,
+            target_type    => $thing,
+            target_id      => $id + 0,
         });
     }
-    $tag_obj->update_add( occurred => $env->now );
+    $env->mongo->collection("History")->add_history_entry({
+        who     => "api",
+        what    => "tag applied to $thing : $id",
+        when    => $env->now(),
+        targets => [ { target_id => $tag_obj->id, target_type => "tag" } ],
+    });
 
     return $tag_obj;
 }

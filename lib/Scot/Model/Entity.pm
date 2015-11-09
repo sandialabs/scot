@@ -20,7 +20,6 @@ extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
     Scot::Role::Hashable
-    Scot::Role::Occurred
     Scot::Role::Targets
 );
 
@@ -75,6 +74,21 @@ has classes => (
     default => sub {[]},
 );
 
+
+=item B<data>
+
+hold data in a key value store about the entity.
+not sure what this will be but it is a safety valve 
+
+=cut
+
+has data    => (
+    is      => 'ro',
+    isa     => 'HashRef',
+    traits  => [ 'Hash' ],
+    required    => 1,
+    default => sub {{}},
+);
 
 __PACKAGE__->meta->make_immutable;
 1;

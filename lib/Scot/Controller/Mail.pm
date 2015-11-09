@@ -1,0 +1,585 @@
+package Scot::Controller::Mail;
+
+use lib '../../../lib';
+
+=head1 Name
+
+Scot::Controller::Mail
+
+=head1 Description
+
+This Controller, initiates a connection to a IMAP server
+gets unread mail
+parses it into Alergroups/Alerts
+profits
+
+=cut
+
+use Data::Dumper;
+use Try::Tiny;
+use Mojo::UserAgent;
+use Scot::Env;
+use HTML::TreeBuilder;
+use Parallel::ForkManager;
+use strict;
+use warnings;
+
+use Moose;
+
+has env => (
+    is          => 'rw',
+    isa         => 'Scot::Env',
+    required    => 1,
+    builder     => '_get_env',
+);
+
+sub _get_env {
+    return Scot::Env->instance;
+}
+
+has max_processes => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    default     => 5,
+);
+
+sub run {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $imap    = $env->imap;
+    my $taskmgr = Parallel::ForkManager->new($self->max_processes);
+
+    $log->trace("Beginning Alert Email Processing...");
+
+    my @unread  = $imap->get_unseen_mail;
+
+    MESSAGE:
+    foreach my $uid (@unread) {
+
+        my $pid = $taskmgr->start and next;
+
+        if ( $pid == 0 ) {
+            $log->trace("Child process $pid begins working on uid $uid");
+            $self->env(Scot::Env->new());
+            my $imap     = $self->env->imap;
+            my $msg_href = $imap->get_message($uid);
+            $self->process_message($msg_href);
+            $taskmgr->finish;
+            exit;
+        }
+    }
+    $taskmgr->wait_all_children;
+}
+
+sub process_message {
+    my $self    = shift;
+    my $msghref = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    # is message from approved sender?
+    unless ( $self->approved_sender($msghref) ) {
+        $log->error("Unapproved Sender is sending message to SCOT");
+        $log->error({ filter => \&Dumper, value => $msghref });
+        return;
+    }
+
+    # is message a health check?
+    if ( $self->is_health_check($msghref) ) {
+        $log->trace("Health check received...");
+        return;
+    }
+
+    # we get this far, let's parse it and create alerts/alertgroup
+    my $source = $self->get_source($msghref);
+
+    my $json_to_post = $self->$source($msghref);
+    my $url          = $self->base_url;
+    my $ua           = Mojo::UserAgent->new;
+
+    my $tx = $ua->post( $url => json => $json_to_post );
+    
+    if ( $tx->res->json->{status} ne "ok" ) {
+        $log->error("Failed posting new alertgroup");
+        $env->imap->mark_uid_unseen($msghref->{imap_uid});
+        return;
+    }
+    $log->trace("Created alertgroup ". $tx->res->json->{id});
+}
+
+sub get_source {
+    my $self    = shift;
+    my $href    = shift;
+    my $from    = $href->{from};
+    my $subject = $href->{subject};
+
+    return "splunk"     if ( $subject =~ /splunk alert/i );
+    return "fireeye"    if ( $from =~ /fireeye/i );
+    return "ascan"      if ( $subject =~ /ascan daily report/i );
+    return "sep"        if ( $from =~ /workflow/i );
+    return "sep2"       if ( $from =~ /symantec/i );
+    return "mds"        if ( $subject =~ /mds alert/i);
+    return "mds2farm"   if ( $subject =~ /mds to farm/i);
+    return "sourcefire" if ( $subject =~ /auto generated email/i );
+    return "forefront"  if ( $subject =~ /microsoft forefront/i );
+    return "generic";
+}
+
+sub approved_sender {
+    # stored as config item in env
+}
+
+sub is_health_check {
+
+}
+
+sub splunk {
+    my $self    = shift;
+    my $href    = shift;
+    my $log     = $self->env->log;
+    my $json    = {
+        subject     => $href->{subject},
+        message_id  => $href->{message_id},
+        body_plain  => $href->{body_plain},
+        body        => $href->{body_html},
+        data        => [],
+        source      => [ qw(email mds) ],
+    };
+    my $body    = $href->{body_html} // $href->{body_plain};
+
+    $log->trace("Parsing Splunk Message Body");
+
+    my  $tree   = HTML::TreeBuilder->new;
+        $tree   ->implicit_tags(1);
+        $tree   ->implicit_body_p_tag(1);
+        $tree   ->parse_content($body);
+
+    # splunk 6 now puts the search name in a table!
+    # and omits search terms
+
+    my $text        = $tree->as_text( skip_dels => 1 );
+    $text           =~ m/ Name: '(.*?)'[ ]+Query/;
+    # my $alertname   = $1;
+    #$text           =~ m/Query Terms: '(.*?)'[ ]+Link/;
+    #(my $search = $1 )     =~ s/\\"/"/g; 
+    #$search      = encode_entities($search);
+
+    my $top_table = ( $tree->look_down('_tag', 'table') )[0];
+    my @top_table_tds = $top_table->look_down('_tag', 'td');
+    my $alertname   = $top_table_tds[0]->as_text;
+    my $search      = "splunk is not sending the search terms";
+    if ( scalar(@top_table_tds) > 1 ) {
+        $search      = $top_table_tds[1]->as_text;
+    }
+
+    my $table   = ( $tree->look_down('_tag', 'table') )[1];
+
+    unless ($table) {
+        $log->error("No Tables in Splunk Email!");
+        return [],[];
+    }
+
+    my @rows    = $table->look_down('_tag', 'tr');
+    my $header  = shift @rows;
+    my @columns = map { $_->as_text; } $header->look_down('_tag', 'th');
+
+    if (scalar(@columns) == 0) {
+        # it seems that micro$oft outlook clients will rewrite valid
+        # splunk HTML into Fugly broken HTML when forwarding.
+        # this case deals with a splunk email sent to a user who then
+        # forwards it to scot using a outlook client.
+        @columns = map { $_->as_text; } $header->look_down('_tag', 'td');
+    }
+
+    my @results = ();
+    my @msg_id_entities;
+
+    my $empty_col_replace   = 1;
+
+    foreach my $row (@rows) {
+        my @values  = $row->look_down('_tag','td');
+        my %rowres  = (
+            alert_name  => $alertname,
+            search      => $search,
+            columns     => \@columns,
+        );
+        for ( my $i = 0; $i < scalar(@values); $i++ ) {
+            my $colname         = $columns[$i];
+            unless ($colname) {
+                $colname    = "c" . $empty_col_replace++;
+                $log->error("EMPTY colname detected! replacing with $colname");
+                $log->debug("table is: ".Dumper($table->as_HTML));
+            }
+            my $value           = $values[$i]->as_text;
+            if ( $colname eq "MESSAGE_ID" ) {
+                push @msg_id_entities, $value;
+                $value = qq|<span class="entity message_id" data-entity-value="$value" data-entity-type="message_id">$value</span>|;
+            }
+            $rowres{$colname}   = $value;
+        }
+        push @results, \%rowres;
+    }
+    $json->{data}   = \@results;
+    $json->{columns} = \@columns;
+    return $json;
+}
+
+sub fireeye {
+    my $self    = shift;
+    my $href    = shift;
+    my $log     = $self->env->log;
+    my $json    = {
+        subject     => $href->{subject},
+        message_id  => $href->{message_id},
+        body_plain  => $href->{body_plain},
+        body        => $href->{body_html},
+        data        => [],
+        source      => [ qw(email mds) ],
+    };
+    my $body    = $href->{body_plain};
+
+    $log->trace("Parsing Fireeye Message Body");
+
+    my $thisjson    = JSON->new->relaxed(1);
+    $body       =~ s/\012\015?|\015\012?//g;
+    my $decoded;
+    eval {
+       $decoded = $thisjson->decode($body);
+    };
+    my $html    = Dumper($decoded);
+
+    my $data    = {
+        fireeye_alert => $html,
+    };
+
+    $json->{data}   = [ $data ];
+    $json->{columns}= keys %$data;
+    return $json;
+}
+
+sub ascan {
+    my $self    = shift;
+    my $href    = shift;
+    my $log     = $self->env->log;
+    my $json    = {
+        subject     => $href->{subject},
+        message_id  => $href->{message_id},
+        body_plain  => $href->{body_plain},
+        body        => $href->{body_html},
+        data        => [],
+        source      => [ qw(email mds) ],
+    };
+    my $body    = $href->{body_html} // $href->{body_plain};
+
+    $log->trace("Parsing Ascan Message Body");
+
+    my $thisjson    = JSON->new()->relaxed(1);
+    my $data        = $thisjson->decode($body);
+
+    my @cols    = keys %{ $data->{mds_alerts}->[0] };
+
+    $json->{data}   = [ $data ];
+    $json->{columns} = \@cols;
+    return $json;
+}
+
+sub sep {
+    my $self    = shift;
+    my $href    = shift;
+    my $log     = $self->env->log;
+    my $json    = {
+        subject     => $href->{subject},
+        message_id  => $href->{message_id},
+        body_plain  => $href->{body_plain},
+        body        => $href->{body_html},
+        data        => [],
+        source      => [ qw(email mds) ],
+    };
+    my $body    = $href->{body_html} // $href->{body_plain};
+
+    $log->trace("Parsing SEP Message Body");
+
+    my  $tree   = HTML::TreeBuilder->new;
+        $tree   ->implicit_tags(1);
+        $tree   ->implicit_body_p_tag(1);
+        $tree   ->parse_content($body);
+
+    my @tables  = $tree->look_down('_tag', 'table');
+    my @results = ();
+
+    my $dblookup = {
+        0   => "SEM5 : SRN SEP 11 clients",
+        1   => "SEM12 : SRN SEP 12 clients",
+        2   => "SEM11 : Dev",
+        3   => "SEM12 : Dev",
+    };
+    my $dbindex = 0;
+    my @columns;
+
+    foreach my $table (@tables) {
+
+        my @rows    = $table->look_down('_tag', 'tr');
+        
+        my $header  = shift @rows;
+        @columns    = map { $_->as_text; } $header->look_down('_tag','th');
+
+        foreach my $row (@rows) {
+            
+            my @values  = $row->look_down('_tag','td');
+            my %rowres  = (
+                alert_name  => "Symantec Cyber Application Scan",
+                search      => $dblookup->{$dbindex},
+                columns     => \@columns,
+            );
+            for ( my $i = 0; $i < scalar(@values); $i++ ) {
+                $rowres{$columns[$i]} = $values[$i]->as_text;
+            }
+            push @results, \%rowres;
+        }
+        $dbindex++;
+    }
+    $json->{data}       = \@results;
+    $json->{columns}    = \@columns;
+    return $json;
+}
+
+sub sep2 {
+    my $self    = shift;
+    my $href    = shift;
+    my $log     = $self->env->log;
+    my $json    = {
+        subject     => $href->{subject},
+        message_id  => $href->{message_id},
+        body_plain  => $href->{body_plain},
+        body        => $href->{body_html},
+        data        => [],
+        source      => [ qw(email mds) ],
+    };
+    my $body    = $href->{body_html} // $href->{body_plain};
+
+    $log->trace("Parsing SEP2 Message Body");
+
+    my @lines   = split /\012\015?|\015\012?/, $body;
+    my @columns = ();
+    my $data;   
+    
+    foreach my $line (@lines) {
+        my ($key, $value) = split(/: /, $line, 2);
+        next unless (defined $key);
+        $key =~ s/ /_/g;
+        $key =~ s/\./,/g;
+        push @columns, $key;
+        $data->{$key} = $value;
+    }
+
+    $json->{data}   = [ $data ];
+    $json->{columns}    = \@columns;
+    return $json;
+}
+
+sub mds {
+    my $self    = shift;
+    my $href    = shift;
+    my $log     = $self->env->log;
+    my $json    = {
+        subject     => $href->{subject},
+        message_id  => $href->{message_id},
+        body_plain  => $href->{body_plain},
+        body        => $href->{body_html},
+        data        => [],
+        source      => [ qw(email mds) ],
+    };
+    my $body    = $href->{body_html} // $href->{body_plain};
+
+    $log->trace("Parsing Ascan Message Body");
+
+    $body =~ s/<br>/<br>:::/g;
+
+    my $tree    = HTML::TreeBuilder->new;
+       $tree    ->implicit_tags(1);
+       $tree    ->implicit_body_p_tag(1);
+       $tree    ->parse_content($body);
+
+    my $text    = $tree->as_text( skip_dels => 1 );
+
+    my @columns     = ();
+    my %results     = ();
+    my @freetext    = ();
+
+    foreach my $line ( split(/:::/, $text) ) {
+        my ( $key, $value ) = split(/ = /,$line);
+        if ( $key =~ /\./ ) {
+            # periods in a key are a no-no
+            $key =~ s/\./&#46;/g;
+        }
+        if ( defined $key and defined $value ) {
+            $results{$key}  = $value;
+            push @columns, $key;
+        }
+        else {
+            push @freetext, $line;
+        }
+    }
+    $results{freetext} = join('\n', @freetext);
+    push @columns, "freetext";
+    $json->{data}       = [ \%results ];
+    $json->{columns}    = \@columns;
+    return $json;
+}
+
+sub mds2farm {
+    my $self    = shift;
+    my $href    = shift;
+    my $log     = $self->env->log;
+    my $json    = {
+        subject     => $href->{subject},
+        message_id  => $href->{message_id},
+        body_plain  => $href->{body_plain},
+        body        => $href->{body_html},
+        data        => [],
+        source      => [ qw(email mds2farm) ],
+    };
+    my $body    = $href->{body_html};
+
+    my  $tree   = HTML::TreeBuilder->new;
+        $tree   ->implicit_tags(1);
+        $tree   ->implicit_body_p_tag(1);
+        $tree   ->parse_content($body);
+
+    my $table   = ( $tree->look_down('_tag', 'table') )[0];
+    unless ($table) {
+        return $json;
+    }
+    my @rows    = $table->look_down('_tag', 'tr');
+    my $header  = shift @rows;
+    my @columns = map { $_->as_text; } $header->look_down('_tag', 'th');
+
+    if ( scalar(@columns) == 0 ) {
+        # Outlook breaks TH sometimes
+        @columns = map { $_->as_text; } $header->look_down('_tag', 'td');
+    }
+    my @results = ();
+    my @msg_id_entities;
+
+    my $empty_col_replace   = 1;
+
+    foreach my $row (@rows) {
+        my @values  = $row->look_down('_tag','td');
+        my %rowres  = (
+            alert_name  => "MDS to Farm Daily Domain Listing",
+            columns     => \@columns,
+        );
+        for ( my $i = 0; $i < scalar(@values); $i++ ) {
+            my $colname         = $columns[$i];
+            unless ($colname) {
+                $colname    = "c" . $empty_col_replace++;
+                $log->error("EMPTY colname detected! replacing with $colname");
+                $log->debug("table is: ".Dumper($table->as_HTML));
+            }
+            my $value           = $values[$i]->as_text;
+            $rowres{$colname}   = $value;
+        }
+        push @results, \%rowres;
+    }
+    $json->{data}       = \@results;
+    $json->{columns}    = \@columns;
+    return $json;
+}
+
+sub sourcefire {
+    my $self    = shift;
+    my $href    = shift;
+    my $json    = {
+        subject     => $href->{subject},
+        message_id  => $href->{message_id},
+        body_plain  => $href->{body_plain},
+        body        => $href->{body_html},
+        data        => [],
+        source      => [ qw(email sourcefire) ],
+    };
+    my $regex   = qr{ \[(?<sid>.*?)\] "(?<rule>.*?)" \[Impact: (?<impact>.*?)\] +From "(?<from>.*?)" at (?<when>.*?) +\[Classification: (?<class>.*?)\] \[Priority: (?<pri>.*?)\] {(?<proto>.*)} (?<rest>.*) *};
+
+    my $body    = $href->{body_html} // $href->{body_plain};
+       $body    =~ s/[\n\r]/ /g;
+       $body    =~ m/$regex/g;
+
+    my $rest    = $+{rest};
+    my ($fullsrc, $fulldst)     = split(/->/, $rest);
+    my ($srcip, $srcport)       = split(/:/, $fullsrc);
+    my ($dstip, $dstport)       = split(/:/, $fulldst);
+    
+    $json->{data}    = {
+        sid             => $+{sid},
+        rule            => $+{rule},
+        impact          => $+{imapct},
+        from            => $+{from},
+        when            => $+{when},
+        class           => $+{class},
+        priority        => $+{pri},
+        proto           => $+{proto},
+        srcip           => $srcip,
+        srcport         => $srcport,
+        dstip           => $dstip,
+        dstport         => $dstport,
+    };
+    $json->{columns}    = [
+        qw(sid rule impact from when class priority proto scrip srcport dstip dstport)
+    ];
+    return $json;
+}
+
+sub forefront {
+    my $self    = shift;
+    my $href    = shift;
+    my $json    = {
+        subject     => $href->{subject},
+        message_id  => $href->{message_id},
+        body_plain  => $href->{body_plain},
+        body        => $href->{body_html},
+        data        => [],
+        source      => [ qw(email forefront) ],
+    };
+    my $data    = {};
+    my @columns = ();
+
+    my $body    = $href->{body_html} // $href->{body_plain};
+    my %upper   = $body =~ m/[ ]{4}(.*?):[ ]+\"(.*?)\"/gms;
+    my %lower   = $body =~ m/[ ]{6}(.*?):[ ]*(.*?)$/gms;
+
+    foreach my $href (\%upper, \%lower) {
+        while ( my ($k, $v) = each %$href ) {
+            $k  =~ s/^[ \n\r]+//gms;
+            $k  =~ s/ /_/g;
+            $k  =~ s/\./_/g;
+            push @columns, $k;
+            $data->{$k} = $v;
+        }
+    }
+        
+    $json->{data} = [ $data ];
+    $json->{columns} = \@columns;
+
+    return $json;
+}
+
+sub generic {
+    my $self    = shift;
+    my $href    = shift;
+    my $json    = {
+        subject     => $href->{subject},
+        message_id  => $href->{message_id},
+        body_plain  => $href->{body_plain},
+        body        => $href->{body_html},
+        data        => [{
+            alert   => $href->{body_plain},
+            columns => [qw(alert)],
+        }],
+        source      => [ qw(email generic) ],
+        columns     => [ qw(alert) ],
+    };
+    return $json;
+}
+
+1;

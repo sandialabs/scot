@@ -38,6 +38,7 @@ sub update_entities_from_target {
     my $entities    = shift;
     my $env         = $self->env;
     my $log         = $self->env->log;
+    my $mongo       = $env->mongo;
 
     my $type        = $target->get_collection_name; # entry or alert
 
@@ -48,6 +49,8 @@ sub update_entities_from_target {
     my $id  = $target->id;
 
     $log->trace("Updating Entity with target $type $id info");
+
+    my $histcol = $mongo->collection('History');
 
     foreach my $entity (@$entities) {
         $log->trace("working on entity ", { filter =>\&Dumper, value => $entity});
@@ -63,6 +66,12 @@ sub update_entities_from_target {
         if ( defined $eobj   ) {
             if ( $eobj->update_push( targets => $thref ) ) {
                 $log->trace("Updated Entity $value");
+                $histcol->add_history_entry({
+                    who     => "api",
+                    what    => "appeared in $type : $id",
+                    when    => $env->now,
+                    targets => [ { target_id => $eobj->id, target_type => "entity" } ],
+                }); 
             }
             else {
                 $log->error("Failed to update Entitity $value (".$eobj->id.")");
@@ -78,7 +87,6 @@ sub update_entities_from_target {
                 targets => [ $thref ],
                 when    => [ $timestamp ],
                 classes => [],
-                occurred => [ $timestamp ],
             };
             if ( $type  eq "alert" ) {
                 push @{$ehref->{targets}},{ 
@@ -94,6 +102,16 @@ sub update_entities_from_target {
             }
             else {
                 $log->trace("Created new entity $value");
+                $env->amq->send_amq_notification("creation", $eobj, "flair");
+                $histcol->add_history_entry({
+                    targets => [ {
+                        target_id   => $eobj->id,
+                        target_type => "entity",
+                    }],
+                    when    => $env->now,
+                    what    => "entity created",
+                    who     => "flair",
+                });
             }
         }
     }

@@ -32,12 +32,12 @@ with    qw(
     Scot::Role::Body
     Scot::Role::Hashable
     Scot::Role::Permission
+    Scot::Role::Promotable
     Scot::Role::Parsed
     Scot::Role::Subject
     Scot::Role::Tags
     Scot::Role::Updated
     Scot::Role::Views
-    Scot::Role::Sources
 );
 
 =head1 Consumed Roles
@@ -63,6 +63,13 @@ This helps us in the reprocessing of mail inboxes
 =cut
 
 has message_id  => (
+    is          => 'ro',
+    isa         => 'Maybe[Str]',
+    required    => 1,
+    default     => ' ',
+);
+
+has body_plain  => (
     is          => 'ro',
     isa         => 'Maybe[Str]',
     required    => 1,
