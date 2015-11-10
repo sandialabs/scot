@@ -24,8 +24,7 @@ with    qw(
     Scot::Role::Parsed
     Scot::Role::Promotable
     Scot::Role::Status
-    Scot::Role::Updated
-    Scot::Role::When
+    Scot::Role::Times
 );
 
 =head1 Attributes

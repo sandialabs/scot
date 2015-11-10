@@ -29,7 +29,7 @@ with    qw(
     Scot::Role::Subject
     Scot::Role::Tags
     Scot::Role::Type
-    Scot::Role::Updated
+    Scot::Role::Times
 );
 
 enum 'valid_status', [ qw(open closed) ];

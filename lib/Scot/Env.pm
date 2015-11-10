@@ -166,6 +166,13 @@ sub _build_mongo {
     return $mongo;
 }
 
+has 'log_level' => (
+    is          => 'rw',
+    isa         => 'Str',
+    required    => 1,
+    default     => "$DEBUG",
+);
+
 has 'log'   => (
     is          => 'ro',
     isa         => 'Log::Log4perl::Logger',

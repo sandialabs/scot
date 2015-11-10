@@ -9,7 +9,9 @@ use MongoDB;
 use Getopt::Long qw(GetOptions);
 use v5.18;
 
-$ENV{scot_mode} = "test";
+$| = 1;
+
+$ENV{scot_mode} = "prod";
 my $env     = Scot::Env->new();
 my $meerkat = $env->mongo;
 my $log     = $env->log;
@@ -19,12 +21,14 @@ my $doalerts    = 1;
 my $doevents    = 1;
 my $doincidents = 1;
 my $doentry     = 1;
+my $startover   = 0;
 
 GetOptions( 
     "alert=i"    => \$doalerts,
     "event=i"    => \$doevents,
     "incident=i" => \$doincidents,
     "entry=i"     => \$doentry,
+    "startover" => \$startover,
 ) or die <<EOF;
 
     INVALID OPTION
@@ -34,18 +38,27 @@ GetOptions(
         --event=x   start at event id of x, 0 skip all
         --incident=x
         --entry=x
+        --startover zero's everything
 
 EOF
+
+if ($startover) {
+    system("mongo scot-prod < reset_db.js");
+    $doalerts    = 1;
+    $doevents    = 1;
+    $doincidents = 1;
+    $doentry     = 1;
+}
 
 
 my $client  = MongoDB::MongoClient->new();
 
-my $db  = $client->get_database("scotng-prod");
-
+my $db           = $client->get_database("scotng-prod");
 my $alertgroups  = $db->get_collection('alertgroups');
-my $alerts      = $db->get_collection('alerts');
+my $alerts       = $db->get_collection('alerts');
+my $agcursor     = $alertgroups->find({alertgroup_id    => { '$gte' => $doalerts }});
 
-my $agcursor    = $alertgroups->find({id    => { '$gte' => $doalerts }});
+say "Processing ". $agcursor->count. " Alertgroups";
 
 while ( my $alertgroup = $agcursor->next ) {
 
@@ -61,6 +74,7 @@ while ( my $alertgroup = $agcursor->next ) {
 
     unless ( $alertgroup->{body} ) { $alertgroup->{body} = ' '; }
 
+
     $alertgroup->{groups}   = {
         read    => delete $alertgroup->{readgroups},
         modify  => delete $alertgroup->{modifygroups},
@@ -74,6 +88,18 @@ while ( my $alertgroup = $agcursor->next ) {
     $alertgroup->{open_count}   = delete $alertgroup->{open} // 0;
     $alertgroup->{closed_count} = delete $alertgroup->{closed} // 0;
     $alertgroup->{promoted_count} = delete $alertgroup->{promoted}// 0;
+
+    if ( $alertgroup->{status} =~ /\// ) {
+        if ( $alertgroup->{promoted_count} > 0 ) {
+            $alertgroup->{status} = "promoted";
+        }
+        elsif ( $alertgroup->{open_count} > 0 ) {
+            $alertgroup->{status} = "open";
+        }
+        else {
+            $alertgroup->{status} = "closed";
+        }
+    }
 
     $alertgroup->{updated}  = int($alertgroup->{updated});
 
@@ -129,7 +155,9 @@ while ( my $alertgroup = $agcursor->next ) {
 }
 
 my $events      = $db->get_collection('events');
-my $event_cursor = $events->find();
+my $event_cursor = $events->find({event_id => {'$gte' => $doevents}});
+
+say "Processing ". $event_cursor->count . " events";
 
 while ( my $event = $event_cursor->next ) {
 
@@ -164,7 +192,9 @@ while ( my $event = $event_cursor->next ) {
 }
 
 my $incidents   = $db->get_collection('incidents');
-my $inc_cursor  = $incidents->find();
+my $inc_cursor  = $incidents->find({ incident_id => { '$gte' => $doincidents}});
+
+say "Processing ". $inc_cursor->count. " incidents";
 
 while ( my $incident = $inc_cursor->next ) {
 
@@ -195,7 +225,9 @@ while ( my $incident = $inc_cursor->next ) {
 }
 
 my $entries = $db->get_collection('Entries');
-my $ecursor = $entries->find();
+my $ecursor = $entries->find({ entry_id => { '$gte' => $doentry }});
+
+say "Processing ". $ecursor->count . " entries";
 
 while ( my $entry = $ecursor->next ) {
 

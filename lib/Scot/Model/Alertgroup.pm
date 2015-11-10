@@ -36,20 +36,22 @@ with    qw(
     Scot::Role::Parsed
     Scot::Role::Subject
     Scot::Role::Tags
-    Scot::Role::Updated
+    Scot::Role::Times
     Scot::Role::Views
 );
 
 =head1 Consumed Roles
+
+    Meerkat::Role::Document
     Scot::Role::Body
     Scot::Role::Hashable
     Scot::Role::Permission
+    Scot::Role::Promotable
     Scot::Role::Parsed
     Scot::Role::Subject
     Scot::Role::Tags
-    Scot::Role::Updated
+    Scot::Role::Times
     Scot::Role::Views
-    Scot::Role::Sources
 
 =head1 Attributes
 

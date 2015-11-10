@@ -19,7 +19,7 @@ with    qw(
     Meerkat::Role::Document
     Scot::Role::Data
     Scot::Role::Hashable
-    Scot::Role::When
+    Scot::Role::Times
 );
 
 =head1 Attributes

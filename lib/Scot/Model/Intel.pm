@@ -20,9 +20,8 @@ with    qw(
     Scot::Role::Hashable
     Scot::Role::Permission
     Scot::Role::Subject
-    Scot::Role::Updated
+    Scot::Role::Times
     Scot::Role::Views
-    Scot::Role::When
 );
 
 =head1 Attributes

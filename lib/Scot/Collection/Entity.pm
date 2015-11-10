@@ -1,6 +1,7 @@
 package Scot::Collection::Entity;
 use lib '../../../lib';
 use Moose 2;
+use Data::Dumper;
 extends 'Scot::Collection';
 with    qw(
     Scot::Role::GetByAttr
@@ -69,7 +70,7 @@ sub update_entities_from_target {
                 $histcol->add_history_entry({
                     who     => "api",
                     what    => "appeared in $type : $id",
-                    when    => $env->now,
+                    when    => $target->when // $target->created,
                     targets => [ { target_id => $eobj->id, target_type => "entity" } ],
                 }); 
             }
@@ -108,7 +109,7 @@ sub update_entities_from_target {
                         target_id   => $eobj->id,
                         target_type => "entity",
                     }],
-                    when    => $env->now,
+                    when    => $target->when // $target->created,
                     what    => "entity created",
                     who     => "flair",
                 });

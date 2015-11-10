@@ -17,14 +17,13 @@ The model of an individual Entry
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
+    Scot::Role::Body
     Scot::Role::Entitiable
-    Scot::Role::Targets
-    Scot::Role::Updated
     Scot::Role::Hashable
     Scot::Role::Parsed
     Scot::Role::Permission
-    Scot::Role::When
-    Scot::Role::Body
+    Scot::Role::Targets
+    Scot::Role::Times
 );
 
 =head1 Attributes
