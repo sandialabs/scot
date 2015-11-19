@@ -8,7 +8,7 @@
 # mucking up the system if there is an issue with the install script
 set -o pipefail
 
-readonly DEVDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+readonly DEVDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"; cd .. && pwd )"
 readonly WEBAPPS='/opt/sandia/webapps'
 readonly INSTDIR='/opt/sandia/webapps/scot'
 readonly FILESTORE='/opt/scotfiles'
@@ -119,7 +119,7 @@ done
 
 
   echo  "Installing Perl Modules"
-  for PACKAGE in  "Curses::UI" "Number::Bytes::Human" "Sys::RunAlone" "Parallel::ForkManager" "DBI" "Encode" "FileHandle" "File::Slurp" "File::Temp" "File::Type" "Geo::IP" "HTML::Entities" "HTML::Scrubber" "HTML::Strip" "HTML::StripTags" "JSON" "Log::Log4perl" "Mail::IMAPClient" "Mail::IMAPClient::BodyStructure" "MongoDB" "MongoDB::GridFS" "MongoDB::GridFS::File" "MongoDB::OID" "Moose" "Moose::Role" "Moose::Util::TypeConstraints" "Net::Jabber::Bot" "Net::LDAP" "Net::SMTP::TLS" "Readonly" "Time::HiRes" "Mojo" "MojoX::Log::Log4perl" "MooseX::MetaDescription::Meta::Attribute" "DateTime::Format::Natural" "Net::STOMP::Client" "IPC::Run" "XML::Smart" "Config::Auto" "Data::GUID" "Redis" "File::LibMagic" "Courriel" "List::Uniq" "Domain::PublicSuffix" "Crypt::PBKDF2" "Config::Crontab" "HTML::TreeBuilder HTML::FromText" "DateTime::Cron::Simple" "HTML::FromText" "IO::Prompt" "Proc::PID::File" "Test::Mojo" "Log::Log4perl" "File::Slurp" "AnyEvent::STOMP::Client"
+  for PACKAGE in  "Curses::UI" "Number::Bytes::Human" "Sys::RunAlone" "Parallel::ForkManager" "DBI" "Encode" "FileHandle" "File::Slurp" "File::Temp" "File::Type" "Geo::IP" "HTML::Entities" "HTML::Scrubber" "HTML::Strip" "HTML::StripTags" "JSON" "Log::Log4perl" "Mail::IMAPClient" "Mail::IMAPClient::BodyStructure" "MongoDB" "MongoDB::GridFS" "MongoDB::GridFS::File" "MongoDB::OID" "Moose" "Moose::Role" "Moose::Util::TypeConstraints" "Net::Jabber::Bot" "Net::LDAP" "Net::SMTP::TLS" "Readonly" "Time::HiRes" "Mojo" "MojoX::Log::Log4perl" "MooseX::MetaDescription::Meta::Attribute" "DateTime::Format::Natural" "Net::STOMP::Client" "IPC::Run" "XML::Smart" "Config::Auto" "Data::GUID" "Redis" "File::LibMagic" "Courriel" "List::Uniq" "Domain::PublicSuffix" "Crypt::PBKDF2" "Config::Crontab" "HTML::TreeBuilder HTML::FromText" "DateTime::Cron::Simple" "HTML::FromText" "IO::Prompt" "Proc::PID::File" "Test::Mojo" "Log::Log4perl" "AnyEvent::STOMP::Client"
 
   do
       DOCRES=`perldoc -l $PACKAGE 2>/dev/null`
@@ -135,8 +135,8 @@ done
       fi
   done
 
-cpanm File::Slurp
-cpanm Test::Mojo --force
+# cpanm File::Slurp
+# cpanm Test::Mojo --force
 
 #remove the default apache webpage which blocks our 80->443 redirect
 if [ -e /etc/apache2/sites-enabled/000-default.conf ]; then
