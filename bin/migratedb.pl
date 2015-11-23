@@ -51,18 +51,17 @@ if ($startover) {
 }
 
 
-my $client  = MongoDB::MongoClient->new();
-
+my $client       = MongoDB::MongoClient->new();
 my $db           = $client->get_database("scotng-prod");
 my $alertgroups  = $db->get_collection('alertgroups');
 my $alerts       = $db->get_collection('alerts');
 my $agcursor     = $alertgroups->find({alertgroup_id    => { '$gte' => $doalerts }});
 
-say "Processing ". $agcursor->count. " Alertgroups";
+$log->debug("Processing ". $agcursor->count. " Alertgroups");
 
 while ( my $alertgroup = $agcursor->next ) {
 
-    say "Alertgroup ". $alertgroup->{alertgroup_id};
+    $log->debug("Alertgroup ". $alertgroup->{alertgroup_id});
 
     delete $alertgroup->{idfield};
     delete $alertgroup->{collection};
@@ -108,14 +107,14 @@ while ( my $alertgroup = $agcursor->next ) {
     my $newalertgroup   = $meerkat->collection('Alertgroup')->exact_create($alertgroup);
 
 
-    say "   creating sources";
+    $log->debug("   creating sources");
     create_targetable("source", $newalertgroup, @sources);
-    say "   creating tags";
+    $log->debug("   creating tags");
     create_targetable("tag", $newalertgroup, @tags);
 
     my $alertcursor = $alerts->find({alertgroup => $alertgroup->{id}});
 
-    say "   has " . $alertcursor->count . " alerts";
+    $log->debug("   has " . $alertcursor->count . " alerts");
 
     while ( my $alert = $alertcursor->next ) {
 
@@ -137,16 +136,21 @@ while ( my $alertgroup = $agcursor->next ) {
             };
         }
 
-        say "       creating alert";
+        delete $alert->{searchtext};
+        delete $alert->{entities};
+
+        $log->debug("       creating alert ". $alert->{id});
+        my $cmdlength = length(Dumper($alert));
+        $log->debug("           alert cmd length = $cmdlength");
         my $aobj    = $meerkat->collection('Alert')->exact_create($alert);
 
-        say "       creating alert flair";
+        $log->debug("       creating alert flair");
         process_alert_flair($aobj);
 
-        say "           creating history";
+        $log->debug("           creating history");
         create_targetable("history", $aobj, @history);
 
-        say "           creating tags";
+        $log->debug("           creating tags");
         create_targetable("tag", $aobj, @tags);
 
     }
@@ -157,11 +161,11 @@ while ( my $alertgroup = $agcursor->next ) {
 my $events      = $db->get_collection('events');
 my $event_cursor = $events->find({event_id => {'$gte' => $doevents}});
 
-say "Processing ". $event_cursor->count . " events";
+$log->debug("Processing ". $event_cursor->count . " events");
 
 while ( my $event = $event_cursor->next ) {
 
-    say "Event $event->{event_id}";
+    $log->debug("Event $event->{event_id}");
 
     delete $event->{idfield};
     delete $event->{collection};
@@ -181,24 +185,24 @@ while ( my $event = $event_cursor->next ) {
         from => delete $event->{alerts}
     };
 
-    say "   Creating Event";
+    $log->debug("   Creating Event");
     my $eobj    = $meerkat->collection('Event')->exact_create($meerkat);
-    say "   Creating History";
+    $log->debug("   Creating History");
     create_targetable("history", $eobj, @history);
-    say "   Creating Tags";
+    $log->debug("   Creating Tags");
     create_targetable("tag", $eobj, @tags);
-    say "   Creating Sources";
+    $log->debug("   Creating Sources");
     create_targetable("source", $eobj, @sources);
 }
 
 my $incidents   = $db->get_collection('incidents');
 my $inc_cursor  = $incidents->find({ incident_id => { '$gte' => $doincidents}});
 
-say "Processing ". $inc_cursor->count. " incidents";
+$log->debug("Processing ". $inc_cursor->count. " incidents");
 
 while ( my $incident = $inc_cursor->next ) {
 
-    say "Incident $incident->{incident_id}";
+    $log->debug("Incident $incident->{incident_id}");
 
     $incident->{id}     = delete $incident->{incident_id};
     delete $incident->{idfield};
@@ -213,13 +217,13 @@ while ( my $incident = $inc_cursor->next ) {
         read    => delete $incident->{readgroups},
         modify  => delete $incident->{modifygroups},
     };
-    say "   Creating Incident";
+    $log->debug("   Creating Incident");
     my $iobj    = $meerkat->collection('Incident')->exact_create($incident);
-    say "   Creating History";
+    $log->debug("   Creating History");
     create_targetable("history", $iobj, @history);
-    say "   Creating Tags";
+    $log->debug("   Creating Tags");
     create_targetable("tag", $iobj, @tags);
-    say "   Creating Sources";
+    $log->debug("   Creating Sources");
     create_targetable("source", $iobj, @sources);
     
 }
@@ -227,11 +231,11 @@ while ( my $incident = $inc_cursor->next ) {
 my $entries = $db->get_collection('Entries');
 my $ecursor = $entries->find({ entry_id => { '$gte' => $doentry }});
 
-say "Processing ". $ecursor->count . " entries";
+$log->debug("Processing ". $ecursor->count . " entries");
 
 while ( my $entry = $ecursor->next ) {
 
-    say "Entry $entry->{entry_id}";
+    $log->debug("Entry $entry->{entry_id}");
 
     $entry->{id}    = delete $entry->{entry_id};
     delete $entry->{idfield};
@@ -252,13 +256,13 @@ while ( my $entry = $ecursor->next ) {
     $entry->{parsed} = 0;
     $entry->{when} = int($entry->{when});
     
-    say "   creating entry";
+    $log->debug("   creating entry");
     my $eobj    = $meerkat->collection('Entry')->exact_create($entry);
 
-    say "   flairing entry";
+    $log->debug("   flairing entry");
     process_entry_flair($eobj);
 
-    say "   creating history";
+    $log->debug("   creating history");
     create_targetable("history", $eobj, @history);
 
 }
@@ -308,7 +312,7 @@ sub create_targetable {
             }
         }
         else {
-            say "unrecognized type $type ";
+            $log->debug("unrecognized type $type ");
         }
     }
 }
@@ -341,6 +345,16 @@ sub process_alert_flair {
             }
         }
     }
+
+    my $flairsize   = length(Dumper(\%flair));
+
+    if ( $flairsize > 1000000 ) {
+        $log->debug("       Really large flair command! $flairsize chars");
+        $env->log->warn("       FLAIR cmd length is $flairsize");
+        $env->log->warn("       skipping Alert: ".$alert->id);
+        return;
+    }
+    
 
     $alert->update({
         '$set'  => {

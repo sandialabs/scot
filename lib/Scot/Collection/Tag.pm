@@ -61,7 +61,7 @@ sub create_from_handler {
         who     => "api",
         what    => "tag applied to $target_type : $target_id",
         when    => $env->now(),
-        targets => [ { target_id => $tag_obj->id, target_type => "tag" } ],
+        targets => [ { id => $tag_obj->id, type => "tag" } ],
     });
 
     return $tag_obj;
@@ -78,8 +78,8 @@ sub get_tags {
     my $cursor  = $self->find({
         targets => {
             '$elemMatch' => {
-                target_type => $thing,
-                target_id   => $id,
+                type => $thing,
+                id   => $id,
             },
         },
     });
@@ -111,22 +111,22 @@ sub add_tag_to {
         $tag_obj    = $self->create({
             value    => $tag,
             targets => [{
-                target_type    => $thing,
-                target_id      => $id + 0,
+                type    => $thing,
+                id      => $id + 0,
             }],
         });
     }
     else {
         $tag_obj->update_add( targets => {
-            target_type    => $thing,
-            target_id      => $id + 0,
+            type    => $thing,
+            id      => $id + 0,
         });
     }
     $env->mongo->collection("History")->add_history_entry({
         who     => "api",
         what    => "tag applied to $thing : $id",
         when    => $env->now(),
-        targets => [ { target_id => $tag_obj->id, target_type => "tag" } ],
+        targets => [ { id => $tag_obj->id, type => "tag" } ],
     });
 
     return $tag_obj;

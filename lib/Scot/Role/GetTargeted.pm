@@ -12,8 +12,8 @@ sub get_targeted {
 
     my $match   = {
         targets => {
-            target_id   => $params{target_id},
-            target_type => $params{target_type},
+            id   => $params{target_id},
+            type => $params{target_type},
         }
     };
     

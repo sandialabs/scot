@@ -35,7 +35,7 @@ override 'create' => sub {
     my $env = $self->env;
     my $log = $self->env->log;
 
-    $log->trace("In overriden create");
+#    $log->trace("In overriden create");
 
     my @args    = ( ref $args->[0] eq 'HASH' ? %{$args->[0]} : @$args );
     my $iid     = $self->get_next_id;
@@ -59,7 +59,7 @@ sub exact_create {
     my $env = $self->env;
     my $log = $self->env->log;
 
-    $log->trace("In exact create");
+#    $log->trace("In exact create");
 
     my @args    = ( ref $args->[0] eq 'HASH' ? %{$args->[0]} : @$args );
     if ( $self->class->meta->does_role("Scot::Role::Permittable") ) {
@@ -67,8 +67,15 @@ sub exact_create {
         $self->get_group_permissions(\@args);
     }
 
-    my $obj = $self->class->new( @args, _collection => $self );
-    $self->_save($obj);
+    my $obj;
+    eval {
+        $obj = $self->class->new( @args, _collection => $self );
+        $self->_save($obj);
+    };
+    if ( $@ ) {
+        $log->warn("\@ARGS are ", {filter=>\&Dumper, value =>\@args});
+        $log->error("ERROR: $@");
+    }
 
     return $obj;
 }
@@ -167,8 +174,8 @@ sub get_subthing {
     if ( $class->meta->does_role("Scot::Role::Targets") ) {
         $log->trace("$class does Targets, retrieving...");
         $cursor = $collection->find({
-            'targets.target_id'  => $id + 0,
-            'targets.target_type' => $thing,
+            'targets.id'  => $id + 0,
+            'targets.type' => $thing,
         });
 #        $cursor = $self->get_targets(
 #            target_id   => $id + 0,
@@ -190,8 +197,8 @@ sub get_targets {
     my $id      = $params{target_id};
     my $thing   = $params{target_type};
     my $search  = {
-        'targets.target_type' => $thing,
-        'targets.target_id'   => $id,
+        'targets.type' => $thing,
+        'targets.id'   => $id,
     };
     $self->env->log->debug("get targets: ",{ filter =>\&Dumper, value => $search});
     my $cursor  = $self->find($search);
@@ -247,16 +254,16 @@ sub upsert_targetables {
         my $object  = $col->find_one({$key => $item});
         if ($object) {
             $object->update_add( targets => {
-                target_id   => $id,
-                target_type => $type,
+                id   => $id,
+                type => $type,
             });
         }
         else {
             $object = $col->create({
                 $key    => $item,
                 targets => [{
-                    target_id   => $id,
-                    target_type => $type,
+                    id   => $id,
+                    type => $type,
                 }],
             });
         }

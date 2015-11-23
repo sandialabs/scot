@@ -22,8 +22,8 @@ sub create_from_api {
         my $ecoll   = $mongo->collection('Entry');
         foreach my $entry (@entries) {
             $entry->{targets}   = [{
-                target_id     => $checklist->id,
-                target_type   => "checklist",
+                id     => $checklist->id,
+                type   => "checklist",
             }];
             $entry->{owner}         = $entry->{owner} // $request->{user};
             $entry->{task}          = {

@@ -38,7 +38,7 @@ has value  => (
 
 =item B<targets>
 
-[ { target_type: x, target_id, y } ]
+[ { type: x, id, y } ]
 
 =cut
 

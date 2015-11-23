@@ -24,7 +24,6 @@ Create an event and from a POST to the handler
 
 =cut
 
-
 sub create_from_api {
     my $self    = shift;
     my $request = shift;
@@ -54,8 +53,8 @@ sub create_from_api {
         foreach my $entry ( @entries ) {
             $entry->{targets}   = [ 
                 {
-                    target_id   => $guide->id,
-                    target_type => "guide",
+                    id   => $guide->id,
+                    type => "guide",
                 }
             ];
             $entry->{owner} = $entry->{owner} // $request->{user};
@@ -64,6 +63,22 @@ sub create_from_api {
     }
 
     return $guide;
+}
+
+sub get_guide {
+    my $self    = shift;
+    my %params  = @_;
+    my $id      = $params{target_id};
+    my $type    = $params{target_type};
+    my $cursor  = $self->find({
+        targets => {
+            '$elemMatch'    => {
+                type    => $type,
+                id      => $id,
+            },
+        },
+    });
+    return $cursor;
 }
 
 
