@@ -59,7 +59,7 @@ sub create_from_handler {
         who     => "api",
         what    => "source created for $target_type : $target_id",
         when    => $env->now,
-        targets => [ { target_id => $source_obj->id, target_type => "source" } ],
+        targets => [ { id => $source_obj->id, type => "source" } ],
     });
 
     return $source_obj;
@@ -76,8 +76,8 @@ sub get_sources {
     my $cursor  = $self->find({
         targets => {
             '$elemMatch' => {
-                target_type => $thing,
-                target_id   => $id,
+                type => $thing,
+                id   => $id,
             },
         },
     });
@@ -101,7 +101,7 @@ sub add_source_to {
     my $handler = shift;
     my $thing   = shift;
     my $id      = shift;
-    my $source     = shift;
+    my $source  = shift;
 
     my $env = $handler->env;
 
@@ -126,7 +126,7 @@ sub add_source_to {
         who     => "api",
         what    => "source cite added $thing : $id",
         when    => $env->now,
-        targets => [ { target_id => $source_obj->id, target_type => "source" } ],
+        targets => [ { id => $source_obj->id, type => "source" } ],
     });
 
 

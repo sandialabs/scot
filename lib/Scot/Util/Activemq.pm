@@ -118,6 +118,7 @@ sub send {
     my $self    = shift;
     my $href    = shift;
     my $log     = $self->env->log;
+    $log->level(Log::Log4perl::Level::to_priority('WARN'));
 
     my $dest    = $href->{dest};
     delete $href->{dest};
@@ -142,6 +143,7 @@ sub send {
     if ($@) {
         $log->error("Error Sending to ActiveMQ: ".$@);
     }
+    $log->level(Log::Log4perl::Level::to_priority('DEBUG'));
 }
 
 sub send_amq_notification {

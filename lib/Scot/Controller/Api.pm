@@ -114,7 +114,7 @@ sub create {
             who     => $user,
             what    => "created via api",
             when    => $env->now,
-            targets => [ { target_id => $object->id, target_type => $thing } ],
+            targets => [ { id => $object->id, type => $thing } ],
         });
     }
 
@@ -664,7 +664,7 @@ sub update {
             who     => $user,
             what    => "updated via api",
             when    => $env->now,
-            targets => [ { target_id => $object->id, target_type => $col_name } ],
+            targets => [ { id => $object->id, type => $col_name } ],
         });
     }
 
@@ -794,7 +794,7 @@ sub promote_to_existing {
     # write history and send amq notification
     $self->write_promotion_history_notification(
         $pobj, $user, "added promotion from $colname : ".$object->id,
-        { target_id => $pobj->id, target_type => $pro_col_name }
+        { id => $pobj->id, type => $pro_col_name }
     );
 
     # now update the object that was promoted
@@ -814,7 +814,7 @@ sub promote_to_existing {
     # write history and send amq notification
     $self->write_promotion_history_notification(
         $object, $user, "promoted to $pro_col_name : ".$pobj->id,
-        {target_id => $object->id, target_type => $colname} 
+        {id => $object->id, type => $colname} 
     );
 
     # special handling of alert to event promotion
@@ -878,7 +878,7 @@ sub promote_to_new_event {
     }
     $self->write_promotion_history_notification(
         $pobj, $user, "created by promotion of alert : ".$object->id,
-        { target_id => $pobj->id, target_type => "event" }
+        { id => $pobj->id, type => "event" }
     );
     
     # do we have an entry provided
@@ -908,7 +908,7 @@ sub promote_to_new_event {
     }
     $self->write_promotion_history_notification(
         $object, $user, "promoted to event : ".$pobj->id, 
-        { target_id => $object->id, target_type => $object->get_collection_name }
+        { id => $object->id, type => $object->get_collection_name }
     );
     return $pobj->id;
 }
@@ -960,7 +960,7 @@ sub promote_to_new_incident {
     }
     $self->write_promotion_history_notification(
         $incident, $user, "created by promotion of event : ".$object->id,
-        { target_id => $incident->id, target_type => "incident" }, "create"
+        { id => $incident->id, type => "incident" }, "create"
     );
 
     unless ( $object->update({
@@ -976,7 +976,7 @@ sub promote_to_new_incident {
     }
     $self->write_promotion_history_notification(
         $object, $user, "promoted to incident : ".$incident->id,
-        { target_id => $object->id, target_type => "event" },
+        { id => $object->id, type => "event" },
     );
     return $incident->id;
 

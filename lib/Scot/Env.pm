@@ -181,10 +181,24 @@ has 'log'   => (
     builder     => '_build_logger',
 );
 
+has 'logfile'   => (
+    is          => 'rw',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_get_log_file',
+);
+
+sub _get_log_file {
+    my $self    = shift;
+    my $logfile = $ENV{'scot_log_file'} // "/tmp/scot.log";
+}
+    
+
 sub _build_logger {
     my $self    = shift;
     my $mode    = $self->mode;
-    my $logfile = $ENV{'scot_log_file'} // "/tmp/scot.log";
+    my $logfile = $self->logfile;
 
     my $log     = Log::Log4perl->get_logger("Scot");
     my $layout  = Log::Log4perl::Layout::PatternLayout->new(

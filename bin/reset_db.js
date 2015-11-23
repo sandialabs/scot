@@ -16,6 +16,19 @@ db.audit.ensureIndex({"when":1});
 db.checklist.drop();
 db.checklist.ensureIndex({"id": 1});
 
+db.scotmod.drop();
+db.scotmod.insert({
+    "id":   1,
+    "class":    "Scot::Util::Activemq",
+    "attribute": "amq",
+});
+
+//db.scotmod.insert({
+//    "id":   2,
+//    "class":    "Scot::Util::Imap",
+//    "attribute":    "imap",
+//});
+
 db.config.drop();
 db.config.insert({
     "id":     1,

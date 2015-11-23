@@ -4,7 +4,7 @@ use Moose::Role;
 
 =item B<targets>
 
-Array of hash references of form { target_type => t, target_id => i }
+Array of hash references of form { type => t, id => i }
 The consuming model will use this to track what this is applied against
 
 =cut

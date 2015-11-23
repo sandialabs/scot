@@ -135,8 +135,8 @@ done
       fi
   done
 
-cpanm File::Slurp
-cpanm Test::Mojo --force
+#cpanm File::Slurp
+#cpanm Test::Mojo --force
 
 #remove the default apache webpage which blocks our 80->443 redirect
 if [ -e /etc/apache2/sites-enabled/000-default.conf ]; then

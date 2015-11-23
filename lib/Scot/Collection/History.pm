@@ -43,8 +43,8 @@ sub get_history {
     my $cursor  = $self->find({
         targets => {
             '$elemMatch' => {
-                target_type => $thing,
-                target_id   => $id,
+                type => $thing,
+                id   => $id,
             },
         },
     });

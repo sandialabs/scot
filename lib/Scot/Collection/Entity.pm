@@ -24,8 +24,8 @@ sub get_entity_data_for {
     my $cursor  = $self->find({
         targets => {
             '$elemMatch' => {
-                target_type => $thing,
-                target_id   => $id,
+                type => $thing,
+                id   => $id,
             },
         },
     });
@@ -48,30 +48,35 @@ sub update_entities_from_target {
     }
 
     my $id  = $target->id;
+    my $thref   = {
+        type => $type,
+        id   => $id,
+    };
+
 
     $log->trace("Updating Entity with target $type $id info");
 
     my $histcol = $mongo->collection('History');
+    my %seen    = ();
 
     foreach my $entity (@$entities) {
-        $log->trace("working on entity ", { filter =>\&Dumper, value => $entity});
+        # $log->trace("working on entity ", { filter =>\&Dumper, value => $entity});
         my $value   = $entity->{value};
-        my $type    = $entity->{type};
-        my $eobj    = $self->find_one({value => $value, type => $type});
+        my $etype    = $entity->{type};
+        my $eobj    = $self->find_one({value => $value, type => $etype});
 
-        my $thref   = {
-            target_type => $type,
-            target_id   => $id,
-        };
-
+        next if $seen{$value}{$etype};
+    
         if ( defined $eobj   ) {
-            if ( $eobj->update_push( targets => $thref ) ) {
+            if ( $eobj->update({
+                    '$addToSet' => {targets => $thref}
+                }) ) {
                 $log->trace("Updated Entity $value");
                 $histcol->add_history_entry({
                     who     => "api",
                     what    => "appeared in $type : $id",
                     when    => $target->when // $target->created,
-                    targets => [ { target_id => $eobj->id, target_type => "entity" } ],
+                    targets => [ { id => $eobj->id, type => "entity" } ],
                 }); 
             }
             else {
@@ -91,7 +96,7 @@ sub update_entities_from_target {
             };
             if ( $type  eq "alert" ) {
                 push @{$ehref->{targets}},{ 
-                    target_type => 'alertgroup', target_id => $target->alertgroup 
+                    type => 'alertgroup', id => $target->alertgroup 
                 };
             }
 
@@ -106,8 +111,8 @@ sub update_entities_from_target {
                 $env->amq->send_amq_notification("creation", $eobj, "flair");
                 $histcol->add_history_entry({
                     targets => [ {
-                        target_id   => $eobj->id,
-                        target_type => "entity",
+                        id   => $eobj->id,
+                        type => "entity",
                     }],
                     when    => $target->when // $target->created,
                     what    => "entity created",
@@ -115,6 +120,7 @@ sub update_entities_from_target {
                 });
             }
         }
+        $seen{$value}{$etype}++;
     }
 }
 
@@ -127,8 +133,8 @@ sub get_entities {
 
     my $cursor  = $self->find({
         targets => {
-            target_id   => $params{target_id},
-            target_type => $params{target_type},
+            id   => $params{target_id},
+            type => $params{target_type},
         }
     });
     return $cursor;

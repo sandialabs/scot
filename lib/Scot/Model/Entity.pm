@@ -55,7 +55,7 @@ has type  => (
 
 =item B<targets>
 
-array of hash references of form { target_type => t, target_id => i }
+array of hash references of form { type => t, id => i }
 from Scot::Role::Target
 
 =cut

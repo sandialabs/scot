@@ -42,8 +42,8 @@ sub create_from_api {
     }
 
     $json->{targets}    = [ {
-        target_id   => $target_id,
-        target_type => $target_type,
+        id   => $target_id,
+        type => $target_type,
     } ];
 
     delete $json->{target_id};
@@ -117,8 +117,8 @@ sub get_entries {
     $id         +=0;
 
     my $cursor  = $self->find({
-        target_type => $thing,
-        target_id   => $id,
+        type => $thing,
+        id   => $id,
     });
     return $cursor;
 }
