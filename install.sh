@@ -1,5 +1,6 @@
 #!/bin/bash
 #
+#
 # SCOT 3 installer
 # 
 # goal: support more than Ubuntu
