@@ -329,8 +329,11 @@ update-rc.d activemq defaults
 
 
 echo -e "${yellow}Starting mongod...${NC}"
+# Copy mongod.conf to /etc/mongod.conf
+  cp ./etc/mongod.conf /etc/mongod.conf
 # Initialize a mongo data folder and logfile
-mkdir -p /data/db
+  mkdir -p /var/lib/mongodb
+  chown -R mongodb:mongodb /var/lib/mongodb/
 # Start mongodb with logging
 # --logpath    Without this mongod will output all log information to the standard output.
 # --logappend  Ensure mongod appends new entries to the end of the logfile. We create it first so that the below tail always finds something
