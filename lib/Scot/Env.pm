@@ -133,8 +133,8 @@ sub _get_mongo_config {
         db_name         => 'scot-' . $self->mode,
         find_master     => 1,
         write_safety    => 1,
-        user            => 'scot',
-        pass            => 'scot1',
+        #user            => 'scot',
+        #pass            => 'scot1',
         port            => 27017,
     };
 }

@@ -10,7 +10,7 @@ set -o pipefail
 
 readonly DEVDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"; cd .. && pwd )"
 readonly WEBAPPS='/opt/sandia/webapps'
-readonly INSTDIR='/opt/sandia/webapps/scot'
+readonly INSTDIR='/opt/sandia/webapps/scot3'
 readonly FILESTORE='/opt/scotfiles'
 readonly CONF="$INSTDIR/etc/scot.json"
 readonly INSTLOG='/tmp/scot.install.log'
