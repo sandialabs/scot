@@ -186,7 +186,10 @@ sub get_many {
     # }
     # where params or json is
     #  {
-    #    match : { mongo json match query },
+    #    match : { 
+    #           col_name_1: condition,
+    #           col_name_2: condition,
+    #    },
     #    sort  : { mongo sorting },
     #    columns: [ col1, ... ], # display only these columns
     #    limit: x,
