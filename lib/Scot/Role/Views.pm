@@ -33,6 +33,16 @@ sub add_view {
     my $ipaddr  = shift;
     my $when    = shift;
 
+    unless ($user) {
+        $user   = "unknown";
+    }
+    unless ($when) {
+        $when   = time();
+    }
+    unless ($ipaddr) {
+        $ipaddr = "unknonw";
+    }
+
     $self->update({
         '$inc'  => { views => 1 },
         '$set'  => {
