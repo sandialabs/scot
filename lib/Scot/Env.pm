@@ -157,8 +157,8 @@ sub _build_mongo {
         database_name           => $mconf->{db_name},
         client_options          => {
             host        => $mconf->{host},
-            username    => $mconf->{user},
-            passowrd    => $mconf->{pass},
+            # username    => $mconf->{user},
+            # passowrd    => $mconf->{pass},
             w           => $mconf->{write_safety},
             find_master => $mconf->{find_master},
         },

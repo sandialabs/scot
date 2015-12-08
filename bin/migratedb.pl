@@ -255,6 +255,11 @@ while ( my $entry = $ecursor->next ) {
     my @history = @{ delete $entry->{history} // [] };
     $entry->{parsed} = 0;
     $entry->{when} = int($entry->{when});
+
+    my $targets = [ { type => $entry->{target_type}, id => $entry->{target_id} } ];
+    $entry->{targets}   = $targets;
+    delete $entry->{target_type};
+    delete $entry->{target_id};
     
     $log->debug("   creating entry");
     my $eobj    = $meerkat->collection('Entry')->exact_create($entry);

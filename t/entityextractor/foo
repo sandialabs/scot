@@ -1,0 +1,247 @@
+$VAR1 = {
+          'text' => 'The alert condition for \'(AAQ) Link to zip file in email quarantined=False\' was triggered.Alert:(AAQ) Link to zip file in email quarantined=FalseSearch String:source=hybrid_email quarantined=False HREFCOUNT<11 HREF="*.zip*" NOT(HREF="*llnl.gov*" OR HREF="*sandia.gov*" OR SMTP_MAIL_FROM="*ziprealty.com" OR HREF="*ziprealty.com" OR SMTP_MAIL_FROM="*george.millar_ge@webaccess-email.org*" OR SMTP_MAIL_FROM="*jon.carderz-1@webaccess-email.org*" OR SMTP_MAIL_FROM="integrity-minute.ethics@lmco.com" OR HREF="*ziplogix.com*" OR HREF="*ziprecruiter.com*" OR DOMAIN="zipalerts.com") | dedup MESSAGE_ID | table _time, quarantined, HREF, MAILSUBJECT, MAIL_FROM, X_IronPort_RCPT_FROM, MAIL_TO, X_IronPort_RCPT_ALL, MESSAGE-email.org*" OR SMTP_MAIL_FROM="*jon.carderz-1@webaccess-email.org*" OR SMTP_MAIL_FROM="integrity-minute.ethics@lmco.com" OR HREF="*ziplogix.com*" OR HREF="*ziprecruiter.com*" OR DOMAIN="zipalerts.com") | dedup MESSAGE_ID | table _time, quarantined, HREF, MAILSUBJECT, MAIL_FROM, X_IronPort_RCPT_FROM, MAIL_TO, X_Irojon.carderz-1@webaccess-email.org*" OR SMTP_MAIL_FROM="integrity-minute.ethics@lmco.com" OR HREF="*ziplogix.com*" OR HREF="*ziprecruiter.com*" OR DOMAIN="zipalerts.com") | dedup MESSAGE_ID | table _time, quarantined, HREF, MAILSUBJECT, MAIL_FROM, X_IronPort_RCPT_FROM, MAIL_TO, X_Ironintegrity-minute.ethics@lmco.com" OR HREF="*ziplogix.com*" OR HREF="*ziprecruiter.com*" OR DOMAIN="zipalerts.com") | dedup MESSAGE_ID | table _time, quarantined, HREF, MAILSUBJECT, MAIL_FROM, X_IronPort_RCPT_FROM, MAIL_TO, X_IronPort_RCPT_ALL, MESSAGE_ID, docidView results in Splunk_timequarantinedHREFMAILSUBJECTMAIL_FROMX_IronPort_RCPT_FROMMAIL_TOX_IronPort_RCPT_ALLMESSAGE_IDdocidSun Sep 13 14:03:55 2015Falsehttp://www.SynthWorks.com https://www.aldec.com/en http://www.altera.com/products/software/quartus-ii/modelsim/qts-modelsim-index.html http://www.xilinx.com http://www.altera.com http://www.synthworks.com/vhdlsyn_1405.zip http://www.synthworks.com/downloads/index.htm https://global.gotomeeting.com/join/452924917Update: Enrollment for VHDL Coding for Synthesisjim@synthworks.comjim@synthworks.comdlmaier@sandia.govdlmaier@sandia.gov55F5D674.6030400@SynthWorks.com55F5D674.6030400821dbf0d5cad8f8dd4e3c88e350213b1If you believe you\'ve received this email in error, please see your Splunk administrator.splunk > the engine for machine data',
+          'entities' => [
+                          {
+                            'value' => '*george.millar_ge@webaccess-email.org',
+                            'type' => 'email'
+                          },
+                          {
+                            'value' => '*jon.carderz-1@webaccess-email.org',
+                            'type' => 'email'
+                          },
+                          {
+                            'type' => 'email',
+                            'value' => 'integrity-minute.ethics@lmco.com'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'llnl.gov'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'sandia.gov'
+                          },
+                          {
+                            'value' => 'ziprealty.com',
+                            'type' => 'domain'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => '-email.org'
+                          },
+                          {
+                            'value' => 'jon.carderz-1',
+                            'type' => 'domain'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'integrity-minute.ethics'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'ziplogix.com'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'ziprecruiter.com'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'zipalerts.com'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'webaccess-email.org'
+                          },
+                          {
+                            'type' => 'emailuser',
+                            'value' => '*george.millar_ge'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'webaccess-email.org'
+                          },
+                          {
+                            'value' => '*jon.carderz-1',
+                            'type' => 'emailuser'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'lmco.com'
+                          },
+                          {
+                            'value' => 'integrity-minute.ethics',
+                            'type' => 'emailuser'
+                          },
+                          {
+                            'value' => 'qts-modelsim-index.html',
+                            'type' => 'file'
+                          },
+                          {
+                            'value' => 'vhdlsyn_1405.zip',
+                            'type' => 'file'
+                          },
+                          {
+                            'value' => 'index.htm',
+                            'type' => 'file'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'www.SynthWorks.com'
+                          },
+                          {
+                            'value' => 'www.aldec.com',
+                            'type' => 'domain'
+                          },
+                          {
+                            'value' => 'www.altera.com',
+                            'type' => 'domain'
+                          },
+                          {
+                            'value' => 'qts-modelsim-index.html',
+                            'type' => 'domain'
+                          },
+                          {
+                            'value' => 'www.xilinx.com',
+                            'type' => 'domain'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'www.synthworks.com'
+                          },
+                          {
+                            'value' => 'index.htm',
+                            'type' => 'domain'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'global.gotomeeting.com'
+                          },
+                          {
+                            'value' => 'jim@synthworks.com',
+                            'type' => 'email'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'synthworks.com'
+                          },
+                          {
+                            'type' => 'emailuser',
+                            'value' => 'jim'
+                          },
+                          {
+                            'value' => 'jim@synthworks.com',
+                            'type' => 'email'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'synthworks.com'
+                          },
+                          {
+                            'value' => 'jim',
+                            'type' => 'emailuser'
+                          },
+                          {
+                            'type' => 'email',
+                            'value' => 'dlmaier@sandia.gov'
+                          },
+                          {
+                            'value' => 'sandia.gov',
+                            'type' => 'domain'
+                          },
+                          {
+                            'value' => 'dlmaier',
+                            'type' => 'emailuser'
+                          },
+                          {
+                            'type' => 'email',
+                            'value' => 'dlmaier@sandia.gov'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'sandia.gov'
+                          },
+                          {
+                            'value' => 'dlmaier',
+                            'type' => 'emailuser'
+                          },
+                          {
+                            'type' => 'email',
+                            'value' => '55F5D674.6030400@SynthWorks.com'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => '55F5D674.6030400'
+                          },
+                          {
+                            'type' => 'domain',
+                            'value' => 'SynthWorks.com'
+                          },
+                          {
+                            'type' => 'emailuser',
+                            'value' => '55F5D674.6030400'
+                          },
+                          {
+                            'type' => 'md5',
+                            'value' => '821dbf0d5cad8f8dd4e3c88e350213b1'
+                          }
+                        ],
+          'flair' => '<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+    </head>
+    <body style="font-size: 14px; font-family: helvetica, arial, sans-serif; padding: 20px 0; margin: 0; color: #333;">
+        <div style="margin: 0 20px;">The alert condition for \'(AAQ) Link to zip file in email quarantined=False\' was triggered.</div>
+        <table border="0" cellpadding="0" cellspacing="0" class="summary" style="margin: 20px;">
+            <tbody>
+                <tr>
+                    <th style="font-weight: normal; text-align: left; padding: 0 20px 10px 0;">Alert:</th>
+                    <td style="padding: 0 0 10px 0;"><a href="https://ms27snllx.sandia.gov:8000/app/search/alert?s=%2FservicesNS%2Faaquint%2Fsearch%2Fsaved%2Fsearches%2F%2528AAQ%2529%2520Link%2520to%2520zip%2520file%2520in%2520email%2520quarantined%253DFalse" style=" text-decoration: none; margin: 0 40px 0 0; color: #5379AF;">(AAQ) Link to zip file in email quarantined=False</a></td>
+                </tr>
+                <tr>
+                    <th style="font-weight: normal; text-align: left; padding: 0 20px 10px 0;">Search String:</th>
+                    <td style="padding: 0 0 10px 0;">source=hybrid_email quarantined=False HREFCOUNT<11 HREF="*.zip*" NOT(HREF="*<span class="entity domain tld" entity-data-type="domain" entity-data-value="llnl.gov">llnl.gov</span>*" OR HREF="*<span class="entity domain tld" entity-data-type="domain" entity-data-value="sandia.gov">sandia.gov</span>*" OR SMTP_MAIL_FROM="*<span class="entity domain tld" entity-data-type="domain" entity-data-value="ziprealty.com">ziprealty.com</span>" OR HREF="*<span class="entity domain tld" entity-data-type="domain" entity-data-value="ziprealty.com">ziprealty.com</span>" OR SMTP_MAIL_FROM="<span class="entity email" data-entity-type="email" data-entity-value="*george.millar_ge@webaccess-email.org"><span class="entity emailuser" data-entity-type="emailuser" data-entity-value="*george.millar_ge">*george.millar_ge</span>@<span class="entity domain" data-entity-type="domain" data-entity-value="webaccess-email.org">webaccess-email.org</span></span>*" OR SMTP_MAIL_FROM="*jon.carderz-1@webaccess-email.org*" OR SMTP_MAIL_FROM="integrity-minute.ethics@lmco.com" OR HREF="*ziplogix.com*" OR HREF="*ziprecruiter.com*" OR DOMAIN="zipalerts.com") | dedup MESSAGE_ID | table _time, quarantined, HREF, MAILSUBJECT, MAIL_FROM, X_IronPort_RCPT_FROM, MAIL_TO, X_IronPort_RCPT_ALL, MESSAGE<span class="entity domain tld" entity-data-type="domain" entity-data-value="-email.org">-email.org</span>*" OR SMTP_MAIL_FROM="<span class="entity email" data-entity-type="email" data-entity-value="*jon.carderz-1@webaccess-email.org"><span class="entity emailuser" data-entity-type="emailuser" data-entity-value="*jon.carderz-1">*jon.carderz-1</span>@<span class="entity domain" data-entity-type="domain" data-entity-value="webaccess-email.org">webaccess-email.org</span></span>*" OR SMTP_MAIL_FROM="integrity-minute.ethics@lmco.com" OR HREF="*ziplogix.com*" OR HREF="*ziprecruiter.com*" OR DOMAIN="zipalerts.com") | dedup MESSAGE_ID | table _time, quarantined, HREF, MAILSUBJECT, MAIL_FROM, X_IronPort_RCPT_FROM, MAIL_TO, X_Iro<span class="entity domain tld" entity-data-type="domain" entity-data-value="jon.carderz-1">jon.carderz-1</span>@webaccess<span class="entity domain tld" entity-data-type="domain" entity-data-value="-email.org">-email.org</span>*" OR SMTP_MAIL_FROM="<span class="entity email" data-entity-type="email" data-entity-value="integrity-minute.ethics@lmco.com"><span class="entity emailuser" data-entity-type="emailuser" data-entity-value="integrity-minute.ethics">integrity-minute.ethics</span>@<span class="entity domain" data-entity-type="domain" data-entity-value="lmco.com">lmco.com</span></span>" OR HREF="*ziplogix.com*" OR HREF="*ziprecruiter.com*" OR DOMAIN="zipalerts.com") | dedup MESSAGE_ID | table _time, quarantined, HREF, MAILSUBJECT, MAIL_FROM, X_IronPort_RCPT_FROM, MAIL_TO, X_Iron<span class="entity domain tld" entity-data-type="domain" entity-data-value="integrity-minute.ethics">integrity-minute.ethics</span>@lmco.com" OR HREF="*<span class="entity domain tld" entity-data-type="domain" entity-data-value="ziplogix.com">ziplogix.com</span>*" OR HREF="*<span class="entity domain tld" entity-data-type="domain" entity-data-value="ziprecruiter.com">ziprecruiter.com</span>*" OR DOMAIN="<span class="entity domain tld" entity-data-type="domain" entity-data-value="zipalerts.com">zipalerts.com</span>") | dedup MESSAGE_ID | table _time, quarantined, HREF, MAILSUBJECT, MAIL_FROM, X_IronPort_RCPT_FROM, MAIL_TO, X_IronPort_RCPT_ALL, MESSAGE_ID, docid</td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="margin-top: 10px; padding-top: 20px; border-top: 1px solid #ccc;">
+        </div>
+        <p><a href="https://ms27snllx.sandia.gov:8000/app/search/@go?sid=scheduler__aaquint__search__RMD52d4de19f8b7990d9_at_1442178000_29062" style=" text-decoration: none; margin: 0 20px; color: #5379AF;">View results in Splunk</a><div style="margin:0">
+                <div style="overflow: auto; width: 100%;">
+                    <table border="0" cellpadding="0" cellspacing="0" class="results" style="margin: 20px;">
+                        <tbody>
+                            <tr>
+                                <th style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;">_time</th>
+                                <th style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;">quarantined</th>
+                                <th style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;">HREF</th>
+                                <th style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;">MAILSUBJECT</th>
+                                <th style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;">MAIL_FROM</th>
+                                <th style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;">X_IronPort_RCPT_FROM</th>
+                                <th style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;">MAIL_TO</th>
+                                <th style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;">X_IronPort_RCPT_ALL</th>
+                                <th style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;">MESSAGE_ID</th>
+                                <th style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;">docid</th>
+                            </tr>
+                            <tr valign="top">
+                                <td style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;">Sun Sep 13 14:03:55 2015</td>
+                                <td style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;">False</td>
+                                <td style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;">http://<span class="entity domain tld" entity-data-type="domain" entity-data-value="www.SynthWorks.com">www.SynthWorks.com</span> https://<span class="entity domain tld" entity-data-type="domain" entity-data-value="www.aldec.com">www.aldec.com</span>/en http://<span class="entity domain tld" entity-data-type="domain" entity-data-value="www.altera.com">www.altera.com</span>/products/software/quartus-ii/modelsim/<span class="entity file" data-entity-type="file" data-entity-value="qts-modelsim-index.html">qts-modelsim-index.html</span> http://<span class="entity domain tld" entity-data-type="domain" entity-data-value="www.xilinx.com">www.xilinx.com</span> http://<span class="entity domain tld" entity-data-type="domain" entity-data-value="www.altera.com">www.altera.com</span> http://<span class="entity domain tld" entity-data-type="domain" entity-data-value="www.synthworks.com">www.synthworks.com</span>/<span class="entity file" data-entity-type="file" data-entity-value="vhdlsyn_1405.zip">vhdlsyn_1405.zip</span> http://<span class="entity domain tld" entity-data-type="domain" entity-data-value="www.synthworks.com">www.synthworks.com</span>/downloads/<span class="entity file" data-entity-type="file" data-entity-value="index.htm">index.htm</span> https://<span class="entity domain tld" entity-data-type="domain" entity-data-value="global.gotomeeting.com">global.gotomeeting.com</span>/join/452924917</td>
+                                <td style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;">Update: Enrollment for VHDL Coding for Synthesis</td>
+                                <td style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;"><span class="entity email" data-entity-type="email" data-entity-value="jim@synthworks.com"><span class="entity emailuser" data-entity-type="emailuser" data-entity-value="jim">jim</span>@<span class="entity domain" data-entity-type="domain" data-entity-value="synthworks.com">synthworks.com</span></span></td>
+                                <td style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;"><span class="entity email" data-entity-type="email" data-entity-value="jim@synthworks.com"><span class="entity emailuser" data-entity-type="emailuser" data-entity-value="jim">jim</span>@<span class="entity domain" data-entity-type="domain" data-entity-value="synthworks.com">synthworks.com</span></span></td>
+                                <td style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;"><span class="entity email" data-entity-type="email" data-entity-value="dlmaier@sandia.gov"><span class="entity emailuser" data-entity-type="emailuser" data-entity-value="dlmaier">dlmaier</span>@<span class="entity domain" data-entity-type="domain" data-entity-value="sandia.gov">sandia.gov</span></span></td>
+                                <td style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;"><span class="entity email" data-entity-type="email" data-entity-value="dlmaier@sandia.gov"><span class="entity emailuser" data-entity-type="emailuser" data-entity-value="dlmaier">dlmaier</span>@<span class="entity domain" data-entity-type="domain" data-entity-value="sandia.gov">sandia.gov</span></span></td>
+                                <td style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;"><span class="entity email" data-entity-type="email" data-entity-value="55F5D674.6030400@SynthWorks.com"><span class="entity emailuser" data-entity-type="emailuser" data-entity-value="55F5D674.6030400">55F5D674.6030400</span>@<span class="entity domain" data-entity-type="domain" data-entity-value="SynthWorks.com">SynthWorks.com</span></span><span class="entity domain tld" entity-data-type="domain" entity-data-value="55F5D674.6030400">55F5D674.6030400</span></td>
+                                <td style="text-align: left; padding: 4px 8px; border-bottom: 1px dotted #ccc;"><span class="entity md5" data-entity-type="md5" data-entity-value="821dbf0d5cad8f8dd4e3c88e350213b1">821dbf0d5cad8f8dd4e3c88e350213b1</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div style="margin-top: 10px; border-top: 1px solid #ccc;">
+            </div>
+        <p style="margin: 20px; font-size: 11px; color: #999;">If you believe you\'ve received this email in error, please see your Splunk administrator.<br />
+            <br />splunk > the engine for machine data</body>
+</html>'
+        };
+1..0
