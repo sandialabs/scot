@@ -90,7 +90,6 @@ function ajaxFlipServer(settings) {
 }
 */
 
-
 // when adding a new entry, scroll to it.
 jQuery.fn.scrollMinimal = function() {
   var cParentTop =  this.parent().offset().top;
@@ -266,7 +265,6 @@ function deepCopy(obj) {
     return obj;
 }
 
-
 var sort_col = new Array(); // current sort column(s)
 sort_col['alert'] = 'created';
 sort_col['event'] = 'updated';
@@ -276,6 +274,7 @@ sort_direction['event'] = -1;
 var previous_filter = new Object();
 var grid_page = new Array();
 var filter = {};
+
 // called as part of preview
 function grid_filter_updated(initial_load, start) {
     if(filter[top_mode] == undefined) {
@@ -375,7 +374,7 @@ function grid_filter_updated(initial_load, start) {
     }
     $.ajax({
         type: 'GET',
-        url: '/scot/' + grid_type,
+        url: '/scot/api/v2/' + grid_type,
         data: {
             grid: JSON.stringify(options),
             filter: JSON.stringify(filter[top_mode]),
@@ -843,7 +842,6 @@ function render_entry(parent_id, entryin) {
         }
         return result;
     }
-
     function render_alert_body_html(alerts, entries, flairdata) {
         var content = alerts[0].data_with_flair.alert;
         content += '<link rel="stylesheet" type="text/css" href="sandbox.css"></link>';
@@ -853,13 +851,10 @@ function render_entry(parent_id, entryin) {
 
         return ifr;
     }
-
     function render_alert_body(entries, real_entries) {
-
         if (!(entries instanceof Array)) {
             entries = new Array(entries);
         }
-
         var result = $('<div class="tablesorter alertTableHorizontal"></div>');
         var table = $('<table width="100%"></table>');
         var thead = $('<thead></thead>');

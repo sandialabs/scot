@@ -346,7 +346,8 @@
                     <img src="/images/show.png"></img>&nbsp;<span>Show/Hide Filters</span>
                 </button> -->
             </div>
-            <table id="filters">
+            <!-- angeor
+			<table id="filters">
                 <tr id="filters-inner">
                 </tr>
             </table>
@@ -363,7 +364,9 @@
                     </table>
                 </div>
             </div>
-
+			
+			
+			</div>
             <div id="paging" style="display:none; height:20px; width:100%; color: #eee; padding-bottom:3px; background-color:#3a3a3a;">
                 <center>
                     <button  style="background-image: url('/images/paging.png'); background-position: -81px -161px; display:inline-block; height:16px; width:16px; margin:0px; padding:0px;" class="btn btn-mini" id="first" onclick="goto_page('first')"></button>
@@ -386,7 +389,7 @@
                         </select>
                 </center>
             </div>
-
+			-->
             <div id="splitterH" style="display:block; height:3px; width:100%; background-color:black; border-top:1px solid #AAA;  border-bottom:1px solid #AAA; cursor:row-resize; overflow:hidden;"  onmousedown="start_drag_splitter(event)" >
                 <center>
                     <span style="color:white; position:relative; top:-10px;"></span>
@@ -582,9 +585,23 @@
             <button class="btn btn-mini alerts hideOnSwitch alert_checked alert_parsed viewing" onclick="export_alert_data()"><img src="/images/csv_text.png"></img>&nbsp;Export to CSV</button>
             <button class="btn btn-mini alert_checked viewing hideOnSwitch alerts" onclick="delete_alerts(this)" id="delete_alerts"><i class="btn-icon icon-trash"></i>&nbsp; Delete</button>
         </div>
-        <div id="BottomPane" class="alerts events tasks" style="height:50%; overflow-y:auto; overflow-x:auto">
-        <!--Entries-->
+        <div id="NewBottomPane" class="alerts events tasks" style="height:50%; overflow-y:auto; overflow-x:auto">
         </div>
+        <div id="NewBottomDataPane">
+            <script src="app.home.js"></script>
+        </div>
+        <!--Entries-->
+			<!--
+            <table id="NewBottomDataPane" className = "entry-table"><script src='app.home.js'></script></table>
+				<tbody /tbody>
+				    <tr>
+						<th id='demo' className='title'>Entry Table Head</th>
+					</tr>
+					<tr>
+						<td id='NewBottomDataPane'><script src="app.home.js"></script></td>
+					</tr>
+				</tbody>
+			</table>-->
         <div id="intro_info" class="intro">
             <center>
             <a href="/license.html">License and Open Source Copyright Info</a>
@@ -601,6 +618,6 @@
             <a class="ajax" href="../content/ajax.html">Click here to load new content</a></p>
             </div>
         </div>
-
+        <!--<script src="app.home.js"></script>-->
     </body>
 </html>
