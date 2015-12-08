@@ -72,9 +72,9 @@ Readonly my $DOMAIN_REGEX_2 => qr{
     (?!\d+\.\d+)                            # negative look ahead for number.number
     (?=.{4,255})                            # positive look ahead to see if we have 4 to 255 characters
     (
-        (?:[a-zA-Z0-9-]{1,63}(?<!-)\.)+     # first through n "words"
+        (?:[a-zA-Z0-9-]{1,63}(?<!-)\(*\[*\{*\.\)*\]*\}*)+     # first through n "words"
         [a-zA-Z0-9-]{2,63}                  # last word, can catpute punycode
-        (?<!php|cgi|pdf|exe|doc|htm|txt|scr|jsp|jar|rar|zip)   # knock out common filenames
+        (?<!php|cgi|cfm|pdf|exe|doc|htm|txt|scr|jsp|jar|rar|zip)   # knock out common filenames
         (?<!htlm|docx|pptx)
         (?<!pl|py)
     )
@@ -112,7 +112,7 @@ Readonly my $FILE_REGEX => qr{
 	\b
     (
         [a-zA-Z0-9\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\%\.\+\~\_]+\.
-        (exe|pdf|txt|scr|doc|docx|ppt|pptx|pl|py|html|htm|php|jsp|jar|rar|zip)
+        (exe|pdf|txt|scr|doc|docx|ppt|pptx|pl|py|html|htm|php|jsp|jar|rar|zip|cfm)
     )
     \b
 }xims;
@@ -194,6 +194,12 @@ Readonly my $GOOGLE_ANALYTICS_REGEX => qr{
     (__utma=\d{9}\.(\d{9})\.\d{10}\.\d{10}\.\d{10}\.\d+\;)
 }xms;
 
+Readonly my $LAT_LONG_REGEX => qr{
+    \b
+    ([-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?))
+    \b
+}xms;
+
 
 sub _build_regexes {
     my $self    = shift;
@@ -205,6 +211,8 @@ sub _build_regexes {
         { type  => "sha256",    regex  => $SHA256_REGEX },
         { type  => "domain",    regex  => $DOMAIN_REGEX_2 },
         { type  => "file",      regex  => $FILE_REGEX },
+        { type  => "ganalytics",      regex  => $GOOGLE_ANALYTICS_REGEX },
+        { type  => "snumber",   regex => $SNUMBER_REGEX },
     ];
 }
 
@@ -227,7 +235,7 @@ sub process_html {
 
     my $tree    = HTML::TreeBuilder->new;
        $tree    ->implicit_tags(1);
-       $tree    ->implicit_body_p_tag(1);
+#       $tree    ->implicit_body_p_tag(1);
        $tree    ->p_strict(1);
        $tree    ->no_space_compacting(1);
        # $tree    ->ignore_ignorable_whitespace(0);
@@ -246,19 +254,21 @@ sub process_html {
 
 #    $tree->dump;
     my $fmt = HTML::FormatText->new();
+    my $txt = $fmt->format($tree);
+
+    $txt =~ s/^ +//;
+    $txt =~ s/ +$//;
+    $txt =~ s/\n$//;
+
+	$entities{text}	    = $txt;
+    $log->debug("PLAIN:".$fmt->format($tree));
 
     my $body    = $tree->look_down('_tag', 'body');
     my $div     = HTML::Element->new('div');
-
     $div->push_content($body->detach_content);
 
     $entities{flair}	= $div->as_HTML();
 	# $entities{text}	    = $tree->as_text;
-	$entities{text}	    = $fmt->format($tree);
-
-
-
-    $log->debug("PLAIN:".$fmt->format($tree));
 
     $tree->delete; # prevent memory leaks
 
@@ -387,6 +397,9 @@ sub process_words {
                 if ( $type eq "ipaddr" ) {# remove the obsfucating [.] or {.} or (.)
                     $match  = $self->ipaddr_processing($match);
                 }
+                if ( $type eq "domain" ) { # remove the obsfucation [.] or {.} or (.)
+                    $match = $self->domain_processing($match);
+                }
 
                 my $flair   = $self->do_span($type, $match);
 
@@ -461,6 +474,13 @@ sub ipaddr_processing {
     return join('.',@parts);
 }
 
+sub domain_processing {
+    my $self    = shift;
+    my $domain  = shift;
+    my @parts   = split (/[\[\{\(]*\.[\]\}\)]*/, $domain);
+
+    return join('.',@parts);
+}
     
 
 
