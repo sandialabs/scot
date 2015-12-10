@@ -1,0 +1,20 @@
+% layout 'default';
+% title 'SCOT LOGON';
+
+<html>
+    <head>
+        <title>SCOT LOGON</title>
+    </head>
+    <body>
+        <center>
+            <form action="/auth" method="POST">
+                <label for="username">Username</label>
+                <input type="text" size="20" name="user"></input>
+                <label for="password">Password</label>
+                <input type="password" size="20" name="pass"></input>
+                <input type="submit"><input type="reset">
+                <input type="hidden" name="orig_url" value="<%= $orig_url %>"></input>
+            </form>
+        </center>
+    </body>
+</html>

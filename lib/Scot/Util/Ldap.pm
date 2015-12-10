@@ -160,7 +160,7 @@ sub get_users_groups {
     my $binddn          = $self->dn;
     my $bindpassword    = $self->password;
     my $scheme          = $self->scheme;
-    my $searchconf      = $self->users_groups;
+    my $searchconf      = $self->user_groups;
     my $filter          = sprintf($searchconf->{filter}, $user);
 
     my $ldap = $self->ldap; 
