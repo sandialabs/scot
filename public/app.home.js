@@ -19050,8 +19050,9 @@ function getEvent() {
 var TableData = React.createClass({displayName: "TableData",
     render: function() {
         return (
-            React.createElement("tr", null, 
-                React.createElement("td", {className: "col-md-6 stat-col-num"}, this.props.item.body)
+            React.createElement("div", {className: "row-fluid entry-outer todo_undefined_outer", style: {marginLeft: 'auto', marginRight: 'auto',width:'99.3%'}}, 
+                React.createElement("div", {className: "row-fluid entry-header todo_undefined"}, this.props.item.id, " ", this.props.item.when, " by ", this.props.item.owner), 
+                React.createElement("div", {className: "entry-body"}, this.props.item.body)
             )
         );
     }
@@ -19062,11 +19063,14 @@ var Table = React.createClass({displayName: "Table",
         var rows = [];
         this.props.data.forEach(function(data) { 
             rows.push(React.createElement(TableData, {item: data}))
+            console.log("data " + data);
         });
         return (
-            React.createElement("table", {width: "100%", className: "info-box-margin"}, 
-                React.createElement("thead", null, "Entry Table Header"), 
-                React.createElement("tbody", null, rows)
+            React.createElement("div", null, 
+                React.createElement("div", {width: "100%", className: "alerts events incidents tasks", style: {height: '430px', overflow: 'auto', display: 'block'}}, 
+                    React.createElement("div", null, "Entry Table Header"), 
+                    React.createElement("div", null, rows)
+                )
             )
         );
     }

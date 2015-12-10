@@ -31,9 +31,10 @@ function getEvent() {
 var TableData = React.createClass({
     render: function() {
         return (
-            <tr>
-                <td className="col-md-6 stat-col-num">{this.props.item.body}</td>
-            </tr>
+            <div className="row-fluid entry-outer todo_undefined_outer" style={{marginLeft: 'auto', marginRight: 'auto',width:'99.3%'}}>
+                <div className="row-fluid entry-header todo_undefined">{this.props.item.id} {this.props.item.when} by {this.props.item.owner}</div>
+                <div className="entry-body">{this.props.item.body}</div>
+            </div>
         );
     }
 });
@@ -43,12 +44,15 @@ var Table = React.createClass({
         var rows = [];
         this.props.data.forEach(function(data) { 
             rows.push(<TableData item = {data} />)
+            console.log("data " + data);
         });
         return (
-            <table width="100%" className="info-box-margin">
-                <thead>Entry Table Header</thead>
-                <tbody>{rows}</tbody>
-            </table>
+            <div>
+                <div width="100%" className="alerts events incidents tasks" style={{height: '430px', overflow: 'auto', display: 'block'}}>
+                    <div>Entry Table Header</div>
+                    <div>{rows}</div>
+                </div>
+            </div>
         );
     }
 });

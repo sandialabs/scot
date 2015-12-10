@@ -3,7 +3,7 @@ var top_mode;
 var bottom_mode;
 var previous_type = 'init';
 
-function locationHashChanged(e) {
+function locationHashChanged(e) { 
     var hash = window.location.hash;
     window.document.title = 'SCOT3';
     if (hash != "" && hash != '#') {
