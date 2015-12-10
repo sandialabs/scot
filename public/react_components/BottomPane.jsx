@@ -11,7 +11,7 @@ function getEvent() {
             async: false,
             success: function(data, status) {
             jsonData = data;
-            //handleData(data);
+            console.log(jsonData);
         },
         error: function(err) {
             console.error(err.toString());
@@ -28,12 +28,22 @@ function getEvent() {
     xhttp.send();*/
 };
 
+var TableHeader = React.createClass({
+    render: function() {
+        return (
+            <div className="" style={{}}>
+                <div className="" style={{}}>{this.props.item.id}</div>
+            </div>
+        );
+    }
+});
+
 var TableData = React.createClass({
     render: function() {
         return (
             <div className="row-fluid entry-outer todo_undefined_outer" style={{marginLeft: 'auto', marginRight: 'auto',width:'99.3%'}}>
                 <div className="row-fluid entry-header todo_undefined">{this.props.item.id} {this.props.item.when} by {this.props.item.owner}</div>
-                <div className="entry-body">{this.props.item.body}</div>
+                <div className="entry-body">{this.props.item.body_plain}</div>
             </div>
         );
     }
@@ -41,15 +51,18 @@ var TableData = React.createClass({
 
 var Table = React.createClass({
     render: function() {
+        var events = [];
         var rows = [];
+        //myfunc = function(this.props.data) {    
+        //    events.push(<TableHeader item = {data} />)
+        //};
         this.props.data.forEach(function(data) { 
             rows.push(<TableData item = {data} />)
-            console.log("data " + data);
         });
         return (
             <div>
-                <div width="100%" className="alerts events incidents tasks" style={{height: '430px', overflow: 'auto', display: 'block'}}>
-                    <div>Entry Table Header</div>
+                <div width="100%" className="alerts events incidents tasks" style={{height: '800px', overflow: 'auto', display: 'block'}}>
+                    <div>{header}</div>
                     <div>{rows}</div>
                 </div>
             </div>
@@ -60,7 +73,7 @@ var Table = React.createClass({
 var displaydata = getEvent();
 console.log(displaydata);
 for (i = 0; i < displaydata.length; i++) {
-    console.log("object each item of object: " + displaydata[i].body)
+    console.log("object each item of object: " + displaydata[i].id)
 }
 console.log("for loop ended");
 

@@ -19030,7 +19030,7 @@ function getEvent() {
             async: false,
             success: function(data, status) {
             jsonData = data;
-            //handleData(data);
+            console.log(jsonData);
         },
         error: function(err) {
             console.error(err.toString());
@@ -19047,12 +19047,22 @@ function getEvent() {
     xhttp.send();*/
 };
 
+var TableHeader = React.createClass({displayName: "TableHeader",
+    render: function() {
+        return (
+            React.createElement("div", {className: "", style: {}}, 
+                React.createElement("div", {className: "", style: {}}, this.props.item.id)
+            )
+        );
+    }
+});
+
 var TableData = React.createClass({displayName: "TableData",
     render: function() {
         return (
             React.createElement("div", {className: "row-fluid entry-outer todo_undefined_outer", style: {marginLeft: 'auto', marginRight: 'auto',width:'99.3%'}}, 
                 React.createElement("div", {className: "row-fluid entry-header todo_undefined"}, this.props.item.id, " ", this.props.item.when, " by ", this.props.item.owner), 
-                React.createElement("div", {className: "entry-body"}, this.props.item.body)
+                React.createElement("div", {className: "entry-body"}, this.props.item.body_plain)
             )
         );
     }
@@ -19060,15 +19070,18 @@ var TableData = React.createClass({displayName: "TableData",
 
 var Table = React.createClass({displayName: "Table",
     render: function() {
+        var events = [];
         var rows = [];
+        //myfunc = function(this.props.data) {    
+        //    events.push(<TableHeader item = {data} />)
+        //};
         this.props.data.forEach(function(data) { 
             rows.push(React.createElement(TableData, {item: data}))
-            console.log("data " + data);
         });
         return (
             React.createElement("div", null, 
-                React.createElement("div", {width: "100%", className: "alerts events incidents tasks", style: {height: '430px', overflow: 'auto', display: 'block'}}, 
-                    React.createElement("div", null, "Entry Table Header"), 
+                React.createElement("div", {width: "100%", className: "alerts events incidents tasks", style: {height: '800px', overflow: 'auto', display: 'block'}}, 
+                    React.createElement("div", null, header), 
                     React.createElement("div", null, rows)
                 )
             )
@@ -19079,7 +19092,7 @@ var Table = React.createClass({displayName: "Table",
 var displaydata = getEvent();
 console.log(displaydata);
 for (i = 0; i < displaydata.length; i++) {
-    console.log("object each item of object: " + displaydata[i].body)
+    console.log("object each item of object: " + displaydata[i].id)
 }
 console.log("for loop ended");
 
