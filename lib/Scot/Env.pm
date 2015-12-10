@@ -48,7 +48,7 @@ has mode    => (
 );
 
 sub _get_mode {
-    return $ENV{'scot_mode'} // 'dev';
+    return $ENV{'scot_mode'} // 'prod';
 }
 
 has authmode    => (
@@ -59,7 +59,7 @@ has authmode    => (
 );
 
 sub _get_authmode {
-    return $ENV{'scot_authmode'} // 'test';
+    return $ENV{'scot_authmode'} // 'prod';
 }
 
 has default_owner   => (

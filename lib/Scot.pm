@@ -82,9 +82,8 @@ get JSON that was submitted with the web request
     # routes
     my $r       = $self->routes;
 
-    $r->route( '/login' )      ->to( 'util-aaa#login' ) ->name( 'login' );
+    $r->route( '/login' )   ->to ( 'util-aaa#login' ) ->name( 'login' );
     $r->route( '/auth' )    ->via('post') ->to('util-aaa#auth') ->name('auth');
-    $r->route( '/scot' )  ->to( 'util-aaa#auth' )  ->name( 'auth' );
 
     # make sure that we have passed authentication
 

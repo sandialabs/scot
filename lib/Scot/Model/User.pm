@@ -40,6 +40,7 @@ has pwhash  => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
+    default     => ' ',
 );
 
 =item B<lockouts>
@@ -85,12 +86,15 @@ has last_login_attempt   => (
 
 The string full name of the the user
 
+TODO: create a setter to set a real fullname (if possible)
+
 =cut
 
 has fullname    => (
     is              => 'ro',
     isa             => 'Str',
     required        => 1,
+    default         => 'not provided',
 );
 
 =item B<tzpref>

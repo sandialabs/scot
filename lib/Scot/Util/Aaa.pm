@@ -54,7 +54,14 @@ sub check {
 
     $log->trace("Not in testing mode");
 
+    my $req     = $self->req;
+    my $url     = $req->url->to_string();
+    $log->trace("Login Form will redirect after auth to url = $url");
+    $self->session(orig_url => $url);
+
+
     $self->redirect_to('/login');
+    return 0;
 }
 
 =item B<login>
@@ -65,7 +72,11 @@ This will render the login in page
 
 sub login {
     my $self    = shift;
-    $self->render();
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $url     = $self->session('orig_url');
+    $log->trace("Trying to render Login Form url = $url");
+    $self->render( orig_url => $url );
 }
 
 =item B<logout>
@@ -78,6 +89,7 @@ Log out has been achieved
 sub logout {
     my $self    = shift;
     $self->session(expires => 1);
+    $self->redirect_to('/login');
 }
 
 =item B<auth>
@@ -100,12 +112,16 @@ sub auth {
 
     my $user    = $self->param('user');
     my $pass    = $self->param('pass');
+    my $orig_url= $self->param('orig_url');
+
+    $log->trace("Got user = $user orig_url = $orig_url");
 
     unless ( defined $user and defined $pass ) {
         return $self->failed_auth(
             "Undefined user or pass",
             $user, 
             $pass);
+
     }
 
     if ( $self->is_test_mode ) {
@@ -133,7 +149,7 @@ sub auth {
     if ( defined( $self->env->ldap ) ) {
         $log->trace("attempting ldap auth for user $user");
         if ( $self->ldap_authenticates($user, $pass) ) {
-            return $self->sucessful_auth($user);;
+            return $self->sucessful_auth($user, $orig_url);;
         }
         else {
             # not returning here because LDAP could fail
@@ -161,7 +177,7 @@ sub failed_auth {
     my $log     = $self->env->log;
 
     $log->error("FAILED AUTH: $msg");
-    $log->debug("User: $user Pass: $pass");
+    $log->debug("User: $user Pass: -----");
 
     $self->flash("Invalid Login");
     $self->redirect_to('/login');
@@ -171,6 +187,7 @@ sub failed_auth {
 sub sucessful_auth {
     my $self    = shift;
     my $user    = shift;
+    my $url     = shift;
     my $log     = $self->env->log;
 
     $log->debug("User $user sucessfully authenticated");
@@ -183,8 +200,7 @@ sub sucessful_auth {
         expiration  => 3600 * 4,
     );
 
-    $self->redirect_to('/scot/html/home'); # place holder until I put in
-                                            # way to go to last url
+    $self->redirect_to($url); 
     return;
 }
 
@@ -217,10 +233,10 @@ sub ldap_authenticates {
         return 0;
     }
 
-    unless ($ldap->is_configured) {
-        $log->error("LDAP not configured!");
-        return 0;
-    }
+#    unless ($ldap->is_configured) {
+#        $log->error("LDAP not configured!");
+#        return 0;
+#    }
 
     return 0 unless ( $ldap->authenticate_user($user, $pass) ); 
 
@@ -243,7 +259,7 @@ sub update_user_sucess {
 
     $log->trace("Updating User $user Authentication Sucess");
 
-    my $collection  = $mongo->collection("user");
+    my $collection  = $mongo->collection("User");
     my $userobj     = $collection->find_one({username => $user});
 
     if ( defined $userobj ) { 
@@ -279,7 +295,7 @@ sub local_authenticates {
 
     $log->trace("Local Authentication for $username");
 
-    my $collection  = $mongo->collection('user');
+    my $collection  = $mongo->collection('User');
     my $user        = $collection->find_one( username => $username );
 
     return 0 unless defined($user);
@@ -325,7 +341,7 @@ sub update_user_failure {
 
     $log->trace("Updating User $username failure to authenticate");
 
-    my $collection  = $mongo->collection('user');
+    my $collection  = $mongo->collection('User');
     my $user        = $collection->find_one(username    => $username);
 
     if ( $user ) {
