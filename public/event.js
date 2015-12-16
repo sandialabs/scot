@@ -871,6 +871,7 @@ function render_entry(parent_id, entryin) {
         col_names.unshift('status'); //Add status to front
         $(col_names).each(function(keyNum, key) {
             var key = $('<th></th>').text(key);
+            key.html(key.html().replace('&lt;br&gt;', '<br>'));
             key.dblclick(function() {
                 var index = $(this).parent().children().index($(this));
                 $(tbody).find('tr').each(function(rowNum, row) {
