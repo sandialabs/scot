@@ -22,14 +22,14 @@ RUN \
 
 # Add SCOT Files
 COPY . /scot
-RUN chmod 755 /scot/install_scot3.sh
+RUN chmod 755 /scot/ubuntu_installer.sh
 COPY deploy/docker-entrypoint.sh /
 COPY deploy/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 ENV DOCKERINSTALL True
 
 # Run SCOT Installer
-RUN cd /scot && /scot/install_scot3.sh && rm -rf /scot
+RUN cd /scot && /scot/ubuntu_installer.sh && rm -rf /scot
 COPY deploy/tests.sh /tests.sh
 COPY deploy/scotamq.xml /opt/sandia/webapps/activemq/conf/scotamq.xml
 RUN chown activemq /opt/sandia/webapps/activemq/conf/scotamq.xml \
