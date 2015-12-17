@@ -1,8 +1,8 @@
-var React     = require('react');
-var ReactDOM  = require('react-dom');
-
-//function getEvent(callback) {
-function getEvent(id) {
+var React       = require('react');
+var ReactDOM    = require('react-dom');
+var ReactTime        = require('react-time');
+var url         = "/scot/api/v2/event"
+function getEntry(id) {
         var jsonData = {};
         $.ajax({
             type: 'GET',
@@ -11,22 +11,22 @@ function getEvent(id) {
             async: false,
             success: function(data, status) {
             jsonData = data;
-            //console.log(jsonData);
         },
         error: function(err) {
             console.error(err.toString());
         }
         });
         return jsonData.records;
-    /*var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function(){
-        if (xhttp.readyState == 4 && xhttp.status == 200) {
-            callback(xhttp.responseText);        
-        }
-    };
-    xhttp.open("GET", "/scot/api/v2/entry", true);
-    xhttp.send();*/
 };
+
+function DateConvert(inDate) {
+    var date = new Date(0);
+    date.setUTCSeconds(inDate);
+    JSON.stringify(date);
+    console.log(typeof date);
+    console.log(date);
+    return date;
+}
 
 var TableHeader = React.createClass({
     render: function() {
@@ -38,91 +38,82 @@ var TableHeader = React.createClass({
     }
 });
 
-var TableSubData = React.createClass({
+var EntryParent = React.createClass({
     render: function() {
-        var rawMarkup = this.props.subitem.body_flair;
+        var rawMarkup = this.props.subitem.body_flair
         return (
-            <div className="row-fluid entry-outer todo_undefined_outer">
-                <div dangerouslySetInnerHTML={{__html: rawMarkup}} />
+            <div className="row-fluid entry-body">
+                <div className="row-fluid entry-body-inner" dangerouslySetInnerHTML={{__html: rawMarkup}}/>     
             </div>
-        );
-    }
-});
-
-var TableSubRecursion = React.createClass({
-    render: function() {
-        var rows = [];
-        var count = 0;
-        console.log("in sub");
-        recursiveIter(this.props.subitem);
-        console.log("out of iteration");
-        count ++;
-        function recursiveIter(obj) {
-            for (var prop in obj) {
-                //console.log(obj[prop]);
-                if (prop == "children") {
-                    var childobj = obj[prop];
-                    obj[prop].forEach(function(childobj) {                        
-                        //console.log(childobj.body_flair);
-                        //var childobjbody = childobj.body_flair;
-                        rows.push(new Array(<TableSubData subitem = {childobj} />));
-                        //for (var key in childobj) {
-                            //rows.push(<TableData item = {childobj} />)
-                        //}
-                        recursiveIter(childobj);
-                    });
-                }
-            }
-        }
-        return (
-            <div>{rows}</div>
         )
     }
 });
 
-var TableData = React.createClass({
-    render: function() {
-        var rawMarkup = this.props.item.body_flair;
-        return (
-            <div className="row-fluid entry-outer todo_undefined_outer" style={{marginLeft: 'auto', marginRight: 'auto',width:'99.3%'}}>
+var EntryData = React.createClass({
+    render: function() { 
+        var itemarr = [];
+        var subitemarr = [];
+        var items = this.props.items;
+        //items.when = items.when * 1000; 
+        itemarr.push(<EntryParent subitem = {items} />);
+        for (var prop in items) {            
+            childfunc(prop);
+            function childfunc(prop){
+                if (prop == "children") {
+                    var childobj = items[prop];
+                    items[prop].forEach(function(childobj) {
+                        subitemarr.push(new Array(<EntryData items = {childobj} />));       
+                    });
+                }
+            }    
+        }   
+        itemarr.push(subitemarr);
+        return (                                                  
+            <div className="row-fluid entry-outer todo_undefined_outer" style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
                 <div className="row-fluid entry-header todo_undefined">
-                    <div className="entry-header-inner">{this.props.item.id} {this.props.item.when} by {this.props.item.owner}</div>
+                    <div className="entry-header-inner">{items.id} <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} (updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)</div>
                 </div>
-                <div className="row-fluid entry-body">                    
-                    <div dangerouslySetInnerHTML={{__html: rawMarkup}} />
-                    //{this.props.item.body_flair}
-                    <TableSubRecursion subitem = {this.props.item} />                    
-                </div>
-            </div>    
-        );
-    }
-});
-
-var Table = React.createClass({
-    render: function() {
-        var header = [];
-        var rows = [];
-        this.props.data.forEach(function(data) {  
-            rows.push(<TableData item = {data} />)   
-        });
-        return ( 
-            <div>
-                <div width="100%" className="alerts events incidents tasks" style={{height: '800px', overflow: 'auto', display: 'block'}}>
-                    <div>{header}</div>
-                    <div>{rows}</div>
-                </div>
+                {itemarr}
             </div>
         );
     }
 });
 
-var displaydata = getEvent(3306);
-/*console.log(displaydata);
-for (i = 0; i < displaydata.length; i++) {
-    console.log("object each item of object: " + displaydata[i].id)
-}
-console.log("for loop ended");
-*/
+var EntryMain = React.createClass({
+    render: function() {
+        var header = []; 
+        var masterrows = [];
+        var ids = this.props.ids;
+        for (i=0; i < ids.length; i++) {
+            var idnum = ids[i];
+            var data = getEntry(idnum);
+            masterrows.push(<EntryWrapper data={data} id={idnum} />);
+        }
+        return (   
+            <div>
+                {header}
+                {masterrows}
+            </div> 
+        );
+    }
+});
+var EntryWrapper = React.createClass({
+    render: function() {
+        var rows = [];
+        this.props.data.forEach(function(data) {  
+            rows.push(new Array(<EntryData items = {data} />)); 
+        });
+        var rawMarkup = this.props.id;
+        return (
+            <div className="row-fluid entry-wrapper">
+                <div className="row-fluid entry-wrapper-id">Event ID: {rawMarkup}</div>
+                {rows}
+            </div>
+        );
+    }
+});
 
-ReactDOM.render(<Table data={displaydata}/>, document.getElementById('NewBottomDataPane'));
- 
+
+var ids = [3309,3308]
+ReactDOM.render(<EntryMain ids={ids}/>, document.getElementById('NewBottomDataPane'));
+

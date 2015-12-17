@@ -216,7 +216,7 @@ function drag_splitter(e) {
 }
 
 function update_bottom_pane_height() {
-    var BottomPane = $('#BottomPane');
+    var BottomPane = $('#NewBottomDataPane');
     BottomPane.css('height', window.innerHeight - BottomPane.offset().top - 10 + "px");
 }
 var previous_top_pane_height;

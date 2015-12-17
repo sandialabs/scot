@@ -3,6 +3,20 @@
 @body_background_color: #EEE;
 @import "/bootstrap/css/bootstrap.css";
 
+.entry-wrapper {
+    background-color:#F0FFF0;
+    border-radius: @entry_border_rounded;
+    border: 1px solid #999999;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+}
+
+.entry-wrapper-id {
+    font-size: 14pt;
+    padding-left: 2px;
+    padding-bottom: 2px;
+    padding-top: 2px;
+}
+
 .entry-outer {
   background-color:white;
    border-radius: @entry_border_rounded;
@@ -27,12 +41,10 @@
 }
 
 .entry-body-inner {
-  p {margin: 0px}
   overflow:auto;
   max-height:500px;
   padding-top:0px;
   padding-left:10px;
-  height:1px;
 }
  
 
