@@ -99,6 +99,11 @@ get JSON that was submitted with the web request
             ->to    ('controller-api#create')
             ->name  ('create');
 
+    $scot   ->route ('/api/v2/supertable')
+            ->via   ('get')
+            ->to    ('controller-api#supertable')
+            ->name  ('supertable');
+
     $scot   ->route ('/api/v2/:thing/:id')
             ->via   ('get')
             ->to    ('controller-api#get_one')

@@ -1825,7 +1825,7 @@ sub get_alertgroup_subject {
     if ( $obj ) {
         return $obj->subject;
     }
-    $self->env->log->error("Did not fine Alertgroup ".$alert->alertgroup);
+    $self->env->log->error("Did not find Alertgroup ".$alert->alertgroup);
     return "please create a subject";
 }
 
@@ -2073,5 +2073,57 @@ sub get_req_value {
 
     return $req->{request}->{param}->{$param} // $req->{request}->{json}->{$param};
 }
+
+# alertgroups are weird, and some analysts want to view multiple alerts from multiple alertgroups
+
+sub supertable {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    $log->trace("Creating Supertable of Alertgroups");
+
+    my $req_json    = $self->req->json // [];
+    my $req_params  = $self->req->param('alertgroup') // [];
+
+    my %ags = ();
+
+    foreach my $agid (@{$req_json->{alertgroup}}, @{$req_params}) {
+        $ags{$agid}++;
+    }
+    my @sorted_agids = sort keys %ags;
+
+    $log->trace("targeting alertgroups ", join(',',@sorted_agids));
+
+    my @rows    = ();
+    my %cols    = ();
+    my @columns = (qw(when));
+
+    my $alertcol    = $mongo->collection('Alert');
+
+    foreach my $agid (@sorted_agids) {
+
+        my $cursor  = $alertcol->get_alerts_in_alertgroup($agid);
+        next unless $cursor;
+
+        while ( my $alert = $cursor->next ) {
+            my $href    = $alert->to_hash;     
+            map { $cols{$_}++ } keys $href;
+            push @rows, $href;
+        }
+    }
+    delete $cols{when};
+
+    push @columns, sort keys %cols;
+
+    $self->do_render({
+        records             => \@rows,
+        columns             => \@columns,
+        queryRecordCount    => scalar(@rows),
+        totalRecordCount    => scalar(@rows),
+    });
+}
+    
 
 1;

@@ -7,14 +7,20 @@
     </head>
     <body>
         <center>
-            <form action="/auth" method="POST">
-                <label for="username">Username</label>
-                <input type="text" size="20" name="user"></input>
-                <label for="password">Password</label>
-                <input type="password" size="20" name="pass"></input>
-                <input type="submit"><input type="reset">
-                <input type="hidden" name="orig_url" value="<%= $orig_url %>"></input>
-            </form>
+            <div id="logo" class="logo_png">
+                <img src="/images/SCOT_Logo64x64.png" alt="SCOT">
+            </div>
+            <div id="login_form" class="login_form">
+                <form action="/auth" method="POST">
+                    <label for="username">Username</label>
+                    <input type="text" size="20" name="user"></input>
+                    <br>
+                    label for="password">Password</label>
+                    <input type="password" size="20" name="pass"></input>
+                    <input type="submit"><input type="reset">
+                    <input type="hidden" name="orig_url" value="<%= $orig_url %>"></input>
+                </form>
+            </div>
         </center>
     </body>
 </html>

@@ -61,11 +61,12 @@ sub run {
         my $pid = $taskmgr->start and next;
 
         if ( $pid == 0 ) {
-            $log->trace("Child process $pid begins working on uid $uid");
+            $log->trace("[UID $uid] Child process $pid begins working");
             $self->env(Scot::Env->new());
             my $imap     = $self->env->imap;
             my $msg_href = $imap->get_message($uid);
             $self->process_message($msg_href);
+            $log->trace("[UID $uid] Child process $pid finishes working");
             $taskmgr->finish;
             exit;
         }
