@@ -3,7 +3,7 @@ var top_mode;
 var bottom_mode;
 var previous_type = 'init';
 
-function locationHashChanged(e) {
+function locationHashChanged(e) { 
     var hash = window.location.hash;
     window.document.title = 'SCOT3';
     if (hash != "" && hash != '#') {
@@ -20,7 +20,7 @@ function locationHashChanged(e) {
                 bottom_mode = parts[1];
                 $('#nav1').find('.nav').find('a').each(function(index, a) {
                     var linkText = $(a).text().toLowerCase();
-		    if(linkText.length > 0) {
+                    if(linkText.length > 0) {
                        $('.' + linkText).hide();
                     }
                 });
@@ -40,7 +40,7 @@ function locationHashChanged(e) {
                 });
             }
             if (parts.length >= 3) {
- 	            $('.viewing').show();
+                $('.viewing').show();
 		        $('.hideOnSwitch').hide();
                 $('#event_info').show();
                 $('#BottomPane').show();
@@ -59,23 +59,23 @@ function locationHashChanged(e) {
                         if (parts[2] == 'group') {
                             preview('alertgroup', parts[3]);
                         } else {
-			      var oldURL = '';
-		              if(e != undefined) {
-			        oldURL = $('<a></a>').attr('href', e.oldURL).get(0).hash;
-			      }
-			       $.ajax({
-         			 type: 'GET',
-			          url:  '/scot/alert/'+parts[2]
-			       }).done(function(response) {
-			           var url = '#/alert/group/'+response.data.alertgroup;
-				   if(oldURL != url) {
-			             window.location = url;
-				   } else {
-  					window.history.back();
-				   }
-			       });
-			       return 1;
-			}
+                            var oldURL = '';
+                                if(e != undefined) {
+                              oldURL = $('<a></a>').attr('href', e.oldURL).get(0).hash;
+                            }
+                             $.ajax({
+                               type: 'GET',
+                                url:  '/scot/alert/'+parts[2]
+                             }).done(function(response) {
+                                 var url = '#/alert/group/'+response.data.alertgroup;
+                             if(oldURL != url) {
+                                   window.location = url;
+                             } else {
+                              window.history.back();
+                             }
+                             });
+                             return 1;
+                        } 
                         break;
                     case 'incident':
                         bottom_mode = parts[1];
@@ -83,21 +83,21 @@ function locationHashChanged(e) {
                         break;
                     case 'task':
                         bottom_mode = parts[2];
-			 $('.' + bottom_mode + 's, .' + bottom_mode).each(function(index, item) {
+                        $('.' + bottom_mode + 's, .' + bottom_mode).each(function(index, item) {
                             if (!(item.classList.contains('hideOnSwitch') || item.classList.contains('viewing'))) {
                                 $(item).show();
                             }
                         });
-
                         preview(parts[2], parts[3], parts[4]);
                         break;
                 }
             } else {  //parts.length == 2
+           
                 $('.hideOnSwitch').hide();
                 $('#event_info').hide();
                 $('#BottomPane').hide();
                 window.document.title = top_mode.charAt(0).toUpperCase() + top_mode.slice(1) + 's';
-                if($('#TopPane:visible').length <= 0) {
+                if ($('#TopPane:visible').length <= 0) {
                     $('#paging').show();
                     $('#filters').show();
                     $('#TopMenu').show();
@@ -216,7 +216,7 @@ function drag_splitter(e) {
 }
 
 function update_bottom_pane_height() {
-    var BottomPane = $('#BottomPane');
+    var BottomPane = $('#NewBottomDataPane');
     BottomPane.css('height', window.innerHeight - BottomPane.offset().top - 10 + "px");
 }
 var previous_top_pane_height;

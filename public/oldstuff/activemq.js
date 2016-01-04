@@ -69,7 +69,7 @@ function listen_for_changes() {
 function get_entry(entry_id, callback) {
     $.ajax({
         type: 'GET',
-        url: '/scot/entry/' + entry_id,
+        url: '/scot/api/v2/entry/' + entry_id,
     }).done(function(response) {
         callback(response.data);
     });
@@ -78,7 +78,7 @@ function get_entry(entry_id, callback) {
 function get_incident(incident_id, callback) {
     $.ajax({
         type: 'GET',
-        url: '/scot/incident/' + incident_id,
+        url: '/scot/api/v2/incident/' + incident_id,
     }).done(function(response) {
         callback(response.data);
     });
@@ -87,7 +87,7 @@ function get_incident(incident_id, callback) {
 function get_intel(intel_id, callback) {
     $.ajax({
         type: 'GET',
-        url: '/scot/intel/' + intel_id,
+        url: '/scot/api/v2/intel/' + intel_id,
     }).done(function(response) {
         callback(response.data);
     });
@@ -95,7 +95,7 @@ function get_intel(intel_id, callback) {
 function get_event(event_id, callback) {
     $.ajax({
         type: 'GET',
-        url: '/scot/event/' + event_id,
+        url: '/scot/api/v2/event/' + event_id,
     }).done(function(response) {
         callback(response.data);
     });
@@ -104,7 +104,7 @@ function get_event(event_id, callback) {
 function get_alertgroup_row(alertgroup_id, callback, opts) {
     $.ajax({
         type: 'GET',
-        url: '/scot/alertgroup/refresh/' + alertgroup_id,
+        url: '/scot/api/v2/alertgroup/' + alertgroup_id,
     }).done(function(response) {
         callback(response.data, opts);
     });
@@ -113,7 +113,7 @@ function get_alertgroup_row(alertgroup_id, callback, opts) {
 function get_alertgroup(alertgroup_id, callback) {
     $.ajax({
         type: 'GET',
-        url: '/scot/alertgroup/' + alertgroup_id,
+        url: '/scot/api/v2/alertgroup/' + alertgroup_id,
     }).done(function(response) {
         callback(response.data);
     });
@@ -123,7 +123,7 @@ function get_alertgroup(alertgroup_id, callback) {
 function get_alert(alert_id, callback) {
     $.ajax({
         type: 'GET',
-        url: '/scot/alert/' + alert_id,
+        url: '/scot/api/v2/alert/' + alert_id,
     }).done(function(response) {
         callback(response.data);
     });

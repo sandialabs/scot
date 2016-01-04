@@ -57,7 +57,8 @@ fi
 
 INSTMODE=''
 MODE='production'
-while getopts "dsfrm:" opt; do
+MONGORESTART='true'
+while getopts "dsfrym:" opt; do
     case $opt in
         d)
             echo "Deleting installation directory..."
@@ -79,6 +80,10 @@ while getopts "dsfrm:" opt; do
             echo "Will Delete $FILESTORE directory and contents"
             SFILESDEL=1
             ;;
+        y)  
+            echo "Will not restart Mongo service"
+            MONGORESTART="false"
+            ;;
         :)
             echo "Option -$OPTARG requires an argument."
             exit 1
@@ -97,7 +102,6 @@ while getopts "dsfrm:" opt; do
             ;;
     esac
 done
-
 
 #if [[ "x$MODE" = "x" ]];
 #then
@@ -327,25 +331,25 @@ update-rc.d scotPlugins defaults
 update-rc.d activemq defaults
 
 
-
-echo -e "${yellow}Starting mongod...${NC}"
+if [ "$MONGORESTART" == "true" ]; then
+    echo -e "${yellow}Starting mongod...${NC}"
 # Copy mongod.conf to /etc/mongod.conf
-  cp ./etc/mongod.conf /etc/mongod.conf
+    cp ./etc/mongod.conf /etc/mongod.conf
 # Initialize a mongo data folder and logfile
-  mkdir -p /var/lib/mongodb
-  chown -R mongodb:mongodb /var/lib/mongodb/
+    mkdir -p /var/lib/mongodb
+    chown -R mongodb:mongodb /var/lib/mongodb/
 # Start mongodb with logging
 # --logpath    Without this mongod will output all log information to the standard output.
 # --logappend  Ensure mongod appends new entries to the end of the logfile. We create it first so that the below tail always finds something
 
-  echo -e "${yellow}Restarting mongod service${NC}"
-  service mongod stop
-  echo '' > /var/log/mongodb/mongod.log
-  chown mongodb /var/log/mongodb/mongod.log
-  chgrp mongodb /var/log/mongodb/mongod.log
+    echo -e "${yellow}Restarting mongod service${NC}"
+    service mongod stop
+    echo '' > /var/log/mongodb/mongod.log
+    chown mongodb /var/log/mongodb/mongod.log
+    chgrp mongodb /var/log/mongodb/mongod.log
 
-  service mongod start
-
+    service mongod start
+fi
 COUNTER=0
 grep -q 'waiting for connections on port' /var/log/mongodb/mongod.log
 while [[ $? -ne 0 && $COUNTER -lt 100 ]] ; do
@@ -355,7 +359,7 @@ while [[ $? -ne 0 && $COUNTER -lt 100 ]] ; do
     grep -q 'waiting for connections on port' /var/log/mongodb/mongod.log
 done
 
-MONGOADMIN=$(mongo scotng-prod --eval "printjson(db.users.count({username:'admin'}))" --quiet)
+MONGOADMIN=$(mongo scot-prod --eval "printjson(db.users.count({username:'admin'}))" --quiet)
 
 if [ "$MONGOADMIN" == "0" ] || [ "$RESETDB" == "1" ] ; then
     PASSWORD=$(dialog --stdout --nocancel --title "Set SCOT Admin Password" --backtitle "SCOT Installer" --inputbox "Choose a SCOT Admin login password" 10 70)
@@ -363,12 +367,12 @@ if [ "$MONGOADMIN" == "0" ] || [ "$RESETDB" == "1" ] ; then
     HASH=`$DEVDIR/bin/passwd.pl $PASSWORD`
 
     if [[ $RESETDB -eq "1" ]]; then
-        mongo scotng-prod $DEVDIR/bin/reset_db.js
+        mongo scot-prod $DEVDIR/bin/reset_db.js
     fi
 
     #Create SCOT admin account for initial setup
-    mongo scotng-prod $DEVDIR/etc/admin_user.js
-    mongo scotng-prod --eval "db.users.update({username:'admin'}, {$set:{hash:'$HASH'}})"
+    mongo scot-prod $DEVDIR/etc/admin_user.js
+    mongo scot-prod --eval "db.users.update({username:'admin'}, {$set:{hash:'$HASH'}})"
     dialog --title "Install Completed" --msgbox "\n Browse to https://$MYIP to finish SCOT configuration\n    Username=admin\n    Password=$PASSWORD" 10 70
 
     if [[ $RESETDB -eq "1" ]]; then
