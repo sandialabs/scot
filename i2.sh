@@ -130,9 +130,8 @@ EOF
             echo "+ Adding Mongo 10Gen repo and updating apt-get caches"
             echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" >> /etc/apt/sources.list
             apt-key add $DEVDIR/etc/mongo_10gen.key
-            apt-get update
-            
         fi
+        apt-get update
         for pkg in `cat $DEVDIR/etc/install/ubuntu_debs_list`; do
             echo "+ package $pkg"
             apt-get -qq install $pkg

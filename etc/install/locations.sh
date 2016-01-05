@@ -1,0 +1,12 @@
+SCOTROOT="/opt/scot"
+FILESTORE="/opt/scotfiles"
+INSTALL_LOG="/tmp/scot.install.log"
+TESTURL="http://getscot.sandia.gov"
+BACKUPDIR="/sdb/scotbackup"
+GEOIPDIR="/usr/local/share/GeoIP"
+AMQPKG="pkgs/apache-activemq-5.9-20130708.151752-73-bin.tar.gz"
+DBDIR="/var/lib/mongodb"
+CPANM="/usr/local/bin/cpanm"
+LOGDIR="/var/log/scot";
+ACTIVEMQDIR="/opt/activemq"
+AMQTAR="https://repository.apache.org/content/repositories/snapshots/org/apache/activemq/apache-activemq/5.14-SNAPSHOT/apache-activemq-5.14-20151229.032504-18-bin.tar.gz"
