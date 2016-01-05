@@ -12,9 +12,9 @@
 
 . /lib/lsb/init-functions
 
-DIR="/opt/sandia/webapps/activemq"
+DIR="/opt/activemq"
 APP="activemq"
-OPTS="console xbean:$DIR/conf/scotamq.xml &> /var/log/activemq.scot.log"
+OPTS="console xbean:$DIR/conf/scotamq.xml &> /var/log/activemq/scot.amq.log"
 CMD="$DIR/bin/$APP $OPTS"
 SHUT="$DIR/bin/activemq-admin stop --all"
 

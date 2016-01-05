@@ -2084,12 +2084,18 @@ sub supertable {
 
     $log->trace("Creating Supertable of Alertgroups");
 
-    my $req_json    = $self->req->json // [];
+    my $req_json    = $self->req->json;
     my $req_params  = $self->req->param('alertgroup') // [];
 
     my %ags = ();
+    my @agset;
 
-    foreach my $agid (@{$req_json->{alertgroup}}, @{$req_params}) {
+    if ( $req_json ) {
+        push @agset, @{$req_json->{alertgroup}};
+    }
+    push @agset, @{$req_params};
+
+    foreach my $agid (@agset) {
         $ags{$agid}++;
     }
     my @sorted_agids = sort keys %ags;
