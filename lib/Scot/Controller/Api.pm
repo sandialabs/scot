@@ -2082,7 +2082,7 @@ sub supertable {
     my $mongo   = $env->mongo;
     my $log     = $env->log;
 
-    $log->trace("Creating Supertable of Alertgroups");
+    $log->debug("Creating Supertable of Alertgroups");
 
     my $req_json    = $self->req->json;
     my $req_params  = $self->req->param('alertgroup') // [];
@@ -2100,11 +2100,11 @@ sub supertable {
     }
     my @sorted_agids = sort keys %ags;
 
-    $log->trace("targeting alertgroups ", join(',',@sorted_agids));
+    $log->debug("targeting alertgroups ", join(',',@sorted_agids));
 
     my @rows    = ();
     my %cols    = ();
-    my @columns = (qw(when));
+    my @columns = (qw(when alertgroup));
 
     my $alertcol    = $mongo->collection('Alert');
 
@@ -2114,8 +2114,14 @@ sub supertable {
         next unless $cursor;
 
         while ( my $alert = $cursor->next ) {
-            my $href    = $alert->to_hash;     
+            $log->debug("Alert ", {filter=>\&Dumper, value=>$alert});
+            my $href    = $alert->data;     
+            if ( %{$alert->data_with_flair} ) {
+                $href   = $alert->data_with_flair;
+            }
             map { $cols{$_}++ } keys $href;
+            $href->{when}       = $alert->when;
+            $href->{alertgroup} = $alert->alertgroup;
             push @rows, $href;
         }
     }
