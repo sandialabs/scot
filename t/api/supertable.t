@@ -53,6 +53,10 @@ $t->get_ok('/scot/api/v2/supertable' => json => {
 })->status_is(200);
 
 print Dumper($t->tx->res->json), "\n";
+
+$t->get_ok("/scot/api/v2/supertable?alertgroup=$alertgroup_id&alertgroup=$alertgroup_id2")
+    ->status_is(200);
+
 done_testing();
 exit 0;
 
