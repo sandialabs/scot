@@ -8,51 +8,55 @@ blue='\e[0;34m'
 green='\e[0;32m'
 yellow='\e[0;33m'
 red='\e[0;31m'
-NC='\e[-m'
+NC='\033[0m'
 
-echo "${blue}########"
+echo -e "${blue}########"
 echo "######## SCOT 3 Installer"
 echo "######## Support at: scot-dev@sandia.gov"
-echo "########${NC}"
+echo -e "########${NC}"
 
 DEVDIR="$( cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 . $DEVDIR/etc/install/locations.sh
 
-echo "${yellow}Reading Commandline Args...${NC}"
+echo -e "${yellow}Reading Commandline Args... ${NC}"
 
-while getopts "digsrflm" opt; do
+while getopts "adigsrflm" opt; do
     case $opt in
+        a)
+            echo -e "${green}--- will refresh the apt repositories ${NC}"
+            REFRESHAPT="yes"
+            ;;
         d)
-            echo "${red}--- will delete installation directory $INSTDIR${NC}"
-            DEL_INST_DIR="true"
+            echo -e "${red}--- will delete installation directory $SCOTROOT ${NC}"
+            DELDIR="true"
             ;;
         i)
-            echo "${red}--- will overwrite existing /etc/init.d/scot file${NC}"
+            echo -e "${red}--- will overwrite existing /etc/init.d/scot file ${NC}"
             NEWINIT="yes"
             ;;
         g)
-            echo "${red}--- overwrite existing GeoCity DB ${NC}"
+            echo -e "${red}--- overwrite existing GeoCity DB ${NC}"
             OVERGEO="yes"
             ;;
         m)
-            echo "${red}--- overwrite mongodb config and restart"
+            echo -e "${red}--- overwrite mongodb config and restart"
             MDBREFRESH="yes"
             ;;
         s) 
-            echo "${green}--- will install only SCOT software (no prereqs)${NC}"
+            echo -e "${green}--- will install only SCOT software (no prereqs) ${NC}"
             INSTMODE="SCOTONLY"
             ;;
         r)
-            echo "${red}--- will reset SCOT DB (warning: DATA LOSS!)"
+            echo -e "${red}--- will reset SCOT DB (warning: DATA LOSS!)"
             RESETDB=1
             ;;
         f)
-            echo "${red}--- will delete SCOT filestore directory $FILESTORE (warning: DATA LOSS)"
+            echo -e "${red}--- will delete SCOT filestore directory $FILESTORE (warning: DATA LOSS)"
             SFILESDEL=1
             ;;
         l)
-            echo "${red}--- will zero existing log files (warning potential data loss)"
+            echo -e "${red}--- will zero existing log files (warning potential data loss)"
             CLEARLOGS=1
             ;;
         \?)
@@ -63,7 +67,7 @@ while getopts "digsrflm" opt; do
             echo "    -f    delete $FILESTORE filestore directory and its contents"
             echo "    -s    only install the SCOT software, skip prerequisite or 3rd party software"
             echo "    -r    delete the SCOT database and install initial template"
-            echo "    -d    delete $INSTDIR intallation directory prior to install"
+            echo "    -d    delete $SCOTROOT intallation directory prior to install"
             echo "    -i    overwrite existing /etc/init.d/scot "
             echo "    -g    overwrite existing GeoCity db file"
             exit 1
@@ -71,9 +75,9 @@ while getopts "digsrflm" opt; do
     esac
 done
 
-echo "${NC}"
-echo "${yellow}Determining OS..."
-echo "${NC}"
+echo -e "${NC}"
+echo -e "${yellow}Determining OS..."
+echo -e "${NC}"
 
 DISTRO=`$DEVDIR/etc/install/determine_os.sh | cut -d ' ' -f 2`
 echo "Looks like a $DISTRO based system"
@@ -97,7 +101,7 @@ if [[ $INSTMODE != "SCOTONLY" ]]; then
 ### Prerequisite Package software installation
 ###
 
-    echo "${yellow}+ installing prerequisite packages{$NC}"
+    echo -e "${yellow}+ installing prerequisite packages ${NC}"
 
     if [[ $OS == "RedHatEnterpriseServer" ]]; then
         if grep --quiet mongo /etc/yum.repos.d/mongodb.repo; then
@@ -131,43 +135,62 @@ EOF
             echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" >> /etc/apt/sources.list
             apt-key add $DEVDIR/etc/mongo_10gen.key
         fi
-        apt-get update
+
+        if [ "$REFRESHAPT" == "yes" ]; then
+            echo "= updating apt repository"
+            apt-get update > /dev/null
+        fi
+
+        echo -e "${yellow}+ installing apt packages ${NC}"
+
         for pkg in `cat $DEVDIR/etc/install/ubuntu_debs_list`; do
-            echo "+ package $pkg"
-            apt-get -qq install $pkg
+            # echo "+ package $pkg"
+	    pkgs="$pkgs $pkg"
         done
+        apt-get -qq install $pkgs > /dev/null
     fi
 
 ###
 ### ActiveMQ install
 ###
-    echo "${yellow}+ installing ActiveMQ${NC}"
+    echo -e "${yellow}+ installing ActiveMQ${NC}"
 
-    if [ -e "$ACTIVEMQDIR/bin/activemq" ]; then
+    if [ -e "$AMQDIR/bin/activemq" ]; then
         echo "= activemq already installed"
     else
-        echo "= downloading..."
-        curl -o /tmp/apache-activemq.tar.gz -SL '$AMQTAR'
-
+        echo "= checking for activemq user"
         AMQ_USER=`grep -c activemq: /etc/passwd`
         if [ $AMQ_USER -ne 1 ]; then
-            userad -c "ActiveMQ User" -d $ACTIVEMQDIR -M -s /bin/bash activemq
+            useradd -c "ActiveMQ User" -d $AMQDIR -M -s /bin/bash activemq
         fi
+
+        if [ ! -e /tmp/$AMQTAR ]; then
+            echo "= downloading $AMQURL"
+            # curl -o /tmp/apache-activemq.tar.gz $AMQTAR
+            wget -P /tmp $AMQURL 
+        fi
+
 
         mkdir -p /var/log/activemq
         touch /var/log/activemq/scot.amq.log
-        chown -R activemq /var/log/activemq
+        chown -R activemq.activemq /var/log/activemq
+        chmod -R g+w /var/log/activemq
 
-        tar xf /tmp/apache-activemq.tar.gz --directory /tmp
-        mv /tmp/apache-activemq-5.14-SNAPSHOT/* $ACTIVEMQDIR
+        if [ ! -d $AMQDIR ];then
+            mkdir -p $AMQDIR
+            chown activemq.activemq $AMQDIR
+        fi
 
-        cp $DEVDIR/etc/scotamq.xml $ACTIVEMQDIR/conf
-        cp $DEVDIR/etc/jetty.xml   $ACTIVEMQDIR/conf
-        cp -R $DEVDIR/etc/scotaq   $ACTIVEMQDIR/webapps
-        mv $ACTIVEMQDIR/webapps/scotaq     $ACITVEMQDIR/webapps/scot
+        tar xf /tmp/$AMQTAR --directory /tmp
+        mv /tmp/apache-activemq-5.14-SNAPSHOT/* $AMQDIR
+
+        cp $DEVDIR/etc/scotamq.xml $AMQDIR/conf
+        cp $DEVDIR/etc/jetty.xml   $AMQDIR/conf
+        cp -R $DEVDIR/etc/scotaq   $AMQDIR/webapps
+        mv $ACTIVEMQDIR/webapps/scotaq     $AMQDIR/webapps/scot
         cp $DEVDIR/etc/activemq-init /etc/init.d/activemq
-        chmow +x /etc/init.d/activemq
-        chown -R activemq.activemq $ACTIVEMQDIR
+        chmod +x /etc/init.d/activemq
+        chown -R activemq.activemq $AMQDIR
         service activemq start
     fi
 
@@ -175,10 +198,10 @@ EOF
 ### Perl Module installation
 ###
 
-    echo "${yellow}+ installing Perl Modules${NC}"
+    echo -e "${yellow}+ installing Perl Modules${NC}"
 
     for mod in `cat $DEVDIR/etc/install/perl_modules_list`; do
-        DOCRES=`perldoc -l $mod 2>/dev/null
+        DOCRES=`perldoc -l $mod 2>/dev/null`
         if [[ -z "$DOCRES" ]]; then
             echo "+ Installing perl module $mod"
             if [ "$mod" = "MongoDB" ]; then
@@ -193,17 +216,17 @@ EOF
 ### Apache Web server configuration
 ###
 
-    echo "${yellow}= Configuring Apache"
+    echo -e "${yellow}= Configuring Apache ${NC}"
 
     MYHOSTNAME=`hostname`
 
     if [[ $OS == "RedHatEnterpriseServer" ]]; then
 
         if [ ! -e /etc/httpd/conf.d/scot.conf ]; then
-            echo "${yellow}+ adding scot configuration${NC}"
+            echo -e "${yellow}+ adding scot configuration${NC}"
             REVPROXY=$DEVDIR/etc/scot-revproxy-$MYHOSTNAME
             if [ ! -e $REVPROXY ]; then
-                echo "${red}= custom apache config for $MYHOSTNAME not present, using defaults${NC}"
+                echo -e "${red}= custom apache config for $MYHOSTNAME not present, using defaults${NC}"
                 if [[ $OSVERSION == "7" ]]; then
                     REVPROXY=$DEVDIR/etc/scot-revproxy-local.conf
                 else
@@ -230,7 +253,7 @@ EOF
 
         # default config blocks 80->443 redirect
         if [ -e $MODSENABLED/000-default.conf ]; then
-            mv $MODSENABLED/000-default.conf $MODSAVAILABLE/000-default.conf
+            rm $MODSENABLED/000-default.conf    # exists as symbolic link
         fi
 
         a2enmod -q proxy
@@ -241,17 +264,14 @@ EOF
         a2enmod -q authnz_ldap
 
         if [ ! -e /etc/apache2/sites-enabled/scot.conf ]; then
-            echo "${yellow}+ adding scot configuration${NC}"
+            echo -e "${yellow}+ adding scot configuration${NC}"
             REVPROXY=$DEVDIR/etc/scot-revproxy-$MYHOSTNAME
             if [ ! -e $REVPROXY ]; then
-                echo "${red}= custom apache config for $MYHOSTNAME not present, using defaults${NC}"
-                if [[ $OSVERSION == "7" ]]; then
-                    REVPROXY=$DEVDIR/etc/scot-revproxy-local.conf
-                else
-                    REVPROXY=$DEVDIR/etc/scot-revproxy-local-rh.conf
-                fi
+                echo -e "${red}= custom apache config for $MYHOSTNAME not present, using defaults${NC}"
+                REVPROXY=$DEVDIR/etc/scot-revproxy-local.conf
             fi
-            cp $REVPROXY /etc/apache2/sites-enabled/scot.conf
+            cp $REVPROXY /etc/apache2/sites-available/scot.conf
+            ln -s /etc/apache2/sites-available/scot.conf /etc/apache2/sites-enabled/scot.conf
         fi
 
         SSLDIR="/etc/apache2/ssl"
@@ -269,7 +289,7 @@ EOF
 ###
     if [ -e $GEODIR/GeoLiteCity.dat ]; then
         if [ "$OVERGEO" == "yes" ]; then
-            echo "${red}- overwriting existing GeoLiteCity.dat file"
+            echo -e "${red}- overwriting existing GeoLiteCity.dat file"
             cp $DEVDIR/etc/GeoLiteCity.dat $GEODIR/GeoLiteCity.dat
             chmod +r $GEODIR/GeoLiteCity.dat
         fi
@@ -289,42 +309,43 @@ fi
 ### account creation
 ###
 
-echo "${yellow} Checking SCOT accounts${NC}"
+echo -e "${yellow} Checking SCOT accounts${NC}"
 
-scot_user=`grep -c scot: /etc/password`
-if [ $scot_user -ne 1 ]; then
-    echo "+ adding user: scot"
+scot_user=`grep -c scot: /etc/passwd`
+if [ "$scot_user" -ne 1 ]; then
+    echo -e "${green}+ adding user: scot ${NC}"
     useradd scot
 fi
 
 ###
 ### set up init.d script
 ###
-echo "${yellow} Checking for init.d script${NC}"
+echo -e "${yellow} Checking for init.d script ${NC}"
 
 if [ -e /etc/init.d/scot ]; then
     echo "= init script exists, stopping existing scot..."
     service scot stop
 fi
 
-if [ "$NEWINIT" == "yes" ]; then
+if [ "$NEWINIT" == "yes" ] || [ ! -e /etc/init.d/scot ]; then
+    echo -e "${yellow} refreshing or instaling the scot init script ${NC}"
     if [ $OS == "RedHatEnterpriseServer" ]; then
-        cp $INSTDIR/etc/scot-centos-init /etc/init.d/scot
+        cp $DEVDIR/etc/scot-centos-init /etc/init.d/scot
     fi
     if [ $OS == "Ubuntu" ]; then
-        cp $INSTDIR/etc/scot-init /etc/init.d/scot
+        cp $DEVDIR/etc/scot-init /etc/init.d/scot
     fi
     chmod +x /etc/init.d/scot
-    sed -i 's=/instdir='$INSTDIR'=g' /etc/init.d/scot
+    sed -i 's=/instdir='$SCOTROOT'=g' /etc/init.d/scot
 fi
     
 ###
 ### Set up Filestore directory
 ###
-echo "${yellow} Checking SCOT filestore $FILESTORE"
+echo -e "${yellow} Checking SCOT filestore $FILESTORE ${NC}"
 
 if [ "$SFILESDEL" == "1" ]; then
-    echo "${red}- removing existing filestore${NC}"
+    echo -e "${red}- removing existing filestore${NC}"
     rm -rf  $FILESTORE
 fi
 
@@ -337,7 +358,7 @@ chmod g+w $FILESTORE
 ###
 ### set up the backup directory
 ###
-echo "${yellow} setting up backup directory $BACKDIR"
+echo -e "${yellow} setting up backup directory $BACKDIR ${NC}"
 mkdir -p $BACKUPDIR
 chown scot:scot $BACKUPDIR
 
@@ -345,26 +366,30 @@ chown scot:scot $BACKUPDIR
 ### install the scot
 ###
 
-echo "${yellow} installing SCOT files"
+echo -e "${yellow} installing SCOT files ${NC}"
 
-if [ $DELDIR = "true" ]; then
-    echo "${red}- removing target installation directory $INSTDIR ${NC}"
-    rm -rf $INSTDIR
+if [ "$DELDIR" == "true" ]; then
+    echo -e "${red}- removing target installation directory $SCOTROOT ${NC}"
+    rm -rf $SCOTROOT
 fi
 
-if [ ! -d $INSTDIR ]; then
-    echo "+ creating $INSTDIR";
-    mkdir -p $INSTDIR
-    chown scot:scot $INSTDIR
-    cp -r $DEVDIR/* $INSTDIR/
+if [ ! -d $SCOTROOT ]; then
+    echo -e "+ creating $SCOTROOT";
+    mkdir -p $SCOTROOT
+    chown scot:scot $SCOTROOT
+    cp -r $DEVDIR/* $SCOTROOT/
 fi
 
 ###
 ### Logging file set up
 ###
-echo "${yellow} setting up Log dir $LOGDIR"
+echo -e "${yellow} setting up Log dir $LOGDIR ${NC}"
+if [ ! -d $LOGDIR ]; then
+    mkdir -p $LOGDIR
+fi
+
 if [ "$CLEARLOGS"  == "1" ]; then
-    echo "${red}- clearing any existing scot logs"
+    echo -e "${red}- clearing any existing scot logs"
     for i in $LOGDIR/*; do
         cat /dev/null > $i
     done
@@ -404,13 +429,13 @@ while [[ $? -ne 0 && $COUNTER -lt 100 ]]; do
 done
 
 if [ "$RESETDB" == "1" ];then
-    echo "${red}- Dropping mongodb scot database!${NC}"
+    echo -e "${red}- Dropping mongodb scot database!${NC}"
     mongo scot-prod $DEVDIR/bin/reset_db.js
 fi
 
 MONGOADMIN=$(mongo scot-prod --eval "printjson(db.users.count({username:'admin'}))" --quiet)
 
-if [ "$MONGOADMIN" == "0" || "$RESETDB" == "1" ]; then
+if [ "$MONGOADMIN" == "0" ] || [ "$RESETDB" == "1" ]; then
     PASSWORD=$(dialog --stdout --nocancel --title "Set SCOT Admin Password" --backtitle "SCOT Installer" --inputbox "Choose a SCOT ADmin login password" 10 70)
     set='$set'
     HASH=`$DEVDIR/bin/passwd.pl $PASSWORD`
@@ -418,6 +443,18 @@ if [ "$MONGOADMIN" == "0" || "$RESETDB" == "1" ]; then
     mongo scot-prod $DEVDIR/etc/admin_user.js
     mongo scot-prod --eval "db.users.update({username:'admin'}, {$set:{hash:'$HASH'}})"
 
+fi
+
+if [ ! -e /etc/init.d/scot ]; then
+    echo -e "${yellow}+ missing /etc/init.d/scot, installing...${NC}"
+    if [ $OS == "RedHatEnterpriseServer" ]; then
+        cp $DEVDIR/etc/scot-centos-init /etc/init.d/scot
+    fi
+    if [ $OS == "Ubuntu" ]; then
+        cp $DEVDIR/etc/scot-init /etc/init.d/scot
+    fi
+    chmod +x /etc/init.d/scot
+    sed -i 's=/instdir='$SCOTROOT'=g' /etc/init.d/scot
 fi
 
 echo "= restarting scot"
