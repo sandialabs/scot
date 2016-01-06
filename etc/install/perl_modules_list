@@ -66,3 +66,5 @@ Test::Mojo
 Log::Log4perl
 File::Slurp
 AnyEvent::STOMP::Client
+Meerkat
+MooseX::Singleton

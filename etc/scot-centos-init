@@ -13,7 +13,7 @@
 . /lib/lsb/init-functions
 
 
-CMD="/opt/sandia/webapps/scot3/bin/start_scot.sh"
+CMD="/opt/scot/bin/start_scot.sh"
 
 OS=`lsb_release -i | cut -s -f2`
 
@@ -27,7 +27,7 @@ case "$1" in
         ;;
     stop)
         echo -n "Stopping $DESC: "
-        PID=`cat /opt/sandia/webapps/scot3/scot.pid`
+        PID=`cat /opt/scot/scot.pid`
         if [ -z $PID ]
         then
             echo "No PID file. using pkill"
