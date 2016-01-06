@@ -2085,7 +2085,9 @@ sub supertable {
     $log->debug("Creating Supertable of Alertgroups");
 
     my $req_json    = $self->req->json;
-    my $req_params  = $self->req->param('alertgroup') // [];
+    my @req_params  = $self->req->param('alertgroup') // [];
+
+    $log->debug("req_params are ",{filter=>\&Dumper, value=>\@req_params});
 
     my %ags = ();
     my @agset;
@@ -2093,7 +2095,7 @@ sub supertable {
     if ( $req_json ) {
         push @agset, @{$req_json->{alertgroup}};
     }
-    push @agset, @{$req_params};
+    push @agset, @req_params;
 
     foreach my $agid (@agset) {
         $ags{$agid}++;
