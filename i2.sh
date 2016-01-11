@@ -388,6 +388,9 @@ if [ ! -d $LOGDIR ]; then
     mkdir -p $LOGDIR
 fi
 
+chown scot.scot $LOGDIR
+chmod g+w $LOGDIR
+
 if [ "$CLEARLOGS"  == "1" ]; then
     echo -e "${red}- clearing any existing scot logs"
     for i in $LOGDIR/*; do

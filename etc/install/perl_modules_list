@@ -68,3 +68,5 @@ File::Slurp
 AnyEvent::STOMP::Client
 Meerkat
 MooseX::Singleton
+Mozilla::PublicSuffix
+Net::IDN::Encode

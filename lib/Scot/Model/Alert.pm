@@ -105,7 +105,7 @@ has columns     => (
 
 array of events that this alert was promoted to
 
-=cut
+HANDLED BY PROMOTABLE
 
 has events  => (
     is          => 'ro',
@@ -115,6 +115,7 @@ has events  => (
     default     => sub { [] },
 );
 
+=cut
 
 __PACKAGE__->meta->make_immutable;
 1;
