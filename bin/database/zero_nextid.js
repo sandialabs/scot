@@ -1,0 +1,16 @@
+db.nextid.upsert({"for_collection": "alertgroup","last_id": 0});
+db.nextid.upsert({"for_collection": "alert",    "last_id": 0});
+db.nextid.upsert({"for_collection": "checklist","last_id": 0});
+db.nextid.upsert({"for_collection": "config",   "last_id": 0});
+db.nextid.upsert({"for_collection": "entity",   "last_id": 0});
+db.nextid.upsert({"for_collection": "entry",    "last_id": 0});
+db.nextid.upsert({"for_collection": "event",    "last_id": 0});
+db.nextid.upsert({"for_collection": "file",     "last_id": 0});
+db.nextid.upsert({"for_collection": "guide",    "last_id": 0});
+db.nextid.upsert({"for_collection": "history",  "last_id": 0});
+db.nextid.upsert({"for_collection": "incident", "last_id": 0});
+db.nextid.upsert({"for_collection": "intel",    "last_id": 0});
+db.nextid.upsert({"for_collection": "intel",    "last_id": 0});
+db.nextid.upsert({"for_collection": "source",   "last_id": 0});
+db.nextid.upsert({"for_collection": "tag",      "last_id": 0});
+db.nextid.upsert({"for_collection": "user",     "last_id": 0});

@@ -53,6 +53,13 @@ sub update_entities_from_target {
         id   => $id,
     };
 
+    my @auxtargets = ();
+    push @auxtargets, $thref;
+
+    if ( $type eq "entry" ) {
+        # add the type that the entry points to as well
+        @auxtargets = @{ $target->targets };
+    }
 
     $log->trace("Updating Entity with target $type $id info");
 
@@ -69,7 +76,7 @@ sub update_entities_from_target {
     
         if ( defined $eobj   ) {
             if ( $eobj->update({
-                    '$addToSet' => {targets => $thref}
+                    '$addToSet' => {targets => {'$each' => \@auxtargets }}
                 }) ) {
                 $log->trace("Updated Entity $value");
                 $histcol->add_history_entry({

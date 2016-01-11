@@ -1,4 +1,4 @@
-db.config.create({
+db.config.insert({
     module: "Scot::Controller::Tor",
     item:   {
         url: 'http://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=132.175.81.4',
@@ -8,11 +8,11 @@ db.config.create({
     }
 });
 
-db.scotmod.create({
+db.scotmod.insert({
     module: 'Scot::Util::Imap',
     attribute: "imap",
 });
-db.config.create({
+db.config.insert({
     module: "Scot::Util::Imap",
     item: {
         mailbox: "INBOX",
@@ -26,11 +26,11 @@ db.config.create({
     }
 });
 
-db.scotmod.create({
+db.scotmod.insert({
     module: "Scot::Util::Activemq",
     attribute: "amq"
 });
-db.config.create({
+db.config.insert({
     module: "Scot::Util::Activemq",
     item: {
         host    => '127.0.0.1',

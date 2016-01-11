@@ -105,6 +105,32 @@ sub find_iid {
     return $self->thaw_object($data);
 }
 
+sub set_next_id {
+    my $self    = shift;
+    my $id      = shift;
+    my $collection  = $self->collection_name;
+    my %command;
+    my $tie     = tie(%command, "Tie::IxHash");
+    %command        = (
+        findAndModify   => "nextid",
+        query           => { for_collection => $collection },
+        update          => { '$set' => { last_id => $id } },
+        'new'           => 1,
+        upsert          => 1,
+    );
+    my $mongo   = $self->meerkat;
+    my $iid = $self->_try_mongo_op(
+        get_next_id => sub {
+            my $db_name = $mongo->database_name;
+            my $db      = $mongo->_mongo_database($db_name);
+            my $job     = $db->run_command(\%command);
+            return $job->{value}->{last_id};
+        }
+    );
+    return $iid;
+}
+
+
 
 =item B<get_next_id()>
 

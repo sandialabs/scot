@@ -38,6 +38,10 @@ from Scot::Role::Subject
 
 =cut
 
+=item B<description>
+
+=cut
+
 has description => (
     is          => 'ro',
     isa         => 'Str',

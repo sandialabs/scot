@@ -141,7 +141,7 @@ sub send {
         );
     };
     if ($@) {
-        $log->error("Error Sending to ActiveMQ: ".$@);
+        # $log->error("Error Sending to ActiveMQ: ".$@);
     }
     $log->level(Log::Log4perl::Level::to_priority('DEBUG'));
 }

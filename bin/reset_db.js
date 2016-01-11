@@ -1,4 +1,4 @@
-db.alertgroup.drop();
+// db.alertgroup.drop();
 db.alertgroup.ensureIndex({"id": 1});
 db.alertgroup.ensureIndex({"message_id":1});
 db.alertgroup.ensureIndex({"updated": 1});
@@ -104,24 +104,21 @@ db.incident.ensureIndex({"updated":1});
 db.intel.drop();
 db.intel.ensureIndex({"id": 1});
 
-db.scotmod.drop();
-db.scotmod.insert({ id: "1", class:  "Scot::Util::Activemq", attribute:  "amq" });
-
-db.source.drop();
+// db.source.drop();
 db.source.ensureIndex({id: 1});
 
-db.tag.drop();
+// db.tag.drop();
 db.tag.ensureIndex({id: 1});
 db.tag.ensureIndex({text: 1});
 db.tag.ensureIndex({"target_id": 1, "target_type": 1});
 
 db.user.drop();
 
-db.idgenerators.drop();
-db.idgenerators.insert({"collection": "alert", "lastid": 0});
-db.idgenerators.insert({"collection": "entry", "lastid": 0});
-db.idgenerators.insert({"collection": "event", "lastid": 0});
-db.idgenerators.insert({"collection": "incident", "lastid": 0});
-db.idgenerators.insert({"collection": "checklist", "lastid": 0});
-db.idgenerators.insert({"collection": "file", "lastid": 0});
-db.idgenerators.insert({"collection": "alertgroup", "lastid": 0});
+// db.idgenerators.drop();
+// db.idgenerators.insert({"collection": "alert", "lastid": 0});
+// db.idgenerators.insert({"collection": "entry", "lastid": 0});
+// db.idgenerators.insert({"collection": "event", "lastid": 0});
+// db.idgenerators.insert({"collection": "incident", "lastid": 0});
+// db.idgenerators.insert({"collection": "checklist", "lastid": 0});
+// db.idgenerators.insert({"collection": "file", "lastid": 0});
+// db.idgenerators.insert({"collection": "alertgroup", "lastid": 0});

@@ -191,7 +191,7 @@ has 'logfile'   => (
 
 sub _get_log_file {
     my $self    = shift;
-    my $logfile = $ENV{'scot_log_file'} // "/tmp/scot.log";
+    my $logfile = $ENV{'scot_log_file'} // "/var/log/scot.log";
 }
     
 
