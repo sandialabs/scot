@@ -39,3 +39,12 @@ db.config.insert({
 });
 
 
+db.config.insert({
+    module: "backup",
+    item:   {
+        pidfile:    "/var/run/scot.backup.pid",
+        location:   "/var/backup/scotdump",
+        tarloc:     "/var/backup/snapshots/",
+        cleanup:    1,
+    }
+});
