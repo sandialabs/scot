@@ -87,6 +87,8 @@ sub create_from_api {
             status      => 'open',
         };
 
+        $log->trace("Creating alert ", {filter=>\&Dumper, value => $chref});
+
         my $alert = $mongo->collection("Alert")->create($chref);
 
         unless ( defined $alert ) {

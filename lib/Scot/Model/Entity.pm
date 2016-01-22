@@ -11,8 +11,9 @@ Scot::Model::Entity
 =head1 Description
 
 The model of an individual Entity
-use this if Entities move back into MongoDB
-if we continue with Redis we will have to invent something else.
+
+Entities are linked to other items via
+the Link collection
 
 =cut
 
@@ -20,7 +21,6 @@ extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
     Scot::Role::Hashable
-    Scot::Role::Targets
 );
 
 =head1 Attributes
@@ -52,13 +52,6 @@ has type  => (
     required    => 1,
     default     => '',
 );
-
-=item B<targets>
-
-array of hash references of form { type => t, id => i }
-from Scot::Role::Target
-
-=cut
 
 =item B<classes>
 

@@ -16,7 +16,7 @@ DIR="/opt/activemq"
 APP="activemq"
 OPTS="console xbean:$DIR/conf/scotamq.xml &> /var/log/activemq/scot.amq.log"
 CMD="$DIR/bin/$APP $OPTS"
-SHUT="$DIR/bin/activemq-admin stop --all"
+SHUT="$DIR/bin/activemq stop --all"
 
 case "$1" in
     start)

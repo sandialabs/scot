@@ -50,15 +50,17 @@ sub create_from_api {
     if ( scalar(@entries) > 0 ) {
         my $mongo   = $env->mongo;
         my $ecoll   = $mongo->collection('Entry');
+        my $lcoll   = $mongo->collection('Link');
         foreach my $entry ( @entries ) {
-            $entry->{targets}   = [ 
-                {
-                    id   => $guide->id,
-                    type => "guide",
-                }
-            ];
             $entry->{owner} = $entry->{owner} // $request->{user};
             my $obj = $ecoll->create($entry);
+            $lcoll->add_link({
+                target_type => "guide",
+                target_id   => $guide->id,
+                when        => $env->now,
+                item_type   => "entry",
+                item_id     => $obj->id,
+            });
         }
     }
 

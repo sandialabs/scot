@@ -225,5 +225,36 @@ sub build_from_alerts {
     return $event;
 }
 
+sub create_promotion {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my $subject =   $self->get_subject($object) //
+                    $self->get_value_from_request($req, "subject");
+
+    return $self->create({
+        subject => $subject 
+    });
+}
+
+sub get_subject {
+    my $self    = shift;
+    my $object  = shift;
+    
+    if ( ref($object) eq "Scot::Model::Alert" ) {
+        my $agid    = $object->alertgroup;
+        my $agcol   = $self->env->mongo->collection('Alertgroup');
+        my $agobj   = $agcol->find_iid($agid);
+        return $agobj->subject;
+    }
+    else {
+        return $object->subject;
+    }
+}
+
+
+
+
+
 
 1;

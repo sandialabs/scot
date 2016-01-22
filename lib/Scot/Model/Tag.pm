@@ -17,7 +17,6 @@ The model of an individual Tag
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
-    Scot::Role::Targets
 );
 
 =head1 Attributes
@@ -36,11 +35,19 @@ has value  => (
     required    => 1,
 );
 
-=item B<targets>
+=item B<note>
 
-[ { type: x, id, y } ]
+a brief description of the tag
+or other explanatory info
 
 =cut
+
+has note    => (
+    is      => 'ro',
+    isa     => 'Str',
+    required=> 1,
+    default => '',
+);
 
 
 __PACKAGE__->meta->make_immutable;

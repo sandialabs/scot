@@ -10,14 +10,15 @@ Scot::Model::Sources
 
 =head1 Description
 
-The model of an individual alert
+The model of an source record
+Sources are linked through the
+Link collection
 
 =cut
 
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
-    Scot::Role::Targets
 );
 
 =head1 Attributes
@@ -36,12 +37,20 @@ has value  => (
     required    => 1,
 );
 
-=item B<targets>
+=item B<notes>
 
-[ { type: x, id, y } ]
-from Scot::Role::Target
+store a bried description or other information
+about this source
 
 =cut
+
+has notes => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default    => 'none',
+);
+
 
 __PACKAGE__->meta->make_immutable;
 1;

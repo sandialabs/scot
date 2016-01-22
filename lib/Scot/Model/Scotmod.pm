@@ -25,13 +25,13 @@ with    qw(
 
 =over 4
 
-=item B<class>
+=item B<module>
 
 The perl heirarchy name for the class to load.  e.g. Scot::Util::Foo
 
 =cut
 
-has class   => (
+has module   => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,

@@ -69,7 +69,7 @@ has ssl         => (
     is          => 'ro',
     isa         => 'ArrayRef',
     required    => 1,
-    default     => [ 'SSL_verify_mode', 'SSL_VERIFY_NONE' ],
+    default     => sub {[ 'SSL_verify_mode', 'SSL_VERIFY_NONE' ]},
 );
 
 has uid         => (
