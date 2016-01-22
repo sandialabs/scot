@@ -33,6 +33,66 @@ sub get_entity_data_for {
     return $cursor;
 }
 
+sub update_entities {
+    my $self    = shift;
+    my $target  = shift;    # Scot::Model Object
+    my $earef   = shift;    # array of hrefs that hold entityinfo
+
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+
+    my $type    = $target->get_collection_name;
+    my $id      = $target->id;
+    my $linkcol = $mongo->collection('Link');
+
+    $log->trace("[$type $id] Updating associated entities");
+    
+    # find entity or create it.
+
+    foreach my $entity (@$earef) {
+        my @command    = (
+            findAndModify   => "entity",
+            query           => { 
+                value   => $entity->{value}, 
+                type    => $entity->{type},
+            },
+            update          => {
+                '$setOnInsert'  => {
+                    value   => $entity->{value},
+                    type    => $entity->{type},
+                }
+            },
+            new     => 1,
+            upsert  => 1,
+        );
+
+        my $return = $self->_try_mongo_op(
+            find_or_create => sub {
+                my $dbname  = $self->meerkat->database_name;
+                my $db      = $self->meerkat->_mongo_database($dbname);
+                my $job     = $db->run_command(\@command);
+                return $job;
+            }
+        );
+
+        $log->debug("FindAndModify returned: ",{ filter =>\&Dumper, value => $return });
+
+        my $entity_id    = $return->{id};
+
+        my $link    = $linkcol->add_link({
+            item_type   => "entity",
+            item_id     => $entity_id,
+            when        => $env->now(),
+            target_type => $type,
+            target_id   => $id,
+        });
+    }
+}
+
+
+
+
 sub update_entities_from_target {
     my $self        = shift;
     my $target      = shift;

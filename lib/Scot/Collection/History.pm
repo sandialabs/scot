@@ -26,7 +26,18 @@ sub add_history_entry {
     my $env     = $self->env;
     my $log     = $env->log;
 
+    my $target  = delete $href->{targets};
+
     my $obj = $self->create($href);
+
+    # now link it to the object
+    my $link = $env->mongo->collection('Link')->add_link({
+        item_type   => "history",
+        item_id     => $obj->id,
+        when        => $env->now(),
+        target_type => $target->{type},
+        target_id   => $target->{id},
+    });
 
     unless ($obj) {
         $log->error("Failed to create History record for $href->{what}");

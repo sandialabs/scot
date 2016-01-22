@@ -4,6 +4,10 @@ use Moose::Role;
 
 =item B<promotions>
 
+###
+### removing this to be replaced with Link.pm
+###
+
 Hash that tracks what was promoted to this thing
 and what this thing was promoted to.  Multi to multi
 {
@@ -16,7 +20,7 @@ and what this thing was promoted to.  Multi to multi
 }
 
 
-=cut
+# no longer used == use link collection
 
 has promotions => (
     is      => 'ro',
@@ -30,5 +34,7 @@ has promotions => (
         } 
     },
 );
+
+=cut
 
 1;

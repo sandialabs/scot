@@ -110,23 +110,15 @@ sub add_tag_to {
     unless ( defined $tag_obj ) {
         $tag_obj    = $self->create({
             value    => $tag,
-            targets => [{
-                type    => $thing,
-                id      => $id + 0,
-            }],
         });
     }
-    else {
-        $tag_obj->update_add( targets => {
-            type    => $thing,
-            id      => $id + 0,
-        });
-    }
-    $env->mongo->collection("History")->add_history_entry({
-        who     => "api",
-        what    => "tag applied to $thing : $id",
-        when    => $env->now(),
-        targets => [ { id => $tag_obj->id, type => "tag" } ],
+
+    $env->mongo->collection("Link")->add_link({
+        target_type => $thing,
+        target_id   => $id,
+        when        => $env->now(),
+        item_type   => "tag",
+        item_id     => $tag_obj->id,
     });
 
     return $tag_obj;

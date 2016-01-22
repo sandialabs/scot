@@ -7,6 +7,8 @@ use Test::Mojo;
 use Data::Dumper;
 use Mojo::JSON qw(decode_json encode_json);
 
+system('mongo scot-testing <../../bin/database/reset.js');
+
 $ENV{'scot_mode'}   = "testing";
 my @defgroups       = ( 'ir', 'testing' );
 
@@ -27,7 +29,7 @@ my $event_id = $t->tx->res->json->{id};
 $t  ->get_ok("/scot/api/v2/event/$event_id")
     ->status_is(200)
     ->json_is('/id'     => $event_id)
-    ->json_is('/owner'  => 'scot-adm')
+    ->json_is('/owner'  => 'scot-admin')
     ->json_is('/status'  => 'open')
     ->json_is('/subject' => 'Test Event 1');
 
@@ -49,7 +51,7 @@ my $entry1 = $t->tx->res->json->{id};
 $t  ->get_ok("/scot/api/v2/event/$event_id")
     ->status_is(200)
     ->json_is('/id' => $event_id)
-    ->json_is('/owner'  => 'scot-adm')
+    ->json_is('/owner'  => 'scot-admin')
     ->json_is('/status'  => 'open')
     ->json_is('/subject'    => 'Test Event 1');
 
@@ -139,6 +141,7 @@ $t  ->get_ok("/scot/api/v2/event/$event_id/entry")
     ->json_is('/totalRecordCount' => 2)
     ->json_is('/records/0/id'   => $entry1)
     ->json_is('/records/1/id'   => $entry2);
+
 
 my $tx  = $t->ua->build_tx(
     PUT =>"/scot/api/v2/event/$event_id" => json =>{

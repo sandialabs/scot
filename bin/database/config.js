@@ -1,4 +1,5 @@
 db.config.insert({
+    id: 1,
     module: "Scot::Controller::Tor",
     item:   {
         url: 'http://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=132.175.81.4',
@@ -9,10 +10,13 @@ db.config.insert({
 });
 
 db.scotmod.insert({
+    id: 1,
     module: 'Scot::Util::Imap',
     attribute: "imap",
 });
+
 db.config.insert({
+    id: 2,
     module: "Scot::Util::Imap",
     item: {
         mailbox: "INBOX",
@@ -27,19 +31,23 @@ db.config.insert({
 });
 
 db.scotmod.insert({
+    id: 2,
     module: "Scot::Util::Activemq",
     attribute: "amq"
 });
+
 db.config.insert({
+    id: 3,
     module: "Scot::Util::Activemq",
     item: {
-        host    => '127.0.0.1',
-        port    => 61613,
+        host    : '127.0.0.1',
+        port    : 61613,
     }
 });
 
 
 db.config.insert({
+    id: 4,
     module: "backup",
     item:   {
         pidfile:    "/var/run/scot.backup.pid",

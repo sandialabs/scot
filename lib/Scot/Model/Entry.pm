@@ -22,7 +22,6 @@ with    qw(
     Scot::Role::Hashable
     Scot::Role::Parsed
     Scot::Role::Permission
-    Scot::Role::Targets
     Scot::Role::Times
 );
 

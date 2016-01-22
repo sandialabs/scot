@@ -184,11 +184,12 @@ EOF
         tar xf /tmp/$AMQTAR --directory /tmp
         mv /tmp/apache-activemq-5.14-SNAPSHOT/* $AMQDIR
 
-        cp $DEVDIR/etc/scotamq.xml $AMQDIR/conf
-        cp $DEVDIR/etc/jetty.xml   $AMQDIR/conf
-        cp -R $DEVDIR/etc/scotaq   $AMQDIR/webapps
-        mv $ACTIVEMQDIR/webapps/scotaq     $AMQDIR/webapps/scot
-        cp $DEVDIR/etc/activemq-init /etc/init.d/activemq
+        cp $DEVDIR/etc/scotamq.xml          $AMQDIR/conf
+        cp $DEVDIR/etc/jetty.xml            $AMQDIR/conf
+        cp -R $DEVDIR/etc/scotaq            $AMQDIR/webapps
+        mv $ACTIVEMQDIR/webapps/scotaq      $AMQDIR/webapps/scot
+        cp $DEVDIR/etc/activemq-init        /etc/init.d/activemq
+
         chmod +x /etc/init.d/activemq
         chown -R activemq.activemq $AMQDIR
         service activemq start

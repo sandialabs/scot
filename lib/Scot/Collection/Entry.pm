@@ -24,8 +24,8 @@ sub create_from_api {
 
     my $json    = $request->{request}->{json};
 
-    my $target_type = $json->{target_type};
-    my $target_id   = $json->{target_id};
+    my $target_type = delete $json->{target_type};
+    my $target_id   = delete $json->{target_id};
 
     unless ( defined $target_type ) {
         $log->error("Error: Must provide a target type");
@@ -40,14 +40,6 @@ sub create_from_api {
             error_msg   => "Entries must have target_id defined",
         };
     }
-
-    $json->{targets}    = [ {
-        id   => $target_id,
-        type => $target_type,
-    } ];
-
-    delete $json->{target_id};
-    delete $json->{target_type};
 
     my $entry_collection    = $mongo->collection("Entry");
     my $entity_collection   = $mongo->collection("Entity");
@@ -64,6 +56,15 @@ sub create_from_api {
     $log->debug("Creating entry with: ", { filter=>\&Dumper, value => $json});
 
     my $entry_obj   = $entry_collection->create($json);
+
+    my $linkcol = $mongo->collection('Link');
+    my $linkobj = $linkcol->add_link({
+        item_type   => "entry",
+        item_id     => $entry_obj->id,
+        when        => $env->now(),
+        target_id   => $target_id,
+        target_type    => $target_type,
+    });
 
     return $entry_obj;
 

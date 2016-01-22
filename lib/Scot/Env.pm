@@ -150,7 +150,7 @@ has mongo   => (
 sub _build_mongo {
     my $self    = shift;
     my $mconf   = $self->mongo_config;
-    $self->log->debug("Mongo Config: ",{ filter=>\&Dumper, value=>$mconf});
+    $self->log->trace("Mongo Config: ",{ filter=>\&Dumper, value=>$mconf});
     my $mongo   = Meerkat->new(
         model_namespace         => "Scot::Model",
         collection_namespace    => "Scot::Collection",
@@ -161,6 +161,7 @@ sub _build_mongo {
             # passowrd    => $mconf->{pass},
             w           => $mconf->{write_safety},
             find_master => $mconf->{find_master},
+            # max_time_ms => 1000,
         },
     );
     return $mongo;
@@ -170,7 +171,7 @@ has 'log_level' => (
     is          => 'rw',
     isa         => 'Str',
     required    => 1,
-    default     => "$DEBUG",
+    default     => "$TRACE",
 );
 
 has 'log'   => (
@@ -191,7 +192,7 @@ has 'logfile'   => (
 
 sub _get_log_file {
     my $self    = shift;
-    my $logfile = $ENV{'scot_log_file'} // "/var/log/scot.log";
+    my $logfile = $ENV{'scot_log_file'} // "/var/log/scot/scot.log";
 }
     
 
@@ -202,7 +203,7 @@ sub _build_logger {
 
     my $log     = Log::Log4perl->get_logger("Scot");
     my $layout  = Log::Log4perl::Layout::PatternLayout->new(
-        '%d [%P] %15F{1}: %4L %m%n'
+        '%d %7p [%P] %15F{1}: %4L %m%n'
     );
     my $appender    = Log::Log4perl::Appender->new(
         "Log::Log4perl::Appender::File",
@@ -212,7 +213,8 @@ sub _build_logger {
     );
     $appender->layout($layout);
     $log->add_appender($appender);
-    $log->level($TRACE);
+    # $log->level($TRACE);
+    $log->level($self->log_level);
     return $log;
 }
 
@@ -227,6 +229,8 @@ has tor_url => (
 sub BUILD {
     my $self    = shift;
     my $log     = $self->log;
+    my $loglevel = $log->level();
+    $log->level($WARN);
 
     $log->trace("-------------------------");
     $log->trace("Scot::Env is Initializing");
@@ -240,20 +244,20 @@ sub BUILD {
 
     my $module_cursor   = $self->get_module_list;
 
-    $log->debug($module_cursor->count . " Modules will be loaded");
+    $log->trace($module_cursor->count . " Modules will be loaded");
 
     while ( my $module_obj = $module_cursor->next ) {
 
-        my $module_name     = $module_obj->class;
+        my $module_name     = $module_obj->module;
         my $attribute_name  = $module_obj->attribute;
 
         #my $fullname    = compose_module_name($prefix, $module_name);
         my $fullname    = $module_name;
 
-        $log->debug("Requiring module $fullname");
+        $log->trace("Requiring module $fullname");
         require_module($fullname);
 
-        $log->debug("Creating attribute $attribute_name");
+        $log->trace("Creating attribute $attribute_name");
         $meta->add_attribute(
             $attribute_name => (
                 is  => 'rw',
@@ -266,13 +270,14 @@ sub BUILD {
 
         if ( defined ($module) ) {
             $self->$attribute_name($module);
-            $log->debug("added link to module");
+            $log->trace("added link to module");
         }
         else {
             $log->error("Failed to create $fullname");
         }
     }
     $meta->make_immutable;
+    $log->level($loglevel);
 }
 
 sub get_module_list {
@@ -280,7 +285,7 @@ sub get_module_list {
     my $mongo   = $self->mongo;
     my $log     = $self->log;
 
-    $log->debug("Looking for Scot Modules to load");
+    $log->trace("Looking for Scot Modules to load");
 
     my $collection  = $mongo->collection('Scotmod');
     my $cursor      = $collection->find({});
@@ -320,16 +325,12 @@ sub get_timer {
     my $start   = [ gettimeofday ];
     my $log     = $self->log;
 
-    $log->debug("Setting Timer for $title");
+    # $log->debug("Setting Timer for $title");
 
     return sub {
         my $begin   = $start;
         my $elapsed = tv_interval($begin, [ gettimeofday ]);
-        $log->debug("====\n".
-        " "x56 ."==== Timer   : $title\n".
-        " "x56 ."==== Elapsed : $elapsed\n".
-        " "x56 ."===="
-        );
+        $log->debug("$title Elapsed Time: $elapsed");
         return $elapsed;
     };
 }

@@ -17,7 +17,6 @@ The model of a History Record
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
-    Scot::Role::Targets
 );
 
 =head1 Attributes

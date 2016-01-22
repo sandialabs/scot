@@ -173,48 +173,73 @@ sub get_subthing {
     my $env     = $self->env;
     my $mongo   = $env->mongo;
     my $log     = $env->log;
-    my $collection;
+
+    my $linkcol;
+    my $subcol  = $mongo->collection(ucfirst($subthing));
     my $cursor;
 
-    $log->trace("GET SUBTHING /$thing/$id/$subthing");
-    $log->trace("db is ".$mongo->database_name);
+    $log->trace("get_subthing");
+    # first see if there is a Link record
+    # then try for an attribute match
 
     try {
-        $collection  = $mongo->collection(ucfirst($subthing));
+        $linkcol  = $mongo->collection("Link");
     }
     catch {
-        $log->error("Failed trying to get collection $subthing");
+        $log->error("Failed to get the Link Collection!");
         return undef;
     };
 
-    unless ($collection) {
-        $log->error("Collection Error!");
+    unless ( $linkcol ) {
+        $log->error("Collection Link error!");
         return undef;
     }
+    my $find_href   = {
+            target_type   => $thing,
+            target_id     => $id + 0,
+            item_type     => $subthing,
+    };
+    # $log->trace("lincol = ",{filter=>\&Dumper, value=>$linkcol});
+    $log->trace("Looking for links matching ",
+                {filter=>\&Dumper, value=>$find_href});
+    $log->trace("DB is ". $mongo->database_name);
+    try {
+         $cursor = $linkcol->find($find_href);
+         $log->debug("cursor count is ".$cursor->count);
+    }
+    catch {
+        $log->error("Failed finding Link cursor!");
+        $log->error("cursor = ",{filter=>\&Dumper, value => $cursor});
 
-    my $class   = "Scot::Model::" . ucfirst($subthing);
+        $log->debug("trying for direct link");
+    };
 
-    # things like tags and entries have a targets field and that is 
-    # what we want to match
-
-    if ( $class->meta->does_role("Scot::Role::Targets") ) {
-        $log->trace("$class does Targets, retrieving...");
-        $cursor = $collection->find({
-            'targets.id'  => $id + 0,
-            'targets.type' => $thing,
-        });
-#        $cursor = $self->get_targets(
-#            target_id   => $id + 0,
-#            target_type => $thing,
-#        );
+    if ( defined $cursor and ref($cursor) eq "Meerkat::Cursor" and
+         $cursor->count > 0) {
+        # now we have a cursor of Links, translate that into 
+        # a cursor of the subthing
+        # I wish I could figure out why meerkat is not returnin objects 
+        # with ->all
+        # my @ids = map { $_->{item_id} } $cursor->all;
+        my @ids;
+        while ( my $linkobj = $cursor->next ) {
+            my $href    = $linkobj->as_hash;
+            $log->debug("link = ", {filter=>\&Dumper, value=>$href});
+            push @ids, $linkobj->item_id;
+        }
+        $log->debug("looking to match ids = ",{filter=>\&Dumper,value=>\@ids});
+        my $subcursor = $subcol->find({ id  => { '$in' => \@ids } });
+        return $subcursor;
+    }
+    else {
+        # otherwise, assume the subthing has an 
+        # attribute named the same as the $thing
+        # and that it holds the matching ID
+        $cursor = $subcol->find({$thing => $id + 0});
         return $cursor;
     }
+        
 
-    # otherwise, assume the subthing has an attribute named the same as the $thing
-    # and that it holds the matching ID
-
-    $cursor = $collection->find({$thing => $id + 0});
-    return $cursor;
 }
 
 sub get_targets {
@@ -295,6 +320,14 @@ sub upsert_targetables {
         }
     }
 }
-    
+
+sub get_value_from_request {
+    my $self    = shift;
+    my $req     = shift;
+    my $key     = shift;
+
+    return  $req->{request}->{params}->{$key} //
+            $req->{request}->{json}  ->{$key};
+} 
 
 1;

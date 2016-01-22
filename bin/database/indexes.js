@@ -41,8 +41,10 @@ db.intel.ensureIndex(       { "when":       1}  );
 db.intel.ensureIndex(       { "subject":    1}  );
 
 db.source.ensureIndex(      { "id":         1}  );
+db.source.ensureIndex(      { "value":      1}  );
 db.source.ensureIndex(      { "targets":    1}  );
 
 db.tag.ensureIndex(         { "id":         1}  );
+db.tag.ensureIndex(         { "value":      1}  );
 db.tag.ensureIndex(         { "targets":    1}  );
 

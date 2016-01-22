@@ -20,6 +20,7 @@ use Data::Dumper;
 use Try::Tiny;
 use Parallel::ForkManager;
 use HTML::Entities;
+use Time::HiRes qw(gettimeofday tv_interval);
 use MongoDB;
 use v5.18;
 use strict;
@@ -73,6 +74,20 @@ has extractor   => (
     builder     => '_get_entity_extractor',
 );
 
+has completed   => (
+    is          => 'rw',
+    isa         => 'Int',
+    required    => 1,
+    default     => 0,
+);
+
+has total   => (
+    is          => 'rw',
+    isa         => 'Int',
+    required    => 1,
+    default     => 0,
+);
+
 sub _get_entity_extractor {
     my $self    = shift;
     my $env     = $self->env;
@@ -80,16 +95,86 @@ sub _get_entity_extractor {
     my $extractor   = Scot::Util::EntityExtractor->new({ log => $log });
     return $extractor;
 }
+sub get_pct {
+    my $self            = shift;
+    my $count           = $self->completed;
+    my $legacy_count    = $self->total;
+    my $pct = ( int( ($count/$legacy_count)*10000 )/100 );
+    return $pct;
+}
 
-sub migrate_alerts {
+has child_count => (
+    is          => 'rw',
+    isa         => 'Int',
+    required    => 1,
+    default     => 0,
+);
+
+sub commify {
+    my $self    = shift;
+    my $number  = shift;
+    my $text    = reverse $number;
+    $text       =~ s/(\d\d\d)(?=\d)(?!\d*\.)/$1,/g;
+    return scalar reverse $text;
+}
+
+has alerts_while_waiting    => (
+    is          => 'rw',
+    isa         => 'Int',
+    required    => 1,
+    default     => 0,
+);
+
+has time_waiting    => (
+    is          => 'rw',
+    isa         => 'Int',
+    required    => 1,
+    default     => 0
+);
+
+sub transform_alert {
+    my $self    = shift;
+    my $alert   = shift;
+    my $log     = $self->env->log;
+    my $id      = delete $alert->{id};
+
+    $log->trace("[Alert $id] transforming alert");
+    delete $alert->{idfield};
+    delete $alert->{collection};
+    delete $alert->{data_with_flair};
+    delete $alert->{searchtext};
+    delete $alert->{entities};
+
+    my @history = @{ delete $alert->{history} };
+    my @tags    = @{ delete $alert->{tags} };
+
+    $alert->{id}        = $id;
+    $alert->{updated}   = int($alert->{updated}); # in case a decimal
+    $alert->{parsed}    = 0;
+
+    my @events  = map {
+        { type => "event", id => $_ }
+    } @{ delete $alert->{events} // [] };
+
+    $alert->{promotions}    = { to => \@events };
+
+    # new format group permissions
+    # will need to get this from alertgroups once they are migrated
+    $alert->{groups}   = {
+        read        => [],
+        modify      => [],
+    };
+    return $alert, \@history, \@tags;
+}
+
+sub migrate_alerts_new {
     my $self    = shift;
     my $log     = $self->env->log;
-    my $meerkat = $self->env->mongo;
+    my $mongo   = $self->env->mongo;
     my $startid = $self->get_latest_migrated_id('Alert');
     my $db      = $self->legacy_db;
     my $coll    = $db->get_collection('alerts');
-
-    $log->debug("====== Starting Alert Migration with alert_id = $startid =======");
+    $self->completed($startid);
 
     my $cursor  = $coll->find({
         alert_id    => { '$gte' => $startid }
@@ -97,6 +182,84 @@ sub migrate_alerts {
     $cursor->immortal(1);
 
     my $legacy_count    = $cursor->count;
+    $self->total($legacy_count);
+
+    $log->debug("[Alert] Legacy DB has $legacy_count Alerts");
+    my $count   = 0;
+    my @requests;
+    my %hist;
+    my %tags;
+    while ( my $alert = $cursor->next ) {
+        my ($newalert, $history_aref, $tag_aref) = $self->transform_alert($alert);
+        my $id = $newalert->{id};
+        $count++;
+        $hist{$id} = $history_aref;
+        $tags{$id} = $tag_aref;
+        push @requests, ( insert_one  => [ $newalert ] );
+        
+    }
+
+}
+
+sub migrate_alerts {
+    my $self    = shift;
+    my $fork    = shift // 0;
+    my $log     = $self->env->log;
+    my $meerkat = $self->env->mongo;
+    my $startid = $self->get_latest_migrated_id('Alert');
+    $self->completed($startid);
+    my $db      = $self->legacy_db;
+    my $coll    = $db->get_collection('alerts');
+
+    $log->debug("====== Starting Alert Migration with alert_id = $startid =======");
+
+    $log->debug("--- Forking Alert Migration requested: $fork children will be created ---");
+
+    my $forkmgr    = Parallel::ForkManager->new($fork);
+    $forkmgr    ->run_on_start( sub {
+        my ($pid, $ident)   = @_;
+        $log->trace("[$ident] Starting child process ");
+        $self->child_count($self->child_count + 1);
+    });
+    $forkmgr    ->run_on_finish( sub {
+        my ($pid, $exit, $ident) = @_;
+        $log->trace("[$ident] Finished child process ");
+        $self->completed($self->completed + 1);
+        $self->child_count($self->child_count - 1);
+        $self->alerts_while_waiting($self->alerts_while_waiting + 1);
+    });
+    $forkmgr    ->run_on_wait( sub {
+        my $alerts_this_period = $self->alerts_while_waiting;
+        $self->alerts_while_waiting(0);
+        my $now                = time;
+        my $time_waiting       = $now - $self->time_waiting;
+        $self->time_waiting($now);
+        $log->trace("---");
+        $log->trace("--- waiting on ". $self->child_count . " children.");
+        $log->trace("--- Total     ". sprintf("%15s",$self->commify($self->total)));
+        $log->trace("--- completed ". sprintf("%15s",$self->commify($self->completed)) );
+        $log->trace("--- Remain    ". sprintf("%15s",$self->commify( ($self->total - $self->completed) )));
+        $log->trace("--- Pct. done ". $self->get_pct. "%");
+        $log->trace("---");
+        $log->trace("--- Alerts    ". sprintf("%15d",$alerts_this_period));
+        $log->trace("--- Seconds   ". sprintf("%15d",$time_waiting));
+        if ( $alerts_this_period > 0 and $time_waiting > 0) {
+            my $rate    = ($alerts_this_period/$time_waiting);
+            $log->trace("--- Rate      ". sprintf("%13.2f", $rate));
+            if ( $rate > 0) {
+                my $est     = (($self->total - $self->completed) / $rate)/3600;
+                $log->trace("--- Est compl ". sprintf("%13.2f", $est));
+            }
+        }
+    });
+
+    my $cursor  = $coll->find({
+        alert_id    => { '$gte' => $startid }
+    });
+    $cursor->immortal(1);
+
+    my $legacy_count    = $cursor->count;
+    $self->total($legacy_count);
 
     $log->debug("[Alert] Legacy DB has $legacy_count Alerts");
     my $count   = 0;
@@ -107,6 +270,8 @@ sub migrate_alerts {
         my $pct = ( int( ($count/$legacy_count)*1000 )/10 );
 
         $log->debug("[Alert $id] $count of $legacy_count { $pct % }");
+
+        $forkmgr->start("Alert $id") and next;
 
         # not needed in new object creation
         delete $alert->{idfield};
@@ -147,17 +312,68 @@ sub migrate_alerts {
             next;
         }
 
-        $log->debug("[Alert $id] Processing Flair");
-        $self->process_alert_flair($object);
+        $self->do_alert_targetables($object, \@history, \@tags);
+        
+        # $self->process_alert_flair($object);
 
-        $log->debug("[Alert $id] creating history");
-        $self->create_targetable("history", $object, @history);
+        # $self->create_targetable("history", $object, @history);
 
-        $log->debug("[Alert $id] creating tags");
-        $self->create_targetable("tag", $object, @tags);
+        # $self->create_targetable("tag", $object, @tags);
+
+        $forkmgr->finish(0);
     }
+
+    $forkmgr->wait_all_children;
     $log->debug("==== Finished Alerts ===");
 }
+
+sub do_alert_targetables {
+    my $self    = shift;
+    my $alert   = shift;
+    my $history = shift;
+    my $tags    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $id      = $alert->id;
+
+    my $f   = Parallel::ForkManager->new(0);
+
+    $f->run_on_start(sub {
+        my ($pid, $ident) = @_;
+        $log->trace("[Alert ".$alert->id."] Subprocess $ident start...");
+    });
+
+    $f->run_on_finish(sub {
+        my ($pid, $exit, $ident) = @_;
+        $log->trace("[Alert ".$alert->id."] Subprocess $ident finished...");
+    });
+
+    $f->run_on_wait(sub {
+        $log->trace("[Alert ".$alert->id."] awaiting subprocesses");
+    });
+
+    foreach my $method (qw(flair history tags)) {
+        if ( $method eq "flair" ) {
+            $f->start($method) and next;
+            $log->debug("[Alert $id] Processing Flair");
+            $self->process_alert_flair($alert);
+            $f->finish(0);
+        }
+        if ( $method eq "history" ) {
+            $f->start($method) and next;
+            $log->debug("[Alert $id] creating history");
+            $self->create_targetable("history", $alert, @{$history});
+            $f->finish(0);
+        }
+        if ( $method eq "tags" ) {
+            $f->start($method) and next;
+            $log->debug("[Alert $id] creating tags");
+            $self->create_targetable("tag", $alert, @{$tags});
+            $f->finish(0);
+        }
+    }
+}
+
 
 sub migrate_alertgroups {
     my $self    = shift;
@@ -548,8 +764,8 @@ sub create_targetable {
                 $src_obj->update({
                     '$addToSet' => { 
                         targets => { 
-                            target_type => $target->get_collection_name,
-                            target_id   => $target->id,
+                            type => $target->get_collection_name,
+                            id   => $target->id,
                         }
                     }
                 });
@@ -558,8 +774,8 @@ sub create_targetable {
                 $col->create({
                     value    => $thing,
                     targets => [{
-                        target_type => $target->get_collection_name,
-                        target_id   => $target->id,
+                        type => $target->get_collection_name,
+                        id   => $target->id,
                     }],
                 });
             }
@@ -572,7 +788,7 @@ sub create_targetable {
                     what    => $item->{what}, 
                     when    => int($item->{when}),
                     targets => [{
-                        target_type => $target->get_collection_name, target_id => $target->id
+                        type => $target->get_collection_name, id => $target->id
                     }],
                 };
                 # $log->debug("[$type] creation using ",{filter=>\&Dumper, value=>$history});

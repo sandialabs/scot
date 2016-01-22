@@ -9,7 +9,7 @@ use Scot::Collection;
 use Scot::Collection::Alertgroup;
 
 $ENV{'scot_mode'}   = "testing";
-system("mongo scot-testing ../../bin/reset_db.js");
+system("mongo scot-testing <../../bin/database/reset.js");
 
 @defgroups = ( 'ir', 'test' );
 
@@ -66,6 +66,10 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
     ->json_is('/records/0/data/foo'     => 1)
     ->json_is('/records/1/data/foo'     => 3);
 
+# print Dumper($t->tx->res->json), "\n";
+# done_testing();
+# exit 0;
+
 my $alert1_id   = $t->tx->res->json->{records}->[0]->{id};
 my $alert1_data = $t->tx->res->json->{records}->[0]->{data};
 $alert1_data->{boom} = 8;
@@ -96,10 +100,15 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
   #   ->status_is(200);
 
 
+$t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/tag" => {},
+    "Getting tags applied to alertgroup")
+    ->status_is(200)
+    ->json_is('/totalRecordCount'   => 2)
+    ->json_is('/queryRecordCount'   => 2);
 
     
 
-# print Dumper($t->tx->res->json), "\n";
+ print Dumper($t->tx->res->json), "\n";
 done_testing();
 exit 0;
 

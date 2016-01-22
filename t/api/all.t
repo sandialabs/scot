@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 $ENV{'scot_mode'}   = "testing";
-system("../../bin/reset_db.js");
+system("../../bin/database/reset.js");
 
 use TAP::Harness;
 my %args = (

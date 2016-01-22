@@ -9,7 +9,7 @@ use Data::Dumper;
 use Scot::Env;
 use Mojo::JSON qw(decode_json encode_json);
 
-system("mongo scot-testing ../../bin/reset_db.js");
+system("mongo scot-testing <../../bin/database/reset.js");
 
 $ENV{'scot_mode'}   = "testing";
 my @defgroups       = ( 'ir', 'testing' );

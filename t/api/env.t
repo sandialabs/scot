@@ -9,7 +9,7 @@ use v5.18;
 
 $ENV{'scot_mode'} = "testing";
 my $db  = "scot-testing";
-system("mongo $db ../../bin/reset_db.js");
+system("mongo $db ../../bin/database/reset.js");
 
 my $env     = Scot::Env->new({
 });
@@ -25,14 +25,14 @@ my $mongo   = $env->mongo;
 my $col     = $mongo->collection('Scotmod');
 my $cursor  = $col->find();
 
-is( $env->default_owner, "scot-adm", "Correct default owner pulled from db");
+is( $env->default_owner, "scot-admin", "Correct default owner pulled from db");
 cmp_deeply( $env->default_groups, {
     read    => [ qw(ir testing) ],
     modify  => [ qw(ir testing) ],
 }, "Correct default groups from config db");
 
 while ( my $mod = $cursor->next ) {
-    my $class   = $mod->class;
+    my $class   = $mod->module;
     my $attr    = $mod->attribute;
     is ( ref($env->$attr), $class, "$attr was loaded correctly");
 }

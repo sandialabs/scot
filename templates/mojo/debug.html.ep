@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    % my $title = stash('exception') ? 'Server error' : 'Page not found';
+    <title><%= $title %> (<%= app->mode %> mode)</title>
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="-1">
+    %= javascript '/mojo/jquery/jquery.js'
+    %= javascript '/mojo/prettify/run_prettify.js'
+    %= stylesheet '/mojo/prettify/prettify-mojo-dark.css'
+    <style>
+      a img { border: 0 }
+      body {
+        background: url(<%= url_for '/mojo/pinstripe-light.png' %>);
+        color: #445555;
+        font: 0.9em 'Helvetica Neue', Helvetica, sans-serif;
+        font-weight: normal;
+        line-height: 1.5em;
+        margin: 0;
+      }
+      :not(pre) > code {
+        background-color: #eef9ff;
+        border: solid #cce4ff 1px;
+        border-radius: 5px;
+        color: #333;
+        font: 0.9em Consolas, Menlo, Monaco, Courier, monospace;
+        padding: 0.4em;
+      }
+      h1 {
+        color: #2a2a2a;
+        font-size: 1.5em;
+        margin: 0;
+      }
+      pre {
+        font: 0.9em Consolas, Menlo, Monaco, Courier, monospace;
+        margin: 0;
+        white-space: pre-wrap;
+      }
+      pre > code {
+        display: block;
+        font: 1.0em Consolas, Menlo, Monaco, Courier, monospace;
+        margin-bottom: 0.7em;
+        margin-top: 0.7em;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      td { padding: 0.5em }
+      .box {
+        background-color: #fff;
+        border: 1px solid #c1c1c1;
+        overflow: hidden;
+        padding: 1em;
+      }
+      .code {
+        background-color: #1a1a1a;
+        background: url(<%= url_for '/mojo/pinstripe-dark.png' %>);
+        color: #eee;
+        text-shadow: #333 0 1px 0;
+      }
+      .important { background-color: rgba(47, 48, 50, .75) }
+      .infobox { color: #333 }
+      .infobox tr:nth-child(odd) .value { background-color: #ddeeff }
+      .infobox tr:nth-child(even) .value { background-color: #eef9ff }
+      .key { text-align: right }
+      .more table { margin-bottom: 1em }
+      .spaced {
+        margin-left: 5em;
+        margin-right: 5em;
+      }
+      .striped { border-top: solid #cce4ff 1px }
+      .tap {
+        font: 0.5em Verdana, sans-serif;
+        text-align: center;
+      }
+      .value { padding-left: 1em }
+      .wide { width: 100% }
+      #error {
+        font: 1.5em 'Helvetica Neue', Helvetica, sans-serif;
+        font-weight: 300;
+        margin: 0;
+        text-shadow: #333 0 1px 0;
+      }
+      #footer {
+        padding-top: 1em;
+        text-align: center;
+      }
+      #nothing {
+        border-bottom: 0;
+        padding-top: 60px;
+      }
+      #showcase {
+        border-bottom: 0;
+        border-top: 0;
+      }
+      #showcase table { margin-top: 1em }
+      #showcase td {
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+      #showcase .key { padding-right: 0 }
+      #log {
+        border-radius: 5px;
+        margin-top: 1em;
+      }
+      #log table { margin: 0 }
+      #more, #trace {
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+      }
+      #more .tap, #trace .tap { text-shadow: #ddd 0 1px 0 }
+      #request {
+        border-bottom: 0;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        margin-top: 1em;
+      }
+      #routes {
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+        padding-top: 70px;
+      }
+      #trace { border-top: 0 }
+      #wrapperlicious {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    %= include 'mojo/menubar'
+    <script>
+      function mojoDrawer (handle, drawer) {
+        $(handle).click(function () {
+          $(drawer).slideToggle('slow');
+          var text = $(handle + ' div.tap').text();
+          text = text == "tap for more" ? "tap for less" : "tap for more";
+          $(handle + ' div.tap').text(text);
+        });
+        $(drawer).toggle();
+      }
+      $(document).ready(function () {
+        mojoDrawer('#trace', '#frames');
+        mojoDrawer('#more', '#infos');
+      });
+    </script>
+    <div id="wrapperlicious">
+      % my $kv = begin
+        % my ($key, $value) = @_;
+        <tr>
+          <td class="key"><%= $key %>:</td>
+          <td class="striped value wide"><pre><%= $value %></pre></td>
+        </tr>
+      % end
+      % if (my $exception = stash 'exception') {
+        <div id="nothing" class="box spaced"></div>
+        % my $cv = begin
+          % my ($key, $value, $i) = @_;
+          %= tag 'tr', $i ? (class => 'important') : (), begin
+            <td class="key"><%= $key %></td>
+            <td class="value wide">
+              <pre><code class="prettyprint"><%= $value %></code></pre>
+            </td>
+          % end
+        % end
+        <div id="showcase" class="box code spaced">
+          <pre id="error"><%= $exception->message %></pre>
+          <div id="context" class="more">
+            <table>
+              % for my $line (@{$exception->lines_before}) {
+                %= $cv->($line->[0], $line->[1])
+              % }
+              % if (defined $exception->line->[1]) {
+                %= $cv->($exception->line->[0], $exception->line->[1], 1)
+              % }
+              % for my $line (@{$exception->lines_after}) {
+                %= $cv->($line->[0], $line->[1])
+              % }
+            </table>
+          </div>
+          % if (defined $exception->line->[2]) {
+            <div id="insight" class="more">
+              <table>
+                % for my $line (@{$exception->lines_before}) {
+                  %= $cv->($line->[0], $line->[2])
+                % }
+                %= $cv->($exception->line->[0], $exception->line->[2], 1)
+                % for my $line (@{$exception->lines_after}) {
+                  %= $cv->($line->[0], $line->[2])
+                % }
+              </table>
+            </div>
+            <div class="tap">tap for more</div>
+            <script>
+              var current = '#context';
+              function mojoShowcase () {
+                $('#showcase').click(function () {
+                  $(this).unbind('click');
+                  $(current).slideToggle('slow', function () {
+                    current = current == '#context' ? '#insight' : '#context';
+                    $(current).slideToggle('slow', function () {
+                      mojoShowcase();
+                    });
+                  });
+                });
+              }
+              mojoShowcase();
+              $('#insight').toggle();
+            </script>
+          % }
+        </div>
+        <div id="trace" class="box spaced">
+          % if (@{$exception->frames}) {
+            <div id="frames" class="infobox more">
+              <table>
+                % for my $frame (@{$exception->frames}) {
+                  <tr>
+                    <td class="striped value wide">
+                      <pre><%= $frame->[1] . ':' . $frame->[2] %></pre>
+                    </td>
+                  </tr>
+                % }
+              </table>
+            </div>
+            <div class="tap">tap for more</div>
+          % }
+        </div>
+      % }
+      % else {
+        <div id="routes" class="box infobox spaced">
+          <h1>Page not found... yet!</h1>
+          <p>
+            None of these routes could generate a response for your
+            <code><%= $c->req->method %></code> request for
+            <code><%= $c->req->url->path->to_route %></code>, maybe you need
+            to add a new one?
+          </p>
+          % my $walk = begin
+            % my ($walk, $route, $depth) = @_;
+            <tr>
+              <td class="striped value">
+                % my $pattern = $route->pattern->unparsed || '/';
+                % $pattern = "+$pattern" if $depth;
+                <pre><%= '  ' x $depth %><%= $pattern %></pre>
+              </td>
+              <td class="striped value">
+                <pre><%= uc(join ',', @{$route->via || []}) || '*' %></pre>
+              </td>
+              <td class="striped value">
+                % my $name = $route->name;
+                <pre><%= $route->has_custom_name ? qq{"$name"} : $name %></pre>
+              </td>
+            </tr>
+            % $depth++;
+            %= $walk->($walk, $_, $depth) for @{$route->children};
+            % $depth--;
+          % end
+          <table>
+            <thead>
+              <tr>
+                <th>Pattern</th>
+                <th>Methods</th>
+                <th>Name</th>
+              </tr>
+            </thead>
+            %= $walk->($walk, $_, 0) for @{app->routes->children};
+          </table>
+        </div>
+      % }
+      <div id="request" class="box infobox spaced">
+        <table>
+          % my $req = $c->req;
+          %= $kv->(Method => $req->method)
+          % my $url = $req->url;
+          %= $kv->(URL => $url->to_string)
+          %= $kv->('Base URL' => $url->base->to_string)
+          %= $kv->(Parameters => dumper $req->params->to_hash)
+          %= $kv->(Stash => dumper $snapshot)
+          %= $kv->(Session => dumper session)
+          %= $kv->(Version => $req->version)
+          % for my $name (sort @{$c->req->headers->names}) {
+            % my $value = $c->req->headers->header($name);
+            %= $kv->($name, $value)
+          % }
+        </table>
+      </div>
+      <div id="more" class="box infobox more spaced">
+        <div id="infos">
+          <table>
+            %= $kv->(Perl => "$^V ($^O)")
+            % my $version  = $Mojolicious::VERSION;
+            % my $codename = $Mojolicious::CODENAME;
+            %= $kv->(Mojolicious => "$version ($codename)")
+            %= $kv->(Home => app->home)
+            %= $kv->('Template paths' => dumper app->renderer->paths)
+            %= $kv->('Template classes' => dumper app->renderer->classes)
+            %= $kv->('Static paths' => dumper app->static->paths)
+            %= $kv->('Static classes' => dumper app->static->classes)
+            %= $kv->(Include => dumper \@INC)
+            %= $kv->(Config => dumper app->config)
+            %= $kv->(Moniker => app->moniker)
+            %= $kv->(Name => $0)
+            %= $kv->(Executable => $^X)
+            %= $kv->(PID => $$)
+            %= $kv->(Time => scalar localtime(time))
+          </table>
+        </div>
+        <div class="tap">tap for more</div>
+      </div>
+    </div>
+    <div id="footer">
+      %= link_to 'http://mojolicio.us' => begin
+        %= image '/mojo/logo-black.png', alt => 'Mojolicious logo'
+      % end
+    </div>
+  </body>
+</html>

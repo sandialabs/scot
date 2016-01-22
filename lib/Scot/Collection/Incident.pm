@@ -58,5 +58,29 @@ sub create_from_api {
     return $incident;
 }
 
+sub create_promotion {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+
+    my $reportable      = $self->get_value_from_request($req, "reportable");
+    my $subject         = $object->subject // 
+                            $self->get_value_from_request($req, "subject");
+    my $href    = {
+        reportable  => $reportable ? 1 : 0,
+        subject     => $subject,
+    };
+    my $category        = $self->get_value_from_request($req, "category");
+    $href->{category}   = $category if (defined($category));
+    my $sensitivity     = $self->get_value_from_request($req, "sensitivity");
+    $href->{sensitivity} = $sensitivity if (defined $sensitivity);
+    my $occurred        = $self->get_value_from_request($req, "occurred");
+    $href->{occurred}   = $occurred if (defined $occurred);
+    my $discovered      = $self->get_value_from_request($req, "discovered");
+    $href->{discovered} = $occurred if (defined $discovered);
+
+    my $incident = $self->create($href);
+    return $incident;
+}
 
 1;
