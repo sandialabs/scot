@@ -266,6 +266,7 @@ sub transform {
     if ( $type eq "alert" ) {
         ($href->{data_with_flair},
          $entity_aref )             = $self->flair_alert_data($href);
+        $href->{data_with_flair} = $href->{data} unless ( $href->{data_with_flair} );
         @promos = map { 
             { type => "event", id => $_, when => $href->{created} // $href->{updated} } 
         } @{ delete $href->{events} // [] };
@@ -320,9 +321,15 @@ sub transform {
             return undef;
         }
 
+        if ( ref($href->{body}) eq "MongoDB::BSON::Binary" ) {
+            $href->{body} = "<html>".$href->{plaintext}."</html>";
+        }
+
         ( $href->{body_flair},
           $href->{body_plain},
           $entity_aref  )   = $self->flair_entry_data($href);
+
+        $href->{parent} = 0 unless ($href->{parent});
 
         push @promos, { type => delete $href->{target_type}, id => delete $href->{target_id}, when => $href->{created} };
 
@@ -438,6 +445,10 @@ sub do_linkables {
             my $href    = $icol->find_one({events   => $object->id});
             $log->debug("Weird OID incident ref in event detected. Now using ",{filter=>\&Dumper,value=>$href});
             $id     = $href->{incident_id};
+            unless ( $id ) {
+                $log->error("unable to find matching oid to id, skipping");
+                next;
+            }
         }
 
         my $la  = $linkcol->create({
