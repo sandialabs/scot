@@ -1,0 +1,30 @@
+{
+  "name": "scot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "gruntfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "browserify": "^12.0.1",
+    "grunt": "^0.4.5",
+    "grunt-browserify": "^4.0.1",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-react": "^0.12.3"
+  },
+  "dependencies": {
+    "moment": "^2.10.6",
+    "react": "^0.14.2",
+    "react-crouton": "^0.2.7",
+    "react-dom": "^0.14.2",
+    "react-frame-component": "^0.4.1",
+    "react-modal": "^0.6.1",
+    "react-notification": "^4.0.0",
+    "react-overlays": "^0.5.4",
+    "react-stickydiv": "^3.4.17",
+    "react-time": "^4.0.0"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "name": "react-tinymce",
+  "version": "0.4.0",
+  "description": "React TinyMCE component",
+  "main": "lib/main.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/instructure-react/react-tinymce.git"
+  },
+  "homepage": "https://github.com/instructure-react/react-tinymce",
+  "keywords": [
+    "tinymce",
+    "react-component"
+  ],
+  "author": {
+    "name": "Matt Zabriskie"
+  },
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^0.14.0",
+    "react-dom": "^0.14.0"
+  },
+  "dependencies": {
+    "lodash": "^3.9.3"
+  },
+  "bugs": {
+    "url": "https://github.com/instructure-react/react-tinymce/issues"
+  },
+  "_id": "react-tinymce@0.4.0",
+  "scripts": {},
+  "_shasum": "b3308e2911f4e5c47c069554b1320d272aa8a77c",
+  "_from": "react-tinymce@*",
+  "_resolved": "https://registry.npmjs.org/react-tinymce/-/react-tinymce-0.4.0.tgz",
+  "_npmVersion": "2.14.3",
+  "_nodeVersion": "3.3.1",
+  "_npmUser": {
+    "name": "mzabriskie",
+    "email": "mzabriskie@gmail.com"
+  },
+  "maintainers": [
+    {
+      "name": "mzabriskie",
+      "email": "mzabriskie@gmail.com"
+    }
+  ],
+  "dist": {
+    "shasum": "b3308e2911f4e5c47c069554b1320d272aa8a77c",
+    "tarball": "http://registry.npmjs.org/react-tinymce/-/react-tinymce-0.4.0.tgz"
+  },
+  "directories": {}
+}
