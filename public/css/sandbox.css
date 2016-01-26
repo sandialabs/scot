@@ -1,0 +1,52 @@
+.entity {
+  background-color: rgba(255, 245, 168, 0.5);
+  border: 1px dotted green;
+  border-radius: 6px 6px 6px 6px;
+  cursor: pointer;
+/*  padding: 1px; */
+}
+
+
+.entity:active {
+  background-color: red;
+}
+
+body {
+  background-color: rgba(0,0,0,0);
+  overflow:hidden;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+body:active {
+  background-color: rgba(255,255,255,1);
+}
+
+.circleNumber {
+   background: lightblue;
+   border: 1px solid black;
+   border-radius: 5em 5em 5em 5em;
+   -moz-border-radius: 5em 5em 5em 5em;
+   -webkit-border-radius: 5em 5em 5em 5em;
+   margin:1px;
+   margin-left:3px;
+   padding:1px;
+}
+
+pre {
+   display: block;
+   padding: 9.5px;
+   margin: 0 0 10px;
+   font-size: 13px;
+   line-height: 20px;
+   white-space: pre-wrap;
+   background-color: #f5f5f5;
+   border: 1px solid #ccc;
+   border: 1px solid rgba(0, 0, 0, 0.15);
+   -webkit-border-radius: 4px;
+   -moz-border-radius: 4px;
+   border-radius: 4px;
+}
+
+/** [contenteditable=true] {border: 1px dashed red;}*/
+* [contenteditable=true] { background-color: rgba(0, 200, 0, 0.1); }
+
