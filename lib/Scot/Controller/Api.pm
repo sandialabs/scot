@@ -244,7 +244,9 @@ sub get_many {
 
     $match_ref   = $req_href->{request}->{params}->{match} // 
                    $req_href->{request}->{json}->{match};
-                   
+  
+     $match_ref  = $self->build_match_ref($match_ref);    
+
     unless ( $match_ref ) {
         $log->debug("Empty match_ref! Easy, peasey");
         $match_ref  = {};
@@ -1524,7 +1526,6 @@ sub get_req_value {
 }
 
 # alertgroups are weird, and some analysts want to view multiple alerts from multiple alertgroups
-
 sub supertable {
     my $self    = shift;
     my $env     = $self->env;
@@ -1534,9 +1535,7 @@ sub supertable {
     $log->debug("Creating Supertable of Alertgroups");
 
     my $req_json    = $self->req->json;
-    my @req_params  = $self->req->param('alertgroup') // [];
-
-    $log->debug("req_params are ",{filter=>\&Dumper, value=>\@req_params});
+    my $req_params  = $self->get_request_params; 
 
     my %ags = ();
     my @agset;
@@ -1544,7 +1543,7 @@ sub supertable {
     if ( $req_json ) {
         push @agset, @{$req_json->{alertgroup}};
     }
-    push @agset, @req_params;
+    push @agset, $req_params;
 
     foreach my $agid (@agset) {
         $ags{$agid}++;
@@ -1558,11 +1557,22 @@ sub supertable {
     my @columns = (qw(when alertgroup));
 
     my $alertcol    = $mongo->collection('Alert');
+    my $match_ref = $req_params->{request}->{params}->{alertgroup};
 
-    foreach my $agid (@sorted_agids) {
+    while (my ($k, $v)  = each %{$match_ref}) {
+	if($k =~ /alertgroup/) {
+	    if(ref ($v) eq "ARRAY" ) {
+		@$v = map {$_ + 0} @$v;	
+	              $match_ref->{$k} = {'$in' => $v};
+		  }
+	}
+	}
+	    my $cursor = $alertcol->find($match_ref);
 
-        my $cursor  = $alertcol->get_alerts_in_alertgroup($agid);
-        next unless $cursor;
+   # foreach my $agid (@sorted_agids) {
+
+     #   my $cursor  = $alertcol->get_alerts_in_alertgroup($agid);
+    #    next unless $cursor;
 
         while ( my $alert = $cursor->next ) {
             $log->debug("Alert ", {filter=>\&Dumper, value=>$alert});
@@ -1575,7 +1585,7 @@ sub supertable {
             $href->{alertgroup} = $alert->alertgroup;
             push @rows, $href;
         }
-    }
+   # }
     delete $cols{when};
 
     push @columns, sort keys %cols;
@@ -1586,6 +1596,87 @@ sub supertable {
         queryRecordCount    => scalar(@rows),
         totalRecordCount    => scalar(@rows),
     });
+}
+
+sub build_match_ref {
+    my $self	        = shift;
+    my $filter_ref      = shift;     
+    my $env   	        = $self->env;
+    my $log             = $env->log;
+    my $match           = {};
+    my $store;
+    my @datefields      = qw(updated created occurred discovered reported);
+    my @numfields       = qw(views); 
+
+    while (my ($k, $v)  = each %{$filter_ref}) {
+	if($k =~ /id/) {
+	    if(ref ($v) eq "ARRAY" ) {
+		@$v = map {$_} @$v;
+	        if(grep(m/!/, @$v) || grep(m/Not/i, @$v)) {
+		    for(@$v){
+		     s/\Not//gi;
+	  	     s/\!//g;
+		     s/\s+//;
+		   }
+		     @$store = map {$_ + 0} @$v;
+		     $match->{$k}  = { '$nin' => $v};
+		}
+		else {
+		      @$store = map {$_ + 0} @$v;
+	              $match->{$k} = {'$in' => $v};
+		  }
+	       }
+	   }
+     elsif ( grep {/$k/}  @numfields){
+	     @$v = map {$_} @$v;
+	        if(grep(m/!/, @$v) || grep(m/Not/i, @$v)) {
+		    for(@$v){
+		     s/\Not//gi;
+	  	     s/\!//g;
+		     s/\s+//;
+		   }
+		     @$store = map {$_ + 0} @$v;
+		     $match->{views}  = { '$nin' => $v};
+		}
+		else {
+		      @$store = map {$_ + 0} @$v;
+	              $match->{views} = {'$in' => $v};
+		  }
+	 }
+     elsif($k eq "tags") {
+	       $match->{$k}  = {'$all' => $v };
+	 }	
+	 elsif ( grep { /$k/ } @datefields ) {
+              if($v =~ m/!/ || $v =~ m/Not/i) {
+	  	  $v  =~ s/\!//g;
+		  $v  =~ s/\Not//gi;
+		  $v  =~ s/\s+//;
+		  my $epoch_href = $v;
+		  my $begin      = $epoch_href->{begin};
+		  my $end        = $epoch_href->{end};
+		     $match->{$k}   = { '$ne' => '$gte'  => $begin, '$lte' => $end };
+	        }
+		else {
+	          my $epoch_href = $v;
+		  my $begin      = $epoch_href->{begin};
+		  my $end        = $epoch_href->{end};
+		     $match->{$k}   = { '$gte'  => $begin, '$lte' => $end };
+	        }
+           }
+	 else {
+	      if($v =~ m/!/ || $v =~ m/Not/i) {
+		    $v  =~ s/\!//g;
+		    $v  =~ s/\Not//gi;
+		    $v  =~ s/\s+//;
+ 		    $match->{$k} = {'$ne' => lc $v };
+		}
+	       else {
+		  $match->{$k} = qr/$v/i;
+	        }
+	   }
+      }
+		
+	return $match;
 }
     
 
