@@ -1,0 +1,45 @@
+<html>
+<link rel="stylesheet"  href="/bootstrap/css/bootstrap.css"></link>
+<link rel="stylesheet/less" type="text/css" href="styles.less">
+<script src="/libs/less-1.3.1.min.js"></script>
+<script src="/libs/jquery.min.js"></script>
+<script src="/libs/jquery.cookie.js"></script>
+<script src="/bootstrap/js/bootstrap.js"></script>
+<script src="/libs/jquery.pnotify.min.js"></script>
+
+<script src="/event.js"></script>
+<script src="/libs.js"></script>
+
+
+<script src="/libs/select2.min.js"></script>
+<script type="text/javascript" src="activemq.js"></script>
+   <script src="/libs/jquery.ba-throttle-debounce.min.js"></script>
+
+
+<script>
+var id = -1;
+var bottom_mode = 'guide';
+  $(document).ready(function() {
+      id = decodeURIComponent(location.hash);
+      id = id.substr(1,9999);
+      console.log(id);
+      id = parseInt(id);
+      current_id = id;
+      $('#event_id').text(id);
+      $.ajax({
+	type: 'GET',
+	url:  '/scot/guide/'+id
+      }).done(function(response) {
+	$('#guide_name').text(response.data.guide);
+	$(response.data.entries).each(function(index, entry) {
+		$('#BottomPane').append(render_entry(entry.parent, entry));
+	});
+      });      
+   });
+
+</script>
+<h2>Guide: <span id="guide_name"></span> </h2>
+<button onclick="addEntry()" class="btn btn-inverse" style="display: fixed; width:100%">Add Entry</button>
+<span id="event_id" style="display:none; padding-left:10px; font-size:14px; font-weight:bold;"></span>
+<div style="width:100%; height:100%; position: absolute: top:0px; left:0px; margin:0px; padding:0px;" id="BottomPane"></div>
+</html>
