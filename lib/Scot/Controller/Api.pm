@@ -1526,6 +1526,7 @@ sub get_req_value {
 }
 
 # alertgroups are weird, and some analysts want to view multiple alerts from multiple alertgroups
+
 sub supertable {
     my $self    = shift;
     my $env     = $self->env;
@@ -1534,59 +1535,65 @@ sub supertable {
 
     $log->debug("Creating Supertable of Alertgroups");
 
+    # tb assumes alertgroup=1&aplertgroup=2
+    # rj assume alertgroup={alergroup:[1,2]}
+
     my $req_json    = $self->req->json;
     my $req_params  = $self->get_request_params; 
 
-    my %ags = ();
-    my @agset;
+    $log->debug("req_params are: ",{filter=>\&Dumper,value=>$req_params});
+    $log->debug("req_json   are: ",{filter=>\&Dumper,value=>$req_json});
+
+    # We need to build an array of alertgroup ids that will search for in the
+    # alert collection based on the values passed into either via the tb
+    # or rj methods above
+
+    my @alertgroup_ids  = ();
 
     if ( $req_json ) {
-        push @agset, @{$req_json->{alertgroup}};
+        my @json_ids    = @{$req_json->{alertgroup}};
+        $log->debug("JSON ids are ",{filter=>\&Dumper, value=>\@json_ids});
+        push @alertgroup_ids, @json_ids;
     }
-    push @agset, $req_params;
 
-    foreach my $agid (@agset) {
-        $ags{$agid}++;
+    if ( $req_params->{request}->{params}->{alertgroup} ) {
+        my @param_ids   = @{$req_params->{request}->{params}->{alertgroup}};
+        $log->debug("PARAM ids are ", {filter=>\&Dumper, value=>\@param_ids});
+        push @alertgroup_ids, @param_ids;
     }
-    my @sorted_agids = sort keys %ags;
 
-    $log->debug("targeting alertgroups ", join(',',@sorted_agids));
+    @alertgroup_ids = map { $_ + 0 } @alertgroup_ids;   # prevent strings
 
-    my @rows    = ();
+    $log->debug("alertgroup_ids are ", {filter=>\&Dumper, value=>\@alertgroup_ids});
+
     my %cols    = ();
     my @columns = (qw(when alertgroup));
+    my @rows    = ();
 
     my $alertcol    = $mongo->collection('Alert');
-    my $match_ref = $req_params->{request}->{params}->{alertgroup};
+    my $match_ref   = { alertgroup   => { '$in'  => \@alertgroup_ids } };
+    my $cursor      = $alertcol->find($match_ref);
 
-    while (my ($k, $v)  = each %{$match_ref}) {
-	if($k =~ /alertgroup/) {
-	    if(ref ($v) eq "ARRAY" ) {
-		@$v = map {$_ + 0} @$v;	
-	              $match_ref->{$k} = {'$in' => $v};
-		  }
-	}
-	}
-	    my $cursor = $alertcol->find($match_ref);
+    while ( my $alert = $cursor->next ) {
+        # $log->debug("Alert ", {filter=>\&Dumper, value=>$alert});
 
-   # foreach my $agid (@sorted_agids) {
+        my $href    = {
+            when        => $alert->when,
+            alertgroup  => $alert->alertgroup,
+        };
+        
+        my $data    = $alert->data_with_flair // $alert->data;
 
-     #   my $cursor  = $alertcol->get_alerts_in_alertgroup($agid);
-    #    next unless $cursor;
-
-        while ( my $alert = $cursor->next ) {
-            $log->debug("Alert ", {filter=>\&Dumper, value=>$alert});
-            my $href    = $alert->data;     
-            if ( %{$alert->data_with_flair} ) {
-                $href   = $alert->data_with_flair;
-            }
-            map { $cols{$_}++ } keys $href;
-            $href->{when}       = $alert->when;
-            $href->{alertgroup} = $alert->alertgroup;
-            push @rows, $href;
+        unless ($data) {
+            $log->error("Alert has no data!");
         }
-   # }
-    delete $cols{when};
+
+        foreach my $key (keys %$data) {
+            $cols{$key}++;
+            $href->{$key}   = $data->{$key};
+        }
+        push @rows, $href;
+    }
 
     push @columns, sort keys %cols;
 
