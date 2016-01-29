@@ -36,7 +36,7 @@ var entrydict = []
 var savedopen = false;
 var alertgroup = []
 var stage = false
-var Editor = require('../../../node_modules/react-medium-editor')
+var TinyMCE = require('../../../node_modules/react-tinymce')
 var columns = 
 [
     { name: 'id', style: {color: 'black'}},
@@ -55,7 +55,8 @@ const  customStyles = {
         right   : 'auto',
         bottom  : 'auto',
         marginRight: '-50%',
-        transform:  'translate(-50%, -50%)'
+        transform:  'translate(-50%, -50%)',
+	width: '80%'
     }
 }
 function getColumns()
@@ -213,7 +214,7 @@ function dataSource(query)
 	render:function(){
 	return(
 	<div> 
-  	<div className = "sub render" dangerouslySetInnerHTML = {{__html:item}} ></div>
+  	<div className = "subrender" dangerouslySetInnerHTML = {{__html:item}} ></div>
 	</div>	
 	)
 	}
@@ -414,7 +415,7 @@ history: false, edit: false, stagecolor : '5px solid #000',enable:true, enablesa
 	React.createElement("h4", {className: "modal-title"}, " Add Entry")
 	), 
 	React.createElement("div", {className: "modal-body"}, 
-	React.createElement(Editor, {disabled: this.state.edit, options: {toolbar:{buttons:['bold','italic','underline']}},className: "editable medium-editor-textarea inputtext", rows: "4", cols: "50", style: {overflow:"auto", border: this.state.stagecolor,resize: 'none',width: '523px', height: '300px'}}
+	React.createElement(TinyMCE, {content: "", config: {plugins: 'autolink link image lists print printview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'},className: "inputtext", style: {overflow:"auto", border: this.state.stagecolor, height: '90%'}}
 	)), 
 	React.createElement("div", {className: "modal-footer"}, React.createElement("input", {type: "file", name: "file_attach", className: "input-field attachfile"}), 
 	React.createElement("button", {type: "button", onClick: this.onCancel}, " Cancel"), 
@@ -445,8 +446,7 @@ history: false, edit: false, stagecolor : '5px solid #000',enable:true, enablesa
 	    showCellBorders: true,
 	    sortable: false,
 	    rowHeight: 100,
-	    rowStyle: configureTable,
-	    onFilter: this.handleFilter}
+	    rowStyle: configureTable}
 	)
         )
 	);
