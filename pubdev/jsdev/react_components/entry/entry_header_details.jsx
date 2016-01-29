@@ -24,7 +24,7 @@ var EntryHeaderDetails = React.createClass({
                         <td className="intel alerts events"><input className="editable multi_tag" id="viewed_by" value={this.props.viewedby}/></td>
                         <td className="intel events alerts"><input className="editable multi_tag" id="event_source2" value="TAG PLACEHOLDER"/></td>
                         <td className="events"><span className="editable" id="linked_alerts">SOURCE PLACEHOLDER</span></td>
-                        <td className="events"><span onclick="linked_incident(this)" style={{cursor: 'pointer'}} className="editable" id="linked_alerts">{this.props.headerdata.promotions.from}</span></td>
+                        <td className="events"><span onclick="linked_incident(this)" style={{cursor: 'pointer'}} className="editable" id="linked_alerts">Linked Incidents Placeholder</span></td>
                         <td>
                         </td>
                     </tr>
