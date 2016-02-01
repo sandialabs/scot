@@ -12,7 +12,19 @@ const customStyles = {
     }
 }
 
-var EntryHeaderEntities = React.createClass({
+var Entities = React.createClass({
+    getInitialState: function() {
+        return {
+            entitiesBody:false,
+            data: ''
+        }
+    },
+    componentWillMount: function() {
+    this.serverRequest = $.get('/scot/api/v2/'+ this.props.type + '/' + this.props.id + '/entity', function (result) {
+            var result = result.records;
+            this.setState({entitiesBody:true, data:result})
+        }.bind(this));
+    }, 
     render: function() {
         return (
             <div>
@@ -25,7 +37,7 @@ var EntryHeaderEntities = React.createClass({
                         <h3 id="myModalLabel">List of Entities</h3>
                     </div>                        
                     <div className="modal-body">
-                        <p>ENTITIES GO HERE ONCE DB IS READY</p>
+                        {this.state.entitiesBody ? <EntitiesData data={this.sate.data} /> :null}
                     </div>
                     <div className="modal-footer">
                         <button class="btn" onClick={this.props.entitiesToggle}>Done</button>
@@ -36,4 +48,28 @@ var EntryHeaderEntities = React.createClass({
     }
 });
 
-module.exports = EntryHeaderEntities;
+var EntitiesData = React.createClass({
+    render: function() {
+        var rows = [];
+        data = this.props.data;
+        for (var prop in data) {
+            rows.push(<EntitiesDataIterator data={data[prop]} />);
+        }
+        return (
+            <div>
+                {rows}
+            </div>
+        )
+    }
+});
+
+var EntitiesDataIterator = React.createClass({
+    render: function() {
+        data = this.props.data;
+        return (
+            <div>{data} PlaceHolder</div>
+        )   
+    }
+});
+
+module.exports = Entities;
