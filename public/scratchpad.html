@@ -1,0 +1,99 @@
+<html>
+<style>
+  .entity { background-color:rgba(255,245,168, 0.5); border: 1px dotted green; border-radius:4px;  }
+</style>
+<script src="/libs/jquery.min.js"></script>
+<script src="/libs/jquery.ba-throttle-debounce.min.js"></script>
+<script src="/libs/jquery.dump.js"></script>
+<script>
+function scratchpad_updated() {
+  console.log('Scratchpad updated');
+  var scratchpad = $('#scratchpad');
+  var scratchpad_html = '<html>' + $(scratchpad).html() + '</html>';
+  console.log(scratchpad_html);
+  $.ajax({
+    type: 'POST',
+    url:  '/scot/flair',
+    contentType: 'application/x-www-form-urlencoded',
+    data: {input: scratchpad_html},
+  }).done(function(a,b,response) {
+    console.log('responseText:'+response.responseText);
+    var JSONresponse = JSON.parse(response.responseText);
+    $('#results').html('');
+    $('#flaired').html(JSONresponse.flair);
+    populate_flair_data(JSONresponse.entities);
+  });
+}
+
+function populate_flair_data(entities) {
+  var entity_values = new Array();
+  $(entities).each(function(index, entity) {
+    entity_values.push(entity.value);
+  });
+  entity_values_str = JSON.stringify(entity_values);
+  $.ajax({
+    type: 'GET',
+    url:  '/scot/entity',
+    traditional: false,
+    data: {'match': '{"entity_value":'+entity_values_str+'}'}
+  }).done(function(response) {
+     console.log('/scot/entity response:'+response);
+     render_results(response.data, entity_values);
+  });
+}
+
+function render_results(results, unique_entity_values) {
+  var events = new Object();
+  var subjects = new Array();
+  var num_items = new Object();
+  $('#results').append('Unique entites:<br>');
+  //$('#results').html('<pre>'+$.dump(results)+'</pre>');
+  $(results).each(function(index, result) {
+     if (  result.events != undefined ) {
+        var result_events = Object.keys(result.events);
+        num_items[result.value] = result_events.length;
+        if(result_events.length < 100) {
+        $(result_events).each(function(event_index, event) {
+        if(events[event] == undefined) {
+            subjects[event] = result.events[event].subject;;
+        events[event] = new Array();
+        }
+        events[event].push(result.value); 
+        });
+        }
+    }
+  });
+  var unique = $('<table border=1></table>');
+  $(unique_entity_values).each(function(index, entity) {
+   $(unique).append('<tr><td>'+entity+'</td><td>'+num_items[entity]+ '</td></tr>');
+  });
+  $('#results').append(unique);
+  $('#results').append('<br>');
+  $('#results').append('<br><br>Events & matching entities:<br>');
+  $('#results').append('<ul></ul>');
+  var event_list = Object.keys(events);
+  $(event_list).each(function(index, event_num) {
+    res = $('<li></li>').html(event_num+' - '+subjects[event_num]+'<ul></ul>');
+    var adf = $(res).find('ul');
+    $('#results').append(res);
+    $(events[event_num]).each(function(idx, value) {
+        var ri = $('<li></li>');
+	$(ri).text(value);
+        $(adf).append(ri);
+    });
+  });
+}
+
+$(document).ready(function() {
+  $(scratchpad).bind('keyup', jQuery.debounce(250, scratchpad_updated));
+  scratchpad_updated();
+});
+</script>
+<div id="scratchpad" style="overflow:auto; float:left; display:block; width:50%; height:50%; background-color: #EFF" contenteditable=true>
+Lets try a few random IPs like 132.1.1.1 or 200.4.58.88.  And how about a domain like example.com? <br>
+Maybe an email like test@example.com if you please. 
+</div>
+<span id="results" style="overflow: auto; float:right; display:block; width:50%; height:100%; padding-top:5px; background-color: #FFE"></span>
+<span id="flaired" style="overflow: auto; float: left; display:block; width:50%; height:50%; padding-top:5px; background-color: #FEF"></span>
+
+</html>

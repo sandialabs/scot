@@ -3,7 +3,7 @@
 use lib '../../lib';
 use Parallel::ForkManager;
 use Scot::Env;
-use Scot::Controller::Migrate3;
+use Scot::Controller::Migrate;
 use Getopt::Long qw(GetOptions);
 
 use v5.18;
