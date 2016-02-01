@@ -10,6 +10,7 @@ var SELECTED_ID_GRID = {}
 var filter = {}
 var passids = {}
 var storealertids = []
+var historyview = ''
 var ids = 'none'
 var numberofids;
 var getColumn;
@@ -222,7 +223,7 @@ function dataSource(query)
         finalarray[key][num] = React.createElement(Link, null)
 	}
 	})
-	finalarray[key]["id"] = count
+	finalarray[key]["index"] = count
 	count++
 
 	})
@@ -370,7 +371,7 @@ history: false, edit: false, stagecolor : '5px solid #000',enable:true, enablesa
 	newarray[i] = {name:last[i],width: 200, style:{color:'black'}}
 	}	    
 	}
-	this.setState({data: dataSource, columns: newarray})
+	this.setState({columns: newarray})
 	}
 	}.bind(this));
 	},
@@ -380,19 +381,24 @@ history: false, edit: false, stagecolor : '5px solid #000',enable:true, enablesa
          this.setState({})
    },
 	render: function(){	
-	var isCtrl = false
-	$(document).keyup(function(e){
-	    if(e.which == 17 || e.which == 224 || e.which == 91 || e.which == 93) isCtrl = false;
-	}).keydown(function(e){
-	   if(e.which == 17 || e.which == 224 || e.which == 91 || e.which == 93) isCtrl = true;
-	   if(e.which == 67 && isCtrl == true){
-		$('.z-column-header').each(function(key,value){
-		$(value).find('.z-content').each(function(x,y){
-		    console.log($(y).text())
-		})
-		})
-	    }
-	})	
+	$('.z-table').each(function(key, value){
+	   $(value).find('.z-content').each(function(x,y){
+		
+		if($(y).text() == 'closed'){
+		    $(y).css('color', 'green')
+		}
+		else if($(y).text() == 'open'){
+		    $(y).css('color', 'red')
+		}
+		else if($(y).text() == 'promoted') {
+		    $(y).css('color', 'orange')
+		}
+		else {
+		    $(y).css('color', 'black')
+		}
+	})
+	})
+	
 	    
 	return (
 	this.state.history ? 
@@ -427,11 +433,11 @@ history: false, edit: false, stagecolor : '5px solid #000',enable:true, enablesa
 	)
 	)
 	)
-	 :
+	:
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
-	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable"}, React.createElement('button', {className: 'btn-success', onClick: this.goBack}, 'Back'), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {className: "Subgrid",
+	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable"}, React.createElement('header', {className: 'main-header', role: 'banner', style:{background: '#000', height: '70px'}}, React.createElement('button', {className: 'btn-success', onClick: this.goBack}, 'Back'), React.createElement('h1',{ style: {color: 'white', 'font-size': '24px', 'text-align':'start'}}, 'Alert Id(s) : ' +  ids)), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {className: "Subgrid",
             ref: "dataGrid", 
-            idProperty: "id",
+            idProperty: "index",
 	    setColumns: true, 
             dataSource: this.state.data, 
             columns: this.state.columns, 
@@ -559,14 +565,17 @@ history: false, edit: false, stagecolor : '5px solid #000',enable:true, enablesa
 	}
 	}
 	else if (option.label == "View History"){
-	/*$.ajax({
+	historyview = ''
+	$('.z-selected').each(function(key,value){
+	    $(value).find('.z-selected').each(function(x,y){
+	$.ajax({
 	    type: 'GET',
-	    url: 'url',
+	    url: '/scot/api/v2/alertgroup/'+$(y).text()+'/history',
     	   }).done(function(response){
-	    $(response.data.history).each(function(index,history_entry) {
-	      $('.historytext').append( getHistory)
-	     });
-	})*/
+		history += $(y).text() + "\n" + response.view_history +"\n"
+	})
+	})
+	})
 	this.setState({history: true})
 	}	
 	else if(option.label == "Add Entry"){
@@ -576,7 +585,7 @@ history: false, edit: false, stagecolor : '5px solid #000',enable:true, enablesa
 	var data = new Object();
 	$('.z-selected').each(function(key,value){
 	$(value).find('.z-cell').each(function(x,y){
-	    if($(y).attr('name') == "alertgroup"){
+	    if($(y).attr('name') == "id"){
 		data = JSON.stringify({status:'open'})
 		$.ajax({
 			type: 'PUT',
@@ -616,13 +625,14 @@ history: false, edit: false, stagecolor : '5px solid #000',enable:true, enablesa
 	var curr = Math.round(new Date().getTime() / 1000);
 	$('.z-selected').each(function(key,value){
 	$(value).find('.z-cell').each(function(x,y){
-	    if($(y).attr('name') == "alertgroup"){
+	    if($(y).attr('name') == "id"){
 		data = JSON.stringify({status:'closed', closed: curr})
 		$.ajax({
 			type: 'PUT',
 			url: '/scot/api/v2/alert/'+$(y).text(),
 			data: data
 		}).success(function(response){
+
 	});
 	}
 	});
@@ -676,7 +686,7 @@ history: false, edit: false, stagecolor : '5px solid #000',enable:true, enablesa
 	var curr = Math.round(new Date().getTime() / 1000);
 	$('.z-selected').each(function(key,value){
 	$(value).find('.z-cell').each(function(x,y){
-	    if($(y).attr('name') == "alertgroup"){
+	    if($(y).attr('name') == "id"){
 		$.ajax({
 			type: 'DELETE',
 			url: '/scot/api/v2/alert/'+$(y).text(),
@@ -806,6 +816,7 @@ var Maintable = React.createClass({
     },
     render: function() {
 	return (
+	
 	    stage ?  React.createElement(Subtable, null) : 
 	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {onClick: this.exportCSV}, 'Export to CSV') : null , this.state.showAlertbutton ? React.createElement('button',{className: 'btn-success',onClick: this.viewAlerts},"View Alert(s)") : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) :  
 	    React.createElement(DataGrid, {
@@ -885,7 +896,7 @@ var Maintable = React.createClass({
 	selected.push(newSelection[id].id)
 	})
 	ids = selected.length? selected.join(',') : 'none'
-        passids['alertgroup'] = ids.split(",")
+        passids = ids.split(",")
 	numberofids = selected.length
 	this.setState({showAlertbutton: true, viewAlert: false})
 	},
@@ -915,4 +926,19 @@ var Maintable = React.createClass({
 module.exports = Maintable
 
 /*
+
+	var isCtrl = false
+	$(document).keyup(function(e){
+	    if(e.which == 17 || e.which == 224 || e.which == 91 || e.which == 93) isCtrl = false;
+	}).keydown(function(e){
+	   if(e.which == 17 || e.which == 224 || e.which == 91 || e.which == 93) isCtrl = true;
+	   if(e.which == 67 && isCtrl == true){
+		$('.z-column-header').each(function(key,value){
+		$(value).find('.z-content').each(function(x,y){
+		    console.log($(y).text())
+		})
+		})
+	    }
+	})
+
   React.createElement("div", {className: "btn-toolbar"}, React.createElement("div", {className: "btn-group"}, React.createElement("a", {className: "btn", alt: "bold", title: "bold"}, React.createElement("i", {className:"icon-bold"})), React.createElement("a", {className: "btn", alt: "italic", title: "italic"},React.createElement("i", {className:"icon-italic"})), React.createElement("span",{className: "dropdown"}, React.createElement("a", {className:"btn dropdown-toggle", "data-toggle":"dropdown", style: {"border-top-right-radius" : "0px","border-bottom-right-radius":"0px","border-right":"0px"}, alt: "Font Size", title: "Font Size"},"Font Size", React.createElement("span", {className:"caret")))))*/
