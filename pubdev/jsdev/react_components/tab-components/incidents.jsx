@@ -91,7 +91,7 @@ function configureTable(data, props){
 module.exports = React.createClass({
 
     getInitialState: function(){
-             return {data: dataSource};
+             return {data: dataSource, csv:true};
          },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
@@ -102,7 +102,7 @@ module.exports = React.createClass({
 
 	return (
 	    React.createElement("div", {className: "allComponents"}, 
-	    React.createElement(DataGrid, {
+	    this.state.csv ? React.createElement('button', {onClick: this.exportCSV}, 'Export to CSV') : null,React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id", 
             dataSource: this.state.data, 
@@ -121,6 +121,37 @@ module.exports = React.createClass({
 	    rowStyle: configureTable}
 	)
         ));
+    },
+
+  exportCSV: function(){
+        var keys = []
+	$.each(columns, function(key, value){
+            keys.push(value['name']);
+	  });
+	var csv = ''
+	$('.z-even').each(function(key, value){
+	var storearray = []
+        $(value).find('.z-content').each(function(x,y) {
+            var obj = $(y).text()
+		obj = obj.replace(/,/g,'|')
+		storearray.push(obj)
+	});
+	    csv += storearray.join() + '\n'
+	});
+
+	$('.z-odd').each(function(key, value){
+        var storearray = []
+        $(value).find('.z-content').each(function(x,y) {
+            var obj = $(y).text()
+		obj = obj.replace(/,/g,'|')
+		storearray.push(obj)
+	});
+	    csv += storearray.join() + '\n'
+	});
+        var result = keys.join() + "\n"
+	csv = result + csv;
+	var data_uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
+	window.open(data_uri)		
     },
 
     handleSortChange : function(sortInfo){

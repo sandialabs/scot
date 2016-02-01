@@ -1,0 +1,89 @@
+<html>
+<link rel="stylesheet"  href="/bootstrap/css/bootstrap.css"></link>
+<link rel="stylesheet/less" type="text/css" href="styles.less">
+<script src="/libs/less-1.3.1.min.js"></script>
+<script src="/libs/jquery.min.js"></script>
+<script src="/libs/jquery.cookie.js"></script>
+<script src="/bootstrap/js/bootstrap.js"></script>
+<script src="/libs/jquery.ba-throttle-debounce.min.js"></script>
+<script src="plugin.js"></script>
+<style>
+#plugin_list { border: 1px solid black; overflow:auto;}
+#plugin_list div:hover {  box-shadow: 0px 0px 5px black inset}
+#plugin_list div {  cursor:pointer;}
+#plugin_list div:nth-child(odd) {  background-color:white; }
+.large_button {font-size:20pt; line-height: inherit !important;}
+#details { display: none;}
+</style>
+<button onclick="newPlugin()">New Plugin</button>
+<button onclick="deletePlugin()" id="delete_button" style="display:none;">Delete Plugin</button>
+   <div id="plugin_list" style="height:100%; width:20%">
+   </div>
+<div style="left:20%; margin-left:5px;position:absolute; top:0px; height:100%; width:80%;" id="details">
+<input type="hidden" name="plugin_id" id="plugin_id"></input>
+<form id="plugin_details_form">
+      <table  border=1 cellpadding=3 style="width:95%">
+      <tr>
+      <th>Type:<img src="/images/question.png" title="What type sould I use?" onclick="help('type')"></img></th>
+      <td> 
+            <input type="radio" name="type" value="simple" disabled >Simple</input>(Not yet implemented)<br>
+            <input type="radio" name="type" value="advanced">Advanced</input>
+      </td>
+      </tr>
+      <tr>
+      <th>Submit URL:<img src="/images/question.png" title="Whats this?" onclick="help('rest')"></img></th>
+      <td>
+           <input type="text" id="submitURL" name="submitURL" value="https://..." style="width: inherit !important; height: inherit !important;" size="70"></input>
+      </td>
+      </tr>
+      <tr>
+      <th>Status URL:<img src="/images/question.png" title="Whats this?" onclick="help('rest')"></img></th>
+      <td>
+           <input type="text" id="statusURL" name="statusURL" value="https://..." style="width: inherit !important; height: inherit !important;" size="70"></input>
+      </td>
+      </tr>
+      <tr>
+         <th>Show With:<img src="/images/question.png" title="Whats this?" onclick="help('entity')"></img></th>
+         <td>
+            <input type="checkbox" name="entity_types" value="domain">Domain</input><br>
+            <input type="checkbox" name="entity_types" value="ipaddr">Ip Address</input><br>
+            <input type="checkbox" name="entity_types" value="email">Email</input><br>
+            <input type="checkbox" name="entity_types" value="hash">Hash (MD5, SHA1, etc.)</input><br>
+            <input type="checkbox" name="entity_types" value="snumber">sNumber</input><br>
+            <input type="checkbox" name="entity_types" value="file" onchange="toggle_file_form_name(this)">File uploaded to SCOT</input><br>
+         </td>
+      </tr>
+      <tr>
+         <th>Run Permisions:<img src="/images/question.png" title="Whats this?" onclick="help('run')"></img></th>
+         <td><input type="text" name="run" id="run" value="scot" style="width: inherit !important; height: inherit !important;"></input></td>
+      </tr>
+      <tr>
+         <th>Edit Permisions:<img src="/images/question.png" title="Whats this?" onclick="help('edit')"></img></th>
+         <td><input type="text" name="edit" id="edit" value="scot" style="width: inherit !important; height: inherit !important;"></input></td>
+      </tr>
+      <tr id="file_form_name" style="display:none;">
+         <th>Form name for file upload (i.e. 'sample[file]')</th>
+         <td>
+            <input type="text"  id="file_field" name="file_field" value=""  style="width: inherit !important; height: inherit !important;"></input>
+         </td>
+      </tr>
+      <tr>
+         <th>Options:<img src="/images/question.png" title="Whats this?" onclick="help('edit')"></img></th>
+         <td>
+         <input type="checkbox" id="preview_checkbox" onclick="preview_html()" >Preview?</input><br>
+<textarea style="border:1px dashed black; width:95%" name="plugin_html" id="plugin_html"  rows="15" ></textarea><br>
+         </td>
+          
+      </tr>
+      <tr>
+        <td colspan="2" id="save"><button class="large_button" onclick="save(); return false;">Save</button><button class="large_button" onclick="test(); return false;">Test</button>
+      </tr>
+      </table>
+</form>
+         <div id="preview" style="border:1px solid black; width:90%;"></div>
+</div>
+<!--
+<textarea style="left:20%; position:absolute; top:0px; height:100%; border:1px dashed black; width:40%;" id="plugin_html"></textarea>
+<div style="left:60%; position:absolute; top:0px; height:100%" id="preview"></div>
+-->
+</html>
