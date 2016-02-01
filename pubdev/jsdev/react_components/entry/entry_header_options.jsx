@@ -59,7 +59,7 @@ var EntryHeaderOptions = React.createClass({
                     <button className="btn btn-inverse dropdown-toggle intel events incidents tasks" data-toggle="dropdown">
                         <span className="caret" style={{marginTop: 8}} />
                     </button>
-                    <ul className="dropdown-menu">
+                        <ul className='dropdown-menu'>
                         <li><a onclick="openFileUploadDialog()">Upload <b>File</b></a></li>
                         <li><a onClick={this.props.historyToggle}>View <b>History</b></a></li>
                         <li><a onClick={this.toggleFlair}>Toggle <b>Flair</b></a></li>
