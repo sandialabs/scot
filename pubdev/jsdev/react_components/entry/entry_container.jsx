@@ -8,7 +8,7 @@ var EntryContainer = React.createClass({
             $.ajax({
                 type: 'GET',
                 url: '/scot/api/v2/event/' + id,
-                dataType: 'json',
+                dataType: 'json', 
                 async: false,
                 success: function(data, status) {
                     jsonData = data;
