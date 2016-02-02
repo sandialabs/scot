@@ -5,6 +5,7 @@ module.exports = function(grunt) {
         watch: {
             react: {
                 files: ['jsdev/react_components/entry/*.jsx', 'jsdev/react_components/modal/*.jsx'],
+                files: 'jsdev/react_components/tab-components/*.jsx',
                 tasks: ['browserify']
             }
         },
@@ -15,6 +16,7 @@ module.exports = function(grunt) {
             },
             client: {
                 src: ['jsdev/react_components/entry/*.jsx', 'jsdev/react_components/modal/*.jsx'],
+                src: ['jsdev/react_components/tab-components/*.jsx'],
                 dest: '../public/scot-3.5.js'
             }
         }
