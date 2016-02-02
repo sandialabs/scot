@@ -4,20 +4,20 @@ var EntryWrapper = require('./entry_wrapper.jsx');
 
 var EntryContainer = React.createClass({
     getEventData: function(id,datarows) {
-            var jsonData = {};
-            $.ajax({
-                type: 'GET',
-                url: '/scot/api/v2/event/' + id,
-                dataType: 'json', 
-                async: false,
-                success: function(data, status) {
-                    jsonData = data;
-                    datarows.push(<EntryHeader id={id} data={jsonData} />);
-                },
-                error: function(err) {
-                    console.error(err.toString());
-                }
-            });
+        var jsonData = {};
+        $.ajax({
+            type: 'GET',
+            url: '/scot/api/v2/event/' + id,
+            dataType: 'json', 
+            async: false,
+            success: function(data, status) {
+                jsonData = data;
+                datarows.push(<EntryHeader id={id} data={jsonData} />);
+            },
+            error: function(err) {
+                console.error(err.toString());
+            }
+        });
     },
     getEntryData: function(id,datarows) {
         var jsonData = {};
