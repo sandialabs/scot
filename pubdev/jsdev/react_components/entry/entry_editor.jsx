@@ -3,7 +3,7 @@
 var React           = require('react');
 var Modal           = require('react-modal');
 var TinyMCE         = require('react-tinymce');
-//var Notification   = require('react-notification');
+
 const customStyles = {
     content : {
         top     : '50%',
@@ -34,7 +34,6 @@ var EntryEditor = React.createClass({
             }); 
     },
     testsave: function() { 
-        this.props.notificationToggle('Entry Successful!');
         this.props.entryToggle();
     },
     render: function() {
