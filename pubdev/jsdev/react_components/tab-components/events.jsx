@@ -2,6 +2,7 @@
 
 var React = require('react')
 var DataGrid = require('../../../node_modules/events-react-datagrid/react-datagrid');
+var Entry = require('../entry/entry_container.jsx')
 var SORT_INFO;
 var colsort = "id"
 var valuesort = 1
@@ -12,6 +13,8 @@ var getColumn;
 var check = false; 
 var tab;
 var datasource
+var ids = []
+var stage = false
 var columns = 
 [
     { name: 'id', style: {color:'black'}},
@@ -88,7 +91,7 @@ function configureTable(data, props){
 module.exports = React.createClass({
 
     getInitialState: function(){
-             return {data: dataSource, csv:true};
+             return {viewevent: false, showevent: false, data: dataSource, csv:true};
          },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
@@ -98,7 +101,9 @@ module.exports = React.createClass({
     render: function() {
 
 	return (
-	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {onClick: this.exportCSV}, 'Export to CSV') : null,
+	    stage ? React.createElement(Entry, {ids: ids}) : 
+	    this.state.viewevent ? React.createElement(Entry, {ids: ids}) : 
+	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {onClick: this.exportCSV}, 'Export to CSV') : null,this.state.showevent ? React.createElement('button', {className: 'btn-success', onClick: this.viewEvent}, "View Event(s)") : null,
 	    React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id", 
@@ -115,9 +120,15 @@ module.exports = React.createClass({
 	    sortInfo: SORT_INFO, 
 	    onSortChange: this.handleSortChange, 
 	    showCellBorders: true,
+	    rowHeight: 100,
 	    rowStyle: configureTable}
 	)
         ));
+    },
+    viewEvent: function(){
+	console.log(ids)	
+	stage = true
+    this.setState({viewevent: true})
     },
     exportCSV: function(){
         var keys = []
@@ -167,10 +178,11 @@ module.exports = React.createClass({
 	SELECTED_ID = newSelection
 	var selected = []
 	Object.keys(newSelection).forEach(function(id){
-	selected.push(newSelection[id].firstName)
+	selected.push(newSelection[id].id)
 	})
-	names = selected.length? selected.join(', ') : 'none'
-	this.setState({})
+	names = selected.length? selected.join(',') : 'none'
+	ids = names.split(',')
+	this.setState({showevent: true})
 	check = true
 
 	},
