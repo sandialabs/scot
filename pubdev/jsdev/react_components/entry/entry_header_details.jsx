@@ -9,6 +9,8 @@ var EntryHeaderPermission   = require('./entry_header_permission.jsx');
 var EntryHeaderDetails = React.createClass({
     getInitialState: function() {
         return {
+            showEventData:false,
+            headerData:'',
             showSource:false,
             sourceData:'',
             permissionsToolbar:false,
@@ -17,15 +19,19 @@ var EntryHeaderDetails = React.createClass({
             entryToolbar:false
         }
     },
-    componentWillMount: function() {
-        this.serverRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
-            var result = result.records;
-            this.setState({showSource:true, sourceData:result})
+    componentDidMount: function() {
+        this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
+            var sourceResult = result.records;
+            this.setState({showSource:true, sourceData:sourceResult})
+        }.bind(this));
+        this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
+            var eventResult = result;
+            this.setState({showEventData:true, headerData:eventResult})
         }.bind(this));
     },
-    viewedbyfunc: function(headerdata) {
+    viewedbyfunc: function(headerData) {
         var viewedbyarr = [];
-        for (prop in headerdata.view_history) {
+        for (prop in headerData.view_history) {
             viewedbyarr.push(prop);
         };
         return viewedbyarr;
@@ -44,18 +50,18 @@ var EntryHeaderDetails = React.createClass({
             this.setState({historyToolbar:false});
         }
     },
-    permissionsfunc: function(headerdata) {
+    permissionsfunc: function(headerData) {
         var writepermissionsarr = [];
         var readpermissionsarr = [];
         var readwritepermissionsarr = [];
-        for (prop in headerdata.groups) {
-            var fullprop = headerdata.groups[prop]
+        for (prop in headerData.groups) {
+            var fullprop = headerData.groups[prop]
             if (prop == 'read') {
-                headerdata.groups[prop].forEach(function(fullprop) {
+                headerData.groups[prop].forEach(function(fullprop) {
                     readpermissionsarr.push(fullprop)
                 });
             } else if (prop == 'modify') {
-                headerdata.groups[prop].forEach(function(fullprop) {
+                headerData.groups[prop].forEach(function(fullprop) {
                     writepermissionsarr.push(fullprop)
                 });
             };
@@ -78,29 +84,37 @@ var EntryHeaderDetails = React.createClass({
             this.setState({entitiesToolbar:false});
         }
     },
+    titleCase: function(string) {
+        var newstring = string.charAt(0).toUpperCase() + string.slice(1)
+        return (
+            newstring
+        )
+    },
     render: function() {
-        var headerdata = this.props.headerdata;        
-        var permissions = this.permissionsfunc(headerdata); //pos 0 is read and pos 1 is write
-        var viewedby = this.viewedbyfunc(headerdata);
+        var headerData = this.state.headerData;        
+        var permissions = this.permissionsfunc(headerData); //pos 0 is read and pos 1 is write
+        var viewedby = this.viewedbyfunc(headerData);
+        var type = this.props.type;
+        var subjectType = this.titleCase(this.props.type);
         var id = this.props.id;
         return (
             <div>
                 <div className='details-table' style={{display: 'flex'}}>
-                    <div><button id="event_status" onclick="event_status_toggle()" style={{lineHeight: '12pt', fontSize: 'inherit', marginTop: '17px', width: '200px', marginLeft: 'auto'}} className="btn btn-mini status">{this.props.headerdata.status}</button></div>
-                    <div style={{flexGrow:1, marginRight: 'auto'}}><h2>Event {this.props.id}: {this.props.headerdata.subject}</h2></div>
+                    <div><button id="event_status" onclick="event_status_toggle()" style={{lineHeight: '12pt', fontSize: 'inherit', marginTop: '17px', width: '200px', marginLeft: 'auto'}} className="btn btn-mini status">{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} />: null}</button></div>
+                    <div style={{flexGrow:1, marginRight: 'auto'}}><h2>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id}/>: null}</h2></div>
                 </div>
                 <div className='details-table' style={{width: '50%', margin: '0 auto'}}>
                     <table>
                         <tbody>
                             <tr>
                                 <th>Owner</th>
-                                <td><span className="editable"><button id='event_owner' style={{lineHeight: '12pt', fontSize: 'inherit'}} className="btn btn-mini">{this.props.headerdata.owner}</button></span></td>
+                                <td><span className="editable"><button id='event_owner' style={{lineHeight: '12pt', fontSize: 'inherit'}} className="btn btn-mini">{this.state.showEventData ? <EntryDataOwner data={this.state.headerData.owner} />: null}</button></span></td>
                                 <th>Tags</th>
-                                <td><span className="editable"><button id='event_tag' style={{lineHeight: '12pt', fontSize: 'inherit'}} className="btn btn-mini">Tag Placeholder</button></span></td>
+                                <td><span className="editable"><button id='event_tag' style={{lineHeight: '12pt', fontSize: 'inherit'}} className="btn btn-mini">{this.state.showEventData ? <EntryDataTag data='Tag Placeholder' /> : null}</button></span></td>
                             </tr>
                             <tr>
                                 <th>Updated</th>
-                                <td><span className="editable" id='event_updated' style={{lineHeight: '12pt', fontSize: 'inherit'}} className="btn btn-mini"><ReactTime value={this.props.headerdata.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" /></span></td>
+                                <td><span className="editable" id='event_updated' style={{lineHeight: '12pt', fontSize: 'inherit'}} className="btn btn-mini">{this.state.showEventdata ? <ReactTime value={this.state.headerData.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" /> : null}</span></td>
                                 <th>Source</th>
                                 <td><span className="editable">{this.state.showSource ? <SourceData data={this.state.sourceData} /> : null }</span></td>
                             </tr>
@@ -108,15 +122,52 @@ var EntryHeaderDetails = React.createClass({
                     </table>
                 </div>
                 <EntryHeaderOptions permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} />
-                {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type='event' /> : null}
-                {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type='event' /> : null}
+                {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
+                {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
                 {this.state.permissionsToolbar ? <EntryHeaderPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
-                {this.state.entryToolbar ? <EntryEditor type='Event' id={id} entryToggle={this.entryToggle} /> : null} 
+                {this.state.entryToolbar ? <EntryEditor type={type} id={id} entryToggle={this.entryToggle} /> : null} 
             </div>
         )
     }
 });
 
+var EntryDataStatus = React.createClass({
+    render: function() {
+        data = this.props.data;
+        return (
+            <div>{data}</div>
+        )
+    }
+});
+
+var EntryDataSubject = React.createClass({
+    render: function() {
+        id = this.props.id;
+        type = this.props.type;
+        data = this.props.data;
+        return (
+            <div>{type} {id}: {data}</div>
+        )
+    }
+});
+
+var EntryDataOwner = React.createClass({
+    render: function() {
+        data = this.props.data;
+        return (
+            <div>{data}</div>
+        )
+    }
+});
+
+var EntryDataTag = React.createClass({
+    render: function() {
+        data = this.props.data;
+        return (
+            <div>{data}</div>
+        )
+    }
+});
 var SourceData = React.createClass({
     render: function() {
         var rows = [];
