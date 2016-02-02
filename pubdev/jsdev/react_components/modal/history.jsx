@@ -20,7 +20,7 @@ var History = React.createClass({
             data: ''
         }
     },
-    componentWillMount: function() {
+    componentDidMount: function() {
         this.serverRequest = $.get('/scot/api/v2/'+ this.props.type + '/' + this.props.id + '/history', function (result) {
             var result = result.records;
             this.setState({historyBody:true, data:result})
