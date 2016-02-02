@@ -19,7 +19,7 @@ var Entities = React.createClass({
             data: ''
         }
     },
-    componentWillMount: function() {
+    componentDidMount: function() {
     this.serverRequest = $.get('/scot/api/v2/'+ this.props.type + '/' + this.props.id + '/entity', function (result) {
             var result = result.records;
             this.setState({entitiesBody:true, data:result})
