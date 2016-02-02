@@ -118,6 +118,7 @@ module.exports = React.createClass({
 	    sortInfo: SORT_INFO, 
 	    onSortChange: this.handleSortChange, 
 	    showCellBorders: true,
+	    rowHeight: 100,
 	    rowStyle: configureTable}
 	)
         ));
