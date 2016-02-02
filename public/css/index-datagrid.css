@@ -778,10 +778,9 @@ html.u-app body {
 .u-ellipsis,
 .react-datagrid .z-column-header .z-content,
 .react-datagrid.z-cell-ellipsis .z-row .z-cell .z-content,
-.react-datagrid .z-summary .z-cell .z-content {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
+.react-datagrid .z-summary .z-cell .z-content .subrender{
+  text-overflow: ellipsis; 
+  overflow: auto;
 }
 .u-absolute {
   position: absolute;
@@ -1269,7 +1268,7 @@ html.u-app body * {
   display: flex;
   -webkit-box-align: center;
   -webkit-align-items: center;
-  align-items: center;
+  
   cursor: default;
 }
 .react-datagrid .z-row .z-cell .z-content {
