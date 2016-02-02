@@ -10,11 +10,12 @@ var EntryHeader = React.createClass({
         render: function() {
             var id = this.props.id;
             var headerdata = this.props.data; 
+            var type = this.props.type;
             return (
                 <div>
                     <AutoAffix>
                         <div id="NewEventInfo" className="entry-header-info-null">
-                            <EntryHeaderDetails id={id} headerdata={headerdata} type='event' />
+                            <EntryHeaderDetails id={id} type={type} headerdata={headerdata} type='event' />
                         </div>
                 </AutoAffix>                
             </div>
