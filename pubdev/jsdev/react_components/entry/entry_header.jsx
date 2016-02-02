@@ -3,24 +3,18 @@ var EntryWrapper            = require('./entry_wrapper.jsx');
 var EntryHeaderDetails      = require('./entry_header_details.jsx');
 var EntryEditor             = require('./entry_editor.jsx');
 var EntryHeaderOptions      = require('./entry_header_options.jsx');
-var EntryHeaderEntities     = require('./entry_header_entities.jsx');
-var EntryHeaderHistory      = require('./entry_header_history.jsx');
+var Entities                = require('../modal/entities.jsx');
+var History                 = require('../modal/history.jsx');
 var EntryHeaderPermission   = require('./entry_header_permission.jsx');
 var AutoAffix               = require('react-overlays/lib/AutoAffix');
 var Crouton                 = require('react-crouton');
-//var Notification    = require('react-notification');
 var EntryHeader = React.createClass({
         getInitialState: function(){
             return {
                 permissionsToolbar:false,
                 entitiesToolbar:false,
                 historyToolbar:false,
-                entryToolbar:false,
-                notification:false,
-                notificationId:Date.now(),
-                notificationMessage:'',
-                notificationType:'', 
-                notificationOnDismiss:"" 
+                entryToolbar:false 
             }
         },
         viewedbyfunc: function(headerdata) {
@@ -43,32 +37,6 @@ var EntryHeader = React.createClass({
             } else {
                 this.setState({historyToolbar:false});
             }
-        },
-        notificationToggle: function(message) {
-            if (this.state.notification == false) {
-                var data = {
-                    id: Date.now(),
-                    type: 'error',
-                    message: 'Hello React-Crouton',
-                    autoMiss: true || false,
-                    onDismiss: this.setState({notification:false}),
-                    buttons: [{
-                        name: 'close',
-                        listener: function() {
-
-                        }
-                    }],
-                    hidden: false,
-                    timeout: 2000
-                }
-                this.setState({notificationId:Date.now()});
-                this.setState({notificationMessage:message});
-                this.setState({notificationType:'info'}); 
-                this.setState({notification:true});
-                this.setState({notificationOnDismiss:notificationToggle()});
-            } else { 
-                this.setState({notification:false});
-            } 
         },
         permissionsfunc: function(headerdata) {
             var writepermissionsarr = [];
@@ -110,18 +78,17 @@ var EntryHeader = React.createClass({
             var headerdata = this.props.data;
             var viewedby = this.viewedbyfunc(headerdata); 
             var permissions = this.permissionsfunc(headerdata); //pos 0 is read and pos 1 is write
-            
+             
             return (
                 <div>
                     <AutoAffix>
                     <div id="NewEventInfo" className="entry-header-info-null">
                         <EntryHeaderOptions permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} />
                         <EntryHeaderDetails id={id} headerdata={headerdata} viewedby={viewedby} />
-                        {this.state.historyToolbar ? <EntryHeaderHistory historyToggle={this.historyToggle} /> : null}
-                        {this.state.entitiesToolbar ? <EntryHeaderEntities entitiesToggle={this.entitiesToggle} /> : null}
+                        {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type='event' /> : null}
+                        {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type='event' /> : null}
                         {this.state.permissionsToolbar ? <EntryHeaderPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
-                        {this.state.entryToolbar ? <EntryEditor type='Event' id={id} entryToggle={this.entryToggle} notificationToggle={this.notificationToggle}/> : null}
-                        {this.state.notification ? <Crouton id={this.state.notificationId} message={this.state.notificationMessage} type={this.state.notificationType} onDismiss={this.state.notificationOnDismiss} /> : null}
+                        {this.state.entryToolbar ? <EntryEditor type='Event' id={id} entryToggle={this.entryToggle} /> : null} 
                     <div id="move_entry_toolbar" className="toolbar" style={{display:'none'}}>
                         <img src="/images/close_toolbar.png" className="close_toolbar" onclick="close_toolbar(this)" />
                         <center><b>Select new destination for entry <span id="entryToMove">###</span>:</b>
