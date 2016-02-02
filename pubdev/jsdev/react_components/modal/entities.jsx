@@ -37,7 +37,7 @@ var Entities = React.createClass({
                         <h3 id="myModalLabel">List of Entities</h3>
                     </div>                        
                     <div className="modal-body">
-                        {this.state.entitiesBody ? <EntitiesData data={this.sate.data} /> :null}
+                        {this.state.entitiesBody ? <EntitiesData data={this.state.data} /> :null}
                     </div>
                     <div className="modal-footer">
                         <button class="btn" onClick={this.props.entitiesToggle}>Done</button>
