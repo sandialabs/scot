@@ -1,7 +1,7 @@
 var React                   = require('react');
 var ReactTime               = require('react-time');
 var EntryHeaderOptions      = require('./entry_header_options.jsx');
-var EntryEditor             = require('./entry_editor.jsx');
+var AddEntryModal           = require('../modal/add_entry.jsx');
 var Entities                = require('../modal/entities.jsx');
 var History                 = require('../modal/history.jsx');
 var EntryHeaderPermission   = require('./entry_header_permission.jsx');
@@ -114,7 +114,7 @@ var EntryHeaderDetails = React.createClass({
                             </tr>
                             <tr>
                                 <th>Updated</th>
-                                <td><span className="editable" id='event_updated' style={{lineHeight: '12pt', fontSize: 'inherit'}} className="btn btn-mini">{this.state.showEventdata ? <ReactTime value={this.state.headerData.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" /> : null}</span></td>
+                                <td><span className="editable" id='event_updated' style={{lineHeight: '12pt', fontSize: 'inherit'}} className="btn btn-mini">{this.state.showEventdata ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                 <th>Source</th>
                                 <td><span className="editable">{this.state.showSource ? <SourceData data={this.state.sourceData} /> : null }</span></td>
                             </tr>
@@ -125,8 +125,18 @@ var EntryHeaderDetails = React.createClass({
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
                 {this.state.permissionsToolbar ? <EntryHeaderPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
-                {this.state.entryToolbar ? <EntryEditor type={type} id={id} entryToggle={this.entryToggle} /> : null} 
+                {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null} 
             </div>
+        )
+    }
+});
+
+var EntryDataUpdated = React.createClass({
+    render: function() {
+        data = this.props.data;
+        console.log(data);
+        return (
+            <div>test</div>
         )
     }
 });
