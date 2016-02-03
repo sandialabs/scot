@@ -6,7 +6,7 @@ var Entities                = require('../modal/entities.jsx');
 var History                 = require('../modal/history.jsx');
 var EntryHeaderPermission   = require('./entry_header_permission.jsx');
 var AutoAffix               = require('react-overlays/lib/AutoAffix');
-
+var Button                  = require('react-bootstrap/lib/Button');
 var EntryHeader = React.createClass({
     getInitialState: function() {
         return {
@@ -102,7 +102,7 @@ var EntryHeader = React.createClass({
             <AutoAffix>
                 <div id="NewEventInfo" className="entry-header-info-null">
                     <div className='details-table' style={{display: 'flex'}}>
-                        <div><button id="event_status" onclick="event_status_toggle()" style={{lineHeight: '12pt', fontSize: 'inherit', marginTop: '17px', width: '200px', marginLeft: 'auto'}} className="btn btn-mini status">{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} />: null}</button></div>
+                        <div>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} />: null}</div>
                         <div style={{flexGrow:1, marginRight: 'auto'}}><h2>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id}/>: null}</h2></div>
                     </div>
                     <div className='details-table' style={{width: '50%', margin: '0 auto'}}>
@@ -147,8 +147,16 @@ var EntryDataUpdated = React.createClass({
 var EntryDataStatus = React.createClass({
     render: function() {
         data = this.props.data;
+        var buttonStyle = ''
+        if (data == 'open') {
+            buttonStyle = 'danger'; 
+        } else if (data == 'closed') {
+            buttonStyle = 'success';
+        } else if (data == 'monitored') {
+            buttonStyle = 'warning'
+        };
         return (
-            <div>{data}</div>
+            <Button bsStyle={buttonStyle} id="event_status" onclick="event_status_toggle()" style={{lineHeight: '12pt', fontSize: 'inherit', marginTop: '17px', width: '200px', marginLeft: 'auto'}}>{data}</Button>
         )
     }
 });
