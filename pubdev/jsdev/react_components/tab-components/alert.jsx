@@ -415,7 +415,7 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	React.createElement("h4", {className: "modal-title"}, " Add Entry")
 	), 
 	React.createElement("div", {className: "modal-body", style: {height: '90%'}}, 
-	React.createElement(TinyMCE, {content: "", config: {plugins: 'autolink link image lists print printview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'}}
+	React.createElement(TinyMCE, {onChange: this.handleEditorChange, content: "", config: {plugins: 'autolink link image lists print printview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'}}
 	)), 
 	React.createElement("div", {className: "modal-footer"}, React.createElement("input", {type: "file", name: "file_attach", className: "input-field attachfile"}), 
 	React.createElement("button", {type: "button", onClick: this.onCancel}, " Cancel"), 
