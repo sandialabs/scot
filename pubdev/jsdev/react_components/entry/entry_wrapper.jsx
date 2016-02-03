@@ -29,7 +29,7 @@ var EntryWrapper = React.createClass({
 var EntryIterator = React.createClass({
     render: function() {
         var rows = [];
-        var data = this.props.data
+        var data = this.props.data 
         data.forEach(function(data) {
             rows.push(new Array(<EntryData items={data}/>));
         });
