@@ -17,7 +17,6 @@ var EntryContainer = React.createClass({
         }
         return (
             <div className="entry-container">
-                <button onClick={this.props.viewEvent}>Toggle Display</button>
                 {datarows}
             </div>
         );
