@@ -73,22 +73,5 @@ var EntryHeaderOptions = React.createClass({
         )
     }
 });
-/* original render
-<span className="pull-right btn-group" style={{marginTop: 17, boxShadow: '0px 0px 50px 5px #8A8A8A'}} id="high_level_dropdown">
-                    <button className="btn btn-inverse intel events incidents tasks" onClick={this.props.entryToggle}>
-                        Add <b>Entry</b>
-                    </button>
-                    <button className="btn btn-inverse dropdown-toggle intel events incidents tasks" data-toggle="dropdown">
-                        <span className="caret" style={{marginTop: 8}} />
-                    </button>
-                        <ul className='dropdown-menu'>
-                        <li><a onclick="openFileUploadDialog()">Upload <b>File</b></a></li>
-                        <li><a onClick={this.props.historyToggle}>View <b>History</b></a></li>
-                        <li><a onClick={this.toggleFlair}>Toggle <b>Flair</b></a></li>
-                        <li><a onClick={this.props.permissionsToggle}><b>Permissions</b></a></li>
-                        <li><a className="alerts events incidents" onClick={this.props.entitiesToggle}>List <b>Entities</b></a></li>
-                        <li><a className="events" onclick="delete_event()"><b>Delete </b>Event</a></li>
-                    </ul>
-                </span>
-*/
+
 module.exports = EntryHeaderOptions;
