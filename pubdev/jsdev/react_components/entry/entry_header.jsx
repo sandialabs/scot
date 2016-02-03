@@ -116,7 +116,7 @@ var EntryHeader = React.createClass({
                                 </tr>
                                 <tr>
                                     <th>Updated</th>
-                                    <td><span className="editable" id='event_updated' style={{lineHeight: '12pt', fontSize: 'inherit'}} className="btn btn-mini">{this.state.showEventdata ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
+                                    <td><span className="" id='event_updated' style={{lineHeight: '12pt', fontSize: 'inherit'}} className="btn btn-mini">{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                     <th>Source</th>
                                     <td><span className="editable">{this.state.showSource ? <SourceData data={this.state.sourceData} /> : null }</span></td>
                                 </tr>
@@ -137,9 +137,8 @@ var EntryHeader = React.createClass({
 var EntryDataUpdated = React.createClass({
     render: function() {
         data = this.props.data;
-        console.log(data);
         return (
-            <div>test</div>
+            <div><ReactTime value={data * 1000} format="MM/DD/YYY hh:mm:ss a" /></div>
         )
     }
 });
