@@ -57,14 +57,15 @@ var EntryHeaderOptions = React.createClass({
         return (
             <div className="entry-header">
                 <ButtonGroup>
-                    <Button>File</Button>
-                    <Button>View</Button>
-                    <DropdownButton title="Actions" id="bg-nested-dropdown">
-                        <MenuItem eventKey="1" onClick={this.toggleFlair}>Toggle <b>Flair</b></MenuItem>
-                        <MenuItem eventKey="2" onClick={this.props.historyToggle}>View <b>History</b></MenuItem>
-                        <MenuItem eventKey="3" onClick={this.props.permissionsToggle}><b>Permissions</b></MenuItem>
-                        <MenuItem eventKey="4" onClick={this.props.entitiesToggle}>List <b>Entities</b></MenuItem>
-                        <MenuItem eventKey="5" onclick={this.props.deleteEvent}><b>Delete</b> Event</MenuItem>
+                    <Button bsStyle='warning' onClick={this.props.toggleEventDisplay}>Back</Button>
+                    <Button bsStyle='info'>File</Button>
+                    <Button bsStyle='info'>View</Button>
+                    <DropdownButton bsStyle='info' title="Actions" id="bg-nested-dropdown">
+                        <MenuItem bsStyle='primary' eventKey="1" onClick={this.toggleFlair}>Toggle <b>Flair</b></MenuItem>
+                        <MenuItem bsStyle='primary' eventKey="2" onClick={this.props.historyToggle}>View <b>History</b></MenuItem>
+                        <MenuItem bsStyle='primary' eventKey="3" onClick={this.props.permissionsToggle}><b>Permissions</b></MenuItem>
+                        <MenuItem bsStyle='primary' eventKey="4" onClick={this.props.entitiesToggle}>List <b>Entities</b></MenuItem>
+                        <MenuItem bsStyle='danger' eventKey="5" onclick={this.props.deleteEvent}><b>Delete</b> Event</MenuItem>
                     </DropdownButton> 
                 </ButtonGroup>
                 <Button bsStyle='success' className="pull-right" onClick={this.props.entryToggle}>Add Entry</Button>

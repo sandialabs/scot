@@ -101,8 +101,8 @@ module.exports = React.createClass({
     render: function() {
 
 	return (
-	    stage ? React.createElement(Entry, {ids: ids}) : 
-	    this.state.viewevent ? React.createElement(Entry, {ids: ids}) : 
+	    stage ? React.createElement(Entry, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
+	    this.state.viewevent ? React.createElement(Entry, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
 	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {onClick: this.exportCSV}, 'Export to CSV') : null,this.state.showevent ? React.createElement('button', {className: 'btn-success', onClick: this.viewEvent}, "View Event(s)") : null,
 	    React.createElement(DataGrid, {
             ref: "dataGrid", 
@@ -126,9 +126,14 @@ module.exports = React.createClass({
         ));
     },
     viewEvent: function(){
-	console.log(ids)	
-	stage = true
-    this.setState({viewevent: true})
+        console.log(ids)	
+        if (stage == false || this.state.viewevent == false) {
+            stage = true;
+            this.setState({viewevent: true});
+        } else {
+            stage = false;
+            this.setState({viewevent: false});
+        }
     },
     exportCSV: function(){
         var keys = []
