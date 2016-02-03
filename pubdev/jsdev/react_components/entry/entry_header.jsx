@@ -152,7 +152,7 @@ var EntryDataStatus = React.createClass({
             buttonStyle = 'danger'; 
         } else if (data == 'closed') {
             buttonStyle = 'success';
-        } else if (data == 'monitored') {
+        } else if (data == 'promoted') {
             buttonStyle = 'warning'
         };
         return (
