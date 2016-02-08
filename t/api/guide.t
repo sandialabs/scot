@@ -9,7 +9,8 @@ use Scot::Collection;
 use Scot::Collection::Alertgroup;
 
 $ENV{'scot_mode'}   = "testing";
-system("mongo scot-testing < ../../bin/database/reset.js");
+print "Resetting test db...\n";
+system("mongo scot-testing <../../bin/database/reset.js 2>&1 > /dev/null");
 
 my $t = Test::Mojo->new('Scot');
 my $env = Scot::Env->instance;
@@ -38,7 +39,7 @@ $t->get_ok("/scot/api/v2/guide/$guide_id" => {},
   ->json_is('/subject'      => 'Guide to Alert: Foo does Bar')
   ->json_is('/applies_to/0'  => 'Splunk Alert: (AJB) zip/rar/7z/jar Hourly Quarantined=False');
 
- print Dumper($t->tx->res->json), "\n";
+#  print Dumper($t->tx->res->json), "\n";
 
 $t->get_ok("/scot/api/v2/guide/$guide_id/entry" => {},
     "Getting entries in guide")

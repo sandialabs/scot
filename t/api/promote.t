@@ -9,7 +9,8 @@ use Scot::Collection;
 use Scot::Collection::Alertgroup;
 
 $ENV{'scot_mode'}   = "testing";
-system("mongo scot-testing <../../bin/database/reset.js");
+print "Resetting test db...\n";
+system("mongo scot-testing <../../bin/database/reset.js 2>&1 > /dev/null");
 
 @defgroups = ( 'ir', 'test' );
 
@@ -194,7 +195,7 @@ $t->get_ok("/scot/api/v2/incident/$incident/event" => {},
     ->json_is('/records/0/status'       => 'promoted');
     
 
-print Dumper($t->tx->res->json), "\n";
+# print Dumper($t->tx->res->json), "\n";
 done_testing();
 exit 0;
 

@@ -9,6 +9,8 @@ use Data::Dumper;
 use Mojo::JSON qw(decode_json encode_json);
 
 $ENV{'scot_mode'}   = "testing";
+print "Resetting test db...\n";
+system("mongo scot-testing <../../bin/database/reset.js 2>&1 > /dev/null");
 my @defgroups       = ( 'ir', 'testing' );
 
 my $t   = Test::Mojo->new('Scot');
