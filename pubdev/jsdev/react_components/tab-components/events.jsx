@@ -2,6 +2,7 @@
 
 var React = require('react')
 var DataGrid = require('../../../node_modules/events-react-datagrid/react-datagrid');
+var Entry = require('../entry/entry_container.jsx')
 var SORT_INFO;
 var colsort = "id"
 var valuesort = 1
@@ -12,6 +13,8 @@ var getColumn;
 var check = false; 
 var tab;
 var datasource
+var ids = []
+var stage = false
 var columns = 
 [
     { name: 'id', style: {color:'black'}},
@@ -88,7 +91,7 @@ function configureTable(data, props){
 module.exports = React.createClass({
 
     getInitialState: function(){
-             return {data: dataSource};
+             return {viewevent: false, showevent: false, data: dataSource, csv:true};
          },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
@@ -98,7 +101,9 @@ module.exports = React.createClass({
     render: function() {
 
 	return (
-	    React.createElement("div", {className: "allComponents"}, 
+	    stage ? React.createElement(Entry, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
+	    this.state.viewevent ? React.createElement(Entry, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
+	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {onClick: this.exportCSV}, 'Export to CSV') : null,this.state.showevent ? React.createElement('button', {className: 'btn-success', onClick: this.viewEvent}, "View Event(s)") : null,
 	    React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id", 
@@ -115,11 +120,51 @@ module.exports = React.createClass({
 	    sortInfo: SORT_INFO, 
 	    onSortChange: this.handleSortChange, 
 	    showCellBorders: true,
+	    rowHeight: 100,
 	    rowStyle: configureTable}
 	)
         ));
     },
+    viewEvent: function(){
+        console.log(ids)	
+        if (stage == false || this.state.viewevent == false) {
+            stage = true;
+            this.setState({viewevent: true});
+        } else {
+            stage = false;
+            this.setState({viewevent: false});
+        }
+    },
+    exportCSV: function(){
+        var keys = []
+	$.each(columns, function(key, value){
+            keys.push(value['name']);
+	  });
+	var csv = ''
+	$('.z-even').each(function(key, value){
+	var storearray = []
+        $(value).find('.z-content').each(function(x,y) {
+            var obj = $(y).text()
+		obj = obj.replace(/,/g,'|')
+		storearray.push(obj)
+	});
+	    csv += storearray.join() + '\n'
+	});
 
+	$('.z-odd').each(function(key, value){
+        var storearray = []
+        $(value).find('.z-content').each(function(x,y) {
+            var obj = $(y).text()
+		obj = obj.replace(/,/g,'|')
+		storearray.push(obj)
+	});
+	    csv += storearray.join() + '\n'
+	});
+        var result = keys.join() + "\n"
+	csv = result + csv;
+	var data_uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
+	window.open(data_uri)		
+    },
     handleSortChange : function(sortInfo){
 	SORT_INFO = sortInfo
 	$.each(SORT_INFO, function(key,value){
@@ -138,10 +183,11 @@ module.exports = React.createClass({
 	SELECTED_ID = newSelection
 	var selected = []
 	Object.keys(newSelection).forEach(function(id){
-	selected.push(newSelection[id].firstName)
+	selected.push(newSelection[id].id)
 	})
-	names = selected.length? selected.join(', ') : 'none'
-	this.setState({})
+	names = selected.length? selected.join(',') : 'none'
+	ids = names.split(',')
+	this.setState({showevent: true})
 	check = true
 
 	},
