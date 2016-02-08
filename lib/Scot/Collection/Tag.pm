@@ -44,18 +44,17 @@ sub create_from_handler {
     unless ( defined $tag_obj ) {
         $tag_obj    = $tag_collection->create({
             value    => $value,
-            targets => [{
-                type    => $target_type,
-                id      => $target_id,
-            }],
         });
     }
-    else {
-        $tag_obj->update_add( targets => {
-            type    => $target_type,
-            id      => $target_id,
-        });
-    }
+
+    my $linkcol  = $env->mongo->collection("Link");
+    $linkcol->create_bidi_link({
+        type    => "tag",
+        id      => $tag_obj->id,
+    },{
+        type    => $target_type,
+        id      => $target_id,
+    });
 
     $env->mongo->collection("History")->add_history_entry({
         who     => "api",
@@ -66,25 +65,6 @@ sub create_from_handler {
 
     return $tag_obj;
 
-}
-
-sub get_tags {
-    my $self    = shift;
-    my %params  = @_;
-
-    my $id      = $params{target_id};
-    my $thing   = $params{target_type};
-
-    my $cursor  = $self->find({
-        targets => {
-            '$elemMatch' => {
-                type => $thing,
-                id   => $id,
-            },
-        },
-    });
-    my $count   = $cursor->count;
-    return $cursor;
 }
 
 sub get_tag_completion { 
@@ -113,12 +93,12 @@ sub add_tag_to {
         });
     }
 
-    $env->mongo->collection("Link")->add_link({
-        target_type => $thing,
-        target_id   => $id,
-        when        => $env->now(),
-        item_type   => "tag",
-        item_id     => $tag_obj->id,
+    $env->mongo->collection("Link")->create_bidi_link({
+        type => $thing,
+        id   => $id,
+    },{
+        type   => "tag",
+        id     => $tag_obj->id,
     });
 
     return $tag_obj;
