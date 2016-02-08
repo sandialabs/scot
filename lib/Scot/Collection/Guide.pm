@@ -54,12 +54,12 @@ sub create_from_api {
         foreach my $entry ( @entries ) {
             $entry->{owner} = $entry->{owner} // $request->{user};
             my $obj = $ecoll->create($entry);
-            $lcoll->add_link({
-                target_type => "guide",
-                target_id   => $guide->id,
-                when        => $env->now,
-                item_type   => "entry",
-                item_id     => $obj->id,
+            $lcoll->create_bidi_link({
+                type => "guide",
+                id   => $guide->id,
+            },{
+                type   => "entry",
+                id     => $obj->id,
             });
         }
     }
@@ -67,21 +67,6 @@ sub create_from_api {
     return $guide;
 }
 
-sub get_guide {
-    my $self    = shift;
-    my %params  = @_;
-    my $id      = $params{target_id};
-    my $type    = $params{target_type};
-    my $cursor  = $self->find({
-        targets => {
-            '$elemMatch'    => {
-                type    => $type,
-                id      => $id,
-            },
-        },
-    });
-    return $cursor;
-}
 
 
 1;

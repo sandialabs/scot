@@ -180,18 +180,28 @@ sub subscribe {
     my $self    = shift;
     my $dest    = shift;
     my $id      = shift;
-    $self->stomp_handle->subscribe(
-        destination     => "/topic/".$dest,
-        id              => $id,
-        ack             => "client",
-    );
+    if ( $self->stomp_handle ) {
+        $self->stomp_handle->subscribe(
+            destination     => "/topic/".$dest,
+            id              => $id,
+            ack             => "client",
+        );
+    }
+    else {
+        $self->env->log->warn("Not connected to AMQ!");
+    }
 }
 
 sub get_message {
     my $self    = shift;
     my $code    = shift;
     my $amq     = $self->stomp_handle;
-    $amq->message_callback($code);
+    if ( $amq ) {
+        $amq->message_callback($code);
+    }
+    else {
+        $self->env->log->warn("Not connected to AMQ!");
+    }
 }
 
 

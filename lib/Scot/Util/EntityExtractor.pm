@@ -406,7 +406,7 @@ sub process_words {
                 # $log->debug(" "x$level." Insert Match flair ". $flair->as_HTML);
                 push @new, $flair;
 
-                push @{$dbhref->{entities}}, { value => $match, type => $type };
+                push @{$dbhref->{entities}}, { value => lc($match), type => $type };
 
                 my $post    = substr($word, $+[0]);
                 if ( $post ) {
