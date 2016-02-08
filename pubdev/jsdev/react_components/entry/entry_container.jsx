@@ -16,7 +16,7 @@ var EntryContainer = React.createClass({
             datarows.push(<EntryWrapper id={this.state.ids[i]} type={this.state.type}/>);
         }
         return (
-            <div className="entry-container">
+            <div className="entry-container"> 
                 {datarows}
             </div>
         );
