@@ -57,6 +57,21 @@ sub _get_entity_extractor {
     });
 };
 
+has imgmunger   => (
+    is          => 'ro',
+    isa         => 'Scot::Util::ImgMunger',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_get_img_munger',
+);
+
+sub _get_img_munger {
+    my $self    = shift;
+    return Scot::Util::ImgMunger->new({
+        log => $self->env->log,
+    });
+};
+
 has base_url    => (
     is          => 'ro',
     isa         => 'Str',
@@ -177,6 +192,7 @@ sub process_entry {
     my $self    = shift;
     my $record  = shift;
     my $extractor   = $self->extractor;
+    my $imgmunger   = $self->imgmunger;
     my $env         = $self->env;
     my $log         = $env->log;
     my $ua      = Mojo::UserAgent->new;
@@ -186,6 +202,7 @@ sub process_entry {
     $log->trace("Processing Entry $id");
 
     my $data    = $record->{body};
+    $data       = $imgmunger->process_html($data, $id);
 
     my $eehref  = $extractor->process_html($data);
 
@@ -202,6 +219,5 @@ sub process_entry {
 
     my $tx  = $ua->put($url => json => $json);
     
-
 }
 1;
