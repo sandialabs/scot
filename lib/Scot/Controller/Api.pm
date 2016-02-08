@@ -1567,19 +1567,20 @@ sub supertable {
     $log->debug("alertgroup_ids are ", {filter=>\&Dumper, value=>\@alertgroup_ids});
 
     my %cols    = ();
-    my @columns = (qw(when alertgroup));
+    my @columns = (qw(id status when alertgroup));
     my @rows    = ();
 
     my $alertcol    = $mongo->collection('Alert');
-    my $match_ref   = { alertgroup   => { '$in'  => \@alertgroup_ids } };
+    my $match_ref   = { id   => { '$in'  => \@alertgroup_ids } };
     my $cursor      = $alertcol->find($match_ref);
-
     while ( my $alert = $cursor->next ) {
         # $log->debug("Alert ", {filter=>\&Dumper, value=>$alert});
 
         my $href    = {
             when        => $alert->when,
             alertgroup  => $alert->alertgroup,
+	    status 	=> $alert->status,
+	    id		=> $alert->id,
         };
         
         my $data    = $alert->data_with_flair // $alert->data;
@@ -1594,7 +1595,6 @@ sub supertable {
         }
         push @rows, $href;
     }
-
     push @columns, sort keys %cols;
 
     $self->do_render({
