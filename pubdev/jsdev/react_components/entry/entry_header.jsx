@@ -1,146 +1,212 @@
 var React                   = require('react');
-var EntryWrapper            = require('./entry_wrapper.jsx');
-var EntryHeaderDetails      = require('./entry_header_details.jsx');
-var EntryEditor             = require('./entry_editor.jsx');
+var ReactTime               = require('react-time');
 var EntryHeaderOptions      = require('./entry_header_options.jsx');
-var EntryHeaderEntities     = require('./entry_header_entities.jsx');
-var EntryHeaderHistory      = require('./entry_header_history.jsx');
+var AddEntryModal           = require('../modal/add_entry.jsx');
+var Entities                = require('../modal/entities.jsx');
+var History                 = require('../modal/history.jsx');
 var EntryHeaderPermission   = require('./entry_header_permission.jsx');
 var AutoAffix               = require('react-overlays/lib/AutoAffix');
-var Crouton                 = require('react-crouton');
-//var Notification    = require('react-notification');
+var Button                  = require('react-bootstrap/lib/Button');
 var EntryHeader = React.createClass({
-        getInitialState: function(){
-            return {
-                permissionsToolbar:false,
-                entitiesToolbar:false,
-                historyToolbar:false,
-                entryToolbar:false,
-                notification:false,
-                notificationId:Date.now(),
-                notificationMessage:'',
-                notificationType:'', 
-                notificationOnDismiss:"" 
-            }
-        },
-        viewedbyfunc: function(headerdata) {
-            var viewedbyarr = [];
-            for (prop in headerdata.view_history) {
-                viewedbyarr.push(prop);
+    getInitialState: function() {
+        return {
+            showEventData:false,
+            headerData:'',
+            showSource:false,
+            sourceData:'',
+            permissionsToolbar:false,
+            entitiesToolbar:false,
+            historyToolbar:false,
+            entryToolbar:false
+        }
+    },
+    componentDidMount: function() {
+        this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
+            var sourceResult = result.records;
+            this.setState({showSource:true, sourceData:sourceResult})
+        }.bind(this));
+        this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
+            var eventResult = result;
+            this.setState({showEventData:true, headerData:eventResult})
+        }.bind(this));
+    },
+    viewedbyfunc: function(headerData) {
+        var viewedbyarr = [];
+        for (prop in headerData.view_history) {
+            viewedbyarr.push(prop);
+        };
+        return viewedbyarr;
+    },
+    entryToggle: function() {
+        if (this.state.entryToolbar == false) {
+            this.setState({entryToolbar:true})
+        } else {
+            this.setState({entryToolbar:false})
+        }
+    },
+    historyToggle: function() {
+        if (this.state.historyToolbar == false) {
+            this.setState({historyToolbar:true});
+        } else {
+            this.setState({historyToolbar:false});
+        }
+    },
+    permissionsfunc: function(headerData) {
+        var writepermissionsarr = [];
+        var readpermissionsarr = [];
+        var readwritepermissionsarr = [];
+        for (prop in headerData.groups) {
+            var fullprop = headerData.groups[prop]
+            if (prop == 'read') {
+                headerData.groups[prop].forEach(function(fullprop) {
+                    readpermissionsarr.push(fullprop)
+                });
+            } else if (prop == 'modify') {
+                headerData.groups[prop].forEach(function(fullprop) {
+                    writepermissionsarr.push(fullprop)
+                });
             };
-            return viewedbyarr;
-        },
-        entryToggle: function() {
-            if (this.state.entryToolbar == false) {
-                this.setState({entryToolbar:true})
-            } else {
-                this.setState({entryToolbar:false})
-            }
-        },
-        historyToggle: function() {
-            if (this.state.historyToolbar == false) {
-                this.setState({historyToolbar:true});
-            } else {
-                this.setState({historyToolbar:false});
-            }
-        },
-        notificationToggle: function(message) {
-            if (this.state.notification == false) {
-                var data = {
-                    id: Date.now(),
-                    type: 'error',
-                    message: 'Hello React-Crouton',
-                    autoMiss: true || false,
-                    onDismiss: this.setState({notification:false}),
-                    buttons: [{
-                        name: 'close',
-                        listener: function() {
-
-                        }
-                    }],
-                    hidden: false,
-                    timeout: 2000
-                }
-                this.setState({notificationId:Date.now()});
-                this.setState({notificationMessage:message});
-                this.setState({notificationType:'info'}); 
-                this.setState({notification:true});
-                this.setState({notificationOnDismiss:notificationToggle()});
-            } else { 
-                this.setState({notification:false});
-            } 
-        },
-        permissionsfunc: function(headerdata) {
-            var writepermissionsarr = [];
-            var readpermissionsarr = []; 
-            var readwritepermissionsarr = [];
-            for (prop in headerdata.groups) {
-                var fullprop = headerdata.groups[prop]
-                if (prop == 'read') {
-                    headerdata.groups[prop].forEach(function(fullprop) {
-                        readpermissionsarr.push(fullprop)
-                    });
-                } else if (prop == 'modify') {
-                    headerdata.groups[prop].forEach(function(fullprop) {
-                        writepermissionsarr.push(fullprop)    
-                    });
-                };
-            };
-            readwritepermissionsarr.push(readpermissionsarr);
-            readwritepermissionsarr.push(writepermissionsarr);
-            return readwritepermissionsarr;
-        },
-        permissionsToggle: function() {
-            if (this.state.permissionsToolbar == false) {
-                this.setState({permissionsToolbar:true});
-            } else {
-                this.setState({permissionsToolbar:false});
-            } 
-        },
-        entitiesToggle: function() {
-            if (this.state.entitiesToolbar == false) {
-                this.setState({entitiesToolbar:true});
-            } else {
-                this.setState({entitiesToolbar:false});
-            }
-        },
-
-        render: function() {
-            var id = this.props.id;
-            var headerdata = this.props.data;
-            var viewedby = this.viewedbyfunc(headerdata); 
-            var permissions = this.permissionsfunc(headerdata); //pos 0 is read and pos 1 is write
-            
-            return (
-                <div>
-                    <AutoAffix>
-                    <div id="NewEventInfo" className="entry-header-info-null">
-                        <EntryHeaderOptions permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} />
-                        <EntryHeaderDetails id={id} headerdata={headerdata} viewedby={viewedby} />
-                        {this.state.historyToolbar ? <EntryHeaderHistory historyToggle={this.historyToggle} /> : null}
-                        {this.state.entitiesToolbar ? <EntryHeaderEntities entitiesToggle={this.entitiesToggle} /> : null}
-                        {this.state.permissionsToolbar ? <EntryHeaderPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
-                        {this.state.entryToolbar ? <EntryEditor type='Event' id={id} entryToggle={this.entryToggle} notificationToggle={this.notificationToggle}/> : null}
-                        {this.state.notification ? <Crouton id={this.state.notificationId} message={this.state.notificationMessage} type={this.state.notificationType} onDismiss={this.state.notificationOnDismiss} /> : null}
-                    <div id="move_entry_toolbar" className="toolbar" style={{display:'none'}}>
-                        <img src="/images/close_toolbar.png" className="close_toolbar" onclick="close_toolbar(this)" />
-                        <center><b>Select new destination for entry <span id="entryToMove">###</span>:</b>
-                            <select style={{width: 400}} onchange="checkValidDestinationEvent()" id="destinationPicker" />
-                            <input type="button" className="btn" disabled defaultValue="Move Entry" id="move_entry_button" onclick="moveEntryConfirmed()" />
-                        </center>
+        };
+        readwritepermissionsarr.push(readpermissionsarr);
+        readwritepermissionsarr.push(writepermissionsarr);
+        return readwritepermissionsarr;
+    },
+    permissionsToggle: function() {
+        if (this.state.permissionsToolbar == false) {
+            this.setState({permissionsToolbar:true});
+        } else {
+            this.setState({permissionsToolbar:false});
+        }
+    },
+    entitiesToggle: function() {
+        if (this.state.entitiesToolbar == false) {
+            this.setState({entitiesToolbar:true});
+        } else {
+            this.setState({entitiesToolbar:false});
+        }
+    },
+    titleCase: function(string) {
+        var newstring = string.charAt(0).toUpperCase() + string.slice(1)
+        return (
+            newstring
+        )
+    },
+    render: function() {
+        var headerData = this.state.headerData;        
+        var permissions = this.permissionsfunc(headerData); //pos 0 is read and pos 1 is write
+        var viewedby = this.viewedbyfunc(headerData);
+        var type = this.props.type;
+        var subjectType = this.titleCase(this.props.type);
+        var id = this.props.id;
+        return (
+            <AutoAffix>
+                <div id="NewEventInfo" className="entry-header-info-null">
+                    <div className='details-table' style={{display: 'flex'}}>
+                        <div>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} />: null}</div>
+                        <div style={{flexGrow:1, marginRight: 'auto'}}><h2>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id}/>: null}</h2></div>
                     </div>
-                    <div id="checklist_toolbar" className="toolbar" style={{display:'none'}}>
-                        <img src="/images/close_toolbar.png" className="close_toolbar" onclick="close_toolbar(this)" />
-                        <center><b>Select checklist to add:</b>
-                            <select id="checklist_toolbar_options" onchange="checklist_selection_changed()" />
-                            <input type="button" className="btn" id="add_checklist_button" disabled defaultValue="Add Checklist" onclick="confirm_add_checklist()" />
-                        </center>
+                    <div className='details-table' style={{width: '50%', margin: '0 auto'}}>
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <th>Owner</th>
+                                    <td><span className="editable"><button id='event_owner' style={{lineHeight: '12pt', fontSize: 'inherit'}} className="btn btn-mini">{this.state.showEventData ? <EntryDataOwner data={this.state.headerData.owner} />: null}</button></span></td>
+                                    <th>Tags</th>
+                                    <td><span className="editable"><button id='event_tag' style={{lineHeight: '12pt', fontSize: 'inherit'}} className="btn btn-mini">{this.state.showEventData ? <EntryDataTag data='Tag Placeholder' /> : null}</button></span></td>
+                                </tr>
+                                <tr>
+                                    <th>Updated</th>
+                                    <td><span className="" id='event_updated' style={{lineHeight: '12pt', fontSize: 'inherit'}} className="btn btn-mini">{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
+                                    <th>Source</th>
+                                    <td><span className="editable">{this.state.showSource ? <SourceData data={this.state.sourceData} /> : null }</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
+                    <EntryHeaderOptions toggleEventDisplay={this.props.toggleEventDisplay} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} />
+                    {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
+                    {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
+                    {this.state.permissionsToolbar ? <EntryHeaderPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
+                    {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null} 
                 </div>
-                </AutoAffix>                
-        </div>
-        );
-    } 
+            </AutoAffix>
+        )
+    }
 });
 
+var EntryDataUpdated = React.createClass({
+    render: function() {
+        data = this.props.data;
+        return (
+            <div><ReactTime value={data * 1000} format="MM/DD/YYY hh:mm:ss a" /></div>
+        )
+    }
+});
+
+var EntryDataStatus = React.createClass({
+    render: function() {
+        data = this.props.data;
+        var buttonStyle = ''
+        if (data == 'open') {
+            buttonStyle = 'danger'; 
+        } else if (data == 'closed') {
+            buttonStyle = 'success';
+        } else if (data == 'promoted') {
+            buttonStyle = 'warning'
+        };
+        return (
+            <Button bsStyle={buttonStyle} id="event_status" onclick="event_status_toggle()" style={{lineHeight: '12pt', fontSize: 'inherit', marginTop: '17px', width: '200px', marginLeft: 'auto'}}>{data}</Button>
+        )
+    }
+});
+
+var EntryDataSubject = React.createClass({
+    render: function() {
+        id = this.props.id;
+        type = this.props.type;
+        data = this.props.data;
+        return (
+            <div>{type} {id}: {data}</div>
+        )
+    }
+});
+
+var EntryDataOwner = React.createClass({
+    render: function() {
+        data = this.props.data;
+        return (
+            <div>{data}</div>
+        )
+    }
+});
+
+var EntryDataTag = React.createClass({
+    render: function() {
+        data = this.props.data;
+        return (
+            <div>{data}</div>
+        )
+    }
+});
+var SourceData = React.createClass({
+    render: function() {
+        var rows = [];
+        data = this.props.data;
+        for (var prop in data) {
+            rows.push(<SourceDataIterator data={data[prop]} />);
+        }
+        return (
+            <div>{rows}</div>
+        )
+    }
+});
+
+var SourceDataIterator = React.createClass({
+    render: function() {
+        data = this.props.data;
+        return (
+            <button id="event_source" style={{lineHeight: '12pt', fontSize: 'inherit'}} className="btn btn-mini">{data.value}</button>
+        )
+    }
+});
 module.exports = EntryHeader;
