@@ -55,18 +55,36 @@ sub create_from_api {
 
     $log->debug("Creating entry with: ", { filter=>\&Dumper, value => $json});
 
+    $self->look_for_img($json);
+
     my $entry_obj   = $entry_collection->create($json);
 
     my $linkcol = $mongo->collection('Link');
-    my $linkobj = $linkcol->add_link({
-        item_type   => "entry",
-        item_id     => $entry_obj->id,
-        when        => $env->now(),
-        target_id   => $target_id,
-        target_type    => $target_type,
+    my $linkobj = $linkcol->create_bidi_link({
+        type   => "entry",
+        id     => $entry_obj->id,
+    },{
+        id      => $target_id,
+        type    => $target_type,
     });
 
     return $entry_obj;
+
+}
+
+sub look_for_img {
+    my $self    = shift;
+    my $json    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    # this function looks for img tags within the post
+    # if it finds them, then it grabs the img from remote
+    # or from data: base64 attribute, creates a local file
+    # and creates a file reference
+
+    # on second thought, this could be slow, so lets move it
+    # to a queue started plugin like EntityExtractor
 
 }
 

@@ -1,7 +1,8 @@
 #!/usr/bin/env perl
 
 $ENV{'scot_mode'}   = "testing";
-system("../../bin/database/reset.js");
+print "Resetting test db...\n";
+system("mongo scot-testing <../../bin/database/reset.js 2>&1 > /dev/null");
 
 use TAP::Harness;
 my %args = (
