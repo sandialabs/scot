@@ -42,6 +42,14 @@ var EntryHeader = React.createClass({
         };
         return viewedbyarr;
     },
+    addSource: function() {
+        console.log('Add functionality for Add source onClick event once links to are created in DB');
+        alert('Add functionality for Add source onClick event once links to are created in DB');
+    },
+    addTag: function() {
+        console.log('Add functionality for Add tag onClick event once links to are created in DB');
+        alert('Add functionality for Add tag onClick event once links to are created in DB');
+    },
     entryToggle: function() {
         if (this.state.entryToolbar == false) {
             this.setState({entryToolbar:true})
@@ -124,13 +132,13 @@ var EntryHeader = React.createClass({
                                     <th>Owner</th>
                                     <td><span><Button id='event_owner' onClick={this.ownerToggle}>{this.state.showEventData ? <EntryDataOwner data={this.state.headerData.owner} />: null}</Button></span></td>
                                     <th>Tags</th>
-                                    <td><span className='editable'><Button id='event_tag'>{this.state.showEventData ? <EntryDataTag data='Tag Placeholder' /> : null}</Button></span></td>
+                                    <td><span className='editable'>{this.state.showEventData ? <EntryDataTag data='Tag Placeholder' /> : null}<Button bsStyle={'success'} onClick={this.addTag}><span onClick={this.addTag} className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button></span></td>
                                 </tr>
                                 <tr>
                                     <th>Updated</th>
                                     <td><span id='event_updated' style={{lineHeight: '12pt', fontSize: 'inherit',paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                     <th>Source</th>
-                                    <td><span className="editable">{this.state.showSource ? <SourceData data={this.state.sourceData} /> : null }</span></td>
+                                    <td><span className="editable">{this.state.showSource ? <SourceData data={this.state.sourceData} /> : null }<Button bsStyle={'success'} onClick={this.addSource}><span onClick={this.addSource} className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button></span></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -213,12 +221,38 @@ var EntryDataOwner = React.createClass({
 
 var EntryDataTag = React.createClass({
     render: function() {
+        var rows = [];
         data = this.props.data;
+        for (var prop in data) {
+            //Remove comment below
+            //rows.push(<TagDataIterator data={data[prop]} />);
+        }
+        //Delete the below line;
+        rows.push(<TagDataIterator data={data} />);
+        //Change data below to rows;
         return (
-            <div>{data}</div>
+            <div>{rows}</div>
         )
     }
 });
+
+var TagDataIterator = React.createClass({
+    getInitialState: function() {
+        return {}
+    },
+    tagDelete: function() {
+        var json = {}
+        console.log('Add delete onClick event once links are created in DB');
+        alert('Add delete onClick event once links are created in DB');
+    },
+    render: function() {
+        data = this.props.data;
+        return (
+            <Button id="event_tag" onClick={this.tagDelete}><span className="glyphicon glyphicon-remove-circle" ariaHidden="true"></span> {data}</Button>
+        )
+    }
+});
+
 var SourceData = React.createClass({
     render: function() {
         var rows = [];
@@ -233,10 +267,18 @@ var SourceData = React.createClass({
 });
 
 var SourceDataIterator = React.createClass({
+    getInitialState: function() {
+        return {}
+    },
+    sourceDelete: function() {
+        var json = {}
+        console.log('Add delete onClick event once links are created in DB');
+        alert('Add delete onClick event once links are created in DB');
+    },
     render: function() {
         data = this.props.data;
         return (
-            <button id="event_source" style={{lineHeight: '12pt', fontSize: 'inherit'}} className="btn btn-mini">{data.value}</button>
+            <Button id="event_source" onClick={this.sourceDelete}><span className="glyphicon glyphicon-remove-circle" ariaHidden="true"></span> {data.value}</Button>
         )
     }
 });
