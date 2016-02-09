@@ -18,6 +18,8 @@ var EntryHeader = React.createClass({
             headerData:'',
             showSource:false,
             sourceData:'',
+            tagData:'',
+            showTag:false,
             permissionsToolbar:false,
             entitiesToolbar:false,
             historyToolbar:false,
@@ -34,6 +36,22 @@ var EntryHeader = React.createClass({
             var eventResult = result;
             this.setState({showEventData:true, headerData:eventResult})
         }.bind(this));
+        this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
+            var tagResult = result.records;
+            this.setState({showTag:true, tagData:tagResult});
+        }.bind(this));
+        console.log('Ran componentDidMount');    
+    },
+    update: function() {
+        this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
+            var sourceResult = result.records;
+            this.setState({showSource:true, sourceData:sourceResult})
+        }.bind(this));
+        this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
+            var eventResult = result;
+            this.setState({showEventData:true, headerData:eventResult})
+        }.bind(this));
+        console.log('Ran update')  
     },
     viewedbyfunc: function(headerData) {
         var viewedbyarr = [];
@@ -102,7 +120,8 @@ var EntryHeader = React.createClass({
         if (this.state.ownerToolbar == false) {
             this.setState({ownerToolbar:true});
         } else {
-            this.setState({ownerToolbar:false});
+            this.setState({ownerToolbar:false});  
+            this.update();        
         }
     },
     titleCase: function(string) {
@@ -132,13 +151,13 @@ var EntryHeader = React.createClass({
                                     <th>Owner</th>
                                     <td><span><Button id='event_owner' onClick={this.ownerToggle}>{this.state.showEventData ? <EntryDataOwner data={this.state.headerData.owner} />: null}</Button></span></td>
                                     <th>Tags</th>
-                                    <td><span className='editable'>{this.state.showEventData ? <EntryDataTag data='Tag Placeholder' /> : null}<Button bsStyle={'success'} onClick={this.addTag}><span onClick={this.addTag} className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button></span></td>
+                                    <td><span className='editable'>{this.state.showTag ? <EntryDataTag data={this.state.tagData} id={id} type={type} /> : null}<Button bsStyle={'success'} onClick={this.addTag}><span onClick={this.addTag} className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button></span></td>
                                 </tr>
                                 <tr>
                                     <th>Updated</th>
                                     <td><span id='event_updated' style={{lineHeight: '12pt', fontSize: 'inherit',paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                     <th>Source</th>
-                                    <td><span className="editable">{this.state.showSource ? <SourceData data={this.state.sourceData} /> : null }<Button bsStyle={'success'} onClick={this.addSource}><span onClick={this.addSource} className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button></span></td>
+                                    <td><span className="editable">{this.state.showSource ? <SourceData data={this.state.sourceData}id={id} type={type} /> : null }<Button bsStyle={'success'} onClick={this.addSource}><span onClick={this.addSource} className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button></span></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -222,14 +241,12 @@ var EntryDataOwner = React.createClass({
 var EntryDataTag = React.createClass({
     render: function() {
         var rows = [];
-        data = this.props.data;
+        var id = this.props.id;
+        var type = this.props.type;
+        var data = this.props.data;
         for (var prop in data) {
-            //Remove comment below
-            //rows.push(<TagDataIterator data={data[prop]} />);
-        }
-        //Delete the below line;
-        rows.push(<TagDataIterator data={data} />);
-        //Change data below to rows;
+            rows.push(<TagDataIterator data={data[prop]} id={id} type={type} />);
+        } 
         return (
             <div>{rows}</div>
         )
@@ -238,17 +255,26 @@ var EntryDataTag = React.createClass({
 
 var TagDataIterator = React.createClass({
     getInitialState: function() {
-        return {}
+        return {tag:true}
     },
     tagDelete: function() {
-        var json = {}
-        console.log('Add delete onClick event once links are created in DB');
-        alert('Add delete onClick event once links are created in DB');
-    },
+        $.ajax({
+            type: 'delete',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag/' + this.props.data.id,
+            //data: json,
+            success: function(data) {
+                console.log('deleted tag success: ' + data);
+            },
+            error: function() {
+                alert('Failed to delete the tag - contact administrator');
+            }.bind(this)
+        });
+        this.setState({tag:false});
+        },
     render: function() {
         data = this.props.data;
         return (
-            <Button id="event_tag" onClick={this.tagDelete}><span className="glyphicon glyphicon-remove-circle" ariaHidden="true"></span> {data}</Button>
+            <Button id="event_tag" onClick={this.tagDelete}><span className="glyphicon glyphicon-remove-circle" ariaHidden="true"></span> {data.value}</Button>
         )
     }
 });
@@ -256,9 +282,11 @@ var TagDataIterator = React.createClass({
 var SourceData = React.createClass({
     render: function() {
         var rows = [];
-        data = this.props.data;
+        var id = this.props.id;
+        var type = this.props.type;
+        var data = this.props.data;
         for (var prop in data) {
-            rows.push(<SourceDataIterator data={data[prop]} />);
+            rows.push(<SourceDataIterator data={data[prop]} id={id} type={type} />);
         }
         return (
             <div>{rows}</div>
@@ -268,13 +296,22 @@ var SourceData = React.createClass({
 
 var SourceDataIterator = React.createClass({
     getInitialState: function() {
-        return {}
+        return {source:true}
     },
     sourceDelete: function() {
-        var json = {}
-        console.log('Add delete onClick event once links are created in DB');
-        alert('Add delete onClick event once links are created in DB');
-    },
+        $.ajax({
+            type: 'delete',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/source/' + this.props.data.id,
+            //data: json,
+            success: function(data) {
+                console.log('deleted source success: ' + data);
+            },
+            error: function() {
+                alert('Failed to delete the source - contact administrator');
+            }.bind(this)
+        });
+        this.setState({source:false});
+    },     
     render: function() {
         data = this.props.data;
         return (
@@ -282,4 +319,5 @@ var SourceDataIterator = React.createClass({
         )
     }
 });
+
 module.exports = EntryHeader;
