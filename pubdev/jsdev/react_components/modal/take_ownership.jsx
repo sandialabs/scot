@@ -27,7 +27,7 @@ var TakeOwnership = React.createClass({
         var json = {'owner':this.state.whoami}
         $.ajax({
             type: 'put',
-            url: 'scot/api/v2/event/' + this.props.id,
+            url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id,
             data: json,
             success: function(data) {
                 console.log('success: ' + data);
