@@ -246,10 +246,57 @@ var EntryDataSubject = React.createClass({
     }
 });
 
-var EntryDataTag = React.createClass({
+var EntryDataTag = React.createClass({ 
+    getInitialState: function() {
+        return {tagEntry:false, newTag:''}
+    },
+    handleChange: function(event) {
+        this.setState({newTag:event.target.value})
+        var potentialTags = 'ajax return here';
+        /*this.serverRequest = $.get('/scot/api/v2/tag', function (result) {
+            var result = result.records;
+            console.log(result);
+        }.bind(this));*/
+    },
     addTag: function() {
-        console.log('Add functionality for Add tag onClick event once links to are created in DB');
-        alert('Add functionality for Add tag onClick event once links to are created in DB');
+        //Look into making this state and doing this code in getInitialState;
+        if (this.state.newTag != '') {
+            var allTags = [];
+            var newTagArr = [];
+            var data = this.props.data;
+            for (var prop in data) {
+                var obj = data[prop];
+                newTagArr.push(obj.value);
+            }
+            newTagArr.push(this.state.newTag);
+            console.log(newTagArr);
+            var json = {'tag':newTagArr} 
+            $.ajax({
+                type: 'put',
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
+                data: json,
+                success: function(data) {
+                    console.log('success: tag added');
+                    this.toggleTagEntry();
+                    this.props.updated();
+                    this.setState({newTag:''});
+                }.bind(this),
+                error: function() {
+                    alert('Failed to add tag - contact administrator');
+                    this.toggleTagEntry();
+                    this.setState({newTag:''});
+                }.bind(this)
+            });}
+        else { 
+            alert('Tag can not be empty');
+        };
+    },
+    toggleTagEntry: function () {
+        if (this.state.tagEntry == false) {
+            this.setState({tagEntry:true})
+        } else if (this.state.tagEntry == true) {
+            this.setState({tagEntry:false})
+        };
     },
     render: function() {
         var rows = [];
@@ -262,7 +309,8 @@ var EntryDataTag = React.createClass({
         return (
             <div>
                 {rows}
-                <Button bsStyle={'success'} onClick={this.addTag}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
+                <Button bsStyle={'success'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
+                {this.state.tagEntry ? <div style={{color:'black'}}><DebounceInput debounceTimeout={300} type='text' value={this.state.newTag} onChange={this.handleChange} /> <Button onClick={this.addTag}>Add</Button></div>: null} 
             </div>
         )
     }
@@ -275,8 +323,7 @@ var TagDataIterator = React.createClass({
     tagDelete: function() {
         $.ajax({
             type: 'delete',
-            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag/' + this.props.data.id,
-            //data: json,
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag/' + this.props.data.id, 
             success: function(data) {
                 console.log('deleted tag success: ' + data);
                 this.props.updated();
@@ -296,9 +343,55 @@ var TagDataIterator = React.createClass({
 });
 
 var SourceData = React.createClass({
+    getInitialState: function() {
+        return {sourceEntry:false, newSource:''}
+    },
+    handleChange: function(event) {
+        this.setState({newSource:event.target.value})
+        var potentialSource = 'ajax return here';
+        /*this.serverRequest = $.get('/scot/api/v2/tag', function (result) {
+            var result = result.records;
+            console.log(result);
+        }.bind(this));*/
+    },
     addSource: function() {
-        console.log('Add functionality for Add source onClick event once links to are created in DB');
-        alert('Add functionality for Add source onClick event once links to are created in DB');
+        //Look into making this state and doing this code in getInitialState;
+        if (this.state.newSource != '') {
+            var newSourceArr = [];
+            var data = this.props.data;
+            for (var prop in data) {
+                var obj = data[prop];
+                newSourceArr.push(obj.value);
+            }
+            newSourceArr.push(this.state.newSource);
+            console.log(newSourceArr);
+            var json = {'source':newSourceArr}
+            $.ajax({
+                type: 'put',
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
+                data: json,
+                success: function(data) {
+                    console.log('success: source added');
+                    this.toggleSOurceEntry();
+                    this.props.updated();
+                    this.setState({newSource:''});
+                }.bind(this),
+                error: function() {
+                    alert('Failed to add source - contact administrator');
+                    this.toggleSourceEntry();
+                    this.setState({newSource:''});
+                }.bind(this)
+            });}
+        else {
+            alert('Tag can not be empty');
+        };
+    },
+    toggleSourceEntry: function () {
+        if (this.state.sourceEntry == false) {
+            this.setState({sourceEntry:true})
+        } else if (this.state.sourceEntry == true) {
+            this.setState({sourceEntry:false})
+        };
     },
     render: function() {
         var rows = [];
@@ -312,6 +405,7 @@ var SourceData = React.createClass({
             <div>
                 {rows}
                 <Button bsStyle={'success'} onClick={this.addSource}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
+                {this.state.sourceEntry ? <div style={{color:'black'}}><DebounceInput debounceTimeout={300} type='text' value={this.state.newSource} onChange={this.handleChange} /> <Button onClick={this.addSource}>Add</Button></div>: null} 
             </div>
         )
     }
