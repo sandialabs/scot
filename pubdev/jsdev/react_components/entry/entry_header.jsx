@@ -11,6 +11,7 @@ var Affix                   = require('react-overlays/lib/Affix');
 var Sticky                  = require('react-sticky');
 var Button                  = require('react-bootstrap/lib/Button');
 var DebounceInput           = require('react-debounce-input');
+var EntryWrapper            = require('./entry_wrapper.jsx');
 var EntryHeader = React.createClass({
     getInitialState: function() {
         return {
@@ -23,8 +24,7 @@ var EntryHeader = React.createClass({
             permissionsToolbar:false,
             entitiesToolbar:false,
             historyToolbar:false,
-            entryToolbar:false,
-            //ownerToolbar:false
+            entryToolbar:false, 
         }
     },
     componentDidMount: function() {
@@ -134,11 +134,11 @@ var EntryHeader = React.createClass({
         var subjectType = this.titleCase(this.props.type);
         var id = this.props.id;
         return (
-                
+            <div>
                 <div id="NewEventInfo" className="entry-header-info-null" style={{zIndex:id}}>
                     <div className='details-table' style={{display: 'flex'}}>
-                        <div>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} id={id} type={type} />: null}</div>
-                        <div style={{flexGrow:1, marginRight: 'auto'}}><h2>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id}/>: null}</h2></div>
+                        <div>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} id={id} type={type} updated={this.updated} />: null}</div>
+                        <div style={{flexGrow:1, marginRight: 'auto'}}><h2>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}</h2></div>
                     </div>
                     <div className='details-table' style={{width: '50%', margin: '0 auto'}}>
                         <table>
@@ -147,13 +147,13 @@ var EntryHeader = React.createClass({
                                     <th>Owner</th>
                                     <td><span>{this.state.showEventData ? <Owner data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
                                     <th>Tags</th>
-                                    <td><span className='editable'>{this.state.showTag ? <EntryDataTag data={this.state.tagData} id={id} type={type} /> : null}<Button bsStyle={'success'} onClick={this.addTag}><span onClick={this.addTag} className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button></span></td>
+                                    <td><span className='editable'>{this.state.showTag ? <EntryDataTag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}<Button bsStyle={'success'} onClick={this.addTag}><span onClick={this.addTag} className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button></span></td>
                                 </tr>
                                 <tr>
                                     <th>Updated</th>
                                     <td><span id='event_updated' style={{lineHeight: '12pt', fontSize: 'inherit',paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                     <th>Source</th>
-                                    <td><span className="editable">{this.state.showSource ? <SourceData data={this.state.sourceData}id={id} type={type} /> : null }<Button bsStyle={'success'} onClick={this.addSource}><span onClick={this.addSource} className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button></span></td>
+                                    <td><span className="editable">{this.state.showSource ? <SourceData data={this.state.sourceData}id={id} type={type} updated={this.updated} /> : null }<Button bsStyle={'success'} onClick={this.addSource}><span onClick={this.addSource} className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button></span></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -164,7 +164,8 @@ var EntryHeader = React.createClass({
                     {this.state.permissionsToolbar ? <EntryHeaderPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
                     {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
                 </div>
-        
+                <EntryWrapper id={id} type={type} />
+            </div>
         )
     }
 });
@@ -173,7 +174,7 @@ var EntryDataUpdated = React.createClass({
     render: function() {
         data = this.props.data;
         return (
-            <div><ReactTime value={data * 1000} format="MM/DD/YYY hh:mm:ss a" /></div>
+            <div><ReactTime value={data * 1000} format="MM/DD/YY hh:mm:ss a" /></div>
         )
     }
 });
@@ -202,7 +203,8 @@ var EntryDataStatus = React.createClass({
             data: json,
             success: function(data) {
                 console.log('success status change to: ' + data);
-            },
+                this.props.updated();
+            }.bind(this),
             error: function() {
                 alert('Failed to change status - contact administrator');
             }.bind(this)
@@ -237,26 +239,17 @@ var EntryDataSubject = React.createClass({
                 data: json,
                 success: function(data) {
                     console.log('success: ' + data);
-                },
+                    this.props.updated();
+                }.bind(this),
                 error: function() { 
                     alert('Failed to make the update to the subject');
                 }.bind(this)
             });
         }
-        console.log('end handle change');
     },
     render: function() {
         return (
             <div>{this.state.type} {this.state.id}: <DebounceInput debounceTimeout={1000} type='text' value={this.state.value} onChange={this.handleChange} /></div>
-        )
-    }
-});
-
-var EntryDataOwner = React.createClass({
-    render: function() {
-        data = this.props.data;
-        return (
-            <div>{data}</div>
         )
     }
 });
@@ -268,7 +261,7 @@ var EntryDataTag = React.createClass({
         var type = this.props.type;
         var data = this.props.data;
         for (var prop in data) {
-            rows.push(<TagDataIterator data={data[prop]} id={id} type={type} />);
+            rows.push(<TagDataIterator data={data[prop]} id={id} type={type} updated={this.props.updated} />);
         } 
         return (
             <div>{rows}</div>
@@ -287,7 +280,8 @@ var TagDataIterator = React.createClass({
             //data: json,
             success: function(data) {
                 console.log('deleted tag success: ' + data);
-            },
+                this.props.updated();
+            }.bind(this),
             error: function() {
                 alert('Failed to delete the tag - contact administrator');
             }.bind(this)
@@ -309,7 +303,7 @@ var SourceData = React.createClass({
         var type = this.props.type;
         var data = this.props.data;
         for (var prop in data) {
-            rows.push(<SourceDataIterator data={data[prop]} id={id} type={type} />);
+            rows.push(<SourceDataIterator data={data[prop]} id={id} type={type} updated={this.props.updated} />);
         }
         return (
             <div>{rows}</div>
@@ -328,7 +322,8 @@ var SourceDataIterator = React.createClass({
             //data: json,
             success: function(data) {
                 console.log('deleted source success: ' + data);
-            },
+                this.props.updated();
+            }.bind(this),
             error: function() {
                 alert('Failed to delete the source - contact administrator');
             }.bind(this)
