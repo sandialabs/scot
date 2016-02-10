@@ -50,7 +50,7 @@ while ( my $link = $cursor->next ) {
         say "Duplicate found.  Orig ".
             $seen{$tt}{$ti}{$it}{$ii}.
             " link $id.  $tt:$ti -> $it:$ii";
-        # $link->remove;
+        $link->remove;
     }
     else {
         $seen{$tt}{$ti}{$it}{$ii} = $id;
