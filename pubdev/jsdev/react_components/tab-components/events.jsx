@@ -2,7 +2,7 @@
 
 var React = require('react')
 var DataGrid = require('../../../node_modules/events-react-datagrid/react-datagrid');
-var Entry = require('../entry/entry_container.jsx')
+var SelectedContainer = require('../entry/selected_container.jsx')
 var SORT_INFO;
 var colsort = "id"
 var valuesort = 1
@@ -101,8 +101,8 @@ module.exports = React.createClass({
     render: function() {
 
 	return (
-	    stage ? React.createElement(Entry, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
-	    this.state.viewevent ? React.createElement(Entry, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
+	    stage ? React.createElement(SelectedContainer, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
+	    this.state.viewevent ? React.createElement(SelectedContainer, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
 	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {onClick: this.exportCSV}, 'Export to CSV') : null,this.state.showevent ? React.createElement('button', {className: 'btn-success', onClick: this.viewEvent}, "View Event(s)") : null,
 	    React.createElement(DataGrid, {
             ref: "dataGrid", 
