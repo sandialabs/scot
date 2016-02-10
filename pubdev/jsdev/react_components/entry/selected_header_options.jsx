@@ -4,7 +4,7 @@ var Button          = require('react-bootstrap/lib/Button.js');
 var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
 var DropdownButton  = require('react-bootstrap/lib/DropdownButton.js');
 
-var EntryHeaderOptions = React.createClass({
+var SelectedHeaderOptions = React.createClass({
     toggleFlair: function() { 
         if (typeof globalFlairState === 'undefined') {
             globalFlairState = true;
@@ -74,4 +74,4 @@ var EntryHeaderOptions = React.createClass({
     }
 });
 
-module.exports = EntryHeaderOptions;
+module.exports = SelectedHeaderOptions;
