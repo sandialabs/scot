@@ -12,10 +12,12 @@ const customStyles = {
     }
 }
 
-var TakeOwnership = React.createClass({
+var Owner = React.createClass({
     getInitialState: function() {
         return {
+            currentOwner:this.props.data,
             whoami:'', 
+            ownerToolbar: false,
         }
     },
     componentDidMount: function() {
@@ -31,32 +33,42 @@ var TakeOwnership = React.createClass({
             data: json,
             success: function(data) {
                 console.log('success: ' + data);
-            },
+                this.setState({currentOwner:this.state.whoami});
+                this.props.updated();
+                this.ownerToggle();
+            }.bind(this),
             error: function() {
                 alert('Failed to make you owner - contact administrator');
             }.bind(this)
         }); 
-        this.props.ownerToggle();
+    },
+    ownerToggle: function() {
+        if (this.state.ownerToolbar == false) {
+            this.setState({ownerToolbar:true});
+        } else {
+            this.setState({ownerToolbar:false});
+        } 
     },
     render: function() { 
         return (
             <div>
-                <Modal isOpen={true} onRequestClose={this.props.ownerToggle} style={customStyles}>
+                <Button id='event_owner' onClick={this.ownerToggle}>{this.state.currentOwner}</Button>
+                {this.state.ownerToolbar ? <Modal isOpen={true} onRequestClose={this.ownerToggle} style={customStyles}>
                     <div className='modal-header'>
-                        <img src='images/close_toolbar.png' className='close_toolbar' onClick={this.props.ownerToggle} />
+                        <img src='images/close_toolbar.png' className='close_toolbar' onClick={this.ownerToggle} />
                         <h3 id='myModalLabel'>Take Ownership</h3>
                     </div>
                     <div className='modal-body'>
                         Are you sure you want to take ownership of this event?
                     </div>
                     <div className='modal-footer'>
-                        <Button id='cancel-ownership' onClick={this.props.ownerToggle}>Cancel</Button>
+                        <Button id='cancel-ownership' onClick={this.ownerToggle}>Cancel</Button>
                         <Button bsStyle='info' id='take-ownership' onClick={this.toggle}>Take Ownership</Button>     
                     </div>
-                </Modal>
+                </Modal> : null }
             </div>
         )
     }
 });
 
-module.exports = TakeOwnership;
+module.exports = Owner;
