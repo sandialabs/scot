@@ -1,8 +1,7 @@
 var React = require('react');
-var EntryHeader = require('./entry_header.jsx');
-var EntryWrapper = require('./entry_wrapper.jsx');
+var SelectedHeader = require('./selected_header.jsx');
 
-var EntryContainer = React.createClass({
+var SelectedContainer = React.createClass({
     getInitialState: function() {
         return {
             type:this.props.type,
@@ -12,7 +11,7 @@ var EntryContainer = React.createClass({
     render: function() {
         var datarows = [];
         for (i=0; i < this.state.ids.length; i++) { 
-            datarows.push(<EntryHeader key={this.state.ids[i]} id={this.state.ids[i]} type={this.state.type} toggleEventDisplay={this.props.viewEvent}/>); 
+            datarows.push(<SelectedHeader key={this.state.ids[i]} id={this.state.ids[i]} type={this.state.type} toggleEventDisplay={this.props.viewEvent}/>); 
         }
         return (
             <div className="entry-container"> 
@@ -22,4 +21,4 @@ var EntryContainer = React.createClass({
     }
 });
 
-module.exports = EntryContainer;
+module.exports = SelectedContainer;
