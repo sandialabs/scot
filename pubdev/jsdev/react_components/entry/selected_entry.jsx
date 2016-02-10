@@ -4,7 +4,7 @@ var SplitButton     = require('react-bootstrap/lib/SplitButton.js');
 var DropdownButton  = require('react-bootstrap/lib/DropdownButton.js');
 var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
 var Button          = require('react-bootstrap/lib/Button.js');
-var EntryWrapper = React.createClass({
+var SelectedEntry = React.createClass({
     getInitialState: function() {
         return {
             showEntryData:false,
@@ -112,4 +112,4 @@ var EntryData = React.createClass({
     }
 });
 
-module.exports = EntryWrapper;
+module.exports = SelectedEntry;
