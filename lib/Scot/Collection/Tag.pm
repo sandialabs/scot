@@ -68,9 +68,13 @@ sub add_tag_to {
     my $tag     = shift;
 
     my $env = $self->env;
+    my $log = $env->log;
+
+    $log->debug("Add_tag_to $thing:$id => $tag");
 
     my $tag_obj         = $self->find_one({ value => $tag });
     unless ( defined $tag_obj ) {
+        $log->debug("created new tag $tag");
         $tag_obj    = $self->create({
             value    => $tag,
         });
