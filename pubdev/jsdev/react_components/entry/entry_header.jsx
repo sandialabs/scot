@@ -2,7 +2,7 @@ var React                   = require('react');
 var ReactTime               = require('react-time');
 var EntryHeaderOptions      = require('./entry_header_options.jsx');
 var AddEntryModal           = require('../modal/add_entry.jsx');
-var TakeOwnership           = require('../modal/take_ownership.jsx');
+var Owner                   = require('../modal/owner.jsx');
 var Entities                = require('../modal/entities.jsx');
 var History                 = require('../modal/history.jsx');
 var EntryHeaderPermission   = require('./entry_header_permission.jsx');
@@ -24,7 +24,7 @@ var EntryHeader = React.createClass({
             entitiesToolbar:false,
             historyToolbar:false,
             entryToolbar:false,
-            ownerToolbar:false
+            //ownerToolbar:false
         }
     },
     componentDidMount: function() {
@@ -42,7 +42,7 @@ var EntryHeader = React.createClass({
         }.bind(this));
         console.log('Ran componentDidMount');    
     },
-    update: function() {
+    updated: function() {
         this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
             var sourceResult = result.records;
             this.setState({showSource:true, sourceData:sourceResult})
@@ -50,6 +50,10 @@ var EntryHeader = React.createClass({
         this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
             var eventResult = result;
             this.setState({showEventData:true, headerData:eventResult})
+        }.bind(this));
+        this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
+            var tagResult = result.records;
+            this.setState({showTag:true, tagData:tagResult});
         }.bind(this));
         console.log('Ran update')  
     },
@@ -116,14 +120,6 @@ var EntryHeader = React.createClass({
             this.setState({entitiesToolbar:false});
         }
     },
-    ownerToggle: function() {
-        if (this.state.ownerToolbar == false) {
-            this.setState({ownerToolbar:true});
-        } else {
-            this.setState({ownerToolbar:false});  
-            this.update();        
-        }
-    },
     titleCase: function(string) {
         var newstring = string.charAt(0).toUpperCase() + string.slice(1)
         return (
@@ -141,7 +137,7 @@ var EntryHeader = React.createClass({
                 
                 <div id="NewEventInfo" className="entry-header-info-null" style={{zIndex:id}}>
                     <div className='details-table' style={{display: 'flex'}}>
-                        <div>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} />: null}</div>
+                        <div>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} id={id} type={type} />: null}</div>
                         <div style={{flexGrow:1, marginRight: 'auto'}}><h2>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id}/>: null}</h2></div>
                     </div>
                     <div className='details-table' style={{width: '50%', margin: '0 auto'}}>
@@ -149,7 +145,7 @@ var EntryHeader = React.createClass({
                             <tbody>
                                 <tr>
                                     <th>Owner</th>
-                                    <td><span><Button id='event_owner' onClick={this.ownerToggle}>{this.state.showEventData ? <EntryDataOwner data={this.state.headerData.owner} />: null}</Button></span></td>
+                                    <td><span>{this.state.showEventData ? <Owner data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
                                     <th>Tags</th>
                                     <td><span className='editable'>{this.state.showTag ? <EntryDataTag data={this.state.tagData} id={id} type={type} /> : null}<Button bsStyle={'success'} onClick={this.addTag}><span onClick={this.addTag} className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button></span></td>
                                 </tr>
@@ -166,8 +162,7 @@ var EntryHeader = React.createClass({
                     {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                     {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
                     {this.state.permissionsToolbar ? <EntryHeaderPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
-                    {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null} 
-                    {this.state.ownerToolbar ? <TakeOwnership type={type} id={id} ownerToggle={this.ownerToggle} /> : null}
+                    {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
                 </div>
         
         )
@@ -184,18 +179,46 @@ var EntryDataUpdated = React.createClass({
 });
 
 var EntryDataStatus = React.createClass({
-    render: function() {
-        data = this.props.data;
+    getInitialState: function() {
+        return {
+            buttonStatus:this.props.data
+        }
+    },
+    eventStatusToggle: function () {
+        if (this.state.buttonStatus == 'open') {
+            this.setState({buttonStatus:'closed'});
+            this.statusAjax('closed');
+        } else if (this.state.buttonStatus == 'closed') {
+            this.setState({buttonStatus:'open'});
+            this.statusAjax('open');
+        }
+    },
+    statusAjax: function(newStatus) {
+        console.log(newStatus);
+        var json = {'status':newStatus};
+        $.ajax({
+            type: 'put',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
+            data: json,
+            success: function(data) {
+                console.log('success status change to: ' + data);
+            },
+            error: function() {
+                alert('Failed to change status - contact administrator');
+            }.bind(this)
+        });
+    },
+    render: function() { 
         var buttonStyle = ''
-        if (data == 'open') {
+        if (this.state.buttonStatus == 'open') {
             buttonStyle = 'danger'; 
-        } else if (data == 'closed') {
+        } else if (this.state.buttonStatus == 'closed') {
             buttonStyle = 'success';
-        } else if (data == 'promoted') {
+        } else if (this.state.buttonStatus == 'promoted') {
             buttonStyle = 'warning'
         };
         return (
-            <Button bsStyle={buttonStyle} id="event_status" onclick="event_status_toggle()" style={{lineHeight: '12pt', fontSize: 'inherit', marginTop: '17px', width: '200px', marginLeft: 'auto'}}>{data}</Button>
+            <Button bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: 'inherit', marginTop: '17px', width: '200px', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button>
         )
     }
 });
