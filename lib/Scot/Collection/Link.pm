@@ -92,18 +92,19 @@ sub create_bidi_link {
     my $env     = $self->env;
     my $log     = $env->log;
     my $now     = $env->now;
+    my $when    = shift // $now;
 
     my $link_ab = {
         item_type   => $a_href->{type},
         item_id     => $a_href->{id},
-        when        => $now,
+        when        => $when,
         target_type => $b_href->{type},
         target_id   => $b_href->{id},
     };
     my $link_ba   = {
         item_type   => $b_href->{type},
         item_id     => $b_href->{id},
-        when        => $now,
+        when        => $when,
         target_type => $a_href->{type},
         target_id   => $a_href->{id},
     };
