@@ -146,4 +146,50 @@ sub remove_bidi_links {
     }
 }
 
+sub find_any {
+    my $self    = shift;
+    my $a       = shift; # href = { id => x, type => y }
+    my $b       = shift; # href = { id => x, type => y }
+
+    my $match   = {
+        '$or'   => [
+            { target_type   => $a->{type},
+              target_id     => $a->{id},
+              item_type     => $b->{type},
+              item_id       => $b->{id},
+            },
+            { target_type   => $b->{type},
+              target_id     => $b->{id},
+              item_type     => $a->{type},
+              item_id       => $a->{id},
+            },
+        ]
+    };
+    my $cursor  = $self->find($match);
+    return $cursor;
+}
+
+sub find_any_one {
+    my $self    = shift;
+    my $a       = shift; # href = { id => x, type => y }
+    my $b       = shift; # href = { id => x, type => y }
+
+    my $match   = {
+        '$or'   => [
+            { target_type   => $a->{type},
+              target_id     => $a->{id},
+              item_type     => $b->{type},
+              item_id       => $b->{id},
+            },
+            { target_type   => $b->{type},
+              target_id     => $b->{id},
+              item_type     => $a->{type},
+              item_id       => $a->{id},
+            },
+        ]
+    };
+    my $object  = $self->find_one($match);
+    return $object;
+}
+
 1;
