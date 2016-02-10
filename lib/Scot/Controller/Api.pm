@@ -1832,7 +1832,10 @@ sub autocomplete {
     }
 
     my @values  = ();
-    my $cursor  = $collection->find( $key => /$search/ );
+    my $match   = { $key => qr/$search/i };
+    $log->debug("Matching: ",{filter=>\&Dumper,value=>$match});
+
+    my $cursor  = $collection->find($match);
 
     unless ($cursor) {
         $log->error("no matching autocomplete");
