@@ -5,7 +5,7 @@ var AddEntryModal           = require('../modal/add_entry.jsx');
 var Owner                   = require('../modal/owner.jsx');
 var Entities                = require('../modal/entities.jsx');
 var History                 = require('../modal/history.jsx');
-var EntryHeaderPermission   = require('./entry_header_permission.jsx');
+var SelectedPermission      = require('./selected_permission.jsx');
 var AutoAffix               = require('react-overlays/lib/AutoAffix');
 var Affix                   = require('react-overlays/lib/Affix');
 var Sticky                  = require('react-sticky');
@@ -153,7 +153,7 @@ var SelectedHeader = React.createClass({
                     <SelectedHeaderOptions toggleEventDisplay={this.props.toggleEventDisplay} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} />
                     {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                     {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
-                    {this.state.permissionsToolbar ? <EntryHeaderPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
+                    {this.state.permissionsToolbar ? <SelectedPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
                     {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
                 </div>
                 <SelectedEntry id={id} type={type} />
