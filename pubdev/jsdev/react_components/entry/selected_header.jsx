@@ -1,17 +1,18 @@
 var React                   = require('react');
 var ReactTime               = require('react-time');
-var EntryHeaderOptions      = require('./entry_header_options.jsx');
+var SelectedHeaderOptions   = require('./selected_header_options.jsx');
 var AddEntryModal           = require('../modal/add_entry.jsx');
-var TakeOwnership           = require('../modal/take_ownership.jsx');
+var Owner                   = require('../modal/owner.jsx');
 var Entities                = require('../modal/entities.jsx');
 var History                 = require('../modal/history.jsx');
-var EntryHeaderPermission   = require('./entry_header_permission.jsx');
+var SelectedPermission      = require('./selected_permission.jsx');
 var AutoAffix               = require('react-overlays/lib/AutoAffix');
 var Affix                   = require('react-overlays/lib/Affix');
 var Sticky                  = require('react-sticky');
 var Button                  = require('react-bootstrap/lib/Button');
 var DebounceInput           = require('react-debounce-input');
-var EntryHeader = React.createClass({
+var SelectedEntry           = require('./selected_entry.jsx');
+var SelectedHeader = React.createClass({
     getInitialState: function() {
         return {
             showEventData:false,
@@ -23,8 +24,7 @@ var EntryHeader = React.createClass({
             permissionsToolbar:false,
             entitiesToolbar:false,
             historyToolbar:false,
-            entryToolbar:false,
-            ownerToolbar:false
+            entryToolbar:false, 
         }
     },
     componentDidMount: function() {
@@ -42,7 +42,7 @@ var EntryHeader = React.createClass({
         }.bind(this));
         console.log('Ran componentDidMount');    
     },
-    update: function() {
+    updated: function() {
         this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
             var sourceResult = result.records;
             this.setState({showSource:true, sourceData:sourceResult})
@@ -50,6 +50,10 @@ var EntryHeader = React.createClass({
         this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
             var eventResult = result;
             this.setState({showEventData:true, headerData:eventResult})
+        }.bind(this));
+        this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
+            var tagResult = result.records;
+            this.setState({showTag:true, tagData:tagResult});
         }.bind(this));
         console.log('Ran update')  
     },
@@ -59,14 +63,6 @@ var EntryHeader = React.createClass({
             viewedbyarr.push(prop);
         };
         return viewedbyarr;
-    },
-    addSource: function() {
-        console.log('Add functionality for Add source onClick event once links to are created in DB');
-        alert('Add functionality for Add source onClick event once links to are created in DB');
-    },
-    addTag: function() {
-        console.log('Add functionality for Add tag onClick event once links to are created in DB');
-        alert('Add functionality for Add tag onClick event once links to are created in DB');
     },
     entryToggle: function() {
         if (this.state.entryToolbar == false) {
@@ -116,14 +112,6 @@ var EntryHeader = React.createClass({
             this.setState({entitiesToolbar:false});
         }
     },
-    ownerToggle: function() {
-        if (this.state.ownerToolbar == false) {
-            this.setState({ownerToolbar:true});
-        } else {
-            this.setState({ownerToolbar:false});  
-            this.update();        
-        }
-    },
     titleCase: function(string) {
         var newstring = string.charAt(0).toUpperCase() + string.slice(1)
         return (
@@ -138,38 +126,38 @@ var EntryHeader = React.createClass({
         var subjectType = this.titleCase(this.props.type);
         var id = this.props.id;
         return (
-                
+            <div>
                 <div id="NewEventInfo" className="entry-header-info-null" style={{zIndex:id}}>
                     <div className='details-table' style={{display: 'flex'}}>
-                        <div>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} />: null}</div>
-                        <div style={{flexGrow:1, marginRight: 'auto'}}><h2>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id}/>: null}</h2></div>
+                        <div>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} id={id} type={type} updated={this.updated} />: null}</div>
+                        <div style={{flexGrow:1, marginRight: 'auto'}}><h2>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}</h2></div>
                     </div>
                     <div className='details-table' style={{width: '50%', margin: '0 auto'}}>
                         <table>
                             <tbody>
                                 <tr>
                                     <th>Owner</th>
-                                    <td><span><Button id='event_owner' onClick={this.ownerToggle}>{this.state.showEventData ? <EntryDataOwner data={this.state.headerData.owner} />: null}</Button></span></td>
+                                    <td><span>{this.state.showEventData ? <Owner data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
                                     <th>Tags</th>
-                                    <td><span className='editable'>{this.state.showTag ? <EntryDataTag data={this.state.tagData} id={id} type={type} /> : null}<Button bsStyle={'success'} onClick={this.addTag}><span onClick={this.addTag} className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button></span></td>
+                                    <td><span className='editable'>{this.state.showTag ? <EntryDataTag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}</span></td>
                                 </tr>
                                 <tr>
                                     <th>Updated</th>
                                     <td><span id='event_updated' style={{lineHeight: '12pt', fontSize: 'inherit',paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                     <th>Source</th>
-                                    <td><span className="editable">{this.state.showSource ? <SourceData data={this.state.sourceData}id={id} type={type} /> : null }<Button bsStyle={'success'} onClick={this.addSource}><span onClick={this.addSource} className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button></span></td>
+                                    <td><span className="editable">{this.state.showSource ? <SourceData data={this.state.sourceData}id={id} type={type} updated={this.updated} /> : null }</span></td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    <EntryHeaderOptions toggleEventDisplay={this.props.toggleEventDisplay} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} />
+                    <SelectedHeaderOptions toggleEventDisplay={this.props.toggleEventDisplay} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} />
                     {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                     {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
-                    {this.state.permissionsToolbar ? <EntryHeaderPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
-                    {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null} 
-                    {this.state.ownerToolbar ? <TakeOwnership type={type} id={id} ownerToggle={this.ownerToggle} /> : null}
+                    {this.state.permissionsToolbar ? <SelectedPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
+                    {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
                 </div>
-        
+                <SelectedEntry id={id} type={type} />
+            </div>
         )
     }
 });
@@ -178,24 +166,53 @@ var EntryDataUpdated = React.createClass({
     render: function() {
         data = this.props.data;
         return (
-            <div><ReactTime value={data * 1000} format="MM/DD/YYY hh:mm:ss a" /></div>
+            <div><ReactTime value={data * 1000} format="MM/DD/YY hh:mm:ss a" /></div>
         )
     }
 });
 
 var EntryDataStatus = React.createClass({
-    render: function() {
-        data = this.props.data;
+    getInitialState: function() {
+        return {
+            buttonStatus:this.props.data
+        }
+    },
+    eventStatusToggle: function () {
+        if (this.state.buttonStatus == 'open') {
+            this.setState({buttonStatus:'closed'});
+            this.statusAjax('closed');
+        } else if (this.state.buttonStatus == 'closed') {
+            this.setState({buttonStatus:'open'});
+            this.statusAjax('open');
+        }
+    },
+    statusAjax: function(newStatus) {
+        console.log(newStatus);
+        var json = {'status':newStatus};
+        $.ajax({
+            type: 'put',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
+            data: json,
+            success: function(data) {
+                console.log('success status change to: ' + data);
+                this.props.updated();
+            }.bind(this),
+            error: function() {
+                alert('Failed to change status - contact administrator');
+            }.bind(this)
+        });
+    },
+    render: function() { 
         var buttonStyle = ''
-        if (data == 'open') {
+        if (this.state.buttonStatus == 'open') {
             buttonStyle = 'danger'; 
-        } else if (data == 'closed') {
+        } else if (this.state.buttonStatus == 'closed') {
             buttonStyle = 'success';
-        } else if (data == 'promoted') {
+        } else if (this.state.buttonStatus == 'promoted') {
             buttonStyle = 'warning'
         };
         return (
-            <Button bsStyle={buttonStyle} id="event_status" onclick="event_status_toggle()" style={{lineHeight: '12pt', fontSize: 'inherit', marginTop: '17px', width: '200px', marginLeft: 'auto'}}>{data}</Button>
+            <Button bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: 'inherit', marginTop: '17px', width: '200px', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button>
         )
     }
 });
@@ -214,13 +231,13 @@ var EntryDataSubject = React.createClass({
                 data: json,
                 success: function(data) {
                     console.log('success: ' + data);
-                },
+                    this.props.updated();
+                }.bind(this),
                 error: function() { 
                     alert('Failed to make the update to the subject');
                 }.bind(this)
             });
         }
-        console.log('end handle change');
     },
     render: function() {
         return (
@@ -229,26 +246,24 @@ var EntryDataSubject = React.createClass({
     }
 });
 
-var EntryDataOwner = React.createClass({
-    render: function() {
-        data = this.props.data;
-        return (
-            <div>{data}</div>
-        )
-    }
-});
-
 var EntryDataTag = React.createClass({
+    addTag: function() {
+        console.log('Add functionality for Add tag onClick event once links to are created in DB');
+        alert('Add functionality for Add tag onClick event once links to are created in DB');
+    },
     render: function() {
         var rows = [];
         var id = this.props.id;
         var type = this.props.type;
         var data = this.props.data;
         for (var prop in data) {
-            rows.push(<TagDataIterator data={data[prop]} id={id} type={type} />);
+            rows.push(<TagDataIterator data={data[prop]} id={id} type={type} updated={this.props.updated} />);
         } 
         return (
-            <div>{rows}</div>
+            <div>
+                {rows}
+                <Button bsStyle={'success'} onClick={this.addTag}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
+            </div>
         )
     }
 });
@@ -264,7 +279,8 @@ var TagDataIterator = React.createClass({
             //data: json,
             success: function(data) {
                 console.log('deleted tag success: ' + data);
-            },
+                this.props.updated();
+            }.bind(this),
             error: function() {
                 alert('Failed to delete the tag - contact administrator');
             }.bind(this)
@@ -280,16 +296,23 @@ var TagDataIterator = React.createClass({
 });
 
 var SourceData = React.createClass({
+    addSource: function() {
+        console.log('Add functionality for Add source onClick event once links to are created in DB');
+        alert('Add functionality for Add source onClick event once links to are created in DB');
+    },
     render: function() {
         var rows = [];
         var id = this.props.id;
         var type = this.props.type;
         var data = this.props.data;
         for (var prop in data) {
-            rows.push(<SourceDataIterator data={data[prop]} id={id} type={type} />);
+            rows.push(<SourceDataIterator data={data[prop]} id={id} type={type} updated={this.props.updated} />);
         }
         return (
-            <div>{rows}</div>
+            <div>
+                {rows}
+                <Button bsStyle={'success'} onClick={this.addSource}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
+            </div>
         )
     }
 });
@@ -305,7 +328,8 @@ var SourceDataIterator = React.createClass({
             //data: json,
             success: function(data) {
                 console.log('deleted source success: ' + data);
-            },
+                this.props.updated();
+            }.bind(this),
             error: function() {
                 alert('Failed to delete the source - contact administrator');
             }.bind(this)
@@ -320,4 +344,4 @@ var SourceDataIterator = React.createClass({
     }
 });
 
-module.exports = EntryHeader;
+module.exports = SelectedHeader;
