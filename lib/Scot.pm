@@ -104,6 +104,11 @@ get JSON that was submitted with the web request
             ->to    ('controller-api#supertable')
             ->name  ('supertable');
 
+    $scot   ->route ('/api/v2/ac/:thing/:search')
+            ->via   ('get')
+            ->to    ('controller-api#autocomplete')
+            ->name  ('autocomplete');
+
     $scot   ->route ('/api/v2/:thing/:id')
             ->via   ('get')
             ->to    ('controller-api#get_one')
@@ -123,6 +128,11 @@ get JSON that was submitted with the web request
             ->via   ('put')
             ->to    ('controller-api#update')
             ->name  ('update');
+
+    $scot   ->route ('/api/v2/:thing/:id/:subthing/:subid')
+            ->via   ('delete')
+            ->to    ('controller-api#breaklink')
+            ->name  ('delete');
 
     $scot   ->route ('/api/v2/:thing/:id')
             ->via   ('delete')
