@@ -12,8 +12,7 @@ var EntryContainer = React.createClass({
     render: function() {
         var datarows = [];
         for (i=0; i < this.state.ids.length; i++) { 
-            datarows.push(<EntryHeader key={this.state.ids[i]} id={this.state.ids[i]} type={this.state.type} toggleEventDisplay={this.props.viewEvent}/>);
-            datarows.push(<EntryWrapper key={i} id={this.state.ids[i]} type={this.state.type}/>);
+            datarows.push(<EntryHeader key={this.state.ids[i]} id={this.state.ids[i]} type={this.state.type} toggleEventDisplay={this.props.viewEvent}/>); 
         }
         return (
             <div className="entry-container"> 
