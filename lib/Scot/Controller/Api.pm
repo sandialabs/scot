@@ -1032,6 +1032,121 @@ sub delete {
 
 }
 
+=item B<DELETE /scot/api/v2/:thing/:id/:/subthing/:subid>
+
+=pod
+
+@api {delete} /scot/api/v2/:thing/:id/:subthing/:subid
+@apiName Delete thing
+@apiGroup CRUD
+@apiDescription Delete Link between thing and subthing 
+@apiParam {String} thing The "alert", "event", "incident", "intel", etc. you wish to retrieve
+
+@apiExample Example Usage
+    curl -X DELETE https://scotserver/scot/api/v2/event/123/source/3 
+
+@apiSuccessExample {json} Success-Response:
+    HTTP/1.1 200 OK
+    {
+        id : 123,
+        thing: "event",
+        subthing: "source",
+        subid: 6,
+        status : "ok",
+        action: "unlink"
+    }
+
+=cut
+
+sub breaklink {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+    my $user    = $self->session('user');
+
+    $log->trace("Handler is processing a DELETE LINK request by $user");
+
+    my $req_href    = $self->get_request_params;
+    my $id          = $req_href->{id} + 0;
+    my $col_name    = $req_href->{collection};
+    my $sub_col     = $req_href->{subthing};
+    my $sub_id      = $req_href->{subid} + 0;
+
+    unless ( $self->id_is_valid($id) ) {
+        $self->do_error(400, {
+            error_msg   => "Invalid integer id: $id"
+        });
+        return;
+    }
+    unless ( $self->id_is_valid($sub_id) ) {
+        $self->do_error(400, {
+            error_msg   => "Invalid integer id: $sub_id"
+        });
+        return;
+    }
+
+    my $object = $mongo->collection(ucfirst($col_name))->find_iid($id);
+
+    if ( $object->meta->does_role("Scot::Role::Permittable") ) {
+        my $users_groups    = $self->session('groups');
+        unless ( $object->is_modifiable($users_groups) ) {
+            $self->modify_not_permitted_error($object, $users_groups);
+            return;
+        }
+    }
+    
+    my $collection      = $mongo->collection('Link');
+    my $match_href      = {
+        '$or'   => [
+            { target_type   => $col_name, 
+              target_id     => $id, 
+              item_type     => $sub_col, 
+              item_id       => $sub_id },
+            { target_type   => $sub_col, 
+              target_id     => $sub_id, 
+              item_type     => $col_name, 
+              item_id       => $id },
+        ]
+    };
+    my $debugjson = encode_json($match_href);
+    $log->debug("Breaklinks looking for ",
+                {filter=>\&Dumper,value=>$debugjson});
+    my $linkcursor      = $collection->find($match_href);
+
+    unless ( defined $linkcursor ) {
+        $log->error("No matching Links for $col_name : $id -> $sub_col : $sub_id");
+        $self->do_error(404, {
+            error_msg   => "No matching Links $col_name: $id -> $sub_col : $sub_id"
+        });
+        return;
+    }
+
+    $log->debug("BREAKLINK found ".$linkcursor->count." links to break");
+
+    while ( my $link = $linkcursor->next ) {
+
+        $link->remove;
+        if ( $link->is_removed ) {
+            $log->debug("Link ".$link->id." has been deleted.");
+        }
+    }
+    
+    $env->amq->send_amq_notification("modify", $object, $user);
+
+    $self->do_render({
+        action      => 'breaklink',
+        thing       => $col_name,
+        id          => $object->id,
+        subthing    => $sub_col,
+        subid       => $sub_id,
+        status      => 'ok',
+    });
+    
+    $self->audit("link broken", $req_href);
+
+}
+
 =item B<user_is_admin>
 
 returns true if one of the user's groups is "admin"
@@ -1321,6 +1436,7 @@ sub get_request_params  {
         collection  => $self->stash('thing'),
         id          => $self->stash('id'),
         subthing    => $self->stash('subthing'),
+        subid       => $self->stash('subid'),
         user        => $self->session('user'),
         request     => {
             params  => $params,
@@ -1382,25 +1498,6 @@ sub thread_entries {
     return wantarray ? @threaded : \@threaded;
 }
 
-sub autocomplete {
-    my $self    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
-    my $thing   = $self->stash('thing');
-    my $query   = $self->param('q');
-
-    $log->trace("Autocomplete request for $thing ($query)");
-
-    my %class   = (
-        tag     => 'Tag',
-    );
-
-    my $collection  = $mongo->collection($class{$thing});
-    my $results     = $collection->get_autocomplete($query);
-
-    $self->do_render(200, $results);
-}
 
 =head2 Special Routes
 
@@ -1684,6 +1781,71 @@ sub build_match_ref {
       }
 		
 	return $match;
+}
+
+sub autocomplete {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+    my $thing   = $self->stash('thing');
+    my $search  = $self->stash('search');
+
+    $log->debug("Autocomplete Request for $thing : $search");
+
+    my $collection;
+    
+    try {
+        $collection  = $mongo->collection(ucfirst($thing));
+    }
+    catch {
+        $log->error("Failed to get collection $thing");
+        $self->do_error(400, { error_msg => "missing or invalid collection"});
+        return;
+    };
+
+    unless (defined $collection) {
+        $self->do_error(400, {
+            error_msg => "No collection matching $thing" });
+        return;
+    }
+
+    my %keymap  = (
+        'source'    => 'value',
+        'tag'       => 'value',
+        'event'     => 'subject',
+        'user'      => 'username',
+        'incident'  => 'subject',
+        'intel'     => 'subject',
+        'guide'     => 'subject',
+        'entity'    => 'value',
+        'checklist' => 'subject',
+        'file'      => 'filename',
+    );
+    my $key = $keymap{$thing};
+
+    unless ($key) {
+        $log->error("Autocomplete not suported on $thing");
+        $self->do_error(400, { error_msg => "Autocomplete not supported on $thing" });
+        return;
+
+    }
+
+    my @values  = ();
+    my $cursor  = $collection->find( $key => /$search/ );
+
+    unless ($cursor) {
+        $log->error("no matching autocomplete");
+    }
+    else {
+        @values  = map { { id => $_->{id}, $key => $_->{$key} } } $cursor->all;
+    }
+
+    $self->do_render({
+        records             => \@values,
+        queryRecordCount    => scalar(@values),
+        totalRecordCount    => scalar(@values),
+    });
 }
     
 

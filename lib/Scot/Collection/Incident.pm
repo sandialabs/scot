@@ -53,7 +53,7 @@ sub create_from_api {
     my $id  = $incident->id;
 
     if ( scalar(@tags) > 0 ) {
-        $self->upssert_targetables("Tag", "incident", $id, @tags);
+        $self->upssert_links("Tag", "incident", $id, @tags);
     }
     return $incident;
 }
