@@ -306,21 +306,36 @@ sub transform {
     $href->{parsed}    = 0;
 
     if ( $type eq "alert" ) {
+
         ($href->{data_with_flair},
-         $entity_aref )             = $self->flair_alert_data($href);
-        $href->{data_with_flair} = $href->{data} unless ( $href->{data_with_flair} );
+         $entity_aref               ) = $self->flair_alert_data($href);
+
+        unless ( $href->{data_with_flair} ) {
+            $href->{data_with_flair} = $href->{data};
+        }
+
         @promos = map { 
-            { type => "event", id => $_, when => $href->{created} // $href->{updated} } 
+            { type => "event", 
+              id => $_, 
+              when => $href->{created} // $href->{updated} } 
         } @{ delete $href->{events} // [] };
     }
+
     if ( $type eq "alertgroup" ) {
-        @promos = map { { type => "event", id => $_, when => $href->{created}//$href->{updated} } } 
-                  @{ delete $href->{events} // [] };
+
+        @promos = map { 
+            { type  => "event", 
+              id    => $_, 
+              when  => $href->{created}//$href->{updated} } 
+        } @{ delete $href->{events} // [] };
+
         if ( $href->{status} =~ /\// ) {
-            if ( defined $href->{promoted_count} and $href->{promoted_count} > 0 ) {
+            if ( defined $href->{promoted_count} and 
+                 $href->{promoted_count} > 0 ) {
                 $href->{status}   = "promoted";
             }
-            elsif ( defined $href->{open_count} and $href->{open_count} > 0 ) {
+            elsif ( defined $href->{open_count} and 
+                    $href->{open_count} > 0 ) {
                 $href->{status}   = "open";
             }
             else {
@@ -335,6 +350,7 @@ sub transform {
         $href->{closed_count}     = delete $href->{closed} // 0;        
         $href->{promoted_count}   = delete $href->{promoted} // 0;        
     }
+
     if ( $type  eq "event" ) {
         push @promos, map { {type=>"alert", id=>$_, when=>$href->{created} } } 
             @{ delete $href->{alerts} };
@@ -347,7 +363,9 @@ sub transform {
 
     if ( $type eq "incident" ) {
         push @promos, map { 
-            { type => "event", id => $_, when => $href->{created}//$href->{updated} } 
+            { type => "event", 
+              id => $_, 
+              when => $href->{created}//$href->{updated} } 
         } @{ delete $href->{events} // [] };
         
         unless ( defined $href->{owner} ) {
@@ -372,19 +390,34 @@ sub transform {
           $entity_aref  )   = $self->flair_entry_data($href);
 
         $href->{parent} = 0 unless ($href->{parent});
-
         $href->{owner}  = "unknown" unless($href->{owner});
 
-        push @promos, { type => delete $href->{target_type}, id => delete $href->{target_id}, when => $href->{created} };
+        my $target_type = delete $href->{target_type};
+        my $target_id   = delete $href->{target_id};
 
+        push @promos, { 
+            type    => $target_type, 
+            id      => $target_id, 
+            when    => $href->{created} 
+        };
+
+        # need something here because entities are not linking to the higher
+        # object
+        foreach my $entity (@{$entity_aref}) {
+            $entity->{ltype} = $target_type;
+            $entity->{lid}  = $target_id;
+            $entity->{when} = $href->{created};
+        }
     }
 
     my @links;
     if ( $type eq "file" ) {
         $href->{directory} = delete $href->{dir};
         push @links, (
-            { type => "entry", id => delete $href->{entry_id} },
-            { type => delete $href->{target_type}, id => delete $href->{target_id} }
+            { type  => "entry", 
+              id    => delete $href->{entry_id} },
+            { type  => delete $href->{target_type}, 
+              id    => delete $href->{target_id} }
         );
     }
 
@@ -501,11 +534,17 @@ sub do_linkables {
         $log->debug("working on entity {".$entity->{value}.",".$entity->{type}."}");
 
         my $when    = $object->when // $object->created;
-        my $eobj = $entitycol->find_one({value => $entity->{value}, type => $entity->{type}});
+
+        my $eobj    = $entitycol->find_one({
+            value => $entity->{value}, 
+            type => $entity->{type}
+        });
+
         unless ( $eobj ) {
             $log->debug("Entity is new, creating...");
             $eobj   = $entitycol->create($entity);
         }
+        
         $log->debug("creating links...");
         my $la  = $linkcol->create({
             item_type   => "entity",
@@ -515,12 +554,31 @@ sub do_linkables {
             target_id   => $object->id,
         });
         my $lb  = $linkcol->create({
-            target_type   => "entity",
-            target_id     => $eobj->id,
+            target_type => "entity",
+            target_id   => $eobj->id,
             when        => $when,
-            item_type => $object->get_collection_name,
-            item_id   => $object->id,
+            item_type   => $object->get_collection_name,
+            item_id     => $object->id,
         });
+
+        if ( defined $entity->{ltype} ) {
+            # we have an entry object and we are going to create links
+            # to the object that the entry is associated with
+            my $hla = $linkcol->create({
+                item_type   => "entity",
+                item_id     => $eobj->id,
+                when        => $when,
+                target_type => $entity->{ltype},
+                target_id   => $entity->{lid},
+            });
+            my $hlb = $linkcol->create({
+                target_type => "entity",
+                target_id   => $eobj->id,
+                when        => $when,
+                item_type   => $entity->{ltype},
+                item_id     => $entity->{lid},
+            });
+        }
     }
 
     my $historycol  = $mongo->collection('History');
@@ -559,6 +617,7 @@ sub do_linkables {
     }
 
     foreach my $promo   (@{ $href->{promos}}) {
+
         my $type    = $promo->{type};
         my $id      = $promo->{id};
         my $when    = $promo->{when} // $env->now;
@@ -566,7 +625,10 @@ sub do_linkables {
         if  (ref($id) eq "MongoDB::OID") {
             my $icol    = $self->legacydb->get_collection('incidents');
             my $href    = $icol->find_one({events   => $object->id});
-            $log->debug("Weird OID incident ref in event detected. Now using ",{filter=>\&Dumper,value=>$href});
+
+            $log->debug("Weird OID incident ref in event detected. Now using ",
+                        {filter=>\&Dumper,value=>$href});
+
             $id     = $href->{incident_id};
             unless ( $id ) {
                 $log->error("unable to find matching oid to id, skipping");
