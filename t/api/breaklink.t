@@ -74,6 +74,7 @@ $t  ->get_ok("/scot/api/v2/tag")
     ->json_is('/records/2/value'   => 'bur')
     ->json_is('/records/3/value'   => 'baz');
 
+
 my $foo_tag_id  = $t->tx->res->json->{records}->[1]->{id};
 
 $t->get_ok("/scot/api/v2/event/$event_id/tag")
@@ -82,7 +83,6 @@ $t->get_ok("/scot/api/v2/event/$event_id/tag")
     ->json_is('/records/1/value' => "bur")
     ->json_is('/records/2/value' => "foo")
     ->json_is('/records/3/value' => "boo");
-
 
 $t->delete_ok("/scot/api/v2/event/$event_id/tag/$foo_tag_id")
     ->status_is(200);
