@@ -21,6 +21,7 @@ with    qw(
     Scot::Role::Permission
     Scot::Role::Promotable
     Scot::Role::Status
+    Scot::Role::Sources
     Scot::Role::Subject
     Scot::Role::Tags
     Scot::Role::Times

@@ -6,7 +6,7 @@ use namespace::autoclean;
 
 =head1 Name
 
-Scot::Model::Sources
+Scot::Model::Source
 
 =head1 Description
 
