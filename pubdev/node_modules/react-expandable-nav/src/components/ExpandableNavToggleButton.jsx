@@ -2,7 +2,7 @@
 
 var React = require('react/addons');
 
-var assign = require('lodash.assign'),
+var assign = require('object-assign'),
     joinClasses = require('../utils/joinClasses');
 
 var ExpandableNavToggleButton = React.createClass({
