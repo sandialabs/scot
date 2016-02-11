@@ -2,7 +2,7 @@
 
 var React = require('react');
 
-var assign = require('lodash.assign'),
+var assign = require('object-assign'),
     joinClasses = require('../utils/joinClasses');
 
 var ExpandableNavItem = require('./ExpandableNavItem');
@@ -26,7 +26,7 @@ var ExpandableNavHeader = React.createClass({
     };
   },
   render() {
-    var headerStyle = assign(this.props.headerStyle, {
+    var headerStyle = assign(this.props.headerStyle || {}, {
       display: 'block',
       float: 'none'
     });
@@ -35,8 +35,8 @@ var ExpandableNavHeader = React.createClass({
       fontWeight: 'bold',
       fontSize: 20,
     };
-    var smallStyle = assign(this.props.smallStyle, sharedStyle),
-        fullStyle = assign(this.props.fullStyle, sharedStyle);
+    var smallStyle = assign(this.props.smallStyle || {}, sharedStyle),
+        fullStyle = assign(this.props.fullStyle || {}, sharedStyle);
 
     var classes = "navbar-header " +
       joinClasses(this.props.className, this.props.expanded ? this.props.fullClass : this.props.smallClass);
