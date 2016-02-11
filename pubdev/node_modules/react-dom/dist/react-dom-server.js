@@ -1,5 +1,5 @@
 /**
- * ReactDOMServer v0.14.6
+ * ReactDOMServer v0.14.7
  *
  * Copyright 2013-2015, Facebook, Inc.
  * All rights reserved.
@@ -21,7 +21,7 @@
 
   // <script>
   } else {
-    var g
+    var g;
     if (typeof window !== "undefined") {
       g = window;
     } else if (typeof global !== "undefined") {
