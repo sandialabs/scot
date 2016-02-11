@@ -2,6 +2,7 @@ var React                   = require('react');
 var ReactTime               = require('react-time');
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
 var AddEntryModal           = require('../modal/add_entry.jsx');
+var DeleteEntryModal        = require('../modal/delete_entry.jsx');
 var Owner                   = require('../modal/owner.jsx');
 var Entities                = require('../modal/entities.jsx');
 var History                 = require('../modal/history.jsx');
@@ -25,6 +26,7 @@ var SelectedHeader = React.createClass({
             entitiesToolbar:false,
             historyToolbar:false,
             entryToolbar:false, 
+            deleteToolbar:false
         }
     },
     componentDidMount: function() {
@@ -70,6 +72,13 @@ var SelectedHeader = React.createClass({
         } else {
             this.setState({entryToolbar:false})
         }
+    },
+    deleteToggle: function() {
+        if (this.state.deleteToolbar == false) {
+            this.setState({deleteToolbar:true})
+        } else {
+            this.setState({deleteToolbar:false})
+        } 
     },
     historyToggle: function() {
         if (this.state.historyToolbar == false) {
@@ -150,11 +159,12 @@ var SelectedHeader = React.createClass({
                             </tbody>
                         </table>
                     </div>
-                    <SelectedHeaderOptions toggleEventDisplay={this.props.toggleEventDisplay} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} />
+                    <SelectedHeaderOptions toggleEventDisplay={this.props.toggleEventDisplay} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle}/>
                     {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                     {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
                     {this.state.permissionsToolbar ? <SelectedPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
                     {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
+                    {this.state.deleteToolbar ? <DeleteEntryModal subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} toggleEventDisplay={this.props.toggleEventDisplay} /> :null}
                 </div>
                 <SelectedEntry id={id} type={type} />
             </div>
