@@ -5,6 +5,7 @@ module.exports = function(grunt) {
         watch: {
             react: {
                files: 'jsdev/react_components/tab-components/*.jsx',
+
                 tasks: ['browserify']
             }
         },
