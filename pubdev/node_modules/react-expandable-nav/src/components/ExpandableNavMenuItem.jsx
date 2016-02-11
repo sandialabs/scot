@@ -2,7 +2,7 @@
 
 var React = require('react');
 
-var assign = require('lodash.assign'),
+var assign = require('object-assign'),
     joinClasses = require('../utils/joinClasses');
 
 var ExpandableNavItem = require('./ExpandableNavItem');
@@ -58,11 +58,11 @@ var ExpandableNavMenuItem = React.createClass({
     var aStyle = {
       padding: 0
     };
-    var smallStyle = assign(this.props.smallStyle, {
+    var smallStyle = assign(this.props.smallStyle || {}, {
       display: 'block',
       fontSize: 20,
     });
-    var fullStyle = assign(this.props.fullStyle, {
+    var fullStyle = assign(this.props.fullStyle || {}, {
       display: 'block',
       fontSize: 20,
     });
