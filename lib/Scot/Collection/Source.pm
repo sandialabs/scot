@@ -59,32 +59,36 @@ sub add_source_to {
     my $self    = shift;
     my $thing   = shift;
     my $id      = shift;
-    my $source     = shift;
+    my $sources = shift;
 
     my $env = $self->env;
     my $log = $env->log;
 
-    $log->debug("Add_source_to $thing:$id => $source");
-
-    my $source_obj         = $self->find_one({ value => $source });
-    unless ( defined $source_obj ) {
-        $log->debug("created new source $source");
-        $source_obj    = $self->create({
-            value    => $source,
-        });
+    if ( ref($sources) ne "ARRAY" ) {
+        $sources = [ $sources];
     }
+
+    $log->debug("Add_source_to $thing:$id => ".join(',',$sources));
 
     $thing = lc($thing);
 
-    $env->mongo->collection("Link")->create_bidi_link({
-        type => $thing,
-        id   => $id,
-    },{
-        type   => "source",
-        id     => $source_obj->id,
-    });
-
-    return $source_obj;
+    foreach my $source (@$sources) {
+        my $source_obj         = $self->find_one({ value => $source });
+        unless ( defined $source_obj ) {
+            $log->debug("created new source $source");
+            $source_obj    = $self->create({
+                value    => $source,
+            });
+            $env->mongo->collection("Link")->create_bidi_link({
+                type => $thing,
+                id   => $id,
+            },{
+                type   => "source",
+                id     => $source_obj->id,
+            });
+        }
+    }
+    return 1;
 }
 
 1;

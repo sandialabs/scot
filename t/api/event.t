@@ -17,7 +17,7 @@ my $t   = Test::Mojo->new('Scot');
 
 $t  ->post_ok  ('/scot/api/v2/event'  => json => {
         subject => "Test Event 1",
-        source  => "firetest",
+        source  => ["firetest"],
         status  => 'open',
 #        readgroups  => $defgroups,
 #        modifygroups=> $defgroups,
@@ -110,7 +110,7 @@ isnt $t->tx->res->json->{updated}, $update2time, "update time change";
 
 $t  ->post_ok  ('/scot/api/v2/event'  => json => {
         subject => "Test Event 3",
-        source  => "deltest" ,
+        source  => ["deltest"] ,
         readgroups  => $defgroups,
         modifygroups=> $defgroups,
         alert_id    => 2,
