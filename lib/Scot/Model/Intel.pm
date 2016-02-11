@@ -19,7 +19,9 @@ with    qw(
     Meerkat::Role::Document
     Scot::Role::Hashable
     Scot::Role::Permission
+    Scot::Role::Sources
     Scot::Role::Subject
+    Scot::Role::Tags
     Scot::Role::Times
     Scot::Role::Views
 );
