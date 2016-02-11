@@ -99,6 +99,9 @@ sub create {
     if ( $object->meta->does_role("Scot::Role::Tags") ) {
         $self->apply_tags($req_href, $colname, $object->id);
     }
+    if ( $object->meta->does_role("Scot::Role::Tags") ) {
+        $self->apply_sources($req_href, $colname, $object->id);
+    }
 
     $env->amq->send_amq_notification("creation", $object, $user);
 
@@ -136,6 +139,19 @@ sub apply_tags {
         foreach my $tag (@$tag_aref) {
             $mongo->collection('Tag')->add_tag_to($col, $id, $tag);
         }
+    }
+}
+
+sub apply_sources {
+    my $self        = shift;
+    my $req         = shift;
+    my $col         = shift;
+    my $id          = shift;
+    my $env         = $self->env;
+    my $mongo       = $env->mongo;
+    my $source      = $self->get_value_from_request($req, "source");
+    if ( $source ) {
+        $mongo->collection('Source')->add_source_to($col, $id, $source);
     }
 }
 
@@ -606,6 +622,9 @@ sub update {
 
     if ( $object->meta->does_role("Scot::Role::Tags") ) {
         $self->apply_tags($req_href, $col_name, $id);
+    }
+    if ( $object->meta->does_role("Scot::Role::Sources") ) {
+        $self->apply_sources($req_href, $col_name, $id);
     }
 
     if ( $object->meta->does_role("Scot::Role::Promotable") ) {
