@@ -65,7 +65,7 @@ var SelectedHeaderOptions = React.createClass({
                         <MenuItem bsStyle='primary' eventKey="2" onClick={this.props.historyToggle}>View <b>History</b></MenuItem>
                         <MenuItem bsStyle='primary' eventKey="3" onClick={this.props.permissionsToggle}><b>Permissions</b></MenuItem>
                         <MenuItem bsStyle='primary' eventKey="4" onClick={this.props.entitiesToggle}>List <b>Entities</b></MenuItem>
-                        <MenuItem bsStyle='danger' eventKey="5" onclick={this.props.deleteEvent}><b>Delete</b> Event</MenuItem>
+                        <MenuItem bsStyle='danger' eventKey="5" onClick={this.props.deleteToggle}><b>Delete</b> Event</MenuItem>
                     </DropdownButton> 
                 </ButtonGroup>
                 <Button bsStyle='success' className="pull-right" onClick={this.props.entryToggle}>Add Entry</Button>
