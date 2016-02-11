@@ -42,47 +42,34 @@ sub create_from_handler {
     unless ( defined $source_obj ) {
         $source_obj    = $source_collection->create({
             value    => $value,
-            targets => [{
-                type    => $target_type,
-                id      => $target_id,
-            }],
         });
     }
     else {
-        $source_obj->update_add( targets => {
-            type    => $target_type,
-            id      => $target_id,
-        });
+        # just create a link
     }
 
+    my $linkcol = $env->mongo->collection("Link");
+
+    $linkcol->create_bidi_link({
+        type   => "source",
+        id     => $source_obj->id,
+        },{
+        type => $target_type,
+        id   => $target_id,
+    });
+
+    # note that targets below is handled in the History
+    # collection correctly, ie. converted to Links not 
+    # an embedded array
     $env->mongo->collection("History")->add_history_entry({
         who     => "api",
         what    => "source created for $target_type : $target_id",
         when    => $env->now,
-        targets => [ { id => $source_obj->id, type => "source" } ],
+        targets => { id => $source_obj->id, type => "source" } ,
     });
 
     return $source_obj;
 
-}
-
-sub get_sources {
-    my $self    = shift;
-    my %params  = @_;
-
-    my $id      = $params{target_id} + 0;
-    my $thing   = $params{target_type};
-
-    my $cursor  = $self->find({
-        targets => {
-            '$elemMatch' => {
-                type => $thing,
-                id   => $id,
-            },
-        },
-    });
-    my $count   = $cursor->count;
-    return $cursor;
 }
 
 sub get_source_completion { 
@@ -94,43 +81,6 @@ sub get_source_completion {
     });
     @results    = map { $_->value } $cursor->all;
     return wantarray ? @results : \@results;
-}
-
-sub add_source_to {
-    my $self    = shift;
-    my $handler = shift;
-    my $thing   = shift;
-    my $id      = shift;
-    my $source  = shift;
-
-    my $env = $handler->env;
-
-    my $source_obj         = $self->find_one({ value => $source });
-    unless ( defined $source_obj ) {
-        $source_obj    = $self->create({
-            value    => $source,
-            targets => [{
-                type    => $thing,
-                id      => $id,
-            }],
-        });
-    }
-    else {
-        $source_obj->update_add( targets => {
-            type    => $thing,
-            id      => $id,
-        });
-    }
-
-    $env->mongo->collection("History")->add_history_entry({
-        who     => "api",
-        what    => "source cite added $thing : $id",
-        when    => $env->now,
-        targets => [ { id => $source_obj->id, type => "source" } ],
-    });
-
-
-    return $source_obj;
 }
 
 

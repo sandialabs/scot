@@ -9,7 +9,10 @@ use v5.18;
 
 $ENV{'scot_mode'} = "testing";
 my $db  = "scot-testing";
-system("mongo $db ../../bin/database/reset.js");
+
+print "Resetting test db...\n";
+system("mongo scot-testing <../../bin/database/reset.js 2>&1 > /dev/null");
+
 
 my $env     = Scot::Env->new({
 });

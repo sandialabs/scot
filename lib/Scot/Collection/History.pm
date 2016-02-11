@@ -31,38 +31,17 @@ sub add_history_entry {
     my $obj = $self->create($href);
 
     # now link it to the object
-    my $link = $env->mongo->collection('Link')->add_link({
-        item_type   => "history",
-        item_id     => $obj->id,
-        when        => $env->now(),
-        target_type => $target->{type},
-        target_id   => $target->{id},
+    my $link = $env->mongo->collection('Link')->create_bidi_link({
+        type   => "history",
+        id     => $obj->id,
+    },{
+        type => $target->{type},
+        id   => $target->{id},
     });
 
     unless ($obj) {
         $log->error("Failed to create History record for $href->{what}");
     }
 }
-
-sub get_history {
-    my $self    = shift;
-    my %params  = @_;
-
-    my $id      = $params{target_id};
-    my $thing   = $params{target_type};
-
-    my $cursor  = $self->find({
-        targets => {
-            '$elemMatch' => {
-                type => $thing,
-                id   => $id,
-            },
-        },
-    });
-    my $count   = $cursor->count;
-    return $cursor;
-}
-
-
 
 1;

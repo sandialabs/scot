@@ -1,6 +1,7 @@
 var React    = require('react')
 var Dropdown = require('../../../node_modules/react-dropdown')
 var Modal    = require('../../../node_modules/react-modal')
+var TinyMCE  = require('react-tinymce')
 var marksave = false
 var addentrydata = false
 
@@ -17,34 +18,34 @@ const  customStyles = {
     }
 }
 
-var Addentrymodal = React.createClass({
+var AddEntryModal = React.createClass({
 	getInitialState: function(){
 	return {
 	edit: true, stagecolor: '5px solid #000',enable: true, addentry: true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}]}
 	},
 
 	render: function() {
-	return (
-	React.createElement(Modal, {style: customStyles, className: "Modal__Bootstrap modal-dialog", isOpen: this.state.addentry}, 
-	React.createElement("div", {className: "modal-content"}, 
-	React.createElement("div", {className: "modal-header"}, 
-	React.createElement("h4", {className: "modal-title"}, " Add Entry")
-	), 
-	React.createElement("div", {className: "modal-body", style: {height: '90%'}}, 
-	React.createElement(TinyMCE, {content: "", config: {plugins: 'autolink link image lists print printview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'},className: "inputtext", style: {overflow:"auto", border: this.state.stagecolor}}
-	)), 
-	React.createElement("div", {className: "modal-footer"}, React.createElement("input", {type: "file", name: "file_attach", className: "input-field attachfile"}), 
-	React.createElement("button", {type: "button", onClick: this.onCancel}, " Cancel"), 
-	this.state.enablesave ? null : React.createElement("button", {type: "button", onClick: this.onSave, disabled: this.state.enablesave}, "Save"), 	
- 
-	this.state.enablesave ? React.createElement("button", {type: "button", onClick: this.Edit, disabled: this.state.enable}, "Edit") : null, this.state.enablesave ?  
-	React.createElement("button", {type: "button", className: "btn-success", onClick: this.submit, disabled: this.state.enable}, "Submit") : null, 
-	React.createElement(Dropdown, {options: this.state.modaloptions, onChange: this.modalonSelect})
-	)
-	)
-	)
-	)
-	},
+        return (
+            <Modal isOpen={this.state.addentry} style={{customStyles}} className=""> 
+                <div className="modal-content"> 
+                    <div className="modal-header"> 
+                    <h4 className="modal-title">Add Entry</h4>
+                    </div>
+                </div> 
+                <div className="modal-body" style={{height: '90%'}}> 
+                    <TinyMCE content="" config={{plugins: 'autolink link image lists print preview', toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'}} onChange={this.handleEditorChange} className="inputtext" style={{overflow:'auto',border:this.state.stagecolor}}/> 
+                </div>    
+                <div className="modal-footer">
+                    <input type="file" name="file_attach" className="input-field attachfile"/> 
+                    <button type="button" onClick={this.onCancel}>Cancel</button> 
+                    <button type="button" onClick={this.onSave} disabled={this.state.enablesave}>Save</button> 
+                    {this.state.enablesave ? <button type="button" onClick={this.Edit} disabled={this.state.enable}>Edit</button> : null}
+                    {this.state.enablesave ? <button type="button" className="btn-success" onClick={this.submit} disabled={this.state.enable}>Submit</button> : null}
+                    <Dropdown options={this.state.modaloptions} onChange={this.modalonSelect}/>
+                </div>
+            </Modal> 
+        )
+    },
 	submit: function(){
 	if(marksave)
 	{
@@ -145,5 +146,5 @@ var Addentrymodal = React.createClass({
 	}
     });
 
-module.exports = Addentrymodal
+module.exports = AddEntryModal
 

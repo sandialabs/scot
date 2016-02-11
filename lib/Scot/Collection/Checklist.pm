@@ -36,12 +36,12 @@ sub create_from_api {
 
             my $obj = $ecoll->create($entry);
 
-            $env->mongo->collection('Link')->add_link({
-                item_type   => "entry",
-                item_id     => $obj->id,
-                when        => $env->now,
-                target_type => "checklist",
-                target_id   => $checklist->id,
+            $env->mongo->collection('Link')->create_bidi_link({
+                type   => "entry",
+                id     => $obj->id,
+            },{
+                type => "checklist",
+                id   => $checklist->id,
             });
         }
     }
