@@ -3,7 +3,7 @@
 var React = require('react/addons');
 
 var joinClasses = require('../utils/joinClasses'),
-    assign = require('lodash.assign');
+    assign = require('object-assign');
 
 var ExpandableNavbar = React.createClass({displayName: "ExpandableNavbar",
   propTypes: {
