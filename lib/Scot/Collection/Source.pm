@@ -8,7 +8,7 @@ with    qw(
 );
 
 # source creation or update
-sub create_from_handler {
+sub create_from_api {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
@@ -55,5 +55,36 @@ sub get_source_completion {
     return wantarray ? @results : \@results;
 }
 
+sub add_source_to {
+    my $self    = shift;
+    my $thing   = shift;
+    my $id      = shift;
+    my $source     = shift;
+
+    my $env = $self->env;
+    my $log = $env->log;
+
+    $log->debug("Add_source_to $thing:$id => $source");
+
+    my $source_obj         = $self->find_one({ value => $source });
+    unless ( defined $source_obj ) {
+        $log->debug("created new source $source");
+        $source_obj    = $self->create({
+            value    => $source,
+        });
+    }
+
+    $thing = lc($thing);
+
+    $env->mongo->collection("Link")->create_bidi_link({
+        type => $thing,
+        id   => $id,
+    },{
+        type   => "source",
+        id     => $source_obj->id,
+    });
+
+    return $source_obj;
+}
 
 1;
