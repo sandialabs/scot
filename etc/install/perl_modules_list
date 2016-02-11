@@ -70,3 +70,4 @@ Meerkat
 MooseX::Singleton
 Mozilla::PublicSuffix
 Net::IDN::Encode
+MIME::Base64

@@ -54,10 +54,10 @@ sub create_from_api {
     my $id  = $intel->id;
 
     if ( scalar(@sources) > 0 ) {
-        $self->upsert_targetables("Source", "intel", $id, @sources);
+        $self->upsert_links("Source", "intel", $id, @sources);
     }
     if ( scalar(@tags) > 0 ) {
-        $self->upsert_targetables("Tag", "intel", $id, @tags);
+        $self->upsert_links("Tag", "intel", $id, @tags);
     }
 
     return $intel;
