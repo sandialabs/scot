@@ -241,21 +241,24 @@ var EntryDataSubject = React.createClass({
     },
     render: function() {
         return (
-            <div>{this.state.type} {this.state.id}: <DebounceInput debounceTimeout={1000} type='text' value={this.state.value} onChange={this.handleChange} /></div>
+            <div>{this.state.type} {this.state.id}: <DebounceInput debounceTimeout={500} type='text' value={this.state.value} onChange={this.handleChange} /></div>
         )
     }
 });
 
 var EntryDataTag = React.createClass({ 
     getInitialState: function() {
-        return {tagEntry:false, newTag:''}
+        return {tagEntry:false, newTag:'', potentialTags:'', togglePotentialTags:false}
     },
-    handleChange: function(event) {
+    handleChange: function(event) { 
         this.setState({newTag:event.target.value})
-        var potentialTags = 'ajax return here';
-        /*this.serverRequest = $.get('/scot/api/v2/tag', function (result) {
+        /*this.serverRequest = $.get('/scot/api/v2/ac/tag/' + this.state.newTag, function (result) {
             var result = result.records;
             console.log(result);
+            for (var prop in result) {
+                arr.push(result[prop])
+            }
+            this.setState({potentialTags:result,togglePotentialTags:true})
         }.bind(this));*/
     },
     addTag: function() {
@@ -276,12 +279,12 @@ var EntryDataTag = React.createClass({
                         console.log('success: tag added');
                         this.toggleTagEntry();
                         this.props.updated();
-                        this.setState({newTag:''});
+                        this.setState({newTag:'',togglePotentialTags:false});
                     }.bind(this),
                     error: function() {
                         alert('Failed to add tag - contact administrator');
                         this.toggleTagEntry();
-                        this.setState({newTag:''});
+                        this.setState({newTag:'',togglePotentialTags:false});
                     }.bind(this)
                 });
             } else { 
@@ -308,6 +311,7 @@ var EntryDataTag = React.createClass({
                 {rows}
                 <Button bsStyle={'success'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
                 {this.state.tagEntry ? <div style={{color:'black'}}><DebounceInput debounceTimeout={300} type='text' value={this.state.newTag} onChange={this.handleChange} /> <Button onClick={this.addTag}>Add</Button></div>: null} 
+                {this.state.potentialTags ? <NewTagIterator potentialTags={this.state.potentialTags} addTag={this.addTag} />: null}
             </div>
         )
     }
@@ -335,6 +339,22 @@ var TagDataIterator = React.createClass({
         data = this.props.data;
         return (
             <Button id="event_tag" onClick={this.tagDelete}><span className="glyphicon glyphicon-remove-circle" ariaHidden="true"></span> {data.value}</Button>
+        )
+    }
+});
+
+var NewTagIterator =  React.createClass({
+    render: function() {
+        var potentialTags = this.props.potentialTags;
+        var defaultValue = 'potential tags...';
+        return (
+            <DropdownInput
+                options={potentialTags}
+                defaultValue={defaultValue}
+                menuClassName='dropdown-input'
+                onSelect={this.props.addTag}
+                placeholder='Search...'
+            />
         )
     }
 });
