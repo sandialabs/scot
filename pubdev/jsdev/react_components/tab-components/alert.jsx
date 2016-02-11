@@ -38,6 +38,8 @@ var entrydict = []
 var savedopen = false;
 var alertgroup = []
 var stage = false
+var tinycount = 0;
+var Dropzone = require('../../../node_modules/react-dropzone');
 var TinyMCE = require('../../../node_modules/react-tinymce')
 var columns = 
 [
@@ -92,7 +94,7 @@ var Viewentry = React.createClass({
 	React.createElement("h4", {className: "modal-title"}, " View Entry")
 	), 
 	React.createElement("div", {className: "modal-body"}, 
-	React.createElement("textarea", {disabled: this.state.edit, className: "viewtext", rows: "4", cols: "50", style: {border: this.state.stagecolor,resize: 'none',width: '523px', height: '300px'}}
+	React.createElement("textarea", {disabled: this.state.edit, className: "viewtext", rows: "4", cols: "50", style: {border: this.state.stagecolor,resize: 'none',width: '1389px', height: '300px'}}
 	)
 	), 
 	React.createElement("div", {className: "modal-footer"}, 
@@ -256,8 +258,7 @@ function dataSource(query)
 	}
 	});
 
-	for(var i = 0; i<entrydict.length; i++){
-	
+	for(var i = 0; i<entrydict.length; i++){	
 	$.each(entrydict[i], function(key, value){
 	if(key != undefined){
 	console.log(key)
@@ -265,6 +266,7 @@ function dataSource(query)
 	}
 	});
 	}
+	addentrydata = false
 	}
 	return {
 	data:  finalarray,	
@@ -333,7 +335,7 @@ var Subtable = React.createClass({
     getInitialState: function(){
         return {
 
-historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
+historyid: 0, history: false, edit: false, stagecolor : 'black',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
     },
    componentDidMount: function(){
 	var project = getColumns()
@@ -409,15 +411,16 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
         : 
 	this.state.addentry  ?  	
 	
-	React.createElement(Modal, {style: customStyles, className: "Modal__Bootstrap modal-dialog", isOpen: this.state.addentry}, 
+	React.createElement(Modal, {style: customStyles, isOpen: this.state.addentry}, 
 	React.createElement("div", {className: "modal-content"}, 
 	React.createElement("div", {className: "modal-header"}, 
 	React.createElement("h4", {className: "modal-title"}, " Add Entry")
 	), 
-	React.createElement("div", {className: "modal-body", style: {height: '90%'}}, 
-	React.createElement(TinyMCE, {onChange: this.handleEditorChange, content: "", config: {plugins: 'autolink link image lists print printview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'}}
+	React.createElement("div", {className: "modal-body", style: {background: this.state.stagecolor, height: '90%'}}, 
+	React.createElement(TinyMCE, {content: "", className: "inputtext",config: {plugins: 'autolink link image lists print preview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'},onChange: this.handleEditorChange}
 	)), 
-	React.createElement("div", {className: "modal-footer"}, React.createElement("input", {type: "file", name: "file_attach", className: "input-field attachfile"}), 
+	React.createElement("div", {className: "modal-footer"}, React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width': '2px','border-color':'#000','border-radius':'4px',margin:'30px', padding:'30px',width: '200px', 'border-style': 'dashed'}}, React.createElement("div",null,"Drop some files here or click to  select files to upload")),
+	this.state.files ? React.createElement("div", null, this.state.files.map((file) => React.createElement("a", {style: {border: '2px solid black'}, href:file.preview, target:"_blank"}, file.name ))): null, 
 	React.createElement("button", {type: "button", onClick: this.onCancel}, " Cancel"), 
 	this.state.enablesave ? null : React.createElement("button", {type: "button", onClick: this.onSave, disabled: this.state.enablesave}, "Save"), 	
  
@@ -429,7 +432,7 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	)
 	:
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
-	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable"}, React.createElement('header', {className: 'main-header', role: 'banner', style:{background: '#000', height: '70px'}}, React.createElement('button', {className: 'btn-success', onClick: this.goBack}, 'Back'), React.createElement('h1',{ style: {color: 'white', 'font-size': '24px', 'text-align':'start'}}, 'Alert Id(s) : ' +  ids)), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {className: "Subgrid",
+	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable"}, React.createElement('div', {className: 'entry-header-info-null', style:{top: '1px', width: '100%',background: '#000'}}, React.createElement('button', {className: 'pull-left btn-success', onClick: this.goBack}, 'Back'), React.createElement('h2',{ style: {color: 'white', 'font-size': '24px', 'text-align':'center'}}, 'Alert Id(s) : ' +  ids)), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {className: "Subgrid",
             ref: "dataGrid", 
             idProperty: "index",
 	    setColumns: true, 
@@ -451,6 +454,10 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
         )
 	);
    },
+    onDrop: function(files){
+        this.setState({files: files})
+
+    },
     handleFilter: function(column, value, allFilterValues){
 	/*
 	var data = {}
@@ -502,7 +509,7 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	SELECTED_ID_GRID = newSelection
 	var selected = []
 	Object.keys(newSelection).forEach(function(id){
-	selected.push(newSelection[id].id)
+	selected.push(newSelection[id].index)
 	})
 	var ids = selected.length? selected.join(',') : 'none'
 	storealertids = ids.split(',')	
@@ -705,34 +712,36 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	    var store = {}
 	    for(var i = 0; i<storealertids.length; i++){
 		store[storealertids[i]] = {}
-		store[storealertids[i]] = $('.inputtext').val()  	
+		store[storealertids[i]] = $('#react-tinymce-'+tinycount+'_ifr').contents().find("#tinymce").text()  	
 	     }
-	     entrydict.push(store)          
-	    addentrydata = true
-	    this.setState({edit:false, addentry: false, reload:true})
+	     entrydict.push(store)  
+	     console.log(store)        
+	     addentrydata = true
+	     tinycount++;
+	     this.setState({edit:false, addentry: false, reload:true})
 
 	}
 
         },
 	Edit: function(){
-	$('.inputtext').attr("contenteditable", true)
+        $('#react-tinymce-'+tinycount+'_ifr').contents().find("#tinymce").attr("contenteditable", true)
 	this.setState({edit: false,enablesave:false,enable:true})
 	},
 	onCancel: function(){
 	 if(confirm('Are you sure you want to cancel this entry?')){
+	     tinycount++;
 	     this.setState({reload: true, addentry: false})
 	    }
 	else{
-
+	
 	}
 	},
 	onSave: function(){
-	if($('.inputtext').text() == "")	{
+	if($('#react-tinymce-'+tinycount+'_ifr').contents().find("#tinymce").text() == "")	{
 	alert("Please fill in Text")
 	}
 	else {
-	console.log($('.attachfile').val())
-	$('.inputtext').attr("contenteditable", false)
+	$('#react-tinymce-'+tinycount+'_ifr').contents().find("#tinymce").attr("contenteditable", false)
 	marksave = true;	
 	this.state.modaloptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Make Task", label: "Make Task"}, {value:"Permissions", label: "Permissions"}]
 	this.setState({reload: false, addentry: true,edit:true, modaloptions : this.state.modaloptions, enable:false, enablesave: true})
@@ -770,23 +779,23 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	else if (option.label == "Make Task"){
 	newoptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Close Task", label: "Close Task"}, {value:"Permissions", label: "Permissions"}, {value: "Assign taks to me", label: "Assign task to me"}]
 	this.state.modaloptions = newoptions
-	color = '5px solid #933'
+	color = 'red'
 	this.state.stagecolor = color 
 	}
 	else if(option.label == "Reopen Task"){
 	newoptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Close Task", label: "Close Task"}, {value:"Permissions", label: "Permissions"}, {value: "Assign taks to me", label: "Assign task to me"}]
 	this.state.modaloptions = newoptions
-	color = '5px solid #933'
+	color = 'red'
 	this.state.stagecolor = color
 	}
 	else if (option.label == "Close Task"){
 	newoptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Reopen Task", label: "Reopen Task"}, {value:"Permissions", label: "Permissions"}]
 	this.state.modaloptions = newoptions
-	color = '5px solid #696'
+	color = 'green'
 	this.state.stagecolor = color
 	}
 	else if (option.label == "Assign task to me"){
-	color = '5px solid #B8B800'
+	color = 'yellow'
 	this.state.stagecolor = color 
 	}	
 	else if (option.label == "Permissions"){
@@ -895,8 +904,8 @@ var Maintable = React.createClass({
 	Object.keys(newSelection).forEach(function(id){
 	selected.push(newSelection[id].id)
 	})
-	ids = selected.length? selected.join(',') : 'none'
-        passids = ids.split(",")
+	ids = selected.length? selected.join(' , ') : 'none'
+        passids = ids.split(" , ")
 	numberofids = selected.length
 	this.setState({showAlertbutton: true, viewAlert: false})
 	},
