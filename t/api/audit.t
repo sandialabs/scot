@@ -9,7 +9,8 @@ use Scot::Collection;
 use Scot::Collection::Alertgroup;
 
 $ENV{'scot_mode'}   = "testing";
-system("mongo scot-testing ../../bin/database/reset.js");
+print "Resetting test db...\n";
+system("mongo scot-testing <../../bin/database/reset.js 2>&1 > /dev/null");
 
 @defgroups = ( 'ir', 'test' );
 

@@ -235,6 +235,7 @@ sub get_subthing {
         # otherwise, assume the subthing has an 
         # attribute named the same as the $thing
         # and that it holds the matching ID
+        # alert -> alertgroup example
         $cursor = $subcol->find({$thing => $id + 0});
         return $cursor;
     }
@@ -287,37 +288,27 @@ sub get_group_permissions {
 
 }
 
-sub upsert_targetables {
+sub upsert_links {
     my $self    = shift;
-    my $colname = shift;
+    my $object  = shift;
     my $type    = shift;
-    my $id      = shift;
-    my @items   = @_;
-    my $key     = "name";   # default field for Source
+    my $aref    = shift;    # the array of things of type $type to link to the object
 
-    if ( $colname eq "Tag" ) {
-        $key    = "text";   
-    }
+    my $mongo   = $self->env->mongo;
+    my $linkcol = $mongo->collection('Link');
+    my $thingcol    = $mongo->collection(ucfirst($type));
+    my $objcol      = $object->get_collection_name;
+    my $objid       = $object->id;
 
-    my $col = $self->meerkat->collection($colname);
+    foreach my $lid (@$aref) {
 
-    foreach my $item (@items) {
-        my $object  = $col->find_one({$key => $item});
-        if ($object) {
-            $object->update_add( targets => {
-                id   => $id,
-                type => $type,
-            });
-        }
-        else {
-            $object = $col->create({
-                $key    => $item,
-                targets => [{
-                    id   => $id,
-                    type => $type,
-                }],
-            });
-        }
+        my $link  = $linkcol->create_bidi_link({
+            type   => $objcol,
+            id     => $objid,
+        },{
+            type    => $type,
+            id      => $lid,
+        });
     }
 }
 
