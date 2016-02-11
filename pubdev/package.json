@@ -20,11 +20,13 @@
     "moment": "^2.10.6",
     "react-bootstrap": "^0.28.2",
     "react-crouton": "^0.2.7",
+    "react-debounce-input": "^2.2.0",
     "react-dom": "^0.14.2",
     "react-frame-component": "^0.4.1",
     "react-modal": "^0.6.1",
     "react-notification": "^4.0.0",
     "react-overlays": "^0.5.4",
+    "react-sticky": "^3.0.0",
     "react-stickydiv": "^3.4.17",
     "react-time": "^4.0.0"
   }
