@@ -4,6 +4,8 @@ var SplitButton     = require('react-bootstrap/lib/SplitButton.js');
 var DropdownButton  = require('react-bootstrap/lib/DropdownButton.js');
 var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
 var Button          = require('react-bootstrap/lib/Button.js');
+var AddEntry        = require('../modal/add_entry.jsx');
+
 var SelectedEntry = React.createClass({
     getInitialState: function() {
         return {
@@ -67,7 +69,7 @@ var EntryParent = React.createClass({
                     <div className="row-fluid entry-header todo_undefined">
                         <div className="entry-header-inner">[<a style={{color:'black'}} href={"#"+items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} (updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
                             <span className='pull-right'>
-                                <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id}>
+                                <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={<AddEntry />}>
                                     <MenuItem eventKey='1' onClick={this.props.entryToggle}>Move</MenuItem>
                                     <MenuItem eventKey='2'>Delete</MenuItem>
                                     <MenuItem eventKey='3'>Mark as Summary</MenuItem>
