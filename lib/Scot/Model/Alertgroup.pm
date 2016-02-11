@@ -35,6 +35,7 @@ with    qw(
     Scot::Role::Promotable
     Scot::Role::Parsed
     Scot::Role::Subject
+    Scot::Role::Sources
     Scot::Role::Tags
     Scot::Role::Times
     Scot::Role::Views
@@ -49,6 +50,7 @@ with    qw(
     Scot::Role::Promotable
     Scot::Role::Parsed
     Scot::Role::Subject
+    Scot::Role::Sources
     Scot::Role::Tags
     Scot::Role::Times
     Scot::Role::Views

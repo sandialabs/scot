@@ -34,8 +34,9 @@ $t  ->get_ok("/scot/api/v2/event/$event_id")
     ->json_is('/status'  => 'open')
     ->json_is('/subject' => 'Test Event 1');
 
-
-
+$t  ->get_ok("/scot/api/v2/event/$event_id/source")
+    ->status_is(200)
+    ->json_is("/records/0/value"  => "firetest");
 
 $t  ->post_ok('/scot/api/v2/entry' => json => {
         body        => "Entry 1 on Event $event_id",
