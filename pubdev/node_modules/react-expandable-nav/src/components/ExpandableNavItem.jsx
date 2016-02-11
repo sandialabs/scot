@@ -2,7 +2,7 @@
 
 var React = require('react/addons');
 
-var assign = require('lodash.assign');
+var assign = require('object-assign');
 
 var ExpandableNavItem = React.createClass({
   propTypes: {
