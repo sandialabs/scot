@@ -8,68 +8,40 @@ with    qw(
 );
 
 # source creation or update
-sub create_from_handler {
+sub create_from_api {
     my $self    = shift;
-    my $handler = shift;
-    my $env     = $handler->env;
+    my $request = shift;
+    my $env     = $self->env;
     my $log     = $env->log;
 
-    $log->trace("Custom create in Scot::Collection::Source");
+    $log->trace("Create Source from API");
 
-    my $build_href  = $handler->get_request_params->{params};
-    my $target_type = $build_href->{target_type};
-    my $target_id   = $build_href->{target_id};
-    my $value        = $build_href->{value};
-
-    unless ( defined $target_type ) {
-        $log->error("Error: must provide a target type");
-        return { error_msg => "Sources must have a target_type defined"};
-    }
-
-    unless ( defined $target_id ) {
-        $log->error("Error: must provide a target id");
-        return { error_msg => "Sources must have a target_id defined"};
-    }
+    my $json    = $request->{request}->{json};
+    my $value   = $json->{value};
+    my $note    = $json->{note};
 
     unless ( defined $value ) {
         $log->error("Error: must provide the source as the value param");
         return { error_msg => "No Source value provided" };
     }
 
-    my $source_collection  = $handler->env->mongo->collection("Source");
-    my $source_obj         = $source_collection->find_one({ value => $value });
+    my $source_obj         = $self->find_one({ value => $value });
 
     unless ( defined $source_obj ) {
-        $source_obj    = $source_collection->create({
+        $source_obj    = $self->create({
             value    => $value,
         });
+        # note that targets below is handled in the History
+        # collection correctly, ie. converted to Links not 
+        # an embedded array
+        $env->mongo->collection("History")->add_history_entry({
+            who     => "api",
+            what    => "source $value created",
+            when    => $env->now,
+            targets => { id => $source_obj->id, type => "source" } ,
+        });
     }
-    else {
-        # just create a link
-    }
-
-    my $linkcol = $env->mongo->collection("Link");
-
-    $linkcol->create_bidi_link({
-        type   => "source",
-        id     => $source_obj->id,
-        },{
-        type => $target_type,
-        id   => $target_id,
-    });
-
-    # note that targets below is handled in the History
-    # collection correctly, ie. converted to Links not 
-    # an embedded array
-    $env->mongo->collection("History")->add_history_entry({
-        who     => "api",
-        what    => "source created for $target_type : $target_id",
-        when    => $env->now,
-        targets => { id => $source_obj->id, type => "source" } ,
-    });
-
     return $source_obj;
-
 }
 
 sub get_source_completion { 
@@ -83,5 +55,40 @@ sub get_source_completion {
     return wantarray ? @results : \@results;
 }
 
+sub add_source_to {
+    my $self    = shift;
+    my $thing   = shift;
+    my $id      = shift;
+    my $sources = shift;
+
+    my $env = $self->env;
+    my $log = $env->log;
+
+    if ( ref($sources) ne "ARRAY" ) {
+        $sources = [ $sources];
+    }
+
+    $log->debug("Add_source_to $thing:$id => ".join(',',$sources));
+
+    $thing = lc($thing);
+
+    foreach my $source (@$sources) {
+        my $source_obj         = $self->find_one({ value => $source });
+        unless ( defined $source_obj ) {
+            $log->debug("created new source $source");
+            $source_obj    = $self->create({
+                value    => $source,
+            });
+            $env->mongo->collection("Link")->create_bidi_link({
+                type => $thing,
+                id   => $id,
+            },{
+                type   => "source",
+                id     => $source_obj->id,
+            });
+        }
+    }
+    return 1;
+}
 
 1;
