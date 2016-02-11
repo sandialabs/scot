@@ -92,18 +92,19 @@ sub create_bidi_link {
     my $env     = $self->env;
     my $log     = $env->log;
     my $now     = $env->now;
+    my $when    = shift // $now;
 
     my $link_ab = {
         item_type   => $a_href->{type},
         item_id     => $a_href->{id},
-        when        => $now,
+        when        => $when,
         target_type => $b_href->{type},
         target_id   => $b_href->{id},
     };
     my $link_ba   = {
         item_type   => $b_href->{type},
         item_id     => $b_href->{id},
-        when        => $now,
+        when        => $when,
         target_type => $a_href->{type},
         target_id   => $a_href->{id},
     };
@@ -143,6 +144,52 @@ sub remove_bidi_links {
     foreach my $href ($link_ab, $link_ba) {
         $self->remove_links($href);
     }
+}
+
+sub find_any {
+    my $self    = shift;
+    my $a       = shift; # href = { id => x, type => y }
+    my $b       = shift; # href = { id => x, type => y }
+
+    my $match   = {
+        '$or'   => [
+            { target_type   => $a->{type},
+              target_id     => $a->{id},
+              item_type     => $b->{type},
+              item_id       => $b->{id},
+            },
+            { target_type   => $b->{type},
+              target_id     => $b->{id},
+              item_type     => $a->{type},
+              item_id       => $a->{id},
+            },
+        ]
+    };
+    my $cursor  = $self->find($match);
+    return $cursor;
+}
+
+sub find_any_one {
+    my $self    = shift;
+    my $a       = shift; # href = { id => x, type => y }
+    my $b       = shift; # href = { id => x, type => y }
+
+    my $match   = {
+        '$or'   => [
+            { target_type   => $a->{type},
+              target_id     => $a->{id},
+              item_type     => $b->{type},
+              item_id       => $b->{id},
+            },
+            { target_type   => $b->{type},
+              target_id     => $b->{id},
+              item_type     => $a->{type},
+              item_id       => $a->{id},
+            },
+        ]
+    };
+    my $object  = $self->find_one($match);
+    return $object;
 }
 
 1;

@@ -2,6 +2,7 @@ package Scot::Collection::Tag;
 
 use lib '../../../lib';
 use Moose 2;
+use Data::Dumper;
 
 extends 'Scot::Collection';
 with    qw(
@@ -9,82 +10,44 @@ with    qw(
     Scot::Role::GetTargeted
 );
 
-# tag creation or update
-sub create_from_handler {
+# tags can be created from a post to /scot/v2/tag
+# ( also "put"ting a tag on a thing will create one but not in this function
+
+sub create_from_api {
     my $self    = shift;
-    my $handler = shift;
-    my $env     = $handler->env;
+    my $request = shift;
+    my $env     = $self->env;
     my $log     = $env->log;
 
-    $log->trace("Custom create in Scot::Collection::Tag");
+    $log->trace("Create Tag from API");
+    $log->debug("request is ",{ filter=>\&Dumper, value=>$request });
 
-    my $build_href  = $handler->get_request_params->{params};
-    my $target_type = $build_href->{target_type};
-    my $target_id   = $build_href->{target_id};
-    my $value        = $build_href->{value};
+    my $json    = $request->{request}->{json};
 
-    unless ( defined $target_type ) {
-        $log->error("Error: must provide a target type");
-        return { error_msg => "Tags must have a target_type defined"};
-    }
-
-    unless ( defined $target_id ) {
-        $log->error("Error: must provide a target id");
-        return { error_msg => "Tags must have a target_id defined"};
-    }
+    my $value       = $json->{value};
+    my $note        = $json->{note};
 
     unless ( defined $value ) {
         $log->error("Error: must provide the tag as the value param");
         return { error_msg => "No Tag value provided" };
     }
 
-    my $tag_collection  = $handler->env->mongo->collection("Tag");
-    my $tag_obj         = $tag_collection->find_one({ value => $value });
+    my $tag_obj         = $self->find_one({ value => $value });
 
     unless ( defined $tag_obj ) {
-        $tag_obj    = $tag_collection->create({
-            value    => $value,
-            targets => [{
-                type    => $target_type,
-                id      => $target_id,
-            }],
+        my $href    = { value => $value };
+        $href->{note} = $note if $note;
+        $tag_obj    = $self->create($href);
+        $env->mongo->collection("History")->add_history_entry({
+            who     => "api",
+            what    => "tag created",
+            when    => $env->now(),
+            targets => { id => $tag_obj->id, type => "tag" },
         });
     }
-    else {
-        $tag_obj->update_add( targets => {
-            type    => $target_type,
-            id      => $target_id,
-        });
-    }
-
-    $env->mongo->collection("History")->add_history_entry({
-        who     => "api",
-        what    => "tag applied to $target_type : $target_id",
-        when    => $env->now(),
-        targets => [ { id => $tag_obj->id, type => "tag" } ],
-    });
 
     return $tag_obj;
 
-}
-
-sub get_tags {
-    my $self    = shift;
-    my %params  = @_;
-
-    my $id      = $params{target_id};
-    my $thing   = $params{target_type};
-
-    my $cursor  = $self->find({
-        targets => {
-            '$elemMatch' => {
-                type => $thing,
-                id   => $id,
-            },
-        },
-    });
-    my $count   = $cursor->count;
-    return $cursor;
 }
 
 sub get_tag_completion { 
@@ -105,20 +68,24 @@ sub add_tag_to {
     my $tag     = shift;
 
     my $env = $self->env;
+    my $log = $env->log;
+
+    $log->debug("Add_tag_to $thing:$id => $tag");
 
     my $tag_obj         = $self->find_one({ value => $tag });
     unless ( defined $tag_obj ) {
+        $log->debug("created new tag $tag");
         $tag_obj    = $self->create({
             value    => $tag,
         });
     }
 
-    $env->mongo->collection("Link")->add_link({
-        target_type => $thing,
-        target_id   => $id,
-        when        => $env->now(),
-        item_type   => "tag",
-        item_id     => $tag_obj->id,
+    $env->mongo->collection("Link")->create_bidi_link({
+        type => $thing,
+        id   => $id,
+    },{
+        type   => "tag",
+        id     => $tag_obj->id,
     });
 
     return $tag_obj;
