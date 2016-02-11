@@ -259,37 +259,34 @@ var EntryDataTag = React.createClass({
         }.bind(this));*/
     },
     addTag: function() {
-        //Look into making this state and doing this code in getInitialState;
-        if (this.state.newTag != '') {
-            var allTags = [];
-            var newTagArr = [];
-            var data = this.props.data;
-            for (var prop in data) {
-                var obj = data[prop];
-                newTagArr.push(obj.value);
-            }
-            newTagArr.push(this.state.newTag);
-            console.log(newTagArr);
-            var json = {'tag':newTagArr} 
-            $.ajax({
-                type: 'put',
-                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-                data: json,
-                success: function(data) {
-                    console.log('success: tag added');
-                    this.toggleTagEntry();
-                    this.props.updated();
-                    this.setState({newTag:''});
-                }.bind(this),
-                error: function() {
-                    alert('Failed to add tag - contact administrator');
-                    this.toggleTagEntry();
-                    this.setState({newTag:''});
-                }.bind(this)
-            });}
-        else { 
-            alert('Tag can not be empty');
-        };
+            if (this.state.newTag != '') {
+                var newTagArr = [];
+                var data = this.props.data;
+                var tag = 'tag'; 
+                for (var prop in data) {
+                    newTagArr.push(data[prop].value);
+                }
+                newTagArr.push(this.state.newTag);
+                $.ajax({
+                    type: 'put',
+                    url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
+                    data: JSON.stringify({tag:newTagArr}),
+                    contentType: 'application/json; charset=UTF-8',
+                    success: function(data) {
+                        console.log('success: tag added');
+                        this.toggleTagEntry();
+                        this.props.updated();
+                        this.setState({newTag:''});
+                    }.bind(this),
+                    error: function() {
+                        alert('Failed to add tag - contact administrator');
+                        this.toggleTagEntry();
+                        this.setState({newTag:''});
+                    }.bind(this)
+                });
+            } else { 
+                alert('Tag can not be empty');
+            };
     },
     toggleTagEntry: function () {
         if (this.state.tagEntry == false) {
@@ -355,24 +352,22 @@ var SourceData = React.createClass({
         }.bind(this));*/
     },
     addSource: function() {
-        //Look into making this state and doing this code in getInitialState;
         if (this.state.newSource != '') {
             var newSourceArr = [];
             var data = this.props.data;
-            for (var prop in data) {
-                var obj = data[prop];
-                newSourceArr.push(obj.value);
+            var source = 'source';
+            for (var prop in data) { 
+                newSourceArr.push(data[prop].value);
             }
             newSourceArr.push(this.state.newSource);
-            console.log(newSourceArr);
-            var json = {'source':newSourceArr}
             $.ajax({
                 type: 'put',
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-                data: json,
+                data: JSON.stringify({source:newSourceArr}),
+                contentType: 'application/json; charset=UTF-8',
                 success: function(data) {
                     console.log('success: source added');
-                    this.toggleSOurceEntry();
+                    this.toggleSourceEntry();
                     this.props.updated();
                     this.setState({newSource:''});
                 }.bind(this),
@@ -404,7 +399,7 @@ var SourceData = React.createClass({
         return (
             <div>
                 {rows}
-                <Button bsStyle={'success'} onClick={this.addSource}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
+                <Button bsStyle={'success'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
                 {this.state.sourceEntry ? <div style={{color:'black'}}><DebounceInput debounceTimeout={300} type='text' value={this.state.newSource} onChange={this.handleChange} /> <Button onClick={this.addSource}>Add</Button></div>: null} 
             </div>
         )
