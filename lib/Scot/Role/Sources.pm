@@ -5,16 +5,9 @@ use namespace::autoclean;
 
 =item B<sources>
 
-Array of sources applied to consuming object
+signals the api.pm that this model might have sources 
 
 =cut
 
-has sources => (
-    is      => 'ro',
-    isa     => 'ArrayRef',
-    traits  => [ 'Array' ],
-    required    => 1,
-    default => sub {[]},
-);
 
 1;
