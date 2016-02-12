@@ -782,7 +782,7 @@ sub handle_promotion {
             id   => $promote_to,
         };
 
-        my $ret = $linkcol->create_bidi_link($lhref_a, $lhref_b);
+        my $ret = $linkcol->create_link($lhref_a, $lhref_b);
 
         unless ( $ret ) {
             $log->error("Error creating Link: ",
@@ -823,12 +823,12 @@ sub handle_promotion {
     else {
         $log->trace("Unpromoting object");
 
-       $linkcol->remove_bidi_links({
-            item_type   => $object_type,
-            item_id     => $object->id,
-            target_type => $proname,
-            target_id   => $promote_to,
-        });
+       $linkcol->remove_links(
+            $object_type,
+            $object->id,
+            $proname,
+            $promote_to,
+        );
         if ( ref($object) eq "Scot::Model::Alert" ) {
             $mongo->collection('Alertgroup')->refresh_data($object->alertgroup, $user);
         }
@@ -1116,22 +1116,16 @@ sub breaklink {
     }
     
     my $collection      = $mongo->collection('Link');
-    my $match_href      = {
-        '$or'   => [
-            { target_type   => $col_name, 
-              target_id     => $id, 
-              item_type     => $sub_col, 
-              item_id       => $sub_id },
-            { target_type   => $sub_col, 
-              target_id     => $sub_id, 
-              item_type     => $col_name, 
-              item_id       => $id },
-        ]
+    my $a   = {
+        type   => $col_name, 
+        id     => $id, 
     };
-    my $debugjson = encode_json($match_href);
-    $log->debug("Breaklinks looking for ",
-                {filter=>\&Dumper,value=>$debugjson});
-    my $linkcursor      = $collection->find($match_href);
+    my $b   = {
+        type   => $sub_col, 
+        id     => $sub_id, 
+    };
+
+    my $linkcursor      = $collection->get_link($a, $b);
 
     unless ( defined $linkcursor ) {
         $log->error("No matching Links for $col_name : $id -> $sub_col : $sub_id");
