@@ -31,7 +31,7 @@ sub add_history_entry {
     my $obj = $self->create($href);
 
     # now link it to the object
-    my $link = $env->mongo->collection('Link')->create_bidi_link({
+    my $link = $env->mongo->collection('Link')->create_link({
         type   => "history",
         id     => $obj->id,
     },{

@@ -62,7 +62,7 @@ sub update_entities {
 
         my $entity_id    = $return->{id};
 
-        my $link    = $linkcol->create_bidi_link({
+        my $link    = $linkcol->create_link({
             type   => "entity",
             id     => $entity_id,
         },{
