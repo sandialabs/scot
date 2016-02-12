@@ -79,13 +79,10 @@ sub add_source_to {
             $source_obj    = $self->create({
                 value    => $source,
             });
-            $env->mongo->collection("Link")->create_bidi_link({
-                type => $thing,
-                id   => $id,
-            },{
-                type   => "source",
-                id     => $source_obj->id,
-            });
+            $env->mongo->collection("Link")->create_link(
+                { type => $thing,       id   => $id },
+                { type   => "source",   id   => $source_obj->id, },
+            );
         }
     }
     return 1;

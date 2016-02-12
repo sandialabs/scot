@@ -60,7 +60,7 @@ sub create_from_api {
     my $entry_obj   = $entry_collection->create($json);
 
     my $linkcol = $mongo->collection('Link');
-    my $linkobj = $linkcol->create_bidi_link({
+    my $linkobj = $linkcol->create_link({
         type   => "entry",
         id     => $entry_obj->id,
     },{
