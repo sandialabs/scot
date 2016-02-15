@@ -2,7 +2,7 @@ var React                   = require('react');
 var ReactTime               = require('react-time');
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
 var AddEntryModal           = require('../modal/add_entry.jsx');
-var DeleteEntryModal        = require('../modal/delete_entry.jsx');
+var DeleteEvent             = require('../modal/delete.jsx').DeleteEvent;
 var Owner                   = require('../modal/owner.jsx');
 var Entities                = require('../modal/entities.jsx');
 var History                 = require('../modal/history.jsx');
@@ -164,9 +164,9 @@ var SelectedHeader = React.createClass({
                     {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
                     {this.state.permissionsToolbar ? <SelectedPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
                     {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
-                    {this.state.deleteToolbar ? <DeleteEntryModal subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} toggleEventDisplay={this.props.toggleEventDisplay} /> :null}
+                    {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} toggleEventDisplay={this.props.toggleEventDisplay} /> :null}
                 </div>
-                <SelectedEntry id={id} type={type} />
+                <SelectedEntry id={id} type={type} entryToggle={this.entryToggle}/>
             </div>
         )
     }
