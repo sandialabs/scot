@@ -6,6 +6,8 @@ var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
 var Button          = require('react-bootstrap/lib/Button.js');
 var AddEntryModal   = require('../modal/add_entry.jsx');
 var DeleteEntry     = require('../modal/delete.jsx').DeleteEntry;
+var Summary         = require('../modal/summary.jsx');
+var Task            = require('../modal/task.jsx');
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
@@ -61,7 +63,9 @@ var EntryParent = React.createClass({
     getInitialState: function() {
         return {
             entryToolbar:false,   
-            deleteToolbar:false
+            deleteToolbar:false,
+            summaryToolbar:false,
+            taskToolbar:false
         }
     },
     entryToggle: function() {
@@ -77,7 +81,21 @@ var EntryParent = React.createClass({
         } else {
             this.setState({deleteToolbar:false})
         }
+    },
+    summaryToggle: function() {
+        if (this.state.summaryToolbar == false) {
+            this.setState({summaryToolbar:true})
+        } else {
+            this.setState({summaryToolbar:false})
+        }
     }, 
+    taskToggle: function() {
+        if (this.state.taskToolbar == false) {
+            this.setState({taskToolbar:true})
+        } else {
+            this.setState({taskToolbar:false}) 
+        }
+    },
     render: function() {
         var itemarr = [];
         var subitemarr = [];
@@ -85,6 +103,15 @@ var EntryParent = React.createClass({
         var type = this.props.type;
         var id = this.props.id; 
         var updated = this.props.updated;
+        var summary = items.summary;
+        var todo = 'todo_undefined';
+        var outerClassName = 'row-fluid entry-outer';
+        if (summary == 1) {
+            outerClassName += ' summary_entry';
+        }
+        /*if (todo =  )else {
+            outerClassName += ' todo_undefined_outer'
+        }*/
         itemarr.push(<EntryData subitem = {items} />);
         for (var prop in items) {
             childfunc(prop);
@@ -100,7 +127,7 @@ var EntryParent = React.createClass({
         itemarr.push(subitemarr);
         return (
             <div> 
-                <div className="row-fluid entry-outer todo_undefined_outer" style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
+                <div className={outerClassName} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
                     <span className="anchor" id={items.id}/>
                     <div className="row-fluid entry-header todo_undefined">
                         <div className="entry-header-inner">[<a style={{color:'black'}} href={"#"+items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} (updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
@@ -108,8 +135,8 @@ var EntryParent = React.createClass({
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.entryToggle}>
                                     <MenuItem eventKey='1' onClick={this.entryToggle}>Move</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
-                                    <MenuItem eventKey='3'>Mark as Summary</MenuItem>
-                                    <MenuItem eventKey='4'>Make Task</MenuItem>
+                                    <MenuItem eventKey='3' onClick={this.summaryToggle}>Mark as Summary</MenuItem>
+                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} updated={updated}/></MenuItem>
                                     <MenuItem eventKey='5'>Permissions</MenuItem>
                                 </SplitButton>
                                 <Button bsSize='xsmall' onClick={this.entryToggle}>Edit</Button>
@@ -120,6 +147,7 @@ var EntryParent = React.createClass({
                 </div>
                 {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}
+                {this.state.summaryToolbar ? <Summary type={type} id={id} summaryToggle={this.summaryToggle} entryid={items.id} updated={updated} /> : null}    
             </div>
         );
     }
@@ -144,8 +172,10 @@ var EntryData = React.createClass({
     },*/
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
+        var outerClassName = 'row-fluid entry-body'
+        var innerClassName = 'row-fluid entry-body-inner'
         return (
-            <div className="row-fluid entry-body">
+            <div className='row-fluid entry-body'>
                 <div className="row-fluid entry-body-inner" style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}} dangerouslySetInnerHTML={{ __html: rawMarkup }}/>
             </div>
         )
