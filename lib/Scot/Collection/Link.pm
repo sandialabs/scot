@@ -10,186 +10,170 @@ with    qw(
     Scot::Role::GetTargeted
 );
 
-# tag creation or update
-sub create_from_handler {
+sub create_from_api {
     my $self    = shift;
-    my $handler = shift;
-    my $env     = $handler->env;
-    my $log     = $env->log;
-
-    $log->trace("create in API Scot::Collection::History not supported");
-    return undef;
+    return $self->create_link(@_);
 }
 
-sub add_link {
+# link creation or update
+sub create_link {
     my $self    = shift;
-    my $href    = shift;
+    my $a       = shift; # href = { id: 123, type: "foo" }
+    my $b       = shift; # href = { id: 124, type: "bar" }
     my $env     = $self->env;
+    my $when    = shift // $env->now();
     my $log     = $env->log;
 
-    my $obj = $self->create($href);
-
-    unless ($obj) {
-        $log->error("Failed to create Link record for ", 
-                    { filter =>\&Dumper, value => $href });
+    if ( ref($a) ne "HASH" or ref($b) ne "HASH" ) {
+        $log->error("Arg[0] and Arg[1] must be Hash Refs");
+        return undef;
     }
-    return $obj;
+
+    unless (defined($a->{id}) and defined($a->{type}) ) {
+        $log->error("Arg[0] invalid hash");
+        return undef;
+    }
+
+    unless (defined($b->{id}) and defined($b->{type}) ) {
+        $log->error("Arg[1] invalid hash");
+        return undef;
+    }
+
+    my $test = $self->get_link($a,$b);
+    if ( $test ) {
+        $log->debug("link exists, returning existing...");
+        return $test;
+    }
+
+    my $link   = $self->create({
+        pair    => [ $a, $b ],
+        when    => $when,
+    });
+
+    return $link;
+}
+
+sub link_objects {
+    my $self    = shift;
+    my $a       = shift; # object
+    my $b       = shift; # object
+    my $env     = $self->env;
+    my $when    = shift // $env->now;
+    my $log     = $env->log;
+    
+    if ( ref($a) !~ /Scot::Model/ ) {
+        $log->error("Arg[0] must be a Scot::Model::* object");
+        return undef;
+    }
+    if ( ref($b) !~ /Scot::Model/ ) {
+        $log->error("Arg[1] must be a Scot::Model::* object");
+        return undef;
+    }
+    my $link    = $self->create({
+        pair    => [
+            { id    => $a->id, type => $a->get_my_type },
+            { id    => $b->id, type => $b->get_my_type },
+        ]
+    });
+    return $link;
 }
 
 sub get_links {
-    my $self    = shift;
-    my %params  = @_;
+    my $self        = shift;
+    my $type        = shift;
+    my $id          = shift;
+    my $linktype    = shift;
+    my $log         = $self->env->log;
 
-    # can be any/all of the following
-    # %params = (
-    #   item_type   => "foo",
-    #   item_id     => 12,
-    #   when        => epoch (or range)
-    #   target_type => "bar",
-    #   target_id   => 234,
-    # );
+    my @ematches    = ({ '$elemMatch' => { id => $id + 0, type => $type } });
 
-    my $cursor  = $self->find(\%params);
+    if ( $linktype ) {
+        push @ematches, { '$elemMatch' => { type => $linktype }};
+    }
+
+    my $match   = {
+        pair    => { '$all' => \@ematches }
+    };
+
+    $log->debug("Searching for links matching:",{filter=>\&Dumper, value=>$match});
+
+    my $cursor  = $self->find($match);
     return $cursor;
 }
 
-sub get_links_for {
+sub get_link { 
     my $self    = shift;
-    my $object  = shift;
-    my $colname = $object->get_collection_name();
+    my $a       = shift;
+    my $b       = shift;
 
-    my $cursor  = $self->find({
-        target_type => $colname,
-        target_id   => $object->id,
-    });
+    my @ematches = (
+        { '$elemMatch'  => $a },
+        { '$elemMatch'  => $b }
+    );
+    my $match   = { pair => {'$all' => \@ematches } };
+    my $cursor  = $self->find($match);
     return $cursor;
+
 }
+
 
 sub remove_links {
     my $self    = shift;
-    my %params  = @_;
+    my $type    = shift;
+    my $id      = shift;
+    my $linktype= shift;
+    my $linkid  = shift;
 
-    my $cursor  = $self->find(\%params);
+    my @ematches    = ({ '$elemMatch' => { id => $id, type => $type } });
+    if ( $linktype ) {
+        if ( $linkid ) { 
+            push @ematches, {'$elemMatch' => { id => $linkid, type => $linktype }};
+        } 
+        else {
+            push @ematches, {'$elemMatch' => { type => $linktype }};
+        }
+    }
+    my $match  = { pair => {'$all' => \@ematches} };
+    my $cursor = $self->find($match);
     while ( my $link = $cursor->next ) {
         $link->remove;
     }
     return;
 }
 
-
-=item B<create_bidi_link>
-
-This function is used to create bidi links between objects 
-since the link collection is directional, this means creating 
-two documents one with obj a as the item and as target.
-
-=cut
-
-sub create_bidi_link {
+sub get_entry_target {
     my $self    = shift;
-    my $a_href  = shift;
-    my $b_href  = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $now     = $env->now;
-    my $when    = shift // $now;
+    my $id      = shift;
 
-    my $link_ab = {
-        item_type   => $a_href->{type},
-        item_id     => $a_href->{id},
-        when        => $when,
-        target_type => $b_href->{type},
-        target_id   => $b_href->{id},
-    };
-    my $link_ba   = {
-        item_type   => $b_href->{type},
-        item_id     => $b_href->{id},
-        when        => $when,
-        target_type => $a_href->{type},
-        target_id   => $a_href->{id},
-    };
-    my $errors = 0;
-    foreach my $href ($link_ab, $link_ba) {
-        my $link    = $self->add_link($href);
-        unless ( $link ) {
-            $log->error("Failed creating link from ".
-                        $href->{item_type}." to ".
-                        $href->{target_type});
-            $errors++;
-        }
-    }
-    if ( $errors > 0 ) {
-        return undef;
-    }
-    return 1;
-}
-
-sub remove_bidi_links {
-    my $self    = shift;
-    my $a       = shift;    # href { id , type }
-    my $b       = shift;    # the other one
-
-    my $link_ab = {
-        item_type   => $a->{type},
-        item_id     => $a->{id},
-        target_type => $b->{type},
-        target_id   => $b->{id},
-    };
-    my $link_ba = {
-        item_type   => $b->{type},
-        item_id     => $b->{id},
-        target_type => $a->{type},
-        target_id   => $a->{id},
-    };
-    foreach my $href ($link_ab, $link_ba) {
-        $self->remove_links($href);
-    }
-}
-
-sub find_any {
-    my $self    = shift;
-    my $a       = shift; # href = { id => x, type => y }
-    my $b       = shift; # href = { id => x, type => y }
-
-    my $match   = {
-        '$or'   => [
-            { target_type   => $a->{type},
-              target_id     => $a->{id},
-              item_type     => $b->{type},
-              item_id       => $b->{id},
-            },
-            { target_type   => $b->{type},
-              target_id     => $b->{id},
-              item_type     => $a->{type},
-              item_id       => $a->{id},
-            },
-        ]
-    };
-    my $cursor  = $self->find($match);
-    return $cursor;
-}
-
-sub find_any_one {
-    my $self    = shift;
-    my $a       = shift; # href = { id => x, type => y }
-    my $b       = shift; # href = { id => x, type => y }
-
-    my $match   = {
-        '$or'   => [
-            { target_type   => $a->{type},
-              target_id     => $a->{id},
-              item_type     => $b->{type},
-              item_id       => $b->{id},
-            },
-            { target_type   => $b->{type},
-              target_id     => $b->{id},
-              item_type     => $a->{type},
-              item_id       => $a->{id},
-            },
-        ]
-    };
+    my @ematches    = (
+        { '$elemMatch' => { id => $id, type => "entry" } },
+        { '$elemMatch' => { 
+            type => {
+                '$in'   => [ "event", 
+                             "incident", 
+                             "alert", 
+                             "alertgroup", 
+                             "intel" ]
+            }
+        }},
+    );
+    my $match   = { pair => { '$all'    => \@ematches } };
     my $object  = $self->find_one($match);
-    return $object;
+    if ($object) {
+        my $pair    = $object->pair;
+        my ( $type, $id );
+        if ( $pair->[0]->{type} eq "entry" ) {
+            type    = $pair->[1]->{type};
+            id      = $pair->[1]->{id};
+        }
+        else {
+            $type    = $pair->[0]->{type};
+            $id      = $pair->[0]->{id};
+        }
+        return $type, $id;
+    }
+    return undef;
 }
+
 
 1;

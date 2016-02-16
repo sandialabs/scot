@@ -51,6 +51,5 @@ db.tag.ensureIndex(         { "id":         1}, {unique: true, dropDups:true}  )
 db.tag.ensureIndex(         { "value":      1}  );
 
 db.link.ensureIndex(        { "id":         1}, {unique: true, dropDups:true}  );
-db.link.ensureIndex(        { "item_id":    1, "item_type": 1 } );
-db.link.ensureIndex(        { "target_id":  1, "target_type": 1 } );
+db.link.ensureIndex(        { "pair.id": 1, "pair.type": 1} );
 db.link.ensureIndex(        { "when": 1, } );
