@@ -39,13 +39,43 @@ sub create_link {
         return undef;
     }
 
+    my $test = $self->get_link($a,$b);
+    if ( $test ) {
+        $log->debug("link exists, returning existing...");
+        return $test;
+    }
+
     my $link   = $self->create({
         pair    => [ $a, $b ],
         when    => $when,
     });
 
     return $link;
+}
 
+sub link_objects {
+    my $self    = shift;
+    my $a       = shift; # object
+    my $b       = shift; # object
+    my $env     = $self->env;
+    my $when    = shift // $env->now;
+    my $log     = $env->log;
+    
+    if ( ref($a) !~ /Scot::Model/ ) {
+        $log->error("Arg[0] must be a Scot::Model::* object");
+        return undef;
+    }
+    if ( ref($b) !~ /Scot::Model/ ) {
+        $log->error("Arg[1] must be a Scot::Model::* object");
+        return undef;
+    }
+    my $link    = $self->create({
+        pair    => [
+            { id    => $a->id, type => $a->get_my_type },
+            { id    => $b->id, type => $b->get_my_type },
+        ]
+    });
+    return $link;
 }
 
 sub get_links {
@@ -110,5 +140,40 @@ sub remove_links {
     }
     return;
 }
+
+sub get_entry_target {
+    my $self    = shift;
+    my $id      = shift;
+
+    my @ematches    = (
+        { '$elemMatch' => { id => $id, type => "entry" } },
+        { '$elemMatch' => { 
+            type => {
+                '$in'   => [ "event", 
+                             "incident", 
+                             "alert", 
+                             "alertgroup", 
+                             "intel" ]
+            }
+        }},
+    );
+    my $match   = { pair => { '$all'    => \@ematches } };
+    my $object  = $self->find_one($match);
+    if ($object) {
+        my $pair    = $object->pair;
+        my ( $type, $id );
+        if ( $pair->[0]->{type} eq "entry" ) {
+            type    = $pair->[1]->{type};
+            id      = $pair->[1]->{id};
+        }
+        else {
+            $type    = $pair->[0]->{type};
+            $id      = $pair->[0]->{id};
+        }
+        return $type, $id;
+    }
+    return undef;
+}
+
 
 1;
