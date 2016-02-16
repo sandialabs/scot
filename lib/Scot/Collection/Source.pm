@@ -75,7 +75,7 @@ sub add_source_to {
     $thing = lc($thing);
 
     my $linkcol = $mongo->collection('Link');
-    $log->debug("LinkCol is ",{filter=>\&Dumper, file=> $linkcol});
+    $log->debug("LinkCol is ",{filter=>\&Dumper, value => $linkcol});
 
     foreach my $source (@$sources) {
         my $source_obj         = $self->find_one({ value => $source });
