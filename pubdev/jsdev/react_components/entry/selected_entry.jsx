@@ -115,15 +115,13 @@ var EntryParent = React.createClass({
             outerClassName += ' todo_open_outer';
             innerClassName += ' todo_open';
         } else if (items.task.status == 'closed' && items.task.who != null ) {
+            taskOwner = '-- Task Owner ' + items.task.who + ' ';
             outerClassName += ' todo_completed_outer';
             innerClassName += ' todo_completed';
         } else if (items.task.status == 'closed') {
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
-        /*if (todo =  )else {
-            outerClassName += ' todo_undefined_outer'
-        }*/
         itemarr.push(<EntryData subitem = {items} />);
         for (var prop in items) {
             childfunc(prop);
