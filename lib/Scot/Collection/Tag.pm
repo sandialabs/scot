@@ -80,12 +80,12 @@ sub add_tag_to {
         });
     }
 
-    $env->mongo->collection("Link")->create_bidi_link({
+    $env->mongo->collection("Link")->create_link({
         type => $thing,
-        id   => $id,
+        id   => $id + 0,
     },{
         type   => "tag",
-        id     => $tag_obj->id,
+        id     => $tag_obj->id + 0,
     });
 
     return $tag_obj;

@@ -99,7 +99,7 @@ sub create {
     if ( $object->meta->does_role("Scot::Role::Tags") ) {
         $self->apply_tags($req_href, $colname, $object->id);
     }
-    if ( $object->meta->does_role("Scot::Role::Tags") ) {
+    if ( $object->meta->does_role("Scot::Role::Sources") ) {
         $self->apply_sources($req_href, $colname, $object->id);
     }
 
@@ -406,6 +406,19 @@ sub get_one {
         $log->trace("_____ Adding to VIEWS _____");
         my $from = $self->tx->remote_address;
         $object->add_view($user, $from, $env->now);
+    }
+
+    if ( ref($object) eq "Scot::Model::File" ) {
+        my $download    = $self->param('download');
+        if ( $download ) {
+            $self->res->content->headers->header(
+                'Content-Type', 'application/x-download; name="'.$object->filename.'"');
+            $self->res->content->headers->header(
+                'Content-Disposition', 'attachment; filename="'.$object->filename.'"');
+            my $static = Mojolicious::Static->new( paths => [ $object->directory ]);
+            $static->serve($self, $object->filename);
+            $self->rendered;
+        }
     }
 
     my $data_href   = {};
@@ -782,7 +795,7 @@ sub handle_promotion {
             id   => $promote_to,
         };
 
-        my $ret = $linkcol->create_bidi_link($lhref_a, $lhref_b);
+        my $ret = $linkcol->create_link($lhref_a, $lhref_b);
 
         unless ( $ret ) {
             $log->error("Error creating Link: ",
@@ -807,7 +820,7 @@ sub handle_promotion {
         };
 
         $self->do_render({
-            id      => $object->id,
+            id      => $proobj->id,
             status  => "successfully promoted",
         });
 
@@ -823,12 +836,12 @@ sub handle_promotion {
     else {
         $log->trace("Unpromoting object");
 
-       $linkcol->remove_bidi_links({
-            item_type   => $object_type,
-            item_id     => $object->id,
-            target_type => $proname,
-            target_id   => $promote_to,
-        });
+       $linkcol->remove_links(
+            $object_type,
+            $object->id,
+            $proname,
+            $promote_to,
+        );
         if ( ref($object) eq "Scot::Model::Alert" ) {
             $mongo->collection('Alertgroup')->refresh_data($object->alertgroup, $user);
         }
@@ -1116,22 +1129,16 @@ sub breaklink {
     }
     
     my $collection      = $mongo->collection('Link');
-    my $match_href      = {
-        '$or'   => [
-            { target_type   => $col_name, 
-              target_id     => $id, 
-              item_type     => $sub_col, 
-              item_id       => $sub_id },
-            { target_type   => $sub_col, 
-              target_id     => $sub_id, 
-              item_type     => $col_name, 
-              item_id       => $id },
-        ]
+    my $a   = {
+        type   => $col_name, 
+        id     => $id, 
     };
-    my $debugjson = encode_json($match_href);
-    $log->debug("Breaklinks looking for ",
-                {filter=>\&Dumper,value=>$debugjson});
-    my $linkcursor      = $collection->find($match_href);
+    my $b   = {
+        type   => $sub_col, 
+        id     => $sub_id, 
+    };
+
+    my $linkcursor      = $collection->get_link($a, $b);
 
     unless ( defined $linkcursor ) {
         $log->error("No matching Links for $col_name : $id -> $sub_col : $sub_id");
@@ -1869,6 +1876,131 @@ sub autocomplete {
         totalRecordCount    => scalar(@values),
     });
 }
+
+sub receive_upload_file {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mogo;
+
+    $log->debug("Receiving File Upload");
+
+    my @uploads     = $self->req->upload('upload');
+    my $target_type = $self->param('target_type');
+    my $target_id   = $self->param('target_id');
+    my $entry_id    = 0; # parent
+    my $linkcol     = $mongo->collection('Link');
     
+
+    if ( $target_type eq "entry" ) {
+        $entry_id   = $target_id;
+        ($target_type, $target_id) = $linkcol->get_entry_target($entry_id);
+    }
+
+    my $entrycol    = $mongo->collection('Entry');
+    my $filecol     = $mongo->collection('File');
+
+    UPLOAD:
+    foreach my $upload (@uploads) {
+        my $href = $self->store_upload_file($upload);
+
+        unless ($href) {
+            next UPLOAD;
+        }
+
+        my ($fileobj, $entryobj);
+
+        try {
+            $fileobj     = $filecol->create($href);
+            # need to create this function in Collection/Entry.pm
+            $entryobj    = $entrycol->create_file_entry($fileobj, $entry_id);
+        }
+        catch {
+            $log->error("Failed to create file object or entyobj",
+                        { filter => \&Dumper, value => $href });
+            next UPLOAD;
+        };
+
+        my ($entrylink, $flink1, $flink2);
+        try {
+            $entrylink   = $self->create_link(
+                { id => $entryobj->id, type => $entryobj->get_my_type },
+                { id => $target_id,    type => $target_type },
+            );
+            $flink1    = $self->link_objects($fileobj, $entryobj);
+            $flink2      = $self->create_link(
+                { id    => $fileobj->id, type => $fileobj->get_my_type },
+                { id    => $target_id,   type => $target_type }
+            );
+        }
+        catch {
+            $log->error("Failed to create one or more of the links for file");
+        };
+    }
+}
+
+sub store_upload_file {
+    my $self    = shift;
+    my $upload  = shift;
+    my $target  = shift;
+    my $id      = shift;
+
+    my $size    = $upload->size;
+    my $name    = $upload->filename;
+    my $year    = $self->get_year;
+    my $dir     = $self->build_upload_dir($year, $target, $id);
+    my $newname = $dir . '/' . $name;
+
+    $upload->move_to($newname);
+
+    my %hashes = $self->hash_upload_file($newname);
+
+    $hashes{filename}   = $name;
+    $hashes{size}       = $size;
+    $hashes{directory}  = $dir;
+
+    if ( $! ) {
+        $self->env->log->error("Failed moving uploaded file to $newname!");
+        return undef;
+    }
+    return wantarray ? %hashes : \%hashes;
+}
+
+sub build_upload_dir {
+    my $self    = shift;
+    my $year    = shift;
+    my $target  = shift;
+    my $id      = shift;
+
+}
+
+sub hash_upload_file {
+    my $self    = shift;
+    my $name    = shift;
+
+    my $data    = read_file($name);
+    my %hashes  = (
+        md5     => md5_hex($data),
+        sha1    => sha1_hex($data),
+        sha256  => sha256_hex($data),
+    );
+    return wantarray ? %hashes : \%hashes;
+}
+
+sub create_file_entry {
+    my $self    = shift;
+    my $parent  = shift;
+    my $href    = shift;
+
+    my $collection  = $self->env->mongo->collection('Entry');
+    my $entry       = $collection->create_upload($href);
+
+    if ( $entry ) {
+        return $entry;
+    }
+    return undef;
+}
+
+
 
 1;
