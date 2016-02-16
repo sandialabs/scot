@@ -104,10 +104,22 @@ var EntryParent = React.createClass({
         var id = this.props.id; 
         var updated = this.props.updated;
         var summary = items.summary;
-        var todo = 'todo_undefined';
         var outerClassName = 'row-fluid entry-outer';
+        var innerClassName = 'row-fluid entry-header';
+        var taskOwner = ''; 
         if (summary == 1) {
             outerClassName += ' summary_entry';
+        }
+        if (items.task.status == 'open') {
+            taskOwner = '-- Task Owner ' + items.task.who + ' ';
+            outerClassName += ' todo_open_outer';
+            innerClassName += ' todo_open';
+        } else if (items.task.status == 'closed' && items.task.who != null ) {
+            outerClassName += ' todo_completed_outer';
+            innerClassName += ' todo_completed';
+        } else if (items.task.status == 'closed') {
+            outerClassName += ' todo_undefined_outer';
+            innerClassName += ' todo_undefined';
         }
         /*if (todo =  )else {
             outerClassName += ' todo_undefined_outer'
@@ -129,8 +141,8 @@ var EntryParent = React.createClass({
             <div> 
                 <div className={outerClassName} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
                     <span className="anchor" id={items.id}/>
-                    <div className="row-fluid entry-header todo_undefined">
-                        <div className="entry-header-inner">[<a style={{color:'black'}} href={"#"+items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} (updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
+                    <div className={innerClassName}>
+                        <div className="entry-header-inner">[<a style={{color:'black'}} href={"#"+items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
                             <span className='pull-right'>
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.entryToggle}>
                                     <MenuItem eventKey='1' onClick={this.entryToggle}>Move</MenuItem>
