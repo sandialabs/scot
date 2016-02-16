@@ -26,8 +26,6 @@ var Task = React.createClass({
         this.taskRequest = $.get('scot/api/v2/entry/' + this.props.entryid, function(result) {
             var taskOwner = result.task.who;
             var taskStatus = result.task.status;
-            console.log(taskOwner);
-            console.log(taskStatus);
             this.setState({taskOwner:taskOwner, taskStatus:taskStatus})
         }.bind(this)); 
     },
