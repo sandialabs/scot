@@ -60,7 +60,7 @@ sub create_from_api {
     my $entry_obj   = $entry_collection->create($json);
 
     my $linkcol = $mongo->collection('Link');
-    my $linkobj = $linkcol->create_bidi_link({
+    my $linkobj = $linkcol->create_link({
         type   => "entry",
         id     => $entry_obj->id,
     },{
@@ -148,6 +148,54 @@ sub get_tasks   {
         'task.status'   => { '$exists' => 1}
     });
     return $cursor;
+}
+
+sub create_file_entry {
+    my $self    = shift;
+    my $fileobj = shift;
+    my $entryid = shift;
+
+    $entryid += 0;
+
+    my $fid     = $fileobj->id;
+    my $htmlsrc = <<EOF;
+
+<div class="fileinfo">
+    <table>
+        <tr>
+            <th>File Id</th>%d</td>
+            <th>Filename</th><td>%s</td>
+            <th>Size</th><td>%s<
+            <th>md5</th><td>%s<
+            <th>sha1</th><td>%s<
+            <th>sha256</th><td>%s<d>
+            <th>notes</th><td>%s<>
+    </table>
+    <a href="/scot/file/%d?download=1">
+        Download
+    </a>
+</div>
+EOF
+    my $html = sprintf(
+        $htmlsrc,
+        $fileobj->id,
+        $fileobj->filename,
+        $fileobj->size,
+        $fileobj->md5,
+        $fileobj->sha1,
+        $fileobj->sha256,
+        $fileobj->notes);
+
+    my $newentry;
+    try {
+        $newentry = $self->create({
+            body    => $html,
+            parent  => $entryid,
+        });
+    }
+    catch {
+        $self->env->log->error("Failed to create Entry!");
+    };
 }
 
 
