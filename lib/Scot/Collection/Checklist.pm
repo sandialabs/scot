@@ -36,7 +36,7 @@ sub create_from_api {
 
             my $obj = $ecoll->create($entry);
 
-            $env->mongo->collection('Link')->create_bidi_link({
+            $env->mongo->collection('Link')->create_link({
                 type   => "entry",
                 id     => $obj->id,
             },{
