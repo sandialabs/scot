@@ -62,7 +62,6 @@ $t->put_ok("/scot/api/v2/alert/$alert_1_id" => json =>
         promote => "new",
     } 
 )->status_is(200)
- ->json_is('/id'        => $alert_1_id)
  ->json_is('/status'    => "successfully promoted");
 
 my $event1  = $t->tx->res->json->{id};
