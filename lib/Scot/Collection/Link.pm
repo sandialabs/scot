@@ -163,8 +163,8 @@ sub get_entry_target {
         my $pair    = $object->pair;
         my ( $type, $id );
         if ( $pair->[0]->{type} eq "entry" ) {
-            type    = $pair->[1]->{type};
-            id      = $pair->[1]->{id};
+            $type    = $pair->[1]->{type};
+            $id      = $pair->[1]->{id};
         }
         else {
             $type    = $pair->[0]->{type};
