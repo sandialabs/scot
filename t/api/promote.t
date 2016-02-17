@@ -95,8 +95,12 @@ $t->put_ok("/scot/api/v2/alert/$alert_2_id" => json =>
         promote => $event1,
     } 
 )->status_is(200)
- ->json_is('/id'        => $alert_2_id)
- ->json_is('/status'    => "successfully promoted");
+ ->json_is('/id'        => $event1)                     
+ ->json_is('/status'    => "successfully promoted");    # expect the id of the promoted object
+
+# print Dumper($t->tx->res->json), "\n";
+# done_testing();
+# exit 0;
 
 $t->get_ok("/scot/api/v2/event/$event1/alert" => {},
     "Get alerts promoted to Event $event1")
@@ -142,7 +146,7 @@ $t->get_ok("/scot/api/v2/event/$event1/incident" => {},
     ->json_is('/queryRecordCount'       => 1)
     ->json_is('/records/0/id'           => $incident1);
 
-print Dumper($t->tx->res->json), "\n";
+# print Dumper($t->tx->res->json), "\n";
 done_testing();
 exit 0;
 
