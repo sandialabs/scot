@@ -20,13 +20,13 @@ Think of this as a multi to multi junction table from SQL  world
 
 or
 
- item ---> target   unidirectional graph component
+ item <---> target   unidirectional graph component
 
 We are not restricting to single links, in other works
 
-entity 123 ---> entry  1010 @ 1453132180
-entity 123 ---> entry  1010 @ 1453132180
-entity 123 ---> alert  1011001 @ 1453102111
+entity 123 <---> entry  1010 @ 1453132180
+entity 123 <---> entry  1010 @ 1453132180
+entity 123 <---> alert  1011001 @ 1453102111
 
 which gives us the count (3) and a timeseries of when we first saw entity 123
 and the subsequent appearances.
@@ -43,33 +43,6 @@ with    qw(
 
 =over 4
 
-=item B<item_type>
-
-The item that we wish to associate with the target
-usually something like an entity
-
-=cut
-
-has item_type  => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    default     => 'unknown',
-);
-
-=item B<item_id>
-
-the id of the item being linked
-
-=cut
-
-has item_id  => (
-    is          => 'ro',
-    isa         => 'Int',
-    required    => 1,
-    default     => 0,
-);
-
 =item B<when>
 
 when it linked
@@ -84,31 +57,20 @@ has when  => (
     default     => sub { time(); },
 );
 
-=item B<target_type>
+=item B<pair>
 
-the target of the link
-
-=cut
-
-has target_type    => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    default     => '',
-);
-
-=item B<target_id>
-
-the id of the item being targeted
+this is the pair of items that are linked
+[ { id: 1, type: "alert" }, {id:2, type:"alertgroup"} ]
 
 =cut
 
-has target_id  => (
+has pair    => (
     is          => 'ro',
-    isa         => 'Int',
+    isa         => 'ArrayRef',
     required    => 1,
-    default     => 0,
+    default     => sub { [] },
 );
+
 
 __PACKAGE__->meta->make_immutable;
 1;

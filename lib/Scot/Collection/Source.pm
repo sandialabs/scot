@@ -1,6 +1,7 @@
 package Scot::Collection::Source;
 use lib '../../../lib';
 use Moose 2;
+use Data::Dumper;
 extends 'Scot::Collection';
 with    qw(
     Scot::Role::GetByAttr
@@ -63,14 +64,18 @@ sub add_source_to {
 
     my $env = $self->env;
     my $log = $env->log;
+    my $mongo   = $env->mongo;
 
     if ( ref($sources) ne "ARRAY" ) {
         $sources = [ $sources];
     }
 
-    $log->debug("Add_source_to $thing:$id => ".join(',',$sources));
+    $log->debug("Add_source_to $thing:$id => ".join(',',@$sources));
 
     $thing = lc($thing);
+
+    my $linkcol = $mongo->collection('Link');
+    $log->debug("LinkCol is ",{filter=>\&Dumper, value => $linkcol});
 
     foreach my $source (@$sources) {
         my $source_obj         = $self->find_one({ value => $source });
@@ -79,13 +84,10 @@ sub add_source_to {
             $source_obj    = $self->create({
                 value    => $source,
             });
-            $env->mongo->collection("Link")->create_bidi_link({
-                type => $thing,
-                id   => $id,
-            },{
-                type   => "source",
-                id     => $source_obj->id,
-            });
+            $linkcol->create_link(
+                { type => $thing,       id   => $id },
+                { type   => "source",   id   => $source_obj->id, },
+            );
         }
     }
     return 1;
