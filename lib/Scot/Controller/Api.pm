@@ -13,6 +13,7 @@ Perform the CRUD operations based on JSON input and provide JSON output
 
 use Data::Dumper;
 use Try::Tiny;
+use DateTime;
 use Mojo::JSON qw(decode_json encode_json);
 use strict;
 use warnings;
@@ -496,7 +497,7 @@ sub get_subthing {
         @things = $cursor->all;
     }
 
-    $log->trace("Records are ",{ filter => \&Dumper, value =>\@things});
+    # $log->trace("Records are ",{ filter => \&Dumper, value =>\@things});
 
     $self->do_render({
         records => \@things,
@@ -1875,130 +1876,6 @@ sub autocomplete {
         queryRecordCount    => scalar(@values),
         totalRecordCount    => scalar(@values),
     });
-}
-
-sub receive_upload_file {
-    my $self    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mogo;
-
-    $log->debug("Receiving File Upload");
-
-    my @uploads     = $self->req->upload('upload');
-    my $target_type = $self->param('target_type');
-    my $target_id   = $self->param('target_id');
-    my $entry_id    = 0; # parent
-    my $linkcol     = $mongo->collection('Link');
-    
-
-    if ( $target_type eq "entry" ) {
-        $entry_id   = $target_id;
-        ($target_type, $target_id) = $linkcol->get_entry_target($entry_id);
-    }
-
-    my $entrycol    = $mongo->collection('Entry');
-    my $filecol     = $mongo->collection('File');
-
-    UPLOAD:
-    foreach my $upload (@uploads) {
-        my $href = $self->store_upload_file($upload);
-
-        unless ($href) {
-            next UPLOAD;
-        }
-
-        my ($fileobj, $entryobj);
-
-        try {
-            $fileobj     = $filecol->create($href);
-            # need to create this function in Collection/Entry.pm
-            $entryobj    = $entrycol->create_file_entry($fileobj, $entry_id);
-        }
-        catch {
-            $log->error("Failed to create file object or entyobj",
-                        { filter => \&Dumper, value => $href });
-            next UPLOAD;
-        };
-
-        my ($entrylink, $flink1, $flink2);
-        try {
-            $entrylink   = $self->create_link(
-                { id => $entryobj->id, type => $entryobj->get_my_type },
-                { id => $target_id,    type => $target_type },
-            );
-            $flink1    = $self->link_objects($fileobj, $entryobj);
-            $flink2      = $self->create_link(
-                { id    => $fileobj->id, type => $fileobj->get_my_type },
-                { id    => $target_id,   type => $target_type }
-            );
-        }
-        catch {
-            $log->error("Failed to create one or more of the links for file");
-        };
-    }
-}
-
-sub store_upload_file {
-    my $self    = shift;
-    my $upload  = shift;
-    my $target  = shift;
-    my $id      = shift;
-
-    my $size    = $upload->size;
-    my $name    = $upload->filename;
-    my $year    = $self->get_year;
-    my $dir     = $self->build_upload_dir($year, $target, $id);
-    my $newname = $dir . '/' . $name;
-
-    $upload->move_to($newname);
-
-    my %hashes = $self->hash_upload_file($newname);
-
-    $hashes{filename}   = $name;
-    $hashes{size}       = $size;
-    $hashes{directory}  = $dir;
-
-    if ( $! ) {
-        $self->env->log->error("Failed moving uploaded file to $newname!");
-        return undef;
-    }
-    return wantarray ? %hashes : \%hashes;
-}
-
-sub build_upload_dir {
-    my $self    = shift;
-    my $year    = shift;
-    my $target  = shift;
-    my $id      = shift;
-
-}
-
-sub hash_upload_file {
-    my $self    = shift;
-    my $name    = shift;
-
-    my $data    = read_file($name);
-    my %hashes  = (
-        md5     => md5_hex($data),
-        sha1    => sha1_hex($data),
-        sha256  => sha256_hex($data),
-    );
-    return wantarray ? %hashes : \%hashes;
-}
-
-sub create_file_entry {
-    my $self    = shift;
-    my $parent  = shift;
-    my $href    = shift;
-
-    my $collection  = $self->env->mongo->collection('Entry');
-    my $entry       = $collection->create_upload($href);
-
-    if ( $entry ) {
-        return $entry;
-    }
-    return undef;
 }
 
 

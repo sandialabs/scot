@@ -35,7 +35,7 @@ override 'create' => sub {
     my $env = $self->env;
     my $log = $self->env->log;
 
-#    $log->trace("In overriden create");
+    $log->trace("In overriden create");
 
     my @args    = ( ref $args->[0] eq 'HASH' ? %{$args->[0]} : @$args );
     my $iid     = $self->get_next_id;

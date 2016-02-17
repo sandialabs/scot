@@ -7,7 +7,6 @@ use Moose 2;
 extends 'Scot::Collection';
 with    qw(
     Scot::Role::GetByAttr
-    Scot::Role::GetTargeted
 );
 
 sub create_from_api {
@@ -23,6 +22,8 @@ sub create_link {
     my $env     = $self->env;
     my $when    = shift // $env->now();
     my $log     = $env->log;
+
+    $log->debug("CREATE LINK from ".Dumper($a)." to ".Dumper($b));
 
     if ( ref($a) ne "HASH" or ref($b) ne "HASH" ) {
         $log->error("Arg[0] and Arg[1] must be Hash Refs");
@@ -71,8 +72,8 @@ sub link_objects {
     }
     my $link    = $self->create({
         pair    => [
-            { id    => $a->id, type => $a->get_my_type },
-            { id    => $b->id, type => $b->get_my_type },
+            { id    => $a->id, type => $a->get_collection_name },
+            { id    => $b->id, type => $b->get_collection_name },
         ]
     });
     return $link;
@@ -105,14 +106,27 @@ sub get_link {
     my $self    = shift;
     my $a       = shift;
     my $b       = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    $a->{id} += 0;
+    $b->{id} += 0;
 
     my @ematches = (
         { '$elemMatch'  => $a },
         { '$elemMatch'  => $b }
     );
     my $match   = { pair => {'$all' => \@ematches } };
+    
+    # $log->debug("Looking for Links matching: ",
+    #            { filter => \&Dumper, value => $match});
+     
     my $cursor  = $self->find($match);
-    return $cursor;
+
+    if ( $cursor->count > 0 ) {
+        return $cursor;
+    }
+    return undef;
 
 }
 
@@ -144,6 +158,10 @@ sub remove_links {
 sub get_entry_target {
     my $self    = shift;
     my $id      = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    $id += 0; 
 
     my @ematches    = (
         { '$elemMatch' => { id => $id, type => "entry" } },
@@ -158,17 +176,24 @@ sub get_entry_target {
         }},
     );
     my $match   = { pair => { '$all'    => \@ematches } };
+
+    $log->debug("Looking for entry target ",
+                { filter => \&Dumper, value => $match});
+
     my $object  = $self->find_one($match);
+
+    # $log->debug("Got :", { filter => \&Dumper, value => $object});
+
     if ($object) {
         my $pair    = $object->pair;
         my ( $type, $id );
         if ( $pair->[0]->{type} eq "entry" ) {
             $type    = $pair->[1]->{type};
-            $id      = $pair->[1]->{id};
+            $id      = $pair->[1]->{id} + 0;
         }
         else {
             $type    = $pair->[0]->{type};
-            $id      = $pair->[0]->{id};
+            $id      = $pair->[0]->{id} + 0;
         }
         return $type, $id;
     }
