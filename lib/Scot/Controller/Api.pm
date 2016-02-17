@@ -1897,7 +1897,7 @@ sub whoami {
     my $userobj = $mongo->collection('User')->find_one({username => $user});
 
     if ( defined ( $userobj )  ) {
-        $self->do_render(200, {
+        $self->do_render({
             user    => $user,
             data    => $userobj->as_hash,
         });
