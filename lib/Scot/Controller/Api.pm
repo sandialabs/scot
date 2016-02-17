@@ -1488,6 +1488,7 @@ sub thread_entries {
     my $count       = 1;
     my $mygroups    = $self->session('groups');
     my $user        = $self->session('user');
+    my @summaries   = ();
 
     ENTRY:
     while ( my $entry   = $cursor->next ) {
@@ -1500,7 +1501,11 @@ sub thread_entries {
         $count++;
         my $href            = $entry->as_hash;
         $href->{children}   = [];
-        
+
+        if ( $entry->summary ) {
+            push @summaries, $href;
+            next ENTRY;
+        }
 
         if ( $entry->parent == 0 ) {
             $threaded[$rindex]  = $href;
@@ -1521,6 +1526,8 @@ sub thread_entries {
         $parent_kids_aref->[$new_child_index]  = $href;
         $where{$entry->id} = \$parent_kids_aref->[$new_child_index];
     }
+
+    unshift @threaded, @summaries;
 
     return wantarray ? @threaded : \@threaded;
 }
