@@ -18,6 +18,7 @@ extends "Scot::Model";
 with    qw(
     Meerkat::Role::Document
     Scot::Role::Username
+    Scot::Role::Hashable
 );
 
 =head1 Attributes
