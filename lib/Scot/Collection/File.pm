@@ -1,6 +1,7 @@
 package Scot::Collection::File;
 use lib '../../../lib';
 use Moose 2;
+use Data::Dumper;
 extends 'Scot::Collection';
 with    qw(
     Scot::Role::GetByAttr
@@ -19,29 +20,21 @@ Custom collection operations for Files
 
 =over 4
 
-=item B<create_from_handler($handler_ref)>
+=item B<create_from_api($handler_ref)>
 
 Create an event and from a POST to the handler
 
 =cut
 
 
-sub create_from_handler {
+sub create_from_api {
     my $self    = shift;
-    my $handler = shift;
-    my $log     = $handler->env->log;
+    my $request = shift;
+    my $log     = $self->env->log;
 
-    $log->trace("Custom create in Scot::Collection::File");
+    $log->trace("Create File from API");
+    $log->trace("request is ",{ filter => \&Dumper, value=>$request});
 
-    my $build_href  = $handler->get_build_href;
-
-    if ( defined $build_href->{from_alerts} ) {
-        return $self->build_from_alerts($handler, $build_href);
-    }
-
-    my $event   = $self->create($build_href);
-
-    return $event;
 
 }
 
