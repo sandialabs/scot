@@ -7,7 +7,7 @@ var Button          = require('react-bootstrap/lib/Button.js');
 var AddEntryModal   = require('../modal/add_entry.jsx');
 var DeleteEntry     = require('../modal/delete.jsx').DeleteEntry;
 var Summary         = require('../modal/summary.jsx');
-var Task            = require('../modal/task.jsx');
+var Task            = require('../components/task.jsx');
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
