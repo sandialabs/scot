@@ -194,17 +194,10 @@ sub get_subthing {
         $log->error("Collection Link error!");
         return undef;
     }
-    my $find_href   = {
-            target_type   => $thing,
-            target_id     => $id + 0,
-            item_type     => $subthing,
-    };
-    # $log->trace("lincol = ",{filter=>\&Dumper, value=>$linkcol});
-    $log->trace("Looking for links matching ",
-                {filter=>\&Dumper, value=>$find_href});
+
     $log->trace("DB is ". $mongo->database_name);
     try {
-         $cursor = $linkcol->find($find_href);
+         $cursor = $linkcol->get_links( $thing, $id, $subthing);
          $log->debug("cursor count is ".$cursor->count);
     }
     catch {
@@ -214,7 +207,8 @@ sub get_subthing {
         $log->debug("trying for direct link");
     };
 
-    if ( defined $cursor and ref($cursor) eq "Meerkat::Cursor" and
+    if ( defined $cursor and 
+         ref($cursor) eq "Meerkat::Cursor" and
          $cursor->count > 0) {
         # now we have a cursor of Links, translate that into 
         # a cursor of the subthing
@@ -223,9 +217,17 @@ sub get_subthing {
         # my @ids = map { $_->{item_id} } $cursor->all;
         my @ids;
         while ( my $linkobj = $cursor->next ) {
-            my $href    = $linkobj->as_hash;
-            $log->debug("link = ", {filter=>\&Dumper, value=>$href});
-            push @ids, $linkobj->item_id;
+
+            my $pair    = $linkobj->pair;
+            my $item_id;
+            if ( $pair->[0]->{id} == $id and $pair->[0]->{type} eq $thing ) {
+                $item_id = $pair->[1]->{id} + 0;
+            }
+            else {
+                $item_id = $pair->[0]->{id} + 0;
+            }
+
+            push @ids, $item_id;
         }
         $log->debug("looking to match ids = ",{filter=>\&Dumper,value=>\@ids});
         my $subcursor = $subcol->find({ id  => { '$in' => \@ids } });
@@ -302,13 +304,20 @@ sub upsert_links {
 
     foreach my $lid (@$aref) {
 
-        my $link  = $linkcol->create_bidi_link({
-            type   => $objcol,
-            id     => $objid,
-        },{
-            type    => $type,
-            id      => $lid,
-        });
+        my @match   = (
+            { type    => $objcol, id => $objid },
+            { type    => $type,   id => $lid, },
+        );
+
+        my $linkobj = $linkcol->get_link(@match);
+
+        unless ( $linkobj ) {
+            $linkobj    = $linkcol->create_link(
+                $match[0],
+                $match[1],
+                $object->when
+            );
+        }
     }
 }
 
