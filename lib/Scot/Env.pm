@@ -167,6 +167,13 @@ sub _build_mongo {
     return $mongo;
 }
 
+has 'filestorage'   => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => '/opt/scotfiles',
+);
+
 has 'log_level' => (
     is          => 'rw',
     isa         => 'Str',
