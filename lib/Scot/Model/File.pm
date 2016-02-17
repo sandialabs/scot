@@ -17,6 +17,7 @@ The model of an individual File
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
+    Scot::Role::Permission
     Scot::Role::Times
 );
 
