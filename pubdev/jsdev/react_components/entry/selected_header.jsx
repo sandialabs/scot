@@ -13,6 +13,8 @@ var Sticky                  = require('react-sticky');
 var Button                  = require('react-bootstrap/lib/Button');
 var DebounceInput           = require('react-debounce-input');
 var SelectedEntry           = require('./selected_entry.jsx');
+var ReactTags               = require('react-tag-input').WithContext;
+
 var SelectedHeader = React.createClass({
     getInitialState: function() {
         return {
@@ -148,7 +150,7 @@ var SelectedHeader = React.createClass({
                                     <th>Owner</th>
                                     <td><span>{this.state.showEventData ? <Owner data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
                                     <th>Tags</th>
-                                    <td><span className='editable'>{this.state.showTag ? <EntryDataTag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}</span></td>
+                                    <td>{this.state.showTag ? <EntryDataTag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}</td>
                                 </tr>
                                 <tr>
                                     <th>Updated</th>
@@ -256,51 +258,10 @@ var EntryDataSubject = React.createClass({
     }
 });
 
-var EntryDataTag = React.createClass({ 
+var EntryDataTag = React.createClass({
     getInitialState: function() {
-        return {tagEntry:false, newTag:'', potentialTags:'', togglePotentialTags:false}
-    },
-    handleChange: function(event) { 
-        this.setState({newTag:event.target.value})
-        /*this.serverRequest = $.get('/scot/api/v2/ac/tag/' + this.state.newTag, function (result) {
-            var result = result.records;
-            console.log(result);
-            for (var prop in result) {
-                arr.push(result[prop])
-            }
-            this.setState({potentialTags:result,togglePotentialTags:true})
-        }.bind(this));*/
-    },
-    addTag: function() {
-            if (this.state.newTag != '') {
-                var newTagArr = [];
-                var data = this.props.data;
-                var tag = 'tag'; 
-                for (var prop in data) {
-                    newTagArr.push(data[prop].value);
-                }
-                newTagArr.push(this.state.newTag);
-                $.ajax({
-                    type: 'put',
-                    url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-                    data: JSON.stringify({tag:newTagArr}),
-                    contentType: 'application/json; charset=UTF-8',
-                    success: function(data) {
-                        console.log('success: tag added');
-                        this.toggleTagEntry();
-                        this.props.updated();
-                        this.setState({newTag:'',togglePotentialTags:false});
-                    }.bind(this),
-                    error: function() {
-                        alert('Failed to add tag - contact administrator');
-                        this.toggleTagEntry();
-                        this.setState({newTag:'',togglePotentialTags:false});
-                    }.bind(this)
-                });
-            } else { 
-                alert('Tag can not be empty');
-            };
-    },
+        return {tagEntry:false}
+    }, 
     toggleTagEntry: function () {
         if (this.state.tagEntry == false) {
             this.setState({tagEntry:true})
@@ -315,13 +276,12 @@ var EntryDataTag = React.createClass({
         var data = this.props.data;
         for (var prop in data) {
             rows.push(<TagDataIterator data={data[prop]} id={id} type={type} updated={this.props.updated} />);
-        } 
+        }
         return (
             <div>
                 {rows}
                 <Button bsStyle={'success'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
-                {this.state.tagEntry ? <div style={{color:'black'}}><DebounceInput debounceTimeout={300} type='text' value={this.state.newTag} onChange={this.handleChange} /> <Button onClick={this.addTag}>Add</Button></div>: null} 
-                {this.state.potentialTags ? <NewTagIterator potentialTags={this.state.potentialTags} addTag={this.addTag} />: null}
+                {this.state.tagEntry ? <NewTag data={data} type={type} id={id} toggleTagEntry={this.toggleTagEntry} updated={this.props.updated}/>: null}
             </div>
         )
     }
@@ -334,7 +294,7 @@ var TagDataIterator = React.createClass({
     tagDelete: function() {
         $.ajax({
             type: 'delete',
-            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag/' + this.props.data.id, 
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag/' + this.props.data.id,
             success: function(data) {
                 console.log('deleted tag success: ' + data);
                 this.props.updated();
@@ -353,21 +313,60 @@ var TagDataIterator = React.createClass({
     }
 });
 
-var NewTagIterator =  React.createClass({
+var NewTag = React.createClass({
+    getInitialState: function() {
+        return {
+            suggestions: this.props.options 
+        }
+    },
+    handleAddition: function(tag) {
+        var newTagArr = [];
+        var data = this.props.data;
+        for (var prop in data) {
+            newTagArr.push(data[prop].value);
+        }
+        newTagArr.push(tag);
+        $.ajax({
+            type: 'put',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
+            data: JSON.stringify({'tag':newTagArr}),
+            contentType: 'application/json; charset=UTF-8',
+            success: function(data) {
+                console.log('success: tag added');
+                this.props.toggleTagEntry();
+                this.props.updated();
+                }.bind(this),
+            error: function() {
+                alert('Failed to add tag - contact administrator');
+                this.props.toggleTagEntry();
+            }.bind(this)
+        });
+    },
+    handleInputChange: function(input) {
+        var arr = [];
+        this.serverRequest = $.get('/scot/api/v2/ac/tag/' + input, function (result) {
+            var result = result.records;
+            console.log(result);
+            for (var prop in result) {
+                arr.push(result[prop].value)
+            }
+            this.setState({suggestions:arr})
+        }.bind(this));
+    },
     render: function() {
-        var potentialTags = this.props.potentialTags;
-        var defaultValue = 'potential tags...';
+        var suggestions = this.state.suggestions;
         return (
-            <DropdownInput
-                options={potentialTags}
-                defaultValue={defaultValue}
-                menuClassName='dropdown-input'
-                onSelect={this.props.addTag}
-                placeholder='Search...'
-            />
+            <span>
+                <ReactTags 
+                    suggestions={suggestions}
+                    handleAddition={this.handleAddition}
+                    handleInputChange={this.handleInputChange}
+                    minQueryLength={1} 
+                    customCSS={1}/>
+            </span>
         )
-    }
-});
+    }  
+})
 
 var SourceData = React.createClass({
     getInitialState: function() {
