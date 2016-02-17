@@ -887,10 +887,12 @@ sub do_task_checks {
 
     my $key;
     my $status;
-    my $now = $env->now();
-    my $params  = $req_href->{request}->{json} // $req_href->{request}->{params} ;
+    my $now     = $env->now();
+    my $params  = $req_href->{request}->{json} // 
+                    $req_href->{request}->{params} ;
 
-    $log->debug("Checking For Task Changes: ", { filter =>\&Dumper, value=>$params });
+    $log->debug("Checking For Task Changes: ", { 
+                filter =>\&Dumper, value=>$params });
 
     if ( defined $params->{make_task} ) {
         $key = "make_task";
@@ -1885,6 +1887,28 @@ sub autocomplete {
     });
 }
 
+sub whoami {
+    my $self    = shift;
+    my $user    = $self->session('user'); # username from session cookie
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    my $userobj = $mongo->collection('User')->find_one({username => $user});
+
+    if ( defined ( $userobj )  ) {
+        $self->do_render(200, {
+            user    => $user,
+            data    => $userobj->as_hash,
+        });
+    }
+    else {
+        $self->do_error(404, {
+            user    => "not valid",
+            data    => { error_msg => "$user not found" },
+        });
+    }
+}
 
 
 1;
