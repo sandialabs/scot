@@ -109,6 +109,11 @@ get JSON that was submitted with the web request
             ->to    ('controller-api#supertable')
             ->name  ('supertable');
 
+    $scot   ->route ('/api/v2/whoami')
+            ->via   ('get')
+            ->to    ('controller-api#whoami')
+            ->name  ('whoami');
+
     $scot   ->route ('/api/v2/ac/:thing/:search')
             ->via   ('get')
             ->to    ('controller-api#autocomplete')
