@@ -217,6 +217,12 @@ sub get_many {
 
     my $col_name    = $req_href->{collection};
 
+    my $tasksearch  = 0;
+    if ( $col_name eq "task" ) {
+        $tasksearch = 1;
+        $col_name   = "entry";
+    }
+
 
     my $collection;
     my $match_ref;
