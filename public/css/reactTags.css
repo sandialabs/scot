@@ -32,6 +32,7 @@ div.ReactTags__tagInput input:focus {
     font-size: 12px;
     width: 200px;
     border: 1px solid #eee;
+    color: black;
 }
 
 /* Styles for selected tags */
@@ -59,6 +60,7 @@ div.ReactTags__suggestions {
     position: absolute;
     width: 200px;
     overflow: auto;
+    z-index: 99;
 }
 div.ReactTags__suggestions ul {
     list-style-type: none;
@@ -70,6 +72,7 @@ div.ReactTags__suggestions li {
     border-bottom: 1px solid #ddd;
     padding: 5px 10px;
     margin: 0;
+    color:black;
 }
 div.ReactTags__suggestions li mark {
     text-decoration: underline;
