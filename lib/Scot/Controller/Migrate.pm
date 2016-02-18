@@ -544,14 +544,19 @@ sub migrate {
                 my $href    = $self->transform($mtype, $item);
                 next unless ($href);
                 my $object;
+                my $collection  = $mongo->collection($mname);
+
+                unless ( $collection ) {
+                    $log->error("Weird not a valid collection!");
+                    die "invalid colllection\n";
+                }
+
                 try {
                     if ( $mtype eq "handler" or $mtype eq "guide" ) {
-                        $object = $mongo->collection($mname)
-                                        ->create($href->{$mtype});
+                        $object = $collection->create($href->{$mtype});
                     }
                     else {
-                        $object = $mongo->collection($mname) 
-                                        ->exact_create($href->{$mtype});
+                        $object = $collection->exact_create($href->{$mtype});
                     }
                 }
                 catch {
@@ -561,6 +566,12 @@ sub migrate {
                     }
                     next ITEM;
                 };
+                
+                unless ($object) {
+                    die "didn't create object!\n";
+                }
+
+
                 $self->do_linkables($object, $href);
                 my $elapsed = &$timer;
                 $remaining_docs--;
@@ -788,6 +799,10 @@ sub xform_alertgroup {
     my $env     = $self->env;
     my $log     = $env->log;
     my $mongo   = $env->mongo;  # meerkat;
+
+    $log->debug("[Alertgroup $href->{id}] xforming ",
+                { filter=>\&Dumper, value => $href});
+
     my @promos = map { 
         { type  => "event", 
             id    => $_, 
@@ -814,6 +829,8 @@ sub xform_alertgroup {
     $href->{open_count}       = delete $href->{open} // 0;        
     $href->{closed_count}     = delete $href->{closed} // 0;        
     $href->{promoted_count}   = delete $href->{promoted} // 0;        
+    $href->{body}             = delete $href->{body_html};
+    $href->{body_plain}       = delete $href->{body_plain};
 
     return \@promos;
 }
