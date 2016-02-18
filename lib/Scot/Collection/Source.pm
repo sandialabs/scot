@@ -84,11 +84,11 @@ sub add_source_to {
             $source_obj    = $self->create({
                 value    => $source,
             });
-            $linkcol->create_link(
-                { type => $thing,       id   => $id },
-                { type   => "source",   id   => $source_obj->id, },
-            );
         }
+        $linkcol->create_link(
+            { type => $thing,       id   => $id },
+            { type   => "source",   id   => $source_obj->id, },
+        );
     }
     return 1;
 }
