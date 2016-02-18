@@ -156,7 +156,7 @@ var SelectedHeader = React.createClass({
                                     <th>Updated</th>
                                     <td><span id='event_updated' style={{lineHeight: '12pt', fontSize: 'inherit',paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                     <th>Source</th>
-                                    <td><span className="editable">{this.state.showSource ? <SourceData data={this.state.sourceData}id={id} type={type} updated={this.updated} /> : null }</span></td>
+                                    <td>{this.state.showSource ? <SourceData data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -370,45 +370,7 @@ var NewTag = React.createClass({
 
 var SourceData = React.createClass({
     getInitialState: function() {
-        return {sourceEntry:false, newSource:''}
-    },
-    handleChange: function(event) {
-        this.setState({newSource:event.target.value})
-        var potentialSource = 'ajax return here';
-        /*this.serverRequest = $.get('/scot/api/v2/tag', function (result) {
-            var result = result.records;
-            console.log(result);
-        }.bind(this));*/
-    },
-    addSource: function() {
-        if (this.state.newSource != '') {
-            var newSourceArr = [];
-            var data = this.props.data;
-            var source = 'source';
-            for (var prop in data) { 
-                newSourceArr.push(data[prop].value);
-            }
-            newSourceArr.push(this.state.newSource);
-            $.ajax({
-                type: 'put',
-                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-                data: JSON.stringify({source:newSourceArr}),
-                contentType: 'application/json; charset=UTF-8',
-                success: function(data) {
-                    console.log('success: source added');
-                    this.toggleSourceEntry();
-                    this.props.updated();
-                    this.setState({newSource:''});
-                }.bind(this),
-                error: function() {
-                    alert('Failed to add source - contact administrator');
-                    this.toggleSourceEntry();
-                    this.setState({newSource:''});
-                }.bind(this)
-            });}
-        else {
-            alert('Tag can not be empty');
-        };
+        return {sourceEntry:false}
     },
     toggleSourceEntry: function () {
         if (this.state.sourceEntry == false) {
@@ -429,7 +391,7 @@ var SourceData = React.createClass({
             <div>
                 {rows}
                 <Button bsStyle={'success'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
-                {this.state.sourceEntry ? <div style={{color:'black'}}><DebounceInput debounceTimeout={300} type='text' value={this.state.newSource} onChange={this.handleChange} /> <Button onClick={this.addSource}>Add</Button></div>: null} 
+                {this.state.sourceEntry ? <NewSource data={data} type={type} id={id} toggleSourceEntry={this.toggleSourceEntry} updated={this.props.updated}/>: null} 
             </div>
         )
     }
@@ -462,4 +424,59 @@ var SourceDataIterator = React.createClass({
     }
 });
 
+
+var NewSource = React.createClass({
+    getInitialState: function() {
+        return {
+            suggestions: this.props.options
+        }
+    },
+    handleAddition: function(tag) {
+        var newSourceArr = [];
+        var data = this.props.data;
+        for (var prop in data) {
+            newSourceArr.push(data[prop].value);
+        }
+        newSourceArr.push(tag);
+        $.ajax({
+            type: 'put',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
+            data: JSON.stringify({'source':newSourceArr}),
+            contentType: 'application/json; charset=UTF-8',
+            success: function(data) {
+                console.log('success: source added');
+                this.props.toggleSourceEntry();
+                this.props.updated();
+                }.bind(this),
+            error: function() {
+                alert('Failed to add source - contact administrator');
+                this.props.toggleSourceEntry();
+            }.bind(this)
+        });
+    },
+    handleInputChange: function(input) {
+        var arr = [];
+        this.serverRequest = $.get('/scot/api/v2/ac/source/' + input, function (result) {
+            var result = result.records;
+            console.log(result);
+            for (var prop in result) {
+                arr.push(result[prop].value)
+            }
+            this.setState({suggestions:arr})
+        }.bind(this));
+    },
+    render: function() {
+        var suggestions = this.state.suggestions;
+        return (
+            <span>
+                <ReactTags
+                    suggestions={suggestions}
+                    handleAddition={this.handleAddition}
+                    handleInputChange={this.handleInputChange}
+                    minQueryLength={1}
+                    customCSS={1}/>
+            </span>
+        )
+    }
+})
 module.exports = SelectedHeader;
