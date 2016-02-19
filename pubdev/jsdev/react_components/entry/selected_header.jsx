@@ -308,7 +308,7 @@ var TagDataIterator = React.createClass({
     render: function() {
         data = this.props.data;
         return (
-            <Button id="event_tag" onClick={this.tagDelete}><span className="glyphicon glyphicon-remove-circle" ariaHidden="true"></span> {data.value}</Button>
+            <Button id="event_tag" onClick={this.tagDelete}><span className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span> {data.value}</Button>
         )
     }
 });
@@ -419,7 +419,7 @@ var SourceDataIterator = React.createClass({
     render: function() {
         data = this.props.data;
         return (
-            <Button id="event_source" onClick={this.sourceDelete}><span className="glyphicon glyphicon-remove-circle" ariaHidden="true"></span> {data.value}</Button>
+            <Button id="event_source" onClick={this.sourceDelete}><span className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span> {data.value}</Button>
         )
     }
 });
