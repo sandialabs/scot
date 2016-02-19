@@ -63,7 +63,7 @@ var Task = React.createClass({
         });
     },
     render: function () {
-        var taskDisplay = 'Task..';
+        var taskDisplay = 'Task Loading...';
         var onClick;
         if (this.state.whoami != this.state.taskOwner) {
             taskDisplay = 'Assign task to me';
