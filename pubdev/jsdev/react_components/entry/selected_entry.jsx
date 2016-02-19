@@ -6,7 +6,7 @@ var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
 var Button          = require('react-bootstrap/lib/Button.js');
 var AddEntryModal   = require('../modal/add_entry.jsx');
 var DeleteEntry     = require('../modal/delete.jsx').DeleteEntry;
-var Summary         = require('../modal/summary.jsx');
+var Summary         = require('../components/summary.jsx');
 var Task            = require('../components/task.jsx');
 
 var SelectedEntry = React.createClass({
@@ -82,20 +82,6 @@ var EntryParent = React.createClass({
             this.setState({deleteToolbar:false})
         }
     },
-    summaryToggle: function() {
-        if (this.state.summaryToolbar == false) {
-            this.setState({summaryToolbar:true})
-        } else {
-            this.setState({summaryToolbar:false})
-        }
-    }, 
-    taskToggle: function() {
-        if (this.state.taskToolbar == false) {
-            this.setState({taskToolbar:true})
-        } else {
-            this.setState({taskToolbar:false}) 
-        }
-    },
     render: function() {
         var itemarr = [];
         var subitemarr = [];
@@ -145,7 +131,7 @@ var EntryParent = React.createClass({
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.entryToggle}>
                                     <MenuItem eventKey='1' onClick={this.entryToggle}>Move</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
-                                    <MenuItem eventKey='3' onClick={this.summaryToggle}>Mark as Summary</MenuItem>
+                                    <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} updated={updated} /></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} updated={updated}/></MenuItem>
                                     <MenuItem eventKey='5'>Permissions</MenuItem>
                                 </SplitButton>
@@ -156,8 +142,7 @@ var EntryParent = React.createClass({
                 {itemarr}
                 </div>
                 {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}
-                {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}
-                {this.state.summaryToolbar ? <Summary type={type} id={id} summaryToggle={this.summaryToggle} entryid={items.id} updated={updated} /> : null}    
+                {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}    
             </div>
         );
     }
