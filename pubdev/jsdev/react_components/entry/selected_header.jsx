@@ -135,7 +135,7 @@ var SelectedHeader = React.createClass({
         var viewedby = this.viewedbyfunc(headerData);
         var type = this.props.type;
         var subjectType = this.titleCase(this.props.type);
-        var id = this.props.id;
+        var id = this.props.id; 
         return (
             <div>
                 <div id="NewEventInfo" className="entry-header-info-null" style={{zIndex:id}}>
@@ -154,7 +154,7 @@ var SelectedHeader = React.createClass({
                                 </tr>
                                 <tr>
                                     <th>Updated</th>
-                                    <td><span id='event_updated' style={{lineHeight: '12pt', fontSize: 'inherit',paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
+                                    <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: 'inherit',paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                     <th>Source</th>
                                     <td>{this.state.showSource ? <SourceData data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }</td>
                                 </tr>
@@ -168,7 +168,7 @@ var SelectedHeader = React.createClass({
                 {this.state.permissionsToolbar ? <SelectedPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
                 {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
                 {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} toggleEventDisplay={this.props.toggleEventDisplay} /> :null}
-                <SelectedEntry id={id} type={type} entryToggle={this.entryToggle}/>
+                <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} />
             </div>
         )
     }
