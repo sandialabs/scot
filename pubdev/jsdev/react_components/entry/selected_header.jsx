@@ -162,12 +162,12 @@ var SelectedHeader = React.createClass({
                         </table>
                     </div>
                 </div>
-                <SelectedHeaderOptions toggleEventDisplay={this.props.toggleEventDisplay} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle}/>
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
                 {this.state.permissionsToolbar ? <SelectedPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
                 {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
                 {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} toggleEventDisplay={this.props.toggleEventDisplay} /> :null}
+                <SelectedHeaderOptions toggleEventDisplay={this.props.toggleEventDisplay} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle}/>
                 <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} />
             </div>
         )
@@ -353,6 +353,12 @@ var NewTag = React.createClass({
             this.setState({suggestions:arr})
         }.bind(this));
     },
+    handleDelete: function () {
+        //blank since buttons are handled outside of this
+    },
+    handleDrag: function () {
+        //blank since buttons are handled outside of this
+    },
     render: function() {
         var suggestions = this.state.suggestions;
         return (
@@ -360,6 +366,8 @@ var NewTag = React.createClass({
                 <ReactTags 
                     suggestions={suggestions}
                     handleAddition={this.handleAddition}
+                    handleDelete={this.handleDelete}
+                    handleDrag={this.handleDrag}
                     handleInputChange={this.handleInputChange}
                     minQueryLength={1} 
                     customCSS={1}/>
@@ -465,7 +473,12 @@ var NewSource = React.createClass({
             this.setState({suggestions:arr})
         }.bind(this));
     },
-    render: function() {
+    handleDelete: function () {
+        //blank since buttons are handled outside of this
+    },
+    handleDrag: function () {
+        //blank since buttons are handled outside of this
+    }, render: function() {
         var suggestions = this.state.suggestions;
         return (
             <span>
@@ -473,6 +486,8 @@ var NewSource = React.createClass({
                     suggestions={suggestions}
                     handleAddition={this.handleAddition}
                     handleInputChange={this.handleInputChange}
+                    handleDelete={this.handleDelete}
+                    handleDrag={this.handleDrag}
                     minQueryLength={1}
                     customCSS={1}/>
             </span>
