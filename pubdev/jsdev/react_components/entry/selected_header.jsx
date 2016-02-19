@@ -161,13 +161,13 @@ var SelectedHeader = React.createClass({
                             </tbody>
                         </table>
                     </div>
-                    <SelectedHeaderOptions toggleEventDisplay={this.props.toggleEventDisplay} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle}/>
-                    {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
-                    {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
-                    {this.state.permissionsToolbar ? <SelectedPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
-                    {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
-                    {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} toggleEventDisplay={this.props.toggleEventDisplay} /> :null}
                 </div>
+                <SelectedHeaderOptions toggleEventDisplay={this.props.toggleEventDisplay} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle}/>
+                {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
+                {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
+                {this.state.permissionsToolbar ? <SelectedPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
+                {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
+                {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} toggleEventDisplay={this.props.toggleEventDisplay} /> :null}
                 <SelectedEntry id={id} type={type} entryToggle={this.entryToggle}/>
             </div>
         )
@@ -253,7 +253,7 @@ var EntryDataSubject = React.createClass({
     },
     render: function() {
         return (
-            <div>{this.state.type} {this.state.id}: <DebounceInput debounceTimeout={500} type='text' value={this.state.value} onChange={this.handleChange} /></div>
+            <div style={{width: '1000px'}}>{this.state.type} {this.state.id}: <DebounceInput debounceTimeout={100} type='text' value={this.state.value} onChange={this.handleChange} /></div>
         )
     }
 });
