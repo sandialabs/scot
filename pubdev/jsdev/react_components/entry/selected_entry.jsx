@@ -13,7 +13,7 @@ var SelectedEntry = React.createClass({
     getInitialState: function() {
         return {
             showEntryData:false,
-            entryData:''
+            entryData:''            
         }
     },
     componentDidMount: function() {
@@ -46,10 +46,10 @@ var EntryIterator = React.createClass({
         var rows = [];
         var data = this.props.data;
         var type = this.props.type;
-        var id = this.props.id; 
+        var id = this.props.id;  
         var updated = this.props.updated;
         data.forEach(function(data) {
-            rows.push(new Array(<EntryParent items={data} type={type} id={id} updated={updated} />));
+            rows.push(<EntryParent items={data} type={type} id={id} updated={updated} />);
         });
         return (
             <div>
@@ -64,8 +64,6 @@ var EntryParent = React.createClass({
         return {
             entryToolbar:false,   
             deleteToolbar:false,
-            summaryToolbar:false,
-            taskToolbar:false
         }
     },
     entryToggle: function() {
@@ -87,7 +85,7 @@ var EntryParent = React.createClass({
         var subitemarr = [];
         var items = this.props.items;
         var type = this.props.type;
-        var id = this.props.id; 
+        var id = this.props.id;
         var updated = this.props.updated;
         var summary = items.summary;
         var outerClassName = 'row-fluid entry-outer';
@@ -96,7 +94,7 @@ var EntryParent = React.createClass({
         if (summary == 1) {
             outerClassName += ' summary_entry';
         }
-        if (items.task.status == 'open') {
+        if (items.task.status == 'open' || items.task.status == 'assigned') {
             taskOwner = '-- Task Owner ' + items.task.who + ' ';
             outerClassName += ' todo_open_outer';
             innerClassName += ' todo_open';
@@ -115,7 +113,7 @@ var EntryParent = React.createClass({
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(<EntryParent items = {childobj} />));  
+                        subitemarr.push(new Array(<EntryParent items = {childobj} updated={updated} />));  
                     });
                 }
             }

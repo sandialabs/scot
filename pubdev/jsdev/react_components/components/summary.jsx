@@ -33,11 +33,9 @@ var Summary = React.createClass({
             success: function(data) {
                 console.log('success: ' + data);
                 this.props.updated();
-                this.props.summaryToggle();
             }.bind(this),
             error: function() {
                 alert('Failed to make summary - contact administrator');
-                this.props.summaryToggle();
             }.bind(this)
         });
     },
