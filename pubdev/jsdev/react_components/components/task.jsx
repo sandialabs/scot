@@ -20,9 +20,10 @@ var Task = React.createClass({
         }
     },
     componentDidMount: function () {
-        //this.whoamiRequest = $.get() ADD THE REST HERE 
-        whoamiResult = 'angeor';
-        this.setState({whoami:whoamiResult});
+        this.whoamiRequest = $.get('scot/api/v2/whoami', function (result) {
+            var result = result.user;
+            this.setState({whoami:result})
+        }.bind(this));  
         this.taskRequest = $.get('scot/api/v2/entry/' + this.props.entryid, function(result) {
             var taskOwner = result.task.who;
             var taskStatus = result.task.status;
@@ -30,7 +31,7 @@ var Task = React.createClass({
         }.bind(this)); 
     },
     closeTask: function() {
-        var taskData = {'status':'closed','who':whoamiResult}
+        var taskData = {'status':'closed','who':this.state.whoami}
         var json = {'task':taskData}
         $.ajax({
             type: 'put',
