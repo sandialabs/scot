@@ -20,6 +20,7 @@ var changestate = false;
 var datasource;
 var exportarray = []
 var url = '/scot/api/v2/alertgroup'
+var savedfsearch;
 var datacolumns = [] 
 var Subgrid = require('../../../node_modules/react-datagrid')
 var Dropdown = require('../../../node_modules/react-dropdown')
@@ -37,8 +38,12 @@ var Modal = require('../../../node_modules/react-modal')
 var entrydict = []
 var savedopen = false;
 var alertgroup = []
+var savedsearch = false
 var stage = false
+var tinycount = 0;
+var Dropzone = require('../../../node_modules/react-dropzone');
 var TinyMCE = require('../../../node_modules/react-tinymce')
+var Crouton = require('../../../node_modules/react-crouton')
 var columns = 
 [
     { name: 'id', style: {color: 'black'}},
@@ -92,7 +97,7 @@ var Viewentry = React.createClass({
 	React.createElement("h4", {className: "modal-title"}, " View Entry")
 	), 
 	React.createElement("div", {className: "modal-body"}, 
-	React.createElement("textarea", {disabled: this.state.edit, className: "viewtext", rows: "4", cols: "50", style: {border: this.state.stagecolor,resize: 'none',width: '523px', height: '300px'}}
+	React.createElement("textarea", {disabled: this.state.edit, className: "viewtext", rows: "4", cols: "50", style: {border: this.state.stagecolor,resize: 'none',width: '1389px', height: '300px'}}
 	)
 	), 
 	React.createElement("div", {className: "modal-footer"}, 
@@ -207,11 +212,41 @@ function dataSource(query)
 	    var date = new Date(1000 * item)
 	    finalarray[key][num] = date.toLocaleString()
 	}
-
-	else{
-	if(num == 'alertgroup'){
-	 getID.push(item)
-	}	
+	else if (item == 'promoted'){
+	
+	var Promote = React.createClass({
+	render: function() {
+	return (
+	React.createElement('button', {className: 'btn btn-warning', onClick: this.launch}, 'promoted')
+	)
+	},
+	launch: function(){
+	$('.z-selected').each(function(key, value){
+	$(value).find('.z-cell').each(function(x,y){	  
+	    if($(y).attr('name') == 'id'){
+		$.ajax({
+			type: 'GET',
+			url: '/scot/api/v2/alert/'+$(y).text() + '/event'
+		}).success(function(response){
+		   $.each(response, function(x,y){
+	           $.each(y, function(key, value){
+		   $.each(value, function(r,s){
+	           if(r == 'id'){
+		    	window.location = '#/event/' + s
+	              }
+	           })
+		})
+		})
+	
+	});
+	}
+	});
+	});
+	}
+	});
+	finalarray[key][num] = React.createElement(Promote, null)
+	}
+	else{	
 	var Link = React.createClass({
 	render:function(){
 	return(
@@ -256,8 +291,7 @@ function dataSource(query)
 	}
 	});
 
-	for(var i = 0; i<entrydict.length; i++){
-	
+	for(var i = 0; i<entrydict.length; i++){	
 	$.each(entrydict[i], function(key, value){
 	if(key != undefined){
 	console.log(key)
@@ -265,6 +299,7 @@ function dataSource(query)
 	}
 	});
 	}
+	addentrydata = false
 	}
 	return {
 	data:  finalarray,	
@@ -333,9 +368,9 @@ var Subtable = React.createClass({
     getInitialState: function(){
         return {
 
-historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
+viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
     },
-   componentDidMount: function(){
+   componentWillMount: function(){
 	var project = getColumns()
 	project.success(function(realData){
 	var last = realData.columns
@@ -352,7 +387,7 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	newarray[i] = {name:last[i],width: 200, style:{color:'black'}}
 	}	    
 	}
-	this.setState({columns: newarray})
+	setTimeout(function() { this.setState({columns: newarray})}.bind(this), 100)
 	}
 	}.bind(this));
 	},
@@ -373,13 +408,12 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	newarray[i] = {name:last[i],width: 200, style:{color:'black'}}
 	}	    
 	}
-	this.setState({columns: newarray})
+	this.setState({data: dataSource, columns: newarray})
 	}
 	}.bind(this));
 	},
     viewHistory: function(){
 	this.setState({history: false})
-
     },
 
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
@@ -389,15 +423,11 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	render: function(){	
 	$('.z-table').each(function(key, value){
 	   $(value).find('.z-content').each(function(x,y){
-		
 		if($(y).text() == 'closed'){
-		    $(y).css('color', 'green')
+		    $(y).css({'color':'green', 'font-weight' : 'bold'})
 		}
 		else if($(y).text() == 'open'){
-		    $(y).css('color', 'red')
-		}
-		else if($(y).text() == 'promoted') {
-		    $(y).css('color', 'orange')
+		    $(y).css({'color' : 'red', 'font-weight':'bold'})
 		}
 		else {
 		    $(y).css('color', 'black')
@@ -409,15 +439,16 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
         : 
 	this.state.addentry  ?  	
 	
-	React.createElement(Modal, {style: customStyles, className: "Modal__Bootstrap modal-dialog", isOpen: this.state.addentry}, 
+	React.createElement(Modal, {style: customStyles, isOpen: this.state.addentry}, 
 	React.createElement("div", {className: "modal-content"}, 
 	React.createElement("div", {className: "modal-header"}, 
 	React.createElement("h4", {className: "modal-title"}, " Add Entry")
 	), 
-	React.createElement("div", {className: "modal-body", style: {height: '90%'}}, 
-	React.createElement(TinyMCE, {content: "", config: {plugins: 'autolink link image lists print printview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'}}
+	React.createElement("div", {className: "modal-body", style: {background: this.state.stagecolor, height: '90%'}}, 
+	React.createElement(TinyMCE, {content: "", className: "inputtext",config: {plugins: 'autolink link image lists print preview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'},onChange: this.handleEditorChange}
 	)), 
-	React.createElement("div", {className: "modal-footer"}, React.createElement("input", {type: "file", name: "file_attach", className: "input-field attachfile"}), 
+	React.createElement("div", {className: "modal-footer"}, React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width': '2px','border-color':'#000','border-radius':'4px',margin:'30px', padding:'30px',width: '200px', 'border-style': 'dashed'}}, React.createElement("div",null,"Drop some files here or click to  select files to upload")),
+	this.state.files ? React.createElement("div", null, this.state.files.map((file) => React.createElement("a", {style: {border: '2px solid black'}, href:file.preview, target:"_blank"}, file.name ))): null, 
 	React.createElement("button", {type: "button", onClick: this.onCancel}, " Cancel"), 
 	this.state.enablesave ? null : React.createElement("button", {type: "button", onClick: this.onSave, disabled: this.state.enablesave}, "Save"), 	
  
@@ -429,7 +460,7 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	)
 	:
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
-	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable"}, React.createElement('header', {className: 'main-header', role: 'banner', style:{background: '#000', height: '70px'}}, React.createElement('button', {className: 'btn-success', onClick: this.goBack}, 'Back'), React.createElement('h1',{ style: {color: 'white', 'font-size': '24px', 'text-align':'start'}}, 'Alert Id(s) : ' +  ids)), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {className: "Subgrid",
+	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable"}, React.createElement('button', {className: 'btn btn-warning', onClick: this.goBack}, 'Back to Alerts'),React.createElement('div', {className: 'entry-header-info-null', style:{top: '1px', width: '100%',background: '#000'}}, React.createElement('h2',{ style: {color: 'white', 'font-size': '24px', 'text-align':'left'}}, 'Id(s) : ' +  ids ), React.createElement('h2', {style: {color: 'white', 'font-size':'24px', 'text-align' : 'left'}}, 'Viewed By : ' + this.state.viewby.join(','))), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {className: "Subgrid",
             ref: "dataGrid", 
             idProperty: "index",
 	    setColumns: true, 
@@ -451,6 +482,10 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
         )
 	);
    },
+    onDrop: function(files){
+        this.setState({files: files})
+
+    },
     handleFilter: function(column, value, allFilterValues){
 	/*
 	var data = {}
@@ -489,7 +524,8 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	SELECTED_ID_GRID = {}
 	changestate = false
 	passids = {}
-	url = '/scot/api/v2/alertgroup'	
+	url = '/scot/api/v2/alertgroup'
+	
 	this.setState({columns: [], back: true})
     },
     handleColumnOrderChange : function(index, dropIndex){
@@ -502,11 +538,11 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	SELECTED_ID_GRID = newSelection
 	var selected = []
 	Object.keys(newSelection).forEach(function(id){
-	selected.push(newSelection[id].id)
+	selected.push(newSelection[id].index)
 	})
 	var ids = selected.length? selected.join(',') : 'none'
 	storealertids = ids.split(',')	
-	this.setState({oneview:true})
+	this.setState({oneview:true,setcss: false})
 	},
     closeHistory: function(){
 	this.setState({history: false, reload: true})	
@@ -543,7 +579,20 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	this.setState({options:this.state.options})
 	}
 	else if(option.label == "View Guide"){
-	    window.open('/guide.html#' + 1);
+	    if(storealertids.length > 1){
+		alert("Select only one id to view guide")
+		this.setState({reload: true})
+	    }
+	    else {
+	    $('.z-selected').each(function(key, value){
+	    $(value).find('.z-cell').each(function(x,y){
+		if($(y).attr('name') == 'id'){
+	    	window.open('/guide.html#' + $(y).text());
+		}
+		})
+		})
+		this.setState({reload:true})
+	    }
 	}
 	else if(option.label == "View Source"){
 	var win = window.open('viewSource.html', '_blank')
@@ -560,13 +609,17 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	}
 	else if (option.label == "View History"){
 	historyview = ''
-        var id = 0;	
+        var id = 0;
+	if(storealertids.length > 1){
+	    alert("Select only one id to view history")
+	    this.setState({reload:true})
+	}
+	else {  	
 	$('.z-selected').each(function(key,value){
-	    $(value).find('.z-selected').each(function(x,y){
-		if($(y.attr('name') == 'id')){
+	    $(value).find('.z-cell').each(function(x,y){
+		if($(y).attr('name') == 'id'){
 		    id = $(y).text()
 		}
-
 	/*
 	$.ajax({
 	    type: 'GET',
@@ -578,8 +631,8 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	*/
 	})
 	})
-
 	this.setState({historyid: id, history: true})
+	}
 	}	
 	else if(option.label == "Add Entry"){
 	this.setState({addentry: true})
@@ -595,28 +648,59 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 			url: '/scot/api/v2/alert/'+$(y).text(),
 			data: data
 		}).success(function(response){
+		    $('.z-selected').each(function(t,u){
+		    $(u).find('.z-cell').each(function(r,s){
+			if($(s).attr('name') == "alertgroup"){
+		         data = JSON.stringify({status: 'open'})
+		        $.ajax({
+			    type: 'PUT',
+			    url: '/scot/api/v2/alertgroup/' + $(s).text(),
+			    data: data
+		        }).success(function(response){
+			   });		
+			   }
+			   });
+			   });
 	});
 	}
 	});
 	});
-	this.setState({reload: true})
+	setTimeout(
+	function() {
+	this.setState({reload:true})
+	}.bind(this), 500)
         }
 	else if (option.label == "Promote Selected"){
 	$('.z-selected').each(function(key,value){
 	$(value).find('.z-cell').each(function(x,y){
 	    if($(y).attr('name') == "id"){
-		data = JSON.stringify({'id':$(y).text(), 'thing': 'alert'})
-		$.ajax({
+		data = JSON.stringify({status: 'promoted',promote: 'new'})			
+			$.ajax({
 			type: 'PUT',
-			url: '/scot/api/v2/promote/',
+			url: '/scot/api/v2/alert/' + $(y).text(),
 			data: data
 		}).success(function(response){
-		    window.location = '/scot/#/event/' + response.id
+		    $('.z-selected').each(function(t,u){
+		    $(u).find('.z-cell').each(function(r,s){
+			if($(s).attr('name') == "alertgroup"){
+		         data = JSON.stringify({status: 'promoted'})
+		        $.ajax({
+			    type: 'PUT',
+			    url: '/scot/api/v2/alertgroup/' + $(s).text(),
+			    data: data
+		        }).success(function(response){
+			   });		
+			   }
+			   });
+			   }); 
 	});
 	}
+	})
 	});
-	});
-	this.setState({reload: true})
+	setTimeout(
+	function() {
+	this.setState({reload:true})
+	}.bind(this),500)
 	}
 	else if(option.label == "Closed Selected"){
 	var data = new Object();
@@ -630,34 +714,49 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 			url: '/scot/api/v2/alert/'+$(y).text(),
 			data: data
 		}).success(function(response){
-
+		    $('.z-selected').each(function(t,u){
+		    $(u).find('.z-cell').each(function(r,s){
+			if($(s).attr('name') == "alertgroup"){
+		         data = JSON.stringify({status: 'closed'})
+		        $.ajax({
+			    type: 'PUT',
+			    url: '/scot/api/v2/alertgroup/' + $(s).text(),
+			    data: data
+		        }).success(function(response){
+			   });		
+			   }
+			   });
+			   });
 	});
 	}
 	});
 	});
+	setTimeout( 
+	function(){
 	this.setState({reload: true})
+	}.bind(this),500)
 	}
 	else if(option.label == "Add Selected to existing event"){
 	var text = prompt("Please Enter Event ID to promote into")
-	var ids = new Array()
 	$('.z-selected').each(function(key, value){
-	$('.z-cell').each(function(x,y){
+	$(value).find('.z-cell').each(function(x,y){
 	if($(y).attr('name') == "id") {
 	var data = { 
-	id: $(y).text(),
-	thing: 'alert'
+	promote: text
 	};
 	$.ajax({
 	type: 'PUT',
-	url: '/scot/api/v2/promote',
+	url: '/scot/api/v2/alert/' + $(y).text(),
 	data: JSON.stringify(data)
-	}).done(function(response){
-	if(response.status == 'ok'){
-	window.location = '/scot/api/v2/event/' + response.id;}
+	}).success(function(response){
+	if($.isNumeric(text)){
+	window.location = '#/event/' + text
+	}
 	})
 	}
 	});
 	})
+	setTimeout(function() {this.setState({reload:true})}.bind(this), 500)
 	}
 	else if (option.label == "Export to CSV"){
 	    var keys = []
@@ -682,6 +781,7 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	    window.open(data_uri)		
 	}
 	else {
+	if(confirm("Are you sure you want to Delete? This action can not be undone.")){
 	var data = new Object();
 	var curr = Math.round(new Date().getTime() / 1000);
 	$('.z-selected').each(function(key,value){
@@ -696,7 +796,11 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	}
 	});
 	});
-	this.setState({reload: true})	
+	setTimeout(function() {this.setState({reload: true})}.bind(this), 300)	
+	}
+	else {
+	    this.setState({reload: true})
+ 	}
 	}	
 	},
 	submit: function(){
@@ -705,34 +809,36 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	    var store = {}
 	    for(var i = 0; i<storealertids.length; i++){
 		store[storealertids[i]] = {}
-		store[storealertids[i]] = $('.inputtext').val()  	
+		store[storealertids[i]] = $('#react-tinymce-'+tinycount+'_ifr').contents().find("#tinymce").text()  	
 	     }
 	     entrydict.push(store)          
-	    addentrydata = true
-	    this.setState({edit:false, addentry: false, reload:true})
-
+	     addentrydata = true
+	     tinycount++;
+	     setTimeout(
+	     function() {
+	     }.bind(this),this.setState({edit:false, addentry: false, reload:true}),100)
 	}
 
         },
 	Edit: function(){
-	$('.inputtext').attr("contenteditable", true)
+        $('#react-tinymce-'+tinycount+'_ifr').contents().find("#tinymce").attr("contenteditable", true)
 	this.setState({edit: false,enablesave:false,enable:true})
 	},
 	onCancel: function(){
 	 if(confirm('Are you sure you want to cancel this entry?')){
+	     tinycount++;
 	     this.setState({reload: true, addentry: false})
 	    }
 	else{
-
+	
 	}
 	},
 	onSave: function(){
-	if($('.inputtext').text() == "")	{
+	if($('#react-tinymce-'+tinycount+'_ifr').contents().find("#tinymce").text() == "")	{
 	alert("Please fill in Text")
 	}
 	else {
-	console.log($('.attachfile').val())
-	$('.inputtext').attr("contenteditable", false)
+	$('#react-tinymce-'+tinycount+'_ifr').contents().find("#tinymce").attr("contenteditable", false)
 	marksave = true;	
 	this.state.modaloptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Make Task", label: "Make Task"}, {value:"Permissions", label: "Permissions"}]
 	this.setState({reload: false, addentry: true,edit:true, modaloptions : this.state.modaloptions, enable:false, enablesave: true})
@@ -770,23 +876,23 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 	else if (option.label == "Make Task"){
 	newoptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Close Task", label: "Close Task"}, {value:"Permissions", label: "Permissions"}, {value: "Assign taks to me", label: "Assign task to me"}]
 	this.state.modaloptions = newoptions
-	color = '5px solid #933'
+	color = 'red'
 	this.state.stagecolor = color 
 	}
 	else if(option.label == "Reopen Task"){
 	newoptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Close Task", label: "Close Task"}, {value:"Permissions", label: "Permissions"}, {value: "Assign taks to me", label: "Assign task to me"}]
 	this.state.modaloptions = newoptions
-	color = '5px solid #933'
+	color = 'red'
 	this.state.stagecolor = color
 	}
 	else if (option.label == "Close Task"){
 	newoptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Reopen Task", label: "Reopen Task"}, {value:"Permissions", label: "Permissions"}]
 	this.state.modaloptions = newoptions
-	color = '5px solid #696'
+	color = 'green'
 	this.state.stagecolor = color
 	}
 	else if (option.label == "Assign task to me"){
-	color = '5px solid #B8B800'
+	color = 'yellow'
 	this.state.stagecolor = color 
 	}	
 	else if (option.label == "Permissions"){
@@ -800,24 +906,54 @@ historyid: 0, history: false, edit: false, stagecolor : '5px solid #000',enable:
 var Maintable = React.createClass({
 
     getInitialState: function(){
-           return {data: dataSource, showAlertbutton: false, viewAlert:false,csv:true};
+           return {fsearch: '',viewfilter: false, data: dataSource, showAlertbutton: false, viewAlert:false,csv:true};
          },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
         this.setState({})
     },
-    componentDidMount: function(){
+    componentWillMount: function(){
+	if(this.props.supertable !== undefined){
+	    if(this.props.supertable.length > 0){
+		window.history.pushState({}, 'Scot', '#/alert/'+ this.props.supertable.join('+'))
+		passids = this.props.supertable
+		ids = this.props.supertable.join(',')
+		stage = true
+		changestate = true
+		url = '/scot/api/v2/supertable'	
+		this.setState({})
+		}
+		else {
+		window.history.pushState({}, 'Scot', '#/alert/')
+		url = '/scot/api/v2/alertgroup'
+		stage = false
+		SELECTED_ID_GRID = {}
+		changestate = false
+		passids = {}	
+		this.setState({})
+		}
+	}
+	else {
+	window.history.pushState({}, 'Scot', '#/alert/')
 	this.setState({})
+	}
     },
     componentWillReceiveProps: function(){
-
 	this.setState({})
     },
     render: function() {
+	const rowFact = (rowProps) => {
+	rowProps.onDoubleClick = this.viewAlerts
+	}
+	
+	if(savedsearch){
+	this.state.fsearch = savedfsearch
+	this.state.viewfilter = true
+	}
 	return (
 	
-	    stage ?  React.createElement(Subtable, null) : 
-	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {onClick: this.exportCSV}, 'Export to CSV') : null , this.state.showAlertbutton ? React.createElement('button',{className: 'btn-success',onClick: this.viewAlerts},"View Alert(s)") : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) :  
+	    stage ?  React.createElement(Subtable, null) :  
+	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {className: 'btn btn-warning', onClick: this.exportCSV, style: {'margin-left' : 'auto'}}, 'Export to CSV') : null , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-info',onClick: this.viewAlerts, style: {'margin-left':'auto'}},"View Alert(s)") : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : this.state.viewfilter ? React.createElement(Crouton, {message:"You Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "onDismiss", type: "info"}) : null,   
 	    React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id",
@@ -835,6 +971,7 @@ var Maintable = React.createClass({
 	    onSortChange: this.handleSortChange,
 	    showCellBorders: true,
 	    rowHeight: 100,
+	    rowFactory:rowFact,
 	    rowStyle: configureTable}
 	)
         ));
@@ -872,7 +1009,8 @@ var Maintable = React.createClass({
     viewAlerts: function(){
 	stage = true
 	changestate = true
-	url = '/scot/api/v2/supertable'	
+	url = '/scot/api/v2/supertable'
+	window.history.pushState({}, 'Scot', '#/alert/' + passids.join('+'))
 	this.setState({viewAlert: true, showAlertbutton:false,csv:false})
     },
     handleSortChange : function(sortInfo){
@@ -891,17 +1029,23 @@ var Maintable = React.createClass({
 	},
     onSelectionChange: function(newSelection){
 	SELECTED_ID = newSelection
+	var multiple = false
 	var selected = []
 	Object.keys(newSelection).forEach(function(id){
 	selected.push(newSelection[id].id)
 	})
-	ids = selected.length? selected.join(',') : 'none'
-        passids = ids.split(",")
+	ids = selected.length? selected.join(' , ') : 'none'
+        passids = ids.split(" , ")
 	numberofids = selected.length
-	this.setState({showAlertbutton: true, viewAlert: false})
+	if(passids.length > 1){
+	multiple = true
+	}	
+	this.setState({showAlertbutton: multiple, viewAlert: false})
 	},
     handleFilter: function(column, value, allFilterValues){
 	filter = {}
+	var filtersearch = ''
+	var search = false
 	Object.keys(allFilterValues).forEach(function(name){
 	var columnFilter = allFilterValues[name]
 	if(columnFilter == ''){
@@ -918,8 +1062,24 @@ var Maintable = React.createClass({
 	
 	}
 	})
-	this.setState({})
-    }
+	if(Object.keys(filter).length > 0){
+	savedsearch = false
+	this.setState({viewfilter: false})
+	$.each(allFilterValues, function(key,value){
+	    if(value != ""){
+	    filtersearch = filtersearch + key + ": " + JSON.stringify(value) + " "
+	    }
+	})
+ 	setTimeout(function() {savedsearch = true; this.setState({viewfilter:true, fsearch: filtersearch})}.bind(this), 1000)	
+	savedfsearch = filtersearch
+	}
+	else{
+	savedsearch = false
+	savedfsearch = ''
+	this.setState({viewfilter: false})
+	}
+	
+	}
 
 });
 
@@ -941,4 +1101,4 @@ module.exports = Maintable
 	    }
 	})
 
-  React.createElement("div", {className: "btn-toolbar"}, React.createElement("div", {className: "btn-group"}, React.createElement("a", {className: "btn", alt: "bold", title: "bold"}, React.createElement("i", {className:"icon-bold"})), React.createElement("a", {className: "btn", alt: "italic", title: "italic"},React.createElement("i", {className:"icon-italic"})), React.createElement("span",{className: "dropdown"}, React.createElement("a", {className:"btn dropdown-toggle", "data-toggle":"dropdown", style: {"border-top-right-radius" : "0px","border-bottom-right-radius":"0px","border-right":"0px"}, alt: "Font Size", title: "Font Size"},"Font Size", React.createElement("span", {className:"caret")))))*/
+*/
