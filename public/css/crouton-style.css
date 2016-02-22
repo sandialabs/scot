@@ -1,0 +1,125 @@
+$green: #31D2B1;
+$black: #2D3036;
+$white: #F8F9FC;
+$headers: #EFF5FE;
+$grey: #ABB6C6;
+
+/* Eggshell */
+
+@import 'eggshell';
+
+/* Layout */
+
+$width: 700px;
+
+#main{
+  margin: 0 auto;
+  max-width: $width;
+  width: 90%;
+  padding-top: 20px;
+}
+
+/* General */
+
+body {
+  background: $white;
+  color: $black;
+  @include font-size($larger);
+  position: relative;
+  /*text-align: center;*/
+}
+
+.CodeMirror {
+    height: auto;
+    line-height: 1.5;
+    font-size: initial;
+    text-align: left;
+    box-sizing: default;
+    overflow-y: hidden;
+}
+
+.CodeMirror-gutters .listing {
+    background-color: #f7f7ff;
+}
+
+.CodeMirror-gutter-wrapper {
+  position: absolute;
+}
+
+
+.header {
+  padding-top: 80px;
+  padding-bottom: 80px;
+  background: $black;
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+      color: $white;
+  }
+}
+
+.example {
+  margin-bottom: 40px;
+  .title {
+    font-size: 2.0rem;
+  }
+  .result {
+    font-size: 1.4rem;
+    display: block;
+  }
+  .show {
+    margin-top: 20px;
+    font-size: 1.6rem;
+    border-radius: $radius;
+    border: 1px solid transparent;
+    border-color: $grey;
+    padding: $gutter/8;
+    min-width: 100px;
+  }
+
+}
+.crouton {
+  color: #FFF;
+  font-size: 14px;
+  font-size: 1.9rem;
+  line-height: 140%;
+  border-radius: 50px;
+  position: fixed;
+  top: 0px;
+  left: auto;
+  right: 0px;
+  max-width: 700px;
+  width: 90%;
+  text-align: center;
+  z-index: 99999;
+  background: #FF6B6B;
+  margin:-20 auto; }
+  .crouton div {
+    padding: 0px; }
+    .crouton div.info {
+      background-color: #1F8DD6; }
+    .crouton div.success {
+      background-color: #50CD84; }
+    .crouton div.warning {
+      background-color: #FF8859; }
+    .crouton div.error {
+      background-color: #FF5F5F; }
+    .crouton div span {
+      display: block;
+      margin-bottom: 0;
+      margin-left: 10px; }
+    .crouton div .buttons {
+      text-align: right; }
+      .crouton div .buttons button.retry, .crouton div .buttons button.close, .crouton div .buttons button.cancel, .crouton div .buttons button.ignore {
+        padding: 5px 15px;
+        border: 1px solid transparent;
+        border-radius: 2px; }
+      .crouton div .buttons button:hover {
+        opacity: 0.75; }
+      .crouton div .buttons button.retry {
+        border-color: #FFF; }
+	
+
