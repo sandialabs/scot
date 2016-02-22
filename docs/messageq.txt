@@ -1,0 +1,40 @@
+SCOT uses a message queue to publish events that have occurred.  This allows your
+process to subscribe to be asyncronously updated and to take actions on these
+event.
+
+The message format is:
+
+{
+    guid:   "unique_guid_string",
+    action: "action_string",
+    type:   "type_of_data_structure",
+    id:     integer_id_of_data,
+    data:   json_object
+}
+
+"unique_guid_string" is a requirement of the STOMP protocol and is generated
+"action_string       is a member of the following: 
+                         "created"  = something was created
+                         "updated"  = something was updated
+                         "deleted"  = something was deleted
+                         "viewed"   = something was viewed
+                         "message"  = send a message to a subscriber
+
+"type"              describes the data type that was operated on and is one of:
+                        alert
+                        alertgroup
+                        entry
+                        event
+                        incident
+                        intel
+                    or in the case of a "message" it can be any string
+                        that your client is listening for.
+
+"id"                is an integer id for the "type" above.  if sending a message, 
+                        this could be the an epoch time.
+
+"data"              is a json structure that you are free to put stuff in.
+
+
+
+                       
