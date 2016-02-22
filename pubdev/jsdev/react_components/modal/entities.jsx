@@ -51,10 +51,39 @@ var Entities = React.createClass({
 var EntitiesData = React.createClass({
     render: function() {
         var rows = [];
-        data = this.props.data;
+        var data = this.props.data;
+        var obj = {};
         for (var prop in data) {
-            rows.push(<EntitiesDataIterator data={data[prop]} />);
+            var type = data[prop].type;
+            var value = data[prop].value;
+            console.log(value);
+            /*if (obj.hasOwnProperty(type)) {
+                var arr = [];
+                //arr.push(obj[type])
+                //arr.push(value);
+                //obj[type] = arr;
+                //console.log(arr);
+                //console.log(obj);
+                console.log('lots of entries')
+            } else {
+                //obj[type] = value; 
+                var arr = [];
+                arr.push(value);
+                obj[type] = arr;
+                console.log(obj);
+                console.log(obj[type]);
+            }*/
+            var arr=[];
+            arr.push(obj[type]);
+            arr.push(data[prop].value);
+            obj[type] = arr;
+            console.log(obj[type]);
+            console.log(obj);
+            //obj.type = value;//data[prop].value;
+            //console.log(obj);
+            //rows.push(<EntitiesDataIterator data={data[prop]} />);
         }
+        //console.log(obj);
         return (
             <div>
                 {rows}
@@ -67,7 +96,7 @@ var EntitiesDataIterator = React.createClass({
     render: function() {
         data = this.props.data;
         return (
-            <div>{data} PlaceHolder</div>
+            <div>{data.id} PlaceHolder</div>
         )   
     }
 });
