@@ -1712,7 +1712,7 @@ sub supertable {
     my @rows    = ();
 
     my $alertcol    = $mongo->collection('Alert');
-    my $match_ref   = { id   => { '$in'  => \@alertgroup_ids } };
+    my $match_ref   = { alertgroup   => { '$in'  => \@alertgroup_ids } };
     my $cursor      = $alertcol->find($match_ref);
     while ( my $alert = $cursor->next ) {
         # $log->debug("Alert ", {filter=>\&Dumper, value=>$alert});
