@@ -95,11 +95,13 @@ module.exports = React.createClass({
          },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
-        this.setState({})
+        setTimeout(function() {this.setState({})}.bind(this), 500)
     },
 
     render: function() {
-
+	const rowFact = (rowProps) => {
+	//rowProps.onDoubleClick = this.vi
+	}
 	return (
 	    React.createElement("div", {className: "allComponents"}, 
 	    this.state.csv ? React.createElement('button', {onClick: this.exportCSV}, 'Export to CSV') : null,React.createElement(DataGrid, {
@@ -110,6 +112,7 @@ module.exports = React.createClass({
             onColumnResize: this.onColumnResize, 
 	    onFilter: this.handleFilter, 
 	    selected: SELECTED_ID, 
+	    rowFactory: rowFact,
 	    onSelectionChange: this.onSelectionChange, 
 	    defaultPageSize:20 ,  
 	    pagination: true, 

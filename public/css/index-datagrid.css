@@ -780,7 +780,9 @@ html.u-app body {
 .react-datagrid.z-cell-ellipsis .z-row .z-cell .z-content,
 .react-datagrid .z-summary .z-cell .z-content .subrender{
   text-overflow: ellipsis; 
+  white-space: pre-wrap;
   overflow: auto;
+  word-wrap: break-word;
 }
 .u-absolute {
   position: absolute;
