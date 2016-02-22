@@ -135,7 +135,7 @@ var SelectedHeader = React.createClass({
         var viewedby = this.viewedbyfunc(headerData);
         var type = this.props.type;
         var subjectType = this.titleCase(this.props.type);
-        var id = this.props.id;
+        var id = this.props.id; 
         return (
             <div>
                 <div id="NewEventInfo" className="entry-header-info-null" style={{zIndex:id}}>
@@ -154,21 +154,21 @@ var SelectedHeader = React.createClass({
                                 </tr>
                                 <tr>
                                     <th>Updated</th>
-                                    <td><span id='event_updated' style={{lineHeight: '12pt', fontSize: 'inherit',paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
+                                    <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: 'inherit',paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                     <th>Source</th>
-                                    <td><span className="editable">{this.state.showSource ? <SourceData data={this.state.sourceData}id={id} type={type} updated={this.updated} /> : null }</span></td>
+                                    <td>{this.state.showSource ? <SourceData data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    <SelectedHeaderOptions toggleEventDisplay={this.props.toggleEventDisplay} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle}/>
-                    {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
-                    {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
-                    {this.state.permissionsToolbar ? <SelectedPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
-                    {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
-                    {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} toggleEventDisplay={this.props.toggleEventDisplay} /> :null}
                 </div>
-                <SelectedEntry id={id} type={type} entryToggle={this.entryToggle}/>
+                {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
+                {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
+                {this.state.permissionsToolbar ? <SelectedPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
+                {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
+                {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} toggleEventDisplay={this.props.toggleEventDisplay} /> :null}
+                <SelectedHeaderOptions toggleEventDisplay={this.props.toggleEventDisplay} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle}/>
+                <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} />
             </div>
         )
     }
@@ -253,7 +253,7 @@ var EntryDataSubject = React.createClass({
     },
     render: function() {
         return (
-            <div>{this.state.type} {this.state.id}: <DebounceInput debounceTimeout={500} type='text' value={this.state.value} onChange={this.handleChange} /></div>
+            <div style={{width: '1000px'}}>{this.state.type} {this.state.id}: <DebounceInput debounceTimeout={100} type='text' value={this.state.value} onChange={this.handleChange} /></div>
         )
     }
 });
@@ -308,7 +308,7 @@ var TagDataIterator = React.createClass({
     render: function() {
         data = this.props.data;
         return (
-            <Button id="event_tag" onClick={this.tagDelete}><span className="glyphicon glyphicon-remove-circle" ariaHidden="true"></span> {data.value}</Button>
+            <Button id="event_tag" onClick={this.tagDelete}><span className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span> {data.value}</Button>
         )
     }
 });
@@ -353,6 +353,12 @@ var NewTag = React.createClass({
             this.setState({suggestions:arr})
         }.bind(this));
     },
+    handleDelete: function () {
+        //blank since buttons are handled outside of this
+    },
+    handleDrag: function () {
+        //blank since buttons are handled outside of this
+    },
     render: function() {
         var suggestions = this.state.suggestions;
         return (
@@ -360,6 +366,8 @@ var NewTag = React.createClass({
                 <ReactTags 
                     suggestions={suggestions}
                     handleAddition={this.handleAddition}
+                    handleDelete={this.handleDelete}
+                    handleDrag={this.handleDrag}
                     handleInputChange={this.handleInputChange}
                     minQueryLength={1} 
                     customCSS={1}/>
@@ -370,45 +378,7 @@ var NewTag = React.createClass({
 
 var SourceData = React.createClass({
     getInitialState: function() {
-        return {sourceEntry:false, newSource:''}
-    },
-    handleChange: function(event) {
-        this.setState({newSource:event.target.value})
-        var potentialSource = 'ajax return here';
-        /*this.serverRequest = $.get('/scot/api/v2/tag', function (result) {
-            var result = result.records;
-            console.log(result);
-        }.bind(this));*/
-    },
-    addSource: function() {
-        if (this.state.newSource != '') {
-            var newSourceArr = [];
-            var data = this.props.data;
-            var source = 'source';
-            for (var prop in data) { 
-                newSourceArr.push(data[prop].value);
-            }
-            newSourceArr.push(this.state.newSource);
-            $.ajax({
-                type: 'put',
-                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-                data: JSON.stringify({source:newSourceArr}),
-                contentType: 'application/json; charset=UTF-8',
-                success: function(data) {
-                    console.log('success: source added');
-                    this.toggleSourceEntry();
-                    this.props.updated();
-                    this.setState({newSource:''});
-                }.bind(this),
-                error: function() {
-                    alert('Failed to add source - contact administrator');
-                    this.toggleSourceEntry();
-                    this.setState({newSource:''});
-                }.bind(this)
-            });}
-        else {
-            alert('Tag can not be empty');
-        };
+        return {sourceEntry:false}
     },
     toggleSourceEntry: function () {
         if (this.state.sourceEntry == false) {
@@ -429,7 +399,7 @@ var SourceData = React.createClass({
             <div>
                 {rows}
                 <Button bsStyle={'success'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
-                {this.state.sourceEntry ? <div style={{color:'black'}}><DebounceInput debounceTimeout={300} type='text' value={this.state.newSource} onChange={this.handleChange} /> <Button onClick={this.addSource}>Add</Button></div>: null} 
+                {this.state.sourceEntry ? <NewSource data={data} type={type} id={id} toggleSourceEntry={this.toggleSourceEntry} updated={this.props.updated}/>: null} 
             </div>
         )
     }
@@ -457,9 +427,71 @@ var SourceDataIterator = React.createClass({
     render: function() {
         data = this.props.data;
         return (
-            <Button id="event_source" onClick={this.sourceDelete}><span className="glyphicon glyphicon-remove-circle" ariaHidden="true"></span> {data.value}</Button>
+            <Button id="event_source" onClick={this.sourceDelete}><span className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span> {data.value}</Button>
         )
     }
 });
 
+
+var NewSource = React.createClass({
+    getInitialState: function() {
+        return {
+            suggestions: this.props.options
+        }
+    },
+    handleAddition: function(tag) {
+        var newSourceArr = [];
+        var data = this.props.data;
+        for (var prop in data) {
+            newSourceArr.push(data[prop].value);
+        }
+        newSourceArr.push(tag);
+        $.ajax({
+            type: 'put',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
+            data: JSON.stringify({'source':newSourceArr}),
+            contentType: 'application/json; charset=UTF-8',
+            success: function(data) {
+                console.log('success: source added');
+                this.props.toggleSourceEntry();
+                this.props.updated();
+                }.bind(this),
+            error: function() {
+                alert('Failed to add source - contact administrator');
+                this.props.toggleSourceEntry();
+            }.bind(this)
+        });
+    },
+    handleInputChange: function(input) {
+        var arr = [];
+        this.serverRequest = $.get('/scot/api/v2/ac/source/' + input, function (result) {
+            var result = result.records;
+            console.log(result);
+            for (var prop in result) {
+                arr.push(result[prop].value)
+            }
+            this.setState({suggestions:arr})
+        }.bind(this));
+    },
+    handleDelete: function () {
+        //blank since buttons are handled outside of this
+    },
+    handleDrag: function () {
+        //blank since buttons are handled outside of this
+    }, render: function() {
+        var suggestions = this.state.suggestions;
+        return (
+            <span>
+                <ReactTags
+                    suggestions={suggestions}
+                    handleAddition={this.handleAddition}
+                    handleInputChange={this.handleInputChange}
+                    handleDelete={this.handleDelete}
+                    handleDrag={this.handleDrag}
+                    minQueryLength={1}
+                    customCSS={1}/>
+            </span>
+        )
+    }
+})
 module.exports = SelectedHeader;
