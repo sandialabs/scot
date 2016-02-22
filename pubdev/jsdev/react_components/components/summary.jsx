@@ -13,8 +13,19 @@ const customStyles = {
 }
 
 var Summary = React.createClass({ 
+     getInitialState: function () {
+        return {
+            summary:this.props.summary
+        }
+     },
      toggle: function() {
-        var json = {'summary':1};
+        var newSummary;
+        if (this.state.summary === 1) {
+            newSummary = 0;
+        } else if (this.state.summary === 0) {
+            newSummary = 1;
+        }
+        var json = {'summary':newSummary};
         $.ajax({
             type: 'put',
             url: 'scot/api/v2/entry/' + this.props.entryid,
@@ -22,28 +33,24 @@ var Summary = React.createClass({
             success: function(data) {
                 console.log('success: ' + data);
                 this.props.updated();
-                this.props.summaryToggle();
             }.bind(this),
             error: function() {
                 alert('Failed to make summary - contact administrator');
-                this.props.summaryToggle();
             }.bind(this)
         });
     },
     render: function() {
+        var summaryDisplay = 'Summary Loading...'
+        var onClick;
+        if (this.state.summary == 0) {
+            summaryDisplay = 'Make Summary';
+            onClick = this.toggle;
+        } else if (this.state.summary == 1) {
+            summaryDisplay = 'Remove Summary';
+            onClick = this.toggle;
+        }
         return (
-            <div>
-                <Modal isOpen={true} onRequestClose={this.props.summaryToggle} style={customStyles}>
-                    <div className='modal-header'>
-                        <img src='images/close_toolbar.png' className='close_toolbar' onClick={this.props.summaryToggle} />
-                        <h3 id='myModalLabel'>Are you sure you want to make Entry: {this.props.entryid} the summary?</h3>
-                    </div>
-                    <div className='modal-body pull-right'>
-                        <Button id='cancel-summary' onClick={this.props.summaryToggle}>Cancel</Button>
-                        <Button bsStyle='primary' id='summary' onClick={this.toggle}>Make Summary</Button>
-                    </div>
-                </Modal>
-            </div>
+            <span onClick={onClick}>{summaryDisplay}</span>
         )
     }  
 });
