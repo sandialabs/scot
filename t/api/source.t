@@ -15,35 +15,35 @@ my @defgroups       = ( 'ir', 'testing' );
 
 my $t   = Test::Mojo->new('Scot');
 
-$t  ->post_ok  ('/scot/api/v2/tag'  => json => {
+$t  ->post_ok  ('/scot/api/v2/source'  => json => {
         value   => "foo",
         note    => "test 1",
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
 
-my $tag1 = $t->tx->res->json->{id};
+my $source1 = $t->tx->res->json->{id};
 
-$t  ->post_ok  ('/scot/api/v2/tag'  => json => {
+$t  ->post_ok  ('/scot/api/v2/source'  => json => {
         value   => "foobar",
         note    => "test 2",
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
 
-my $tag2 = $t->tx->res->json->{id};
+my $source2 = $t->tx->res->json->{id};
 
 
-$t  ->post_ok  ('/scot/api/v2/tag'  => json => {
+$t  ->post_ok  ('/scot/api/v2/source'  => json => {
         value   => "sydney",
         note    => "test 3",
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
 
-my $tag3 = $t->tx->res->json->{id};
+my $source3 = $t->tx->res->json->{id};
 
-$t  ->get_ok("/scot/api/v2/tag")
+$t  ->get_ok("/scot/api/v2/source")
     ->status_is(200)
     ->json_is("/records/2/value"  => "foo")
     ->json_is("/records/1/value"  => "foobar")

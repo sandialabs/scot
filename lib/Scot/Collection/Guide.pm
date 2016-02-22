@@ -54,7 +54,7 @@ sub create_from_api {
         foreach my $entry ( @entries ) {
             $entry->{owner} = $entry->{owner} // $request->{user};
             my $obj = $ecoll->create($entry);
-            $lcoll->create_bidi_link({
+            $lcoll->create_link({
                 type => "guide",
                 id   => $guide->id,
             },{
