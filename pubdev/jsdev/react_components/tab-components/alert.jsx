@@ -212,11 +212,41 @@ function dataSource(query)
 	    var date = new Date(1000 * item)
 	    finalarray[key][num] = date.toLocaleString()
 	}
-
-	else{
-	if(num == 'alertgroup'){
-	 getID.push(item)
-	}	
+	else if (item == 'promoted'){
+	
+	var Promote = React.createClass({
+	render: function() {
+	return (
+	React.createElement('button', {className: 'btn btn-warning', onClick: this.launch}, 'promoted')
+	)
+	},
+	launch: function(){
+	$('.z-selected').each(function(key, value){
+	$(value).find('.z-cell').each(function(x,y){	  
+	    if($(y).attr('name') == 'id'){
+		$.ajax({
+			type: 'GET',
+			url: '/scot/api/v2/alert/'+$(y).text() + '/event'
+		}).success(function(response){
+		   $.each(response, function(x,y){
+	           $.each(y, function(key, value){
+		   $.each(value, function(r,s){
+	           if(r == 'id'){
+		    	window.location = '#/event/' + s
+	              }
+	           })
+		})
+		})
+	
+	});
+	}
+	});
+	});
+	}
+	});
+	finalarray[key][num] = React.createElement(Promote, null)
+	}
+	else{	
 	var Link = React.createClass({
 	render:function(){
 	return(
@@ -394,29 +424,11 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	$('.z-table').each(function(key, value){
 	   $(value).find('.z-content').each(function(x,y){
 		if($(y).text() == 'closed'){
-		    $(y).css('color', 'green')
+		    $(y).css({'color':'green', 'font-weight' : 'bold'})
 		}
 		else if($(y).text() == 'open'){
-		    $(y).css('color', 'red')
+		    $(y).css({'color' : 'red', 'font-weight':'bold'})
 		}
-		else if($(y).text() == 'promoted') {
-		    $(y).css({'color':'orange', 'text-decoration':'underline'})  
-		    $('.z-selected').each(function(key,value){
-		    $(value).find('.z-cell').each(function(r,s){ 
-		    if($(s).attr('name') == 'id'){
-		    $(y).click(function(){
-			$.ajax({
-			type: 'GET',
-			url: '/scot/api/v2/alert/'+$(s).text()
-		}).success(function(response){
-		    console.log(response)
-		    //window.location = '/scot/api/v2/event/' + response.id
-	});
-	});
-	}
-	});
-	});
-	}
 		else {
 		    $(y).css('color', 'black')
 		}
@@ -448,7 +460,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	)
 	:
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
-	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable"}, React.createElement('button', {className: 'btn btn-warning', onClick: this.goBack}, 'Back'),React.createElement('div', {className: 'entry-header-info-null', style:{top: '1px', width: '100%',background: '#000'}}, React.createElement('h2',{ style: {color: 'white', 'font-size': '24px', 'text-align':'left'}}, 'Id(s) : ' +  ids ), React.createElement('h2', {style: {color: 'white', 'font-size':'24px', 'text-align' : 'left'}}, 'Viewed By : ' + this.state.viewby.join(','))), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {className: "Subgrid",
+	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable"}, React.createElement('button', {className: 'btn btn-warning', onClick: this.goBack}, 'Back to Alerts'),React.createElement('div', {className: 'entry-header-info-null', style:{top: '1px', width: '100%',background: '#000'}}, React.createElement('h2',{ style: {color: 'white', 'font-size': '24px', 'text-align':'left'}}, 'Id(s) : ' +  ids ), React.createElement('h2', {style: {color: 'white', 'font-size':'24px', 'text-align' : 'left'}}, 'Viewed By : ' + this.state.viewby.join(','))), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {className: "Subgrid",
             ref: "dataGrid", 
             idProperty: "index",
 	    setColumns: true, 
@@ -512,7 +524,8 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	SELECTED_ID_GRID = {}
 	changestate = false
 	passids = {}
-	url = '/scot/api/v2/alertgroup'	
+	url = '/scot/api/v2/alertgroup'
+	
 	this.setState({columns: [], back: true})
     },
     handleColumnOrderChange : function(index, dropIndex){
@@ -529,7 +542,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	})
 	var ids = selected.length? selected.join(',') : 'none'
 	storealertids = ids.split(',')	
-	this.setState({oneview:true})
+	this.setState({oneview:true,setcss: false})
 	},
     closeHistory: function(){
 	this.setState({history: false, reload: true})	
@@ -571,7 +584,14 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 		this.setState({reload: true})
 	    }
 	    else {
-	    window.open('/guide.html#' + 1);
+	    $('.z-selected').each(function(key, value){
+	    $(value).find('.z-cell').each(function(x,y){
+		if($(y).attr('name') == 'id'){
+	    	window.open('/guide.html#' + $(y).text());
+		}
+		})
+		})
+		this.setState({reload:true})
 	    }
 	}
 	else if(option.label == "View Source"){
@@ -648,7 +668,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	setTimeout(
 	function() {
 	this.setState({reload:true})
-	}.bind(this), 100)
+	}.bind(this), 500)
         }
 	else if (option.label == "Promote Selected"){
 	$('.z-selected').each(function(key,value){
@@ -669,8 +689,6 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 			    url: '/scot/api/v2/alertgroup/' + $(s).text(),
 			    data: data
 		        }).success(function(response){
-		            /*go to event */
-			   //window.location
 			   });		
 			   }
 			   });
@@ -716,11 +734,10 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	setTimeout( 
 	function(){
 	this.setState({reload: true})
-	}.bind(this),100)
+	}.bind(this),500)
 	}
 	else if(option.label == "Add Selected to existing event"){
 	var text = prompt("Please Enter Event ID to promote into")
-	console.log(text)
 	$('.z-selected').each(function(key, value){
 	$(value).find('.z-cell').each(function(x,y){
 	if($(y).attr('name') == "id") {
@@ -732,8 +749,9 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	url: '/scot/api/v2/alert/' + $(y).text(),
 	data: JSON.stringify(data)
 	}).success(function(response){
-	console.log(response)
-	//window.location = '/scot/api/v2/event/' + response.id + '/alert'
+	if($.isNumeric(text)){
+	window.location = '#/event/' + text
+	}
 	})
 	}
 	});
@@ -894,9 +912,31 @@ var Maintable = React.createClass({
         firstCol.width = firstSize
         this.setState({})
     },
-    componentDidMount: function(){
-
+    componentWillMount: function(){
+	if(this.props.supertable !== undefined){
+	    if(this.props.supertable.length > 0){
+		window.history.pushState({}, 'Scot', '#/alert/'+ this.props.supertable.join('+'))
+		passids = this.props.supertable
+		ids = this.props.supertable.join(',')
+		stage = true
+		changestate = true
+		url = '/scot/api/v2/supertable'	
+		this.setState({})
+		}
+		else {
+		window.history.pushState({}, 'Scot', '#/alert/')
+		url = '/scot/api/v2/alertgroup'
+		stage = false
+		SELECTED_ID_GRID = {}
+		changestate = false
+		passids = {}	
+		this.setState({})
+		}
+	}
+	else {
+	window.history.pushState({}, 'Scot', '#/alert/')
 	this.setState({})
+	}
     },
     componentWillReceiveProps: function(){
 	this.setState({})
@@ -912,7 +952,7 @@ var Maintable = React.createClass({
 	}
 	return (
 	
-	    stage ?  React.createElement(Subtable, null) : 
+	    stage ?  React.createElement(Subtable, null) :  
 	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {className: 'btn btn-info', onClick: this.exportCSV, style: {'margin-left' : 'auto'}}, 'Export to CSV') : null , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-info',onClick: this.viewAlerts, style: {'margin-left':'auto'}},"View Alert(s)") : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : this.state.viewfilter ? React.createElement(Crouton, {message:"You Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "onDismiss", type: "info"}) : null,   
 	    React.createElement(DataGrid, {
             ref: "dataGrid", 
@@ -969,7 +1009,8 @@ var Maintable = React.createClass({
     viewAlerts: function(){
 	stage = true
 	changestate = true
-	url = '/scot/api/v2/supertable'	
+	url = '/scot/api/v2/supertable'
+	window.history.pushState({}, 'Scot', '#/alert/' + passids.join('+'))
 	this.setState({viewAlert: true, showAlertbutton:false,csv:false})
     },
     handleSortChange : function(sortInfo){
@@ -988,6 +1029,7 @@ var Maintable = React.createClass({
 	},
     onSelectionChange: function(newSelection){
 	SELECTED_ID = newSelection
+	var multiple = false
 	var selected = []
 	Object.keys(newSelection).forEach(function(id){
 	selected.push(newSelection[id].id)
@@ -995,8 +1037,10 @@ var Maintable = React.createClass({
 	ids = selected.length? selected.join(' , ') : 'none'
         passids = ids.split(" , ")
 	numberofids = selected.length
-	
-	this.setState({showAlertbutton: true, viewAlert: false})
+	if(passids.length > 1){
+	multiple = true
+	}	
+	this.setState({showAlertbutton: multiple, viewAlert: false})
 	},
     handleFilter: function(column, value, allFilterValues){
 	filter = {}

@@ -23,6 +23,7 @@ var setalerts = false
 var setevents = false
 var setincidents = false
 var setintel = false
+var supertableid = [];
 {
 	window.React = React;	
 	var $ = window.$;
@@ -43,7 +44,10 @@ if(this.props.params.value  != null){
 	setincidents = false
 	setevents = false
 	}
-	else if( this.props.params.value.toLowerCase() == "alerts"){
+	else if( this.props.params.value.toLowerCase() == "alert"){
+	if(this.props.params.id != null){
+	supertableid = this.props.params.id.split('+')
+	}
 	state = 1
 	setalerts = true
 	setintel = true
@@ -51,7 +55,7 @@ if(this.props.params.value  != null){
 	setincidents = false
 	setevents = false
 	}
-	else if(this.props.params.value.toLowerCase() == "events"){
+	else if(this.props.params.value.toLowerCase() == "event"){
 	state = 2
 	if(this.props.params.id != null) {
 	if($.isNumeric(this.props.params.id)){
@@ -65,7 +69,7 @@ if(this.props.params.value  != null){
 	setalerts = false
 	setincidents = false
 	}
-	else if (this.props.params.value.toLowerCase() == "incidents"){
+	else if (this.props.params.value.toLowerCase() == "incident"){
 	state = 3
 	setincidents = true
 	setintel = true
@@ -146,10 +150,10 @@ React.createElement(ExpandableNavContainer, {expanded: false},
            
 	React.createElement(ExpandableNavMenu, null, React.createElement(ExpandableNavMenuItem, {url: '#/home',active: sethome,small: menuItemsSmall[0], full: menuItemsFull[0], tooltip: "Home", jquery: window.$ ,onClick : this.handleHome}), 
             React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[1], full: menuItemsFull[1], tooltip: "Incident Handler", jquery: window.$, onClick: this.handleHandler}), 
-            React.createElement(ExpandableNavMenuItem, {url: '#/alerts', active:setalerts ,small: menuItemsSmall[2], full: menuItemsFull[2], tooltip: "Alerts", jquery: window.$, onClick: this.handleAlerts}),
-	    React.createElement(ExpandableNavMenuItem, {url: '#/events', active: setevents,small: menuItemsSmall[3], full: menuItemsFull[3], tooltip: "Events", jquery: window.$,onClick: this.handleEvents}),
-	    React.createElement(ExpandableNavMenuItem, {url: '#/incidents',active: setincidents,small: menuItemsSmall[4], full: menuItemsFull[4], tooltip: "Incidents", jquery: window.$, onClick: this.handleIncidents}),
-            React.createElement(ExpandableNavMenuItem, {url: '#/tasks', small: menuItemsSmall[5], full: menuItemsFull[5], tooltip: "Tasks", jquery: window.$, onClick: this.handleTasks}),
+            React.createElement(ExpandableNavMenuItem, {active:setalerts ,small: menuItemsSmall[2], full: menuItemsFull[2], tooltip: "Alerts", jquery: window.$, onClick: this.handleAlerts}),
+	    React.createElement(ExpandableNavMenuItem, {url: '#/event', active: setevents,small: menuItemsSmall[3], full: menuItemsFull[3], tooltip: "Events", jquery: window.$,onClick: this.handleEvents}),
+	    React.createElement(ExpandableNavMenuItem, {url: '#/incident',active: setincidents,small: menuItemsSmall[4], full: menuItemsFull[4], tooltip: "Incidents", jquery: window.$, onClick: this.handleIncidents}),
+            React.createElement(ExpandableNavMenuItem, {url: '#/task', small: menuItemsSmall[5], full: menuItemsFull[5], tooltip: "Tasks", jquery: window.$, onClick: this.handleTasks}),
 		React.createElement(ExpandableNavMenuItem, {url: '#/intel', active: setintel,small: menuItemsSmall[6], full: menuItemsFull[6], tooltip: "Intel", jquery: window.$, onClick: this.handleTasks}),
             React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Chat", jquery: window.$, onClick: this.handleChat}),
             React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[8], full: menuItemsFull[8], tooltip: "Note Pad", jquery: window.$, onClick:this.handlePad}),
@@ -162,7 +166,7 @@ React.createElement(ExpandableNavPage, null, React.createElement('div', {classNa
 	:
 	this.state.set == 1
 	?	
-	 React.createElement(ExpandableNavPage, null, React.createElement(Alerts, null))	
+	 React.createElement(ExpandableNavPage, null, React.createElement(Alerts, {supertable: supertableid}))	
 	:
         this.state.set == 2
 	?
