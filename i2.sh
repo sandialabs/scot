@@ -16,6 +16,7 @@ echo "######## Support at: scot-dev@sandia.gov"
 echo -e "########${NC}"
 
 DEVDIR="$( cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
+FILESTORE="/opt/scotfiles";
 
 . $DEVDIR/etc/install/locations.sh
 
