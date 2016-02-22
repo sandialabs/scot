@@ -21,9 +21,10 @@ var Owner = React.createClass({
         }
     },
     componentDidMount: function() {
-        //this.whoamiRequest = $.get('scot/api/v2/') ADD THE REST HERE
-        whoamiResult = 'angeor';
-        this.setState({whoami:whoamiResult})
+        this.whoamiRequest = $.get('scot/api/v2/whoami', function (result) {
+            var result = result.user;
+            this.setState({whoami:result})
+        }.bind(this)); 
     },
     toggle: function() { 
         var json = {'owner':this.state.whoami}

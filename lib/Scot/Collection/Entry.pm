@@ -55,12 +55,10 @@ sub create_from_api {
 
     $log->debug("Creating entry with: ", { filter=>\&Dumper, value => $json});
 
-    $self->look_for_img($json);
-
     my $entry_obj   = $entry_collection->create($json);
 
     my $linkcol = $mongo->collection('Link');
-    my $linkobj = $linkcol->create_bidi_link({
+    my $linkobj = $linkcol->create_link({
         type   => "entry",
         id     => $entry_obj->id,
     },{
@@ -72,22 +70,6 @@ sub create_from_api {
 
 }
 
-sub look_for_img {
-    my $self    = shift;
-    my $json    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-
-    # this function looks for img tags within the post
-    # if it finds them, then it grabs the img from remote
-    # or from data: base64 attribute, creates a local file
-    # and creates a file reference
-
-    # on second thought, this could be slow, so lets move it
-    # to a queue started plugin like EntityExtractor
-
-}
-
 sub create_via_alert_promotion {
     my $self    = shift;
     my $href    = shift;
@@ -95,7 +77,7 @@ sub create_via_alert_promotion {
     my $mongo   = $self->meerkat;
     my $col     = $mongo->collection('Entry');
 
-
+    die "implement this!";
 
 }
 
@@ -148,6 +130,70 @@ sub get_tasks   {
         'task.status'   => { '$exists' => 1}
     });
     return $cursor;
+}
+
+sub create_file_entry {
+    my $self    = shift;
+    my $fileobj = shift;
+    my $entryid = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    $entryid += 0;
+
+    my $fid     = $fileobj->id;
+    my $htmlsrc = <<EOF;
+
+<div class="fileinfo">
+    <table>
+        <tr>
+            <th>File Id</th>%d</td>
+            <th>Filename</th><td>%s</td>
+            <th>Size</th><td>%s</td>
+            <th>md5</th><td>%s</td>
+            <th>sha1</th><td>%s</td>
+            <th>sha256</th><td>%s<d>
+            <th>notes</th><td>%s</td>
+    </table>
+    <a href="/scot/file/%d?download=1">
+        Download
+    </a>
+</div>
+EOF
+    my $html = sprintf(
+        $htmlsrc,
+        $fileobj->id,
+        $fileobj->filename,
+        $fileobj->size,
+        $fileobj->md5,
+        $fileobj->sha1,
+        $fileobj->sha256,
+        $fileobj->notes,
+        $fileobj->id);
+
+    my $linkcol = $self->env->mongo->collection('Link');
+    my $newentry;
+
+    # TODO: potential problem here that needs more thought
+    #  groups is being set to default_groups and probably should inherit from parent
+    # entry_id or target's permissions
+
+    my $href    = {
+        body    => $html,
+        parent  => $entryid,
+        groups  => $env->default_groups,
+    };
+
+    $log->debug("Creating Entry with ", {filter=>\&Dumper, value => $href});
+
+#    try {
+        $newentry = $self->create($href);
+#    }
+#    catch {
+#        $log->error("Failed to create Entry!: $_");
+#    };
+
+    return $newentry;
 }
 
 
