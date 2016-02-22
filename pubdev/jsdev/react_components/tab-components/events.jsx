@@ -99,11 +99,14 @@ module.exports = React.createClass({
     },
 
     render: function() {
-
+	window.history.pushState({}, 'Scot', '#/event/')
+	const rowFact = (rowProps) => {	
+	rowProps.onDoubleClick = this.viewEvent
+	}
 	return (
 	    stage ? React.createElement(SelectedContainer, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
 	    this.state.viewevent ? React.createElement(SelectedContainer, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
-	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {onClick: this.exportCSV}, 'Export to CSV') : null,this.state.showevent ? React.createElement('button', {className: 'btn-success', onClick: this.viewEvent}, "View Event(s)") : null,
+	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {className: 'btn btn-warning', onClick: this.exportCSV}, 'Export to CSV') : null,this.state.showevent ? React.createElement('button', {className: 'btn btn-info', onClick: this.viewEvent}, "View Event(s)") : null,
 	    React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id", 
@@ -121,6 +124,7 @@ module.exports = React.createClass({
 	    onSortChange: this.handleSortChange, 
 	    showCellBorders: true,
 	    rowHeight: 100,
+	    rowFactory: rowFact,
 	    rowStyle: configureTable}
 	)
         ));
@@ -134,6 +138,7 @@ module.exports = React.createClass({
             stage = false;
             this.setState({viewevent: false});
         }
+	window.history.pushState({}, 'Scot', '#/event/' + ids.join('+'))
     },
     exportCSV: function(){
         var keys = []
@@ -182,12 +187,17 @@ module.exports = React.createClass({
     onSelectionChange: function(newSelection){
 	SELECTED_ID = newSelection
 	var selected = []
+	var multiple = false
 	Object.keys(newSelection).forEach(function(id){
 	selected.push(newSelection[id].id)
 	})
 	names = selected.length? selected.join(',') : 'none'
 	ids = names.split(',')
-	this.setState({showevent: true})
+	if(ids.length > 1){
+	multiple = true
+	}
+	
+	this.setState({showevent: multiple})
 	check = true
 
 	},
