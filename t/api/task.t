@@ -37,6 +37,11 @@ $t  ->post_ok('/scot/api/v2/entry' => json => {
 
 my $entry1 = $t->tx->res->json->{id};
 
+$t  ->get_ok("/scot/api/v2/entry/$entry1" => {}, 
+    "get to make sure entry is not task" )
+    ->status_is(200)
+    ->json_is('/is_task'        => 0);
+  print Dumper($t->tx->res->json);
 # make entry1 a task
 
 $t  ->put_ok("/scot/api/v2/entry/$entry1" => json => {
@@ -48,6 +53,9 @@ $t  ->get_ok("/scot/api/v2/entry/$entry1" => {},
     ->status_is(200)
     ->json_is('/is_task'        => 1)
     ->json_is('/task/status'    => 'open');
+  print Dumper($t->tx->res->json);
+ done_testing();
+ exit 0;
 
 $t  ->put_ok("/scot/api/v2/entry/$entry1" => json => {
     take_task => 1 })
