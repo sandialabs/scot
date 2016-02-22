@@ -24,6 +24,7 @@ var setevents = false
 var setincidents = false
 var setintel = false
 var supertableid = [];
+var eventtableid = []
 {
 	window.React = React;	
 	var $ = window.$;
@@ -58,10 +59,8 @@ if(this.props.params.value  != null){
 	else if(this.props.params.value.toLowerCase() == "event"){
 	state = 2
 	if(this.props.params.id != null) {
-	if($.isNumeric(this.props.params.id)){
 	state = 5	
-	array.push(this.props.params.id)
-	}
+	array = this.props.params.id.split('+')
 	}
 	setevents = true	
 	setintel = true
@@ -151,10 +150,10 @@ React.createElement(ExpandableNavContainer, {expanded: false},
 	React.createElement(ExpandableNavMenu, null, React.createElement(ExpandableNavMenuItem, {url: '#/home',active: sethome,small: menuItemsSmall[0], full: menuItemsFull[0], tooltip: "Home", jquery: window.$ ,onClick : this.handleHome}), 
             React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[1], full: menuItemsFull[1], tooltip: "Incident Handler", jquery: window.$, onClick: this.handleHandler}), 
             React.createElement(ExpandableNavMenuItem, {active:setalerts ,small: menuItemsSmall[2], full: menuItemsFull[2], tooltip: "Alerts", jquery: window.$, onClick: this.handleAlerts}),
-	    React.createElement(ExpandableNavMenuItem, {url: '#/event', active: setevents,small: menuItemsSmall[3], full: menuItemsFull[3], tooltip: "Events", jquery: window.$,onClick: this.handleEvents}),
-	    React.createElement(ExpandableNavMenuItem, {url: '#/incident',active: setincidents,small: menuItemsSmall[4], full: menuItemsFull[4], tooltip: "Incidents", jquery: window.$, onClick: this.handleIncidents}),
-            React.createElement(ExpandableNavMenuItem, {url: '#/task', small: menuItemsSmall[5], full: menuItemsFull[5], tooltip: "Tasks", jquery: window.$, onClick: this.handleTasks}),
-		React.createElement(ExpandableNavMenuItem, {url: '#/intel', active: setintel,small: menuItemsSmall[6], full: menuItemsFull[6], tooltip: "Intel", jquery: window.$, onClick: this.handleTasks}),
+	    React.createElement(ExpandableNavMenuItem, {active: setevents,small: menuItemsSmall[3], full: menuItemsFull[3], tooltip: "Events", jquery: window.$,onClick: this.handleEvents}),
+	    React.createElement(ExpandableNavMenuItem, {active: setincidents,small: menuItemsSmall[4], full: menuItemsFull[4], tooltip: "Incidents", jquery: window.$, onClick: this.handleIncidents}),
+            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[5], full: menuItemsFull[5], tooltip: "Tasks", jquery: window.$, onClick: this.handleTasks}),
+		React.createElement(ExpandableNavMenuItem, {active: setintel,small: menuItemsSmall[6], full: menuItemsFull[6], tooltip: "Intel", jquery: window.$, onClick: this.handleTasks}),
             React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Chat", jquery: window.$, onClick: this.handleChat}),
             React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[8], full: menuItemsFull[8], tooltip: "Note Pad", jquery: window.$, onClick:this.handlePad}),
             React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[9], full: menuItemsFull[9], tooltip: "Plugin", jquery: window.$, onClick: this.handlePlugin})
