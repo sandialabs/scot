@@ -99,7 +99,9 @@ module.exports = React.createClass({
     },
 
     render: function() {
-
+	const rowFact = (rowProps) => {	
+	rowProps.onDoubleClick = this.viewEvent
+	}
 	return (
 	    stage ? React.createElement(SelectedContainer, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
 	    this.state.viewevent ? React.createElement(SelectedContainer, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
@@ -121,6 +123,7 @@ module.exports = React.createClass({
 	    onSortChange: this.handleSortChange, 
 	    showCellBorders: true,
 	    rowHeight: 100,
+	    rowFactory: rowFact,
 	    rowStyle: configureTable}
 	)
         ));
