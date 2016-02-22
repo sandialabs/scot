@@ -296,7 +296,7 @@ sub local_authenticates {
     $log->trace("Local Authentication for $username");
 
     my $collection  = $mongo->collection('User');
-    my $user        = $collection->find_one( username => $username );
+    my $user        = $collection->find_one({ username => $username });
 
     return 0 unless defined($user);
 
