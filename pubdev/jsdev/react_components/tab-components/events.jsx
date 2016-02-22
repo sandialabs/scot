@@ -99,6 +99,7 @@ module.exports = React.createClass({
     },
 
     render: function() {
+	window.history.pushState({}, 'Scot', '#/event/')
 	const rowFact = (rowProps) => {	
 	rowProps.onDoubleClick = this.viewEvent
 	}
