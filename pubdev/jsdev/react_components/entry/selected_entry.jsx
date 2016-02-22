@@ -6,14 +6,14 @@ var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
 var Button          = require('react-bootstrap/lib/Button.js');
 var AddEntryModal   = require('../modal/add_entry.jsx');
 var DeleteEntry     = require('../modal/delete.jsx').DeleteEntry;
-var Summary         = require('../modal/summary.jsx');
+var Summary         = require('../components/summary.jsx');
 var Task            = require('../components/task.jsx');
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
         return {
             showEntryData:false,
-            entryData:''
+            entryData:''            
         }
     },
     componentDidMount: function() {
@@ -46,10 +46,10 @@ var EntryIterator = React.createClass({
         var rows = [];
         var data = this.props.data;
         var type = this.props.type;
-        var id = this.props.id; 
+        var id = this.props.id;  
         var updated = this.props.updated;
         data.forEach(function(data) {
-            rows.push(new Array(<EntryParent items={data} type={type} id={id} updated={updated} />));
+            rows.push(<EntryParent items={data} type={type} id={id} updated={updated} />);
         });
         return (
             <div>
@@ -64,8 +64,6 @@ var EntryParent = React.createClass({
         return {
             entryToolbar:false,   
             deleteToolbar:false,
-            summaryToolbar:false,
-            taskToolbar:false
         }
     },
     entryToggle: function() {
@@ -82,26 +80,12 @@ var EntryParent = React.createClass({
             this.setState({deleteToolbar:false})
         }
     },
-    summaryToggle: function() {
-        if (this.state.summaryToolbar == false) {
-            this.setState({summaryToolbar:true})
-        } else {
-            this.setState({summaryToolbar:false})
-        }
-    }, 
-    taskToggle: function() {
-        if (this.state.taskToolbar == false) {
-            this.setState({taskToolbar:true})
-        } else {
-            this.setState({taskToolbar:false}) 
-        }
-    },
     render: function() {
         var itemarr = [];
         var subitemarr = [];
         var items = this.props.items;
         var type = this.props.type;
-        var id = this.props.id; 
+        var id = this.props.id;
         var updated = this.props.updated;
         var summary = items.summary;
         var outerClassName = 'row-fluid entry-outer';
@@ -110,7 +94,7 @@ var EntryParent = React.createClass({
         if (summary == 1) {
             outerClassName += ' summary_entry';
         }
-        if (items.task.status == 'open') {
+        if (items.task.status == 'open' || items.task.status == 'assigned') {
             taskOwner = '-- Task Owner ' + items.task.who + ' ';
             outerClassName += ' todo_open_outer';
             innerClassName += ' todo_open';
@@ -129,7 +113,7 @@ var EntryParent = React.createClass({
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(<EntryParent items = {childobj} />));  
+                        subitemarr.push(new Array(<EntryParent items = {childobj} updated={updated} />));  
                     });
                 }
             }
@@ -145,7 +129,7 @@ var EntryParent = React.createClass({
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.entryToggle}>
                                     <MenuItem eventKey='1' onClick={this.entryToggle}>Move</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
-                                    <MenuItem eventKey='3' onClick={this.summaryToggle}>Mark as Summary</MenuItem>
+                                    <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} updated={updated} /></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} updated={updated}/></MenuItem>
                                     <MenuItem eventKey='5'>Permissions</MenuItem>
                                 </SplitButton>
@@ -156,8 +140,7 @@ var EntryParent = React.createClass({
                 {itemarr}
                 </div>
                 {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}
-                {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}
-                {this.state.summaryToolbar ? <Summary type={type} id={id} summaryToggle={this.summaryToggle} entryid={items.id} updated={updated} /> : null}    
+                {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}    
             </div>
         );
     }

@@ -31,7 +31,7 @@ div.ReactTags__tagInput input:focus {
     margin: 0;
     font-size: 12px;
     width: 200px;
-    border: 1px solid #eee;
+    border: 1px solid #eee; 
 }
 
 /* Styles for selected tags */
@@ -59,22 +59,27 @@ div.ReactTags__suggestions {
     position: absolute;
     width: 200px;
     overflow: auto;
+    z-index: 99;
 }
 div.ReactTags__suggestions ul {
     list-style-type: none;
     box-shadow: .05em .01em .5em rgba(0,0,0,.2);
-    background: white;
+    background: black;
     width: 200px;
+    color: white;
 }
 div.ReactTags__suggestions li {
     border-bottom: 1px solid #ddd;
     padding: 5px 10px;
     margin: 0;
+    color:white;
+    background:black;
 }
 div.ReactTags__suggestions li mark {
     text-decoration: underline;
     background: none;
     font-weight: 600;
+    color:white;
 }
 div.ReactTags__suggestions ul li.active {
     background: #b7cfe0;
