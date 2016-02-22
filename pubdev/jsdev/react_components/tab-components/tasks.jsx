@@ -92,13 +92,16 @@ module.exports = React.createClass({
     },
 
     render: function() {
-
+	const rowFact = (rowProps) => {
+	//rowProps.onDoubleClick = this
+	}
 	return (
 	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {onClick: this.exportCSV}, 'Export to CSV') : null,
 
 	    React.createElement(DataGrid, {
             ref: "dataGrid", 
-            idProperty: "id", 
+            idProperty: "id",
+	    rowFactory: rowFact, 
             dataSource: this.state.data, 
             columns: columns, 
             onColumnResize: this.onColumnResize, 
