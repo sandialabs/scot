@@ -20,8 +20,6 @@ $t  ->post_ok  ('/scot/api/v2/event'  => json => {
         subject => "Entry Test Event 1",
         source  => "threadtest",
         status  => 'open',
-#        readgroups  => $defgroups,
-#        modifygroups=> $defgroups,
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
@@ -32,8 +30,6 @@ $t  ->post_ok('/scot/api/v2/entry' => json => {
         body        => "Entry 1 on Event $event_id",
         target_id   => $event_id,
         target_type => "event",
-        readgroups  => $defgroups,
-        modifygroups=> $defgroups,
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
@@ -78,8 +74,6 @@ $t  ->post_ok('/scot/api/v2/entry'    => json => {
         target_id   => $event_id,
         target_type => "event",
         parent      => 0,
-        readgroups  => $defgroups,
-        modifygroups => $defgroups,
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
@@ -95,7 +89,7 @@ $t  ->get_ok("/scot/api/v2/event/$event_id/entry")
     ->json_is('/records/0/children/1/id'    => $entry1b)
     ->json_is('/records/1/id'   => $entry2);
 
-#  print Dumper($t->tx->res->json);
+  print Dumper($t->tx->res->json);
  done_testing();
  exit 0;
 

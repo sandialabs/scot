@@ -9,7 +9,7 @@ use Getopt::Long qw(GetOptions);
 use v5.18;
 
 $| = 1;
-
+# $ENV{'scot_mode'} = "migrated"; # use this to set the scot-foo database
 my $env     = Scot::Env->new({ logfile => "/var/log/scot/migration.log" });
 my $mover   = Scot::Controller::Migrate->new({env=>$env});
 
@@ -26,12 +26,12 @@ my $opts   = {
     verbose => 1,
 };
 if ( $multi ) {
-    $opts->{multi_proc_alerts}++;
+    $opts->{num_proc}   = $multi;
     $opts->{idranges}   = [
-        [1081605  , 18430988],
+        [0  , 18430988],
         [18430989 , 21987375],
         [21987376 , 25543744],
-        [25543745 , 29100097],
+        [25543745 , 39100097],
     ];
 }
 

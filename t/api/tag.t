@@ -50,11 +50,7 @@ $t  ->get_ok("/scot/api/v2/tag")
     ->json_is("/records/0/value"  => "sydney");
 
 
-$t->get_ok("/scot/api/v2/ac/tag/fo")
-    ->status_is(200);
-
-
-  print Dumper($t->tx->res->json);
+ print Dumper($t->tx->res->json);
  done_testing();
  exit 0;
 

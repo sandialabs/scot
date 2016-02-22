@@ -10,7 +10,7 @@ The "body" of the consuming role.  May be HTML.
 
 has body => (
     is          => 'ro',
-    isa         => 'Str',
+    isa         => 'Maybe[Str]',
     required    => 1,
     default     => '',
 );
@@ -23,7 +23,7 @@ The plaintext version of the body.
 
 has body_plain => (
     is          => 'ro',
-    isa         => 'Str',
+    isa         => 'Maybe[Str]',
     required    => 1,
     default     => '',
 );
@@ -37,7 +37,7 @@ in other words, defenitely html
 
 has body_flair => (
     is          => 'ro',
-    isa         => 'Str',
+    isa         => 'Maybe[Str]',
     required    => 1,
     default     => '',
 );
