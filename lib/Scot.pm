@@ -94,6 +94,11 @@ get JSON that was submitted with the web request
             ->to    ('controller-api#do_command')
             ->name  ('do_command');
 
+    $scot   ->route ('/api/v2/file')
+            ->via   ('post')
+            ->to    ('controller-file#upload')
+            ->name  ('create');
+
     $scot   ->route ('/api/v2/:thing')
             ->via   ('post')
             ->to    ('controller-api#create')
@@ -103,6 +108,11 @@ get JSON that was submitted with the web request
             ->via   ('get')
             ->to    ('controller-api#supertable')
             ->name  ('supertable');
+
+    $scot   ->route ('/api/v2/whoami')
+            ->via   ('get')
+            ->to    ('controller-api#whoami')
+            ->name  ('whoami');
 
     $scot   ->route ('/api/v2/ac/:thing/:search')
             ->via   ('get')

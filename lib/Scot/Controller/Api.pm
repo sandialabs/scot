@@ -13,6 +13,7 @@ Perform the CRUD operations based on JSON input and provide JSON output
 
 use Data::Dumper;
 use Try::Tiny;
+use DateTime;
 use Mojo::JSON qw(decode_json encode_json);
 use strict;
 use warnings;
@@ -99,6 +100,9 @@ sub create {
     if ( $object->meta->does_role("Scot::Role::Tags") ) {
         $self->apply_tags($req_href, $colname, $object->id);
     }
+    if ( $object->meta->does_role("Scot::Role::Sources") ) {
+        $self->apply_sources($req_href, $colname, $object->id);
+    }
 
     $env->amq->send_amq_notification("creation", $object, $user);
 
@@ -136,6 +140,19 @@ sub apply_tags {
         foreach my $tag (@$tag_aref) {
             $mongo->collection('Tag')->add_tag_to($col, $id, $tag);
         }
+    }
+}
+
+sub apply_sources {
+    my $self        = shift;
+    my $req         = shift;
+    my $col         = shift;
+    my $id          = shift;
+    my $env         = $self->env;
+    my $mongo       = $env->mongo;
+    my $source      = $self->get_value_from_request($req, "source");
+    if ( $source ) {
+        $mongo->collection('Source')->add_source_to($col, $id, $source);
     }
 }
 
@@ -199,6 +216,12 @@ sub get_many {
     $log->debug("Request = ", {filter=>\&Dumper, value=>$req_href});
 
     my $col_name    = $req_href->{collection};
+
+    my $tasksearch  = 0;
+    if ( $col_name eq "task" ) {
+        $tasksearch = 1;
+        $col_name   = "entry";
+    }
 
 
     my $collection;
@@ -392,6 +415,19 @@ sub get_one {
         $object->add_view($user, $from, $env->now);
     }
 
+    if ( ref($object) eq "Scot::Model::File" ) {
+        my $download    = $self->param('download');
+        if ( $download ) {
+            $self->res->content->headers->header(
+                'Content-Type', 'application/x-download; name="'.$object->filename.'"');
+            $self->res->content->headers->header(
+                'Content-Disposition', 'attachment; filename="'.$object->filename.'"');
+            my $static = Mojolicious::Static->new( paths => [ $object->directory ]);
+            $static->serve($self, $object->filename);
+            $self->rendered;
+        }
+    }
+
     my $data_href   = {};
     if ( $req_href->{fields} and 
          $object->meta->does_role("Scot::Role::Hashable")) {
@@ -467,7 +503,7 @@ sub get_subthing {
         @things = $cursor->all;
     }
 
-    $log->trace("Records are ",{ filter => \&Dumper, value =>\@things});
+    # $log->trace("Records are ",{ filter => \&Dumper, value =>\@things});
 
     $self->do_render({
         records => \@things,
@@ -606,6 +642,9 @@ sub update {
 
     if ( $object->meta->does_role("Scot::Role::Tags") ) {
         $self->apply_tags($req_href, $col_name, $id);
+    }
+    if ( $object->meta->does_role("Scot::Role::Sources") ) {
+        $self->apply_sources($req_href, $col_name, $id);
     }
 
     if ( $object->meta->does_role("Scot::Role::Promotable") ) {
@@ -763,7 +802,7 @@ sub handle_promotion {
             id   => $promote_to,
         };
 
-        my $ret = $linkcol->create_bidi_link($lhref_a, $lhref_b);
+        my $ret = $linkcol->create_link($lhref_a, $lhref_b);
 
         unless ( $ret ) {
             $log->error("Error creating Link: ",
@@ -788,7 +827,7 @@ sub handle_promotion {
         };
 
         $self->do_render({
-            id      => $object->id,
+            id      => $proobj->id,
             status  => "successfully promoted",
         });
 
@@ -804,12 +843,12 @@ sub handle_promotion {
     else {
         $log->trace("Unpromoting object");
 
-       $linkcol->remove_bidi_links({
-            item_type   => $object_type,
-            item_id     => $object->id,
-            target_type => $proname,
-            target_id   => $promote_to,
-        });
+       $linkcol->remove_links(
+            $object_type,
+            $object->id,
+            $proname,
+            $promote_to,
+        );
         if ( ref($object) eq "Scot::Model::Alert" ) {
             $mongo->collection('Alertgroup')->refresh_data($object->alertgroup, $user);
         }
@@ -854,10 +893,12 @@ sub do_task_checks {
 
     my $key;
     my $status;
-    my $now = $env->now();
-    my $params  = $req_href->{request}->{json} // $req_href->{request}->{params} ;
+    my $now     = $env->now();
+    my $params  = $req_href->{request}->{json} // 
+                    $req_href->{request}->{params} ;
 
-    $log->debug("Checking For Task Changes: ", { filter =>\&Dumper, value=>$params });
+    $log->debug("Checking For Task Changes: ", { 
+                filter =>\&Dumper, value=>$params });
 
     if ( defined $params->{make_task} ) {
         $key = "make_task";
@@ -1097,22 +1138,16 @@ sub breaklink {
     }
     
     my $collection      = $mongo->collection('Link');
-    my $match_href      = {
-        '$or'   => [
-            { target_type   => $col_name, 
-              target_id     => $id, 
-              item_type     => $sub_col, 
-              item_id       => $sub_id },
-            { target_type   => $sub_col, 
-              target_id     => $sub_id, 
-              item_type     => $col_name, 
-              item_id       => $id },
-        ]
+    my $a   = {
+        type   => $col_name, 
+        id     => $id, 
     };
-    my $debugjson = encode_json($match_href);
-    $log->debug("Breaklinks looking for ",
-                {filter=>\&Dumper,value=>$debugjson});
-    my $linkcursor      = $collection->find($match_href);
+    my $b   = {
+        type   => $sub_col, 
+        id     => $sub_id, 
+    };
+
+    my $linkcursor      = $collection->get_link($a, $b);
 
     unless ( defined $linkcursor ) {
         $log->error("No matching Links for $col_name : $id -> $sub_col : $sub_id");
@@ -1461,6 +1496,7 @@ sub thread_entries {
     my $count       = 1;
     my $mygroups    = $self->session('groups');
     my $user        = $self->session('user');
+    my @summaries   = ();
 
     ENTRY:
     while ( my $entry   = $cursor->next ) {
@@ -1473,7 +1509,11 @@ sub thread_entries {
         $count++;
         my $href            = $entry->as_hash;
         $href->{children}   = [];
-        
+
+        if ( $entry->summary ) {
+            push @summaries, $href;
+            next ENTRY;
+        }
 
         if ( $entry->parent == 0 ) {
             $threaded[$rindex]  = $href;
@@ -1494,6 +1534,8 @@ sub thread_entries {
         $parent_kids_aref->[$new_child_index]  = $href;
         $where{$entry->id} = \$parent_kids_aref->[$new_child_index];
     }
+
+    unshift @threaded, @summaries;
 
     return wantarray ? @threaded : \@threaded;
 }
@@ -1850,6 +1892,29 @@ sub autocomplete {
         totalRecordCount    => scalar(@values),
     });
 }
-    
+
+sub whoami {
+    my $self    = shift;
+    my $user    = $self->session('user'); # username from session cookie
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    my $userobj = $mongo->collection('User')->find_one({username => $user});
+
+    if ( defined ( $userobj )  ) {
+        $self->do_render({
+            user    => $user,
+            data    => $userobj->as_hash,
+        });
+    }
+    else {
+        $self->do_error(404, {
+            user    => "not valid",
+            data    => { error_msg => "$user not found" },
+        });
+    }
+}
+
 
 1;

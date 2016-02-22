@@ -41,7 +41,6 @@ $t->post_ok(
 my $alertgroup_id   = $t->tx->res->json->{id};
 my $updated         = $t->tx->res->json->{updated};
 
-
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
            "Get alertgroup $alertgroup_id" )
   ->status_is(200)
@@ -109,7 +108,7 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/tag" => {},
 
     
 
-#  print Dumper($t->tx->res->json), "\n";
+print Dumper($t->tx->res->json), "\n";
 done_testing();
 exit 0;
 
