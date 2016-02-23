@@ -138,12 +138,12 @@ var SelectedHeader = React.createClass({
         var id = this.props.id; 
         return (
             <div>
-                <div id="NewEventInfo" className="entry-header-info-null" style={{zIndex:id}}>
-                    <div className='details-table' style={{display: 'flex'}}>
+                <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%',textAlign:'-webkit-center'}}>
+                    <div className='details-table' style={{display: 'inline-flex'}}>
                         <div>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} id={id} type={type} updated={this.updated} />: null}</div>
-                        <div style={{flexGrow:1, marginRight: 'auto'}}><h2>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}</h2></div>
+                        <div><h2>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}</h2></div>
                     </div>
-                    <div className='details-table' style={{width: '50%', margin: '0 auto'}}>
+                    <div className='details-table toolbar'>
                         <table>
                             <tbody>
                                 <tr>
@@ -224,7 +224,7 @@ var EntryDataStatus = React.createClass({
             buttonStyle = 'warning'
         };
         return (
-            <Button bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: 'inherit', marginTop: '17px', width: '200px', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button>
+            <Button bsSize='large' bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: '18pt', marginTop: '15px', width: '250px', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button>
         )
     }
 });
