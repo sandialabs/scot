@@ -108,7 +108,6 @@ var EntryParent = React.createClass({
         }
         itemarr.push(<EntryData subitem = {items} />);
         for (var prop in items) {
-            childfunc(prop);
             function childfunc(prop){
                 if (prop == "children") {
                     var childobj = items[prop];
@@ -117,14 +116,16 @@ var EntryParent = React.createClass({
                     });
                 }
             }
+            childfunc(prop);
         };
         itemarr.push(subitemarr);
+        console.log(location.pathname);
         return (
             <div> 
                 <div className={outerClassName} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
-                    <span className="anchor" id={items.id}/>
+                    <span className="anchor" id={"/"+ type + '/' + id + '/' + items.id}/>
                     <div className={innerClassName}>
-                        <div className="entry-header-inner">[<a style={{color:'black'}} href={"#"+items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
+                        <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/"+ type + '/' + id + '/' + items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
                             <span className='pull-right'>
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.entryToggle}>
                                     <MenuItem eventKey='1' onClick={this.entryToggle}>Move</MenuItem>
