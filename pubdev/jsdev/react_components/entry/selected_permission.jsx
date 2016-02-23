@@ -36,18 +36,32 @@ var SelectedPermission = React.createClass({
             var read_modify = 'modify'; 
             modifyRows.push(<PermissionIterator data={data[1][prop]} dataRead={data[0]} dataModify={data[1]} id={id} type={type} read_modify={read_modify} updated={this.props.updated} />);
         }
-        return (
-            <div id="" className="toolbar entry-header-info-null">
-                <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.permissionsToggle} />
-                <center>
-                    <h3>Event Permissions</h3>
-                    Read Groups: {readRows}<Button bsStyle={'success'} onClick={this.toggleNewReadPermission}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
-                    Modify Groups: {modifyRows}<Button bsStyle={'success'} onClick={this.toggleNewModifyPermission}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button><br/>
-                    {this.state.readPermissionEntry ? <span style={{textAlign:'center'}}>Add Read Group:<NewPermission readUpdate={1} modifyUpdate={0} dataRead={data[0]} dataModify={data[1]} type={type} id={id} toggleNewReadPermission={this.toggleNewReadPermission} updated={this.props.updated} permissionsToggle={this.props.permissionsToggle}/></span> : null}
-                    {this.state.modifyPermissionEntry ? <span>Add Modify Group:<NewPermission readUpdate={0} modifyUpdate={1} dataRead={data[0]} dataModify={data[1]} type={type} id={id} toggleNewModifyPermission={this.toggleNewModifyPermission} updated={this.props.updated} permissionsToggle={this.props.permissionsToggle}/></span> : null}
-                </center>
-            </div> 
-        )
+        if (type == 'entry') {
+            return ( 
+               <div id="" className="">
+                    <span style={{display:'inline-flex'}}>
+                        Read Groups: {readRows}<Button bsSize='xsmall' bsStyle={'success'} onClick={this.toggleNewReadPermission}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
+                        {this.state.readPermissionEntry ? <span style={{display:'inherit',color:'white'}}><NewPermission readUpdate={1} modifyUpdate={0} dataRead={data[0]} dataModify={data[1]} type={type} id={id} toggleNewReadPermission={this.toggleNewReadPermission} updated={this.props.updated} permissionsToggle={this.props.permissionsToggle}/></span>: null}
+                        Modify Groups: {modifyRows}<Button bsSize='xsmall' bsStyle={'success'} onClick={this.toggleNewModifyPermission}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button><br/>
+                        {this.state.modifyPermissionEntry ? <span style={{display:'inherit',color:'white'}}><NewPermission readUpdate={0} modifyUpdate={1} dataRead={data[0]} dataModify={data[1]} type={type} id={id} toggleNewModifyPermission={this.toggleNewModifyPermission} updated={this.props.updated} permissionsToggle={this.props.permissionsToggle}/></span> : null}
+                    </span>
+                </div> 
+            )
+        }
+        else {
+            return (
+                <div id="" className="toolbar entry-header-info-null">
+                    <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.permissionsToggle} />
+                    <center>
+                        <h3>Event Permissions</h3>
+                        Read Groups: {readRows}<Button bsStyle={'success'} onClick={this.toggleNewReadPermission}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
+                        Modify Groups: {modifyRows}<Button bsStyle={'success'} onClick={this.toggleNewModifyPermission}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button><br/>
+                        {this.state.readPermissionEntry ? <span style={{textAlign:'center'}}>Add Read Group:<NewPermission readUpdate={1} modifyUpdate={0} dataRead={data[0]} dataModify={data[1]} type={type} id={id} toggleNewReadPermission={this.toggleNewReadPermission} updated={this.props.updated} permissionsToggle={this.props.permissionsToggle}/></span> : null}
+                        {this.state.modifyPermissionEntry ? <span>Add Modify Group:<NewPermission readUpdate={0} modifyUpdate={1} dataRead={data[0]} dataModify={data[1]} type={type} id={id} toggleNewModifyPermission={this.toggleNewModifyPermission} updated={this.props.updated} permissionsToggle={this.props.permissionsToggle}/></span> : null}
+                    </center>
+                </div> 
+            )
+        }
     }
 }); 
 
@@ -93,9 +107,16 @@ var PermissionIterator = React.createClass({
    },
    render: function() {
         data = this.props.data;
-        return ( 
-            <Button id="permission_source" onClick={this.permissionDelete}><span style={{paddingRight:'3px'}} className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span>{data}</Button> 
-        )
+        type = this.props.type;
+        if (type == 'entry') {
+            return (
+                <Button id="permission_source" bsSize='xsmall' onClick={this.permissionDelete}><span style={{paddingRight:'3px'}} className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span>{data}</Button>
+            )
+        } else {
+            return ( 
+                <Button id="permission_source" onClick={this.permissionDelete}><span style={{paddingRight:'3px'}} className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span>{data}</Button> 
+            )
+        }
    }
 });
 
