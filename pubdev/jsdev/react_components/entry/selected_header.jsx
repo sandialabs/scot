@@ -139,22 +139,22 @@ var SelectedHeader = React.createClass({
         return (
             <div>
                 <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%',textAlign:'-webkit-center'}}>
-                    <div className='details-table' style={{display: 'inline-flex'}}>
-                        <div>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} id={id} type={type} updated={this.updated} />: null}</div>
-                        <div><h2>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}</h2></div>
+                    <div className='details-subject' style={{display: 'inline-flex'}}>
+                        <div style={{paddingRight:'20px'}}>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} id={id} type={type} updated={this.updated} />: null}</div>
+                        <div>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}</div>
                     </div>
                     <div className='details-table toolbar'>
                         <table>
                             <tbody>
-                                <tr>
+                                <tr className='spaceTop'>
                                     <th>Owner</th>
                                     <td><span>{this.state.showEventData ? <Owner data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
                                     <th>Tags</th>
                                     <td>{this.state.showTag ? <EntryDataTag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}</td>
                                 </tr>
-                                <tr>
+                                <tr className='spaceTop'>
                                     <th>Updated</th>
-                                    <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: 'inherit',paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
+                                    <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: 'inherit', paddingTop:'5px', fontSize:'18pt'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                     <th>Source</th>
                                     <td>{this.state.showSource ? <SourceData data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }</td>
                                 </tr>
@@ -224,7 +224,7 @@ var EntryDataStatus = React.createClass({
             buttonStyle = 'warning'
         };
         return (
-            <Button bsSize='large' bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: '18pt', marginTop: '15px', width: '250px', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button>
+            <Button bsSize='large' bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: '18pt', width: '250px', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button>
         )
     }
 });
@@ -252,8 +252,10 @@ var EntryDataSubject = React.createClass({
         }
     },
     render: function() {
+        var subjectLength = this.state.value.length;
+        var subjectWidth = subjectLength * 16;
         return (
-            <div style={{width: '1000px'}}>{this.state.type} {this.state.id}: <DebounceInput debounceTimeout={100} type='text' value={this.state.value} onChange={this.handleChange} /></div>
+            <div>{this.state.type} {this.state.id}: <DebounceInput debounceTimeout={300} forceNotifyOnBlur={true} type='text' value={this.state.value} onChange={this.handleChange} style={{width:subjectWidth+'px'}} /></div>
         )
     }
 });

@@ -3,6 +3,14 @@
 @body_background_color: #EEE;
 @import "/css/bootstrap.css";
 
+tr.spaceTop > th {
+    padding-top: .5em;
+}
+
+tr.spaceTop > td {
+    padding-top: 1em;
+}
+
 input[type=text] {
     background-color:#292929;
     border-color: #292929;
@@ -126,17 +134,20 @@ body {
   height:20px; 
 }
 
-
 .details-table td,th {
   padding-left:5px;
-  padding-right:2px;
+  padding-right:20px;
   text-align:left;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
 .details-table th {
- font-size:8pt;
+ font-size:18pt;
  outline: 0px solid transparent;
+}
+
+.details-subject {
+ font-size:24pt;
 }
 
 .grid-table th {
