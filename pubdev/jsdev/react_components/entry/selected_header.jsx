@@ -138,12 +138,12 @@ var SelectedHeader = React.createClass({
         var id = this.props.id; 
         return (
             <div>
-                <div id="NewEventInfo" className="entry-header-info-null" style={{zIndex:id}}>
-                    <div className='details-table' style={{display: 'flex'}}>
+                <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%',textAlign:'-webkit-center'}}>
+                    <div className='details-table' style={{display: 'inline-flex'}}>
                         <div>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} id={id} type={type} updated={this.updated} />: null}</div>
-                        <div style={{flexGrow:1, marginRight: 'auto'}}><h2>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}</h2></div>
+                        <div><h2>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}</h2></div>
                     </div>
-                    <div className='details-table' style={{width: '50%', margin: '0 auto'}}>
+                    <div className='details-table toolbar'>
                         <table>
                             <tbody>
                                 <tr>
@@ -164,7 +164,7 @@ var SelectedHeader = React.createClass({
                 </div>
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
-                {this.state.permissionsToolbar ? <SelectedPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
+                {this.state.permissionsToolbar ? <SelectedPermission id={id} type={type} permissions={permissions} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
                 {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
                 {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} toggleEventDisplay={this.props.toggleEventDisplay} /> :null}
                 <SelectedHeaderOptions toggleEventDisplay={this.props.toggleEventDisplay} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle}/>
@@ -224,7 +224,7 @@ var EntryDataStatus = React.createClass({
             buttonStyle = 'warning'
         };
         return (
-            <Button bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: 'inherit', marginTop: '17px', width: '200px', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button>
+            <Button bsSize='large' bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: '18pt', marginTop: '15px', width: '250px', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button>
         )
     }
 });
@@ -308,7 +308,7 @@ var TagDataIterator = React.createClass({
     render: function() {
         data = this.props.data;
         return (
-            <Button id="event_tag" onClick={this.tagDelete}><span className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span> {data.value}</Button>
+            <Button id="event_tag" onClick={this.tagDelete}><span style={{paddingRight:'3px'}} className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span> {data.value}</Button>
         )
     }
 });
@@ -427,7 +427,7 @@ var SourceDataIterator = React.createClass({
     render: function() {
         data = this.props.data;
         return (
-            <Button id="event_source" onClick={this.sourceDelete}><span className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span> {data.value}</Button>
+            <Button id="event_source" onClick={this.sourceDelete}><span style={{paddingRight:'3px'}} className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span> {data.value}</Button>
         )
     }
 });
@@ -478,7 +478,8 @@ var NewSource = React.createClass({
     },
     handleDrag: function () {
         //blank since buttons are handled outside of this
-    }, render: function() {
+    },
+    render: function() {
         var suggestions = this.state.suggestions;
         return (
             <span>
