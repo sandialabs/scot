@@ -27,7 +27,8 @@ var History = React.createClass({
 	    filter['id'] = [this.props.id]
 	    var result  = $.ajax({type: 'GET', url: '/scot/api/v2/alertgroup', data: {match: JSON.stringify(filter)}})
 	    result.success(function(response) {
-	        this.setState({historyBody:true, data: response})
+	        var response = response.records;
+            this.setState({historyBody:true, data: response})
 	    }.bind(this))
 
 	}
@@ -66,9 +67,7 @@ var HistoryData = React.createClass({
         var rows = [];
         data = this.props.data;
         for (var prop in data) {
-	    if(prop == 'records'){
-             rows.push(<HistoryDataIterator data={data[prop]} />);
-	    }
+            rows.push(<HistoryDataIterator data={data[prop]} />); 
         }
         return (
             <div>
@@ -83,31 +82,30 @@ var HistoryDataIterator = React.createClass({
     render: function() {
         data = this.props.data;
 	if(type == 'alertgroup'){
-	   $.each(data, function(key,value){
-	    $.each(value, function(x,y){
-	     if(x == 'id'){
-		data.id = y
-	      }
-	     else if (x == 'when'){
-		data.when = y	
-	     }
-	     else if (x == 'view_history'){
-		$.each(y, function(key,value){
-		    data.who = key
-		    $.each(value, function(x,y){
-		    if(x == 'where'){
-		        data.what = y
-		    }
-		    })
-		})
-	   }
-	   })
+	    $.each(data, function(key,value){
+	        $.each(value, function(x,y){
+	            if(x == 'id'){
+		            data.id = y
+	            }
+	            else if (x == 'when'){
+		            data.when = y	
+	            }
+	            else if (x == 'view_history'){
+		            $.each(y, function(key,value){
+		                data.who = key
+		                $.each(value, function(x,y){
+		                    if(x == 'where'){
+		                        data.what = y
+		                    }
+		                })
+		            })
+	            }
+	        })
 	   })
 	}
-        return (
-            <div>ID: {data.id} - <ReactTime value={data.when * 1000} format="MM/DD/YYYY hh:mm:ss a" /> - {data.who} - {data.what}</div>
-        )
-    }
+    return (
+        <div>ID: {data.id} - <ReactTime value={data.when * 1000} format="MM/DD/YYYY hh:mm:ss a" /> - {data.who} - {data.what}</div>
+    )}
 });
 
 
