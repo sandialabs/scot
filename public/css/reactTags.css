@@ -1,8 +1,8 @@
 /*Tags/Sources CSS */
 span > div.ReactTags__tags {
     position: relative;
-    width: 100px;
-    height: 31px;
+    width: 200px;
+    height: 25px;
     overflow-x: visible;
 }
 
@@ -23,11 +23,11 @@ div.ReactTags__tagInput {
     width: 200px;
     border-radius: 2px;
     display: inline-block;
-    height: 31px;
+    height: 25px;
 }
 div.ReactTags__tagInput input, 
 div.ReactTags__tagInput input:focus {
-    height: 31px;
+    height: 25px;
     margin: 0;
     font-size: 12px;
     width: 200px;
