@@ -104,7 +104,15 @@ sub create {
         $self->apply_sources($req_href, $colname, $object->id);
     }
 
-    $env->amq->send_amq_notification("creation", $object, $user);
+    # $env->amq->send_amq_notification("creation", $object, $user);
+    $env->mq->send("scot", {
+        action  => "created",
+        data    => {
+            type    => $object->get_collection_name,
+            id      => $object->id,
+            who     => $user,
+        }
+    });
 
     $self->do_render({
         action  => 'post',
@@ -320,6 +328,14 @@ sub get_many {
     delete $req_href->{request}; # hack to kil error when '$' appears in match ref
 
     $self->audit("get_many", $req_href);
+    $env->mq->send("scot", {
+        action  => "viewed",
+        data    => {
+            who     => $user,
+            type    => $col_name,
+            id      => 'many',
+        }
+    });
 }
 
 
@@ -440,6 +456,14 @@ sub get_one {
     $self->do_render($data_href);
 
     $self->audit("get_one", $req_href);
+    $env->mq->send("scot", {
+        action  => "viewed",
+        data    => {
+            who     => $user,
+            type    => $col_name,
+            id      => $id,
+        }
+    });
 }
 
 =item B<GET /scot/api/v2/:thing/:id/:subthing>
@@ -478,6 +502,7 @@ sub get_subthing {
     my $thing       = $req_href->{collection};
     my $subthing    = $req_href->{subthing};
     my $collection  = $mongo->collection(ucfirst($thing));
+    my $user        = $self->session('user');
     my $cursor      = $collection->get_subthing($thing, $id, $subthing);
 
     $log->debug("-----");
@@ -511,6 +536,15 @@ sub get_subthing {
         totalRecordCount => scalar(@things),
     });
     $self->audit("get_subthing", $req_href);
+    $env->mq->send("scot", {
+        action  => "viewed",
+        data    => {
+            who     => $user,
+            type    => $thing,
+            id      => $id,
+            subtype => $subthing,
+        }
+    });
 }
 
 =item B<PUT /scot/api/v2/:thing/:id>
@@ -672,7 +706,7 @@ sub update {
 
     $log->trace("Updated object");
 
-    $env->amq->send_amq_notification("update", $object, $user);
+    # $env->amq->send_amq_notification("update", $object, $user);
 
     $self->do_render({
         id      => $object->id,
@@ -689,6 +723,14 @@ sub update {
     }
 
     $self->audit("update_thing", $req_href);
+    $env->mq->send("scot", {
+        action  => "updated",
+        data    => {
+            who     => $user,
+            type    => $col_name,
+            id      => $id,
+        }
+    });
 }
 
 sub build_update_doc {
@@ -881,7 +923,7 @@ sub write_promotion_history_notification {
             targets => [ $targets ],
         });
     }
-    $self->env->amq->send_amq_notification($type, $object, $user);
+    # $self->env->amq->send_amq_notification($type, $object, $user);
 }
 
 sub do_task_checks {
@@ -1060,7 +1102,7 @@ sub delete {
 
     $object->remove;
     
-    $env->amq->send_amq_notification("delete", $object, $user);
+    # $env->amq->send_amq_notification("delete", $object, $user);
 
     $self->do_render({
         action      => 'delete',
@@ -1070,7 +1112,14 @@ sub delete {
     });
     
     $self->audit("delete_thing", $req_href);
-
+    $env->mq->send("scot", {
+        action  => "deleted",
+        data    => {
+            type    => $col_name,
+            id      => $object->id,
+            who     => $user,
+        }
+    });
 }
 
 =item B<DELETE /scot/api/v2/:thing/:id/:/subthing/:subid>
@@ -1167,7 +1216,7 @@ sub breaklink {
         }
     }
     
-    $env->amq->send_amq_notification("modify", $object, $user);
+    # $env->amq->send_amq_notification("modify", $object, $user);
 
     $self->do_render({
         action      => 'breaklink',
@@ -1179,6 +1228,16 @@ sub breaklink {
     });
     
     $self->audit("link broken", $req_href);
+    $env->mq->send("scot", {
+        action  => "unlinked",
+        data    => {
+            type        => $col_name,
+            id          => $object->id,
+            subthing    => $sub_col,
+            subid       => $sub_id,
+            who         => $user,
+        }
+    });
 
 }
 
@@ -1653,6 +1712,13 @@ sub do_command {
     $log->trace("------------");
 
     my $req_href    = $self->get_request_params;
+
+# TODO
+    $env->mq->send("scot", {
+        action  => "message",
+        data    => {
+        }
+    });
 
 }
 
