@@ -8,7 +8,7 @@ use v5.18;
 use Moose;
 use Mojo::JSON qw/decode_json encode_json/;
 use Data::GUID;
-use Net::STOMP::Client;
+use Net::Stomp;
 use Scot::Env;
 use Data::Dumper;
 use Try::Tiny;
@@ -17,7 +17,7 @@ use namespace::autoclean;
 
 has stomp   => (
     is      => 'ro',
-    isa     => 'Maybe[Net::STOMP::Client]',
+    isa     => 'Maybe[Net::Stomp]',
     required    => 1,
     lazy    => 1,
     builder => '_build_stomp',
@@ -34,7 +34,7 @@ has stomp_host  => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default     => '127.0.0.1',
+    default     => 'localhost',
 );
 
 has stomp_port  => (
@@ -52,30 +52,30 @@ sub _build_stomp {
     $log->debug("Creating STOMP client");
 
     try {
-        $stomp  = Net::STOMP::Client->new(
-            host    => $self->stomp_host,
-            port    => $self->stomp_port,
-        );
+        $stomp  = Net::Stomp->new({
+            hostname    => $self->stomp_host,
+            port        => $self->stomp_port,   
+            # TODO: make sure queue is SSL
+            # ssl   => 1,
+            # ssl_options => { },
+            logger  => $log,
+        });
+        $stomp->connect();
     }
     catch {
         $log->error("Error creating STOMP client: $_");
         return undef;
     };
+
+    try {
+        $stomp->connect();
+    }
+    catch {
+        $log->error("Error connecting: $_");
+    }
     return $stomp;
 }
 
-sub is_connected {
-    my $self    = shift;
-    my $log     = $self->env->log;
-    my $stomp   = $self->stomp;
-
-    retry   { $stomp->connect(); }
-    catch   {
-        $log->error("Failed to reconnect to STOMP client: $_");
-        return undef;
-    };
-    return 1;
-}
 
 sub send {
     my $self    = shift;
@@ -92,19 +92,20 @@ sub send {
     $href->{guid}   = $gstring;
     my $body    = encode_json($href);
 
-    if ( $self->is_connected ) {
+    #if ( $self->is_connected ) {
         try {
-            $stomp->send(
+            $stomp->send({
                 destination => "/".$dest,
                 body        => $body,
                 'amq-msg-type'  => 'text',
-            );
+            });
         }
         catch {
             $log->error("Erros sending to STOMP message: $_");
-        }
-    }
+        };
+    #}
     $log->level($savelevel);
+    # $stomp->disconnect();
 }
 
 __PACKAGE__->meta->make_immutable;
