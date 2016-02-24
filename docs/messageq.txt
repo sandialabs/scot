@@ -7,9 +7,11 @@ The message format is:
 {
     guid:   "unique_guid_string",
     action: "action_string",
-    type:   "type_of_data_structure",
-    id:     integer_id_of_data,
-    data:   json_object
+    data:   {
+        type:   "type_of_data_structure",
+        id:     integer_id_of_data,
+        who:    username,
+    }
 }
 
 "unique_guid_string" is a requirement of the STOMP protocol and is generated
