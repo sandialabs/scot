@@ -1,13 +1,14 @@
-var React           = require('react');
-var ReactTime       = require('react-time');
-var SplitButton     = require('react-bootstrap/lib/SplitButton.js');
-var DropdownButton  = require('react-bootstrap/lib/DropdownButton.js');
-var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
-var Button          = require('react-bootstrap/lib/Button.js');
-var AddEntryModal   = require('../modal/add_entry.jsx');
-var DeleteEntry     = require('../modal/delete.jsx').DeleteEntry;
-var Summary         = require('../components/summary.jsx');
-var Task            = require('../components/task.jsx');
+var React               = require('react');
+var ReactTime           = require('react-time');
+var SplitButton         = require('react-bootstrap/lib/SplitButton.js');
+var DropdownButton      = require('react-bootstrap/lib/DropdownButton.js');
+var MenuItem            = require('react-bootstrap/lib/MenuItem.js');
+var Button              = require('react-bootstrap/lib/Button.js');
+var AddEntryModal       = require('../modal/add_entry.jsx');
+var DeleteEntry         = require('../modal/delete.jsx').DeleteEntry;
+var Summary             = require('../components/summary.jsx');
+var Task                = require('../components/task.jsx');
+var SelectedPermission  = require('./selected_permission.jsx');
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
@@ -64,6 +65,7 @@ var EntryParent = React.createClass({
         return {
             entryToolbar:false,   
             deleteToolbar:false,
+            permissionsToolbar:false,
         }
     },
     entryToggle: function() {
@@ -80,6 +82,33 @@ var EntryParent = React.createClass({
             this.setState({deleteToolbar:false})
         }
     },
+    permissionsToggle: function() {
+        if (this.state.permissionsToolbar == false) {
+            this.setState({permissionsToolbar:true})
+        } else {
+            this.setState({permissionsToolbar:false})
+        }
+    },
+    permissionsfunc: function(items) {
+        var writepermissionsarr = [];
+        var readpermissionsarr = [];
+        var readwritepermissionsarr = [];
+        for (prop in items.groups) {
+            var fullprop = items.groups[prop]
+            if (prop == 'read') {
+                items.groups[prop].forEach(function(fullprop) {
+                    readpermissionsarr.push(fullprop)
+                });
+            } else if (prop == 'modify') {
+                items.groups[prop].forEach(function(fullprop) {
+                    writepermissionsarr.push(fullprop)
+                });
+            };
+        };
+        readwritepermissionsarr.push(readpermissionsarr);
+        readwritepermissionsarr.push(writepermissionsarr);
+        return readwritepermissionsarr; 
+    },
     render: function() {
         var itemarr = [];
         var subitemarr = [];
@@ -88,6 +117,7 @@ var EntryParent = React.createClass({
         var id = this.props.id;
         var updated = this.props.updated;
         var summary = items.summary;
+        var permissions = this.permissionsfunc(items);
         var outerClassName = 'row-fluid entry-outer';
         var innerClassName = 'row-fluid entry-header';
         var taskOwner = ''; 
@@ -108,7 +138,6 @@ var EntryParent = React.createClass({
         }
         itemarr.push(<EntryData subitem = {items} />);
         for (var prop in items) {
-            childfunc(prop);
             function childfunc(prop){
                 if (prop == "children") {
                     var childobj = items[prop];
@@ -117,21 +146,23 @@ var EntryParent = React.createClass({
                     });
                 }
             }
+            childfunc(prop);
         };
         itemarr.push(subitemarr);
         return (
             <div> 
                 <div className={outerClassName} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
-                    <span className="anchor" id={items.id}/>
+                    <span className="anchor" id={"/"+ type + '/' + id + '/' + items.id}/>
                     <div className={innerClassName}>
-                        <div className="entry-header-inner">[<a style={{color:'black'}} href={"#"+items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
-                            <span className='pull-right'>
+                        <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/"+ type + '/' + id + '/' + items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
+                            <span className='pull-right' style={{display:'inline-flex'}}>
+                                {this.state.permissionsToolbar ? <SelectedPermission id={items.id} type={'entry'} permissions={permissions} permissionsToggle={this.permissionsToggle} updated={updated} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.entryToggle}>
                                     <MenuItem eventKey='1' onClick={this.entryToggle}>Move</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} updated={updated} /></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} updated={updated}/></MenuItem>
-                                    <MenuItem eventKey='5'>Permissions</MenuItem>
+                                    <MenuItem eventKey='5' onClick={this.permissionsToggle}>Permissions</MenuItem>
                                 </SplitButton>
                                 <Button bsSize='xsmall' onClick={this.entryToggle}>Edit</Button>
                             </span>
