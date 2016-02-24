@@ -16,12 +16,12 @@ system("mongo scot-testing <../../bin/database/reset.js 2>&1 > /dev/null");
 
 my $t = Test::Mojo->new('Scot');
 my $env = Scot::Env->instance;
-my $amq = $env->amq;
-$amq->subscribe("alert", "alert_queue");
-$amq->get_message(sub{
-    my ($self, $frame) = @_;
-    print "AMQ received: ". Dumper($frame). "\n";
-});
+#my $amq = $env->amq;
+#$amq->subscribe("alert", "alert_queue");
+#$amq->get_message(sub{
+#    my ($self, $frame) = @_;
+#    print "AMQ received: ". Dumper($frame). "\n";
+#});
 
 
 $t->post_ok(
