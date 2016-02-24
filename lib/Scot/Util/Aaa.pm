@@ -36,9 +36,6 @@ sub check {
         $log->trace("[User $user] has logged in");
         return 1;
     }
-    # TODO: need to cache original URL so we can redirect to it
-    # after auth
-
 
     # if testing, do away with pesky auth
     if ($ENV{'scot_mode'} eq "testing") {

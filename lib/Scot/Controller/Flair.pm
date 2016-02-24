@@ -91,8 +91,7 @@ sub run {
     $stomp->on_connected(
         sub {
             my $stomp    = shift;
-            $stomp->subscribe('/topic/alert');
-            $stomp->subscribe('/topic/entry');
+            $stomp->subscribe('/scot');
         }
     );
 
@@ -104,8 +103,19 @@ sub run {
 
             # read $body to determine alert or entry number
             my $json    = decode_json $body;
-            my $type    = $json->{type};
-            my $id      = $json->{id};
+            my $type    = $json->{data}->{type};
+            my $id      = $json->{data}->{id};
+            my $action  = $json->{action};
+
+            if ( $action ne "created" and $action ne "updated" ) {
+                $log->trace("not a created or updated action");
+                return;
+            }
+            if ( $type ne "alert" and $type ne "entry" ) {
+                $log->trace("non flairable creation/update");
+                return;
+            }
+
             my $url     = $self->base_url . "/$type/$id";
             my $ua      = Mojo::UserAgent->new;
 
