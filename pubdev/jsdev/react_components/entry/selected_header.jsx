@@ -138,13 +138,13 @@ var SelectedHeader = React.createClass({
         var id = this.props.id; 
         return (
             <div>
-                <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%',textAlign:'-webkit-center'}}>
+                <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%',textAlign:'center'}}>
                     <div className='details-subject' style={{display: 'inline-flex'}}>
                         <div style={{paddingRight:'20px'}}>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} id={id} type={type} updated={this.updated} />: null}</div>
                         <div>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}</div>
                     </div>
                     <div className='details-table toolbar'>
-                        <table>
+                        <table className='table-centered'>
                             <tbody>
                                 <tr className='spaceTop'>
                                     <th>Owner</th>
@@ -253,9 +253,12 @@ var EntryDataSubject = React.createClass({
     },
     render: function() {
         var subjectLength = this.state.value.length;
-        var subjectWidth = subjectLength * 16;
+        var subjectWidth = subjectLength * 18;
+        if (subjectWidth <= 200) {
+            subjectWidth = 200;
+        }
         return (
-            <div>{this.state.type} {this.state.id}: <DebounceInput debounceTimeout={300} forceNotifyOnBlur={true} type='text' value={this.state.value} onChange={this.handleChange} style={{width:subjectWidth+'px'}} /></div>
+            <div>{this.state.type} {this.state.id}: <DebounceInput debounceTimeout={500} forceNotifyOnBlur={true} type='text' value={this.state.value} onChange={this.handleChange} style={{width:subjectWidth+'px'}} /></div>
         )
     }
 });
