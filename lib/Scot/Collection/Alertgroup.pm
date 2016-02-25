@@ -34,7 +34,7 @@ sub create_from_api {
     my $env     = $self->env;
     my $mongo   = $env->mongo;
     my $log     = $env->log;
-    my $amq     = $env->amq;
+    my $mq     = $env->mq;
 
     $log->trace("Create Alertgroup");
 
@@ -97,7 +97,13 @@ sub create_from_api {
             next;
         }
 
-        $amq->send_amq_notification("creation", $alert);
+        $mq->send("scot", {
+            action  => "created", 
+            data    => {
+                type    => "alert",
+                id      => $alert->id
+            }
+        });
 
         # not sure we need a notification for every alert, maybe just alertgroup
         # alert triage may want this at some point though
@@ -117,7 +123,13 @@ sub create_from_api {
             alert_count     => $alert_count,
         }
     });
-    $env->amq->send_amq_notification("creation", $alertgroup);
+    $self->env->mq->send("scot",{
+        action  => "created", 
+        data    => {
+            type    => "alertgroup",
+            id      => $alertgroup->id
+        }
+    });
     return $alertgroup;
 }
 
@@ -143,7 +155,14 @@ sub refresh_data {
             alert_count     => $count{total},
         }
     });
-    $self->env->amq->send_amq_notification("update", $alertgroup, $user);
+    $self->env->mq->send("scot", {
+        action  => "updated", 
+        data    => {
+            type    => "alertgroup",
+            id      => $id, 
+            who     => $user
+        }
+    });
 }
 
 

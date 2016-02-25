@@ -138,23 +138,23 @@ var SelectedHeader = React.createClass({
         var id = this.props.id; 
         return (
             <div>
-                <div id="NewEventInfo" className="entry-header-info-null" style={{zIndex:id}}>
-                    <div className='details-table' style={{display: 'flex'}}>
-                        <div>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} id={id} type={type} updated={this.updated} />: null}</div>
-                        <div style={{flexGrow:1, marginRight: 'auto'}}><h2>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}</h2></div>
+                <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%',textAlign:'center'}}>
+                    <div className='details-subject' style={{display: 'inline-flex'}}>
+                        <div style={{paddingRight:'20px'}}>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} id={id} type={type} updated={this.updated} />: null}</div>
+                        <div>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}</div>
                     </div>
-                    <div className='details-table' style={{width: '50%', margin: '0 auto'}}>
-                        <table>
+                    <div className='details-table toolbar'>
+                        <table className='table-centered'>
                             <tbody>
-                                <tr>
+                                <tr className='spaceTop'>
                                     <th>Owner</th>
                                     <td><span>{this.state.showEventData ? <Owner data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
                                     <th>Tags</th>
                                     <td>{this.state.showTag ? <EntryDataTag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}</td>
                                 </tr>
-                                <tr>
+                                <tr className='spaceTop'>
                                     <th>Updated</th>
-                                    <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: 'inherit',paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
+                                    <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: 'inherit', paddingTop:'5px', fontSize:'18pt'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                     <th>Source</th>
                                     <td>{this.state.showSource ? <SourceData data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }</td>
                                 </tr>
@@ -164,7 +164,7 @@ var SelectedHeader = React.createClass({
                 </div>
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
-                {this.state.permissionsToolbar ? <SelectedPermission permissions={permissions} permissionsToggle={this.permissionsToggle} /> : null}
+                {this.state.permissionsToolbar ? <SelectedPermission id={id} type={type} permissions={permissions} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
                 {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
                 {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} toggleEventDisplay={this.props.toggleEventDisplay} /> :null}
                 <SelectedHeaderOptions toggleEventDisplay={this.props.toggleEventDisplay} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle}/>
@@ -191,10 +191,8 @@ var EntryDataStatus = React.createClass({
     },
     eventStatusToggle: function () {
         if (this.state.buttonStatus == 'open') {
-            this.setState({buttonStatus:'closed'});
             this.statusAjax('closed');
         } else if (this.state.buttonStatus == 'closed') {
-            this.setState({buttonStatus:'open'});
             this.statusAjax('open');
         }
     },
@@ -207,6 +205,7 @@ var EntryDataStatus = React.createClass({
             data: json,
             success: function(data) {
                 console.log('success status change to: ' + data);
+                this.setState({buttonStatus:newStatus});
                 this.props.updated();
             }.bind(this),
             error: function() {
@@ -224,7 +223,7 @@ var EntryDataStatus = React.createClass({
             buttonStyle = 'warning'
         };
         return (
-            <Button bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: 'inherit', marginTop: '17px', width: '200px', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button>
+            <Button bsSize='large' bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: '18pt', width: '250px', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button>
         )
     }
 });
@@ -252,8 +251,13 @@ var EntryDataSubject = React.createClass({
         }
     },
     render: function() {
+        var subjectLength = this.state.value.length;
+        var subjectWidth = subjectLength * 18;
+        if (subjectWidth <= 200) {
+            subjectWidth = 200;
+        }
         return (
-            <div style={{width: '1000px'}}>{this.state.type} {this.state.id}: <DebounceInput debounceTimeout={100} type='text' value={this.state.value} onChange={this.handleChange} /></div>
+            <div>{this.state.type} {this.state.id}: <DebounceInput debounceTimeout={500} forceNotifyOnBlur={true} type='text' value={this.state.value} onChange={this.handleChange} style={{width:subjectWidth+'px'}} /></div>
         )
     }
 });
@@ -308,7 +312,7 @@ var TagDataIterator = React.createClass({
     render: function() {
         data = this.props.data;
         return (
-            <Button id="event_tag" onClick={this.tagDelete}><span className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span> {data.value}</Button>
+            <Button id="event_tag" onClick={this.tagDelete}><span style={{paddingRight:'3px'}} className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span> {data.value}</Button>
         )
     }
 });
@@ -427,7 +431,7 @@ var SourceDataIterator = React.createClass({
     render: function() {
         data = this.props.data;
         return (
-            <Button id="event_source" onClick={this.sourceDelete}><span className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span> {data.value}</Button>
+            <Button id="event_source" onClick={this.sourceDelete}><span style={{paddingRight:'3px'}} className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span> {data.value}</Button>
         )
     }
 });
@@ -478,7 +482,8 @@ var NewSource = React.createClass({
     },
     handleDrag: function () {
         //blank since buttons are handled outside of this
-    }, render: function() {
+    },
+    render: function() {
         var suggestions = this.state.suggestions;
         return (
             <span>
