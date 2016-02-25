@@ -44,6 +44,10 @@ var tinycount = 0;
 var Dropzone = require('../../../node_modules/react-dropzone');
 var TinyMCE = require('../../../node_modules/react-tinymce')
 var Crouton = require('../../../node_modules/react-crouton')
+var Frame = require('../../../node_modules/react-frame-component')
+var finalfiles = []
+var checkfiles = false
+var Alertentry = require('../entry/selected_entry.jsx')
 var columns = 
 [
     { name: 'id', style: {color: 'black'}},
@@ -63,7 +67,8 @@ const  customStyles = {
         bottom  : 'auto',
         marginRight: '-50%',
         transform:  'translate(-50%, -50%)',
-	width: '80%'
+	width: '80%',
+	'z-index' : '99'
     }
 }
 function getColumns()
@@ -81,15 +86,17 @@ function getColumns()
 
 var Viewentry = React.createClass({
 	getInitialState: function() {
-	return{edit:true,stagecolor : '5px solid #000',enable:true, reload: false, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Reply to Entry First"}], open: true}
+	return{open: true}
 	},
-	componentDidMount: function() {
-	$('.viewtext').val(entrydict[storealertids.length - 1])
-	this.setState({})
+	componentWillMount: function(){
+		this.setState({open:true})
 	},
-	render: function() { 
+	componentWillReceiveProps: function() {
+		this.setState({open: true})
+	},
+	render: function() {
+	console.log(this.state.open) 
 	return (
-	this.state.reload ? React.createElement(Link, null) :  
 	React.createElement("div", {className: "modal-grid"}, 
 	React.createElement(Modal, {style: customStyles, className: "Modal__Bootstrap modal-dialog", isOpen: this.state.open}, 
 	React.createElement("div", {className: "modal-content"}, 
@@ -97,93 +104,23 @@ var Viewentry = React.createClass({
 	React.createElement("h4", {className: "modal-title"}, " View Entry")
 	), 
 	React.createElement("div", {className: "modal-body"}, 
-	React.createElement("textarea", {disabled: this.state.edit, className: "viewtext", rows: "4", cols: "50", style: {border: this.state.stagecolor,resize: 'none',width: '1389px', height: '300px'}}
-	)
+	React.createElement('div', null, React.createElement(Alertentry, {type: 'alert', id: this.props.id}))
 	), 
 	React.createElement("div", {className: "modal-footer"}, 
-	React.createElement("button", {type: "button", onClick: this.onCancel}, "Close"),this.state.enablesave ? null :  	
-	React.createElement("button", {type: "button", onClick: this.onReply}, "Reply"), React.createElement("button", {type: "button", className: "btn-danger", onClick: this.onSave}, "Save") , 	
-	React.createElement(Dropdown, {options: this.state.modaloptions, onChange: this.modalonSelect})
+	React.createElement("button", {type: "button", onClick: this.onCancel, className: 'btn btn-danger'}, "Close")
 	)
 	)
 	)
 	)
 	)
-	},
-	Edit: function(){
-	this.setState({edit: false,enablesave:false,enable:true})
 	},
 	onCancel: function(){
 	 if(confirm('Are you sure you want to close this entry?')){
-		$('.btn-success').show()
-	        $('.Subgrid').show()
-	        $('.subtable').show()
-	     this.setState({open:false})
+	     this.setState({open:false, change:false})
 	    }
 	else{
 
 	}
-	},
-	onSave: function(){
-	if(confirm('Are you sure you want to Save this Reply')){
-	$('.btn-sucess').show()
-	$('.Subgrid').show()
-	$('.Dropdown').show()
-	    this.state.open = false
-	    this.state.edit = true
-	    this.state.enablesave = true
-	}
-	else {
-	    this.state.open = true
-	    this.state.edit = false
-	    this.state.enablesave = false
-	}
-	addentrydata = true
-	this.setState({open:this.state.open,edit:this.state.edit, enable:false, enablesave: this.state.enablesave})
-	},
-	onReply: function() {	
-
-	this.state.modaloptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Make Task", label: "Make Task"}, {value:"Permissions", label: "Permissions"}]
-	$('.viewtext').val($('.inputtext').val() + "\n\n" + "Re:  " )
-	this.setState({modaloptions: this.state.modaloptions, edit: false,enablesave: true})	
-	},
-	modalonSelect: function (option){
-	var newoptions
-	var color;
-	//getEntry
-	if(option.label == "Move"){
-	}
-	else if(option.label == "Delete"){
-	}
-	else if (option.label == "Mark as Summary"){
-	}
-	else if (option.label == "Make Task"){
-	newoptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Close Task", label: "Close Task"}, {value:"Permissions", label: "Permissions"}, {value: "Assign taks to me", label: "Assign task to me"}]
-	this.state.modaloptions = newoptions
-	color = '5px solid #933'
-	this.state.stagecolor = color 
-	}
-	else if(option.label == "Reopen Task"){
-	newoptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Close Task", label: "Close Task"}, {value:"Permissions", label: "Permissions"}, {value: "Assign taks to me", label: "Assign task to me"}]
-	this.state.modaloptions = newoptions
-	color = '5px solid #933'
-	this.state.stagecolor = color
-	}
-	else if (option.label == "Close Task"){
-	newoptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Reopen Task", label: "Reopen Task"}, {value:"Permissions", label: "Permissions"}]
-	this.state.modaloptions = newoptions
-	color = '5px solid #696'
-	this.state.stagecolor = color
-	}
-	else if (option.label == "Assign task to me"){
-	color = '5px solid #B8B800'
-	this.state.stagecolor = color 
-	}	
-	else if (option.label == "Permissions"){
-	console.log($('.inputtext').val())
-	}
-
-	this.setState({modaloptions: this.state.modaloptions, stagecolor : this.state.stagecolor })
 	}
 	});
 
@@ -207,13 +144,31 @@ function dataSource(query)
 	finalarray[key] = {}
 	
 	$.each(value, function(num, item){	
-	if(num == 'when')
+	if(num == 'id'){
+	addentrydata = true
+	var View = React.createClass({
+		getInitialState: function(){
+		return {view:false, refe: 0}
+		  },
+		 render: function(){
+		 return( 
+	this.state.view ? React.createElement('div', {className: 'ViewEntry'} , React.createElement(Viewentry, {id: this.state.refe}), React.createElement('button', {className: 'btn btn-info', onClick:this.view}, 'Re-Open Entry')) :
+			React.createElement('button', {className: 'btn btn-info', onClick: this.view}, 'View Entry')
+			)
+		},
+		view: function(){		
+		this.setState({view:true, refe: item})
+		}
+		});	
+		finalarray[key]["Entry"] = React.createElement(View, {change: true})
+		finalarray[key][num] = item
+	}
+	else if(num == 'when')
 	{
 	    var date = new Date(1000 * item)
 	    finalarray[key][num] = date.toLocaleString()
 	}
-	else if (item == 'promoted'){
-	
+	else if (item == 'promoted'){	
 	var Promote = React.createClass({
 	render: function() {
 	return (
@@ -263,44 +218,6 @@ function dataSource(query)
 	count++
 
 	})
-	if(addentrydata){
-	viewmodalwithdata = true
-	var Viewalerts = React.createClass({
-	getInitialState: function(){
-	return{view: backtoview, reload: false}
-	},
-	render: function(){
-	return (
-	 this.state.reload ? React.createElement('div', {className: "Reload"}, React.createElement('button', {onClick: this.Reload}, 'Re Open Entry'), React.createElement(Viewentry, null)) : 
-	 this.state.view ? React.createElement('div', {className: "Entries"}, React.createElement(Viewentry, null), React.createElement('button', {onClick: this.Reload}, 'Re Open Entry')) : React.createElement('button', {onClick: this.viewAlert}, 'View Entry')
-	)
-	},
-	viewAlert: function(){
-        $('.Entries').show()	
-	$('.btn-success').hide()
-	$('.Subgrid').hide()
-	$('.subtable').hide() 
-	this.setState({view:true})
-	},
-	Reload: function() {
-	$('.btn-success').hide()
-	$('.Subgrid').hide()
-	$('.subtable').hide()
-	savedopen = true
-	this.setState({reload: true})
-	}
-	});
-
-	for(var i = 0; i<entrydict.length; i++){	
-	$.each(entrydict[i], function(key, value){
-	if(key != undefined){
-	console.log(key)
-	finalarray[key]["Entry"] = React.createElement(Viewalerts, null)
-	}
-	});
-	}
-	addentrydata = false
-	}
 	return {
 	data:  finalarray,	
 	count: response.totalRecordCount,
@@ -376,7 +293,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	var last = realData.columns
 	if(this.isMounted()){
 	var newarray = []
-	if(addentrydata){
+	if(true){
 	newarray[0] = {name:"Entry", width: 180, style: {color: 'black'}}
 	for(var i = 1; i<last.length; i++) {
 	newarray[i] = {name:last[i-1],width: 200, style:{color:'black'}}
@@ -420,7 +337,21 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
          firstCol.width = firstSize
          this.setState({})
    },
-	render: function(){	
+	Close: function(i) {
+	for(var x = 0; x< finalfiles.length; x++){
+	 if(i.target.id == finalfiles[x].name){
+	     finalfiles.splice(x,1)
+	  }
+	  }
+	  this.setState({files:finalfiles})
+	},
+	render: function(){
+	$('.mac-fix').css('position', 'relative')	
+	$('.z-table').each(function(key,value){
+	$(value).find('.z-content').each(function(x,y){
+	$(y).css('overflow', 'auto')
+	})
+	})
 	$('.z-table').each(function(key, value){
 	   $(value).find('.z-content').each(function(x,y){
 		if($(y).text() == 'closed'){
@@ -436,9 +367,8 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	})	    
 	return (
 	this.state.history ? React.createElement(HistoryView, {type:'alertgroup', id: this.state.historyid, historyToggle: this.viewHistory}) 
-        : 
-	this.state.addentry  ?  	
-	
+        :
+	React.createElement("div", {className: 'All Modal'},  	
 	React.createElement(Modal, {style: customStyles, isOpen: this.state.addentry}, 
 	React.createElement("div", {className: "modal-content"}, 
 	React.createElement("div", {className: "modal-header"}, 
@@ -448,7 +378,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	React.createElement(TinyMCE, {content: "", className: "inputtext",config: {plugins: 'autolink link image lists print preview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'},onChange: this.handleEditorChange}
 	)), 
 	React.createElement("div", {className: "modal-footer"}, React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width': '2px','border-color':'#000','border-radius':'4px',margin:'30px', padding:'30px',width: '200px', 'border-style': 'dashed'}}, React.createElement("div",null,"Drop some files here or click to  select files to upload")),
-	this.state.files ? React.createElement("div", null, this.state.files.map((file) => React.createElement("a", {style: {border: '2px solid black'}, href:file.preview, target:"_blank"}, file.name ))): null, 
+	this.state.files ? React.createElement("div", null, this.state.files.map((file) => React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("a", {href:file.preview, target:"_blank"}, file.name),React.createElement('button', {style: {width: '2em', height: '1em', 'line-height':'1px'}, className: 'btn btn-danger', id: file.name, onClick: this.Close}, 'x'))))): null, 
 	React.createElement("button", {type: "button", onClick: this.onCancel}, " Cancel"), 
 	this.state.enablesave ? null : React.createElement("button", {type: "button", onClick: this.onSave, disabled: this.state.enablesave}, "Save"), 	
  
@@ -457,10 +387,9 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	React.createElement(Dropdown, {options: this.state.modaloptions, onChange: this.modalonSelect})
 	)
 	)
-	)
-	:
+	),
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
-	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable"}, React.createElement('button', {className: 'btn btn-warning', onClick: this.goBack}, 'Back to Alerts'),React.createElement('div', {className: 'entry-header-info-null', style:{top: '1px', width: '100%',background: '#000'}}, React.createElement('h2',{ style: {color: 'white', 'font-size': '24px', 'text-align':'left'}}, 'Id(s) : ' +  ids ), React.createElement('h2', {style: {color: 'white', 'font-size':'24px', 'text-align' : 'left'}}, 'Viewed By : ' + this.state.viewby.join(','))), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {className: "Subgrid",
+	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable"}, React.createElement('button', {className: 'btn btn-warning', onClick: this.goBack}, 'Back to Alerts'),React.createElement('div', {className: 'entry-header-info-null', style:{top: '1px', width: '100%',background: '#000'}}, React.createElement('h2',{ style: {color: 'white', 'font-size': '24px', 'text-align':'left'}}, 'Id(s) : ' +  ids ), React.createElement('h2', {style: {color: 'white', 'font-size':'24px', 'text-align' : 'left'}}, 'Viewed By : ' + this.state.viewby.join(','))), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {style: {'z-index' : '0'},className: "Subgrid",
             ref: "dataGrid", 
             idProperty: "index",
 	    setColumns: true, 
@@ -480,52 +409,20 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	    rowStyle: configureTable}
 	)
         )
-	);
+	));
    },
     onDrop: function(files){
-        this.setState({files: files})
-
-    },
-    handleFilter: function(column, value, allFilterValues){
-	/*
-	var data = {}
-	Object.keys(allFilterValues).forEach(function(name){
-	    var columnFilter = (allFilterValues[name] + '').toUpperCase()
-	    $('.z-table').each(function(key,value) {
-	        $(value).find('.z-cell').each(function(x,y){
-		    if($(y).attr('name').toUpperCase() == name.toUpperCase()) {
-			if(columnFilter == $(y).text().toUpperCase()){
-			    $('.z-table').each(function(key,value){
-				$(value).find('.z-cell').each(function(x,y){
-				    var Link = React.createClass({
-					render:function(){
-					return(
-					<div>
-	  					<div className = "sub render" dangerouslySetInnerHTML={{__html:$(y).html()}} ></div>	
-					</div>
-					)
-			}
-			})
-				    data[x] = {}
-				    data[x][$(y).attr('name')] = React.createElement(Link, null)
-			})
-		})
-		}
-		}
-		})
-		})
-		})
-	console.log(data)
-    	this.setState({data: data,reload:false})
-	*/
+	   for(var i = 0; i<files.length; i++){
+		finalfiles.push(files[i])
+	   }	
+        this.setState({files: finalfiles})
     },
     goBack : function(){
 	stage = false
 	SELECTED_ID_GRID = {}
 	changestate = false
 	passids = {}
-	url = '/scot/api/v2/alertgroup'
-	
+	url = '/scot/api/v2/alertgroup'	
 	this.setState({columns: [], back: true})
     },
     handleColumnOrderChange : function(index, dropIndex){
@@ -806,14 +703,38 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	submit: function(){
 	if(marksave)
 	{
-	    var store = {}
-	    for(var i = 0; i<storealertids.length; i++){
-		store[storealertids[i]] = {}
-		store[storealertids[i]] = $('#react-tinymce-'+tinycount+'_ifr').contents().find("#tinymce").text()  	
+
+	 var data = new Object()
+	 $('.z-selected').each(function(key,value){
+	 $(value).find('.z-cell').each(function(x,y){
+	    if($(y).attr('name') == 'id'){  
+	     data = JSON.stringify({body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id: $(y).text(), target_type: 'alert', parent: 0})
+	     $.ajax({
+		type: 'PUT', 
+		url: '/scot/api/v2/entry',
+		data: data
+		}).success(function(response){
+		    console.log(response)
+		    if(this.state.files.length > 0){
+			for(var i = 0; i<this.state.files.length; i++){	
+			var file = {file:this.state.files[i].name}
+			data = JSON.stringify({upload: file, target_type: 'alert', target_id: response.id, entry_id: ''})
+			$.ajax({
+			   type: 'PUT',
+			   url: '/scot/api/v2/file',
+			   data: data
+			   }).success(function(response){
+			   })
+			}
+			}
+		})
+		}
+	})
+	})
+	     for(var i = 0; i<this.state.files.length; i++){
+		var file = {file:this.state.files[i].name}
+		console.log(JSON.stringify({upload: file}))	
 	     }
-	     entrydict.push(store)          
-	     addentrydata = true
-	     tinycount++;
 	     setTimeout(
 	     function() {
 	     }.bind(this),this.setState({edit:false, addentry: false, reload:true}),100)
@@ -821,7 +742,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 
         },
 	Edit: function(){
-        $('#react-tinymce-'+tinycount+'_ifr').contents().find("#tinymce").attr("contenteditable", true)
+        $('#react-tinymce-addentry_ifr').contents().find("#tinymce").attr("contenteditable", true)
 	this.setState({edit: false,enablesave:false,enable:true})
 	},
 	onCancel: function(){
@@ -834,13 +755,14 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	}
 	},
 	onSave: function(){
-	if($('#react-tinymce-'+tinycount+'_ifr').contents().find("#tinymce").text() == "")	{
+	if($('#react-tinymce-addentry_ifr').contents().find("#tinymce").text() == "")	{
 	alert("Please fill in Text")
 	}
 	else {
-	$('#react-tinymce-'+tinycount+'_ifr').contents().find("#tinymce").attr("contenteditable", false)
+	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").attr("contenteditable", false)
 	marksave = true;	
 	this.state.modaloptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Make Task", label: "Make Task"}, {value:"Permissions", label: "Permissions"}]
+		
 	this.setState({reload: false, addentry: true,edit:true, modaloptions : this.state.modaloptions, enable:false, enablesave: true})
 	}
 	},
@@ -963,9 +885,9 @@ var Maintable = React.createClass({
 	    onFilter: this.handleFilter, 
 	    selected: SELECTED_ID, 
 	    onSelectionChange: this.onSelectionChange, 
-	    defaultPageSize:20 ,  
+	    defaultPageSize:50 ,  
 	    pagination: true, 
-	    paginationToolbarProps: {pageSizes: [5,10,20]}, 
+	    paginationToolbarProps: {pageSizes: [30,40,100]}, 
 	    onColumnOrderChange: this.handleColumnOrderChange, 
 	    sortInfo: SORT_INFO, 
 	    onSortChange: this.handleSortChange,
@@ -1085,20 +1007,3 @@ var Maintable = React.createClass({
 
 module.exports = Maintable
 
-/*
-
-	var isCtrl = false
-	$(document).keyup(function(e){
-	    if(e.which == 17 || e.which == 224 || e.which == 91 || e.which == 93) isCtrl = false;
-	}).keydown(function(e){
-	   if(e.which == 17 || e.which == 224 || e.which == 91 || e.which == 93) isCtrl = true;
-	   if(e.which == 67 && isCtrl == true){
-		$('.z-column-header').each(function(key,value){
-		$(value).find('.z-content').each(function(x,y){
-		    console.log($(y).text())
-		})
-		})
-	    }
-	})
-
-*/
