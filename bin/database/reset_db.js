@@ -19,13 +19,13 @@ db.checklist.ensureIndex({"id": 1});
 db.scotmod.drop();
 db.scotmod.insert({
     "id":   1,
-    "class":    "Scot::Util::Activemq",
+    "module":    "Scot::Util::Activemq",
     "attribute": "amq",
 });
 
 //db.scotmod.insert({
 //    "id":   2,
-//    "class":    "Scot::Util::Imap",
+//    "module":    "Scot::Util::Imap",
 //    "attribute":    "imap",
 //});
 

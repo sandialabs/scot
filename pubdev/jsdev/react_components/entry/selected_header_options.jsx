@@ -54,11 +54,11 @@ var SelectedHeaderOptions = React.createClass({
         }
     }, 
     render: function() { 
-        return (
+                    return (
             <div className="entry-header">
                 <ButtonGroup>
-                    <Button bsStyle='warning' onClick={this.props.toggleEventDisplay}>Back</Button>
-                    <DropdownButton bsStyle='info' title="Actions" id="bg-nested-dropdown">
+                        <Button bsStyle='warning' onClick={this.props.toggleEventDisplay}>Back</Button>
+                        <DropdownButton bsStyle='info' title="Actions" id="bg-nested-dropdown">
                         <MenuItem bsStyle='primary' eventKey="1" onClick={this.toggleFlair}>Toggle <b>Flair</b></MenuItem>
                         <MenuItem bsStyle='primary' eventKey="2" onClick={this.props.historyToggle}>View <b>History</b></MenuItem>
                         <MenuItem bsStyle='primary' eventKey="3" onClick={this.props.permissionsToggle}><b>Permissions</b></MenuItem>
