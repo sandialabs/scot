@@ -130,7 +130,7 @@ module.exports = React.createClass({
         ));
     },
     viewEvent: function(){
-        console.log(ids)	
+
         if (stage == false || this.state.viewevent == false) {
             stage = true;
             this.setState({viewevent: true});
