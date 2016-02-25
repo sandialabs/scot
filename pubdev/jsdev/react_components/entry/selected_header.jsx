@@ -191,10 +191,8 @@ var EntryDataStatus = React.createClass({
     },
     eventStatusToggle: function () {
         if (this.state.buttonStatus == 'open') {
-            this.setState({buttonStatus:'closed'});
             this.statusAjax('closed');
         } else if (this.state.buttonStatus == 'closed') {
-            this.setState({buttonStatus:'open'});
             this.statusAjax('open');
         }
     },
@@ -207,6 +205,7 @@ var EntryDataStatus = React.createClass({
             data: json,
             success: function(data) {
                 console.log('success status change to: ' + data);
+                this.setState({buttonStatus:newStatus});
                 this.props.updated();
             }.bind(this),
             error: function() {
