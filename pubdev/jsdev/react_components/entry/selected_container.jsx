@@ -9,7 +9,7 @@ var SelectedContainer = React.createClass({
         }
     },
     render: function() {
-	window.history.pushState({}, 'Scot', '#/event/'+ this.state.ids.join('+'))
+	    window.history.pushState({}, 'Scot', '#/' + this.state.type + '/'+ this.state.ids.join('+'))
         var datarows = [];
         for (i=0; i < this.state.ids.length; i++) { 
             datarows.push(<SelectedHeader key={this.state.ids[i]} id={this.state.ids[i]} type={this.state.type} toggleEventDisplay={this.props.viewEvent}/>); 
