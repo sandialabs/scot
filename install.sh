@@ -15,8 +15,15 @@ echo "######## SCOT 3 Installer"
 echo "######## Support at: scot-dev@sandia.gov"
 echo -e "########${NC}"
 
+if [[ $EUID -ne 0 ]]; then
+    echo -e "${red}This script must be run as root or using sudo!${NC}"
+    exit 1
+fi
+
 DEVDIR="$( cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
 FILESTORE="/opt/scotfiles";
+SCOTDIR="/opt/scot"
+REFRESH_AMQ_CONFIG=1
 
 . $DEVDIR/etc/install/locations.sh
 
@@ -29,7 +36,7 @@ while getopts "adigsrflm" opt; do
             REFRESHAPT="yes"
             ;;
         d)
-            echo -e "${red}--- will delete installation directory $SCOTROOT ${NC}"
+            echo -e "${red}--- will delete installation directory $SCOTDIR ${NC}"
             DELDIR="true"
             ;;
         i)
@@ -53,12 +60,16 @@ while getopts "adigsrflm" opt; do
             RESETDB=1
             ;;
         f)
-            echo -e "${red}--- will delete SCOT filestore directory $FILESTORE (warning: DATA LOSS)"
+            echo -e "${red}--- will delete SCOT filestore directory $FILESTORE (warning: DATA LOSS) {$NC}"
             SFILESDEL=1
             ;;
         l)
-            echo -e "${red}--- will zero existing log files (warning potential data loss)"
+            echo -e "${red}--- will zero existing log files (warning potential data loss) {$NC}"
             CLEARLOGS=1
+            ;;
+        q)  
+            echo -e "${red}--- will refresh ActiveMQ config and init files ${NC}"
+            REFRESH_AMQ_CONFIG=1
             ;;
         \?)
             echo "!!! Invalid -$OPTARG"
@@ -68,7 +79,7 @@ while getopts "adigsrflm" opt; do
             echo "    -f    delete $FILESTORE filestore directory and its contents"
             echo "    -s    only install the SCOT software, skip prerequisite or 3rd party software"
             echo "    -r    delete the SCOT database and install initial template"
-            echo "    -d    delete $SCOTROOT intallation directory prior to install"
+            echo "    -d    delete $SCOTDIR intallation directory prior to install"
             echo "    -i    overwrite existing /etc/init.d/scot "
             echo "    -g    overwrite existing GeoCity db file"
             exit 1
@@ -186,14 +197,16 @@ EOF
                 echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" >> /etc/apt/sources.list
                 apt-key add $DEVDIR/etc/mongo_10gen.key
             fi
-            if grep -q rabbitmq /etc/apt/sources.list
-            then
-                echo "= rabbitmq repo already present"
-            else
-                echo "+ Adding RabbitMQ repo and updateing apt-get caches"
-                echo "deb http://www.rabbitmq.com/debian/ testing main" >> /etc/apt/sources.list
-                apt-key add $DEVDIR/etc/rabbitmq.key
-            fi
+
+            # for possible switch to rabbitmq
+            #if grep -q rabbitmq /etc/apt/sources.list
+            #then
+            #    echo "= rabbitmq repo already present"
+            #else
+            #    echo "+ Adding RabbitMQ repo and updateing apt-get caches"
+            #    echo "deb http://www.rabbitmq.com/debian/ testing main" >> /etc/apt/sources.list
+            #    apt-key add $DEVDIR/etc/rabbitmq.key
+            #fi
         fi
 
         if [ "$REFRESHAPT" == "yes" ]; then
@@ -216,29 +229,45 @@ EOF
 ###
 ### ActiveMQ install
 ###
+    echo -e "${yellow}= checking activmq user has been created${NC}"
+    AMQ_USER=`grep -c activemq: /etc/passwd`
+    if [ $AMQ_USER -ne 1 ]; then
+        echo "+ adding activemq user"
+        useradd -c "ActiveMQ User" -d $AMQDIR -M -s /bin/bash activemq
+    fi
+
+    echo "= checking activemq logging directories"
+    if [ ! -d /var/log/activemq ]; then
+        echo "+ creating /var/log/activemq"
+        mkdir -p /var/log/activemq
+        touch /var/log/activemq/scot.amq.log
+        chown -R activemq.activemq /var/log/activemq
+        chmod -R g+w /var/log/activemq
+    fi
+
+    if [ $REFRESH_AMQ_CONFIG == 1 ]; then
+        echo "+ adding/refreshing scot activemq config"
+        cp $DEVDIR/etc/scotamq.xml     $AMQDIR/conf
+        cp $DEVDIR/etc/jetty.xml       $AMQDIR/conf
+        cp -R $DEVDIR/etc/scotaq       $AMQDIR/webapps
+        mv $AMQDIR/webapps/scotaq      $AMQDIR/webapps/scot
+        cp $DEVDIR/etc/activemq-init   /etc/init.d/activemq
+        chmod +x /etc/init.d/activemq
+        chown -R activemq.activemq $AMQDIR
+    fi
+
     echo -e "${yellow}+ installing ActiveMQ${NC}"
 
     if [ -e "$AMQDIR/bin/activemq" ]; then
         echo "= activemq already installed"
+        # service activemq restart
     else
-        AMQ_USER=`grep -c activemq: /etc/passwd`
-        if [ $AMQ_USER -ne 1 ]; then
-            echo "+ adding activemq user"
-            useradd -c "ActiveMQ User" -d $AMQDIR -M -s /bin/bash activemq
-        fi
 
         if [ ! -e /tmp/$AMQTAR ]; then
             echo "= downloading $AMQURL"
             # curl -o /tmp/apache-activemq.tar.gz $AMQTAR
             wget -P /tmp $AMQURL 
         fi
-
-
-        echo "+ adding activemq logging directories"
-        mkdir -p /var/log/activemq
-        touch /var/log/activemq/scot.amq.log
-        chown -R activemq.activemq /var/log/activemq
-        chmod -R g+w /var/log/activemq
 
         if [ ! -d $AMQDIR ];then
             mkdir -p $AMQDIR
@@ -248,15 +277,6 @@ EOF
         tar xf /tmp/$AMQTAR --directory /tmp
         mv /tmp/apache-activemq-5.14-SNAPSHOT/* $AMQDIR
 
-        echo "+ adding scot config"
-        cp $DEVDIR/etc/scotamq.xml     $AMQDIR/conf
-        cp $DEVDIR/etc/jetty.xml       $AMQDIR/conf
-        cp -R $DEVDIR/etc/scotaq       $AMQDIR/webapps
-        mv $AMQDIR/webapps/scotaq      $AMQDIR/webapps/scot
-        cp $DEVDIR/etc/activemq-init   /etc/init.d/activemq
-
-        chmod +x /etc/init.d/activemq
-        chown -R activemq.activemq $AMQDIR
         echo "+ starting activemq"
         service activemq start
     fi
@@ -372,6 +392,7 @@ EOF
 
 fi
 
+
 ###
 ### account creation
 ###
@@ -403,7 +424,7 @@ if [ "$NEWINIT" == "yes" ] || [ ! -e /etc/init.d/scot ]; then
         cp $DEVDIR/etc/scot-init /etc/init.d/scot
     fi
     chmod +x /etc/init.d/scot
-    sed -i 's=/instdir='$SCOTROOT'=g' /etc/init.d/scot
+    sed -i 's=/instdir='$SCOTDIR'=g' /etc/init.d/scot
 fi
     
 ###
@@ -436,16 +457,20 @@ chown scot:scot $BACKUPDIR
 echo -e "${yellow} installing SCOT files ${NC}"
 
 if [ "$DELDIR" == "true" ]; then
-    echo -e "${red}- removing target installation directory $SCOTROOT ${NC}"
-    rm -rf $SCOTROOT
+    echo -e "${red}- removing target installation directory $SCOTDIR ${NC}"
+    rm -rf $SCOTDIR
 fi
 
-if [ ! -d $SCOTROOT ]; then
-    echo -e "+ creating $SCOTROOT";
-    mkdir -p $SCOTROOT
-    chown scot:scot $SCOTROOT
-    cp -r $DEVDIR/* $SCOTROOT/
+if [ ! -d $SCOTDIR ]; then
+    echo -e "+ creating $SCOTDIR";
+    mkdir -p $SCOTDIR
+    chown scot:scot $SCOTDIR
+    chmod 754 $SCOTDIR
 fi
+
+cp -r $DEVDIR/* $SCOTDIR/
+chown -R scot.scot $SCOTDIR
+chmod -R 755 $SCOTDIR/bin
 
 ###
 ### Logging file set up
@@ -524,7 +549,7 @@ if [ ! -e /etc/init.d/scot ]; then
         cp $DEVDIR/etc/scot-init /etc/init.d/scot
     fi
     chmod +x /etc/init.d/scot
-    sed -i 's=/instdir='$SCOTROOT'=g' /etc/init.d/scot
+    sed -i 's=/instdir='$SCOTDIR'=g' /etc/init.d/scot
 fi
 
 echo "= restarting scot"
