@@ -50,7 +50,7 @@ var History = React.createClass({
                         <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.historyToggle} />
                         <h3 id="myModalLabel">Current History</h3>
                     </div>
-                    <div className="modal-body" style={{height: '400px', overflowY:'auto'}}>
+                    <div className="modal-body" style={{height: '700px', overflowY:'auto'}}>
                        {this.state.historyBody ? <HistoryData data={this.state.data} /> : null }
                     </div>
                     <div className="modal-footer">
