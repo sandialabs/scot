@@ -5,6 +5,8 @@ use v5.18;
 use strict;
 use warnings;
 
+use base 'Mojolicious::Controller';
+
 =head1 Scot::Util::Auth
 
 superclass of auth modules
