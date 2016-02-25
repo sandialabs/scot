@@ -9,6 +9,7 @@ var DeleteEntry         = require('../modal/delete.jsx').DeleteEntry;
 var Summary             = require('../components/summary.jsx');
 var Task                = require('../components/task.jsx');
 var SelectedPermission  = require('./selected_permission.jsx');
+var Frame               = require('react-frame-component');
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
@@ -136,7 +137,7 @@ var EntryParent = React.createClass({
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
-        itemarr.push(<EntryData subitem = {items} />);
+        itemarr.push(<EntryData subitem = {items}/>);
         for (var prop in items) {
             function childfunc(prop){
                 if (prop == "children") {
@@ -176,31 +177,28 @@ var EntryParent = React.createClass({
         );
     }
 });
-
+/*function autoResize(id) {
+    id.style.height = id.contentWindow.document.body.scrollHeight + 'px';    
+}*/
 var EntryData = React.createClass({
-    /*iframe: function() {
-        var rawMarkup = this.props.subitem.body_flair
-       var ifr = $('<iframe style={{width:"100%"}} sandbox="allow-popups allow-same-origin"></iframe>').attr('srcdoc', '<link rel="stylesheet" type="text/css" href="sandbox.css"></link><body>' + rawMarkup + '</body>');
-        var iframe = '<iframe srcDoc="dangerouslySetInnerHTML={{ __html: '+{rawMarkup}+'}}"></iframe>'
-        console.log(rawMarkup);
-        console.log(iframe);
-        return ifr
-    },
-    norender: function() {
-        var rawMarkup = this.props.subitem.body_flair;
+        /*var rawMarkup = this.props.subitem.body_flair;
+        var outerClassName = 'row-fluid entry-body'
+        var innerClassName = 'row-fluid entry-body-inner'
+        var srcDocHolder =  "<div className='row-fluid entry-body'><div className='row-fluid entry-body-inner' style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}} dangerouslySetInnerHTML={{ __html: " + rawMarkup + " }}/></div>"
+        console.log(this.props.subitem.id);
         return (
-            <div>
-                <iframe srcDoc={rawMarkup}></iframe>
+            <div className='fluidiFrame'>
+                <iframe id={this.props.subitem.id} sandbox='allow-popups allow-same-origin' srcDoc={srcDocHolder} frameBorder='0'></iframe>
             </div>
         )
-    },*/
+        */
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
         var outerClassName = 'row-fluid entry-body'
-        var innerClassName = 'row-fluid entry-body-inner'
+        var innerClassName = 'row-fluid entry-body-inner'        
         return (
             <div className='row-fluid entry-body'>
-                <div className="row-fluid entry-body-inner" style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}} dangerouslySetInnerHTML={{ __html: rawMarkup }}/>
+                <div className='row-fluid entry-body-inner' style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}} dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
             </div>
         )
     }
