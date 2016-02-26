@@ -171,7 +171,7 @@ var EntryParent = React.createClass({
                     </div>
                 {itemarr}
                 </div>
-                {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}
+                {this.state.entryToolbar ? <AddEntryModal title = 'Entry' type={type} id={id} entryToggle={this.entryToggle} /> : null}
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}    
             </div>
         );
