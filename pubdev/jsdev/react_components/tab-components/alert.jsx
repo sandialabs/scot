@@ -44,10 +44,11 @@ var tinycount = 0;
 var Dropzone = require('../../../node_modules/react-dropzone');
 var TinyMCE = require('../../../node_modules/react-tinymce')
 var Crouton = require('../../../node_modules/react-crouton')
-var Frame = require('../../../node_modules/react-frame-component')
+var Frame = require('../../../node_modules/react-frame')
 var finalfiles = []
 var checkfiles = false
 var Alertentry = require('../entry/selected_entry.jsx')
+var Addentry = require('../modal/add_entry.jsx')
 var columns = 
 [
     { name: 'id', style: {color: 'black'}},
@@ -68,7 +69,8 @@ const  customStyles = {
         marginRight: '-50%',
         transform:  'translate(-50%, -50%)',
 	width: '80%',
-	'z-index' : '99'
+	'z-index' : '99',
+	height: '80%'
     }
 }
 function getColumns()
@@ -95,16 +97,16 @@ var Viewentry = React.createClass({
 		this.setState({open: true})
 	},
 	render: function() {
-	console.log(this.state.open) 
+
 	return (
 	React.createElement("div", {className: "modal-grid"}, 
 	React.createElement(Modal, {style: customStyles, className: "Modal__Bootstrap modal-dialog", isOpen: this.state.open}, 
-	React.createElement("div", {className: "modal-content"}, 
+	React.createElement("div", {className: "modal-content", style: {height: '100%'}}, 
 	React.createElement("div", {className: "modal-header"}, 
 	React.createElement("h4", {className: "modal-title"}, " View Entry")
 	), 
-	React.createElement("div", {className: "modal-body"}, 
-	React.createElement('div', null, React.createElement(Alertentry, {type: 'alert', id: this.props.id}))
+	React.createElement("div", {className: "modal-body", style: {height: '80%'}}, 
+	React.createElement('div', {style: {height: '100%'}}, React.createElement(Frame, {styleSheets:['/css/styles.less'], style: {width: '100%', height: '100%', border: 'none'}}, React.createElement(Alertentry, {type: 'alert', id: this.props.id})))
 	), 
 	React.createElement("div", {className: "modal-footer"}, 
 	React.createElement("button", {type: "button", onClick: this.onCancel, className: 'btn btn-danger'}, "Close")
@@ -146,6 +148,11 @@ function dataSource(query)
 	$.each(value, function(num, item){	
 	if(num == 'id'){
 	addentrydata = true
+	$.ajax({
+	   type: 'GET',
+	   url: '/scot/api/v2/alert/' + item + '/entry'
+	   }).success(function(response){
+	   if(response.totalRecordCount != 0){
 	var View = React.createClass({
 		getInitialState: function(){
 		return {view:false, refe: 0}
@@ -161,6 +168,8 @@ function dataSource(query)
 		}
 		});	
 		finalarray[key]["Entry"] = React.createElement(View, {change: true})
+		}
+		})
 		finalarray[key][num] = item
 	}
 	else if(num == 'when')
@@ -284,7 +293,6 @@ var Subtable = React.createClass({
 	
     getInitialState: function(){
         return {
-
 viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
     },
    componentWillMount: function(){
@@ -304,7 +312,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	newarray[i] = {name:last[i],width: 200, style:{color:'black'}}
 	}	    
 	}
-	setTimeout(function() { this.setState({columns: newarray})}.bind(this), 100)
+	setTimeout(function() { this.setState({columns: newarray})}.bind(this), 800)
 	}
 	}.bind(this));
 	},
@@ -348,8 +356,8 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	render: function(){
 	$('.mac-fix').css('position', 'relative')	
 	$('.z-table').each(function(key,value){
-	$(value).find('.z-content').each(function(x,y){
-	$(y).css('overflow', 'auto')
+	$(value).find('.z-cell').each(function(x,y){
+	$(y).css({'height' : '120px', 'overflow':'auto'})
 	})
 	})
 	$('.z-table').each(function(key, value){
@@ -364,30 +372,12 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 		    $(y).css('color', 'black')
 		}
 	})
-	})	    
+	})
+	    
 	return (
 	this.state.history ? React.createElement(HistoryView, {type:'alertgroup', id: this.state.historyid, historyToggle: this.viewHistory}) 
         :
-	React.createElement("div", {className: 'All Modal'},  	
-	React.createElement(Modal, {style: customStyles, isOpen: this.state.addentry}, 
-	React.createElement("div", {className: "modal-content"}, 
-	React.createElement("div", {className: "modal-header"}, 
-	React.createElement("h4", {className: "modal-title"}, " Add Entry")
-	), 
-	React.createElement("div", {className: "modal-body", style: {background: this.state.stagecolor, height: '90%'}}, 
-	React.createElement(TinyMCE, {content: "", className: "inputtext",config: {plugins: 'autolink link image lists print preview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'},onChange: this.handleEditorChange}
-	)), 
-	React.createElement("div", {className: "modal-footer"}, React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width': '2px','border-color':'#000','border-radius':'4px',margin:'30px', padding:'30px',width: '200px', 'border-style': 'dashed'}}, React.createElement("div",null,"Drop some files here or click to  select files to upload")),
-	this.state.files ? React.createElement("div", null, this.state.files.map((file) => React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("a", {href:file.preview, target:"_blank"}, file.name),React.createElement('button', {style: {width: '2em', height: '1em', 'line-height':'1px'}, className: 'btn btn-danger', id: file.name, onClick: this.Close}, 'x'))))): null, 
-	React.createElement("button", {type: "button", onClick: this.onCancel}, " Cancel"), 
-	this.state.enablesave ? null : React.createElement("button", {type: "button", onClick: this.onSave, disabled: this.state.enablesave}, "Save"), 	
- 
-	this.state.enablesave ? React.createElement("button", {type: "button", onClick: this.Edit, disabled: this.state.enable}, "Edit") : null, this.state.enablesave ?  
-	React.createElement("button", {type: "button", className: "btn-success", onClick: this.submit, disabled: this.state.enable}, "Submit") : null, 
-	React.createElement(Dropdown, {options: this.state.modaloptions, onChange: this.modalonSelect})
-	)
-	)
-	),
+	React.createElement("div", {className: 'All Modal'}, this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry'}) : null,
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
 	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable"}, React.createElement('button', {className: 'btn btn-warning', onClick: this.goBack}, 'Back to Alerts'),React.createElement('div', {className: 'entry-header-info-null', style:{top: '1px', width: '100%',background: '#000'}}, React.createElement('h2',{ style: {color: 'white', 'font-size': '24px', 'text-align':'left'}}, 'Id(s) : ' +  ids ), React.createElement('h2', {style: {color: 'white', 'font-size':'24px', 'text-align' : 'left'}}, 'Viewed By : ' + this.state.viewby.join(','))), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {style: {'z-index' : '0'},className: "Subgrid",
             ref: "dataGrid", 
@@ -405,7 +395,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	    withColumnMenu: true, 
 	    showCellBorders: true,
 	    sortable: false,
-	    rowHeight: 100,
+	    rowHeight: 120,
 	    rowStyle: configureTable}
 	)
         )
@@ -493,8 +483,8 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	}
 	else if(option.label == "View Source"){
 	var win = window.open('viewSource.html', '_blank')
-	var html = $('.z-selected').html()
-	
+
+	var html = $('.z-selected').html()	
 	var plain = $('.z-selected').text()
 	win.onload = function() {   if(html != undefined){
 	$(win.document).find('#html').text(html)
@@ -699,129 +689,6 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	    this.setState({reload: true})
  	}
 	}	
-	},
-	submit: function(){
-	if(marksave)
-	{
-
-	 var data = new Object()
-	 $('.z-selected').each(function(key,value){
-	 $(value).find('.z-cell').each(function(x,y){
-	    if($(y).attr('name') == 'id'){  
-	     data = JSON.stringify({body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id: $(y).text(), target_type: 'alert', parent: 0})
-	     $.ajax({
-		type: 'PUT', 
-		url: '/scot/api/v2/entry',
-		data: data
-		}).success(function(response){
-		    console.log(response)
-		    if(this.state.files.length > 0){
-			for(var i = 0; i<this.state.files.length; i++){	
-			var file = {file:this.state.files[i].name}
-			data = JSON.stringify({upload: file, target_type: 'alert', target_id: response.id, entry_id: ''})
-			$.ajax({
-			   type: 'PUT',
-			   url: '/scot/api/v2/file',
-			   data: data
-			   }).success(function(response){
-			   })
-			}
-			}
-		})
-		}
-	})
-	})
-	     for(var i = 0; i<this.state.files.length; i++){
-		var file = {file:this.state.files[i].name}
-		console.log(JSON.stringify({upload: file}))	
-	     }
-	     setTimeout(
-	     function() {
-	     }.bind(this),this.setState({edit:false, addentry: false, reload:true}),100)
-	}
-
-        },
-	Edit: function(){
-        $('#react-tinymce-addentry_ifr').contents().find("#tinymce").attr("contenteditable", true)
-	this.setState({edit: false,enablesave:false,enable:true})
-	},
-	onCancel: function(){
-	 if(confirm('Are you sure you want to cancel this entry?')){
-	     tinycount++;
-	     this.setState({reload: true, addentry: false})
-	    }
-	else{
-	
-	}
-	},
-	onSave: function(){
-	if($('#react-tinymce-addentry_ifr').contents().find("#tinymce").text() == "")	{
-	alert("Please fill in Text")
-	}
-	else {
-	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").attr("contenteditable", false)
-	marksave = true;	
-	this.state.modaloptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Make Task", label: "Make Task"}, {value:"Permissions", label: "Permissions"}]
-		
-	this.setState({reload: false, addentry: true,edit:true, modaloptions : this.state.modaloptions, enable:false, enablesave: true})
-	}
-	},
-
-	onReply: function() {
-	if(marksave){
-	var domnode = this.getDOMNode();
-	var append_reply = '<div class = "Reply Entry"> <' + Dropdown + ' options = '+this.state.options+' onChange ='+this.onSelect+'/></div>'
-
-	$(domnode).append($(domnode).html())	
-
-
-	}
-	else {
-	alert("You must save this entry before you can reply to it")
-	}
-	//var domnode = this.getDOMNode();
-	//var dom = React.createElement(Addpanel, null)	
-
-	//console.log($(domnode).html())
-	//$(domnode).append($(domnode).html())
-	},
-	modalonSelect: function (option){
-	var newoptions
-	var color;
-	//getEntry
-	if(option.label == "Move"){
-	}
-	else if(option.label == "Delete"){
-	}
-	else if (option.label == "Mark as Summary"){
-	}
-	else if (option.label == "Make Task"){
-	newoptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Close Task", label: "Close Task"}, {value:"Permissions", label: "Permissions"}, {value: "Assign taks to me", label: "Assign task to me"}]
-	this.state.modaloptions = newoptions
-	color = 'red'
-	this.state.stagecolor = color 
-	}
-	else if(option.label == "Reopen Task"){
-	newoptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Close Task", label: "Close Task"}, {value:"Permissions", label: "Permissions"}, {value: "Assign taks to me", label: "Assign task to me"}]
-	this.state.modaloptions = newoptions
-	color = 'red'
-	this.state.stagecolor = color
-	}
-	else if (option.label == "Close Task"){
-	newoptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Mark as Summary", label: "Mark as Summary"}, {value: "Reopen Task", label: "Reopen Task"}, {value:"Permissions", label: "Permissions"}]
-	this.state.modaloptions = newoptions
-	color = 'green'
-	this.state.stagecolor = color
-	}
-	else if (option.label == "Assign task to me"){
-	color = 'yellow'
-	this.state.stagecolor = color 
-	}	
-	else if (option.label == "Permissions"){
-	console.log($('.inputtext').val())
-	}
-
-	this.setState({modaloptions: this.state.modaloptions, stagecolor : this.state.stagecolor })
 	}
 });
 
