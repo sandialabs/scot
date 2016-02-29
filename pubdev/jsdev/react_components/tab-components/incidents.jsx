@@ -2,6 +2,8 @@
 
 var React = require('react')
 var DataGrid = require('../../../node_modules/incident-react-datagrid/react-datagrid');
+var Crouton = require('../../../node_modules/react-crouton')
+var SelectedContainer = require('../entry/selected_container.jsx')
 var SORT_INFO;
 var colsort = "id"
 var valuesort = 1
@@ -12,6 +14,10 @@ var getColumn;
 var check = false; 
 var tab;
 var datasource
+var ids = []
+var stage = false
+var savedsearch = false
+var savedfsearch;
 var columns = 
 [
     { name: 'id',style: {color: 'black'}},
@@ -88,23 +94,36 @@ function configureTable(data, props){
 
 	return style;
 }
+
+
 module.exports = React.createClass({
 
     getInitialState: function(){
-             return {data: dataSource, csv:true};
+             return {viewfilter: false, viewevent: false, showevent: false, data: dataSource, csv:true,fsearch: ''};
          },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
-        setTimeout(function() {this.setState({})}.bind(this), 500)
+        this.setState({})
+    },
+    componentWillMount: function(){
+	//window.history.pushState({}, 'Scot', '#/incident/')
+	window.location = '#/incident'
     },
 
     render: function() {
-	const rowFact = (rowProps) => {
-	//rowProps.onDoubleClick = this.vi
+	const rowFact = (rowProps) => {	
+	rowProps.onDoubleClick = this.viewEvent
 	}
+	if(savedsearch){
+	this.state.fsearch = savedfsearch
+	this.state.viewfilter = true
+	}
+
 	return (
-	    React.createElement("div", {className: "allComponents"}, 
-	    this.state.csv ? React.createElement('button', {onClick: this.exportCSV}, 'Export to CSV') : null,React.createElement(DataGrid, {
+	    stage ? React.createElement(SelectedContainer, {ids: ids, type: 'incident', viewEvent:this.viewEvent}) : 
+	    this.state.viewevent ? React.createElement(SelectedContainer, {ids: ids, type: 'incident', viewEvent:this.viewEvent}) : 
+	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {className: 'btn btn-warning', onClick: this.exportCSV}, 'Export to CSV') : null,this.state.showevent ? React.createElement('button', {className: 'btn btn-info', onClick: this.viewEvent}, "View Incidents") : null, this.state.viewfilter ? React.createElement(Crouton, {message: "You Filtered: (" + this.state.fsearch + ")", buttons: "close", onDismiss: "onDismiss", type: "info"}) :null,
+	    React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id", 
             dataSource: this.state.data, 
@@ -112,7 +131,6 @@ module.exports = React.createClass({
             onColumnResize: this.onColumnResize, 
 	    onFilter: this.handleFilter, 
 	    selected: SELECTED_ID, 
-	    rowFactory: rowFact,
 	    onSelectionChange: this.onSelectionChange, 
 	    defaultPageSize:20 ,  
 	    pagination: true, 
@@ -122,12 +140,24 @@ module.exports = React.createClass({
 	    onSortChange: this.handleSortChange, 
 	    showCellBorders: true,
 	    rowHeight: 100,
+	    rowFactory: rowFact,
 	    rowStyle: configureTable}
 	)
         ));
     },
+    viewEvent: function(){
 
-  exportCSV: function(){
+        if (stage == false || this.state.viewevent == false) {
+            stage = true;
+            this.setState({viewevent: true});
+        } else {
+            stage = false;
+            this.setState({viewevent: false});
+        }
+	//window.history.pushState({}, 'Scot', '#/incident/' + ids.join('+'))
+	window.location = '#/incident/'+ids.join('+')
+    },
+    exportCSV: function(){
         var keys = []
 	$.each(columns, function(key, value){
             keys.push(value['name']);
@@ -157,7 +187,6 @@ module.exports = React.createClass({
 	var data_uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
 	window.open(data_uri)		
     },
-
     handleSortChange : function(sortInfo){
 	SORT_INFO = sortInfo
 	$.each(SORT_INFO, function(key,value){
@@ -175,15 +204,22 @@ module.exports = React.createClass({
     onSelectionChange: function(newSelection){
 	SELECTED_ID = newSelection
 	var selected = []
+	var multiple = false
 	Object.keys(newSelection).forEach(function(id){
-	selected.push(newSelection[id].firstName)
+	selected.push(newSelection[id].id)
 	})
-	names = selected.length? selected.join(', ') : 'none'
-	this.setState({})
+	names = selected.length? selected.join(',') : 'none'
+	ids = names.split(',')
+	if(ids.length > 1){
+	multiple = true
+	}
+	
+	this.setState({showevent: multiple})
 	check = true
 
 	},
     handleFilter: function(column, value, allFilterValues){
+	var filtersearch = ''
 	filter = {}
 	Object.keys(allFilterValues).forEach(function(name){
 	var columnFilter = allFilterValues[name]
@@ -197,48 +233,28 @@ module.exports = React.createClass({
 	filter[name] = columnFilter;
 	}
 	else{
-	filter[name] = columnFilter
-	
+	filter[name] = columnFilter	
 	}
 	})
-	this.setState({})
+	if(Object.keys(filter).length > 0){
+	savedsearch = false
+	this.setState({viewfilter: false})
+	$.each(allFilterValues, function(key,value){
+	    if(value != ""){
+	    filtersearch = filtersearch + key + ": " + JSON.stringify(value) + " "
+	    }
+	})
+ 	setTimeout(function() {savedsearch = true; this.setState({viewfilter:true, fsearch: filtersearch})}.bind(this), 1000)	
+	savedfsearch = filtersearch
+	}
+	else{
+	savedsearch = false
+	savedfsearch = ''
+	this.setState({viewfilter: false})
+	}
     }
 
 });
 	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
