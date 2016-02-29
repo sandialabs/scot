@@ -379,7 +379,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
         :
 	React.createElement("div", {className: 'All Modal'}, this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry'}) : null,
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
-	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable"}, React.createElement('button', {className: 'btn btn-warning', onClick: this.goBack}, 'Back to Alerts'),React.createElement('div', {className: 'entry-header-info-null', style:{top: '1px', width: '100%',background: '#000'}}, React.createElement('h2',{ style: {color: 'white', 'font-size': '24px', 'text-align':'left'}}, 'Id(s) : ' +  ids ), React.createElement('h2', {style: {color: 'white', 'font-size':'24px', 'text-align' : 'left'}}, 'Viewed By : ' + this.state.viewby.join(','))), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {style: {'z-index' : '0'},className: "Subgrid",
+	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable"}, React.createElement('div', {className: 'entry-header-info-null', style:{top: '1px', width: '100%',background: '#000'}}, React.createElement('h2',{ style: {color: 'white', 'font-size': '24px', 'text-align':'left'}}, 'Id(s) : ' +  ids ), React.createElement('h2', {style: {color: 'white', 'font-size':'24px', 'text-align' : 'left'}}, 'Viewed By : ' + this.state.viewby.join(','))), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {style: {'z-index' : '0'},className: "Subgrid",
             ref: "dataGrid", 
             idProperty: "index",
 	    setColumns: true, 
@@ -561,12 +561,14 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	$('.z-selected').each(function(key,value){
 	$(value).find('.z-cell').each(function(x,y){
 	    if($(y).attr('name') == "id"){
-		data = JSON.stringify({status: 'promoted',promote: 'new'})			
+		data = JSON.stringify({promote: 'new'})			
 			$.ajax({
 			type: 'PUT',
 			url: '/scot/api/v2/alert/' + $(y).text(),
 			data: data
 		}).success(function(response){
+		console.log(response)		
+	/*
 		    $('.z-selected').each(function(t,u){
 		    $(u).find('.z-cell').each(function(r,s){
 			if($(s).attr('name') == "alertgroup"){
@@ -576,14 +578,11 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 			    url: '/scot/api/v2/alertgroup/' + $(s).text(),
 			    data: data
 		        }).success(function(response){
-			   });		
-			   }
-			   });
-			   }); 
-	});
+			   });		*/
+			})
 	}
 	})
-	});
+	})
 	setTimeout(
 	function() {
 	this.setState({reload:true})
@@ -704,7 +703,8 @@ var Maintable = React.createClass({
     componentWillMount: function(){
 	if(this.props.supertable !== undefined){
 	    if(this.props.supertable.length > 0){
-		window.history.pushState({}, 'Scot', '#/alert/'+ this.props.supertable.join('+'))
+	//	window.history.pushState({}, 'Scot', '#/alert/'+ this.props.supertable.join('+'))
+		window.location = '#/alert/' + this.props.supertable.join('+')
 		passids = this.props.supertable
 		ids = this.props.supertable.join(',')
 		stage = true
@@ -713,7 +713,8 @@ var Maintable = React.createClass({
 		this.setState({})
 		}
 		else {
-		window.history.pushState({}, 'Scot', '#/alert/')
+	//	window.history.pushState({}, 'Scot', '#/alert/')
+		window.location = '#/alert'
 		url = '/scot/api/v2/alertgroup'
 		stage = false
 		SELECTED_ID_GRID = {}
@@ -723,7 +724,8 @@ var Maintable = React.createClass({
 		}
 	}
 	else {
-	window.history.pushState({}, 'Scot', '#/alert/')
+	//window.history.pushState({}, 'Scot', '#/alert/')
+	window.location = '#/alert'
 	this.setState({})
 	}
     },
@@ -742,7 +744,7 @@ var Maintable = React.createClass({
 	return (
 	
 	    stage ?  React.createElement(Subtable, null) :  
-	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {className: 'btn btn-warning', onClick: this.exportCSV, style: {'margin-left' : 'auto'}}, 'Export to CSV') : null , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-info',onClick: this.viewAlerts, style: {'margin-left':'auto'}},"View Alert(s)") : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : this.state.viewfilter ? React.createElement(Crouton, {message:"You Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "onDismiss", type: "info"}) : null,   
+	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {className: 'btn btn-warning', onClick: this.exportCSV, style: {'margin-left' : 'auto'}}, 'Export to CSV') : null , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-info',onClick: this.viewAlerts, style: {'margin-left':'auto'}},"View Alerts") : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : this.state.viewfilter ? React.createElement(Crouton, {message:"You Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "onDismiss", type: "info"}) : null,   
 	    React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id",
