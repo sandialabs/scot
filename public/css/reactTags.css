@@ -13,9 +13,10 @@ span > div.ReactTags__selected {
 /* Example Styles for React Tags*/
 div.ReactTags__tags {
     position: relative;
-    width: 200px;
+    width: 500px;
    /* height: 80px;*/
-    overflow-x: auto;
+    overflow: auto;
+    height: 450px;
 }
 
 /* Styles for the input */
@@ -57,9 +58,10 @@ div.ReactTags__selected a.ReactTags__remove {
 
 /* Styles for suggestions */
 div.ReactTags__suggestions {
-    position: absolute;
+    position: relative;
     width: 200px;
-    overflow: auto;
+    height: 450px;
+    /*overflow: auto;i*/
     z-index: 99;
 }
 div.ReactTags__suggestions ul {
