@@ -4,12 +4,20 @@ span > div.ReactTags__tags {
     width: 200px;
     height: 25px;
     overflow-x: visible;
+    overflow: visible;
 }
 
-span > div.ReactTags__selected {
+span > div > div.ReactTags__selected {
     float: left;
 }
 
+span > div > div > div > div.ReactTags__suggestions {
+    position:absolute;
+    width:200px;
+    overflow:auto;
+    z-index:99;
+    height:auto;
+}
 /* Example Styles for React Tags*/
 div.ReactTags__tags {
     position: relative;
@@ -70,6 +78,7 @@ div.ReactTags__suggestions ul {
     background: black;
     width: 200px;
     color: white;
+    padding:0;
 }
 div.ReactTags__suggestions li {
     border-bottom: 1px solid #ddd;
