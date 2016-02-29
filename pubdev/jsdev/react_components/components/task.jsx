@@ -15,15 +15,10 @@ var Task = React.createClass({
     getInitialState: function () {
         return {
             taskOwner:null,
-            taskStatus:null,
-            whoami:''
+            taskStatus:null, 
         }
     },
-    componentWillMount: function () {
-        $.get('scot/api/v2/whoami', function (result) {
-            var result = result.user;
-            this.setState({whoami:result})
-        }.bind(this));
+    componentWillMount: function () { 
         this.taskRequest = $.get('scot/api/v2/entry/' + this.props.entryid, function(result) {
             var taskOwner = result.task.who;
             var taskStatus = result.task.status;
@@ -81,19 +76,19 @@ var Task = React.createClass({
         if (this.state.taskStatus === undefined || this.state.taskStatus === null) {
             taskDisplay = 'Make Task';
             onClick = this.makeTask;
-        } else if (this.state.whoami != this.state.taskOwner && this.state.taskStatus == 'open') {
+        } else if (whoami != this.state.taskOwner && this.state.taskStatus == 'open') {
             taskDisplay = 'Assign task to me';
             onClick = this.takeTask;
-        } else if (this.state.whoami == this.state.taskOwner && this.state.taskStatus == 'open') {
+        } else if (whoami == this.state.taskOwner && this.state.taskStatus == 'open') {
             taskDisplay = 'Close Task';
             onClick = this.closeTask;
         } else if (this.state.taskStatus == 'closed') {
             taskDisplay = 'Reopen Task';
             onClick = this.makeTask;
-        } else if (this.state.whoami == this.state.taskOwner && this.state.taskStatus == 'assigned') {
+        } else if (whoami == this.state.taskOwner && this.state.taskStatus == 'assigned') {
             taskDisplay = 'Close Task';
             onClick = this.closeTask;
-        } else if (this.state.whoami != this.state.taskowner && this.state.taskStatus == 'assigned') {
+        } else if (whoami != this.state.taskowner && this.state.taskStatus == 'assigned') {
             taskDisplay = 'Assign task to me';
             onClick = this.takeTask;
         }
