@@ -32,6 +32,7 @@ div.ReactTags__tagInput input:focus {
     font-size: 12px;
     width: 200px;
     border: 1px solid #eee; 
+    color:white;
 }
 
 /* Styles for selected tags */
