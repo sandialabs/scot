@@ -24,6 +24,7 @@ var setevents = false
 var setincidents = false
 var setintel = false
 var supertableid = [];
+var statetype = ''
 var eventtableid = []
 {
 	window.React = React;	
@@ -59,7 +60,8 @@ if(this.props.params.value  != null){
 	else if(this.props.params.value.toLowerCase() == "event"){
 	state = 2
 	if(this.props.params.id != null) {
-	state = 5	
+	state = 5
+	statetype = 'event'	
 	array = this.props.params.id.split('+')
 	}
 	setevents = true	
@@ -70,6 +72,11 @@ if(this.props.params.value  != null){
 	}
 	else if (this.props.params.value.toLowerCase() == "incident"){
 	state = 3
+	if(this.props.params.id != null) {
+	state = 5
+	statetype = 'incident'	
+	array = this.props.params.id.split('+')
+	}
 	setincidents = true
 	setintel = true
 	sethome = false
@@ -177,7 +184,7 @@ React.createElement(ExpandableNavPage, null, React.createElement('div', {classNa
 	:
 	this.state.set == 5
 	?
-	React.createElement(ExpandableNavPage, null, React.createElement(SelectedContainer, {ids: this.state.ids, type: 'event'}))
+	React.createElement(ExpandableNavPage, null, React.createElement(SelectedContainer, {ids: this.state.ids, type: statetype}))
 	:	
  React.createElement(ExpandableNavPage, null, React.createElement(Tasks, null))	
 
