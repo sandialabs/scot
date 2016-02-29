@@ -9,7 +9,7 @@ var DeleteEntry         = require('../modal/delete.jsx').DeleteEntry;
 var Summary             = require('../components/summary.jsx');
 var Task                = require('../components/task.jsx');
 var SelectedPermission  = require('./selected_permission.jsx');
-var Frame               = require('react-frame-component');
+var Frame               = require('react-frame');
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
@@ -219,9 +219,11 @@ var EntryData = React.createClass({
         var outerClassName = 'row-fluid entry-body'
         var innerClassName = 'row-fluid entry-body-inner'        
         return (
-            <div className='row-fluid entry-body'>
-                <div className='row-fluid entry-body-inner' style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}} dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
-            </div>
+            <Frame styleSheets={['/css/styles.less']} style={{width:'100%',height:'100%'}}>
+                <div className='row-fluid entry-body'>
+                    <div className='row-fluid entry-body-inner' style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}} dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
+                </div>
+            </Frame>
         )
     }
 });
