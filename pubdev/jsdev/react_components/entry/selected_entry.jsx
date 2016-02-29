@@ -64,17 +64,33 @@ var EntryIterator = React.createClass({
 var EntryParent = React.createClass({
     getInitialState: function() {
         return {
-            entryToolbar:false,   
+            addEntryToolbar:false,   
+            editEntryToolbar:false,
+            replyEntryToolbar:false,
             deleteToolbar:false,
             permissionsToolbar:false,
         }
     },
-    entryToggle: function() {
-        if (this.state.entryToolbar == false) {
-            this.setState({entryToolbar:true})
+    addEntryToggle: function() {
+        if (this.state.addEntryToolbar == false) {
+            this.setState({addEntryToolbar:true})
         } else {
-            this.setState({entryToolbar:false})
+            this.setState({addEntryToolbar:false})
         } 
+    },
+    editEntryToggle: function() {
+        if (this.state.editEntryToolbar == false) {
+            this.setState({editEntryToolbar:true})
+        } else {
+            this.setState({editEntryToolbar:false})
+        }
+    },
+    replyEntryToggle: function() {
+        if (this.state.replyEntryToolbar == false) {
+            this.setState({replyEntryToolbar:true})
+        } else {
+            this.setState({replyEntryToolbar:false})
+        }
     },
     deleteToggle: function() {
         if (this.state.deleteToolbar == false) {
@@ -150,6 +166,10 @@ var EntryParent = React.createClass({
             childfunc(prop);
         };
         itemarr.push(subitemarr);
+        var header1 = '[' + items.id + '] ';
+        var header2 = ' by ' + items.owner + ' ' + taskOwner + '(updated on '; 
+        var header3 = ')'; 
+        //JSON.stringify(created,null,4);
         return (
             <div> 
                 <div className={outerClassName} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
@@ -158,28 +178,28 @@ var EntryParent = React.createClass({
                         <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/"+ type + '/' + id + '/' + items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
                             <span className='pull-right' style={{display:'inline-flex'}}>
                                 {this.state.permissionsToolbar ? <SelectedPermission id={items.id} type={'entry'} permissions={permissions} permissionsToggle={this.permissionsToggle} updated={updated} /> : null}
-                                <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.entryToggle}>
-                                    <MenuItem eventKey='1' onClick={this.entryToggle}>Move</MenuItem>
+                                <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle}>
+                                    <MenuItem eventKey='1' onClick={this.addEntryToggle}>Move</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} updated={updated} /></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} updated={updated}/></MenuItem>
                                     <MenuItem eventKey='5' onClick={this.permissionsToggle}>Permissions</MenuItem>
                                 </SplitButton>
-                                <Button bsSize='xsmall' onClick={this.entryToggle}>Edit</Button>
+                                <Button bsSize='xsmall' onClick={this.editEntryToggle}>Edit</Button>
                             </span>
                         </div>
                     </div>
                 {itemarr}
-                </div>
-                {this.state.entryToolbar ? <AddEntryModal title = 'Entry' type={type} id={id} entryToggle={this.entryToggle} /> : null}
+                </div> 
+                {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} created={items.created} updated={items.updated} type={type} id={id} entryToggle={this.entryToggle} /> : null}
+                {this.state.editEntryToolbar ? <AddEntryModal title='Edit Entry' header1={header1} header2={header2} header3={header3} created={items.created} updated={items.updated} type={type} id={id} entryToggle={this.entryToggle} /> : null}
+                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' header1={header1} header2={header2} header3={header3} created={items.created} updated={items.updated} type={type} id={id} entryToggle={this.entryToggle} /> : null}
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}    
             </div>
         );
     }
 });
-/*function autoResize(id) {
-    id.style.height = id.contentWindow.document.body.scrollHeight + 'px';    
-}*/
+
 var EntryData = React.createClass({
         /*var rawMarkup = this.props.subitem.body_flair;
         var outerClassName = 'row-fluid entry-body'
