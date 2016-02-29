@@ -169,6 +169,8 @@ var EntryParent = React.createClass({
         var header1 = '[' + items.id + '] ';
         var header2 = ' by ' + items.owner + ' ' + taskOwner + '(updated on '; 
         var header3 = ')'; 
+        var created = <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" />
+        var updated = <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />
         //JSON.stringify(created,null,4);
         return (
             <div> 
@@ -191,9 +193,9 @@ var EntryParent = React.createClass({
                     </div>
                 {itemarr}
                 </div> 
-                {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} created={items.created} updated={items.updated} type={type} id={id} entryToggle={this.entryToggle} /> : null}
-                {this.state.editEntryToolbar ? <AddEntryModal title='Edit Entry' header1={header1} header2={header2} header3={header3} created={items.created} updated={items.updated} type={type} id={id} entryToggle={this.entryToggle} /> : null}
-                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' header1={header1} header2={header2} header3={header3} created={items.created} updated={items.updated} type={type} id={id} entryToggle={this.entryToggle} /> : null}
+                {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} created={created} updated={updated} type={type} id={id} entryToggle={this.entryToggle} /> : null}
+                {this.state.editEntryToolbar ? <AddEntryModal title='Edit Entry' header1={header1} header2={header2} header3={header3} created={created} updated={updated} type={type} id={id} entryToggle={this.entryToggle} /> : null}
+                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' header1={header1} header2={header2} header3={header3} created={created} updated={updated} type={type} id={id} entryToggle={this.entryToggle} /> : null}
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}    
             </div>
         );
