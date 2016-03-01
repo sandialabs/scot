@@ -148,9 +148,8 @@ var EntryParent = React.createClass({
         var header1 = '[' + items.id + '] ';
         var header2 = ' by ' + items.owner + ' ' + taskOwner + '(updated on '; 
         var header3 = ')'; 
-        var created = <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" />
-        var updated = <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />
-        //JSON.stringify(created,null,4);
+        var created = items.created;
+        var updated = items.updated; 
         return (
             <div> 
                 <div className={outerClassName} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
@@ -172,9 +171,9 @@ var EntryParent = React.createClass({
                     </div>
                 {itemarr}
                 </div> 
-                {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} created={created} updated={updatedcallback} type={type} id={id} entryToggle={this.entryToggle} /> : null}
-                {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} created={created} targetid = {id} updated={updatedcallback} type={type} stage = {'Edit'} id={items.id} entryToggle={this.entryToggle} /> : null}
-                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} created={created} targetid = {id} updated={updatedcallback}  id={items.id} entryToggle={this.entryToggle} /> : null}
+                {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} created={created} update={updated} updatedcallback={updatedcallback} type={type} id={id} entryToggle={this.entryToggle} /> : null}
+                {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} created={created} updated={updated} targetid = {id} updatedcallback={updatedcallback} type={type} stage = {'Edit'} id={items.id} entryToggle={this.entryToggle} /> : null}
+                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} created={created} updated={updated} targetid = {id} updatedcallback={updatedcallback}  id={items.id} entryToggle={this.entryToggle} /> : null}
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}     
             </div>
         );
