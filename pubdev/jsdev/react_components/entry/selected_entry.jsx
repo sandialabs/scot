@@ -132,7 +132,7 @@ var EntryParent = React.createClass({
         var items = this.props.items;
         var type = this.props.type;
         var id = this.props.id;
-        var updated = this.props.updated;
+        var updatedcallback = this.props.updated;
         var summary = items.summary;
         var permissions = this.permissionsfunc(items);
         var outerClassName = 'row-fluid entry-outer';
@@ -193,9 +193,9 @@ var EntryParent = React.createClass({
                     </div>
                 {itemarr}
                 </div> 
-                {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} created={created} updated={updated} type={type} id={id} entryToggle={this.entryToggle} /> : null}
-                {this.state.editEntryToolbar ? <AddEntryModal title='Edit Entry' header1={header1} header2={header2} header3={header3} created={created} updated={updated} type={type} id={id} entryToggle={this.entryToggle} /> : null}
-                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' header1={header1} header2={header2} header3={header3} created={created} updated={updated} type={type} id={id} entryToggle={this.entryToggle} /> : null}
+                {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} created={created} updated={updatedcallback} type={type} id={id} entryToggle={this.entryToggle} /> : null}
+                {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} created={created} targetid = {id} updated={updatedcallback} type={type} stage = {'Edit'} id={items.id} entryToggle={this.entryToggle} /> : null}
+                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} created={created} targetid = {id} updated={updatedcallback}  id={items.id} entryToggle={this.entryToggle} /> : null}
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}    
             </div>
         );
