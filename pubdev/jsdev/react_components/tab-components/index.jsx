@@ -227,6 +227,7 @@ ReactDOM.render((
     <Route path = '/' component = {App} />
     <Route path = '/:value' component = {App} />
     <Route path = '/:value/:id' component = {App} />
+    <Route path = '/:value/:id/:id2' component = {App} />
     </Router>
 ), document.getElementById('content'))
 
