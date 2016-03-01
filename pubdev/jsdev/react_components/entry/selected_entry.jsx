@@ -8,8 +8,8 @@ var AddEntryModal       = require('../modal/add_entry.jsx');
 var DeleteEntry         = require('../modal/delete.jsx').DeleteEntry;
 var Summary             = require('../components/summary.jsx');
 var Task                = require('../components/task.jsx');
-var SelectedPermission  = require('./selected_permission.jsx');
-var Frame               = require('react-frame-component');
+var SelectedPermission  = require('../components/permission.jsx');
+var Frame               = require('react-frame');
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
@@ -106,26 +106,6 @@ var EntryParent = React.createClass({
             this.setState({permissionsToolbar:false})
         }
     },
-    permissionsfunc: function(items) {
-        var writepermissionsarr = [];
-        var readpermissionsarr = [];
-        var readwritepermissionsarr = [];
-        for (prop in items.groups) {
-            var fullprop = items.groups[prop]
-            if (prop == 'read') {
-                items.groups[prop].forEach(function(fullprop) {
-                    readpermissionsarr.push(fullprop)
-                });
-            } else if (prop == 'modify') {
-                items.groups[prop].forEach(function(fullprop) {
-                    writepermissionsarr.push(fullprop)
-                });
-            };
-        };
-        readwritepermissionsarr.push(readpermissionsarr);
-        readwritepermissionsarr.push(writepermissionsarr);
-        return readwritepermissionsarr; 
-    },
     render: function() {
         var itemarr = [];
         var subitemarr = [];
@@ -134,7 +114,6 @@ var EntryParent = React.createClass({
         var id = this.props.id;
         var updatedcallback = this.props.updated;
         var summary = items.summary;
-        var permissions = this.permissionsfunc(items);
         var outerClassName = 'row-fluid entry-outer';
         var innerClassName = 'row-fluid entry-header';
         var taskOwner = ''; 
@@ -159,7 +138,7 @@ var EntryParent = React.createClass({
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(<EntryParent items = {childobj} updated={updated} />));  
+                        subitemarr.push(new Array(<EntryParent items = {childobj} updated={updatedcallback} />));  
                     });
                 }
             }
@@ -179,12 +158,12 @@ var EntryParent = React.createClass({
                     <div className={innerClassName}>
                         <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/"+ type + '/' + id + '/' + items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
                             <span className='pull-right' style={{display:'inline-flex'}}>
-                                {this.state.permissionsToolbar ? <SelectedPermission id={items.id} type={'entry'} permissions={permissions} permissionsToggle={this.permissionsToggle} updated={updated} /> : null}
+                                {this.state.permissionsToolbar ? <SelectedPermission id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} updated={updatedcallback} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle}>
                                     <MenuItem eventKey='1' onClick={this.addEntryToggle}>Move</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
-                                    <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} updated={updated} /></MenuItem>
-                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} updated={updated}/></MenuItem>
+                                    <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} updated={updatedcallback} /></MenuItem>
+                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} updated={updatedcallback}/></MenuItem>
                                     <MenuItem eventKey='5' onClick={this.permissionsToggle}>Permissions</MenuItem>
                                 </SplitButton>
                                 <Button bsSize='xsmall' onClick={this.editEntryToggle}>Edit</Button>
@@ -196,32 +175,23 @@ var EntryParent = React.createClass({
                 {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} created={created} updated={updatedcallback} type={type} id={id} entryToggle={this.entryToggle} /> : null}
                 {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} created={created} targetid = {id} updated={updatedcallback} type={type} stage = {'Edit'} id={items.id} entryToggle={this.entryToggle} /> : null}
                 {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} created={created} targetid = {id} updated={updatedcallback}  id={items.id} entryToggle={this.entryToggle} /> : null}
-                {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}    
+                {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}     
             </div>
         );
     }
 });
 
-var EntryData = React.createClass({
-        /*var rawMarkup = this.props.subitem.body_flair;
-        var outerClassName = 'row-fluid entry-body'
-        var innerClassName = 'row-fluid entry-body-inner'
-        var srcDocHolder =  "<div className='row-fluid entry-body'><div className='row-fluid entry-body-inner' style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}} dangerouslySetInnerHTML={{ __html: " + rawMarkup + " }}/></div>"
-        console.log(this.props.subitem.id);
-        return (
-            <div className='fluidiFrame'>
-                <iframe id={this.props.subitem.id} sandbox='allow-popups allow-same-origin' srcDoc={srcDocHolder} frameBorder='0'></iframe>
-            </div>
-        )
-        */
+var EntryData = React.createClass({ 
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
         var outerClassName = 'row-fluid entry-body'
         var innerClassName = 'row-fluid entry-body-inner'        
         return (
-            <div className='row-fluid entry-body'>
-                <div className='row-fluid entry-body-inner' style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}} dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
-            </div>
+            <Frame styleSheets={['/css/styles.less']} style={{width:'100%',height:'100%'}}>
+                <div className='row-fluid entry-body'>
+                    <div className='row-fluid entry-body-inner' style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}} dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
+                </div>
+            </Frame>
         )
     }
 });
