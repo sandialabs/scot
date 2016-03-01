@@ -8,7 +8,7 @@ var AddEntryModal       = require('../modal/add_entry.jsx');
 var DeleteEntry         = require('../modal/delete.jsx').DeleteEntry;
 var Summary             = require('../components/summary.jsx');
 var Task                = require('../components/task.jsx');
-var SelectedPermission  = require('./selected_permission.jsx');
+var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
 
 var SelectedEntry = React.createClass({
