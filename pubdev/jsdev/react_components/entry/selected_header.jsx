@@ -153,7 +153,7 @@ var SelectedHeader = React.createClass({
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
                 {this.state.permissionsToolbar ? <SelectedPermission id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
-                {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
+                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type={type} id={id} entryToggle={this.entryToggle} /> : null}  
                 {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} /> :null}
                 <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle}/>
                 <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} />
