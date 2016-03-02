@@ -1929,6 +1929,7 @@ sub autocomplete {
         'entity'    => 'value',
         'checklist' => 'subject',
         'file'      => 'filename',
+        'group'     => 'name',
     );
     my $key = $keymap{$thing};
 

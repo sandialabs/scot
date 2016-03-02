@@ -28,14 +28,32 @@ sub has_invalid_user_chars {
     return undef;
 }
 
+sub update_lastvisit {
+    my $self    = shift;
+    my $user    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    $log->trace("[User $user] update lastvisit time");
+
+    my $col = $mongo->collection('User');
+    my $obj = $col->find_one({username => $user});
+
+    if ( $obj ) {
+        $obj->update_set( lastvisit => $env->now );
+    }
+    else {
+        $log->error("Weird, user $user is not in User collection!");
+    }
+}
+
 sub update_user_sucess {
     my $self    = shift;
     my $user    = shift;
-
-    print Dumper($self);
-
-    my $mongo   = $self->env->mongo;
-    my $log     = $self->env->log;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
 
     $log->trace("Updating User $user Authentication Sucess");
 
@@ -47,6 +65,7 @@ sub update_user_sucess {
         $userobj->update_set( attempts => 0);
         $userobj->update_set( lockouts => 0);
         $userobj->update_set( lastvisit=> $self->env->now);
+        $userobj->update_set( last_login_attempt => $env->now );
     }
     else {
         $log->error("User $user not in DB.  Assuming New User");
