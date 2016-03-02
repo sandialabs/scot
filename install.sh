@@ -59,11 +59,12 @@ REFRESH_AMQ_CONFIG="no"     # install new config for activemq and restart
 AUTHMODE="Remoteuser"       # authentication type to use
 DEFAULFILE=""               # override file for all the above
 DBCONFIGJS="./private.js"   # initial config data you entered for DB
+REFRESHAPACHECONF="no"      # refresh the apache config for SCOT
 
 
 echo -e "${yellow}Reading Commandline Args... ${NC}"
 
-while getopts "adigmsrflqA:F:J:" opt; do
+while getopts "adigmsrflqA:F:J:w" opt; do
     case $opt in
         a)  
             echo -e "${red} --- do not refresh apt repositories ${NC}"
@@ -123,6 +124,10 @@ while getopts "adigmsrflqA:F:J:" opt; do
             DBCONFIGJS=$OPTARG
             echo -e "${green} --- Loading Config into DB from $DBCONFIGJS ${NC}"
             ;;
+        w)
+            REFRESHAPACHECONF="yes"
+            echo -e "${red} --- overwriting exist SCOT apache config ${NC}"
+            ;;
         \?)
             echo -e "${yellow} !!!! INVALID option -$OPTARG ${NC}";
             cat << EOF
@@ -141,6 +146,7 @@ Usage: $0 [-abigmsrflq] [-A mode] [-F file]
     -f      delete $FILESTORE directory and contents ( again, data loss!)
     -l      truncate logs in $LOGDIR (potential data loss)
     -q      install new activemq config, apps, initfiles and restart service
+    -w      overwrite existing SCOT apache config files
     
     -A mode     mode = Local | Ldap | Remoteuser
                 default is Remoteuser (see docs for details)
@@ -335,7 +341,7 @@ EOF
 
     if [[ $OS == "RedHatEnterpriseServer" ]]; then
 
-        if [ ! -e /etc/httpd/conf.d/scot.conf ]; then
+        if [ ! -e /etc/httpd/conf.d/scot.conf ] || [ $REFRESHAPACHECONF == "yes"]; then
             echo -e "${yellow}+ adding scot configuration${NC}"
             REVPROXY=$DEVDIR/etc/scot-revproxy-$MYHOSTNAME
             if [ ! -e $REVPROXY ]; then
@@ -396,7 +402,7 @@ EOF
             echo -e "${yellow}+ adding scot configuration${NC}"
             REVPROXY=$DEVDIR/etc/scot-revproxy-$MYHOSTNAME
 
-            if [ ! -e $REVPROXY ]; then
+            if [ ! -e $REVPROXY ] || [ $REFRESHAPACHECONF eq "yes"]; then
                 echo -e "${red}= custom apache config for $MYHOSTNAME not present, using defaults${NC}"
                 if [[ $AUTHMODE == "Remoteuser" ]]; then
                     REVPROXY=$DEVDIR/etc/scot-revproxy-ubuntu-remoteuser.conf
@@ -505,7 +511,7 @@ chown scot:scot $BACKUPDIR
 ### install the scot
 ###
 echo -e "${yellow} running grunt on reactjs files...${NC}"
-npm install
+(cd $DEVDIR/pubdev && npm install)
 
 echo -e "${yellow} installing SCOT files ${NC}"
 
@@ -538,7 +544,7 @@ chown scot.scot $LOGDIR
 chmod g+w $LOGDIR
 
 if [ "$CLEARLOGS"  == "yes" ]; then
-    echo -e "${red}- clearing any existing scot logs"
+    echo -e "${red}- clearing any existing scot logs${NC}"
     for i in $LOGDIR/*; do
         cat /dev/null > $i
     done
