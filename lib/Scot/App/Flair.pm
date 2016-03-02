@@ -1,10 +1,10 @@
-package Scot::Controller::Flair;
+package Scot::App::Flair;
 
 use lib '../../../lib';
 
 =head1 Name
 
-Scot::Controller::Flair
+Scot::App::Flair
 
 =head1 Description
 
