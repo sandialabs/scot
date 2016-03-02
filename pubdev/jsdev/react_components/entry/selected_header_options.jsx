@@ -58,15 +58,20 @@ var SelectedHeaderOptions = React.createClass({
         var subjectType = this.props.subjectType;
         var type = this.props.type;
         var id = this.props.id;
+        var status = this.props.status;
         var newType = null;
         var showPromote = true;
-        if (type == "alert") {
-            newType = "Event"
-        } else if (type == "event") {
-            newType = "Incident"
-        } else if (type == "incident") {
+        if (status != 'promoted') {
+            if (type == "alert") {
+                newType = "Event"
+            } else if (type == "event") {
+                newType = "Incident"
+            } else if (type == "incident") {
+                showPromote = false;
+            } 
+        } else {
             showPromote = false;
-        } 
+        }
         return (
             <div className="entry-header">
                 <ButtonGroup> 
