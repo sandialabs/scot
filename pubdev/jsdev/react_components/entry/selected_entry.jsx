@@ -132,7 +132,7 @@ var EntryParent = React.createClass({
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
-        itemarr.push(<EntryData key={items.id} subitem = {items}/>);
+        itemarr.push(<EntryData id={items.id} key={items.id} subitem = {items}/>);
         for (var prop in items) {
             function childfunc(prop){
                 if (prop == "children") {
@@ -181,12 +181,32 @@ var EntryParent = React.createClass({
 });
 
 var EntryData = React.createClass({ 
+    getInitialState: function() {
+        return {
+            height:'1px',    
+            count:0
+        }
+    },
+    componentDidUpdate: function() {
+        if (this.state.count == 0) {
+            var newheight; 
+            newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+            newheight += 15;
+            newheight = newheight + 'px';
+            this.setState({height:newheight});
+            this.setState({count:1});
+        }
+    },
+    componentDidMount: function () {
+        this.setState({height:'2px'});
+    },
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
         var outerClassName = 'row-fluid entry-body'
-        var innerClassName = 'row-fluid entry-body-inner'        
+        var innerClassName = 'row-fluid entry-body-inner'         
+        var id = this.props.id;
         return (
-            <Frame styleSheets={['/css/styles.less']} style={{width:'100%',height:'100%'}}>
+            <Frame id={'iframe_' + id} styleSheets={['/css/styles.less']} style={{width:'100%',height:this.state.height}}>
                 <div className='row-fluid entry-body'>
                     <div className='row-fluid entry-body-inner' style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}} dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
                 </div>
