@@ -1,8 +1,22 @@
 React           = require('react');
 
 var Promote = React.createClass({
+    getInitialState: function () {
+        return {
+            newURL:null,
+            newType: null
+        }
+    },
+    componentDidMount: function() {
+        if (this.props.type == "alert") {
+            this.setState({newType:"Event"})
+            this.setState({newURL:'event'});
+        } else if (this.props.type == "event") {
+            this.setState({newType:"Incident"})
+            this.setState({newURL:'incident'});
+        } 
+    },
     promote: function() {
-        var newType;
         var data = JSON.stringify({promote:'new'});
         $.ajax({
             type: 'put',
@@ -11,6 +25,7 @@ var Promote = React.createClass({
             success: function(data) {
                 console.log('successfully promoted');
                 console.log(data);
+                window.location.assign('#/'+this.state.newURL+'/'+data.id);
             }.bind(this),
             error: function() {
                 alert('Failed to promote');
@@ -19,17 +34,10 @@ var Promote = React.createClass({
     },
     render: function() {
         var type = this.props.type;
-        var id = this.props.id;
-        var newType = null;
-        var showPromote = true;
-        if (type == "alert") {
-            newType = "Event"
-        } else if (type == "event") {
-            newType = "Incident"
-        } 
+        var id = this.props.id; 
         return (
             <span onClick={this.promote}>
-                Make <b>{newType}</b>
+                Make <b>{this.state.newType}</b>
             </span>
         )
     }

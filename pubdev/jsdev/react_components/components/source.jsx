@@ -19,7 +19,7 @@ var Source = React.createClass({
         var type = this.props.type;
         var data = this.props.data;
         for (var prop in data) {
-            rows.push(<SourceDataIterator data={data[prop]} id={id} type={type} updated={this.props.updated} />);
+            rows.push(<SourceDataIterator key={id} data={data[prop]} id={id} type={type} updated={this.props.updated} />);
         }
         return (
             <div>
@@ -38,8 +38,7 @@ var SourceDataIterator = React.createClass({
     sourceDelete: function() {
         $.ajax({
             type: 'delete',
-            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/source/' + this.props.data.id,
-            //data: json,
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/source/' + this.props.data.id, 
             success: function(data) {
                 console.log('deleted source success: ' + data);
                 this.props.updated();
