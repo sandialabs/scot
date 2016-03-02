@@ -1,10 +1,10 @@
-package Scot::Controller::Tor;
+package Scot::App::Tor;
 
 use lib '../../../lib';
 
 =head1 Name
 
-Scot::Controller::Tor
+Scot::App::Tor
 
 =head1 Description
 
