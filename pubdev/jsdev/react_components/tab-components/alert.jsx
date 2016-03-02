@@ -48,7 +48,10 @@ var Frame = require('../../../node_modules/react-frame')
 var finalfiles = []
 var checkfiles = false
 var Alertentry = require('../entry/selected_entry.jsx')
+var Header = require('../entry/selected_header.jsx')
 var Addentry = require('../modal/add_entry.jsx')
+var supervalue = [];
+var supername;
 var columns = 
 [
     { name: 'id', style: {color: 'black'}},
@@ -79,7 +82,7 @@ function getColumns()
 	type: 'GET',
 	url: url,
 	data: {
-	alertgroup: JSON.stringify(passids)
+	alertgroup: JSON.stringify(supervalue)
 	}
 	}).success(function(data){
 		datacolumns = data
@@ -138,7 +141,7 @@ function dataSource(query)
 	type: 'GET',
 	url: url,
 	data: {
-	alertgroup: JSON.stringify(passids)
+	alertgroup: JSON.stringify(supervalue)
 	}
 	}).then(function(response){
   	datasource = response
@@ -292,8 +295,18 @@ function configureTable(data, props){
 var Subtable = React.createClass({
 	
     getInitialState: function(){
+	if(this.props.id !== undefined)
+	{
+	    supervalue = []
+	    supervalue.push(this.props.id)
+	    supername = this.props.id
+	}
+	else {
+	supername = supervalue[0]
+	}
         return {
-viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
+
+key: supername, viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
     },
    componentWillMount: function(){
 	var project = getColumns()
@@ -373,13 +386,13 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 		}
 	})
 	})
-	    
+	ids = supervalue.join(',') 
 	return (
 	this.state.history ? React.createElement(HistoryView, {type:'alertgroup', id: this.state.historyid, historyToggle: this.viewHistory}) 
         :
 	React.createElement("div", {className: 'All Modal'}, this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', type: 'alert'}) : null,
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
-	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable"}, React.createElement('div', {className: 'entry-header-info-null', style:{top: '1px', width: '100%',background: '#000'}}, React.createElement('h2',{ style: {color: 'white', 'font-size': '24px', 'text-align':'left'}}, 'Id(s) : ' +  ids ), React.createElement('h2', {style: {color: 'white', 'font-size':'24px', 'text-align' : 'left'}}, 'Viewed By : ' + this.state.viewby.join(','))), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {style: {'z-index' : '0'},className: "Subgrid",
+	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alert', id: this.state.key})), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {style: {'z-index' : '0'},className: "Subgrid",
             ref: "dataGrid", 
             idProperty: "index",
 	    setColumns: true, 
@@ -422,21 +435,23 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	this.setState({})
 	},
     onSelectionChange: function(newSelection, data){
+	supervalue = []	
+	supervalue.push(this.state.key)
 	SELECTED_ID_GRID = newSelection
 	var selected = []
 	Object.keys(newSelection).forEach(function(id){
 	selected.push(newSelection[id].index)
 	})
 	var ids = selected.length? selected.join(',') : 'none'
-	storealertids = ids.split(',')	
-	this.setState({oneview:true,setcss: false})
+	storealertids = ids.split(',')		
+	this.setState({oneview:true,setcss: false, key:supervalue[0] })
 	},
     closeHistory: function(){
 	this.setState({history: false, reload: true})	
     },
     onSelect: function(option){
 	if(option.label == "Flair Off"){
-	$('.z-selected').each(function(key, value){
+	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
 	    $(value).find('.z-cell').each(function(num,content){
 		var con = $(content).find('.entity')
 		con.each(function(x,y){
@@ -451,7 +466,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	}
 
 	else if(option.label == "Flair On"){
-	$('.z-selected').each(function(key, value){
+	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
 	    $(value).find('.z-cell').each(function(num,content){
 		var con = $(content).find('.entity-off')
 		con.each(function(x,y){
@@ -471,7 +486,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 		this.setState({reload: true})
 	    }
 	    else {
-	    $('.z-selected').each(function(key, value){
+	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
 	    $(value).find('.z-cell').each(function(x,y){
 		if($(y).attr('name') == 'id'){
 	    	window.open('/guide.html#' + $(y).text());
@@ -484,8 +499,8 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	else if(option.label == "View Source"){
 	var win = window.open('viewSource.html', '_blank')
 
-	var html = $('.z-selected').html()	
-	var plain = $('.z-selected').text()
+	var html = $('.subtable'+this.state.key).find('.z-selected').html()	
+	var plain = $('.subtable'+this.state.key).find('.z-selected').text()
 	win.onload = function() {   if(html != undefined){
 	$(win.document).find('#html').text(html)
 	} else {$(win.document).find('.html').remove() }
@@ -501,8 +516,8 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	    alert("Select only one id to view history")
 	    this.setState({reload:true})
 	}
-	else {  	
-	$('.z-selected').each(function(key,value){
+	else {  
+	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
 	    $(value).find('.z-cell').each(function(x,y){
 		if($(y).attr('name') == 'id'){
 		    id = $(y).text()
@@ -526,7 +541,8 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	}
 	else if (option.label == "Open Selected"){
 	var data = new Object();
-	$('.z-selected').each(function(key,value){
+	var state = this.state.key
+	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
 	$(value).find('.z-cell').each(function(x,y){
 	    if($(y).attr('name') == "id"){
 		data = JSON.stringify({status:'open'})
@@ -535,7 +551,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 			url: '/scot/api/v2/alert/'+$(y).text(),
 			data: data
 		}).success(function(response){
-		    $('.z-selected').each(function(t,u){
+	$('.subtable'+state).find('.z-selected').each(function(t,u){
 		    $(u).find('.z-cell').each(function(r,s){
 			if($(s).attr('name') == "alertgroup"){
 		         data = JSON.stringify({status: 'open'})
@@ -548,18 +564,19 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 			   }
 			   });
 			   });
-	});
+	}.bind(this));
 	}
 	});
 	});
 	setTimeout(
 	function() {
 	this.setState({reload:true})
-	}.bind(this), 500)
+	}.bind(this), 700)
         }
 	else if (option.label == "Promote Selected"){
 	var data = new Object()
-	$('.z-selected').each(function(key,value){
+	var state = this.state.key
+	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
 	$(value).find('.z-cell').each(function(x,y){
 	    if($(y).attr('name') == "id"){
 		data = JSON.stringify({promote: 'new'})			
@@ -568,7 +585,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 			url: '/scot/api/v2/alert/' + $(y).text(),
 			data: data
 		}).success(function(response){
-		    $('.z-selected').each(function(t,u){
+	$('.subtable'+state).find('.z-selected').each(function(t,u){
 		    $(u).find('.z-cell').each(function(r,s){
 			if($(s).attr('name') == "alertgroup"){
 		         data = JSON.stringify({status: 'promoted'})
@@ -577,11 +594,11 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 			    url: '/scot/api/v2/alertgroup/' + $(s).text(),
 			    data: data
 		        }).success(function(response){
-			})
+			}.bind(this))
 		}
 		})
 		})
-		})
+		}.bind(this))
 	}
 	})
 	})
@@ -593,7 +610,8 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	else if(option.label == "Closed Selected"){
 	var data = new Object();
 	var curr = Math.round(new Date().getTime() / 1000);
-	$('.z-selected').each(function(key,value){
+	var state = this.state.key
+	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
 	$(value).find('.z-cell').each(function(x,y){
 	    if($(y).attr('name') == "id"){
 		data = JSON.stringify({status:'closed', closed: curr})
@@ -601,8 +619,8 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 			type: 'PUT',
 			url: '/scot/api/v2/alert/'+$(y).text(),
 			data: data
-		}).success(function(response){
-		    $('.z-selected').each(function(t,u){
+		}).success(function(response){	
+	$('.subtable'+state).find('.z-selected').each(function(t,u){
 		    $(u).find('.z-cell').each(function(r,s){
 			if($(s).attr('name') == "alertgroup"){
 		         data = JSON.stringify({status: 'closed'})
@@ -615,18 +633,18 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 			   }
 			   });
 			   });
-	});
+	}.bind(this));
 	}
 	});
 	});
 	setTimeout( 
 	function(){
 	this.setState({reload: true})
-	}.bind(this),500)
+	}.bind(this),1000)
 	}
 	else if(option.label == "Add Selected to existing event"){
 	var text = prompt("Please Enter Event ID to promote into")
-	$('.z-selected').each(function(key, value){
+	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
 	$(value).find('.z-cell').each(function(x,y){
 	if($(y).attr('name') == "id") {
 	var data = { 
@@ -652,7 +670,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 		keys.push(value['name']);
 	    });
 	    var csv = ''
-	    $('.z-selected').each(function(key, value){
+	    	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
                 var storearray = []
 		$(value).find('.z-content').each(function(x,y) {
 		    var obj = $(y).text()
@@ -672,7 +690,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	if(confirm("Are you sure you want to Delete? This action can not be undone.")){
 	var data = new Object();
 	var curr = Math.round(new Date().getTime() / 1000);
-	$('.z-selected').each(function(key,value){
+	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
 	$(value).find('.z-cell').each(function(x,y){
 	    if($(y).attr('name') == "id"){
 		$.ajax({
@@ -745,7 +763,7 @@ var Maintable = React.createClass({
 	}
 	return (
 	
-	    stage ?  React.createElement(Subtable, null) :  
+	    stage ?  React.createElement('div', null, passids.map((num) => React.createElement(Subtable, {id: num}))) :  
 	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {className: 'btn btn-warning', onClick: this.exportCSV, style: {'margin-left' : 'auto'}}, 'Export to CSV') : null , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-info',onClick: this.viewAlerts, style: {'margin-left':'auto'}},"View Alerts") : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : this.state.viewfilter ? React.createElement(Crouton, {message:"You Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "onDismiss", type: "info"}) : null,   
 	    React.createElement(DataGrid, {
             ref: "dataGrid", 

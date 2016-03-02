@@ -1,10 +1,10 @@
-package Scot::Controller::Mail;
+package Scot::App::Mail;
 
 use lib '../../../lib';
 
 =head1 Name
 
-Scot::Controller::Mail
+Scot::App::Mail
 
 =head1 Description
 
