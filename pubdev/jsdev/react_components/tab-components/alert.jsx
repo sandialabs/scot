@@ -568,8 +568,6 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 			url: '/scot/api/v2/alert/' + $(y).text(),
 			data: data
 		}).success(function(response){
-		console.log(response)		
-	/*
 		    $('.z-selected').each(function(t,u){
 		    $(u).find('.z-cell').each(function(r,s){
 			if($(s).attr('name') == "alertgroup"){
@@ -579,8 +577,11 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 			    url: '/scot/api/v2/alertgroup/' + $(s).text(),
 			    data: data
 		        }).success(function(response){
-			   });		*/
 			})
+		}
+		})
+		})
+		})
 	}
 	})
 	})
@@ -715,7 +716,7 @@ var Maintable = React.createClass({
 		}
 		else {
 	//	window.history.pushState({}, 'Scot', '#/alert/')
-		window.location = '#/alert'
+		window.location = '#/alert/'
 		url = '/scot/api/v2/alertgroup'
 		stage = false
 		SELECTED_ID_GRID = {}
@@ -726,7 +727,7 @@ var Maintable = React.createClass({
 	}
 	else {
 	//window.history.pushState({}, 'Scot', '#/alert/')
-	window.location = '#/alert'
+	window.location = '#/alert/'
 	this.setState({})
 	}
     },

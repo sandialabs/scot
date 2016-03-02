@@ -148,24 +148,22 @@ state = 0
 	];
 	var headerStyle = { paddingLeft: 5 };
 	var fullStyle   = { paddingLeft: 50};
-
 	return (
-React.createElement(ExpandableNavContainer, {expanded: false}, 
+React.createElement(ExpandableNavContainer, {expanded: false}, React.createElement(ExpandableNavToggleButton, {smallClass: "s", className: "shared"}),
         React.createElement(ExpandableNavbar, {fullClass: "full", smallClass: "small"}, 
           React.createElement(ExpandableNavHeader, {small: headerSmall, full: headerFull, headerStyle: headerStyle, fullStyle: fullStyle}), 
            
 	React.createElement(ExpandableNavMenu, null, React.createElement(ExpandableNavMenuItem, {url: '#/home',active: sethome,small: menuItemsSmall[0], full: menuItemsFull[0], tooltip: "Home", jquery: window.$ ,onClick : this.handleHome}), 
             React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[1], full: menuItemsFull[1], tooltip: "Incident Handler", jquery: window.$, onClick: this.handleHandler}), 
-            React.createElement(ExpandableNavMenuItem, {active:setalerts ,small: menuItemsSmall[2], full: menuItemsFull[2], tooltip: "Alerts", jquery: window.$, onClick: this.handleAlerts}),
-	    React.createElement(ExpandableNavMenuItem, {active: setevents,small: menuItemsSmall[3], full: menuItemsFull[3], tooltip: "Events", jquery: window.$,onClick: this.handleEvents}),
-	    React.createElement(ExpandableNavMenuItem, {active: setincidents,small: menuItemsSmall[4], full: menuItemsFull[4], tooltip: "Incidents", jquery: window.$, onClick: this.handleIncidents}),
-            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[5], full: menuItemsFull[5], tooltip: "Tasks", jquery: window.$, onClick: this.handleTasks}),
+            React.createElement(ExpandableNavMenuItem, {active:setalerts ,small: menuItemsSmall[2], full: menuItemsFull[2], tooltip: "Alert", jquery: window.$, onClick: this.handleAlerts}),
+	    React.createElement(ExpandableNavMenuItem, {active: setevents,small: menuItemsSmall[3], full: menuItemsFull[3], tooltip: "Event", jquery: window.$,onClick: this.handleEvents}),
+	    React.createElement(ExpandableNavMenuItem, {active: setincidents,small: menuItemsSmall[4], full: menuItemsFull[4], tooltip: "Incident", jquery: window.$, onClick: this.handleIncidents}),
+            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[5], full: menuItemsFull[5], tooltip: "Task", jquery: window.$, onClick: this.handleTasks}),
 		React.createElement(ExpandableNavMenuItem, {active: setintel,small: menuItemsSmall[6], full: menuItemsFull[6], tooltip: "Intel", jquery: window.$, onClick: this.handleTasks}),
             React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Chat", jquery: window.$, onClick: this.handleChat}),
             React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[8], full: menuItemsFull[8], tooltip: "Note Pad", jquery: window.$, onClick:this.handlePad}),
             React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[9], full: menuItemsFull[9], tooltip: "Plugin", jquery: window.$, onClick: this.handlePlugin})
          )),
-        React.createElement(ExpandableNavToggleButton, {smallClass: "s", className: "shared"}),
         this.state.set == 0 
 	?
 React.createElement(ExpandableNavPage, null, React.createElement('div', {className: 'Text'}, React.createElement('img', {src: 'scot.png', style: {width:'350px', height: '320px','margin-left':'auto', 'margin-right':'auto', display: 'block'}}), React.createElement('h1', null, "Sandia Cyber Omni Tracker, v. 3.5"), React.createElement('h1', null, 'Official Use Only')))  
