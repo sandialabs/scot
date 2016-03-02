@@ -22,17 +22,39 @@ var SelectedPermission = React.createClass({
             this.setState({modifyPermissionEntry:false})
         };
     },
+    permissionsfunc: function(permissionData) {
+        console.log(permissionData.groups);
+        var writepermissionsarr = [];
+        var readpermissionsarr = [];
+        var readwritepermissionsarr = [];
+        for (prop in permissionData.groups) {
+            var fullprop = permissionData.groups[prop]
+            if (prop == 'read') {
+                permissionData.groups[prop].forEach(function(fullprop) {
+                    readpermissionsarr.push(fullprop)
+                });
+            } else if (prop == 'modify') {
+                permissionData.groups[prop].forEach(function(fullprop) {
+                    writepermissionsarr.push(fullprop)
+                });
+            };
+        };
+        readwritepermissionsarr.push(readpermissionsarr);
+        readwritepermissionsarr.push(writepermissionsarr);
+        return readwritepermissionsarr;
+    }, 
     render: function() {
         var modifyRows = [];
         var readRows = [];
+        var permissionData = this.props.permissionData;
+        var data = this.permissionsfunc(permissionData);//pos 0 is read and pos 1 is write
         var id = this.props.id;
         var type = this.props.type;
-        var data = this.props.permissions;
         for (var prop in data[0]) { 
             var read_modify = 'read';
             readRows.push(<PermissionIterator data={data[0][prop]} dataRead={data[0]} dataModify={data[1]} id={id} type={type} read_modify={read_modify} updated={this.props.updated} />);
         }
-        for (var prop in this.props.permissions[1]) {
+        for (var prop in data[1]) {
             var read_modify = 'modify'; 
             modifyRows.push(<PermissionIterator data={data[1][prop]} dataRead={data[0]} dataModify={data[1]} id={id} type={type} read_modify={read_modify} updated={this.props.updated} />);
         }
