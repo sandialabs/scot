@@ -3,6 +3,7 @@ var ButtonGroup     = require('react-bootstrap/lib/ButtonGroup.js');
 var Button          = require('react-bootstrap/lib/Button.js');
 var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
 var DropdownButton  = require('react-bootstrap/lib/DropdownButton.js');
+var Promote         = require('../components/promote.jsx');
 
 var SelectedHeaderOptions = React.createClass({
     toggleFlair: function() { 
@@ -54,7 +55,24 @@ var SelectedHeaderOptions = React.createClass({
         }
     }, 
     render: function() { 
-                    return (
+        var subjectType = this.props.subjectType;
+        var type = this.props.type;
+        var id = this.props.id;
+        var status = this.props.status;
+        var newType = null;
+        var showPromote = true;
+        if (status != 'promoted') {
+            if (type == "alert") {
+                newType = "Event"
+            } else if (type == "event") {
+                newType = "Incident"
+            } else if (type == "incident") {
+                showPromote = false;
+            } 
+        } else {
+            showPromote = false;
+        }
+        return (
             <div className="entry-header">
                 <ButtonGroup> 
                         <DropdownButton bsStyle='info' title="Actions" id="bg-nested-dropdown">
@@ -62,7 +80,8 @@ var SelectedHeaderOptions = React.createClass({
                         <MenuItem bsStyle='primary' eventKey="2" onClick={this.props.historyToggle}>View <b>History</b></MenuItem>
                         <MenuItem bsStyle='primary' eventKey="3" onClick={this.props.permissionsToggle}><b>Permissions</b></MenuItem>
                         <MenuItem bsStyle='primary' eventKey="4" onClick={this.props.entitiesToggle}>List <b>Entities</b></MenuItem>
-                        <MenuItem bsStyle='danger' eventKey="5" onClick={this.props.deleteToggle}><b>Delete</b> Event</MenuItem>
+                        <MenuItem bsStyle='danger' eventKey="5" onClick={this.props.deleteToggle}><b>Delete</b> {subjectType}</MenuItem>
+                        {showPromote ? <MenuItem bsStyle='primary' eventKey="6"><Promote type={type} id={id} /></MenuItem> : null}
                     </DropdownButton> 
                 </ButtonGroup>
                 <Button bsStyle='success' className="pull-right" onClick={this.props.entryToggle}>Add Entry</Button>

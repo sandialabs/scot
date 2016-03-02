@@ -109,7 +109,7 @@ var Viewentry = React.createClass({
 	React.createElement('div', {style: {height: '100%'}}, React.createElement(Frame, {styleSheets:['/css/styles.less'], style: {width: '100%', height: '100%', border: 'none'}}, React.createElement(Alertentry, {type: 'alert', id: this.props.id})))
 	), 
 	React.createElement("div", {className: "modal-footer"}, 
-	React.createElement("button", {type: "button", onClick: this.onCancel, className: 'btn btn-danger'}, "Close")
+	React.createElement("button", {type: "button", onClick: this.onCancel, className: 'btn'}, "Close")
 	)
 	)
 	)
@@ -377,7 +377,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	return (
 	this.state.history ? React.createElement(HistoryView, {type:'alertgroup', id: this.state.historyid, historyToggle: this.viewHistory}) 
         :
-	React.createElement("div", {className: 'All Modal'}, this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry'}) : null,
+	React.createElement("div", {className: 'All Modal'}, this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', type: 'alert'}) : null,
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
 	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable"}, React.createElement('div', {className: 'entry-header-info-null', style:{top: '1px', width: '100%',background: '#000'}}, React.createElement('h2',{ style: {color: 'white', 'font-size': '24px', 'text-align':'left'}}, 'Id(s) : ' +  ids ), React.createElement('h2', {style: {color: 'white', 'font-size':'24px', 'text-align' : 'left'}}, 'Viewed By : ' + this.state.viewby.join(','))), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {style: {'z-index' : '0'},className: "Subgrid",
             ref: "dataGrid", 
@@ -558,6 +558,7 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 	}.bind(this), 500)
         }
 	else if (option.label == "Promote Selected"){
+	var data = new Object()
 	$('.z-selected').each(function(key,value){
 	$(value).find('.z-cell').each(function(x,y){
 	    if($(y).attr('name') == "id"){
@@ -567,8 +568,6 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 			url: '/scot/api/v2/alert/' + $(y).text(),
 			data: data
 		}).success(function(response){
-		console.log(response)		
-	/*
 		    $('.z-selected').each(function(t,u){
 		    $(u).find('.z-cell').each(function(r,s){
 			if($(s).attr('name') == "alertgroup"){
@@ -578,8 +577,11 @@ viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enabl
 			    url: '/scot/api/v2/alertgroup/' + $(s).text(),
 			    data: data
 		        }).success(function(response){
-			   });		*/
 			})
+		}
+		})
+		})
+		})
 	}
 	})
 	})
@@ -714,7 +716,7 @@ var Maintable = React.createClass({
 		}
 		else {
 	//	window.history.pushState({}, 'Scot', '#/alert/')
-		window.location = '#/alert'
+		window.location = '#/alert/'
 		url = '/scot/api/v2/alertgroup'
 		stage = false
 		SELECTED_ID_GRID = {}
@@ -725,7 +727,7 @@ var Maintable = React.createClass({
 	}
 	else {
 	//window.history.pushState({}, 'Scot', '#/alert/')
-	window.location = '#/alert'
+	window.location = '#/alert/'
 	this.setState({})
 	}
     },
