@@ -12,7 +12,7 @@ has status => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default     => '',
+    default     => 'open',
 );
 
 1;

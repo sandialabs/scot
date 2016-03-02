@@ -25,7 +25,3 @@ load("../../bin/database/zero_nextid.js");
 print ("Clearing config and re-creating...");
 db.config.drop();
 db.scotmod.drop();
-load("../../bin/database/config.DO_NOT_ADD_TO_GIT.js");
-
-
-
