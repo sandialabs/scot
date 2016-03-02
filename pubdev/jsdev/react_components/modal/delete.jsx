@@ -19,7 +19,7 @@ var DeleteEvent = React.createClass({
             url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id,
             success: function(data) {
                 console.log('success: ' + data); 
-                this.props.toggleEventDisplay();
+                window.location.replace('#/'+this.props.type);
                 //this.props.deleteToggle();
             }.bind(this),
             error: function() {
@@ -53,7 +53,7 @@ var DeleteEntry = React.createClass({
             url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id + '/entry/' + this.props.entryid,
             success: function(data) {
                 console.log('success: ' + data);
-                this.props.updated();
+                this.props.updatedcallback();
                 this.props.deleteToggle();
             }.bind(this),
             error: function() {
