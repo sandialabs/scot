@@ -87,7 +87,7 @@ var AddEntryModal = React.createClass({
     onCancel: function(){
 	 if(confirm('Are you sure you want to close this entry?')){
 	     this.setState({addentry:false, change:false})
-	     //this.props.updated()
+	     this.props.updated()
 	    }
 	else{
 
@@ -125,7 +125,7 @@ var AddEntryModal = React.createClass({
 	data = JSON.stringify({parent: this.props.id, body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id:123 , target_type: this.props.type})
 	$.ajax({
 	type: 'put',
-	url: '/scot/api/v2/'+this.props.type+'/entry',
+	url: '/scot/api/v2/entry',
 	data: data
 	}).success(function(repsonse){
 		    if(this.state.files.length > 0){
@@ -142,8 +142,65 @@ var AddEntryModal = React.createClass({
 			}
 	})
 	this.props.updated()
+	this.setState({addentry: false})
 	}
 	else if (this.props.stage == 'Edit'){
+	var data = {parent: this.props.id, body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id: this.props.targetid , target_type: this.props.type}
+	$.ajax({
+	type: 'put',
+	url: '/scot/api/v2/entry',
+	data: JSON.stringify(data)
+	}).success(function(repsonse){
+		    if(this.state.files.length > 0){
+			for(var i = 0; i<this.state.files.length; i++){	
+			var file = {file:this.state.files[i].name}
+			data = JSON.stringify({upload: file, target_type: this.props.type, target_id: response.id, entry_id: ''})
+			$.ajax({
+			   type: 'PUT',
+			   url: '/scot/api/v2/file',
+			   data: data
+			   }).success(function(response){
+			   })
+			}
+			}
+	})
+	this.props.updated()
+	this.setState({addentry: false})
+	}
+	else  if(this.props.type == 'alert'){ 
+	 var data = new Object()
+	 $('.z-selected').each(function(key,value){
+	 $(value).find('.z-cell').each(function(x,y){
+	    if($(y).attr('name') == 'id'){  
+	     data = JSON.stringify({body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id: $(y).text(), target_type: 'alert',  parent: 0})
+	     $.ajax({
+		type: 'post', 
+		url: '/scot/api/v2/entry',
+		data: data
+		}).success(function(response){
+		 if(this.state.files !== undefined){
+			for(var i = 0; i<this.state.files.length; i++){	
+			var file = {file:this.state.files[i].name}
+			data = JSON.stringify({upload: file, target_type: 'alert', target_id: response.id, entry_id: ''})
+			$.ajax({
+			   type: 'PUT',
+			   url: '/scot/api/v2/file',
+			   data: data
+			   }).success(function(response){
+			   })
+			}
+		}
+		})
+		}
+		})
+		})
+	/*
+	     setTimeout(
+	     function() {
+	     }.bind(this),/*this.props.updated() ,100)*/
+		this.setState({addentry: false})
+	}	
+	else {
 	var data = {parent: this.props.id, body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id: this.props.targetid , target_type: this.props.type}
 	$.ajax({
 	type: 'put',
@@ -164,38 +221,8 @@ var AddEntryModal = React.createClass({
 			}
 	})
 	this.props.updated()
+	this.setState({addentry: false})
 	}
-	else  { 
-	 var data = new Object()
-	 $('.z-selected').each(function(key,value){
-	 $(value).find('.z-cell').each(function(x,y){
-	    if($(y).attr('name') == 'id'){  
-	     data = JSON.stringify({body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id: $(y).text(), target_type: this.props.id,  parent: 0})
-	     $.ajax({
-		type: 'post', 
-		url: '/scot/api/v2/'+this.props.type+'/entry',
-		data: data
-		}).success(function(response){
-		    if(this.state.files.length > 0){
-			for(var i = 0; i<this.state.files.length; i++){	
-			var file = {file:this.state.files[i].name}
-			data = JSON.stringify({upload: file, target_type: this.props.type, target_id: response.id, entry_id: ''})
-			$.ajax({
-			   type: 'PUT',
-			   url: '/scot/api/v2/file',
-			   data: data
-			   }).success(function(response){
-			   })
-			}
-			}
-		})
-		}
-	})
-	})
-	}
-	     setTimeout(
-	     function() {
-	     }.bind(this),this.props.updated() ,100)
 	},
 	modalonSelect: function (option){
 	var newoptions
