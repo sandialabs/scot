@@ -51,7 +51,7 @@ var EntryIterator = React.createClass({
         var id = this.props.id;  
         var updated = this.props.updated;
         data.forEach(function(data) {
-            rows.push(<EntryParent items={data} type={type} id={id} updated={updated} />);
+            rows.push(<EntryParent key={data.id} items={data} type={type} id={id} updated={updated} />);
         });
         return (
             <div>
@@ -132,7 +132,7 @@ var EntryParent = React.createClass({
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
-        itemarr.push(<EntryData subitem = {items}/>);
+        itemarr.push(<EntryData key={items.id} subitem = {items}/>);
         for (var prop in items) {
             function childfunc(prop){
                 if (prop == "children") {
