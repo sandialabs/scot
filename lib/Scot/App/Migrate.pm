@@ -1,10 +1,10 @@
-package Scot::Controller::Migrate;
+package Scot::App::Migrate;
 
 use lib '../../../lib';
 
 =head1 Name
 
-Scot::Controller::Migrate
+Scot::App::Migrate
 
 =head1 Description
 

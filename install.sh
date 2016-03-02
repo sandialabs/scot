@@ -468,6 +468,7 @@ if [ ! -d $SCOTDIR ]; then
     chmod 754 $SCOTDIR
 fi
 
+usermod -a -G scot www-data
 cp -r $DEVDIR/* $SCOTDIR/
 chown -R scot.scot $SCOTDIR
 chmod -R 755 $SCOTDIR/bin
