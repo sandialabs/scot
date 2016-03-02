@@ -25,7 +25,7 @@ var Promote = React.createClass({
             success: function(data) {
                 console.log('successfully promoted');
                 console.log(data);
-                window.location.replace('#/'+this.state.newURL+'/'+data.id);
+                window.location.assign('#/'+this.state.newURL+'/'+data.id);
             }.bind(this),
             error: function() {
                 alert('Failed to promote');
