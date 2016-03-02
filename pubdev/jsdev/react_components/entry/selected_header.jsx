@@ -6,7 +6,7 @@ var DeleteEvent             = require('../modal/delete.jsx').DeleteEvent;
 var Owner                   = require('../modal/owner.jsx');
 var Entities                = require('../modal/entities.jsx');
 var History                 = require('../modal/history.jsx');
-var SelectedPermission      = require('./selected_permission.jsx');
+var SelectedPermission      = require('../components/permission.jsx');
 var AutoAffix               = require('react-overlays/lib/AutoAffix');
 var Affix                   = require('react-overlays/lib/Affix');
 var Sticky                  = require('react-sticky');
@@ -29,7 +29,8 @@ var SelectedHeader = React.createClass({
             entitiesToolbar:false,
             historyToolbar:false,
             entryToolbar:false, 
-            deleteToolbar:false
+            deleteToolbar:false,
+            promoteToolbar:false
         }
     },
     componentDidMount: function() {
@@ -90,26 +91,6 @@ var SelectedHeader = React.createClass({
             this.setState({historyToolbar:false});
         }
     },
-    permissionsfunc: function(headerData) {
-        var writepermissionsarr = [];
-        var readpermissionsarr = [];
-        var readwritepermissionsarr = [];
-        for (prop in headerData.groups) {
-            var fullprop = headerData.groups[prop]
-            if (prop == 'read') {
-                headerData.groups[prop].forEach(function(fullprop) {
-                    readpermissionsarr.push(fullprop)
-                });
-            } else if (prop == 'modify') {
-                headerData.groups[prop].forEach(function(fullprop) {
-                    writepermissionsarr.push(fullprop)
-                });
-            };
-        };
-        readwritepermissionsarr.push(readpermissionsarr);
-        readwritepermissionsarr.push(writepermissionsarr);
-        return readwritepermissionsarr;
-    },
     permissionsToggle: function() {
         if (this.state.permissionsToolbar == false) {
             this.setState({permissionsToolbar:true});
@@ -124,6 +105,13 @@ var SelectedHeader = React.createClass({
             this.setState({entitiesToolbar:false});
         }
     },
+    promoteToggle: function() {
+        if (this.state.promoteToolbar == false) {
+            this.setState({promoteToolbar:true});
+        } else {
+            this.setState({promoteToolbar:false});
+        }
+    },
     titleCase: function(string) {
         var newstring = string.charAt(0).toUpperCase() + string.slice(1)
         return (
@@ -131,8 +119,7 @@ var SelectedHeader = React.createClass({
         )
     },
     render: function() {
-        var headerData = this.state.headerData;        
-        var permissions = this.permissionsfunc(headerData); //pos 0 is read and pos 1 is write
+        var headerData = this.state.headerData;         
         var viewedby = this.viewedbyfunc(headerData);
         var type = this.props.type;
         var subjectType = this.titleCase(this.props.type);
@@ -165,10 +152,10 @@ var SelectedHeader = React.createClass({
                 </div>
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
-                {this.state.permissionsToolbar ? <SelectedPermission id={id} type={type} permissions={permissions} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
-                {this.state.entryToolbar ? <AddEntryModal type={type} id={id} entryToggle={this.entryToggle} /> : null}  
-                {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} toggleEventDisplay={this.props.toggleEventDisplay} /> :null}
-                <SelectedHeaderOptions toggleEventDisplay={this.props.toggleEventDisplay} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle}/>
+                {this.state.permissionsToolbar ? <SelectedPermission id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
+                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type={type} id={id} entryToggle={this.entryToggle} /> : null}  
+                {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} /> :null}
+                <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle}/>
                 <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} />
             </div>
         )
@@ -195,7 +182,7 @@ var EntryDataStatus = React.createClass({
             this.statusAjax('closed');
         } else if (this.state.buttonStatus == 'closed') {
             this.statusAjax('open');
-        }
+        } 
     },
     statusAjax: function(newStatus) {
         console.log(newStatus);
