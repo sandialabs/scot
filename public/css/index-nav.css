@@ -6,3 +6,7 @@ body {
 .shared {
   z-index: 1;
 }
+
+.tooltip{
+z-index: 2;
+}

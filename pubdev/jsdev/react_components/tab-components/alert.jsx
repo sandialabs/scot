@@ -109,7 +109,7 @@ var Viewentry = React.createClass({
 	React.createElement("h4", {className: "modal-title"}, " View Entry")
 	), 
 	React.createElement("div", {className: "modal-body", style: {height: '80%'}}, 
-	React.createElement('div', {style: {height: '100%'}}, React.createElement(Frame, {styleSheets:['/css/styles.less'], style: {width: '100%', height: '100%', border: 'none'}}, React.createElement(Alertentry, {type: 'alert', id: this.props.id})))
+	React.createElement('div', {style: {height: '100%'}}, React.createElement(Alertentry, {type: 'alert', id: this.props.id}))
 	), 
 	React.createElement("div", {className: "modal-footer"}, 
 	React.createElement("button", {type: "button", onClick: this.onCancel, className: 'btn'}, "Close")
@@ -392,7 +392,7 @@ key: supername, viewby: [],historyid: 0, history: false, edit: false, stagecolor
         :
 	React.createElement("div", {className: 'All Modal'}, this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', type: 'alert'}) : null,
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
-	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alert', id: this.state.key})), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {style: {'z-index' : '0'},className: "Subgrid",
+	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alertgroup', id: this.state.key})), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {style: {'z-index' : '0'},className: "Subgrid",
             ref: "dataGrid", 
             idProperty: "index",
 	    setColumns: true, 
