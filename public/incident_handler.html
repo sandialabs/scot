@@ -583,9 +583,9 @@ table.fc-border-separate {
 	
 
 </style>
-<link href="/libs/css/ui-lightness/jquery-ui-1.10.3.custom.min.css" rel="stylesheet" type="text/css"></link>
+<link href="/css/jquery-ui-1.10.3.custom.min.css" rel="stylesheet" type="text/css"></link>
 <div id="calendar"></div>
-<script src="/libs/jquery.min.js"></script>
+<script src="/libs/jquery-2.2.0/jquery.min.js"></script>
 <script src="/libs/jquery-ui-1.10.3.custom.min.js"></script>
 <script src="/libs/fullcalendar.min.js"></script>
 <script src="/libs/jquery.datepick.js"></script>"
@@ -599,9 +599,9 @@ function do_refresh() {
 $(document).ready(function() {
    $.ajax({
      type: 'GET',
-     url:  '/scot/user'
+     url:  '/scot/api/v2/user'
    }).done(function(response) {
-     $(response.data).each(function(index, userObj) {
+     $(response.records).each(function(index, userObj) {
         var option = $('<option></option>').attr('value', userObj.username).text(userObj.username);
         $('#user_select').append(option);
      });
