@@ -2,3 +2,7 @@ body {
   padding-top: 15px;
   padding-left: 65px;
 }
+
+.shared {
+  z-index: 1;
+}
