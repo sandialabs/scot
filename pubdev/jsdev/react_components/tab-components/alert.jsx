@@ -71,9 +71,9 @@ const  customStyles = {
         bottom  : 'auto',
         marginRight: '-50%',
         transform:  'translate(-50%, -50%)',
-	width: '80%',
-	'z-index' : '99',
-	height: '80%'
+	width: '60%',
+	'z-index' : '99'
+//	height: '80%'
     }
 }
 function getColumns()
@@ -120,12 +120,7 @@ var Viewentry = React.createClass({
 	)
 	},
 	onCancel: function(){
-	 if(confirm('Are you sure you want to close this entry?')){
 	     this.setState({open:false, change:false})
-	    }
-	else{
-
-	}
 	}
 	});
 
@@ -309,6 +304,7 @@ var Subtable = React.createClass({
 key: supername, viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
     },
    componentWillMount: function(){
+	SELECTED_ID_GRID = {}
 	var project = getColumns()
 	project.success(function(realData){
 	var last = realData.columns
@@ -723,8 +719,8 @@ var Maintable = React.createClass({
     componentWillMount: function(){
 	if(this.props.supertable !== undefined){
 	    if(this.props.supertable.length > 0){
-	//	window.history.pushState({}, 'Scot', '#/alert/'+ this.props.supertable.join('+'))
-		window.location = '#/alert/' + this.props.supertable.join('+')
+		window.location.hash = '#/alert/' + this.props.supertable.join('+')
+		window.location.href = window.location.hash 
 		passids = this.props.supertable
 		ids = this.props.supertable.join(',')
 		stage = true
@@ -733,8 +729,8 @@ var Maintable = React.createClass({
 		this.setState({})
 		}
 		else {
-	//	window.history.pushState({}, 'Scot', '#/alert/')
-		window.location = '#/alert/'
+		window.location.hash = '#/alert/'
+		window.location.location = window.location.hash
 		url = '/scot/api/v2/alertgroup'
 		stage = false
 		SELECTED_ID_GRID = {}
@@ -744,8 +740,8 @@ var Maintable = React.createClass({
 		}
 	}
 	else {
-	//window.history.pushState({}, 'Scot', '#/alert/')
-	window.location = '#/alert/'
+	window.location.hash = '#/alert/'
+	window.location.href = window.location.hash
 	this.setState({})
 	}
     },
@@ -753,6 +749,10 @@ var Maintable = React.createClass({
 	this.setState({})
     },
     render: function() {
+	$('.active').on('click', function(){
+	window.location.hash = '#/alert/'
+	window.location.href = window.location.hash
+	})
 	const rowFact = (rowProps) => {
 	rowProps.onDoubleClick = this.viewAlerts
 	}
@@ -774,9 +774,9 @@ var Maintable = React.createClass({
 	    onFilter: this.handleFilter, 
 	    selected: SELECTED_ID, 
 	    onSelectionChange: this.onSelectionChange, 
-	    defaultPageSize:50 ,  
+	    defaultPageSize: 50,  
 	    pagination: true, 
-	    paginationToolbarProps: {pageSizes: [30,40,100]}, 
+	    paginationToolbarProps: {pageSizes: [5,10,20]}, 
 	    onColumnOrderChange: this.handleColumnOrderChange, 
 	    sortInfo: SORT_INFO, 
 	    onSortChange: this.handleSortChange,
@@ -821,7 +821,8 @@ var Maintable = React.createClass({
 	stage = true
 	changestate = true
 	url = '/scot/api/v2/supertable'
-	window.history.pushState({}, 'Scot', '#/alert/' + passids.join('+'))
+	window.location.hash = '#/alert/'+passids.join('+')
+	window.location.href = window.location.hash
 	this.setState({viewAlert: true, showAlertbutton:false,csv:false})
     },
     handleSortChange : function(sortInfo){
