@@ -195,9 +195,9 @@ if [[ $INSTMODE != "SCOTONLY" ]]; then
         else
             echo "+ adding mongo to yum repos"
             cat <<- EOF > /etc/yum.repos.d/mongodb.repo
-[mongodb]
+[mongodb-org-3.2]
 name=MongoDB Repository
-baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64/
+baseurl=http://repo.mongodb.org/yum/redhat/$OSVERSION/mongodb-org/3.2/x86_64/
 gpgcheck=0
 enabled=1
 EOF
@@ -231,8 +231,9 @@ EOF
                 echo "= mongo 10Gen repo already present"
             else 
                 echo "+ Adding Mongo 10Gen repo and updating apt-get caches"
-                echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" >> /etc/apt/sources.list
-                apt-key add $DEVDIR/etc/mongo_10gen.key
+                apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
+                echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+
             fi
         fi
 
@@ -268,7 +269,7 @@ EOF
         useradd -c "ActiveMQ User" -d $AMQDIR -M -s /bin/bash activemq
     fi
 
-    echo "${yellow}= checking activemq logging directories ${NC}"
+    echo -e "${yellow}= checking activemq logging directories ${NC}"
     if [ ! -d /var/log/activemq ]; then
         echo "${green}+ creating /var/log/activemq ${NC}"
         mkdir -p /var/log/activemq
@@ -511,7 +512,10 @@ chown scot:scot $BACKUPDIR
 ### install the scot
 ###
 echo -e "${yellow} running grunt on reactjs files...${NC}"
-(cd $DEVDIR/pubdev && npm install)
+my $CURDIR=`pwd`
+cd $DEVDIR/pubdev 
+npm install
+cd $CURDIR
 
 echo -e "${yellow} installing SCOT files ${NC}"
 
