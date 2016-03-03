@@ -16,8 +16,8 @@ const  customStyles = {
         bottom  : 'auto',
         marginRight: '-50%',
         transform:  'translate(-50%, -50%)',
-	width: '80%',
-	height: '80%'
+	width: '80%'
+//	height: '80%'
     }
 }
 
@@ -67,7 +67,7 @@ var AddEntryModal = React.createClass({
 	React.createElement("div", {className: "modal-body", style: {height: '90%'}}, 
 	React.createElement(TinyMCE, {content: "", className: "inputtext",config: {plugins: 'autolink link image lists print preview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'},onChange: this.handleEditorChange}
 	)), 
-	React.createElement("div", {className: "modal-footer"}, React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width': '2px','border-color':'#000','border-radius':'4px',margin:'30px', padding:'30px',width: '200px', 'border-style': 'dashed'}}, React.createElement("div",null,"Drop some files here or click to  select files to upload")),
+	React.createElement("div", {className: "modal-footer"}, React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width': '2px','border-color':'#000','border-radius':'4px',margin:'30px' ,padding: '30px','border-style': 'dashed', 'text-align' : 'center'}}, React.createElement("div",null,"Drop some files here or click to  select files to upload")),
 	this.state.files ? React.createElement("div", null, this.state.files.map((file) => React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("a", {href:file.preview, target:"_blank"}, file.name),React.createElement('button', {style: {width: '2em', height: '1em', 'line-height':'1px'}, className: 'btn btn-info', id: file.name, onClick: this.Close}, 'x'))))): null, 
 	React.createElement("button", {className: 'btn', onClick: this.onCancel}, " Cancel"), this.state.edit ? React.createElement(
 'button', {className: 'btn btn-primary', onClick: this.Edit}, 'Edit') : null,
@@ -85,13 +85,8 @@ var AddEntryModal = React.createClass({
 
     },
     onCancel: function(){
-	 if(confirm('Are you sure you want to close this entry?')){
 	     this.setState({addentry:false, change:false})
 	     this.props.updated()
-	    }
-	else{
-
-	}
 	},
    	Close: function(i) {
 	for(var x = 0; x< finalfiles.length; x++){
@@ -143,6 +138,7 @@ var AddEntryModal = React.createClass({
 	})
 	this.props.updated()
 	this.setState({addentry: false})
+	window.location.reload()
 	}
 	else if (this.props.stage == 'Edit'){
 	var data = {parent: this.props.id, body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id: this.props.targetid , target_type: this.props.type}
@@ -166,6 +162,7 @@ var AddEntryModal = React.createClass({
 	})
 	this.props.updated()
 	this.setState({addentry: false})
+	//window.location.reload()
 	}
 	else  if(this.props.type == 'alert'){ 
 	 var data = new Object()
@@ -181,12 +178,13 @@ var AddEntryModal = React.createClass({
 		 if(this.state.files !== undefined){
 			for(var i = 0; i<this.state.files.length; i++){	
 			var file = {file:this.state.files[i].name}
-			data = JSON.stringify({upload: file, target_type: 'alert', target_id: response.id, entry_id: ''})
+			data = JSON.stringify({upload: file, target_type: 'alert', target_id: $(y).text(), entry_id: response.id})
 			$.ajax({
 			   type: 'PUT',
 			   url: '/scot/api/v2/file',
 			   data: data
 			   }).success(function(response){
+			   console.log(response)
 			   })
 			}
 		}
@@ -199,6 +197,7 @@ var AddEntryModal = React.createClass({
 	     function() {
 	     }.bind(this),/*this.props.updated() ,100)*/
 		this.setState({addentry: false})
+		//window.location.reload()
 	}	
 	else {
 	var data = {parent: this.props.id, body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id: this.props.targetid , target_type: this.props.type}
