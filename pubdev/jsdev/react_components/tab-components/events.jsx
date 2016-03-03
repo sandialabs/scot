@@ -101,8 +101,8 @@ module.exports = React.createClass({
         this.setState({})
     },
     componentWillMount: function(){
-	//window.history.pushState({}, 'Scot', '#/event/')
-	window.location = '#/event/'
+	window.location.hash ='#/event/'
+	window.location.href = window.location.hash
     },
 
     render: function() {
@@ -149,8 +149,8 @@ module.exports = React.createClass({
             stage = false;
             this.setState({viewevent: false});
         }
-	//window.history.pushState({}, 'Scot', '#/event/' + ids.join('+'))
-	window.location = '#/event/'+ids.join('+')
+	window.location.hash = '#/event/'+ids.join('+')
+	window.location.href = window.location.hash
     },
     exportCSV: function(){
         var keys = []
