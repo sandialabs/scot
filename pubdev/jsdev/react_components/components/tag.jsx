@@ -19,7 +19,7 @@ var Tag = React.createClass({
         var type = this.props.type;
         var data = this.props.data;
         for (var prop in data) {
-            rows.push(<TagDataIterator data={data[prop]} id={id} type={type} updated={this.props.updated} />);
+            rows.push(<TagDataIterator key={data.id} data={data[prop]} id={id} type={type} updated={this.props.updated} />);
         }
         return (
             <div>
