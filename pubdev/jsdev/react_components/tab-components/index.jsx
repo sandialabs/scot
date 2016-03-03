@@ -23,6 +23,7 @@ var setalerts = false
 var setevents = false
 var setincidents = false
 var setintel = false
+var settask = false
 var supertableid = [];
 var statetype = ''
 var eventtableid = []
@@ -45,6 +46,7 @@ if(this.props.params.value  != null){
 	setalerts = false
 	setincidents = false
 	setevents = false
+	settask = false
 	}
 	else if( this.props.params.value.toLowerCase() == "alert"){
 	if(this.props.params.id != null){
@@ -56,6 +58,7 @@ if(this.props.params.value  != null){
 	sethome = false
 	setincidents = false
 	setevents = false
+	settask = false
 	}
 	else if(this.props.params.value.toLowerCase() == "event"){
 	state = 2
@@ -69,6 +72,7 @@ if(this.props.params.value  != null){
 	sethome = false
 	setalerts = false
 	setincidents = false
+	settask = false
 	}
 	else if (this.props.params.value.toLowerCase() == "incident"){
 	state = 3
@@ -82,6 +86,7 @@ if(this.props.params.value  != null){
 	sethome = false
 	setalerts = false
 	setevents = false
+	settask = false
 	}
 	else if(this.props.params.value.toLowerCase() == "intel") {
 	state = 4
@@ -90,14 +95,16 @@ if(this.props.params.value  != null){
 	setalerts = false
 	setincidents = false
 	setevents = false
+	settask = false
 	}
 	else {
-	state = 0
-	sethome = true
+	state = 6
+	sethome = false
 	setalerts = false
 	setevents = false
 	setincidents = false
 	setintel = false
+	settask = true
 	}
 }
 else {
@@ -118,7 +125,15 @@ state = 0
    },
 
    render: function() {
-	var headerFull = <a href='/#'>Scot3</a>
+	var array = []
+	var id = window.location.hash
+	array = id.split('/')	
+	console.log(array)
+	$('.active').on('click', function(){
+	window.location.hash = '#/' + array[1] + '/'
+	window.location.href = window.location.hash
+	})
+	var headerFull = <a href='/'>Scot3</a>
 	var headerSmall = ""
 	var menuItemsSmall = [
 	<span className = "glyphicon glyphicon-home"></span>,
@@ -158,9 +173,9 @@ React.createElement(ExpandableNavContainer, {expanded: false}, React.createEleme
             React.createElement(ExpandableNavMenuItem, {active:setalerts ,small: menuItemsSmall[2], full: menuItemsFull[2], tooltip: "Alert", jquery: window.$, onClick: this.handleAlerts}),
 	    React.createElement(ExpandableNavMenuItem, {active: setevents,small: menuItemsSmall[3], full: menuItemsFull[3], tooltip: "Event", jquery: window.$,onClick: this.handleEvents}),
 	    React.createElement(ExpandableNavMenuItem, {active: setincidents,small: menuItemsSmall[4], full: menuItemsFull[4], tooltip: "Incident", jquery: window.$, onClick: this.handleIncidents}),
-            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[5], full: menuItemsFull[5], tooltip: "Task", jquery: window.$, onClick: this.handleTasks}),
+            React.createElement(ExpandableNavMenuItem, {active: settask, small: menuItemsSmall[5], full: menuItemsFull[5], tooltip: "Task", jquery: window.$, onClick: this.handleTasks}),
 		React.createElement(ExpandableNavMenuItem, {active: setintel,small: menuItemsSmall[6], full: menuItemsFull[6], tooltip: "Intel", jquery: window.$, onClick: this.handleTasks}),
-            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Chat", jquery: window.$, onClick: this.handleChat}),
+            React.createElement(ExpandableNavMenuItem, {active: setintel, small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Chat", jquery: window.$, onClick: this.handleChat}),
             React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[8], full: menuItemsFull[8], tooltip: "Note Pad", jquery: window.$, onClick:this.handlePad}),
             React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[9], full: menuItemsFull[9], tooltip: "Plugin", jquery: window.$, onClick: this.handlePlugin})
          )),
@@ -183,14 +198,22 @@ React.createElement(ExpandableNavPage, null, React.createElement('div', {classNa
 	this.state.set == 5
 	?
 	React.createElement(ExpandableNavPage, null, React.createElement(SelectedContainer, {ids: this.state.ids, type: statetype}))
-	:	
- React.createElement(ExpandableNavPage, null, React.createElement(Tasks, null))	
-
+	:
+	this.state.set == 4
+	?
+	null
+	:
+	this.state.set == 6
+	?	
+	React.createElement(ExpandableNavPage, null, React.createElement(Tasks, null))	
+	:
+	null
 	)	
     );
 
   },
     handleHome: function(){
+
         this.setState({set:0})
     }, 
     handleHandler: function(){
@@ -203,10 +226,11 @@ React.createElement(ExpandableNavPage, null, React.createElement('div', {classNa
 	this.setState({set: 2})
     },
     handleIncidents: function(){
+
 	this.setState({set : 3})
     },
     handleTasks: function(){
-	this.setState({set: 4})
+	this.setState({set: 6})
     },
     handleChat: function (){
 	window.open('/scot/chat/irt')
