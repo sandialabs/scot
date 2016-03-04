@@ -134,7 +134,7 @@ has authtype    => (
 
 sub _get_authtype {
     my $self    = shift;
-    my $type    = "Remoteuser";
+    my $type    = $ENV{'SCOT_AUTH_TYPE'} // "Remoteuser";
 
     my $col     = $self->mongo->collection('Config');
     my $obj     = $col->find_one({ module => "authtype" });
