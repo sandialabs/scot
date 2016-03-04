@@ -535,6 +535,7 @@ sub migrate {
 
             say "Starting Migration of $remaining_docs docs";
 
+            my $maxid   = 0;
             ITEM:
             while ( my $item = $legcursor->next ) {
                 my $timer   = $env->get_timer(
@@ -585,6 +586,10 @@ sub migrate {
                     say "$procindex: [ $mname ". $object->id.
                         "] $elapstr secs -- $ratestr $etastr ".
                         $self->commify($remaining_docs). " remain";
+                }
+                if ( $object->id > $maxid ) {
+                    $maxid = $object->id;
+                    $collection->set_next_id($maxid);
                 }
             }
         $forkmgr->finish;
