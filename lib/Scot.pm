@@ -114,6 +114,14 @@ get JSON that was submitted with the web request
 
     my $scot    = $r->under('/scot')->to($authclass.'#check');
 
+    # necessary to get default index.html from /opt/scot/public
+    # and have it remain so that only authenticated users can see
+    $scot   ->get('/')
+            ->to( cb => sub {
+                my $c = shift;
+                $c->reply->static('index.html');
+            });
+
     $scot   ->route ('/api/v2/command/:action')
             ->via   ('put')
             ->to    ('controller-api#do_command')
