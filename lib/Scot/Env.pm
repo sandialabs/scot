@@ -66,7 +66,7 @@ has group_mode  => (
     is          => 'rw',
     isa         => 'Str',
     required    => 1,
-    default     => 'local', # ldap is other option
+    default     => 'ldap', # local is other option
 );
 
 has default_owner   => (
