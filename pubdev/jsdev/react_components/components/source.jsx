@@ -19,7 +19,7 @@ var Source = React.createClass({
         var type = this.props.type;
         var data = this.props.data;
         for (var prop in data) {
-            rows.push(<SourceDataIterator key={data.id} data={data[prop]} id={id} type={type} updated={this.props.updated} />);
+            rows.push(<SourceDataIterator key={data[prop].id} data={data[prop]} id={id} type={type} updated={this.props.updated} />);
         }
         return (
             <div>

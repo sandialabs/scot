@@ -32,7 +32,7 @@ var Summary = React.createClass({
             data: json,
             success: function(data) {
                 console.log('success: ' + data);
-                this.props.updated();
+                this.props.updatedcallback();
             }.bind(this),
             error: function() {
                 alert('Failed to make summary - contact administrator');

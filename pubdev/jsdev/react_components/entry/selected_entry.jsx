@@ -116,7 +116,7 @@ var EntryParent = React.createClass({
         var summary = items.summary;
         var outerClassName = 'row-fluid entry-outer';
         var innerClassName = 'row-fluid entry-header';
-        var taskOwner = ''; 
+        var taskOwner = '';
         if (summary == 1) {
             outerClassName += ' summary_entry';
         }
@@ -157,12 +157,12 @@ var EntryParent = React.createClass({
                     <div className={innerClassName}>
                         <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/"+ type + '/' + id + '/' + items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
                             <span className='pull-right' style={{display:'inline-flex'}}>
-                                {this.state.permissionsToolbar ? <SelectedPermission id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} updated={updatedcallback} /> : null}
+                                {this.state.permissionsToolbar ? <SelectedPermission id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} updatedcallback={updatedcallback} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle}>
                                     <MenuItem eventKey='1' onClick={this.addEntryToggle}>Move</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
-                                    <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} updated={updatedcallback} /></MenuItem>
-                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} updated={updatedcallback}/></MenuItem>
+                                    <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} updatedcallback={updatedcallback} /></MenuItem>
+                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} updatedcallback={updatedcallback}/></MenuItem>
                                     <MenuItem eventKey='5' onClick={this.permissionsToggle}>Permissions</MenuItem>
                                 </SplitButton>
                                 <Button bsSize='xsmall' onClick={this.editEntryToggle}>Edit</Button>
@@ -174,7 +174,7 @@ var EntryParent = React.createClass({
                 {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} created={created} update={updated} updatedcallback={updatedcallback} type={type} id={id} entryToggle={this.entryToggle} /> : null}
                 {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} created={created} updated={updated} targetid = {id} updatedcallback={updatedcallback} type={type} stage = {'Edit'} id={items.id} entryToggle={this.entryToggle} /> : null}
                 {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} created={created} updated={updated} targetid = {id} updatedcallback={updatedcallback}  id={items.id} entryToggle={this.entryToggle} /> : null}
-                {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}     
+                {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updatedcallback={updatedcallback} /> : null}     
             </div>
         );
     }
@@ -196,21 +196,28 @@ var EntryData = React.createClass({
             this.setState({height:newheight});
             this.setState({count:1});
         }
+        console.log('update');
+        document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
     },
     componentDidMount: function () {
         this.setState({height:'2px'});
     },
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
-        var outerClassName = 'row-fluid entry-body'
-        var innerClassName = 'row-fluid entry-body-inner'         
         var id = this.props.id;
+        var spanEntity = $('span').attr('data-entity-type');
+        /*$(document).on('click',spanEntity, function() {
+            console.log(id);
+        });*/
+        console.log('height: ' + this.state.height);
         return (
-            <Frame id={'iframe_' + id} styleSheets={['/css/styles.less']} style={{width:'100%',height:this.state.height}}>
-                <div className='row-fluid entry-body'>
-                    <div className='row-fluid entry-body-inner' style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}} dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
+            <div className={'row-fluid entry-body'}>
+                <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
+                    <Frame frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-popups allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
+                    <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
+                    </Frame>
                 </div>
-            </Frame>
+            </div>
         )
     }
 });

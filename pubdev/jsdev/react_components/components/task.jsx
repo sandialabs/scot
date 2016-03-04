@@ -33,7 +33,7 @@ var Task = React.createClass({
             data: JSON.stringify(json),
             success: function(data) {
                 console.log('success: ' + data);
-                this.props.updated();
+                this.props.updatedcallback();
             }.bind(this),
             error: function() {
                 alert('Failed to close task - contact administrator');
@@ -48,7 +48,7 @@ var Task = React.createClass({
             data: JSON.stringify(json),
             success: function(data) {
                 console.log('success: ' + data);
-                this.props.updated();
+                this.props.updatedcallback();
             }.bind(this),
             error: function() {
                 alert('Failed to close task - contact administrator');
@@ -63,7 +63,7 @@ var Task = React.createClass({
             data: JSON.stringify(json),
             success: function(data) {
                 console.log('success: ' + data);
-                this.props.updated();
+                this.props.updatedcallback();
             }.bind(this),
             error: function() {
                 alert('Failed to make Task owner - contact administrator');
