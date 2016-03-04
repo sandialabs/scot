@@ -86,7 +86,7 @@ var AddEntryModal = React.createClass({
     },
     onCancel: function(){
 	     this.setState({addentry:false, change:false})
-	     this.props.updated()
+	     this.props.updatedcallback()
 	},
    	Close: function(i) {
 	for(var x = 0; x< finalfiles.length; x++){
@@ -160,7 +160,7 @@ var AddEntryModal = React.createClass({
 			}
 			}
 	})
-	this.props.updated()
+	this.props.updatedcallback()
 	this.setState({addentry: false})
 	window.location.reload()
 	}
@@ -218,7 +218,7 @@ var AddEntryModal = React.createClass({
 			}
 			}
 	})
-	this.props.updated()
+	this.props.updatedcallback()
 	this.setState({addentry: false})
 	}
 	},

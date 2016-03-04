@@ -52,20 +52,20 @@ var SelectedPermission = React.createClass({
         var type = this.props.type;
         for (var prop in data[0]) { 
             var read_modify = 'read';
-            readRows.push(<PermissionIterator data={data[0][prop]} dataRead={data[0]} dataModify={data[1]} id={id} type={type} read_modify={read_modify} updated={this.props.updated} />);
+            readRows.push(<PermissionIterator data={data[0][prop]} dataRead={data[0]} dataModify={data[1]} id={id} type={type} read_modify={read_modify} updatedcallback={this.props.updatedcallback} />);
         }
         for (var prop in data[1]) {
             var read_modify = 'modify'; 
-            modifyRows.push(<PermissionIterator data={data[1][prop]} dataRead={data[0]} dataModify={data[1]} id={id} type={type} read_modify={read_modify} updated={this.props.updated} />);
+            modifyRows.push(<PermissionIterator data={data[1][prop]} dataRead={data[0]} dataModify={data[1]} id={id} type={type} read_modify={read_modify} updatedcallback={this.props.updatedcallback} />);
         }
         if (type == 'entry') {
             return ( 
                <div id="" className="">
                     <span style={{display:'inline-flex'}}>
                         Read Groups: {readRows}<Button bsSize='xsmall' bsStyle={'success'} onClick={this.toggleNewReadPermission}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
-                        {this.state.readPermissionEntry ? <span style={{display:'inherit',color:'white'}}><NewPermission readUpdate={1} modifyUpdate={0} dataRead={data[0]} dataModify={data[1]} type={type} id={id} toggleNewReadPermission={this.toggleNewReadPermission} updated={this.props.updated} permissionsToggle={this.props.permissionsToggle}/></span>: null}
+                        {this.state.readPermissionEntry ? <span style={{display:'inherit',color:'white'}}><NewPermission readUpdate={1} modifyUpdate={0} dataRead={data[0]} dataModify={data[1]} type={type} id={id} toggleNewReadPermission={this.toggleNewReadPermission} updatedcallback={this.props.updatedcallback} permissionsToggle={this.props.permissionsToggle}/></span>: null}
                         Modify Groups: {modifyRows}<Button bsSize='xsmall' bsStyle={'success'} onClick={this.toggleNewModifyPermission}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button><br/>
-                        {this.state.modifyPermissionEntry ? <span style={{display:'inherit',color:'white'}}><NewPermission readUpdate={0} modifyUpdate={1} dataRead={data[0]} dataModify={data[1]} type={type} id={id} toggleNewModifyPermission={this.toggleNewModifyPermission} updated={this.props.updated} permissionsToggle={this.props.permissionsToggle}/></span> : null}
+                        {this.state.modifyPermissionEntry ? <span style={{display:'inherit',color:'white'}}><NewPermission readUpdate={0} modifyUpdate={1} dataRead={data[0]} dataModify={data[1]} type={type} id={id} toggleNewModifyPermission={this.toggleNewModifyPermission} updatedcallback={this.props.updatedcallback} permissionsToggle={this.props.permissionsToggle}/></span> : null}
                     </span>
                 </div> 
             )
@@ -78,8 +78,8 @@ var SelectedPermission = React.createClass({
                         <h3>Event Permissions</h3>
                         Read Groups: {readRows}<Button bsStyle={'success'} onClick={this.toggleNewReadPermission}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
                         Modify Groups: {modifyRows}<Button bsStyle={'success'} onClick={this.toggleNewModifyPermission}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button><br/>
-                        {this.state.readPermissionEntry ? <span style={{textAlign:'center'}}>Add Read Group:<NewPermission readUpdate={1} modifyUpdate={0} dataRead={data[0]} dataModify={data[1]} type={type} id={id} toggleNewReadPermission={this.toggleNewReadPermission} updated={this.props.updated} permissionsToggle={this.props.permissionsToggle}/></span> : null}
-                        {this.state.modifyPermissionEntry ? <span>Add Modify Group:<NewPermission readUpdate={0} modifyUpdate={1} dataRead={data[0]} dataModify={data[1]} type={type} id={id} toggleNewModifyPermission={this.toggleNewModifyPermission} updated={this.props.updated} permissionsToggle={this.props.permissionsToggle}/></span> : null}
+                        {this.state.readPermissionEntry ? <span style={{textAlign:'center'}}>Add Read Group:<NewPermission readUpdate={1} modifyUpdate={0} dataRead={data[0]} dataModify={data[1]} type={type} id={id} toggleNewReadPermission={this.toggleNewReadPermission} updatedcallback={this.props.updatedcallback} permissionsToggle={this.props.permissionsToggle}/></span> : null}
+                        {this.state.modifyPermissionEntry ? <span>Add Modify Group:<NewPermission readUpdate={0} modifyUpdate={1} dataRead={data[0]} dataModify={data[1]} type={type} id={id} toggleNewModifyPermission={this.toggleNewModifyPermission} updatedcallback={this.props.updatedcallback} permissionsToggle={this.props.permissionsToggle}/></span> : null}
                     </center>
                 </div> 
             )
@@ -119,11 +119,11 @@ var PermissionIterator = React.createClass({
             contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success');
-                this.props.updated();
+                this.props.updatedcallback();
             }.bind(this),
             error: function() {
                 alert('failure to delete group');
-                this.props.updated();
+                this.props.updatedcallback();
             }.bind(this)
         })
    },
@@ -173,12 +173,12 @@ var NewPermission = React.createClass({
             success: function(data) {
                 console.log('success: permission added');
                 toggle();
-                this.props.updated();
+                this.props.updatedcallback();
             }.bind(this),
             error: function() {
                 alert('Failed to add source - contact administrator');
                 toggle();
-                this.props.updated();
+                this.props.updatedcallback();
             }.bind(this)
         });
     },
