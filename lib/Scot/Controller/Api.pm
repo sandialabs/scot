@@ -1546,16 +1546,18 @@ sub thread_entries {
     my $cursor  = shift;
     my $env     = $self->env;
     my $log     = $env->log;
+    my $mygroups    = $self->session('groups');
+    my $user        = $self->session('user');
 
     $log->debug("Threading ". $cursor->count . " entries...");
+    $log->debug("users groups are: ".join(',',@$mygroups));
 
     my @threaded    = ();
     my %where       = ();
     my $rindex      = 0;
     my $count       = 1;
-    my $mygroups    = $self->session('groups');
-    my $user        = $self->session('user');
     my @summaries   = ();
+
 
     ENTRY:
     while ( my $entry   = $cursor->next ) {
