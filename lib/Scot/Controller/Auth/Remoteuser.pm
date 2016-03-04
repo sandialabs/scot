@@ -40,14 +40,27 @@ sub check {
     my $headers     = $request->headers;
 
 
-    $log->debug("headers = ".Dumper($headers));
+    # $log->debug("headers = ".Dumper($headers));
 
     my $basicauth   = $headers->header('authorization');
     my $authuser    = $headers->header('authuser');
 
     my $user    = $self->session('user');
+    $log->debug("Session user is ", {filter =>\&Dumper, value =>$user});
+    my $groups  = $self->session('groups');
+    $log->debug("Session groups is ", {filter =>\&Dumper, value =>$groups});
 
-    return 1 if (defined $user);  
+    if ( defined $user ) {
+        if ( defined $groups ) {
+            return 1;
+        }
+        # sometimes, rarely, groups session gets lost
+        # so reset it
+        my $garef   = $self->get_groups($user);
+        $self->session('groups' => $garef);
+        return 1;
+    }
+
     $log->debug("user not previously authenticated");
 
     my $remote_user = $headers->header('remote-user');
@@ -59,7 +72,8 @@ sub check {
         $self->session( 'user'  => $remote_user );
         my $groups = $self->session('groups');
         unless ($groups) {
-            $self->session('groups' => $self->get_groups($user));
+            my $garef   = $self->get_groups($remote_user);
+            $self->session('groups' => $garef);
         }
         return 1;
     }
@@ -76,20 +90,39 @@ sub login {
     $self->render( json => $href);
 }
 
+sub logout {
+    my $self    = shift;
+    $self->session('user' => '');
+    $self->session('groups' => '');
+    $self->session(expires => 1);
+}
+
 sub get_groups {
     my $self    = shift;
     my $user    = shift;
     my $env     = $self->env;
+    my $log     = $env->log;
     my $gmode   = $env->group_mode;
     my @groups;
 
+    $log->debug("getting $user groups");
+
     if ( $gmode eq "ldap" ) {
+        $log->debug("group mode is ldap");
         my $ldap    = $env->ldap;
-        my @ug      = $ldap->get_users_groups($user);
-        push @groups, @ug;
+
+        my $results = $ldap->get_users_groups($user);
+        if ( $results < 0 ) {
+            $log->error("GOT ERROR FROM LDAP!");
+            return wantarray ? () :[];
+        }
+        
+        $log->debug("got ". join(',',@$results));
+        push @groups, @$results;
         return wantarray ? @groups : \@groups;
     }
     # else local is all that remains
+    $log->debug("group mode is local");
     my $mongo   = $env->mongo;
     my $col     = $mongo->collection('Group');
     my $cursor  = $col->find({members => $user});
@@ -97,6 +130,7 @@ sub get_groups {
     while ( my $group = $cursor->next ) {
         push @groups, $group->name;
     }
+    $log->debug("got ".join(',',@groups));
     return wantarray ? @groups : \@groups;
 }
 
