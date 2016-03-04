@@ -23,6 +23,8 @@ It is a child of Mojo::Base and therefore is a Mojolicious based app.
 sub startup {
     my $self    = shift;
 
+    $self->mode('development'); # remove when in prod
+
 
     my $env     = Scot::Env->new();
     $self->attr     ( env => sub { $env } );
@@ -53,7 +55,7 @@ sub startup {
             clients => 1,
             proxy   => 1,
             pidfile => '/var/run/hypno.pid',
-        }
+        },
     );
 
     # capture stuff that normally would go to STDERR and put in log
@@ -112,15 +114,19 @@ get JSON that was submitted with the web request
     
     # make sure that we have passed authentication
 
-    my $scot    = $r->under('/scot')->to($authclass.'#check');
+    my $auth    = $r->under('/')->to($authclass.'#check');
 
     # necessary to get default index.html from /opt/scot/public
     # and have it remain so that only authenticated users can see
-    $scot   ->get('/')
+    $auth   ->get('/')
             ->to( cb => sub {
                 my $c = shift;
+                $log->debug("Hitting Static /");
                 $c->reply->static('index.html');
             });
+
+    # prepends /scot to the routes below
+    my $scot    = $auth->any('/scot');
 
     $scot   ->route ('/api/v2/command/:action')
             ->via   ('put')
