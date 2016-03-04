@@ -41,7 +41,11 @@ sub startup {
     $self->sessions->secure(1);
 
 
-    # TODO: allow these setting to come from Env.pm and therefor the DB config
+    # Note to future maintainer: 
+    # hypnotoad performs preforking.  This can cause problems with DB
+    # connections created in Env, IF the DB client can't handle reconnections
+    # after forking.  Meerkat for mongo can, but if we have any DBI connection
+    # we might have problems.
     $self->config(
         hypnotoad   => {
             listen  => ['http://localhost:3000?reuse=1'],
