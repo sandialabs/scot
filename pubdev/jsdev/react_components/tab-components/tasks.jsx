@@ -113,7 +113,7 @@ module.exports = React.createClass({
 	return (
 	    stage ? React.createElement(SelectedContainer, {ids: ids, type: 'task', viewEvent:this.viewEvent}) : 
 	    this.state.viewevent ? React.createElement(SelectedContainer, {ids: ids, type: 'task', viewEvent:this.viewEvent}) : 
-	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {className: 'btn btn-warning', onClick: this.exportCSV}, 'Export to CSV') : null,this.state.showevent ? React.createElement('button', {className: 'btn btn-info', onClick: this.viewEvent}, "View Tasks") : null, this.state.viewfilter ? React.createElement(Crouton, {message: "You Filtered: (" + this.state.fsearch + ")", buttons: "close", onDismiss: "onDismiss", type: "info"}) :null,
+	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {className: 'btn btn-warning', onClick: this.exportCSV, style: {'margin-top':'13px'}}, 'Export to CSV') : null,this.state.showevent ? React.createElement('button', {className: 'btn btn-info', onClick: this.viewEvent, style: {'margin-top':'13px'}}, "View Tasks") : null, this.state.viewfilter ? React.createElement(Crouton, {message: "You Filtered: (" + this.state.fsearch + ")", buttons: "close", onDismiss: "onDismiss", type: "info"}) :null,
 	    React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id", 
@@ -123,14 +123,15 @@ module.exports = React.createClass({
 	    onFilter: this.handleFilter, 
 	    selected: SELECTED_ID, 
 	    onSelectionChange: this.onSelectionChange, 
-	    defaultPageSize:20 ,  
+	    defaultPageSize:50 ,  
 	    pagination: true, 
-	    paginationToolbarProps: {pageSizes: [5,10,20]}, 
+	    paginationToolbarProps: {pageSizes: [5,10,20,50]}, 
 	    onColumnOrderChange: this.handleColumnOrderChange, 
 	    sortInfo: SORT_INFO, 
 	    onSortChange: this.handleSortChange, 
 	    showCellBorders: true,
 	    rowHeight: 100,
+	    style: {height: '100%'},
 	    rowFactory: rowFact,
 	    rowStyle: configureTable}
 	)

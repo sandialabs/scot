@@ -128,7 +128,6 @@ state = 0
 	var array = []
 	var id = window.location.hash
 	array = id.split('/')	
-	console.log(array)
 	$('.active').on('click', function(){
 	window.location.hash = '#/' + array[1] + '/'
 	window.location.href = window.location.hash
