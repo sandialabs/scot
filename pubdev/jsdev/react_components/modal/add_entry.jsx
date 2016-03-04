@@ -86,7 +86,7 @@ var AddEntryModal = React.createClass({
     },
     onCancel: function(){
 	     this.setState({addentry:false, change:false})
-	     this.props.updatedcallback()
+	     this.props.updated()
 	},
    	Close: function(i) {
 	for(var x = 0; x< finalfiles.length; x++){
