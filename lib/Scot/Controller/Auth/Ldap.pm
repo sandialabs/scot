@@ -29,7 +29,7 @@ sub check {
     $log->trace("Checking Login Status");
 
     if (defined $user) {
-        # TODO: update last use records for user
+        $self->update_lastvisit($user);
         $log->trace("[User $user] has logged in");
         return 1;
     }
@@ -104,7 +104,6 @@ sub auth {
             "Undefined user or pass",
             $user, 
             $pass);
-
     }
 
     $user = lc($user);  # force to lc for consistency
@@ -126,6 +125,8 @@ sub auth {
     if ( defined( $self->env->ldap ) ) {
         $log->trace("attempting ldap auth for user $user");
         if ( $self->ldap_authenticates($user, $pass) ) {
+            my $group_aref = $env->ldap->get_users_groups($user);
+            $self->session('groups' => $group_aref);
             return $self->sucessful_auth($user, $orig_url);;
         }
     }
@@ -150,6 +151,8 @@ sub failed_auth {
     $log->error("FAILED AUTH: $msg");
     $log->debug("User: $user Pass: -----");
 
+    $self->update_user_failure($user);
+
     $self->flash("Invalid Login");
     $self->redirect_to('/login');
     return;
@@ -163,7 +166,7 @@ sub sucessful_auth {
 
     $log->debug("User $user sucessfully authenticated");
 
-    #$self->update_user_sucess($user);
+    $self->update_user_sucess($user);
     $self->session( 
         user        => $user, 
     #    groups      => $self->get_user_groups($user),

@@ -130,8 +130,6 @@ sub set_next_id {
     return $iid;
 }
 
-
-
 =item B<get_next_id()>
 
 users hate typing in oid's on the URL, so give them a friendly integer

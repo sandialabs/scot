@@ -55,8 +55,12 @@ sub check {
     $log->debug("Remote user is set to: ".$remote_user);
 
     if ( $remote_user ) {
-        # can do look ups of user groups here
+        # TODO: can do look ups of user groups here
         $self->session( 'user'  => $remote_user );
+        my $groups = $self->session('groups');
+        unless ($groups) {
+            $self->session('groups' => $self->get_groups($user));
+        }
         return 1;
     }
 
@@ -72,6 +76,28 @@ sub login {
     $self->render( json => $href);
 }
 
+sub get_groups {
+    my $self    = shift;
+    my $user    = shift;
+    my $env     = $self->env;
+    my $gmode   = $env->group_mode;
+    my @groups;
 
+    if ( $gmode eq "ldap" ) {
+        my $ldap    = $env->ldap;
+        my @ug      = $ldap->get_users_groups($user);
+        push @groups, @ug;
+        return wantarray ? @groups : \@groups;
+    }
+    # else local is all that remains
+    my $mongo   = $env->mongo;
+    my $col     = $mongo->collection('Group');
+    my $cursor  = $col->find({members => $user});
+
+    while ( my $group = $cursor->next ) {
+        push @groups, $group->name;
+    }
+    return wantarray ? @groups : \@groups;
+}
 
 1;
