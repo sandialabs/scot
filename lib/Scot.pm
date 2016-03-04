@@ -22,6 +22,8 @@ It is a child of Mojo::Base and therefore is a Mojolicious based app.
 
 sub startup {
     my $self    = shift;
+
+
     my $env     = Scot::Env->new();
     $self->attr     ( env => sub { $env } );
     $self->helper   ( env => sub { shift->app->env } );
@@ -37,6 +39,18 @@ sub startup {
     $self->secrets( $env->mojo->{secrets} );
     $self->sessions->default_expiration( $env->mojo->{default_expiration} );
     $self->sessions->secure(1);
+
+
+    # TODO: allow these setting to come from Env.pm and therefor the DB config
+    $self->config(
+        hypnotoad   => {
+            listen  => ['http://localhost:3000?reuse=1'],
+            workers => 10,
+            clients => 1,
+            proxy   => 1,
+            pidfile => '/var/run/hypno.pid',
+        }
+    );
 
     # capture stuff that normally would go to STDERR and put in log
     #$SIG{'__WARN__'} = sub {
@@ -79,15 +93,22 @@ get JSON that was submitted with the web request
 
 =cut
 
+    my $authclass   = $env->authclass;
+
     # routes
     my $r       = $self->routes;
 
-    $r->route( '/login' )   ->to ( 'util-aaa#login' ) ->name( 'login' );
-    $r->route( '/auth' )    ->via('post') ->to('util-aaa#auth') ->name('auth');
+    $r->route( '/login' )   
+      ->to ( $authclass.'#login' ) 
+      ->name( 'login' );
+    $r->route( '/auth' )    
+      ->via('post') 
+      ->to($authclass.'#auth') 
+      ->name('auth');
     
     # make sure that we have passed authentication
 
-    my $scot    = $r->under('/scot')->to('util-aaa#check');
+    my $scot    = $r->under('/scot')->to($authclass.'#check');
 
     $scot   ->route ('/api/v2/command/:action')
             ->via   ('put')
