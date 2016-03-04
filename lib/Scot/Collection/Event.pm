@@ -233,7 +233,8 @@ sub create_promotion {
                     $self->get_value_from_request($req, "subject");
 
     return $self->create({
-        subject => $subject 
+        subject => $subject, 
+        status  => 'open',
     });
 }
 

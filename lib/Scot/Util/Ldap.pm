@@ -194,7 +194,7 @@ sub get_users_groups {
     }
 
     $log->trace("User $user is in the following groups: ".join(',',@groups));
-    return \@groups;
+    return wantarray ? @groups : \@groups;
 }
 
 
