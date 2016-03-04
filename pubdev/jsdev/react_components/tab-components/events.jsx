@@ -6,7 +6,7 @@ var Crouton = require('../../../node_modules/react-crouton')
 var SelectedContainer = require('../entry/selected_container.jsx')
 var SORT_INFO;
 var colsort = "id"
-var valuesort = 1
+var valuesort = -1
 var SELECTED_ID = {}
 var filter = {}
 var names = 'none'
@@ -117,7 +117,7 @@ module.exports = React.createClass({
 	return (
 	    stage ? React.createElement(SelectedContainer, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
 	    this.state.viewevent ? React.createElement(SelectedContainer, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
-	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {className: 'btn btn-warning', onClick: this.exportCSV}, 'Export to CSV') : null,this.state.showevent ? React.createElement('button', {className: 'btn btn-info', onClick: this.viewEvent}, "View Events") : null, this.state.viewfilter ? React.createElement(Crouton, {message: "You Filtered: (" + this.state.fsearch + ")", buttons: "close", onDismiss: "onDismiss", type: "info"}) :null,
+	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('div', null , React.createElement('button', {className: 'btn', onClick: this.createevent, style: {'margin-top':'13px'}}, 'Create Event') ,React.createElement('button', {style: {'margin-top': '13px'}, className: 'btn btn-warning', onClick: this.exportCSV}, 'Export to CSV')) : null,this.state.showevent ? React.createElement('button', {className: 'btn btn-info', onClick: this.viewEvent}, "View Events") : null, this.state.viewfilter ? React.createElement(Crouton, {message: "You Filtered: (" + this.state.fsearch + ")", buttons: "close", onDismiss: "onDismiss", type: "info"}) :null,
 	    React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id", 
@@ -127,18 +127,29 @@ module.exports = React.createClass({
 	    onFilter: this.handleFilter, 
 	    selected: SELECTED_ID, 
 	    onSelectionChange: this.onSelectionChange, 
-	    defaultPageSize:20 ,  
+	    defaultPageSize: 50,  
 	    pagination: true, 
-	    paginationToolbarProps: {pageSizes: [5,10,20]}, 
+	    paginationToolbarProps: {pageSizes: [5,10,20, 50]}, 
 	    onColumnOrderChange: this.handleColumnOrderChange, 
 	    sortInfo: SORT_INFO, 
 	    onSortChange: this.handleSortChange, 
 	    showCellBorders: true,
 	    rowHeight: 100,
+	    style: {height: '100%'},
 	    rowFactory: rowFact,
 	    rowStyle: configureTable}
 	)
         ));
+    },
+    createevent: function(){
+	var data = JSON.stringify({subject: 'No Subject', source: ['No Source']})
+	$.ajax({
+	type: 'POST',
+	url: '/scot/api/v2/event',
+	data: data
+	}).success(function(response){
+	window.location = '#/event/'+response.id
+	})
     },
     viewEvent: function(){
 

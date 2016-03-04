@@ -5,7 +5,7 @@ var HistoryView = require('../modal/history.jsx')
 var DataGrid = require('../../../node_modules/alert-react-datagrid/react-datagrid');
 var SORT_INFO;
 var colsort = "id"
-var valuesort = 1
+var valuesort = -1
 var SELECTED_ID = {}
 var SELECTED_ID_GRID = {}
 var filter = {}
@@ -125,7 +125,7 @@ var Viewentry = React.createClass({
 	});
 
 function dataSource(query)
-{
+{	
 	var getID = []	
       	var finalarray = [];
 	var sortarray = {}
@@ -233,6 +233,7 @@ function dataSource(query)
 	})
     }
     else {
+	$('.z-vertical-scrollbar').css('top', 0)
 	return $.ajax({
 	type: 'GET',
 	url: url,
@@ -244,7 +245,7 @@ function dataSource(query)
 	}
 	}).then(function(response){
   	datasource = response
-	$.each(datasource.records, function(key, value){
+	$.each(response.records, function(key, value){
 	finalarray[key] = {}
 	$.each(value, function(num, item){	
 	if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
@@ -761,10 +762,11 @@ var Maintable = React.createClass({
 	this.state.fsearch = savedfsearch
 	this.state.viewfilter = true
 	}
+
 	return (
 	
 	    stage ?  React.createElement('div', null, passids.map((num) => React.createElement(Subtable, {id: num}))) :  
-	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {className: 'btn btn-warning', onClick: this.exportCSV, style: {'margin-left' : 'auto'}}, 'Export to CSV') : null , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-info',onClick: this.viewAlerts, style: {'margin-left':'auto'}},"View Alerts") : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : this.state.viewfilter ? React.createElement(Crouton, {message:"You Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "onDismiss", type: "info"}) : null,   
+	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {className: 'btn btn-warning', onClick: this.exportCSV, style: {'margin-left' : 'top', 'margin-top': '13px'}}, 'Export to CSV') : null , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-info',onClick: this.viewAlerts, style: {'margin-left':'auto', 'margin-top': '13px'}},"View Alerts") : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : this.state.viewfilter ? React.createElement(Crouton, {message:"You Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "onDismiss", type: "info"}) : null,   
 	    React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id",
@@ -776,12 +778,13 @@ var Maintable = React.createClass({
 	    onSelectionChange: this.onSelectionChange, 
 	    defaultPageSize: 50,  
 	    pagination: true, 
-	    paginationToolbarProps: {pageSizes: [5,10,20]}, 
+	    paginationToolbarProps: {pageSizes: [5,10,20,50]}, 
 	    onColumnOrderChange: this.handleColumnOrderChange, 
 	    sortInfo: SORT_INFO, 
 	    onSortChange: this.handleSortChange,
 	    showCellBorders: true,
 	    rowHeight: 100,
+	    style: {height: '100%'},
 	    rowFactory:rowFact,
 	    rowStyle: configureTable}
 	)
