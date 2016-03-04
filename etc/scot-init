@@ -12,8 +12,10 @@
 
 . /lib/lsb/init-functions
 
-
-CMD="/opt/scot/bin/start_scot.sh"
+APP="SCOT"
+CMD="hypnotoad"
+PIDFILE="/var/run/hypno.pid"
+SCRIPT="/opt/scot/script/Scot"
 
 OS=`lsb_release -i | cut -s -f2`
 
@@ -25,20 +27,12 @@ fi
 
 case "$1" in
     start)
-        echo -n "Starting $APP: "
-        rm -f /tmp/nytprof.out.*
-        eval $CMD &
+        echo "Starting $APP: "
+        eval $CMD $SCRIPT 
         ;;
     stop)
-        echo -n "Stopping $DESC: "
-        PID=`cat /opt/scot/scot.pid`
-        if [ -z $PID ]
-        then
-            echo "No PID file. using pkill"
-            pkill starman
-        else 
-            kill $PID
-        fi
+        echo "Stopping $APP: "
+        eval $CMD -s $SCRIPT 
         ;;
     restart)
         $0 stop

@@ -29,6 +29,7 @@ FILESTORE="/opt/scotfiles";
 SCOTDIR="/opt/scot"
 SCOTROOT="/opt/scot"
 SCOTINIT="/etc/init.d/scot"
+SCOTPORT=3000
 FILESTORE="/opt/scotfiles"
 INSTALL_LOG="/tmp/scot.install.log"
 TESTURL="http://getscot.sandia.gov"
@@ -60,11 +61,12 @@ AUTHMODE="Remoteuser"       # authentication type to use
 DEFAULFILE=""               # override file for all the above
 DBCONFIGJS="./private.js"   # initial config data you entered for DB
 REFRESHAPACHECONF="no"      # refresh the apache config for SCOT
+SKIPNODE="no"               # skip the node/npm/grunt stuff
 
 
 echo -e "${yellow}Reading Commandline Args... ${NC}"
 
-while getopts "adigmsrflqA:F:J:w" opt; do
+while getopts "adigmsrflqA:F:J:wN" opt; do
     case $opt in
         a)  
             echo -e "${red} --- do not refresh apt repositories ${NC}"
@@ -127,6 +129,10 @@ while getopts "adigmsrflqA:F:J:w" opt; do
         w)
             REFRESHAPACHECONF="yes"
             echo -e "${red} --- overwriting exist SCOT apache config ${NC}"
+            ;;
+        N)
+            SKIPNODE="yes"
+            echo -e "${yellow} --- skipping NODE/NPM/Grunt instal/build ${NC}"
             ;;
         \?)
             echo -e "${yellow} !!!! INVALID option -$OPTARG ${NC}";
@@ -217,8 +223,10 @@ EOF
         # 
         # get NodeJS setup for package install
         # 
-        curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
-        yum -y install nodejs
+        if [ $SKIPNODE == "no" ]; then
+            curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
+            yum -y install nodejs
+        fi
 
     fi
 
@@ -242,9 +250,11 @@ EOF
             apt-get update > /dev/null
         fi
 
-        echo "+ setting up nodejs apt repos"
-        curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
-        apt-get install -y nodejs
+        if [ $SKIPNODE == "no" ]; then
+            echo "+ setting up nodejs apt repos"
+            curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
+            apt-get install -y nodejs
+        fi
 
         echo -e "${yellow}+ installing apt packages ${NC}"
 
@@ -342,10 +352,12 @@ EOF
 
     if [[ $OS == "RedHatEnterpriseServer" ]]; then
 
+        HTTPCONFDIR=/etc/httpd/conf.d
+
         if [ ! -e /etc/httpd/conf.d/scot.conf ] || [ $REFRESHAPACHECONF == "yes"]; then
             echo -e "${yellow}+ adding scot configuration${NC}"
             REVPROXY=$DEVDIR/etc/scot-revproxy-$MYHOSTNAME
-            if [ ! -e $REVPROXY ]; then
+            if [ ! -e $REVPROXY ]||[$REFRESHAPACHECONF == "yes"]; then
 
                 echo -e "${red}= custom apache config for $MYHOSTNAME not present, using defaults${NC}"
 
@@ -363,7 +375,12 @@ EOF
                     fi
                 fi
             fi
-            cp $REVPROXY /etc/httpd/conf.d/scot.conf
+            echo -e "${green} --- copying scot.conf apache configuration"
+            cp $REVPROXY $HTTPCONFDIR/scot.conf
+            echo -e "${yellow} --- sed-ing scot.conf ${NC}"
+            sed -i 's=/scot/document/root='$SCOTROOT'/public=g' $HTTPCONFDIR/scot.conf
+            sed -i 's=localport='$SCOTPORT'=g' $HTTPCONFDIR/scot.conf
+            sed -i 's=scot\.server\.tld='$MYHOSTNAME'=g' $HTTPCONFDIR/scot.conf
         fi
 
         SSLDIR="/etc/apache2/ssl"
@@ -383,12 +400,17 @@ EOF
 
     if [[ $OS == "Ubuntu" ]]; then
 
-        MODSENABLED="/etc/apache2/sites-enabled"
-        MODSAVAILABLE="/etc/apache2/sites-available"
+        SITESENABLED="/etc/apache2/sites-enabled"
+        SITESAVAILABLE="/etc/apache2/sites-available"
+
+        if [ $REFRESHAPACHECONF == "yes" ]; then
+            rm -f $SITESENABLED/scot.conf
+            rm -f $SITESAVAILABLE/scot.conf
+        fi
 
         # default config blocks 80->443 redirect
-        if [ -e $MODSENABLED/000-default.conf ]; then
-            rm $MODSENABLED/000-default.conf    # exists as symbolic link
+        if [ -e $SITESENABLED/000-default.conf ]; then
+            rm -f $SITESENABLED/000-default.conf    # exists as symbolic link
         fi
 
         a2enmod -q proxy
@@ -398,12 +420,12 @@ EOF
         a2enmod -q rewrite
         a2enmod -q authnz_ldap
 
-        if [ ! -e /etc/apache2/sites-enabled/scot.conf ]; then
+        if [ ! -e $SITESAVAILABLE/scot.conf ]; then
 
             echo -e "${yellow}+ adding scot configuration${NC}"
             REVPROXY=$DEVDIR/etc/scot-revproxy-$MYHOSTNAME
 
-            if [ ! -e $REVPROXY ] || [ $REFRESHAPACHECONF eq "yes"]; then
+            if [ ! -e $REVPROXY ]; then
                 echo -e "${red}= custom apache config for $MYHOSTNAME not present, using defaults${NC}"
                 if [[ $AUTHMODE == "Remoteuser" ]]; then
                     REVPROXY=$DEVDIR/etc/scot-revproxy-ubuntu-remoteuser.conf
@@ -411,8 +433,13 @@ EOF
                     REVPROXY=$DEVDIR/etc/scot-revproxy-ubuntu-aux.conf
                 fi
             fi
-            cp $REVPROXY /etc/apache2/sites-available/scot.conf
-            ln -s /etc/apache2/sites-available/scot.conf \
+            echo -e "${green} copying $REVPROXY to $SITESAVAILABLE ${NC}"
+            cp $REVPROXY $SITESAVAILABLE/scot.conf
+            echo -e "${yellow} sed-ing files ${NC}"
+            sed -i 's=/scot/document/root='$SCOTROOT'/public=g' $SITESAVAILABLE/scot.conf
+            sed -i 's=localport='$SCOTPORT'=g' $SITESAVAILABLE/scot.conf
+            sed -i 's=scot\.server\.tld='$MYHOSTNAME'=g' $SITESAVAILABLE/scot.conf
+            ln -sf /etc/apache2/sites-available/scot.conf \
                   /etc/apache2/sites-enabled/scot.conf
         fi
 
@@ -512,10 +539,13 @@ chown scot:scot $BACKUPDIR
 ### install the scot
 ###
 echo -e "${yellow} running grunt on reactjs files...${NC}"
-my $CURDIR=`pwd`
-cd $DEVDIR/pubdev 
-npm install
-cd $CURDIR
+CURDIR=`pwd`
+
+if [ $SKIPNODE == "no" ];then
+    cd $DEVDIR/pubdev 
+    npm install
+    cd $CURDIR
+fi
 
 echo -e "${yellow} installing SCOT files ${NC}"
 
