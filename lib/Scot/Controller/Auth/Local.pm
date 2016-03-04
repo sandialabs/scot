@@ -32,7 +32,7 @@ sub check {
     $log->trace("Checking Login Status");
 
     if (defined $user) {
-        # TODO: update last use records for user
+        $self->update_lastvisit($user);
         $log->trace("[User $user] has logged in");
         return 1;
     }
@@ -75,6 +75,7 @@ Log out has been achieved
 sub logout {
     my $self    = shift;
     $self->session(expires => 1);
+    $self->session(user => '');
     $self->redirect_to('/login');
 }
 
@@ -98,7 +99,7 @@ sub auth {
 
     my $user    = $self->param('user');
     my $pass    = $self->param('pass');
-    my $orig_url= $self->param('orig_url');
+    my $orig_url= $self->session('orig_url');
 
     $log->trace("Got user = $user orig_url = $orig_url");
 
@@ -126,6 +127,7 @@ sub auth {
 
     $log->trace("Attempting local authentication for $user");
     if ( $self->local_authenticates($user, $pass) ) {
+        my $group_aref  = $self->get_groups;
         return $self->sucessful_auth($user);
     }
 
@@ -190,6 +192,21 @@ sub local_authenticates {
         groups  => $groups,
     );
     return 1;
+}
+
+sub get_groups {
+    my $self    = shift;
+    my $user    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my @groups;
+    my $col     = $mongo->collection('Group');
+    my $cursor  = $col->find({members => $user});
+
+    while ( my $group = $cursor->next ) {
+        push @groups, $group->name;
+    }
+    return wantarray ? @groups : \@groups;
 }
 
 

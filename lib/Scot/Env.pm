@@ -62,6 +62,13 @@ sub _get_authmode {
     return $ENV{'scot_authmode'} // 'prod';
 }
 
+has group_mode  => (
+    is          => 'rw',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'local', # ldap is other option
+);
+
 has default_owner   => (
     is              => 'rw',
     isa             => 'Str',
@@ -116,7 +123,40 @@ sub _get_default_groups {
 sub get_test_groups {
     return [ qw(wg-scot-ir) ];
 }
-    
+
+has authtype    => (
+    is              => 'rw',
+    isa             => 'Str',
+    lazy            => 1,
+    required        => 1,
+    builder         => '_get_authtype',
+);
+
+sub _get_authtype {
+    my $self    = shift;
+    my $type    = "Remoteuser";
+
+    my $col     = $self->mongo->collection('Config');
+    my $obj     = $col->find_one({ module => "authtype" });
+    if ( $obj ) {
+        return $obj->item->{type};
+    }
+    return $type;
+}
+
+has authclass => (
+    is          => 'rw',
+    isa         => 'Str',
+    lazy        => 1,
+    required    => 1,
+    builder     => '_get_authclass',
+);
+
+sub _get_authclass {
+    my $self        = shift;
+    my $authtype    = $self->authtype;
+    return 'controller-auth-'.lc($authtype);
+}
 
 has mongo_config    => (
     is              => 'rw',
@@ -283,6 +323,24 @@ sub BUILD {
             $log->error("Failed to create $fullname");
         }
     }
+    # build auth class
+    my $atype   = $self->authtype;
+    my $amodule = "Scot::Controller::Auth::$atype";
+    require_module($amodule);
+    $self->meta->add_attribute(
+        "auth_module"   => {
+            is      => 'rw',
+            isa     => $amodule,
+        }
+    );
+    my $amodobj = $amodule->new;
+    if ( $amodobj ) {
+        $self->auth_module($amodobj);
+    }
+    else {
+        $log->error("Failed to instantiate $amodule");
+    }
+    # lock er down
     $meta->make_immutable;
     $log->level($loglevel);
 }
