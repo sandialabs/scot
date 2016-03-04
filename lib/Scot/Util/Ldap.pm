@@ -163,15 +163,19 @@ sub get_users_groups {
     my $searchconf      = $self->user_groups;
     my $filter          = sprintf($searchconf->{filter}, $user);
 
+    $log->debug("ldap group filter is ", { filter=>\&Dumper, value=>$filter});
+
     my $ldap = $self->ldap; 
     my $msg;
     eval {
        $msg     = $ldap->bind($binddn, 'password'   => $bindpassword);
     };
     if($@) {
+       $log->error("LDAP bind error: $@");
        return -2;
     }
     if($msg->is_error) {
+       $log->error("LDAP bind error: ", {filter=>\&Dumper, value=> $msg});
        return -1;    
     }
     
@@ -182,6 +186,7 @@ sub get_users_groups {
     );
 
     my $membership  = $search->pop_entry();
+    $log->debug("Membership = ",{filter=>\&Dumper, value=>$membership});
     if(defined($membership)) {    
         $log->debug("membership returned");
         foreach my $attr ( $membership->attributes() ) {
@@ -190,6 +195,7 @@ sub get_users_groups {
                 map { /cn=(.*?),.*/; $1 } $membership->get_value($attr);
         }
     } else {
+        $log->error("get users from ldap returned nothing!");
         return -3;
     }
 
