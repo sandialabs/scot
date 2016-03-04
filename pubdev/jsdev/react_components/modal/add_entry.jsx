@@ -162,7 +162,7 @@ var AddEntryModal = React.createClass({
 	})
 	this.props.updated()
 	this.setState({addentry: false})
-	//window.location.reload()
+	window.location.reload()
 	}
 	else  if(this.props.type == 'alert'){ 
 	 var data = new Object()
@@ -178,13 +178,12 @@ var AddEntryModal = React.createClass({
 		 if(this.state.files !== undefined){
 			for(var i = 0; i<this.state.files.length; i++){	
 			var file = {file:this.state.files[i].name}
-			data = JSON.stringify({upload: file, target_type: 'alert', target_id: $(y).text(), entry_id: response.id})
+			data = JSON.stringify({upload: file, target_type: 'alert', target_id: response.id, entry_id: ''})
 			$.ajax({
 			   type: 'PUT',
 			   url: '/scot/api/v2/file',
 			   data: data
 			   }).success(function(response){
-			   console.log(response)
 			   })
 			}
 		}
@@ -197,7 +196,7 @@ var AddEntryModal = React.createClass({
 	     function() {
 	     }.bind(this),/*this.props.updated() ,100)*/
 		this.setState({addentry: false})
-		//window.location.reload()
+		window.location.reload()
 	}	
 	else {
 	var data = {parent: this.props.id, body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id: this.props.targetid , target_type: this.props.type}
