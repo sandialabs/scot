@@ -197,7 +197,7 @@ var EntryData = React.createClass({
                 var newcount = this.state.count;
                 newcount += 1;
                 this.setState({count:newcount});
-            }.bind(this),100);
+            }.bind(this),300);
         }
         document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
     },
