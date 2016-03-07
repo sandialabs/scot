@@ -126,24 +126,23 @@ var SelectedHeader = React.createClass({
         var id = this.props.id; 
         return (
             <div>
-                <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%',textAlign:'center'}}>
-                    <div className='details-subject' style={{display: 'inline-flex'}}>
-                        <div style={{paddingRight:'20px'}}>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} id={id} type={type} updated={this.updated} />: null}</div>
-                        <div>{this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}</div>
-                    </div>
+                <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%'}}>
+                    <div className='details-subject' style={{display: 'inline-flex',paddingLeft:'5px'}}>
+                        {this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}
+                    </div> 
                     <div className='details-table toolbar'>
-                        <table className='table-centered'>
+                        <table>
                             <tbody>
-                                <tr className='spaceTop'>
-                                    <th>Owner</th>
+                                <tr>
+                                    <th></th>
+                                    <td><div style={{paddingRight:'20px'}}>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} id={id} type={type} updated={this.updated} />: null}</div></td>
+                                    <th>Owner: </th>
                                     <td><span>{this.state.showEventData ? <Owner data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
-                                    <th>Tags</th>
+                                    <th>Updated: </th>
+                                    <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: '14pt', paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
+                                    <th>Tags: </th>
                                     <td>{this.state.showTag ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}</td>
-                                </tr>
-                                <tr className='spaceTop'>
-                                    <th>Updated</th>
-                                    <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: 'inherit', paddingTop:'5px', fontSize:'18pt'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
-                                    <th>Source</th>
+                                    <th>Source: </th>
                                     <td>{this.state.showSource ? <Source data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }</td>
                                 </tr>
                             </tbody>
@@ -211,7 +210,7 @@ var EntryDataStatus = React.createClass({
             buttonStyle = 'warning'
         };
         return (
-            <Button bsSize='large' bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: '18pt', width: '250px', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button>
+            <Button bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: '14pt', width: '100%', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button>
         )
     }
 });
