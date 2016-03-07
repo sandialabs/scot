@@ -188,19 +188,21 @@ var EntryData = React.createClass({
         }
     },
     componentDidUpdate: function() {
-        if (this.state.count == 0) {
-            var newheight; 
-            newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-            newheight += 15;
-            newheight = newheight + 'px';
-            this.setState({height:newheight});
-            this.setState({count:1});
+        if (this.state.count <= 1) {
+            setTimeout(function() {
+                var newheight; 
+                newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+                newheight = newheight + 'px';
+                this.setState({height:newheight});
+                var newcount = this.state.count;
+                newcount += 1;
+                this.setState({count:newcount});
+            }.bind(this),100);
         }
-        console.log('update');
         document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
     },
     componentDidMount: function () {
-        this.setState({height:'2px'});
+        this.setState({height:'2px'}); 
     },
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
@@ -209,11 +211,10 @@ var EntryData = React.createClass({
         /*$(document).on('click',spanEntity, function() {
             console.log(id);
         });*/
-        console.log('height: ' + this.state.height);
         return (
             <div className={'row-fluid entry-body'}>
                 <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
-                    <Frame frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-popups allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
+                    <Frame frameBorder={'0'} id={'iframe_' + id} onLoad={this.onLoad} sandbox={'allow-popups allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
                     <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
                     </Frame>
                 </div>
