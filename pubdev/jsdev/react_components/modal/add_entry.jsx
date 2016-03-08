@@ -62,7 +62,7 @@ var AddEntryModal = React.createClass({
  	React.createElement(Modal, {style: customStyles, isOpen: this.state.addentry}, 
 	React.createElement("div", {className: "modal-content"}, 
 	React.createElement("div", {className: "modal-header"}, 
-	React.createElement("h4", {className: "modal-title"}, this.props.title), React.createElement('div', {className: 'entry-header-info-null', style: {top: '1px', width: '100%', background: this.state.stagecolor}}, React.createElement('h2', {style: {color: 'white', 'font-size':'18px', 'text-align': 'left'}}, this.props.header1 ? React.createElement("div" , {style: {display: 'inline-flex'}}, React.createElement("p", null, this.props.header1), React.createElement(ReactTime, { value: this.props.created * 1000, format:"MM/DD/YYYY hh:mm:ss a"}) , React.createElement("p", null, this.props.header2), React.createElement(ReactTime, {value: this.props.updated * 1000,format:"MM/DD/YYYY hh:mm:ss a"}), React.createElement("p", null, this.props.header3)): output)) 
+	React.createElement("h4", {className: "modal-title"}, this.props.title), React.createElement('div', {className: 'entry-header-info-null', style: {top: '1px', width: '100%', background: this.state.stagecolor}}, React.createElement('h2', {style: {color: 'white', 'font-size':'18px', 'text-align': 'left'}}, this.props.header1 ? React.createElement("div" , {style: {display: 'inline-flex'}}, React.createElement("p", null, this.props.header1), React.createElement(ReactTime, { value: this.props.createdTime * 1000, format:"MM/DD/YYYY hh:mm:ss a"}) , React.createElement("p", null, this.props.header2), React.createElement(ReactTime, {value: this.props.updatedTime * 1000,format:"MM/DD/YYYY hh:mm:ss a"}), React.createElement("p", null, this.props.header3)): output)) 
 	), 
 	React.createElement("div", {className: "modal-body", style: {height: '90%'}}, 
 	React.createElement(TinyMCE, {content: "", className: "inputtext",config: {plugins: 'autolink link image lists print preview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'},onChange: this.handleEditorChange}
@@ -160,7 +160,7 @@ var AddEntryModal = React.createClass({
 			}
 			}
 	})
-	this.props.updatedcallback()
+	this.props.updated()
 	this.setState({addentry: false})
 	window.location.reload()
 	}
@@ -218,7 +218,7 @@ var AddEntryModal = React.createClass({
 			}
 			}
 	})
-	this.props.updatedcallback()
+	this.props.updated()
 	this.setState({addentry: false})
 	}
 	},
