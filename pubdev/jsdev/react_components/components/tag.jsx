@@ -24,8 +24,9 @@ var Tag = React.createClass({
         return (
             <div>
                 {rows}
-                <Button bsStyle={'success'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
                 {this.state.tagEntry ? <NewTag data={data} type={type} id={id} toggleTagEntry={this.toggleTagEntry} updated={this.props.updated}/>: null}
+                {this.state.tagEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-minus' ariaHidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>}
+                
             </div>
         )
     }
@@ -52,7 +53,7 @@ var TagDataIterator = React.createClass({
     render: function() {
         data = this.props.data;
         return (
-            <Button id="event_tag" onClick={this.tagDelete}><span style={{paddingRight:'3px'}} className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span> {data.value}</Button>
+            <Button id="event_tag" bsSize={'xsmall'} onClick={this.tagDelete}>{data.value} <span style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></Button>
         )
     }
 });
@@ -105,7 +106,7 @@ var NewTag = React.createClass({
     render: function() {
         var suggestions = this.state.suggestions;
         return (
-            <span>
+            <span className='tag-new'>
                 <ReactTags
                     suggestions={suggestions}
                     handleAddition={this.handleAddition}
