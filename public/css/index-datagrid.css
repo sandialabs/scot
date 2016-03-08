@@ -824,6 +824,7 @@ html.u-app body * {
   -ms-flex: 1 1 auto;
   -webkit-flex: 1 1 auto;
   flex: 1 1 auto;
+  text-align: center;
 }
 .z-scroller .z-content-wrapper {
   -webkit-box-flex: 1 1 auto;
@@ -1163,13 +1164,14 @@ html.u-app body * {
   font-style: italic;
 }
 .react-datagrid .z-header-wrapper {
+   text-align: center;
   -webkit-box-flex: 0 0 auto;
   -moz-box-flex: 0 0 auto;
   -ms-box-flex: 0 0 auto;
   -ms-flex: 0 0 auto;
   -webkit-flex: 0 0 auto;
   flex: 0 0 auto;
-  background: linear-gradient(to bottom, #f7f7f7 0%, #efefef 13%, #e6e6e6 100%);
+  background: linear-gradient(to bottom, #f7f7f7 0%, #efefef 13%, #FFF 100%);
   border-bottom: 1px solid #a8a8a8;
 }
 .react-datagrid .z-header-wrapper.z-dragging .z-column-header:not(.z-drag) {
@@ -1249,7 +1251,7 @@ html.u-app body * {
   border-right: 1px solid #a8a8a8;
 }
 .react-datagrid.z-style-alternate .z-odd.z-row {
-  background: #F2F2F2;
+  background: #FFF;
 }
 .react-datagrid.z-even.z-row {
   background: #F2F2F2;

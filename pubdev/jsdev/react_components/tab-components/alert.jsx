@@ -389,7 +389,7 @@ key: supername, viewby: [],historyid: 0, history: false, edit: false, stagecolor
         :
 	React.createElement("div", {className: 'All Modal'}, this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', type: 'alert'}) : null,
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
-	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alertgroup', id: this.state.key})), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {style: {'z-index' : '0'},className: "Subgrid",
+	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alertgroup', id: this.state.key})), this.state.oneview ? React.createElement(Dropdown, {placeholder: 'Select an option', options: this.state.options, onChange: this.onSelect}) : null ,  React.createElement(Subgrid, {style: {height: '100%', 'z-index' : '0'},className: "Subgrid",
             ref: "dataGrid", 
             idProperty: "index",
 	    setColumns: true, 
@@ -762,12 +762,19 @@ var Maintable = React.createClass({
 	this.state.fsearch = savedfsearch
 	this.state.viewfilter = true
 	}
-
+	$('#close').css('text-shadow', '#0B0B0B 0px 1px 0px')
+	$('#searchid').keyup(function(){
+         var page = $('.allComponents');
+         var pageText = page.text().replace("<span>","").replace("</span>");
+         var searchedText = $('#searchid').val();
+         var theRegEx = new RegExp("("+searchedText+")", "igm");    
+         var newHtml = pageText.replace(theRegEx ,"<span>$1</span>");
+ 	
+    	});	
 	return (
 	
 	    stage ?  React.createElement('div', null, passids.map((num) => React.createElement(Subtable, {id: num}))) :  
-	    React.createElement("div", {className: "allComponents"}, this.state.csv ? React.createElement('button', {className: 'btn btn-warning', onClick: this.exportCSV, style: {'margin-left' : 'top', 'margin-top': '13px'}}, 'Export to CSV') : null , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-info',onClick: this.viewAlerts, style: {'margin-left':'auto', 'margin-top': '13px'}},"View Alerts") : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : this.state.viewfilter ? React.createElement(Crouton, {message:"You Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "onDismiss", type: "info"}) : null,   
-	    React.createElement(DataGrid, {
+	    React.createElement("div", {className: "allComponents"}, React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', null, 'Alerts')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute'}}, React.createElement('h2', null, 'OUO')), React.createElement('input', {type:'text', className: 'search', id: 'searchid', placeholder: 'Search', style: {'margin-top': '10px', 'border-radius': '50px', width: '30%', float: 'right', padding: '10px 20px',color: 'black', 'background-color': 'white'}})),this.state.viewfilter ? React.createElement(Crouton, {style: {top: '75px', padding: '5px'}, message:"You Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "onDismiss", type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: {'margin-left' : 'top'}}, 'Export to CSV') , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewAlerts, style: {'margin-left':'auto'}},"View Alerts") : null) : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id",
             dataSource: this.state.data, 
@@ -783,7 +790,7 @@ var Maintable = React.createClass({
 	    sortInfo: SORT_INFO, 
 	    onSortChange: this.handleSortChange,
 	    showCellBorders: true,
-	    rowHeight: 100,
+	    rowHeight: 55,
 	    style: {height: '100%'},
 	    rowFactory:rowFact,
 	    rowStyle: configureTable}

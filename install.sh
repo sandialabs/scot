@@ -541,11 +541,11 @@ chown scot:scot $BACKUPDIR
 echo -e "${yellow} running grunt on reactjs files...${NC}"
 CURDIR=`pwd`
 
-if [ $SKIPNODE == "no" ];then
-    cd $DEVDIR/pubdev 
-    npm install
-    cd $CURDIR
-fi
+#if [ $SKIPNODE == "no" ];then
+   # cd $DEVDIR/pubdev 
+  #  npm install
+ #   cd $CURDIR
+#fi
 
 echo -e "${yellow} installing SCOT files ${NC}"
 
