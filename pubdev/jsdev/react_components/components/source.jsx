@@ -24,8 +24,8 @@ var Source = React.createClass({
         return (
             <div>
                 {rows}
-                <Button bsStyle={'success'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>
                 {this.state.sourceEntry ? <NewSource data={data} type={type} id={id} toggleSourceEntry={this.toggleSourceEntry} updated={this.props.updated}/>: null}
+                {this.state.sourceEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-minus' ariaHidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>} 
             </div>
         )
     }
@@ -52,7 +52,7 @@ var SourceDataIterator = React.createClass({
     render: function() {
         data = this.props.data;
         return (
-            <Button id="event_source" onClick={this.sourceDelete}><span style={{paddingRight:'3px'}} className="glyphicon glyphicon-ban-circle" ariaHidden="true"></span> {data.value}</Button>
+            <Button id="event_source" bsSize={'xsmall'} onClick={this.sourceDelete}>{data.value} <span style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></Button>
         )
     }
 });
@@ -105,7 +105,7 @@ var NewSource = React.createClass({
     render: function() {
         var suggestions = this.state.suggestions;
         return (
-            <span>
+            <span className='tag-new'>
                 <ReactTags
                     suggestions={suggestions}
                     handleAddition={this.handleAddition}
