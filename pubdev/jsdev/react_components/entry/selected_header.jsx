@@ -139,7 +139,7 @@ var SelectedHeader = React.createClass({
                                     <th>Owner: </th>
                                     <td><span>{this.state.showEventData ? <Owner data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
                                     <th>Updated: </th>
-                                    <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: '14pt', paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
+                                    <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                     <th>Tags: </th>
                                     <td>{this.state.showTag ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}</td>
                                     <th>Source: </th>
