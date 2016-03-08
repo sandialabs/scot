@@ -86,16 +86,15 @@ body {
   font-size: 14px;
   font-size: 1.9rem;
   line-height: 140%;
-  border-radius: 50px;
+  border-radius: 0px;
   position: fixed;
-  top: 0px;
+  top: 75px;
   left: auto;
-  right: 0px;
+  right: 260px;
   max-width: 100%;
   width: 70%;
   text-align: center;
-  z-index: 99999;
-  background: #188FE6;
+  background: #656363;
   padding: 5px;
   margin:-20 auto; }
   .crouton div {
@@ -116,6 +115,7 @@ body {
       text-align: right; }
       .crouton div .buttons button.retry, .crouton div .buttons button.close, .crouton div .buttons button.cancel, .crouton div .buttons button.ignore {
         padding: 5px 15px;
+	color: white;
         border: 1px solid transparent;
         border-radius: 2px; }
       .crouton div .buttons button:hover {
