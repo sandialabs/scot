@@ -7,6 +7,6 @@ body {
   z-index: 1;
 }
 
-.tooltip{
-z-index: 2;
+div.tooltip{
+z-index: 1;
 }
