@@ -44,7 +44,7 @@ var SourceDataIterator = React.createClass({
                 this.props.updated();
             }.bind(this),
             error: function() {
-                this.props.updated('red','Failed to delete the source');
+                this.props.updated('error','Failed to delete the source');
             }.bind(this)
         });
         this.setState({source:false});
@@ -81,7 +81,7 @@ var NewSource = React.createClass({
                 this.props.updated();
                 }.bind(this),
             error: function() {
-                this.props.updated('red','Failed to add source');
+                this.props.updated('error','Failed to add source');
                 this.props.toggleSourceEntry();
             }.bind(this)
         });

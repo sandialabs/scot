@@ -45,7 +45,7 @@ var TagDataIterator = React.createClass({
                 this.props.updated();
             }.bind(this),
             error: function() {
-                this.props.updated('red','Failed to delete tag');
+                this.props.updated('error','Failed to delete tag');
             }.bind(this)
         });
         this.setState({tag:false});
@@ -82,7 +82,7 @@ var NewTag = React.createClass({
                 this.props.updated();
                 }.bind(this),
             error: function() {
-                this.props.updated('red','Failed to add tag');
+                this.props.updated('error','Failed to add tag');
                 this.props.toggleTagEntry();
             }.bind(this)
         });
