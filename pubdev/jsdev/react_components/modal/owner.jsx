@@ -39,7 +39,7 @@ var Owner = React.createClass({
                 this.ownerToggle();
             }.bind(this),
             error: function() {
-                alert('Failed to make you owner - contact administrator');
+                this.props.updated('red','Failed to change owner');
                 this.ownerToggle();
             }.bind(this)
         }); 
