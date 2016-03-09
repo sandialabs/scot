@@ -25,6 +25,7 @@ var SelectedEntry = React.createClass({
         }.bind(this));
     },
     updated: function () {
+        this.props.updated();
         this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
@@ -207,10 +208,11 @@ var EntryData = React.createClass({
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
         var id = this.props.id;
-        var spanEntity = $('span').attr('data-entity-type');
-        /*$(document).on('click',spanEntity, function() {
-            console.log(id);
-        });*/
+        /*var spanEntity = $('span').attr('data-entity-type');
+        $('span').click(function() {
+            var test = spanEntity;
+            console.log(test);
+        }).bind(this);*/
         return (
             <div className={'row-fluid entry-body'}>
                 <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
