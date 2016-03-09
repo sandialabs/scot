@@ -973,6 +973,7 @@ html.u-app body * {
   display: block;
 }
 .react-datagrid {
+    z-index: -1;
   -webkit-box-align: stretch;
   -webkit-align-items: stretch;
   align-items: stretch;
@@ -1307,6 +1308,7 @@ html.u-app body * {
   border-right: 1px dotted #a8a8a8;
 }
 .react-datagrid.z-cell-borders-vertical .z-cell:not(.z-first):not(.z-column-header) {
+  overflow: auto;
   border-left: 1px dotted #a8a8a8;
 }
 .react-datagrid .z-footer-wrapper {
