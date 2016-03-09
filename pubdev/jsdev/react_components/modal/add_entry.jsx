@@ -10,12 +10,10 @@ var finalfiles = []
 var ReactTime = require('react-time')
 const  customStyles = {
         content : {
-        top     : '50%',
-        left    : '50%',
-        right   : 'auto',
+        top     : '11%',
+        right   : '60%',
         bottom  : 'auto',
-        marginRight: '-50%',
-        transform:  'translate(-50%, -50%)',
+	left	: '10%',
 	width: '80%'
 //	height: '80%'
     }
@@ -201,8 +199,8 @@ var AddEntryModal = React.createClass({
 	else {
 	var data = {parent: this.props.id, body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id: this.props.targetid , target_type: this.props.type}
 	$.ajax({
-	type: 'put',
-	url: '/scot/api/v2/'+this.props.type+'/entry',
+	type: 'post',
+	url: '/scot/api/v2/'+this.props.type+'/'+this.props.id+'/entry',
 	data: JSON.stringify(data)
 	}).success(function(repsonse){
 		    if(this.state.files.length > 0){
@@ -236,7 +234,7 @@ var AddEntryModal = React.createClass({
 		var json = {'summary': 0}
 		$.ajax({
 		type: 'PUT',
-		url: '/scot/api/v2/entry' + $(y).text(),
+		url: '/scot/api/v2/entry/' + $(y).text(),
 		data: json
 		}).success(function(response){
 		alert("Created Summary")
@@ -252,7 +250,7 @@ var AddEntryModal = React.createClass({
 		var data = {taskstatus: 'open', assignee: ''}
 		$.ajax({
 		type: 'PUT',
-		url: '/scot/api/v2/entry' + $(y).text(),
+		url: '/scot/api/v2/entry/' + $(y).text(),
 		data: JSON.stringify(data)
 		}).success(function(response){
 		alert("Made Task")
@@ -272,7 +270,7 @@ var AddEntryModal = React.createClass({
 		var data = {taskstatus: 'open', assignee: ''}
 		$.ajax({
 		type: 'PUT',
-		url: '/scot/api/v2/entry' + $(y).text(),
+		url: '/scot/api/v2/entry/' + $(y).text(),
 		data: JSON.stringify(data)
 		}).success(function(response){
 		alert("Reopened Task")
@@ -292,7 +290,7 @@ var AddEntryModal = React.createClass({
 		var data = {taskstatus: 'completed', assignee: ''}
 		$.ajax({
 		type: 'PUT',
-		url: '/scot/api/v2/entry' + $(y).text(),
+		url: '/scot/api/v2/entry/' + $(y).text(),
 		data: JSON.stringify(data)
 		}).success(function(response){
 		alert("Assigned Task")
@@ -312,7 +310,7 @@ var AddEntryModal = React.createClass({
 		var data = {taskstatus: 'assigned', assignee: ''}
 		$.ajax({
 		type: 'PUT',
-		url: '/scot/api/v2/entry' + $(y).text(),
+		url: '/scot/api/v2/entry/' + $(y).text(),
 		data: JSON.stringify(data)
 		}).success(function(response){
 		alert("Assigned Task")

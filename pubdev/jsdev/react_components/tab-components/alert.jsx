@@ -2,6 +2,7 @@
 
 var React = require('react')
 var HistoryView = require('../modal/history.jsx')
+var Search = require('../components/esearch.jsx')
 var DataGrid = require('../../../node_modules/alert-react-datagrid/react-datagrid');
 var SORT_INFO;
 var colsort = "id"
@@ -51,27 +52,26 @@ var Alertentry = require('../entry/selected_entry.jsx')
 var Header = require('../entry/selected_header.jsx')
 var Addentry = require('../modal/add_entry.jsx')
 var supervalue = [];
+var ventry = false
 var supername;
 var columns = 
 [
-    { name: 'id' ,width: 111.183, style: {color: 'black'}},
+    { name: 'id' , width: 111.183, style: {color: 'black'}},
     { name: 'status', width: 119.533},
     { name: 'created', style: {color: 'black'}, width:261.45},
     { name: 'sources', style: {color: 'black'}, width:198.467},
-    { name: 'subject', width: 809, style: {color: 'black'}},
+    { name: 'subject', style: {color: 'black'}},
     { name: 'tags', style: {color: 'black'}, width:189.95},
-    { name: 'views', style: {color: 'black'}, width: 205.4}
+    { name: 'views', style: {color: 'black'}, width: 104.4}
 ]
 
 const  customStyles = {
         content : {
-        top     : '50%',
-        left    : '50%',
-        right   : 'auto',
+        top     : '11%',
+        right   : '60%',
         bottom  : 'auto',
-        marginRight: '-50%',
-        transform:  'translate(-50%, -50%)',
-	width: '60%',
+        left: '10%',
+	width: '80%',
 	'z-index' : '99'
 //	height: '80%'
     }
@@ -91,13 +91,13 @@ function getColumns()
 
 var Viewentry = React.createClass({
 	getInitialState: function() {
-	return{open: true}
+	return{open: ventry}
 	},
 	componentWillMount: function(){
-		this.setState({open:true})
+		this.setState({open:ventry})
 	},
 	componentWillReceiveProps: function() {
-		this.setState({open: true})
+		this.setState({open: ventry})
 	},
 	render: function() {
 
@@ -161,7 +161,8 @@ function dataSource(query)
 			React.createElement('button', {className: 'btn btn-default', onClick: this.view}, 'View Entry')
 			)
 		},
-		view: function(){		
+		view: function(){
+		ventry = true;		
 		this.setState({view:true, refe: item})
 		}
 		});	
@@ -450,7 +451,6 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
     },
     viewSource: function(){
 	var win = window.open('viewSource.html', '_blank')
-
 	var html = $('.subtable'+this.state.key).find('.z-selected').html()	
 	var plain = $('.subtable'+this.state.key).find('.z-selected').text()
 	win.onload = function() {   if(html != undefined){
@@ -776,12 +776,16 @@ var Maintable = React.createClass({
 	else{
 	styles = {'border-radius': '0px'}
 	}
-	
+ 	$('.z-table').find('.z-row').each(function(key, value){
+	$(value).find('.z-cell').each(function(x,y){
+	$(y).css('overflow', 'auto')
+	})
+	})	
 	return (
 	
 	    stage ?  React.createElement('div', null, passids.map((num) => React.createElement(Subtable, {id: num}))) :  
 
-	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Alerts')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement('input', {type:'text', className: 'search', id: 'searchid', placeholder: 'Search', style: {position: 'relative', 'margin-top': '7.5px', 'border-radius': '50px', width: '30%', float: 'right', padding: '10px 20px',color: 'black', 'background-color': 'white'}})),this.state.viewfilter ? React.createElement(Crouton, {style: {top: '75px', padding: '5px'}, message:"You Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: this.onDismiss, type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewAlerts, style:styles},"View Alerts") : null) : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : React.createElement(DataGrid, {
+	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Alerts')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement(Search, null)),this.state.viewfilter ? React.createElement(Crouton, {buttons: 'close', color: '#119FE1',style: {top: '75px', padding: '5px'}, message:"Filtered: ( " + this.state.fsearch + ")", onDismiss: 'onDismiss', type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewAlerts, style:styles},"View Alerts") : null) : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id",
             dataSource: this.state.data, 
