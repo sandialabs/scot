@@ -28,7 +28,7 @@ var Promote = React.createClass({
                 window.location.assign('#/'+this.state.newURL+'/'+data.id);
             }.bind(this),
             error: function() {
-                this.props.updated('red','Failed to promote');
+                this.props.updated('error','Failed to promote');
             }.bind(this)
         });
     },

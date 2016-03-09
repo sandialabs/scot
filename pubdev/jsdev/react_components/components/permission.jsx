@@ -127,7 +127,7 @@ var PermissionIterator = React.createClass({
                 this.props.updated();
             }.bind(this),
             error: function() {
-                this.props.updated('red','Failed to delete group');
+                this.props.updated('error','Failed to delete group');
             }.bind(this)
         })
    },
@@ -181,7 +181,7 @@ var NewPermission = React.createClass({
             }.bind(this),
             error: function() {
                 toggle();
-                this.props.updated('red','Failed to add source');
+                this.props.updated('error','Failed to add source');
             }.bind(this)
         });
     },

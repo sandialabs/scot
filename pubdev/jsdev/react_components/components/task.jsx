@@ -36,7 +36,7 @@ var Task = React.createClass({
                 this.props.updated();
             }.bind(this),
             error: function() {
-                this.props.updated('red','Failed to close task');
+                this.props.updated('error','Failed to close task');
             }.bind(this)
         }); 
     },
@@ -51,7 +51,7 @@ var Task = React.createClass({
                 this.props.updated();
             }.bind(this),
             error: function() {
-                this.props.updated('red','Failed to close task');
+                this.props.updated('error','Failed to close task');
             }.bind(this)
         });
     },
@@ -66,7 +66,7 @@ var Task = React.createClass({
                 this.props.updated();
             }.bind(this),
             error: function() {
-                this.props.updated('red','Failed to make Task owner');
+                this.props.updated('error','Failed to make Task owner');
             }.bind(this)
         });
     },
