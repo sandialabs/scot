@@ -31,7 +31,7 @@ var SelectedHeader = React.createClass({
             entryToolbar:false, 
             deleteToolbar:false,
             promoteToolbar:false,
-            notificationColor:null,
+            notificationType:null,
             notificationMessage:null,
             showFlash:false,
         }
@@ -51,7 +51,7 @@ var SelectedHeader = React.createClass({
         }.bind(this)); 
         console.log('Ran componentDidMount');    
     },
-    updated: function(_color,_message) {
+    updated: function(_type,_message) {
         this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
             var sourceResult = result.records;
             this.setState({showSource:true, sourceData:sourceResult})
@@ -64,10 +64,10 @@ var SelectedHeader = React.createClass({
             var tagResult = result.records;
             this.setState({showTag:true, tagData:tagResult});
         }.bind(this));
-        if (_color != undefined && _message != undefined) {
-            this.setState({notificationMessage:_message, notificationColor:_color, showFlash:true});
+        if (_type!= undefined && _message != undefined) {
+            this.setState({notificationMessage:_message, notificationType:_type, showFlash:true});
         } else {
-            this.setState({notificationColor:null,notificationMessage:null,showFlash:false}); 
+            this.setState({notificationType:null,notificationMessage:null,showFlash:false}); 
         }
         console.log('Ran update')  
     },
@@ -132,7 +132,7 @@ var SelectedHeader = React.createClass({
         var type = this.props.type;
         var subjectType = this.titleCase(this.props.type);
         var id = this.props.id; 
-        var notificationColor = this.state.notificationColor;
+        var notificationType = this.state.notificationType;
         var notificationMessage = this.state.notificationMessage;
         return (
             <div>
@@ -159,7 +159,7 @@ var SelectedHeader = React.createClass({
                         </table>
                     </div>
                 </div>
-                {this.state.showFlash == true ? <Crouton id={Date.now()} color={this.state.notificationColor} message={this.state.notificationMessage} buttons={'close'} /> : null}   
+                {this.state.showFlash == true ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} /> : null}   
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
                 {this.state.permissionsToolbar ? <SelectedPermission id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
@@ -207,7 +207,7 @@ var EntryDataStatus = React.createClass({
                 this.props.updated();
             }.bind(this),
             error: function() {
-                this.props.updated('red','Failed to change status');
+                this.props.updated('error','Failed to change status');
             }.bind(this)
         });
     },
@@ -243,7 +243,7 @@ var EntryDataSubject = React.createClass({
                     this.props.updated();
                 }.bind(this),
                 error: function() { 
-                    this.props.updated('red','Failed to update the subject');
+                    this.props.updated('error','Failed to update the subject');
                 }.bind(this)
             });
         }
