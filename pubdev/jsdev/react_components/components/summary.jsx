@@ -35,7 +35,7 @@ var Summary = React.createClass({
                 this.props.updated();
             }.bind(this),
             error: function() {
-                alert('Failed to make summary - contact administrator');
+                this.props.updated('error','Failed to make summary');
             }.bind(this)
         });
     },
