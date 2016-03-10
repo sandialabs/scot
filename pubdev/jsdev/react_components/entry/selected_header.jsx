@@ -15,7 +15,7 @@ var DebounceInput           = require('react-debounce-input');
 var SelectedEntry           = require('./selected_entry.jsx');
 var Tag                     = require('../components/tag.jsx');
 var Source                  = require('../components/source.jsx');
-
+var Crouton                 = require('react-crouton');
 var SelectedHeader = React.createClass({
     getInitialState: function() {
         return {
@@ -31,6 +31,9 @@ var SelectedHeader = React.createClass({
             entryToolbar:false, 
             deleteToolbar:false,
             promoteToolbar:false,
+            notificationType:null,
+            notificationMessage:null,
+            showFlash:false,
         }
     },
     componentDidMount: function() {
@@ -45,10 +48,10 @@ var SelectedHeader = React.createClass({
         this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
             var tagResult = result.records;
             this.setState({showTag:true, tagData:tagResult});
-        }.bind(this));
+        }.bind(this)); 
         console.log('Ran componentDidMount');    
     },
-    updated: function() {
+    updated: function(_type,_message) {
         this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
             var sourceResult = result.records;
             this.setState({showSource:true, sourceData:sourceResult})
@@ -61,6 +64,11 @@ var SelectedHeader = React.createClass({
             var tagResult = result.records;
             this.setState({showTag:true, tagData:tagResult});
         }.bind(this));
+        if (_type!= undefined && _message != undefined) {
+            this.setState({notificationMessage:_message, notificationType:_type, showFlash:true});
+        } else {
+            this.setState({notificationType:null,notificationMessage:null,showFlash:false}); 
+        }
         console.log('Ran update')  
     },
     viewedbyfunc: function(headerData) {
@@ -124,6 +132,8 @@ var SelectedHeader = React.createClass({
         var type = this.props.type;
         var subjectType = this.titleCase(this.props.type);
         var id = this.props.id; 
+        var notificationType = this.state.notificationType;
+        var notificationMessage = this.state.notificationMessage;
         return (
             <div>
                 <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%'}}>
@@ -149,13 +159,14 @@ var SelectedHeader = React.createClass({
                         </table>
                     </div>
                 </div>
+                {this.state.showFlash == true ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} /> : null}   
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
                 {this.state.permissionsToolbar ? <SelectedPermission id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
                 {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type={type} id={id} entryToggle={this.entryToggle} updated={this.updated}/> : null}  
-                {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} /> :null}
-                {type != 'alertgroup' ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle}/> :null}
-                {type != 'alertgroup' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} /> : null}
+                {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
+                {type != 'alertgroup' ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
+                {type != 'alertgroup' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} /> : null}
             </div>
         )
     }
@@ -196,7 +207,7 @@ var EntryDataStatus = React.createClass({
                 this.props.updated();
             }.bind(this),
             error: function() {
-                alert('Failed to change status - contact administrator');
+                this.props.updated('error','Failed to change status');
             }.bind(this)
         });
     },
@@ -232,7 +243,7 @@ var EntryDataSubject = React.createClass({
                     this.props.updated();
                 }.bind(this),
                 error: function() { 
-                    alert('Failed to make the update to the subject');
+                    this.props.updated('error','Failed to update the subject');
                 }.bind(this)
             });
         }
