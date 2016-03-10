@@ -26,7 +26,7 @@ output  = output + timestamp.toLocaleString()
 var AddEntryModal = React.createClass({
 	getInitialState: function(){
 	return {
-	edit: false, stagecolor: '#000',enable: true, addentry: true, saved: false, enablesave: true, modaloptions: [{value:' Please Save Entry First', label:'Please Save Entry First'}]}
+	files: [], edit: false, stagecolor: '#000',enable: true, addentry: true, saved: false, enablesave: true, modaloptions: [{value:' Please Save Entry First', label:'Please Save Entry First'}]}
 	},
 	componentWillMount: function(){
 	if(this.props.stage == 'Edit'){
@@ -53,11 +53,12 @@ var AddEntryModal = React.createClass({
 	else if (this.props.title == 'Add Entry'){
 	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").text('')
 	}
+	this.setState({})
         },
 	render: function() {
-	  
+ 
         return (
- 	React.createElement(Modal, {style: customStyles, isOpen: this.state.addentry}, 
+ 	React.createElement(Modal, {onRequestClose: this.props.addedentry, style: customStyles, isOpen: this.state.addentry}, 
 	React.createElement("div", {className: "modal-content"}, 
 	React.createElement("div", {className: "modal-header"}, 
 	React.createElement("h4", {className: "modal-title"}, this.props.title), React.createElement('div', {className: 'entry-header-info-null', style: {top: '1px', width: '100%', background: this.state.stagecolor}}, React.createElement('h2', {style: {color: 'white', 'font-size':'18px', 'text-align': 'left'}}, this.props.header1 ? React.createElement("div" , {style: {display: 'inline-flex'}}, React.createElement("p", null, this.props.header1), React.createElement(ReactTime, { value: this.props.createdTime * 1000, format:"MM/DD/YYYY hh:mm:ss a"}) , React.createElement("p", null, this.props.header2), React.createElement(ReactTime, {value: this.props.updatedTime * 1000,format:"MM/DD/YYYY hh:mm:ss a"}), React.createElement("p", null, this.props.header3)): output)) 
@@ -77,6 +78,9 @@ var AddEntryModal = React.createClass({
 	) 
         )
     },
+     clickable: function(){
+	this.setState({addentry: false})
+	},
     Edit: function(){
 	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").attr('contenteditable', true)
 	this.setState({saved: false, edit: false, enablesave:true})    
@@ -121,7 +125,7 @@ var AddEntryModal = React.createClass({
 	url: '/scot/api/v2/entry',
 	data: data
 	}).success(function(repsonse){
-		    if(this.state.files.length > 0){
+		    /*if(this.state.files.length > 0){
 			for(var i = 0; i<this.state.files.length; i++){	
 			var file = {file:this.state.files[i].name}
 			data = JSON.stringify({upload: file, target_type: this.props.type, target_id: response.id, entry_id: ''})
@@ -132,11 +136,10 @@ var AddEntryModal = React.createClass({
 			   }).success(function(response){
 			   })
 			}
-			}
+			}*/
 	})
-	this.props.updated()
 	this.setState({addentry: false})
-	window.location.reload()
+	this.props.updated
 	}
 	else if (this.props.stage == 'Edit'){
 	var data = {parent: this.props.id, body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id: this.props.targetid , target_type: this.props.type}
@@ -145,7 +148,7 @@ var AddEntryModal = React.createClass({
 	url: '/scot/api/v2/entry',
 	data: JSON.stringify(data)
 	}).success(function(repsonse){
-		    if(this.state.files.length > 0){
+		    /*if(this.state.files.length > 0){
 			for(var i = 0; i<this.state.files.length; i++){	
 			var file = {file:this.state.files[i].name}
 			data = JSON.stringify({upload: file, target_type: this.props.type, target_id: response.id, entry_id: ''})
@@ -156,11 +159,10 @@ var AddEntryModal = React.createClass({
 			   }).success(function(response){
 			   })
 			}
-			}
+			}*/
 	})
-	this.props.updated()
 	this.setState({addentry: false})
-	window.location.reload()
+	this.props.updated()
 	}
 	else  if(this.props.type == 'alert'){ 
 	 var data = new Object()
@@ -173,7 +175,8 @@ var AddEntryModal = React.createClass({
 		url: '/scot/api/v2/entry',
 		data: data
 		}).success(function(response){
-		 if(this.state.files !== undefined){
+		/* 
+		if(this.state.files !== undefined){
 			for(var i = 0; i<this.state.files.length; i++){	
 			var file = {file:this.state.files[i].name}
 			data = JSON.stringify({upload: file, target_type: 'alert', target_id: response.id, entry_id: ''})
@@ -184,17 +187,13 @@ var AddEntryModal = React.createClass({
 			   }).success(function(response){
 			   })
 			}
-		}
+		}*/
 		})
 		}
 		})
 		})
-	/*
-	     setTimeout(
-	     function() {
-	     }.bind(this),/*this.props.updated() ,100)*/
 		this.setState({addentry: false})
-		window.location.reload()
+		this.props.updated()
 	}	
 	else {
 	var data = {parent: this.props.id, body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id: this.props.targetid , target_type: this.props.type}
@@ -203,7 +202,7 @@ var AddEntryModal = React.createClass({
 	url: '/scot/api/v2/'+this.props.type+'/'+this.props.id+'/entry',
 	data: JSON.stringify(data)
 	}).success(function(repsonse){
-		    if(this.state.files.length > 0){
+		   /* if(this.state.files.length > 0){
 			for(var i = 0; i<this.state.files.length; i++){	
 			var file = {file:this.state.files[i].name}
 			data = JSON.stringify({upload: file, target_type: this.props.type, target_id: response.id, entry_id: ''})
@@ -214,10 +213,10 @@ var AddEntryModal = React.createClass({
 			   }).success(function(response){
 			   })
 			}
-			}
+			}*/
 	})
-	this.props.updated()
 	this.setState({addentry: false})
+	this.props.updated()
 	}
 	},
 	modalonSelect: function (option){
