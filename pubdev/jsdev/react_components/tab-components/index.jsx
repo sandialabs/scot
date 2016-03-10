@@ -173,7 +173,7 @@ React.createElement(ExpandableNavContainer, {expanded: false}, React.createEleme
             React.createElement(ExpandableNavMenuItem, {active: settask, small: menuItemsSmall[5], full: menuItemsFull[5], tooltip: "Tasks", jquery: window.$, onClick: this.handleTasks}),
 	React.createElement(ExpandableNavMenuItem, {active: setintel, small: menuItemsSmall[6], full: menuItemsFull[6], tooltip: "Guides", jquery: window.$, onClick: this.handleChat}),
             React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Admin", jquery: window.$, onClick:this.handlePad}),
-            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[8], full: menuItemsFull[8], tooltip: "Incident Handler", jquery: window.$, onClick: this.handleHandler}) 
+            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[8], full: menuItemsFull[8], tooltip: "Incident Handler:  " + this.state.handler, jquery: window.$, onClick: this.handleHandler}) 
          )
 
 	),
