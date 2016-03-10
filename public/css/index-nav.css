@@ -4,7 +4,12 @@ body {
 }
 
 .shared {
-  z-index: 1;
+  z-index: 101;
+}
+
+.navbar-inverse {
+  z-index: 100;
+
 }
 
 div.tooltip{
