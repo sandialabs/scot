@@ -73,14 +73,14 @@ var SelectedHeaderOptions = React.createClass({
             showPromote = false;
         }
         return (
-            <div className="entry-header">
+            <div className="entry-header" style={{marginBottom:'2px'}}>
                 <ButtonGroup bsSize='small'> 
                     <Button bsStyle='success' onClick={this.props.entryToggle}>Add Entry</Button>
                     <Button eventKey="1" onClick={this.toggleFlair}>Toggle <b>Flair</b></Button>
                     <Button eventKey="2" onClick={this.props.historyToggle}>View <b>History</b></Button>
                     <Button eventKey="3" onClick={this.props.permissionsToggle}><b>Permissions</b></Button>
                     <Button eventKey="4" onClick={this.props.entitiesToggle}>List <b>Entities</b></Button>
-                    {showPromote ? <Button bsStyle='warning' eventKey="6"><Promote type={type} id={id} /></Button> : null}
+                    {showPromote ? <Button bsStyle='warning' eventKey="6"><Promote type={type} id={id} updated={this.props.updated} /></Button> : null}
                     <Button bsStyle='danger' eventKey="5" onClick={this.props.deleteToggle}><b>Delete</b> {subjectType}</Button>
                 </ButtonGroup>
             </div>
