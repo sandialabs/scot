@@ -103,7 +103,7 @@ var Viewentry = React.createClass({
 
 	return (
 	React.createElement("div", {className: "modal-grid"}, 
-	React.createElement(Modal, {style: customStyles, className: "Modal__Bootstrap modal-dialog", isOpen: this.state.open}, 
+	React.createElement(Modal, {onRequestClose: this.clickable1, style: customStyles, className: "Modal__Bootstrap modal-dialog", isOpen: this.state.open}, 
 	React.createElement("div", {className: "modal-content", style: {height: '100%'}}, 
 	React.createElement("div", {className: "modal-header"}, 
 	React.createElement("h4", {className: "modal-title"}, " View Entry")
@@ -119,6 +119,11 @@ var Viewentry = React.createClass({
 	)
 	)
 	},
+        clickable1: function(){
+
+	this.setState({open: false})
+
+        },
 	onCancel: function(){
 	     this.setState({open:false, change:false})
 	}
@@ -368,6 +373,7 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	$(y).css({'height' : '120px', 'overflow':'auto'})
 	})
 	})
+	setTimeout(function() {
 	$('.z-table').each(function(key, value){
 	   $(value).find('.z-content').each(function(x,y){
 		if($(y).text() == 'closed'){
@@ -381,11 +387,12 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 		}
 	})
 	})
+	}, 100)
 	ids = supervalue.join(',') 
 	return (
 	this.state.history ? React.createElement(HistoryView, {type:'alertgroup', id: this.state.historyid, historyToggle: this.viewHistory}) 
         :
-	React.createElement("div", {className: 'All Modal'}, this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', type: 'alert'}) : null,
+	React.createElement("div", {className: 'All Modal', style: {'padding-left': '25px'}}, this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', updated: this.reloadentry, addedentry: this.addEntry, type: 'alert'}) : null,
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
 	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alertgroup', id: this.state.key})), this.state.oneview ? React.createElement('btn-group', null, this.state.flair ? React.createElement('button',{className: 'btn btn-default', onClick: this.flairOn}, 'Flair On') : React.createElement('button', {className: 'btn btn-default', onClick: this.flairOff}, 'Flair Off'), React.createElement('button', {className: 'btn btn-default', onClick: this.viewGuide}, 'View Guide'), React.createElement('button', {className:'btn btn-default', onClick:this.viewSource}, 'View Source'), React.createElement('button', {className:'btn btn-default', onClick: this.viewHistory}, 'View History'), React.createElement('button', {className: 'btn btn-default', onClick:this.addEntry}, 'Add Entry'), React.createElement('button', {className: 'btn btn-default', onClick: this.openSelected}, 'Open Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.closeSelected}, 'Close Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.promoteSelected}, 'Promote Selected'), React.createElement('button', {className:'btn btn-default', onClick:this.selectExisting}, 'Add Selected to Existing Event'), React.createElement('button', {className:'btn btn-default', onClick:this.exportCSV}, 'Export to CSV'), React.createElement('button', {className:'btn btn-default', onClick:this.deleteSelected}, 'Delete Selected')) : null ,  React.createElement(Subgrid, {style: {height: '100%', 'z-index' : '0'},className: "Subgrid",
             ref: "dataGrid", 
@@ -436,7 +443,11 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
     viewGuide: function(){
 	    if(storealertids.length > 1){
 		alert("Select only one id to view guide")
-		this.setState({reload: true})
+	setTimeout(
+	function() {
+	this.reloadentry()
+	}.bind(this), 1000)
+	this.setState({})
 	    }
 	    else {
 	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
@@ -446,7 +457,11 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 		}
 		})
 		})
-		this.setState({reload:true})
+	setTimeout(
+	function() {
+	this.reloadentry()
+	}.bind(this), 1000)
+	this.setState({})
 	    }
     },
     viewSource: function(){
@@ -467,7 +482,10 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
         var id = 0;
 	if(storealertids.length > 1){
 	    alert("Select only one id to view history")
-	    this.setState({reload:true})
+	setTimeout(
+	function() {
+	this.reloadentry()
+	}.bind(this), 1000)
 	}
 	else {  
 	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
@@ -490,7 +508,118 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	}
    },
    addEntry: function(){
+	if(!this.state.addentry) {
 	this.setState({addentry: true})
+	}
+	else {
+	this.setState({addentry: false})
+	}
+
+    },
+    reloadentry: function(){
+	SELECTED_ID_GRID = {}
+	var getID = []	
+      	var finalarray = [];
+	var sortarray = {}
+	sortarray[colsort] = valuesort
+	if(changestate){
+	var count = 0
+	return $.ajax({
+	type: 'GET',
+	url: url,
+	data: {
+	alertgroup: JSON.stringify(supervalue)
+	}
+	}).then(function(response){
+  	datasource = response
+	$.each(datasource.records, function(key, value){
+	finalarray[key] = {}	
+	$.each(value, function(num, item){	
+	if(num == 'id'){
+	addentrydata = true
+	$.ajax({
+	   type: 'GET',
+	   url: '/scot/api/v2/alert/' + item + '/entry'
+	   }).success(function(response){
+	   if(response.totalRecordCount != 0){
+	var View = React.createClass({
+		getInitialState: function(){
+		return {view:false, refe: 0}
+		  },
+		 render: function(){
+		 return( 
+	this.state.view ? React.createElement('div', {className: 'ViewEntry'} , React.createElement(Viewentry, {id: this.state.refe}), React.createElement('button', {className: 'btn btn-default', onClick:this.view}, 'Re-Open Entry')) :
+			React.createElement('button', {className: 'btn btn-default', onClick: this.view}, 'View Entry')
+			)
+		},
+		view: function(){
+		ventry = true;		
+		this.setState({view:true, refe: item})
+		}
+		});	
+		finalarray[key]["Entry"] = React.createElement(View, {change: true})
+		}
+		})
+		finalarray[key][num] = item
+	}
+	else if(num == 'when')
+	{
+	    var date = new Date(1000 * item)
+	    finalarray[key][num] = date.toLocaleString()
+	}
+	else if (item == 'promoted'){	
+	var Promote = React.createClass({
+	render: function() {
+	return (
+	React.createElement('button', {className: 'btn btn-warning', onClick: this.launch}, 'promoted')
+	)
+	},
+	launch: function(){
+	$('.z-selected').each(function(key, value){
+	$(value).find('.z-cell').each(function(x,y){	  
+	    if($(y).attr('name') == 'id'){
+		$.ajax({
+			type: 'GET',
+			url: '/scot/api/v2/alert/'+$(y).text() + '/event'
+		}).success(function(response){
+		   $.each(response, function(x,y){
+	           $.each(y, function(key, value){
+		   $.each(value, function(r,s){
+	           if(r == 'id'){
+		    	window.location = '#/event/' + s
+	              }
+	           })
+		})
+		})
+	
+	});
+	}
+	});
+	});
+	}
+	});
+	finalarray[key][num] = React.createElement(Promote, null)
+	}
+	else{	
+	var Link = React.createClass({
+	render:function(){
+	return(
+	<div> 
+  	<div className = "subrender" dangerouslySetInnerHTML = {{__html:item}} ></div>
+	</div>	
+	)
+	}
+	})
+        finalarray[key][num] = React.createElement(Link, null)
+	}
+	})
+	finalarray[key]["index"] = count
+	count++
+	})
+	this.setState({oneview: false, data:finalarray})
+	}.bind(this))
+  	}
+
     },
     openSelected: function(){
 	var data = new Object();
@@ -523,9 +652,9 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	});
 	setTimeout(
 	function() {
-	this.setState({reload:true})
-	}.bind(this), 700)
-
+	this.reloadentry()
+	}.bind(this), 1000)
+	this.setState({})
     },
 
     closeSelected: function(){
@@ -558,11 +687,11 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	}
 	});
 	});
-	setTimeout( 
-	function(){
-	this.setState({reload: true})
-	}.bind(this),1000)
-
+	setTimeout(
+	function() {
+	this.reloadentry()
+	}.bind(this), 1000)
+	this.setState({})
    },
    promoteSelected: function(){
 	var data = new Object()
@@ -595,8 +724,9 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	})
 	setTimeout(
 	function() {
-	this.setState({reload:true})
-	}.bind(this),500)
+	this.reloadentry()
+	}.bind(this), 1000)
+	this.setState({})
    },
 
    selectExisting: function(){
@@ -619,8 +749,11 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	}
 	});
 	})
-	setTimeout(function() {this.setState({reload:true})}.bind(this), 500)
-
+	setTimeout(
+	function() {
+	this.reloadentry()
+	}.bind(this), 1000)
+	this.setState({})
    },
    exportCSV: function(){
 	    var keys = []
@@ -641,7 +774,11 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	    var result = keys.join() + "\n"
 	    csv = result + csv;
 	    var data_uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
-	    this.setState({reload: true})
+	setTimeout(
+	function() {
+	this.reloadentry()
+	}.bind(this), 1000)
+	this.setState({})
 	    window.open(data_uri)
     },
     deleteSelected: function(){
@@ -660,10 +797,18 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	}
 	});
 	});
-	setTimeout(function() {this.setState({reload: true})}.bind(this), 300)	
+	setTimeout(
+	function() {
+	this.reloadentry()
+	}.bind(this), 1000)
+	this.setState({})
 	}
 	else {
-	    this.setState({reload: true})
+	setTimeout(
+	function() {
+	this.reloadentry()
+	}.bind(this), 1000)
+	this.setState({})
  	}
 
    },
@@ -700,7 +845,7 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	this.setState({oneview:true,setcss: false, key:supervalue[0] })
 	},
     closeHistory: function(){
-	this.setState({history: false, reload: true})	
+	this.setState({history: false})	
     }
 });
 
@@ -785,7 +930,7 @@ var Maintable = React.createClass({
 	
 	    stage ?  React.createElement('div', null, passids.map((num) => React.createElement(Subtable, {id: num}))) :  
 
-	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Alerts')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement(Search, null)),this.state.viewfilter ? React.createElement(Crouton, {buttons: 'close', color: '#119FE1',style: {top: '75px', padding: '5px'}, message:"Filtered: ( " + this.state.fsearch + ")", onDismiss: 'onDismiss', type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewAlerts, style:styles},"View Alerts") : null) : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : React.createElement(DataGrid, {
+	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Alerts')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement(Search, null)),this.state.viewfilter ? React.createElement(Crouton, {color: '#119FE1',style: {top: '75px', padding: '5px'}, message:"Filtered: ( " + this.state.fsearch + ")", onDismiss: 'onDismiss', type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewAlerts, style:styles},"View Alerts") : null) : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id",
             dataSource: this.state.data, 
