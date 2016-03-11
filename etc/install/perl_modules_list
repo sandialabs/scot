@@ -72,3 +72,5 @@ Mozilla::PublicSuffix
 Net::IDN::Encode
 MIME::Base64
 Net::Stomp
+Proc::InvokeEditor
+Test::JSON
