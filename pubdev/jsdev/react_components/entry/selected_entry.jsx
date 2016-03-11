@@ -10,6 +10,7 @@ var Summary             = require('../components/summary.jsx');
 var Task                = require('../components/task.jsx');
 var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
+var Flair               = require('../modal/flair.jsx');
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
@@ -25,6 +26,7 @@ var SelectedEntry = React.createClass({
         }.bind(this));
     },
     updated: function () {
+        this.props.updated();
         this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
@@ -112,11 +114,11 @@ var EntryParent = React.createClass({
         var items = this.props.items;
         var type = this.props.type;
         var id = this.props.id;
-        var updatedcallback = this.props.updated;
+        var updated = this.props.updated;
         var summary = items.summary;
         var outerClassName = 'row-fluid entry-outer';
         var innerClassName = 'row-fluid entry-header';
-        var taskOwner = ''; 
+        var taskOwner = '';
         if (summary == 1) {
             outerClassName += ' summary_entry';
         }
@@ -138,7 +140,7 @@ var EntryParent = React.createClass({
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(<EntryParent items = {childobj} updated={updatedcallback} />));  
+                        subitemarr.push(new Array(<EntryParent items = {childobj} updated={updated} />));  
                     });
                 }
             }
@@ -148,8 +150,8 @@ var EntryParent = React.createClass({
         var header1 = '[' + items.id + '] ';
         var header2 = ' by ' + items.owner + ' ' + taskOwner + '(updated on '; 
         var header3 = ')'; 
-        var created = items.created;
-        var updated = items.updated; 
+        var createdTime = items.created;
+        var updatedTime = items.updated; 
         return (
             <div> 
                 <div className={outerClassName} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
@@ -157,12 +159,12 @@ var EntryParent = React.createClass({
                     <div className={innerClassName}>
                         <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/"+ type + '/' + id + '/' + items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
                             <span className='pull-right' style={{display:'inline-flex'}}>
-                                {this.state.permissionsToolbar ? <SelectedPermission id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} updated={updatedcallback} /> : null}
+                                {this.state.permissionsToolbar ? <SelectedPermission id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} updated={updated} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle}>
                                     <MenuItem eventKey='1' onClick={this.addEntryToggle}>Move</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
-                                    <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} updated={updatedcallback} /></MenuItem>
-                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} updated={updatedcallback}/></MenuItem>
+                                    <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} updated={updated} /></MenuItem>
+                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} updated={updated}/></MenuItem>
                                     <MenuItem eventKey='5' onClick={this.permissionsToggle}>Permissions</MenuItem>
                                 </SplitButton>
                                 <Button bsSize='xsmall' onClick={this.editEntryToggle}>Edit</Button>
@@ -171,9 +173,9 @@ var EntryParent = React.createClass({
                     </div>
                 {itemarr}
                 </div> 
-                {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} created={created} update={updated} updatedcallback={updatedcallback} type={type} id={id} entryToggle={this.entryToggle} /> : null}
-                {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} created={created} updated={updated} targetid = {id} updatedcallback={updatedcallback} type={type} stage = {'Edit'} id={items.id} entryToggle={this.entryToggle} /> : null}
-                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} created={created} updated={updated} targetid = {id} updatedcallback={updatedcallback}  id={items.id} entryToggle={this.entryToggle} /> : null}
+                {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} updated={updated} type={type} id={id} addedentry={this.entryToggle} /> : null}
+                {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} type={type} stage = {'Edit'} id={items.id} addedentry={this.entryToggle} /> : null}
+                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} id={items.id} addedentry={this.entryToggle} /> : null}
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}     
             </div>
         );
@@ -184,33 +186,51 @@ var EntryData = React.createClass({
     getInitialState: function() {
         return {
             height:'1px',    
-            count:0
+            count:0,
+            flairToolbar: false,
         }
     },
     componentDidUpdate: function() {
-        if (this.state.count == 0) {
-            var newheight; 
-            newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-            newheight += 15;
-            newheight = newheight + 'px';
-            this.setState({height:newheight});
-            this.setState({count:1});
+        if (this.state.count <= 1) {
+            setTimeout(function() {
+                var newheight; 
+                newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+                newheight = newheight + 'px';
+                this.setState({height:newheight});
+                var newcount = this.state.count;
+                newcount += 1;
+                this.setState({count:newcount});
+            }.bind(this),300);
         }
+        document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
     },
     componentDidMount: function () {
-        this.setState({height:'2px'});
+        this.setState({height:'2px'}); 
+    },
+    flairToggle: function() {
+        if (this.state.flairToolbar == false) {
+            this.setState({flairToolbar:true})
+        } else {
+            this.setState({flairToolbar:false})
+        }
     },
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
-        var outerClassName = 'row-fluid entry-body'
-        var innerClassName = 'row-fluid entry-body-inner'         
         var id = this.props.id;
+        var spanEntity = $('span').attr('data-entity-type');
+        /*$('span').click(function() {
+            var test = spanEntity;
+            console.log(test);
+        }).bind(this);*/
         return (
-            <Frame id={'iframe_' + id} styleSheets={['/css/styles.less']} style={{width:'100%',height:this.state.height}}>
-                <div className='row-fluid entry-body'>
-                    <div className='row-fluid entry-body-inner' style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}} dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
+            <div className={'row-fluid entry-body'}>
+                <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
+                    <Frame frameBorder={'0'} id={'iframe_' + id} onLoad={this.onLoad} sandbox={'allow-popups allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
+                    <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
+                    </Frame>
                 </div>
-            </Frame>
+            {this.state.flairToolbar ? <Flair flairToggle={this.flairToggle} /> : null}
+            </div>
         )
     }
 });
