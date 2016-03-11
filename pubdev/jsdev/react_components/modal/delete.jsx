@@ -23,7 +23,7 @@ var DeleteEvent = React.createClass({
                 //this.props.deleteToggle();
             }.bind(this),
             error: function() {
-                alert('Failed to delete - contact administrator');
+                this.props.updated('error','Failed to delete');
                 this.props.deleteToggle();
             }.bind(this)
         }); 
@@ -53,11 +53,11 @@ var DeleteEntry = React.createClass({
             url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id + '/entry/' + this.props.entryid,
             success: function(data) {
                 console.log('success: ' + data);
-                this.props.updatedcallback();
+                this.props.updated();
                 this.props.deleteToggle();
             }.bind(this),
             error: function() {
-                alert('Failed to delete - contact administrator');
+                this.props.updated('error','Failed to delete');
                 this.props.deleteToggle();
             }.bind(this)
         });

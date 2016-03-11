@@ -86,17 +86,17 @@ body {
   font-size: 14px;
   font-size: 1.9rem;
   line-height: 140%;
-  border-radius: 50px;
-  position: fixed;
-  top: 0px;
-  left: auto;
-  right: 0px;
-  max-width: 100%;
-  width: 70%;
-  text-align: center;
-  z-index: 99999;
-  background: #188FE6;
-  padding: 5px;
+  border-radius: 0px;
+  position: inherit;
+  height: 45px;
+  /*top: 75px;*/
+  left: 77px;
+  right: 325px;
+  /*max-width: 93.25%;*/
+  width: 100%;
+  /*text-align: center;*/
+  background: #FFF;
+  padding: 4px;
   margin:-20 auto; }
   .crouton div {
     padding: 0px; }
@@ -111,11 +111,12 @@ body {
     .crouton div span {
       display: block;
       margin-bottom: 0;
-      margin-left: 10px; }
+      margin-left: 5px; }
     .crouton div .buttons {
       text-align: right; }
       .crouton div .buttons button.retry, .crouton div .buttons button.close, .crouton div .buttons button.cancel, .crouton div .buttons button.ignore {
         padding: 5px 15px;
+	color: white;
         border: 1px solid transparent;
         border-radius: 2px; }
       .crouton div .buttons button:hover {

@@ -39,7 +39,7 @@ var Owner = React.createClass({
                 this.ownerToggle();
             }.bind(this),
             error: function() {
-                alert('Failed to make you owner - contact administrator');
+                this.props.updated('error','Failed to change owner');
                 this.ownerToggle();
             }.bind(this)
         }); 
@@ -54,7 +54,7 @@ var Owner = React.createClass({
     render: function() { 
         return (
             <div>
-                <Button id='event_owner' onClick={this.ownerToggle}>{this.state.currentOwner}</Button>
+                <Button bsSize='xsmall' id='event_owner' onClick={this.ownerToggle}>{this.state.currentOwner}</Button>
                 {this.state.ownerToolbar ? <Modal isOpen={true} onRequestClose={this.ownerToggle} style={customStyles}>
                     <div className='modal-header'>
                         <img src='images/close_toolbar.png' className='close_toolbar' onClick={this.ownerToggle} />
