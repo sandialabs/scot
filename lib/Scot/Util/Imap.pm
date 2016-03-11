@@ -12,6 +12,7 @@ Readonly my $MSG_ID_FMT => qr/\A\d+\z/;
 use Data::Dumper;
 use Courriel;
 use Try::Tiny::Retry qw/:all/;
+use Mail::IMAPClient;
 
 use Moose;
 
@@ -27,14 +28,6 @@ has mailbox => (
     isa         => 'Str',
     required    => 1,
     default     => 'INBOX',
-);
-
-has client => (
-    is          => 'ro',
-    isa         => 'Mail::IMAPClient',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_connect_to_imap',
 );
 
 has hostname    => (
@@ -69,7 +62,9 @@ has ssl         => (
     is          => 'ro',
     isa         => 'ArrayRef',
     required    => 1,
-    default     => sub {[ 'SSL_verify_mode', 'SSL_VERIFY_NONE' ]},
+    # default     => sub {[ 'SSL_verify_mode', 'SSL_VERIFY_NONE' ]},
+    # default     => sub {[ 'SSL_verify_mode', SSL_VERIFY_NONE ]},
+    default     => sub {[ 'SSL_verify_mode', 0 ]},
 );
 
 has uid         => (
@@ -86,11 +81,25 @@ has ignore_size_errors   => (
     default     => 1,
 );
 
+has client => (
+    is          => 'ro',
+    isa         => 'Mail::IMAPClient',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_connect_to_imap',
+    clearer     => 'clear_client_connection',
+);
+
+has _client_pid => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => sub { $$ },
+);
 
 sub _connect_to_imap {
     my $self    = shift;
     my $env     = $self->env;
-    my $log     = $self->log;
+    my $log     = $env->log;
 
     my @options = (
         Server              => $self->hostname,
@@ -114,25 +123,40 @@ sub _connect_to_imap {
     }
     catch {
         $log->error("Failed to connect to IMAP server!");
+        $log->error($_);
         undef $client;
     };
+    $log->debug("Imap connected...");
     return $client;
+}
+
+sub check_imap_connection {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    if ( $$ != $self->_client_pid ) {
+        $log->trace("Fork detected.  attempting reconnect.");
+        $self->_client_pid($$);
+        $self->clear_client_connection;
+    }
+    return;
 }
 
 sub get_unseen_mail {
     my $self    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
+    $self->check_imap_connection;
     my $client  = $self->client;
 
     $log->trace("Retrieving unseen mail");
 
-    unless ($client) {
-        $log->error("IMAPClient not initialized...");
-        $self->_connect_to_imap;
-    }
+    $client->select($self->mailbox);
     
     my @unseen_uids = $client->unseen; 
+
+    $log->debug("Unseen Mail: ",{filter=>\&Dumper, value=>\@unseen_uids});
 
     if ( scalar(@unseen_uids) == 0 ) {
         $log->warn("No unseen messages...");
@@ -148,10 +172,12 @@ sub mark_uid_unseen {
     my $uid     = shift;
     my $env     = $self->env;
     my $log     = $env->log;
+    $self->check_imap_connection;
     my $client  = $self->client;
     my @usuid   = ( $uid );
 
     $log->trace("marking message $uid as unseen");
+
 
     if ( $client->unset_flag('\Seen', @usuid) ) {
         $log->trace("UID $uid is now unseen");
@@ -166,11 +192,21 @@ sub get_message {
     my $uid     = shift;
     my $env     = $self->env;
     my $log     = $env->log;
+    $self->check_imap_connection;
     my $client  = $self->client;
 
     $log->trace("Getting Message uid=$uid");
 
-    my $envelope    = $client->get_envelope($uid);
+    my $envelope;
+    try {
+        $envelope    = $client->get_envelope($uid);
+        $log->trace("Envelope is ",{filter=>\&Dumper,value=>$envelope});
+    }
+    catch {
+        $log->error("Error from IMAP: $_");
+    };
+
+    $log->trace("Envelope is ",{filter=>\&Dumper,value=>$envelope});
 
     my %message = (
         imap_uid    => $uid,
@@ -187,10 +223,35 @@ sub get_message {
     return wantarray ? %message : \%message;
 }
 
+sub extract_body {
+    my $self    = shift;
+    my $uid     = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    $log->trace("Extracting body from uid = $uid");
+
+    my $msgstring   = $self->client->message_string($uid);
+    my $email       = Courriel->parse( text => $msgstring );
+    my $htmlpart    = $email->html_body_part();
+    my $plainpart   = $email->plain_body_part();
+
+    my ($html, $plain);
+
+    if ( $htmlpart ) {
+        $html   = $htmlpart->content();
+    }
+    if ( $plainpart ) {
+        $plain  = $plainpart->content();
+    }
+    return $html, $plain;
+}
+
 sub get_subject {
     my $self    = shift;
     my $uid     = shift;
     my $env     = $self->env;
+    $self->check_imap_connection;
     my $client  = $self->client;
     my $log     = $env->log;
 
@@ -203,7 +264,7 @@ sub get_from {
     my $self    = shift;
     my $envelope= shift;
     my $env     = $self->env;
-    my $client  = $self->client;
+    # my $client  = $self->client;
     my $log     = $env->log;
 
     return $envelope->from_addresses;
@@ -223,6 +284,7 @@ sub get_when {
     my $self    = shift;
     my $uid     = shift;
     my $env     = $self->env;
+    $self->check_imap_connection;
     my $client  = $self->client;
     my $log     = $env->log;
 
@@ -237,6 +299,7 @@ sub get_message_id {
     my $self    = shift;
     my $uid     = shift;
     my $env     = $self->env;
+    $self->check_imap_connection;
     my $client  = $self->client;
     my $log     = $env->log;
 

@@ -46,6 +46,12 @@ my @domains = (
         plain   => 'https://cbase.som.sunysb.edu/foo/bar',
         entity  => [ { type => 'domain', value => 'cbase.som.sunysb.edu' } ],
     },
+    {
+        source  => 'https://support.online',
+        flair   => '<div>https://<span class="entity domain" data-entity-type="domain" data-entity-value="support.online">support.online</span> </div>',
+        plain   => 'https://support.online',
+        entity  => [ { type => 'domain', value => 'support.online' } ],
+    },
 );
 
 foreach my $href (@domains) {
