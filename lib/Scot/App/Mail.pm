@@ -38,37 +38,69 @@ sub _get_env {
 }
 
 has max_processes => (
-    is          => 'ro',
+    is          => 'rw',
     isa         => 'Int',
     required    => 1,
-    default     => 5,
+    default     => 4,
 );
+
+has interactive => (
+    is      => 'rw',
+    isa     => 'Str',
+    required    => 1,
+    default => 'no',
+);
+
+has scot => (
+    is          => 'ro',
+    isa         => 'Scot::Util::Scot',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_scot_scot',
+);
+
+sub _build_scot_scot {
+    my $self    = shift;
+    return Scot::Util::Scot->new();
+}
 
 sub run {
     my $self    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
     my $imap    = $env->imap;
-    my $taskmgr = Parallel::ForkManager->new($self->max_processes);
 
     $log->trace("Beginning Alert Email Processing...");
 
     my @unread  = $imap->get_unseen_mail;
 
+    if ( $self->interactive eq "yes" ) {
+        $self->max_processes(0);
+    }
+    
+    my $taskmgr = Parallel::ForkManager->new($self->max_processes);
+
     MESSAGE:
     foreach my $uid (@unread) {
+
+        next unless $uid;
 
         my $pid = $taskmgr->start and next;
 
         if ( $pid == 0 ) {
             $log->trace("[UID $uid] Child process $pid begins working");
-            $self->env(Scot::Env->new());
-            my $imap     = $self->env->imap;
+            my $imap     = $env->imap;
             my $msg_href = $imap->get_message($uid);
             $self->process_message($msg_href);
             $log->trace("[UID $uid] Child process $pid finishes working");
             $taskmgr->finish;
-            exit;
+        }
+        if ( $self->interactive eq "yes" ) {
+            print "Press Enter to continue, or \"off\" to continue to finish: ";
+            my $resp = <STDIN>;
+            if ( $resp =~ /off/ ) {
+                $self->interactive("no");
+            }
         }
     }
     $taskmgr->wait_all_children;
@@ -97,13 +129,19 @@ sub process_message {
     my $source = $self->get_source($msghref);
 
     my $json_to_post = $self->$source($msghref);
-    my $url          = $self->base_url;
-    my $ua           = Mojo::UserAgent->new;
+    my $path         = "/scot/api/v2/alertgroup";
+    my $scot         = $self->scot;
 
-    my $tx = $ua->post( $url => json => $json_to_post );
+    $log->debug("Json to Post = ", {filter=>\&Dumper, value=>$json_to_post});
+
+    $log->debug("posting to $path");
+
+    my $tx = $scot->post( $path, $json_to_post );
+
+    $log->debug("tx->res is ",{filter=>\&Dumper, value=>$tx->res});
     
     if ( $tx->res->json->{status} ne "ok" ) {
-        $log->error("Failed posting new alertgroup");
+        $log->error("Failed posting new alertgroup mgs_uid:", $msghref->{imap_uid});
         $env->imap->mark_uid_unseen($msghref->{imap_uid});
         return;
     }
@@ -129,17 +167,66 @@ sub get_source {
 }
 
 sub approved_sender {
-    # stored as config item in env
+    my $self    = shift;
+    my $href    = shift;
+    my $env     = $self->env;
+    my $domains = $env->approved_alert_domains;
+    my $senders = $env->approved_accounts;
+    my $this_sender = $href->{from};
+    my $log     = $env->log;
+
+    $this_sender =~ s/<(.*)>/$1/;
+    $log->trace("Checking if Sender $this_sender is approved");
+
+
+    foreach my $as (@$senders) {
+        $log->trace("comparing $as");
+        if ( $as eq $this_sender ) {
+            $log->trace("you are approved!");
+            return 1;
+        }
+    }
+    my $this_domain = (split(/\@/, $this_sender))[1];
+    $log->trace("not explicitly named, checking domain $this_domain");
+
+    foreach my $ad ( @$domains ) {
+        $log->trace("comparing to domain $ad");
+        if ( $ad eq $this_domain ) {
+            $log->trace("approved domain");
+            return 1;
+        }
+    }
+    return undef;
 }
 
 sub is_health_check {
+    my $self    = shift;
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
 
+    $log->trace("Checking if this is a health check message");
+
+    my $subject = $href->{subject};
+
+    if ( $subject =~ /SCOT-ALERTS Health Check/i ) {
+        $log->trace("It is!");
+        # ok, last version had this, but I think it was a kludge
+        # keeping this to ignore them when they come in.
+        # but a better check might be to see if we haven't received
+        # any alerts in x number of minutes
+        return 1;
+    }
+    return undef;
 }
 
 sub splunk {
     my $self    = shift;
     my $href    = shift;
     my $log     = $self->env->log;
+
+    $log->trace("parsing Splunk alert of ",{filter=>\&Dumper, value=>$href});
+
     my $json    = {
         subject     => $href->{subject},
         message_id  => $href->{message_id},
@@ -151,11 +238,17 @@ sub splunk {
     my $body    = $href->{body_html} // $href->{body_plain};
 
     $log->trace("Parsing Splunk Message Body");
+    $log->trace("Body is : ",{filter=>\&Dumper,value=>$body});
 
     my  $tree   = HTML::TreeBuilder->new;
         $tree   ->implicit_tags(1);
         $tree   ->implicit_body_p_tag(1);
         $tree   ->parse_content($body);
+
+    unless ( $tree ) {
+        $log->error("Parsing error!");
+        die "Parsing error!";
+    }
 
     # splunk 6 now puts the search name in a table!
     # and omits search terms

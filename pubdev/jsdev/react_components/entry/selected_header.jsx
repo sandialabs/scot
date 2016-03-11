@@ -11,6 +11,9 @@ var AutoAffix               = require('react-overlays/lib/AutoAffix');
 var Affix                   = require('react-overlays/lib/Affix');
 var Sticky                  = require('react-sticky');
 var Button                  = require('react-bootstrap/lib/Button');
+var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar');
+var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger');
+var Popover                 = require('react-bootstrap/lib/Popover');
 var DebounceInput           = require('react-debounce-input');
 var SelectedEntry           = require('./selected_entry.jsx');
 var Tag                     = require('../components/tag.jsx');
@@ -145,7 +148,7 @@ var SelectedHeader = React.createClass({
                             <tbody>
                                 <tr>
                                     <th></th>
-                                    <td><div style={{paddingRight:'20px'}}>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData.status} id={id} type={type} updated={this.updated} />: null}</div></td>
+                                    <td><div style={{marginLeft:'5px'}}>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData} id={id} type={type} updated={this.updated} />: null}</div></td>
                                     <th>Owner: </th>
                                     <td><span>{this.state.showEventData ? <Owner data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
                                     <th>Updated: </th>
@@ -163,7 +166,7 @@ var SelectedHeader = React.createClass({
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
                 {this.state.permissionsToolbar ? <SelectedPermission id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
-                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type={type} id={id} entryToggle={this.entryToggle} updated={this.updated}/> : null}  
+                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type={type} id={id} addedentry={this.entryToggle} updated={this.updated}/> : null}  
                 {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
                 {type != 'alertgroup' ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
                 {type != 'alertgroup' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} /> : null}
@@ -184,7 +187,7 @@ var EntryDataUpdated = React.createClass({
 var EntryDataStatus = React.createClass({
     getInitialState: function() {
         return {
-            buttonStatus:this.props.data
+            buttonStatus:this.props.data.status
         }
     },
     eventStatusToggle: function () {
@@ -212,7 +215,10 @@ var EntryDataStatus = React.createClass({
         });
     },
     render: function() { 
-        var buttonStyle = ''
+        var buttonStyle = '';
+        var open = '';
+        var closed = '';
+        var promoted = '';
         if (this.state.buttonStatus == 'open') {
             buttonStyle = 'danger'; 
         } else if (this.state.buttonStatus == 'closed') {
@@ -220,8 +226,15 @@ var EntryDataStatus = React.createClass({
         } else if (this.state.buttonStatus == 'promoted') {
             buttonStyle = 'warning'
         };
+        if (this.props.type == 'alertgroup') {
+            open = this.props.data.open_count;
+            closed = this.props.data.closed_count;
+            promoted = this.props.data.promoted_count;
+        }        
         return (
-            <Button bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: '14pt', width: '100%', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button>
+            <div>
+                {this.props.type == 'alertgroup' ? <ButtonToolbar><OverlayTrigger trigger='hover' placement='bottom' overlay={<Popover id={this.props.id}>open/closed/promoted alerts</Popover>}><Button bsSize='xsmall'><span className='alertgroup'><span className='alertgroup_open'>{open}</span> / <span className='alertgroup_closed'>{closed}</span> / <span className='alertgroup_promoted'>{promoted}</span></span></Button></OverlayTrigger></ButtonToolbar> : <Button bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: '14pt', width: '100%', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button > }
+            </div>
         )
     }
 });
