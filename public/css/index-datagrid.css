@@ -824,6 +824,7 @@ html.u-app body * {
   -ms-flex: 1 1 auto;
   -webkit-flex: 1 1 auto;
   flex: 1 1 auto;
+  text-align: center;
 }
 .z-scroller .z-content-wrapper {
   -webkit-box-flex: 1 1 auto;
@@ -857,10 +858,10 @@ html.u-app body * {
   -webkit-box-orient: horizontal;
   position: relative;
   overflow: hidden;
-  z-index: 10;
+  z-index: 0;
 }
 .z-scroller .z-content-wrapper-fix {
-  z-index: -1;
+  z-index: 0;
   -webkit-box-flex: 1;
   -moz-box-flex: 1;
   -ms-box-flex: 1;
@@ -907,7 +908,7 @@ html.u-app body * {
   left: 0px;
   bottom: 0px;
   overflow: auto;
-  z-index: 89;
+  z-index: 0;
 }
 .z-horizontal-scrollbar.mac-fix {
   display: -webkit-box;
@@ -944,7 +945,7 @@ html.u-app body * {
   overflow: auto;
 }
 .loadmask {
-  z-index: 100;
+  z-index: 0;
 }
 .z-unselectable,
 .react-datagrid .z-header-menu-column .menu-row {
@@ -965,13 +966,13 @@ html.u-app body * {
   top: 0px;
   display: none;
   width: 3px;
-  z-index: 1000;
   border-left: 1px solid #868686;
 }
 .react-datagrid.z-columns-resizable .z-resize-proxy {
   display: block;
 }
 .react-datagrid {
+    z-index: 0;
   -webkit-box-align: stretch;
   -webkit-align-items: stretch;
   align-items: stretch;
@@ -985,10 +986,10 @@ html.u-app body * {
   user-select: none;
 }
 .react-datagrid .loadmask {
-  z-index: 100;
+
 }
 .react-datagrid .z-header-menu-column {
-  z-index: 100;
+
 }
 .react-datagrid > .z-inner {
   -webkit-box-flex: 1;
@@ -1118,6 +1119,7 @@ html.u-app body * {
   color: #808080;
 }
 .react-datagrid .z-header-menu-column {
+  z-index: 2;
   background: #fff;
   position: absolute;
   top: 0px;
@@ -1163,13 +1165,14 @@ html.u-app body * {
   font-style: italic;
 }
 .react-datagrid .z-header-wrapper {
+   text-align: center;
   -webkit-box-flex: 0 0 auto;
   -moz-box-flex: 0 0 auto;
   -ms-box-flex: 0 0 auto;
   -ms-flex: 0 0 auto;
   -webkit-flex: 0 0 auto;
   flex: 0 0 auto;
-  background: linear-gradient(to bottom, #f7f7f7 0%, #efefef 13%, #e6e6e6 100%);
+  background: linear-gradient(to bottom, #f7f7f7 0%, #efefef 13%, #FFF 100%);
   border-bottom: 1px solid #a8a8a8;
 }
 .react-datagrid .z-header-wrapper.z-dragging .z-column-header:not(.z-drag) {
@@ -1224,7 +1227,7 @@ html.u-app body * {
   border-top: 8px solid #6eb8f1;
 }
 .react-datagrid .z-column-header.z-drag {
-  z-index: 1;
+  z-index: 0;
   background: linear-gradient(to bottom, #fbfbfb 0%, #f8f8f8 13%, #f4f4f4 100%);
   border-right: 1px solid #a8a8a8;
   border-left: 1px solid #a8a8a8;
@@ -1237,7 +1240,7 @@ html.u-app body * {
   cursor: e-resize;
   top: 0px;
   position: absolute;
-  z-index: 10;
+  z-index: 0;
 }
 .react-datagrid .z-column-header.z-last .z-inner .z-column-resize {
   display: none !important;
@@ -1249,7 +1252,7 @@ html.u-app body * {
   border-right: 1px solid #a8a8a8;
 }
 .react-datagrid.z-style-alternate .z-odd.z-row {
-  background: #F2F2F2;
+  background: #FFF;
 }
 .react-datagrid.z-even.z-row {
   background: #F2F2F2;
@@ -1305,6 +1308,7 @@ html.u-app body * {
   border-right: 1px dotted #a8a8a8;
 }
 .react-datagrid.z-cell-borders-vertical .z-cell:not(.z-first):not(.z-column-header) {
+  overflow: auto;
   border-left: 1px dotted #a8a8a8;
 }
 .react-datagrid .z-footer-wrapper {
