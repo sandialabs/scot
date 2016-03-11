@@ -10,6 +10,7 @@ var Summary             = require('../components/summary.jsx');
 var Task                = require('../components/task.jsx');
 var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
+var Flair               = require('../modal/flair.jsx');
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
@@ -172,9 +173,9 @@ var EntryParent = React.createClass({
                     </div>
                 {itemarr}
                 </div> 
-                {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} updated={updated} type={type} id={id} entryToggle={this.entryToggle} /> : null}
-                {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} type={type} stage = {'Edit'} id={items.id} entryToggle={this.entryToggle} /> : null}
-                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} id={items.id} entryToggle={this.entryToggle} /> : null}
+                {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} updated={updated} type={type} id={id} addedentry={this.entryToggle} /> : null}
+                {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} type={type} stage = {'Edit'} id={items.id} addedentry={this.entryToggle} /> : null}
+                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} id={items.id} addedentry={this.entryToggle} /> : null}
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}     
             </div>
         );
@@ -185,7 +186,8 @@ var EntryData = React.createClass({
     getInitialState: function() {
         return {
             height:'1px',    
-            count:0
+            count:0,
+            flairToolbar: false,
         }
     },
     componentDidUpdate: function() {
@@ -205,11 +207,18 @@ var EntryData = React.createClass({
     componentDidMount: function () {
         this.setState({height:'2px'}); 
     },
+    flairToggle: function() {
+        if (this.state.flairToolbar == false) {
+            this.setState({flairToolbar:true})
+        } else {
+            this.setState({flairToolbar:false})
+        }
+    },
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
         var id = this.props.id;
-        /*var spanEntity = $('span').attr('data-entity-type');
-        $('span').click(function() {
+        var spanEntity = $('span').attr('data-entity-type');
+        /*$('span').click(function() {
             var test = spanEntity;
             console.log(test);
         }).bind(this);*/
@@ -220,6 +229,7 @@ var EntryData = React.createClass({
                     <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
                     </Frame>
                 </div>
+            {this.state.flairToolbar ? <Flair flairToggle={this.flairToggle} /> : null}
             </div>
         )
     }
