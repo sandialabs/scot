@@ -25,6 +25,13 @@ has version => (
     default     => '3.5',
 );
 
+has servername => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'localhost',
+);
+
 has mojo    => (
     is          => 'rw',
     isa         => 'HashRef',
@@ -323,9 +330,11 @@ sub BUILD {
             $log->error("Failed to create $fullname");
         }
     }
+
     # build auth class
     my $atype   = $self->authtype;
     my $amodule = "Scot::Controller::Auth::$atype";
+    $log->trace("Building Auth module $amodule");
     require_module($amodule);
     $self->meta->add_attribute(
         "auth_module"   => {
@@ -340,9 +349,43 @@ sub BUILD {
     else {
         $log->error("Failed to instantiate $amodule");
     }
+    $self->load_env_config_items();
     # lock er down
     $meta->make_immutable;
     $log->level($loglevel);
+}
+
+sub load_env_config_items {
+    my $self    = shift;
+    my $mongo   = $self->mongo;
+    my $log     = $self->log;
+    my $col     = $mongo->collection('Config');
+    my $cursor  = $col->find({module => "Scot::Env"});
+    my $meta    = $self->meta;
+
+    $log->debug("loading Env configuration items");
+    
+    while (my $confobj = $cursor->next) {
+        my $item    = $confobj->item;
+        foreach my $key (keys %{$item}) {
+            my $type    = "Str";
+            if ( ref($item->{$key}) eq "ARRAY" ) {
+                $type   = "ArrayRef";
+            }
+            if ( ref($item->{$key}) eq "HASH" ) {
+                $type   = "HashRef";
+            }
+            $log->debug("creating attribute $key of type $type");
+            $meta->add_attribute(
+                $key    => (
+                    is  => 'rw',
+                    isa => $type,
+                )
+            );
+            $log->debug("setting $key to ",{filter=>\&Dumper, value=>$item->{$key}});
+            $self->$key($item->{$key});
+        }
+    }
 }
 
 sub get_module_list {
