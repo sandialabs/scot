@@ -73,18 +73,16 @@ var SelectedHeaderOptions = React.createClass({
             showPromote = false;
         }
         return (
-            <div className="entry-header">
-                <ButtonGroup> 
-                        <DropdownButton bsStyle='info' title="Actions" id="bg-nested-dropdown">
-                        <MenuItem bsStyle='primary' eventKey="1" onClick={this.toggleFlair}>Toggle <b>Flair</b></MenuItem>
-                        <MenuItem bsStyle='primary' eventKey="2" onClick={this.props.historyToggle}>View <b>History</b></MenuItem>
-                        <MenuItem bsStyle='primary' eventKey="3" onClick={this.props.permissionsToggle}><b>Permissions</b></MenuItem>
-                        <MenuItem bsStyle='primary' eventKey="4" onClick={this.props.entitiesToggle}>List <b>Entities</b></MenuItem>
-                        <MenuItem bsStyle='danger' eventKey="5" onClick={this.props.deleteToggle}><b>Delete</b> {subjectType}</MenuItem>
-                        {showPromote ? <MenuItem bsStyle='primary' eventKey="6"><Promote type={type} id={id} /></MenuItem> : null}
-                    </DropdownButton> 
+            <div className="entry-header" style={{marginBottom:'2px'}}>
+                <ButtonGroup bsSize='small'> 
+                    <Button bsStyle='success' onClick={this.props.entryToggle}>Add Entry</Button>
+                    <Button eventKey="1" onClick={this.toggleFlair}>Toggle <b>Flair</b></Button>
+                    <Button eventKey="2" onClick={this.props.historyToggle}>View <b>History</b></Button>
+                    <Button eventKey="3" onClick={this.props.permissionsToggle}><b>Permissions</b></Button>
+                    <Button eventKey="4" onClick={this.props.entitiesToggle}>List <b>Entities</b></Button>
+                    {showPromote ? <Button bsStyle='warning' eventKey="6"><Promote type={type} id={id} updated={this.props.updated} /></Button> : null}
+                    <Button bsStyle='danger' eventKey="5" onClick={this.props.deleteToggle}><b>Delete</b> {subjectType}</Button>
                 </ButtonGroup>
-                <Button bsStyle='success' className="pull-right" onClick={this.props.entryToggle}>Add Entry</Button>
             </div>
         )
     }
