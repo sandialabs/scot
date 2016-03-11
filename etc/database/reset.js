@@ -16,7 +16,6 @@ db.tag.drop();
 db.users.drop();
 db.link.drop();
 
-// load("./config.js");
 print ("Creating indexes...");
 load("../../bin/database/indexes.js");
 print ("Zero-ing the nexid collection...");
@@ -25,3 +24,4 @@ load("../../bin/database/zero_nextid.js");
 print ("Clearing config and re-creating...");
 db.config.drop();
 db.scotmod.drop();
+load("/home/tbruner/config.DO_NOT_ADD_TO_GIT.js");
