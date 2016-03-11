@@ -10,7 +10,7 @@ var finalfiles = []
 var ReactTime = require('react-time')
 const  customStyles = {
         content : {
-        top     : '11%',
+        top     : '1%',
         right   : '60%',
         bottom  : 'auto',
 	left	: '10%',
@@ -56,7 +56,7 @@ var AddEntryModal = React.createClass({
 	this.setState({})
         },
 	render: function() {
- 
+ 	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").css('height', '394px')
         return (
  	React.createElement(Modal, {onRequestClose: this.props.addedentry, style: customStyles, isOpen: this.state.addentry}, 
 	React.createElement("div", {className: "modal-content"}, 
@@ -64,7 +64,7 @@ var AddEntryModal = React.createClass({
 	React.createElement("h4", {className: "modal-title"}, this.props.title), React.createElement('div', {className: 'entry-header-info-null', style: {top: '1px', width: '100%', background: this.state.stagecolor}}, React.createElement('h2', {style: {color: 'white', 'font-size':'18px', 'text-align': 'left'}}, this.props.header1 ? React.createElement("div" , {style: {display: 'inline-flex'}}, React.createElement("p", null, this.props.header1), React.createElement(ReactTime, { value: this.props.createdTime * 1000, format:"MM/DD/YYYY hh:mm:ss a"}) , React.createElement("p", null, this.props.header2), React.createElement(ReactTime, {value: this.props.updatedTime * 1000,format:"MM/DD/YYYY hh:mm:ss a"}), React.createElement("p", null, this.props.header3)): output)) 
 	), 
 	React.createElement("div", {className: "modal-body", style: {height: '90%'}}, 
-	React.createElement(TinyMCE, {content: "", className: "inputtext",config: {plugins: 'autolink link image lists print preview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'},onChange: this.handleEditorChange}
+	React.createElement(TinyMCE, {style: {height: '394px'}, content: "", className: "inputtext",config: {plugins: 'autolink link image lists print preview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'},onChange: this.handleEditorChange}
 	)), 
 	React.createElement("div", {className: "modal-footer"}, React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width': '2px','border-color':'#000','border-radius':'4px',margin:'30px' ,padding: '30px','border-style': 'dashed', 'text-align' : 'center'}}, React.createElement("div",null,"Drop some files here or click to  select files to upload")),
 	this.state.files ? React.createElement("div", null, this.state.files.map((file) => React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("a", {href:file.preview, target:"_blank"}, file.name),React.createElement('button', {style: {width: '2em', height: '1em', 'line-height':'1px'}, className: 'btn btn-info', id: file.name, onClick: this.Close}, 'x'))))): null, 
@@ -87,7 +87,8 @@ var AddEntryModal = React.createClass({
 
     },
     onCancel: function(){
-	     this.setState({addentry:false, change:false})
+	     this.props.addedentry()
+	     this.setState({change:false})
 	     this.props.updated()
 	},
    	Close: function(i) {
@@ -138,8 +139,8 @@ var AddEntryModal = React.createClass({
 			}
 			}*/
 	})
-	this.setState({addentry: false})
-	this.props.updated
+	this.props.addedentry()
+	this.props.updated()
 	}
 	else if (this.props.stage == 'Edit'){
 	var data = {parent: this.props.id, body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id: this.props.targetid , target_type: this.props.type}
@@ -161,7 +162,7 @@ var AddEntryModal = React.createClass({
 			}
 			}*/
 	})
-	this.setState({addentry: false})
+	this.props.addedentry()
 	this.props.updated()
 	}
 	else  if(this.props.type == 'alert'){ 
@@ -192,7 +193,7 @@ var AddEntryModal = React.createClass({
 		}
 		})
 		})
-		this.setState({addentry: false})
+		this.props.addedentry()
 		this.props.updated()
 	}	
 	else {
@@ -215,7 +216,7 @@ var AddEntryModal = React.createClass({
 			}
 			}*/
 	})
-	this.setState({addentry: false})
+	this.props.addedentry()
 	this.props.updated()
 	}
 	},
