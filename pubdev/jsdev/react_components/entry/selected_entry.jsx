@@ -160,8 +160,7 @@ var EntryParent = React.createClass({
                         <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/"+ type + '/' + id + '/' + items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
                             <span className='pull-right' style={{display:'inline-flex'}}>
                                 {this.state.permissionsToolbar ? <SelectedPermission id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} updated={updated} /> : null}
-                                <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle}>
-                                    <MenuItem eventKey='1' onClick={this.addEntryToggle}>Move</MenuItem>
+                                <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle}> 
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} updated={updated} /></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} updated={updated}/></MenuItem>
@@ -173,9 +172,9 @@ var EntryParent = React.createClass({
                     </div>
                 {itemarr}
                 </div> 
-                {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} updated={updated} type={type} id={id} addedentry={this.entryToggle} /> : null}
-                {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} type={type} stage = {'Edit'} id={items.id} addedentry={this.entryToggle} /> : null}
-                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} id={items.id} addedentry={this.entryToggle} subitem={items} /> : null}
+                {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} updated={updated} type={type} id={id} addedentry={this.addEntryToggle} /> : null}
+                {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} type={type} stage = {'Edit'} id={items.id} addedentry={this.editEntryToggle} /> : null}
+                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} id={items.id} addedentry={this.replyEntryToggle} /> : null}
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}     
             </div>
         );
