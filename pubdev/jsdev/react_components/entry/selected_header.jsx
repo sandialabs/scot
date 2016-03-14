@@ -19,6 +19,8 @@ var SelectedEntry           = require('./selected_entry.jsx');
 var Tag                     = require('../components/tag.jsx');
 var Source                  = require('../components/source.jsx');
 var Crouton                 = require('react-crouton');
+var Store                   = require('../flux/store.jsx');
+var AppActions              = require('../flux/actions.jsx');
 var SelectedHeader = React.createClass({
     getInitialState: function() {
         return {
@@ -37,6 +39,7 @@ var SelectedHeader = React.createClass({
             notificationType:null,
             notificationMessage:null,
             showFlash:false,
+            key:this.props.id,
         }
     },
     componentDidMount: function() {
@@ -52,7 +55,9 @@ var SelectedHeader = React.createClass({
             var tagResult = result.records;
             this.setState({showTag:true, tagData:tagResult});
         }.bind(this)); 
-        console.log('Ran componentDidMount');    
+        console.log('Ran componentDidMount');
+        Store.storeKey(this.state.key);
+        Store.addChangeListener(this.updated);
     },
     componentWillReceiveProps: function() {
         this.updated();    
@@ -153,7 +158,7 @@ var SelectedHeader = React.createClass({
                                     <th></th>
                                     <td><div style={{marginLeft:'5px'}}>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData} id={id} type={type} updated={this.updated} />: null}</div></td>
                                     <th>Owner: </th>
-                                    <td><span>{this.state.showEventData ? <Owner data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
+                                    <td><span>{this.state.showEventData ? <Owner key={id} data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
                                     <th>Updated: </th>
                                     <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                     <th>Tags: </th>
