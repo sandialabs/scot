@@ -48,7 +48,7 @@ var Crouton = require('../../../node_modules/react-crouton')
 var Frame = require('../../../node_modules/react-frame')
 var finalfiles = []
 var checkfiles = false
-var Alertentry = require('../entry/selected_entry.jsx')
+var Alertentry = require('../entry/selected_entry.jsx').SelectedEntry
 var Header = require('../entry/selected_header.jsx')
 var Addentry = require('../modal/add_entry.jsx')
 var Appactions = require('../flux/actions.jsx')
@@ -396,11 +396,10 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	})
 	})
 	}, 100)
-	ids = supervalue.join(',') 
 	return (
 	this.state.history ? React.createElement(HistoryView, {type:'alertgroup', id: this.state.historyid, historyToggle: this.viewHistory}) 
         :
-	React.createElement("div", {className: 'All Modal', style: {'padding-left': '25px'}}, this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', updated: this.reloadentry, addedentry: this.addEntry, type: 'alert'}) : null,
+	React.createElement("div", {className: 'All Modal'}, /*style: {'padding-left': '25px'}},*/ this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', updated: this.reloadentry, addedentry: this.addEntry, type: 'alert'}) : null,
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
 	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alertgroup', id: this.state.key})), this.state.oneview ? React.createElement('btn-group', null, this.state.flair ? React.createElement('button',{className: 'btn btn-default', onClick: this.flairOn}, 'Flair On') : React.createElement('button', {className: 'btn btn-default', onClick: this.flairOff}, 'Flair Off'), React.createElement('button', {className: 'btn btn-default', onClick: this.viewGuide}, 'View Guide'), React.createElement('button', {className:'btn btn-default', onClick:this.viewSource}, 'View Source'), React.createElement('button', {className:'btn btn-default', onClick: this.viewHistory}, 'View History'), React.createElement('button', {className: 'btn btn-default', onClick:this.addEntry}, 'Add Entry'), React.createElement('button', {className: 'btn btn-default', onClick: this.openSelected}, 'Open Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.closeSelected}, 'Close Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.promoteSelected}, 'Promote Selected'), React.createElement('button', {className:'btn btn-default', onClick:this.selectExisting}, 'Add Selected to Existing Event'), React.createElement('button', {className:'btn btn-default', onClick:this.exportCSV}, 'Export to CSV'), React.createElement('button', {className:'btn btn-default', onClick:this.deleteSelected}, 'Delete Selected')) : null ,  React.createElement(Subgrid, {style: {height: '100%', 'z-index' : '0'},className: "Subgrid",
             ref: "dataGrid", 
@@ -451,11 +450,6 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
     viewGuide: function(){
 	    if(storealertids.length > 1){
 		alert("Select only one id to view guide")
-	setTimeout(
-	function() {
-	this.reloadentry()
-	}.bind(this), 1000)
-	this.setState({})
 	    }
 	    else {
 	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
@@ -465,11 +459,6 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 		}
 		})
 		})
-	setTimeout(
-	function() {
-	this.reloadentry()
-	}.bind(this), 1000)
-	this.setState({})
 	    }
     },
     viewSource: function(){
@@ -490,10 +479,6 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
         var id = 0;
 	if(storealertids.length > 1){
 	    alert("Select only one id to view history")
-	setTimeout(
-	function() {
-	this.reloadentry()
-	}.bind(this), 1000)
 	}
 	else {  
 	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
@@ -664,11 +649,6 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	}
 	});
 	})
-	setTimeout(
-	function() {
-	this.reloadentry()
-	}.bind(this), 1000)
-	this.setState({})
    },
    exportCSV: function(){
 	    var keys = []
