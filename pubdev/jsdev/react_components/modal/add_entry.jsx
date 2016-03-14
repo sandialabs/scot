@@ -33,11 +33,12 @@ var AddEntryModal = React.createClass({
 	},
 	componentWillMount: function(){
 	if(this.props.stage == 'Edit'){
-	  $.ajax({
+	  reply = false;
+      $.ajax({
 	   type: 'GET',
 	   url:  '/scot/api/v2/entry/'+ this.props.id
 	   }).success(function(response){
-	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(response.body_plain)
+	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(response.body_flair)
 	    })
 	}
 	else if (this.props.title == 'Add Entry'){
