@@ -234,4 +234,4 @@ var EntryData = React.createClass({
     }
 });
 
-module.exports = SelectedEntry; 
+module.exports = {SelectedEntry:SelectedEntry, EntryData:EntryData}
