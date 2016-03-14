@@ -175,7 +175,7 @@ var EntryParent = React.createClass({
                 </div> 
                 {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} updated={updated} type={type} id={id} addedentry={this.entryToggle} /> : null}
                 {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} type={type} stage = {'Edit'} id={items.id} addedentry={this.entryToggle} /> : null}
-                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} id={items.id} addedentry={this.entryToggle} /> : null}
+                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} id={items.id} addedentry={this.entryToggle} subitem={items} /> : null}
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}     
             </div>
         );
@@ -235,4 +235,4 @@ var EntryData = React.createClass({
     }
 });
 
-module.exports = SelectedEntry; 
+module.exports = {SelectedEntry:SelectedEntry, EntryData:EntryData}
