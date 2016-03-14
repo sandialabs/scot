@@ -54,6 +54,9 @@ var SelectedHeader = React.createClass({
         }.bind(this)); 
         console.log('Ran componentDidMount');    
     },
+    componentWillReceiveProps: function() {
+        this.updated();    
+    },
     updated: function(_type,_message) {
         this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
             var sourceResult = result.records;
