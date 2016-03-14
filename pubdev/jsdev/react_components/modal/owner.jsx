@@ -1,6 +1,7 @@
 var React               = require('react');
 var Modal               = require('react-modal');
 var Button              = require('react-bootstrap/lib/Button');
+var AppActions          = require('../flux/actions.jsx');
 const customStyles = {
     content : {
         top     : '50%',
@@ -18,6 +19,7 @@ var Owner = React.createClass({
             currentOwner:this.props.data,
             whoami:'', 
             ownerToolbar: false,
+            key:this.props.id,
         }
     },
     componentDidMount: function() {
@@ -26,23 +28,14 @@ var Owner = React.createClass({
             this.setState({whoami:result})
         }.bind(this)); 
     },
+    componentWillReceiveProps: function() {
+        this.setState({currentOwner:this.props.data});
+    },
     toggle: function() { 
-        var json = {'owner':this.state.whoami}
-        $.ajax({
-            type: 'put',
-            url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id,
-            data: json,
-            success: function(data) {
-                console.log('success: ' + data);
-                this.setState({currentOwner:this.state.whoami});
-                this.props.updated();
-                this.ownerToggle();
-            }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to change owner');
-                this.ownerToggle();
-            }.bind(this)
-        }); 
+        var json = {'owner':this.state.whoami} 
+        this.ownerToggle();
+        var key = this.state.key;
+        AppActions.updateItem(key,'ownerChange', json, this.props.type);
     },
     ownerToggle: function() {
         if (this.state.ownerToolbar == false) {
