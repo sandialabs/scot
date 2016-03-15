@@ -43,19 +43,12 @@ function updateStatus(payload) {
     }
 }
 
-function updateOwner(payload) {
-    var json;
-    json = payload.action.data;
-    $.ajax({
-        type: 'put',
-        url: 'scot/api/v2/' + payload.action.type + '/'  + payload.action.item,
-        data: json,
-        success: function(data) {
-            Store.emitChange(payload.action.item);
-        }.bind(this),
-        error: function() {      
-        }.bind(this)
-    }); 
+function deleteEvent(payload) {
+    window.location.replace('#/'+payload.action.type);
+}
+
+function headerUpdate(payload) {
+    Store.emitChange(payload.action.item);
 }
 
 var Store = assign({}, EventEmitter.prototype, {
@@ -74,12 +67,12 @@ var Store = assign({}, EventEmitter.prototype, {
 	if(payload.message == 'alertstatusmessage') {
 		updateStatus(payload)
 	}
-	else if(payload.message == 'update'){
-    
-	}
-    else if(payload.message == 'ownerChange') {
-        updateOwner(payload)
+    else if(payload.message == 'headerUpdate') {
+        headerUpdate(payload)
     }
+    else if(payload.message == 'deleteEvent') {
+        deleteEvent(payload);
+    }	 
     else if (payload.message == 'activemq'){
 	console.log(payload.action.item)
 	Store.emitChange(payload.action.item)
