@@ -1,6 +1,7 @@
 var React               = require('react');
 var Button              = require('react-bootstrap/lib/Button');
 var ReactTags           = require('react-tag-input').WithContext;
+var AppActions          = require('../flux/actions.jsx');
 
 var Tag = React.createClass({
     getInitialState: function() {
@@ -34,7 +35,10 @@ var Tag = React.createClass({
 
 var TagDataIterator = React.createClass({
     getInitialState: function() {
-        return {tag:true}
+        return {
+            tag:true,
+            key: this.props.id,
+        }
     },
     tagDelete: function() {
         $.ajax({
@@ -42,7 +46,8 @@ var TagDataIterator = React.createClass({
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag/' + this.props.data.id,
             success: function(data) {
                 console.log('deleted tag success: ' + data);
-                this.props.updated();
+                var key = this.state.key;
+                AppActions.updateItem(key,'headerUpdate');
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to delete tag');
@@ -61,7 +66,8 @@ var TagDataIterator = React.createClass({
 var NewTag = React.createClass({
     getInitialState: function() {
         return {
-            suggestions: this.props.options
+            suggestions: this.props.options,
+            key:this.props.id
         }
     },
     handleAddition: function(tag) {
@@ -79,8 +85,9 @@ var NewTag = React.createClass({
             success: function(data) {
                 console.log('success: tag added');
                 this.props.toggleTagEntry();
-                this.props.updated();
-                }.bind(this),
+                var key = this.state.key;
+                AppActions.updateItem(key,'headerUpdate');
+            }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to add tag');
                 this.props.toggleTagEntry();
