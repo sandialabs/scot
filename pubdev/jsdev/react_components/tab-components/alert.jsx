@@ -56,6 +56,9 @@ var Store = require('../flux/store.jsx')
 var supervalue = [];
 var ventry = false
 var supername;
+var setfilter = false
+var activequery;
+var Listener = require('../activemq/listener.jsx')
 var columns = 
 [
     { name: 'id' , width: 111.183, style: {color: 'black'}},
@@ -245,7 +248,11 @@ function dataSource(query)
 	})
     }
     else {
-	$('.z-vertical-scrollbar').css('top', 0)
+	if(setfilter){
+	query.skip = 0
+	setfilter = false
+	}
+	activequery = query
 	return $.ajax({
 	type: 'GET',
 	url: url,
@@ -723,7 +730,7 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 var Maintable = React.createClass({
 
     getInitialState: function(){
-           return {fsearch: '',viewfilter: false, data: dataSource, showAlertbutton: false, viewAlert:false,csv:true};
+           return {fsearch: '',viewfilter: false, data: [], showAlertbutton: false, viewAlert:false,csv:true};
          },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
@@ -739,7 +746,7 @@ var Maintable = React.createClass({
 		stage = true
 		changestate = true
 		url = '/scot/api/v2/supertable'	
-		this.setState({})
+		this.setState({data:dataSource})
 		}
 		else {
 		window.location.hash = '#/alertgroup/'
@@ -749,7 +756,7 @@ var Maintable = React.createClass({
 		SELECTED_ID_GRID = {}
 		changestate = false
 		passids = {}	
-		this.setState({})
+		this.setState({data:dataSource})
 		}
 	}
 	else {
@@ -757,7 +764,8 @@ var Maintable = React.createClass({
 	window.location.href = window.location.hash
 	this.setState({})
 	}
-    },
+	Listener.activeMq(activequery, this.activecallback)
+	},
     componentWillReceiveProps: function(){
 	this.setState({})
     },
@@ -916,6 +924,7 @@ var Maintable = React.createClass({
 	})
 	if(Object.keys(filter).length > 0){
 	savedsearch = false
+	setfilter = true
 	this.setState({viewfilter: false})
 	$.each(allFilterValues, function(key,value){
 	    if(value != ""){
@@ -929,10 +938,13 @@ var Maintable = React.createClass({
 	savedsearch = false
 	savedfsearch = ''
 	this.setState({viewfilter: false})
+	}	
+	},
+	activecallback: function(){
+	if(activequery != undefined){
+	this.setState({data: dataSource(activequery)})
 	}
-	
 	}
-
 });
 
 module.exports = Maintable
