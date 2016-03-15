@@ -72,20 +72,12 @@ var EntryIterator = React.createClass({
 var EntryParent = React.createClass({
     getInitialState: function() {
         return {
-            addEntryToolbar:false,   
             editEntryToolbar:false,
             replyEntryToolbar:false,
             deleteToolbar:false,
             permissionsToolbar:false,
         }
-    },
-    addEntryToggle: function() {
-        if (this.state.addEntryToolbar == false) {
-            this.setState({addEntryToolbar:true})
-        } else {
-            this.setState({addEntryToolbar:false})
-        } 
-    },
+    }, 
     editEntryToggle: function() {
         if (this.state.editEntryToolbar == false) {
             this.setState({editEntryToolbar:true})
@@ -158,6 +150,7 @@ var EntryParent = React.createClass({
         var header3 = ')'; 
         var createdTime = items.created;
         var updatedTime = items.updated; 
+        console.log(typeof(items.id));
         return (
             <div> 
                 <div className={outerClassName} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
@@ -178,9 +171,8 @@ var EntryParent = React.createClass({
                     </div>
                 {itemarr}
                 </div> 
-                {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} updated={updated} type={type} id={id} addedentry={this.addEntryToggle} /> : null}
-                {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} type={type} stage = {'Edit'} id={items.id} addedentry={this.editEntryToggle} /> : null}
-                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} id={items.id} addedentry={this.replyEntryToggle} /> : null}
+                {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid={items.id} updated={updated} type={type} stage = {'Edit'} id={items.id} addedentry={this.editEntryToggle} /> : null}
+                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid={items.id} updated={updated} id={items.id} addedentry={this.replyEntryToggle} /> : null}
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}     
             </div>
         );
@@ -207,7 +199,7 @@ var EntryData = React.createClass({
                 this.setState({count:newcount});
             }.bind(this),300);
         }
-        document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
+        //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
     },
     componentDidMount: function () {
         this.setState({height:'2px'}); 
