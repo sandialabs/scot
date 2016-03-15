@@ -33,9 +33,19 @@ var Owner = React.createClass({
     },
     toggle: function() { 
         var json = {'owner':this.state.whoami} 
+        $.ajax({
+            type: 'put',
+            url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id,
+            data: json,
+            success: function(data) {
+                var key = this.state.key;
+                AppActions.updateItem(key,'headerUpdate');
+            }.bind(this),
+            error: function() {
+                this.props.updated('error','Failed to change owner');
+            }.bind(this)
+        }); 
         this.ownerToggle();
-        var key = this.state.key;
-        AppActions.updateItem(key,'ownerChange', json, this.props.type);
     },
     ownerToggle: function() {
         if (this.state.ownerToolbar == false) {
