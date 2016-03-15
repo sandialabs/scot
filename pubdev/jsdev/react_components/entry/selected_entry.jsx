@@ -11,12 +11,14 @@ var Task                = require('../components/task.jsx');
 var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
 var Flair               = require('../modal/flair.jsx');
-
+var Store               = require('../flux/store.jsx');
+var AppActions          = require('../flux/actions.jsx');
 var SelectedEntry = React.createClass({
     getInitialState: function() {
         return {
             showEntryData:false,
-            entryData:''            
+            entryData:'',
+            key:this.props.id,
         }
     },
     componentDidMount: function() {
@@ -24,9 +26,13 @@ var SelectedEntry = React.createClass({
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
         }.bind(this));
+        Store.storeKey(this.state.key);
+        Store.addChangeListener(this.updated);
     },
+    /*componentWillReceiveProps: function() {
+        this.updated();
+    },*/
     updated: function () {
-        this.props.updated();
         this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
@@ -159,7 +165,7 @@ var EntryParent = React.createClass({
                     <div className={innerClassName}>
                         <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/"+ type + '/' + id + '/' + items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
                             <span className='pull-right' style={{display:'inline-flex'}}>
-                                {this.state.permissionsToolbar ? <SelectedPermission id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} updated={updated} /> : null}
+                                {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} updated={updated} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle}> 
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} updated={updated} /></MenuItem>
