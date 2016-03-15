@@ -168,9 +168,9 @@ var AddEntryModal = React.createClass({
 	var data = {parent: Number(this.props.id), body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id: Number(this.props.targetid) , target_type: this.props.type}
 	$.ajax({
 	type: 'put',
-	url: '/scot/api/v2/entry',
+	url: '/scot/api/v2/entry/'+this.props.id,
 	data: JSON.stringify(data)
-	}).success(function(repsonse){
+	}).success(function(response){
 		    /*if(this.state.files.length > 0){
 			for(var i = 0; i<this.state.files.length; i++){	
 			var file = {file:this.state.files[i].name}
