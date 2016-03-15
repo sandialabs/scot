@@ -7,14 +7,35 @@ var AppActions = {
 		actionType: message,
 		item: item,
 		data:data,
-        type:type
+        	type:type
 	})
     },
-	updateView: function(message){
-	Dispatcher.handleViewAction({
-		actionType:message
+	updateView: function(item, message){
+	var client = ''
+	var now = new Date()
+	$.ajax({
+	type: 'GET',
+	dataType:'text',
+	data: {
+	clientId: client,
+	timeout: 2000,
+	d: now.getTime(),
+	r: Math.random(),
+	json: 'true',
+	username: 'rjeffer'
+	}, 
+	url: '/scotaq/amq'
+	}).done(function(data) {
+	console.log(data)
+	setTimeout(AppActions.updateView(item, message), 10)
+	if(data != null){
+	Dispatcher.handleActivemq({
+		actionType:message,
+		item: item
 	})
-    }
+	}
+    })
+  }
 }
 
 
