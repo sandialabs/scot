@@ -9,7 +9,7 @@ var addentrydata = true
 var Dropzone = require('../../../node_modules/react-dropzone')
 var finalfiles = []
 var ReactTime = require('react-time')
-
+var AppActions  = require('../flux/actions.jsx');
 const  customStyles = {
         content : {
         top     : '1%',
@@ -64,7 +64,7 @@ var AddEntryModal = React.createClass({
 	   type: 'GET',
 	   url:  '/scot/api/v2/entry/'+ this.props.id
 	   }).success(function(response){
-	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(response.body_plain)
+	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(response.body_flair)
 	    })
 	}
 	else if (this.props.title == 'Add Entry'){
@@ -162,7 +162,7 @@ var AddEntryModal = React.createClass({
 			}*/
 	})
 	this.props.addedentry()
-	this.props.updated()
+	AppActions.updateItem(this.props.targetid,'headerUpdate')
 	}
 	else if (this.props.stage == 'Edit'){
 	var data = {parent: Number(this.props.id), body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(), target_id: Number(this.props.targetid) , target_type: this.props.type}
@@ -216,7 +216,7 @@ var AddEntryModal = React.createClass({
 		})
 		})
 		this.props.addedentry()
-		this.props.updated()
+		AppActions.updateItem(this.props.targetid,'headerUpdate');
 	}	
 	else {
     var data = new Object();
@@ -240,8 +240,8 @@ var AddEntryModal = React.createClass({
 			}*/
 	})
 	this.props.addedentry()
-	this.props.updated()
-	}
+	AppActions.updateItem(this.props.targetid,'headerUpdate');
+    }
 	},
 	modalonSelect: function (option){
 	var newoptions
