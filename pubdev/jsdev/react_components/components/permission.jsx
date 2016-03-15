@@ -188,7 +188,7 @@ var NewPermission = React.createClass({
             }.bind(this),
             error: function() {
                 toggle();
-                this.props.updated('error','Failed to add source');
+                this.props.updated('error','Failed to add group');
             }.bind(this)
         });
     },
