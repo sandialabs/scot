@@ -29,9 +29,9 @@ var SelectedEntry = React.createClass({
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated);
     },
-    /*componentWillReceiveProps: function() {
+    componentWillReceiveProps: function() {
         this.updated();
-    },*/
+    },
     updated: function () {
         this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
             var entryResult = result.records;
