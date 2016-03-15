@@ -80,6 +80,10 @@ var Store = assign({}, EventEmitter.prototype, {
     else if(payload.message == 'ownerChange') {
         updateOwner(payload)
     }
+    else if (payload.message == 'activemq'){
+	console.log(payload.action.item)
+	Store.emitChange(payload.action.item)
+	}
    	return true
      })
 
