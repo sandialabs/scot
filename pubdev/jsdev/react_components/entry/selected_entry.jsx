@@ -11,12 +11,14 @@ var Task                = require('../components/task.jsx');
 var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
 var Flair               = require('../modal/flair.jsx');
-
+var Store               = require('../flux/store.jsx');
+var AppActions          = require('../flux/actions.jsx');
 var SelectedEntry = React.createClass({
     getInitialState: function() {
         return {
             showEntryData:false,
-            entryData:''            
+            entryData:'',
+            key:this.props.id,
         }
     },
     componentDidMount: function() {
@@ -24,9 +26,13 @@ var SelectedEntry = React.createClass({
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
         }.bind(this));
+        Store.storeKey(this.state.key);
+        Store.addChangeListener(this.updated);
+    },
+    componentWillReceiveProps: function() {
+        this.updated();
     },
     updated: function () {
-        this.props.updated();
         this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
@@ -66,20 +72,12 @@ var EntryIterator = React.createClass({
 var EntryParent = React.createClass({
     getInitialState: function() {
         return {
-            addEntryToolbar:false,   
             editEntryToolbar:false,
             replyEntryToolbar:false,
             deleteToolbar:false,
             permissionsToolbar:false,
         }
-    },
-    addEntryToggle: function() {
-        if (this.state.addEntryToolbar == false) {
-            this.setState({addEntryToolbar:true})
-        } else {
-            this.setState({addEntryToolbar:false})
-        } 
-    },
+    }, 
     editEntryToggle: function() {
         if (this.state.editEntryToolbar == false) {
             this.setState({editEntryToolbar:true})
@@ -140,7 +138,7 @@ var EntryParent = React.createClass({
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(<EntryParent items = {childobj} updated={updated} />));  
+                        subitemarr.push(new Array(<EntryParent items = {childobj} updated={updated} id={id} type={type} />));  
                     });
                 }
             }
@@ -152,6 +150,7 @@ var EntryParent = React.createClass({
         var header3 = ')'; 
         var createdTime = items.created;
         var updatedTime = items.updated; 
+        console.log(typeof(items.id));
         return (
             <div> 
                 <div className={outerClassName} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
@@ -159,9 +158,8 @@ var EntryParent = React.createClass({
                     <div className={innerClassName}>
                         <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/"+ type + '/' + id + '/' + items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
                             <span className='pull-right' style={{display:'inline-flex'}}>
-                                {this.state.permissionsToolbar ? <SelectedPermission id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} updated={updated} /> : null}
-                                <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle}>
-                                    <MenuItem eventKey='1' onClick={this.addEntryToggle}>Move</MenuItem>
+                                {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} updated={updated} /> : null}
+                                <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle}> 
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} updated={updated} /></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} updated={updated}/></MenuItem>
@@ -173,9 +171,8 @@ var EntryParent = React.createClass({
                     </div>
                 {itemarr}
                 </div> 
-                {this.state.addEntryToolbar ? <AddEntryModal title='Add Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} updated={updated} type={type} id={id} addedentry={this.entryToggle} /> : null}
-                {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} type={type} stage = {'Edit'} id={items.id} addedentry={this.entryToggle} /> : null}
-                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid = {id} updated={updated} id={items.id} addedentry={this.entryToggle} /> : null}
+                {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid={id} updated={updated} type={type} stage = {'Edit'} id={items.id} addedentry={this.editEntryToggle} /> : null}
+                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid={id} updated={updated} id={items.id} addedentry={this.replyEntryToggle} /> : null}
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} updated={updated} /> : null}     
             </div>
         );
@@ -202,10 +199,10 @@ var EntryData = React.createClass({
                 this.setState({count:newcount});
             }.bind(this),300);
         }
-        document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
+       //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
     },
     componentDidMount: function () {
-        this.setState({height:'2px'}); 
+        //this.setState({height:'2px'}); 
     },
     flairToggle: function() {
         if (this.state.flairToolbar == false) {
@@ -235,4 +232,4 @@ var EntryData = React.createClass({
     }
 });
 
-module.exports = SelectedEntry; 
+module.exports = {SelectedEntry:SelectedEntry, EntryData:EntryData}

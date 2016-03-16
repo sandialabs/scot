@@ -15,10 +15,12 @@ var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar');
 var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger');
 var Popover                 = require('react-bootstrap/lib/Popover');
 var DebounceInput           = require('react-debounce-input');
-var SelectedEntry           = require('./selected_entry.jsx');
+var SelectedEntry           = require('./selected_entry.jsx').SelectedEntry;
 var Tag                     = require('../components/tag.jsx');
 var Source                  = require('../components/source.jsx');
 var Crouton                 = require('react-crouton');
+var Store                   = require('../flux/store.jsx');
+var AppActions              = require('../flux/actions.jsx');
 var SelectedHeader = React.createClass({
     getInitialState: function() {
         return {
@@ -37,6 +39,7 @@ var SelectedHeader = React.createClass({
             notificationType:null,
             notificationMessage:null,
             showFlash:false,
+            key:this.props.id,
         }
     },
     componentDidMount: function() {
@@ -52,7 +55,12 @@ var SelectedHeader = React.createClass({
             var tagResult = result.records;
             this.setState({showTag:true, tagData:tagResult});
         }.bind(this)); 
-        console.log('Ran componentDidMount');    
+        console.log('Ran componentDidMount');
+        Store.storeKey(this.state.key);
+        Store.addChangeListener(this.updated);
+    },
+    componentWillReceiveProps: function() {
+        this.updated();    
     },
     updated: function(_type,_message) {
         this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
@@ -150,7 +158,7 @@ var SelectedHeader = React.createClass({
                                     <th></th>
                                     <td><div style={{marginLeft:'5px'}}>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData} id={id} type={type} updated={this.updated} />: null}</div></td>
                                     <th>Owner: </th>
-                                    <td><span>{this.state.showEventData ? <Owner data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
+                                    <td><span>{this.state.showEventData ? <Owner key={id} data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
                                     <th>Updated: </th>
                                     <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                     <th>Tags: </th>
@@ -165,8 +173,8 @@ var SelectedHeader = React.createClass({
                 {this.state.showFlash == true ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} /> : null}   
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
-                {this.state.permissionsToolbar ? <SelectedPermission id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
-                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type={type} id={id} addedentry={this.entryToggle} updated={this.updated}/> : null}  
+                {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
+                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type={type} targetid={id} id={id} addedentry={this.entryToggle} updated={this.updated}/> : null}  
                 {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
                 {type != 'alertgroup' ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
                 {type != 'alertgroup' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} /> : null}
@@ -187,8 +195,12 @@ var EntryDataUpdated = React.createClass({
 var EntryDataStatus = React.createClass({
     getInitialState: function() {
         return {
-            buttonStatus:this.props.data.status
+            buttonStatus:this.props.data.status,
+            key: this.props.id
         }
+    },
+    componentWillReceiveProps: function() {
+        this.setState({buttonStatus:this.props.data.status});
     },
     eventStatusToggle: function () {
         if (this.state.buttonStatus == 'open') {
@@ -206,8 +218,7 @@ var EntryDataStatus = React.createClass({
             data: json,
             success: function(data) {
                 console.log('success status change to: ' + data);
-                this.setState({buttonStatus:newStatus});
-                this.props.updated();
+                AppActions.updateItem(this.state.key,'headerUpdate');    
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to change status');
@@ -243,6 +254,9 @@ var EntryDataSubject = React.createClass({
     getInitialState: function() {
         return {value:this.props.data, type:this.props.type, id:this.props.id}
     },
+    componentWillReceiveProps: function() {
+        this.setState({value:this.props.data});
+    },
     handleChange: function(event) {
         this.setState({value:event.target.value});
         if (this.state.value != this.props.data) {
@@ -253,7 +267,7 @@ var EntryDataSubject = React.createClass({
                 data: json,
                 success: function(data) {
                     console.log('success: ' + data);
-                    this.props.updated();
+                    AppActions(this.state.id,'headerUpdate'); 
                 }.bind(this),
                 error: function() { 
                     this.props.updated('error','Failed to update the subject');
