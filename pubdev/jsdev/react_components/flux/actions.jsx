@@ -15,23 +15,14 @@ var AppActions = {
 	var now = new Date()
 	$.ajax({
 	type: 'GET',
-	dataType:'text',
-	data: {
-	clientId: client,
-	timeout: 2000,
-	d: now.getTime(),
-	r: Math.random(),
-	json: 'true',
-	username: 'rjeffer'
-	}, 
-	url: '/scotaq/amq'
+	url:  '/scot/api/v2/alertgroup'
 	}).done(function(data) {
-	console.log(data)
-	setTimeout(AppActions.updateView(item, message), 10)
+	setTimeout(AppActions.updateView(item, message), 200000)
 	if(data != null){
 	Dispatcher.handleActivemq({
 		actionType:message,
-		item: item
+		item: item,
+		activemq: data
 	})
 	}
     })

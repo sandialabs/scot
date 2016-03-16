@@ -730,7 +730,7 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 var Maintable = React.createClass({
 
     getInitialState: function(){
-           return {fsearch: '',viewfilter: false, data: [], showAlertbutton: false, viewAlert:false,csv:true};
+           return {fsearch: '',viewfilter: false, data: dataSource, showAlertbutton: false, viewAlert:false,csv:true};
          },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
@@ -746,7 +746,7 @@ var Maintable = React.createClass({
 		stage = true
 		changestate = true
 		url = '/scot/api/v2/supertable'	
-		this.setState({data:dataSource})
+		this.setState({})
 		}
 		else {
 		window.location.hash = '#/alertgroup/'
@@ -756,7 +756,7 @@ var Maintable = React.createClass({
 		SELECTED_ID_GRID = {}
 		changestate = false
 		passids = {}	
-		this.setState({data:dataSource})
+		this.setState({})
 		}
 	}
 	else {
@@ -764,7 +764,7 @@ var Maintable = React.createClass({
 	window.location.href = window.location.hash
 	this.setState({})
 	}
-	Listener.activeMq(activequery, this.activecallback)
+	Listener.activeMq('alertactive', this.activecallback)
 	},
     componentWillReceiveProps: function(){
 	this.setState({})
@@ -941,9 +941,7 @@ var Maintable = React.createClass({
 	}	
 	},
 	activecallback: function(){
-	if(activequery != undefined){
-	this.setState({data: dataSource(activequery)})
-	}
+	this.setState({})
 	}
 });
 
