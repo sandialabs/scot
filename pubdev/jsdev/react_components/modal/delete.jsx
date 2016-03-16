@@ -1,6 +1,7 @@
 var React               = require('react');
 var Modal               = require('react-modal');
 var Button              = require('react-bootstrap/lib/Button');
+var AppActions          = require('../flux/actions.jsx');
 const customStyles = {
     content : {
         top     : '50%',
@@ -13,20 +14,25 @@ const customStyles = {
 }
 
 var DeleteEvent = React.createClass({
-    toggle: function() { 
+    getInitialState: function() {
+        return {
+            key:this.props.id,
+        }
+    },
+    toggle: function() {  
         $.ajax({
             type: 'delete',
             url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id,
             success: function(data) {
-                console.log('success: ' + data); 
-                window.location.replace('#/'+this.props.type);
-                //this.props.deleteToggle();
+                console.log('success: ' + data);
+                var key = this.state.key;
+                AppActions.updateItem(key,'deleteEvent', null, this.props.type);
             }.bind(this),
             error: function() {
-                this.props.updated('error','Failed to delete');
+                this.props.updated('error','Failed to delete');  
                 this.props.deleteToggle();
             }.bind(this)
-        }); 
+        });         
     },
     render: function() { 
         return (
@@ -47,20 +53,25 @@ var DeleteEvent = React.createClass({
 });
 
 var DeleteEntry = React.createClass({
-     toggle: function() {
+    getInitialState: function() {
+        return {
+            key:this.props.id,
+        }
+    },
+    toggle: function() {
         $.ajax({
-            type: 'delete',
-            url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id + '/entry/' + this.props.entryid,
-            success: function(data) {
-                console.log('success: ' + data);
-                this.props.updated();
-                this.props.deleteToggle();
-            }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to delete');
-                this.props.deleteToggle();
-            }.bind(this)
-        });
+           type: 'delete',
+           url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id + '/entry/' + this.props.entryid,
+           success: function(data) {
+               console.log('success: ' + data);
+               var key = this.state.key;
+               AppActions.updateItem(key,'headerUpdate');
+           }.bind(this),
+           error: function() {
+               this.props.updated('error','Failed to delete entry');
+           }.bind(this)
+        }); 
+        this.props.deleteToggle();
     },
     render: function() {
         return (

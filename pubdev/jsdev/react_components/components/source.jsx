@@ -1,6 +1,7 @@
 var React               = require('react');
 var Button              = require('react-bootstrap/lib/Button');
 var ReactTags           = require('react-tag-input').WithContext;
+var AppActions          = require('../flux/actions.jsx');
 
 var Source = React.createClass({
     getInitialState: function() {
@@ -33,7 +34,10 @@ var Source = React.createClass({
 
 var SourceDataIterator = React.createClass({
     getInitialState: function() {
-        return {source:true}
+        return {
+            source:true,
+            key:this.props.id,
+        }
     },
     sourceDelete: function() {
         $.ajax({
@@ -41,7 +45,8 @@ var SourceDataIterator = React.createClass({
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/source/' + this.props.data.id, 
             success: function(data) {
                 console.log('deleted source success: ' + data);
-                this.props.updated();
+                var key = this.state.key;
+                AppActions.updateItem(key,'headerUpdate');
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to delete the source');
@@ -60,7 +65,8 @@ var SourceDataIterator = React.createClass({
 var NewSource = React.createClass({
     getInitialState: function() {
         return {
-            suggestions: this.props.options
+            suggestions: this.props.options,
+            key:this.props.id,
         }
     },
     handleAddition: function(tag) {
@@ -78,8 +84,9 @@ var NewSource = React.createClass({
             success: function(data) {
                 console.log('success: source added');
                 this.props.toggleSourceEntry();
-                this.props.updated();
-                }.bind(this),
+                var key = this.state.key;
+                AppActions.updateItem(key,'headerUpdate');    
+            }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to add source');
                 this.props.toggleSourceEntry();
