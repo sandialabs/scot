@@ -42,9 +42,7 @@ sub check {
 
     if ( defined $user ) {
         $log->warn("[User $user] TESTING (non)authenticated $user" );
-        # TODO: set other things like group membership from elsewhere
-        # (ldap, local, ???)
-        # if not in the proper group send an undef and and redirect like below
+        $self->session(groups => $env->default_groups->{modify});
         $self->session(user => $user, secure => 1, expiration => 600);
         return 1;
     }
