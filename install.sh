@@ -35,13 +35,12 @@ INSTALL_LOG="/tmp/scot.install.log"
 TESTURL="http://getscot.sandia.gov"
 BACKUPDIR="/sdb/scotbackup"
 GEOIPDIR="/usr/local/share/GeoIP"
-AMQPKG="pkgs/apache-activemq-5.9-20130708.151752-73-bin.tar.gz"
 DBDIR="/var/lib/mongodb"
 CPANM="/usr/local/bin/cpanm"
 LOGDIR="/var/log/scot";
 AMQDIR="/opt/activemq"
-AMQTAR="apache-activemq-5.14-20151229.032504-18-bin.tar.gz"
-AMQURL="https://repository.apache.org/content/repositories/snapshots/org/apache/activemq/apache-activemq/5.14-SNAPSHOT/$AMQTAR"
+AMQTAR="apache-activemq-5.13.2-bin.tar.gz"
+AMQURL="https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-activemq/5.13.2/$AMQTAR"
 
 ##
 ## defaults
@@ -288,7 +287,7 @@ EOF
         chmod -R g+w /var/log/activemq
     fi
 
-    if [ $REFRESH_AMQ_CONFIG == 1 ]; then
+    if [ $REFRESH_AMQ_CONFIG == "yes" ]; then
         echo "+ adding/refreshing scot activemq config"
         cp $DEVDIR/etc/scotamq.xml     $AMQDIR/conf
         cp $DEVDIR/etc/jetty.xml       $AMQDIR/conf
@@ -314,11 +313,11 @@ EOF
 
         if [ ! -d $AMQDIR ];then
             mkdir -p $AMQDIR
-            chown activemq.activemq $AMQDIR
+            chown -R activemq.activemq $AMQDIR
         fi
 
         tar xf /tmp/$AMQTAR --directory /tmp
-        mv /tmp/apache-activemq-5.14-SNAPSHOT/* $AMQDIR
+        mv /tmp/apache-activemq-5.13.2/* $AMQDIR
 
         echo "${green}+ starting activemq${NC}"
         service activemq start

@@ -48,7 +48,7 @@ if(this.props.params.value  != null){
 	setevents = false
 	settask = false
 	}
-	else if( this.props.params.value.toLowerCase() == "alert"){
+	else if( this.props.params.value.toLowerCase() == "alertgroup"){
 	if(this.props.params.id != null){
 	supertableid = this.props.params.id.split('+')
 	}
@@ -97,7 +97,7 @@ if(this.props.params.value  != null){
 	setevents = false
 	settask = false
 	}
-	else {
+	else if(this.props.params.value.toLowerCase() == "task")  {
 	state = 6
 	sethome = false
 	setalerts = false
@@ -105,6 +105,15 @@ if(this.props.params.value  != null){
 	setincidents = false
 	setintel = false
 	settask = true
+	}
+	else {
+	state = 0
+	sethome = true
+	setalerts = false
+	setevents = false
+	setincidents = false
+	setintel = false
+	settask = false
 	}
 }
 else {
