@@ -1,6 +1,7 @@
 var React               = require('react');
 var Modal               = require('react-modal');
 var Button              = require('react-bootstrap/lib/Button');
+var AppActions          = require('../flux/actions.jsx');
 const customStyles = {
     content : {
         top     : '50%',
@@ -15,7 +16,8 @@ const customStyles = {
 var Summary = React.createClass({ 
      getInitialState: function () {
         return {
-            summary:this.props.summary
+            summary:this.props.summary,
+            key:this.props.id,
         }
      },
      toggle: function() {
@@ -32,7 +34,7 @@ var Summary = React.createClass({
             data: json,
             success: function(data) {
                 console.log('success: ' + data);
-                this.props.updated();
+                AppActions.updateItem(this.state.key,'headerUpdate');
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to make summary');
