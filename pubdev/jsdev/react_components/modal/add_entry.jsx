@@ -42,6 +42,7 @@ var AddEntryModal = React.createClass({
 	    })
 	}
 	else if (this.props.title == 'Add Entry'){
+	reply = false
 	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").text('')
 	}
 	else if(this.props.title == 'Reply Entry'){

@@ -3,7 +3,7 @@ var EventEmitter = require('../../../node_modules/events').EventEmitter
 var Actions = ('./tab_actions.jsx')
 var assign = require('object-assign')
 var storekey;
-
+var Activemq = require('../activemq/handleupdate.jsx')
 function updateStatus(payload) {
 	var data = new Object()
 	var type = 'PUT'
@@ -51,6 +51,12 @@ function headerUpdate(payload) {
     Store.emitChange(payload.action.item);
 }
 
+function activeMQ(payload){
+   
+    Activemq.handle_update(Store, payload)
+
+}
+
 var Store = assign({}, EventEmitter.prototype, {
 	emitChange: function(key){
 	    this.emit(key)
@@ -74,8 +80,7 @@ var Store = assign({}, EventEmitter.prototype, {
         deleteEvent(payload);
     }	 
     else if (payload.message == 'activemq'){
-	console.log(payload.action.item)
-	Store.emitChange(payload.action.item)
+	    activeMQ(payload)
 	}
    	return true
      })
