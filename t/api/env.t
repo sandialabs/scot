@@ -7,11 +7,10 @@ use Scot::Env;
 use Data::Dumper;
 use v5.18;
 
-$ENV{'scot_mode'} = "testing";
-my $db  = "scot-testing";
-
+$ENV{'scot_mode'}   = "testing";
+$ENV{'SCOT_AUTH_MODE'}   = "Testing";
 print "Resetting test db...\n";
-system("mongo scot-testing <../../bin/database/reset.js 2>&1 > /dev/null");
+system("mongo scot-testing <../../etc/database/reset.js 2>&1 > /dev/null");
 
 
 my $env     = Scot::Env->new({
@@ -30,8 +29,8 @@ my $cursor  = $col->find();
 
 is( $env->default_owner, "scot-admin", "Correct default owner pulled from db");
 cmp_deeply( $env->default_groups, {
-    read    => [ qw(ir testing) ],
-    modify  => [ qw(ir testing) ],
+    read    => [ qw(wg-scot-ir wg-scot-researchers) ],
+    modify  => [ qw(wg-scot-ir ) ],
 }, "Correct default groups from config db");
 
 while ( my $mod = $cursor->next ) {
