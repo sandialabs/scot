@@ -163,7 +163,11 @@ sub get_users_groups {
     my $searchconf      = $self->user_groups;
     my $filter          = sprintf($searchconf->{filter}, $user);
 
+    my $loglevel    = $log->level;
+    $log->level(Log::Log4perl::Level::to_priority('WARN')); # turn debug off unless needed
+
     $log->debug("ldap group filter is ", { filter=>\&Dumper, value=>$filter});
+    $log->debug("ldap binddn is ", { filter=>\&Dumper, value=>$binddn});
 
     my $ldap = $self->ldap; 
     my $msg;
@@ -198,6 +202,7 @@ sub get_users_groups {
         $log->error("get users from ldap returned nothing!");
         return -3;
     }
+    $log->level($loglevel); # restore the loglevel from the rest of the app
 
     $log->trace("User $user is in the following groups: ".join(',',@groups));
     return wantarray ? @groups : \@groups;

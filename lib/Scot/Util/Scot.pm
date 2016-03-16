@@ -26,6 +26,12 @@ has env => (
     default => sub { Scot::Env->instance },
 );
 
+=item B<servername>
+
+this is the SCOT server
+
+=cut
+
 has servername  => (
     is          => 'ro',
     isa         => 'Str',
@@ -37,9 +43,15 @@ has servername  => (
 sub _get_servername {
     my $self    = shift;
     my $env     = $self->env;
-    my $name    = $env->servername // 'localhost';
+    my $name    = $env->servername // '127.0.0.1';
     return $name;
 }
+
+=item B<username>
+
+the username to access scot
+
+=cut
 
 has username => (
     is          => 'ro',
@@ -68,6 +80,12 @@ sub _get_imap_user_pass {
     my $env     = $self->env;
     return  $env->imap->password // 'needtosetimapspass';
 }
+
+=item B<uapid>
+
+for detection of forks
+
+=cut
 
 has uapid => (
     is          => 'ro',
@@ -204,7 +222,7 @@ sub get {
     my $json    = shift;
     my $log     = $self->env->log;
     my $ua      = $self->ua;
-    my $url     = sprintf "https://%s/%s", $self->servername, $path;
+    my $url     = sprintf "https://%s%s", $self->servername, $path;
 
     $log->debug("GET $url ",{filter=>\&Dumper, value=>$json});
     
@@ -224,7 +242,7 @@ sub post {
     my $json    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $url     = sprintf "https://%s/%s", $self->servername, $path;
+    my $url     = sprintf "https://%s%s", $self->servername, $path;
     my $ua      = $self->ua;
 
     $log->debug("POST $url ",{filter=>\&Dumper, value=>$json});
@@ -246,7 +264,7 @@ sub put {
     my $json    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $url     = sprintf "https://%s/%s", $self->servername, $path;
+    my $url     = sprintf "https://%s%s", $self->servername, $path;
     my $ua      = $self->ua;
 
     $log->debug("PUT $url ",{filter=>\&Dumper, value=>$json});
