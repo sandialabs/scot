@@ -23,6 +23,7 @@ use JSON;
 use Try::Tiny;
 use Mojo::UserAgent;
 use Scot::Env;
+use Scot::Util::Scot;
 use Scot::Util::EntityExtractor;
 use AnyEvent::STOMP::Client;
 use HTML::Entities;
@@ -76,8 +77,21 @@ has base_url    => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default    => "http://localhost:3000/scot/api/v2",
+    default    => "/scot/api/v2",
 );
+
+has scot        => (
+    is          => 'ro',
+    isa         => 'Scot::Util::Scot',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_scot_scot',
+);
+
+sub _build_scot_scot {
+    my $self    = shift;
+    return Scot::Util::Scot->new();
+}
 
 sub run {
     my $self    = shift;
@@ -95,14 +109,18 @@ sub run {
         }
     );
 
+    my $scot    = $self->scot;
+
     $stomp->on_message(
         sub {
             my ($stomp, $header, $body) = @_;
+            $log->debug("-"x50);
             $log->debug("header : ", { filter => \&Dumper, value => $header});
             $log->debug("body   : ", { filter => \&Dumper, value => $body});
 
             # read $body to determine alert or entry number
             my $json    = decode_json $body;
+            $log->debug("body   : ", { filter => \&Dumper, value => $json});
             my $type    = $json->{data}->{type};
             my $id      = $json->{data}->{id};
             my $action  = $json->{action};
@@ -117,12 +135,11 @@ sub run {
             }
 
             my $url     = $self->base_url . "/$type/$id";
-            my $ua      = Mojo::UserAgent->new;
 
             $log->debug("Getting $url");
 
             # do a REST GET of that thing
-            my $tx  = $ua->get($url);
+            my $tx  = $scot->get($url);
 
             # process through Entity Extractor
 
@@ -140,6 +157,7 @@ sub run {
                 return;
             }
             $self->process_entry($record);
+            $log->debug("-"x50);
         }
     );
 
@@ -152,6 +170,7 @@ sub process_alert  {
     my $extractor   = $self->extractor;
     my $env         = $self->env;
     my $log         = $env->log;
+    my $scot        = $self->scot;
 
     my $data    = $record->{data};
     my $flair;
@@ -173,7 +192,7 @@ sub process_alert  {
             next TUPLE;
         }
 
-# note self on monday.  this isn't working find out why.
+        # note self on monday.  this isn't working find out why.
         my $eehref  = $extractor->process_html($encoded);
 
         $flair->{$key} = $eehref->{flair};
@@ -188,10 +207,9 @@ sub process_alert  {
         }
     }
 
-    my $ua      = Mojo::UserAgent->new;
     # save via REST PUT
     my $url = $self->base_url."/alert/$record->{id}";
-    my $tx  = $ua->put($url => json => {
+    my $tx  = $scot->put($url,{
         data_with_flair => $flair,
         entities        => \@entities,
         parsed          => 1,
@@ -205,7 +223,7 @@ sub process_entry {
     my $imgmunger   = $self->imgmunger;
     my $env         = $self->env;
     my $log         = $env->log;
-    my $ua      = Mojo::UserAgent->new;
+    my $scot        = $self->scot;
 
     my $id  = $record->{id};
 
@@ -227,7 +245,7 @@ sub process_entry {
 
     $log->debug("Putting: ", { filter => \&Dumper, value => $json});
 
-    my $tx  = $ua->put($url => json => $json);
+    my $tx  = $scot->put($url, $json);
     
 }
 1;
