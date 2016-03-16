@@ -199,10 +199,10 @@ var EntryData = React.createClass({
                 this.setState({count:newcount});
             }.bind(this),300);
         }
-        //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
+       //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
     },
     componentDidMount: function () {
-        this.setState({height:'2px'}); 
+        //this.setState({height:'2px'}); 
     },
     flairToggle: function() {
         if (this.state.flairToolbar == false) {
