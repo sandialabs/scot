@@ -9,11 +9,12 @@ use Data::Dumper;
 use Scot::Env;
 use Mojo::JSON qw(decode_json encode_json);
 
-print "Resetting test db...\n";
-system("mongo scot-testing <../../bin/database/reset.js 2>&1 > /dev/null");
-
 $ENV{'scot_mode'}   = "testing";
-my @defgroups       = ( 'ir', 'testing' );
+$ENV{'SCOT_AUTH_MODE'}   = "Testing";
+print "Resetting test db...\n";
+system("mongo scot-testing <../../etc/database/reset.js 2>&1 > /dev/null");
+
+my @defgroups       = ( 'wg-scot-ir', 'testing' );
 
 my $t   = Test::Mojo->new('Scot');
 

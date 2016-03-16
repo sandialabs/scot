@@ -276,7 +276,11 @@ sub get_many {
     $match_ref   = $req_href->{request}->{params}->{match} // 
                    $req_href->{request}->{json}->{match};
   
-     $match_ref  = $self->build_match_ref($match_ref);    
+    $match_ref  = $self->build_match_ref($match_ref);    
+
+    if ( $tasksearch == 1 ) {
+        $match_ref->{'task.status'} = {'$exists' => 1};
+    }
 
     unless ( $match_ref ) {
         $log->debug("Empty match_ref! Easy, peasey");
@@ -623,6 +627,7 @@ sub update {
 
     if ( $object->meta->does_role("Scot::Role::Permission") ) {
         my $users_groups    = $self->session('groups');
+        $log->debug("User groups are ",{filter=>\&Dumper, value=>$users_groups});
         unless ( $object->is_modifiable($users_groups) ) {
             $self->modify_not_permitted_error($object, $users_groups);
             return;
@@ -656,6 +661,7 @@ sub update {
 
     if ( ref($object) eq "Scot::Model::Entry" ) {
         $self->do_task_checks($req_href);
+        $log->debug("Request is now: ",{filter=>\&Dumper, value => $req_href});
     }
 
     if ( $object->meta->does_role("Scot::Role::Entitiable") ) {
@@ -1812,6 +1818,10 @@ sub supertable {
     });
 }
 
+## TODO:  This will change:  We are going to allow client to pass in mongo query json
+## This function will then untaint the data for safety
+## benefit:  removing much brittleness from code below
+
 sub build_match_ref {
     my $self	        = shift;
     my $filter_ref      = shift;     
@@ -1823,73 +1833,72 @@ sub build_match_ref {
     my @numfields       = qw(views); 
 
     while (my ($k, $v)  = each %{$filter_ref}) {
-	if($k =~ /id/) {
-	    if(ref ($v) eq "ARRAY" ) {
-		@$v = map {$_} @$v;
-	        if(grep(m/!/, @$v) || grep(m/Not/i, @$v)) {
-		    for(@$v){
-		     s/\Not//gi;
-	  	     s/\!//g;
-		     s/\s+//;
-		   }
-		     @$store = map {$_ + 0} @$v;
-		     $match->{$k}  = { '$nin' => $v};
-		}
-		else {
-		      @$store = map {$_ + 0} @$v;
-	              $match->{$k} = {'$in' => $v};
-		  }
-	       }
-	   }
-     elsif ( grep {/$k/}  @numfields){
-	     @$v = map {$_} @$v;
-	        if(grep(m/!/, @$v) || grep(m/Not/i, @$v)) {
-		    for(@$v){
-		     s/\Not//gi;
-	  	     s/\!//g;
-		     s/\s+//;
-		   }
-		     @$store = map {$_ + 0} @$v;
-		     $match->{views}  = { '$nin' => $v};
-		}
-		else {
-		      @$store = map {$_ + 0} @$v;
-	              $match->{views} = {'$in' => $v};
-		  }
-	 }
-     elsif($k eq "tags") {
-	       $match->{$k}  = {'$all' => $v };
-	 }	
-	 elsif ( grep { /$k/ } @datefields ) {
-              if($v =~ m/!/ || $v =~ m/Not/i) {
-	  	  $v  =~ s/\!//g;
-		  $v  =~ s/\Not//gi;
-		  $v  =~ s/\s+//;
-		  my $epoch_href = $v;
-		  my $begin      = $epoch_href->{begin};
-		  my $end        = $epoch_href->{end};
-		     $match->{$k}   = { '$ne' => '$gte'  => $begin, '$lte' => $end };
-	        }
-		else {
-	          my $epoch_href = $v;
-		  my $begin      = $epoch_href->{begin};
-		  my $end        = $epoch_href->{end};
-		     $match->{$k}   = { '$gte'  => $begin, '$lte' => $end };
-	        }
-           }
-	 else {
-	      if($v =~ m/!/ || $v =~ m/Not/i) {
-		    $v  =~ s/\!//g;
-		    $v  =~ s/\Not//gi;
-		    $v  =~ s/\s+//;
- 		    $match->{$k} = {'$ne' => lc $v };
-		}
-	       else {
-		  $match->{$k} = qr/$v/i;
-	        }
-	   }
-      }
-		
+        if($k =~ /id/) {
+            if(ref ($v) eq "ARRAY" ) {
+                @$v = map {$_} @$v;
+                if(grep(m/!/, @$v) || grep(m/Not/i, @$v)) {
+                    for(@$v) {
+                        s/\Not//gi;
+                        s/\!//g;
+                        s/\s+//;
+                    }
+                    @$store = map {$_ + 0} @$v;
+                    $match->{$k}  = { '$nin' => $v};
+                }
+                else {
+                    @$store = map {$_ + 0} @$v;
+                    $match->{$k} = {'$in' => $v};
+                }
+            }
+        }
+        elsif ( grep {/$k/}  @numfields) {
+            @$v = map {$_} @$v;
+            if(grep(m/!/, @$v) || grep(m/Not/i, @$v)) {
+                for(@$v){
+                    s/\Not//gi;
+                    s/\!//g;
+                    s/\s+//;
+                }
+                @$store = map {$_ + 0} @$v;
+                $match->{views}  = { '$nin' => $v};
+            }
+            else {
+                @$store = map {$_ + 0} @$v;
+                    $match->{views} = {'$in' => $v};
+            }
+        }
+        elsif($k eq "tags") {
+            $match->{$k}  = {'$all' => $v };
+        }	
+        elsif ( grep { /$k/ } @datefields ) {
+            if($v =~ m/!/ || $v =~ m/Not/i) {
+                $v  =~ s/\!//g;
+                $v  =~ s/\Not//gi;
+                $v  =~ s/\s+//;
+                my $epoch_href = $v;
+                my $begin      = $epoch_href->{begin};
+                my $end        = $epoch_href->{end};
+                    $match->{$k}   = { '$ne' => '$gte'  => $begin, '$lte' => $end };
+            }
+            else {
+                my $epoch_href = $v;
+                my $begin      = $epoch_href->{begin};
+                my $end        = $epoch_href->{end};
+                $match->{$k}   = { '$gte'  => $begin, '$lte' => $end };
+            }
+        }
+        else {
+            if($v =~ m/!/ || $v =~ m/Not/i) {
+                $v  =~ s/\!//g;
+                $v  =~ s/\Not//gi;
+                $v  =~ s/\s+//;
+                $match->{$k} = {'$ne' => lc $v };
+            }
+            else {
+            $match->{$k} = qr/$v/i;
+            }
+        }
+    }
 	return $match;
 }
 
