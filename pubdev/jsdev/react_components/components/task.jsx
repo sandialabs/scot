@@ -1,6 +1,8 @@
 var React               = require('react');
 var Modal               = require('react-modal');
 var Button              = require('react-bootstrap/lib/Button');
+var AppActions          = require('../flux/actions.jsx');
+
 const customStyles = {
     content : {
         top     : '50%',
@@ -16,6 +18,7 @@ var Task = React.createClass({
         return {
             taskOwner:null,
             taskStatus:null, 
+            key:this.props.id,
         }
     },
     componentWillMount: function () { 
@@ -33,7 +36,7 @@ var Task = React.createClass({
             data: JSON.stringify(json),
             success: function(data) {
                 console.log('success: ' + data);
-                this.props.updated();
+                AppActions.updateItem(this.state.key,'headerUpdate');
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to close task');
@@ -48,7 +51,7 @@ var Task = React.createClass({
             data: JSON.stringify(json),
             success: function(data) {
                 console.log('success: ' + data);
-                this.props.updated();
+                AppActions.updateItem(this.state.key,'headerUpdate');
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to close task');
@@ -63,8 +66,8 @@ var Task = React.createClass({
             data: JSON.stringify(json),
             success: function(data) {
                 console.log('success: ' + data);
-                this.props.updated();
-            }.bind(this),
+                 AppActions.updateItem(this.state.key,'headerUpdate');
+           }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to make Task owner');
             }.bind(this)

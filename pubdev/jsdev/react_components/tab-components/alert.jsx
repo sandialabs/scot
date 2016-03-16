@@ -48,12 +48,17 @@ var Crouton = require('../../../node_modules/react-crouton')
 var Frame = require('../../../node_modules/react-frame')
 var finalfiles = []
 var checkfiles = false
-var Alertentry = require('../entry/selected_entry.jsx')
+var Alertentry = require('../entry/selected_entry.jsx').SelectedEntry
 var Header = require('../entry/selected_header.jsx')
 var Addentry = require('../modal/add_entry.jsx')
+var Appactions = require('../flux/actions.jsx')
+var Store = require('../flux/store.jsx')
 var supervalue = [];
 var ventry = false
 var supername;
+var setfilter = false
+var activequery;
+var Listener = require('../activemq/listener.jsx')
 var columns = 
 [
     { name: 'id' , width: 111.183, style: {color: 'black'}},
@@ -67,7 +72,7 @@ var columns =
 
 const  customStyles = {
         content : {
-        top     : '11%',
+        top     : '3%',
         right   : '60%',
         bottom  : 'auto',
         left: '10%',
@@ -88,16 +93,17 @@ function getColumns()
 		datacolumns = data
 	});
 }
-
-var Viewentry = React.createClass({
+	var Viewentry = React.createClass({
 	getInitialState: function() {
 	return{open: ventry}
 	},
 	componentWillMount: function(){
-		this.setState({open:ventry})
+	this.clickable1()
+	ventry = true
 	},
 	componentWillReceiveProps: function() {
-		this.setState({open: ventry})
+	this.clickable1()
+	ventry = true
 	},
 	render: function() {
 
@@ -119,13 +125,16 @@ var Viewentry = React.createClass({
 	)
 	)
 	},
-        clickable1: function(){
+	clickable1: function(){
 
-	this.setState({open: false})
-
-        },
+	if(!ventry){
+	this.setState({open: true})
+	} else{
+	this.setState({open:false})
+	}
+	},
 	onCancel: function(){
-	     this.setState({open:false, change:false})
+     this.setState({open:false, change:false})
 	}
 	});
 
@@ -167,7 +176,7 @@ function dataSource(query)
 			)
 		},
 		view: function(){
-		ventry = true;		
+		ventry = false;		
 		this.setState({view:true, refe: item})
 		}
 		});	
@@ -239,7 +248,11 @@ function dataSource(query)
 	})
     }
     else {
-	$('.z-vertical-scrollbar').css('top', 0)
+	if(setfilter){
+	query.skip = 0
+	setfilter = false
+	}
+	activequery = query
 	return $.ajax({
 	type: 'GET',
 	url: url,
@@ -331,6 +344,8 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	setTimeout(function() { this.setState({columns: newarray})}.bind(this), 800)
 	}
 	}.bind(this));
+	Store.storeKey(this.state.key)
+	Store.addChangeListener(this.reloadentry)
 	},
   componentWillReceiveProps: function(){
   	var project = getColumns()
@@ -388,11 +403,10 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	})
 	})
 	}, 100)
-	ids = supervalue.join(',') 
 	return (
 	this.state.history ? React.createElement(HistoryView, {type:'alertgroup', id: this.state.historyid, historyToggle: this.viewHistory}) 
         :
-	React.createElement("div", {className: 'All Modal', style: {'padding-left': '25px'}}, this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', updated: this.reloadentry, addedentry: this.addEntry, type: 'alert'}) : null,
+	React.createElement("div", {className: 'All Modal'}, /*style: {'padding-left': '25px'}},*/ this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', updated: this.reloadentry, addedentry: this.addEntry, type: 'alert'}) : null,
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
 	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alertgroup', id: this.state.key})), this.state.oneview ? React.createElement('btn-group', null, this.state.flair ? React.createElement('button',{className: 'btn btn-default', onClick: this.flairOn}, 'Flair On') : React.createElement('button', {className: 'btn btn-default', onClick: this.flairOff}, 'Flair Off'), React.createElement('button', {className: 'btn btn-default', onClick: this.viewGuide}, 'View Guide'), React.createElement('button', {className:'btn btn-default', onClick:this.viewSource}, 'View Source'), React.createElement('button', {className:'btn btn-default', onClick: this.viewHistory}, 'View History'), React.createElement('button', {className: 'btn btn-default', onClick:this.addEntry}, 'Add Entry'), React.createElement('button', {className: 'btn btn-default', onClick: this.openSelected}, 'Open Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.closeSelected}, 'Close Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.promoteSelected}, 'Promote Selected'), React.createElement('button', {className:'btn btn-default', onClick:this.selectExisting}, 'Add Selected to Existing Event'), React.createElement('button', {className:'btn btn-default', onClick:this.exportCSV}, 'Export to CSV'), React.createElement('button', {className:'btn btn-default', onClick:this.deleteSelected}, 'Delete Selected')) : null ,  React.createElement(Subgrid, {style: {height: '100%', 'z-index' : '0'},className: "Subgrid",
             ref: "dataGrid", 
@@ -443,11 +457,6 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
     viewGuide: function(){
 	    if(storealertids.length > 1){
 		alert("Select only one id to view guide")
-	setTimeout(
-	function() {
-	this.reloadentry()
-	}.bind(this), 1000)
-	this.setState({})
 	    }
 	    else {
 	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
@@ -457,11 +466,6 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 		}
 		})
 		})
-	setTimeout(
-	function() {
-	this.reloadentry()
-	}.bind(this), 1000)
-	this.setState({})
 	    }
     },
     viewSource: function(){
@@ -482,10 +486,6 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
         var id = 0;
 	if(storealertids.length > 1){
 	    alert("Select only one id to view history")
-	setTimeout(
-	function() {
-	this.reloadentry()
-	}.bind(this), 1000)
 	}
 	else {  
 	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
@@ -553,7 +553,7 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 			)
 		},
 		view: function(){
-		ventry = true;		
+		ventry = false;		
 		this.setState({view:true, refe: item})
 		}
 		});	
@@ -624,109 +624,16 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
     openSelected: function(){
 	var data = new Object();
 	var state = this.state.key
-	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
-	$(value).find('.z-cell').each(function(x,y){
-	    if($(y).attr('name') == "id"){
-		data = JSON.stringify({status:'open'})
-		$.ajax({
-			type: 'PUT',
-			url: '/scot/api/v2/alert/'+$(y).text(),
-			data: data
-		}).success(function(response){
-	$('.subtable'+state).find('.z-selected').each(function(t,u){
-		    $(u).find('.z-cell').each(function(r,s){
-			if($(s).attr('name') == "alertgroup"){
-		         data = JSON.stringify({status: 'open'})
-		        $.ajax({
-			    type: 'PUT',
-			    url: '/scot/api/v2/alertgroup/' + $(s).text(),
-			    data: data
-		        }).success(function(response){
-			   });		
-			   }
-			   });
-			   });
-	}.bind(this));
-	}
-	});
-	});
-	setTimeout(
-	function() {
-	this.reloadentry()
-	}.bind(this), 1000)
-	this.setState({})
+	Appactions.updateItem(state, 'alertstatusmessage', 'open')
     },
 
     closeSelected: function(){
-	var data = new Object();
-	var curr = Math.round(new Date().getTime() / 1000);
 	var state = this.state.key
-	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
-	$(value).find('.z-cell').each(function(x,y){
-	    if($(y).attr('name') == "id"){
-		data = JSON.stringify({status:'closed', closed: curr})
-		$.ajax({
-			type: 'PUT',
-			url: '/scot/api/v2/alert/'+$(y).text(),
-			data: data
-		}).success(function(response){	
-	$('.subtable'+state).find('.z-selected').each(function(t,u){
-		    $(u).find('.z-cell').each(function(r,s){
-			if($(s).attr('name') == "alertgroup"){
-		         data = JSON.stringify({status: 'closed'})
-		        $.ajax({
-			    type: 'PUT',
-			    url: '/scot/api/v2/alertgroup/' + $(s).text(),
-			    data: data
-		        }).success(function(response){
-			   });		
-			   }
-			   });
-			   });
-	}.bind(this));
-	}
-	});
-	});
-	setTimeout(
-	function() {
-	this.reloadentry()
-	}.bind(this), 1000)
-	this.setState({})
+	Appactions.updateItem(state, 'alertstatusmessage', 'closed')
    },
    promoteSelected: function(){
-	var data = new Object()
 	var state = this.state.key
-	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
-	$(value).find('.z-cell').each(function(x,y){
-	    if($(y).attr('name') == "id"){
-		data = JSON.stringify({promote: 'new'})			
-			$.ajax({
-			type: 'PUT',
-			url: '/scot/api/v2/alert/' + $(y).text(),
-			data: data
-		}).success(function(response){
-	$('.subtable'+state).find('.z-selected').each(function(t,u){
-		    $(u).find('.z-cell').each(function(r,s){
-			if($(s).attr('name') == "alertgroup"){
-		         data = JSON.stringify({status: 'promoted'})
-		        $.ajax({
-			    type: 'PUT',
-			    url: '/scot/api/v2/alertgroup/' + $(s).text(),
-			    data: data
-		        }).success(function(response){
-			}.bind(this))
-		}
-		})
-		})
-		}.bind(this))
-	}
-	})
-	})
-	setTimeout(
-	function() {
-	this.reloadentry()
-	}.bind(this), 1000)
-	this.setState({})
+	Appactions.updateItem(state, 'alertstatusmessage', 'promoted')
    },
 
    selectExisting: function(){
@@ -749,11 +656,6 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	}
 	});
 	})
-	setTimeout(
-	function() {
-	this.reloadentry()
-	}.bind(this), 1000)
-	this.setState({})
    },
    exportCSV: function(){
 	    var keys = []
@@ -783,33 +685,9 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
     },
     deleteSelected: function(){
 	if(confirm("Are you sure you want to Delete? This action can not be undone.")){
-	var data = new Object();
-	var curr = Math.round(new Date().getTime() / 1000);
-	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
-	$(value).find('.z-cell').each(function(x,y){
-	    if($(y).attr('name') == "id"){
-		$.ajax({
-			type: 'DELETE',
-			url: '/scot/api/v2/alert/'+$(y).text(),
-			data: data
-		}).success(function(response){
-	});
+	var state = this.state.key
+	Appactions.updateItem(state, 'alertstatusmessage', 'delete')
 	}
-	});
-	});
-	setTimeout(
-	function() {
-	this.reloadentry()
-	}.bind(this), 1000)
-	this.setState({})
-	}
-	else {
-	setTimeout(
-	function() {
-	this.reloadentry()
-	}.bind(this), 1000)
-	this.setState({})
- 	}
 
    },
     onDrop: function(files){
@@ -852,7 +730,7 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 var Maintable = React.createClass({
 
     getInitialState: function(){
-           return {fsearch: '',viewfilter: false, data: dataSource, showAlertbutton: false, viewAlert:false,csv:true};
+           return {fsearch: '',viewfilter: false, data: [], showAlertbutton: false, viewAlert:false,csv:true};
          },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
@@ -861,38 +739,39 @@ var Maintable = React.createClass({
     componentWillMount: function(){
 	if(this.props.supertable !== undefined){
 	    if(this.props.supertable.length > 0){
-		window.location.hash = '#/alert/' + this.props.supertable.join('+')
+		window.location.hash = '#/alertgroup/' + this.props.supertable.join('+')
 		window.location.href = window.location.hash 
 		passids = this.props.supertable
 		ids = this.props.supertable.join(',')
 		stage = true
 		changestate = true
 		url = '/scot/api/v2/supertable'	
-		this.setState({})
+		this.setState({data:dataSource})
 		}
 		else {
-		window.location.hash = '#/alert/'
+		window.location.hash = '#/alertgroup/'
 		window.location.location = window.location.hash
 		url = '/scot/api/v2/alertgroup'
 		stage = false
 		SELECTED_ID_GRID = {}
 		changestate = false
 		passids = {}	
-		this.setState({})
+		this.setState({data:dataSource})
 		}
 	}
 	else {
-	window.location.hash = '#/alert/'
+	window.location.hash = '#/alertgroup/'
 	window.location.href = window.location.hash
 	this.setState({})
 	}
-    },
+	Listener.activeMq(activequery, this.activecallback)
+	},
     componentWillReceiveProps: function(){
 	this.setState({})
     },
     render: function() {
 	$('.active').on('click', function(){
-	window.location.hash = '#/alert/'
+	window.location.hash = '#/alertgroup/'
 	window.location.href = window.location.hash
 	})
 	const rowFact = (rowProps) => {
@@ -990,7 +869,7 @@ var Maintable = React.createClass({
 	stage = true
 	changestate = true
 	url = '/scot/api/v2/supertable'
-	window.location.hash = '#/alert/'+passids.join('+')
+	window.location.hash = '#/alertgroup/'+passids.join('+')
 	window.location.href = window.location.hash
 	this.setState({viewAlert: true, showAlertbutton:false,csv:false})
     },
@@ -1045,6 +924,7 @@ var Maintable = React.createClass({
 	})
 	if(Object.keys(filter).length > 0){
 	savedsearch = false
+	setfilter = true
 	this.setState({viewfilter: false})
 	$.each(allFilterValues, function(key,value){
 	    if(value != ""){
@@ -1058,10 +938,13 @@ var Maintable = React.createClass({
 	savedsearch = false
 	savedfsearch = ''
 	this.setState({viewfilter: false})
+	}	
+	},
+	activecallback: function(){
+	if(activequery != undefined){
+	this.setState({data: dataSource(activequery)})
 	}
-	
 	}
-
 });
 
 module.exports = Maintable
