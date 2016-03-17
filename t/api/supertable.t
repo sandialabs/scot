@@ -9,11 +9,12 @@ use Scot::Collection;
 use Scot::Collection::Alertgroup;
 
 $ENV{'scot_mode'}   = "testing";
-
+$ENV{'SCOT_AUTH_MODE'}   = "Testing";
 print "Resetting test db...\n";
-system("mongo scot-testing <../../bin/database/reset.js 2>&1 > /dev/null");
+system("mongo scot-testing <../../etc/database/reset.js 2>&1 > /dev/null");
 
-@defgroups = ( 'ir', 'test' );
+
+@defgroups = ( 'wg-scot-ir', 'test' );
 
 my $t = Test::Mojo->new('Scot');
 

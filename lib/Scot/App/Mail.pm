@@ -19,6 +19,7 @@ use Data::Dumper;
 use Try::Tiny;
 use Mojo::UserAgent;
 use Scot::Env;
+use Scot::Util::Scot;
 use HTML::TreeBuilder;
 use Parallel::ForkManager;
 use strict;
@@ -50,6 +51,20 @@ has interactive => (
     required    => 1,
     default => 'no',
 );
+
+# has scotserver  => (
+#     is          => 'ro',
+#     isa         => 'Str',
+#     required    => 1,
+#     lazy        => 1,
+#     builder     => '_get_scot_server',
+# );
+# 
+# sub _get_scot_server {
+#     my $self    = shift;
+#     my $env     = $self->env;
+#     return $env->servername;
+# }
 
 has scot => (
     is          => 'ro',
@@ -111,6 +126,7 @@ sub process_message {
     my $msghref = shift;
     my $env     = $self->env;
     my $log     = $env->log;
+    my $scot    = $self->scot;
 
     # is message from approved sender?
     unless ( $self->approved_sender($msghref) ) {
@@ -130,7 +146,6 @@ sub process_message {
 
     my $json_to_post = $self->$source($msghref);
     my $path         = "/scot/api/v2/alertgroup";
-    my $scot         = $self->scot;
 
     $log->debug("Json to Post = ", {filter=>\&Dumper, value=>$json_to_post});
 
