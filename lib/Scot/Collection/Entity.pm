@@ -9,11 +9,33 @@ with    qw(
     Scot::Role::GetTargeted
 );
 
-sub create_from_handler {
-    return {
-        error   => "Direct creation of Entities from Web API not supported",
-    };
+sub create_from_api {
+    my $self    = shift;
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mq      = $env->mq;
+
+    $log->trace("Creating Entity via API");
+
+    my $request = $href->{request}->{json};
+    my $entity  = $self->create($request);
+
+    unless ( defined $entity ) {
+        $log->error("Error! Failed to create Entity with data ",
+                    { filter => \&Dumper, value => $request } );
+        return undef;
+    }
+    $env->mq->send("scot", {
+        action  => "created",
+        data    => {
+            type    => "entity",
+            id      => $entity->id,
+        }
+    });
+    return $entity;
 }
+
 
 sub update_entities {
     my $self    = shift;

@@ -100,23 +100,6 @@ has columns     => (
 
 =cut
 
-
-=item B<events>
-
-array of events that this alert was promoted to
-
-HANDLED BY PROMOTABLE
-
-has events  => (
-    is          => 'ro',
-    isa         => 'ArrayRef',
-    traits      => ['Array'],
-    required    => 0,
-    default     => sub { [] },
-);
-
-=cut
-
 __PACKAGE__->meta->make_immutable;
 1;
 
