@@ -121,6 +121,7 @@ sub get_groups {
         push @groups, @$results;
         return wantarray ? @groups : \@groups;
     }
+
     # else local is all that remains
     $log->debug("group mode is local");
     my $mongo   = $env->mongo;

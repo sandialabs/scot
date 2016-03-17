@@ -29,7 +29,7 @@ has servername => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default     => 'localhost',
+    default     => '127.0.0.1',
 );
 
 has mojo    => (
@@ -121,8 +121,8 @@ sub _get_default_groups {
     }
     else {
         return {
-            read        => [ qw(ir testing) ],
-            modify      => [ qw(ir testing) ],
+            read        => [ qw(wg-scot-ir testing) ],
+            modify      => [ qw(wg-scot-ir testing) ],
         };
     }
 }

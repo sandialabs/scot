@@ -10,6 +10,7 @@ use AnyEvent::STOMP::Client;
 use Scot::Env;
 use JSON;
 use Data::Dumper;
+use DateTime;
 
 my $stomp   = AnyEvent::STOMP::Client->new();
 
@@ -28,7 +29,14 @@ $stomp->on_message(
 
         my $json = decode_json $body;
 
-        say "-"x80;
+        my $dt  = DateTime->now();
+       
+        my $date    = $dt->ymd . " ". $dt->hms;
+        my $dl  = length($date);
+
+        my $nd = 80 - $dl - 10;
+
+        say "-"x10 . $dt->ymd . " ". $dt->hms. "-"x$nd;
         say Dumper($json);
         say "-"x80;
     }
