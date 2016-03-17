@@ -50,7 +50,11 @@ var AddEntryModal = React.createClass({
 	   type: 'GET',
 	   url:  '/scot/api/v2/entry/'+ this.props.id
 	   }).success(function(response){
-	      this.setState({subitem: response.body_flair})
+	        if (response.body_flair == '') {
+                this.setState({subitem: response.body});
+            } else {
+                this.setState({subitem: response.body_flair});
+            }
 	    }.bind(this))
 		var newheight;
 		newheight= document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
