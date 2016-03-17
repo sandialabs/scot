@@ -61,6 +61,7 @@ var SelectedHeader = React.createClass({
     },
     componentWillReceiveProps: function() {
         this.updated();    
+        setTimeout(function(){this.entityUpdate()}.bind(this));
     },
     updated: function(_type,_message) {
         this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
@@ -81,6 +82,37 @@ var SelectedHeader = React.createClass({
             this.setState({notificationType:null,notificationMessage:null,showFlash:false}); 
         }
         console.log('Ran update')  
+    },
+    entityUpdate: function() {
+        var count = 0;
+        this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
+            var entityResult = result.records;
+            $('iframe').each(function(index,ifr) {
+                if(ifr.contentDocument != null) {
+                    var ifrContents = $(ifr).contents();
+                    ifrContents.find('.entity').each(function(index,entity){
+                        var oldentity = $(this).attr('data-entity-value');
+                        $(this).attr('data-entity-value', oldentity.toLowerCase())
+                    });
+                }
+            });
+            for (var prop in entityResult) {
+                var entityValue = entityResult[prop].value;
+                $('iframe').each(function(index,ifr) {
+                    if(ifr.contentDocument != null) {
+                        var ifrContents = $(ifr).contents();
+                        var entity = ifrContents.find('span[data-entity-value="' + entityValue + '"]');
+                        entity.each(function(index,entity) {
+                            var circle = $('<span class="noselect">')//.attr('alt', ref_text).attr('title', ref_text);
+                            circle.addClass('circleNumber');
+                            circle.addClass('extras');
+                            circle.text(count += 1);
+                            $(entity).append(circle);
+                        });
+                    }
+                })
+            }
+        });  
     },
     viewedbyfunc: function(headerData) {
         var viewedbyarr = [];
@@ -177,7 +209,7 @@ var SelectedHeader = React.createClass({
                 {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type={type} targetid={id} id={id} addedentry={this.entryToggle} updated={this.updated}/> : null}  
                 {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
                 {type != 'alertgroup' ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
-                {type != 'alertgroup' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} /> : null}
+                {type != 'alertgroup' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated}  /> : null}
             </div>
         )
     }
