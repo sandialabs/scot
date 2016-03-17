@@ -541,9 +541,9 @@ echo -e "${yellow} running grunt on reactjs files...${NC}"
 CURDIR=`pwd`
 
 #if [ $SKIPNODE == "no" ];then
-   # cd $DEVDIR/pubdev 
-  #  npm install
- #   cd $CURDIR
+#    cd $DEVDIR/pubdev 
+#    npm install
+#    cd $CURDIR
 #fi
 
 echo -e "${yellow} installing SCOT files ${NC}"
@@ -616,7 +616,7 @@ while [[ $? -ne 0 && $COUNTER -lt 100 ]]; do
     grep -q 'waiting for connections on port' /var/log/mongodb/mongod.log
 done
 
-if [ "$RESETDB" == "1" ];then
+if [ "$RESETDB" == "yes" ];then
     echo -e "${red}- Dropping mongodb scot database!${NC}"
     mongo scot-prod $DEVDIR/etc/database/reset.js
     mongo scot-prod $DBCONFIGJS
