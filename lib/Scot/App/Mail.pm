@@ -153,10 +153,15 @@ sub process_message {
 
     my $tx = $scot->post( $path, $json_to_post );
 
-    $log->debug("tx->res is ",{filter=>\&Dumper, value=>$tx->res});
+    unless (defined $tx) {
+        $log->error("ERROR! Undefined transaction object $path ",
+                    {filter=>\&Dumper, value=>$json_to_post});
+        return;
+    }
     
     if ( $tx->res->json->{status} ne "ok" ) {
         $log->error("Failed posting new alertgroup mgs_uid:", $msghref->{imap_uid});
+        $log->debug("tx->res is ",{filter=>\&Dumper, value=>$tx->res});
         $env->imap->mark_uid_unseen($msghref->{imap_uid});
         return;
     }

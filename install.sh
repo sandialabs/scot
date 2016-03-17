@@ -419,7 +419,7 @@ EOF
         a2enmod -q rewrite
         a2enmod -q authnz_ldap
 
-        if [ ! -e $SITESAVAILABLE/scot.conf ]; then
+        if [ ! -e $SITESAVAILABLE/scot.conf ] || [ $REFRESHAPACHECONF == "yes"]; then
 
             echo -e "${yellow}+ adding scot configuration${NC}"
             REVPROXY=$DEVDIR/etc/scot-revproxy-$MYHOSTNAME
