@@ -1,5 +1,6 @@
 'use strict';
 
+
 var React = require('react')
 var HistoryView = require('../modal/history.jsx')
 var Search = require('../components/esearch.jsx')
@@ -53,12 +54,15 @@ var Header = require('../entry/selected_header.jsx')
 var Addentry = require('../modal/add_entry.jsx')
 var Appactions = require('../flux/actions.jsx')
 var Store = require('../flux/store.jsx')
+var Listener = require('../activemq/listener.jsx')
 var supervalue = [];
+var supercolumns = []
+var getUser
 var ventry = false
 var supername;
 var setfilter = false
 var activequery;
-var Listener = require('../activemq/listener.jsx')
+var array = []
 var columns = 
 [
     { name: 'id' , width: 111.183, style: {color: 'black'}},
@@ -70,24 +74,28 @@ var columns =
     { name: 'views', style: {color: 'black'}, width: 104.4}
 ]
 
+
+
 const  customStyles = {
         content : {
         top     : '3%',
         right   : '60%',
         bottom  : 'auto',
         left: '10%',
-	width: '80%',
-	'z-index' : '99'
+	    width: '80%',
+	    'z-index' : '99'
 //	height: '80%'
     }
 }
-function getColumns()
+function getColumns(key)
 {
+    var data = []
+    data.push(key)
     return $.ajax({
 	type: 'GET',
 	url: url,
 	data: {
-	alertgroup: JSON.stringify(supervalue)
+	alertgroup: JSON.stringify(data)
 	}
 	}).success(function(data){
 		datacolumns = data
@@ -139,13 +147,12 @@ function getColumns()
 	});
 
 function dataSource(query)
-{	
-	var getID = []	
-      	var finalarray = [];
+{	var getID = []	
+    var finalarray = [];
 	var sortarray = {}
 	sortarray[colsort] = valuesort
 	if(changestate){
-	var count = 0
+    var count = 0
 	return $.ajax({
 	type: 'GET',
 	url: url,
@@ -198,6 +205,7 @@ function dataSource(query)
 	)
 	},
 	launch: function(){
+    var set;
 	$('.z-selected').each(function(key, value){
 	$(value).find('.z-cell').each(function(x,y){	  
 	    if($(y).attr('name') == 'id'){
@@ -206,15 +214,15 @@ function dataSource(query)
 			url: '/scot/api/v2/alert/'+$(y).text() + '/event'
 		}).success(function(response){
 		   $.each(response, function(x,y){
-	           $.each(y, function(key, value){
+	       $.each(y, function(key, value){
 		   $.each(value, function(r,s){
 	           if(r == 'id'){
-		    	window.location = '#/event/' + s
+                set = s
 	              }
 	           })
 		})
-		})
-	
+		})   	
+        window.location = '#/event/' + set
 	});
 	}
 	});
@@ -310,12 +318,12 @@ function configureTable(data, props){
 var Subtable = React.createClass({
 	
     getInitialState: function(){
-	if(this.props.id !== undefined)
+	if(this.props.number !== undefined)
 	{
 	    supervalue = []
-	    supervalue.push(this.props.id)
-	    supername = this.props.id
-	}
+	    supervalue.push(this.props.number)
+	    supername = this.props.number
+    }
 	else {
 	supername = supervalue[0]
 	}
@@ -323,9 +331,9 @@ var Subtable = React.createClass({
 
 flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
     },
-   componentWillMount: function(){
-	SELECTED_ID_GRID = {}
-	var project = getColumns()
+   componentDidMount: function(){ 
+    SELECTED_ID_GRID = {}
+	var project = getColumns(this.state.key)
 	project.success(function(realData){
 	var last = realData.columns
 	if(this.isMounted()){
@@ -344,11 +352,13 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	setTimeout(function() { this.setState({columns: newarray})}.bind(this), 800)
 	}
 	}.bind(this));
-	Store.storeKey(this.state.key)
-	Store.addChangeListener(this.reloadentry)
+
+    Listener.activeMq(this.state.key, this.reloadactive)
+    setTimeout(function() {Store.storeKey(this.state.key)}.bind(this), 10)
+	setTimeout(function() {Store.addChangeListener(this.reloadentry)}.bind(this),10)
 	},
   componentWillReceiveProps: function(){
-  	var project = getColumns()
+    var project = getColumns(this.state.key)
 	project.success(function(realData){
 	var last = realData.columns
 	if(this.isMounted()){
@@ -364,11 +374,10 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	newarray[i] = {name:last[i],width: 200, style:{color:'black'}}
 	}	    
 	}
-	this.setState({data: dataSource, columns: newarray})
+	this.setState({columns: newarray})
 	}
-	}.bind(this));
+	}.bind(this)); 
 	},
-
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
          firstCol.width = firstSize
          this.setState({})
@@ -409,11 +418,11 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	React.createElement("div", {className: 'All Modal'}, /*style: {'padding-left': '25px'}},*/ this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', updated: this.reloadentry, addedentry: this.addEntry, type: 'alert'}) : null,
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
 	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alertgroup', id: this.state.key})), this.state.oneview ? React.createElement('btn-group', null, this.state.flair ? React.createElement('button',{className: 'btn btn-default', onClick: this.flairOn}, 'Flair On') : React.createElement('button', {className: 'btn btn-default', onClick: this.flairOff}, 'Flair Off'), React.createElement('button', {className: 'btn btn-default', onClick: this.viewGuide}, 'View Guide'), React.createElement('button', {className:'btn btn-default', onClick:this.viewSource}, 'View Source'), React.createElement('button', {className:'btn btn-default', onClick: this.viewHistory}, 'View History'), React.createElement('button', {className: 'btn btn-default', onClick:this.addEntry}, 'Add Entry'), React.createElement('button', {className: 'btn btn-default', onClick: this.openSelected}, 'Open Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.closeSelected}, 'Close Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.promoteSelected}, 'Promote Selected'), React.createElement('button', {className:'btn btn-default', onClick:this.selectExisting}, 'Add Selected to Existing Event'), React.createElement('button', {className:'btn btn-default', onClick:this.exportCSV}, 'Export to CSV'), React.createElement('button', {className:'btn btn-default', onClick:this.deleteSelected}, 'Delete Selected')) : null ,  React.createElement(Subgrid, {style: {height: '100%', 'z-index' : '0'},className: "Subgrid",
-            ref: "dataGrid", 
-            idProperty: "index",
+        ref: "dataGrid", 
+        idProperty: "index",
 	    setColumns: true, 
-            dataSource: this.state.data, 
-            columns: this.state.columns, 
+        dataSource: this.state.data, 
+        columns: this.state.columns, 
 	    onColumnResize: this.onColumnResize, 
 	    selected: SELECTED_ID_GRID, 
 	    onSelectionChange: this.onSelectionChange, 
@@ -430,6 +439,11 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
         )
 	));
    },
+    reloadactive: function(){
+    supervalue = []
+    supervalue.push(this.state.key)
+    this.reloadentry()
+    },
    flairOn: function(){
 	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
 	    $(value).find('.z-cell').each(function(num,content){
@@ -517,9 +531,9 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 
     },
     reloadentry: function(){
-	SELECTED_ID_GRID = {}
+    SELECTED_ID_GRID = {}
 	var getID = []	
-      	var finalarray = [];
+    var finalarray = [];
 	var sortarray = {}
 	sortarray[colsort] = valuesort
 	if(changestate){
@@ -530,7 +544,7 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	data: {
 	alertgroup: JSON.stringify(supervalue)
 	}
-	}).then(function(response){
+	}).success(function(response){
   	datasource = response
 	$.each(datasource.records, function(key, value){
 	finalarray[key] = {}	
@@ -575,6 +589,7 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	)
 	},
 	launch: function(){
+    var set;
 	$('.z-selected').each(function(key, value){
 	$(value).find('.z-cell').each(function(x,y){	  
 	    if($(y).attr('name') == 'id'){
@@ -586,12 +601,14 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	           $.each(y, function(key, value){
 		   $.each(value, function(r,s){
 	           if(r == 'id'){
-		    	window.location = '#/event/' + s
-	              }
+	              set = s
+                  }
+                  
 	           })
 		})
 		})
-	
+           	window.location = '#/event/' + set
+
 	});
 	}
 	});
@@ -617,9 +634,9 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	count++
 	})
 	this.setState({oneview: false, data:finalarray})
-	}.bind(this))
+    }.bind(this))
   	}
-
+    this.setState({})
     },
     openSelected: function(){
 	var data = new Object();
@@ -711,16 +728,18 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	this.setState({})
 	},
     onSelectionChange: function(newSelection, data){
-	supervalue = []	
+    array = []
+    supervalue = []	
 	supervalue.push(this.state.key)
 	SELECTED_ID_GRID = newSelection
 	var selected = []
 	Object.keys(newSelection).forEach(function(id){
 	selected.push(newSelection[id].index)
-	})
+	array.push(newSelection[id].id)
+    })
 	var ids = selected.length? selected.join(',') : 'none'
 	storealertids = ids.split(',')		
-	this.setState({oneview:true,setcss: false, key:supervalue[0] })
+    this.setState({oneview:true,setcss: false, key:supervalue[0] })
 	},
     closeHistory: function(){
 	this.setState({history: false})	
@@ -730,7 +749,7 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 var Maintable = React.createClass({
 
     getInitialState: function(){
-           return {fsearch: '',viewfilter: false, data: dataSource, showAlertbutton: false, viewAlert:false,csv:true};
+           return {reloaddata: false, fsearch: '',viewfilter: false, data: dataSource, showAlertbutton: false, viewAlert:false,csv:true};
          },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
@@ -739,17 +758,18 @@ var Maintable = React.createClass({
     componentWillMount: function(){
 	if(this.props.supertable !== undefined){
 	    if(this.props.supertable.length > 0){
-		window.location.hash = '#/alertgroup/' + this.props.supertable.join('+')
+        window.location.hash = '#/alertgroup/' + this.props.supertable.join('+')
 		window.location.href = window.location.hash 
 		passids = this.props.supertable
 		ids = this.props.supertable.join(',')
 		stage = true
 		changestate = true
-		url = '/scot/api/v2/supertable'	
-		this.setState({})
-		}
+		url = '/scot/api/v2/supertable'
+        Listener.activeMq('activealertgroup', this.activecallback)
+        }
 		else {
-		window.location.hash = '#/alertgroup/'
+        Listener.activeMq('activealertgroup', this.activecallback)
+        window.location.hash = '#/alertgroup/'
 		window.location.location = window.location.hash
 		url = '/scot/api/v2/alertgroup'
 		stage = false
@@ -760,14 +780,14 @@ var Maintable = React.createClass({
 		}
 	}
 	else {
+    Listener.activeMq('activealertgroup', this.activecallback)
 	window.location.hash = '#/alertgroup/'
 	window.location.href = window.location.hash
 	this.setState({})
 	}
-	Listener.activeMq('alertactive', this.activecallback)
 	},
     componentWillReceiveProps: function(){
-	this.setState({})
+        this.setState({data:dataSource})
     },
     render: function() {
 	$('.active').on('click', function(){
@@ -807,14 +827,14 @@ var Maintable = React.createClass({
 	})	
 	return (
 	
-	    stage ?  React.createElement('div', null, passids.map((num) => React.createElement(Subtable, {id: num}))) :  
+	    stage ?  React.createElement('div', null, passids.map((num) => React.createElement(Subtable, {number: num}))) :  
 
 	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Alerts')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement(Search, null)),this.state.viewfilter ? React.createElement(Crouton, {color: '#119FE1',style: {top: '75px', padding: '5px'}, message:"Filtered: ( " + this.state.fsearch + ")", onDismiss: 'onDismiss', type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewAlerts, style:styles},"View Alerts") : null) : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : React.createElement(DataGrid, {
-            ref: "dataGrid", 
-            idProperty: "id",
-            dataSource: this.state.data, 
-            columns: columns, 
-            onColumnResize: this.onColumnResize, 
+        ref: "dataGrid", 
+        idProperty: "id",
+        dataSource: this.state.data, 
+        columns: columns, 
+        onColumnResize: this.onColumnResize, 
 	    onFilter: this.handleFilter, 
 	    selected: SELECTED_ID, 
 	    onSelectionChange: this.onSelectionChange, 
@@ -826,7 +846,8 @@ var Maintable = React.createClass({
 	    onSortChange: this.handleSortChange,
 	    showCellBorders: true,
 	    rowHeight: 55,
-	    style: {height: '100%'},
+	    reloaddata: this.state.reloaddata,
+        style: {height: '100%'},
 	    rowFactory:rowFact,
 	    rowStyle: configureTable}
 	)
@@ -871,7 +892,7 @@ var Maintable = React.createClass({
 	url = '/scot/api/v2/supertable'
 	window.location.hash = '#/alertgroup/'+passids.join('+')
 	window.location.href = window.location.hash
-	this.setState({viewAlert: true, showAlertbutton:false,csv:false})
+	this.setState({viewAlert: true, showAlertbutton:false,reloaddata: false, csv:false})
     },
     handleSortChange : function(sortInfo){
 	SORT_INFO = sortInfo
@@ -879,13 +900,13 @@ var Maintable = React.createClass({
 	colsort = value['name']	
 	valuesort = value['dir']
 	})
-	this.setState({})
+	this.setState({reloadata: false})
 	},
     handleColumnOrderChange : function(index, dropIndex){
 	var col = columns[index]
 	columns.splice(index,1)
 	columns.splice(dropIndex, 0, col)
-	this.setState({})
+	this.setState({reloaddata:false})
 	},
     onSelectionChange: function(newSelection){
 	SELECTED_ID = newSelection
@@ -900,7 +921,7 @@ var Maintable = React.createClass({
 	if(passids.length > 1){
 	multiple = true
 	}	
-	this.setState({showAlertbutton: multiple, viewAlert: false})
+	this.setState({reloaddata:false, showAlertbutton: multiple, viewAlert: false})
 	},
     handleFilter: function(column, value, allFilterValues){
 	filter = {}
@@ -937,12 +958,13 @@ var Maintable = React.createClass({
 	else{
 	savedsearch = false
 	savedfsearch = ''
-	this.setState({viewfilter: false})
+	this.setState({viewfilter: false, reloaddata:false})
 	}	
 	},
 	activecallback: function(){
-	this.setState({})
-	}
+    this.setState({reloaddata:true})
+    
+    }
 });
 
 module.exports = Maintable

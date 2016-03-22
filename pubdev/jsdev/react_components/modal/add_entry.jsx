@@ -76,7 +76,7 @@ var AddEntryModal = React.createClass({
 	output  = output + timestamp.toLocaleString()
 	}
 	this.setState({})
-        },
+    },
 	render: function() {
 	var item = this.state.subitem
  	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").css('height', '394px')

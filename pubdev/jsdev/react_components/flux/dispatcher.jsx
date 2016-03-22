@@ -7,12 +7,6 @@ var AppDispatcher = assign(new Dispatcher(), {
 	    message: action.actionType,
 	    action: action
 	})
-    },
- 	handleActivemq: function(action){
-	this.dispatch({
-	message: action.actionType,
-	action: action
-	})
     }
 })
 
