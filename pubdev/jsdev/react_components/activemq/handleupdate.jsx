@@ -132,9 +132,7 @@ var ActiveMQ = {
                     case 'deleted':
                          deletion('event', callback, payload);
                     case 'viewed':
-                        if (json.id != null) {
-                            event_view(json.id, json.viewcount);
-                        }
+
                 }
                 break;
             case 'intel': 
@@ -147,7 +145,7 @@ var ActiveMQ = {
                         break;
                     case 'deleted':
                         deletion('intel', callback, payload)
-                    case 'viewed':
+                    case 'views':
                         if (json.id != null) {
                             event_view(json.id, json.viewcount);
                         }
