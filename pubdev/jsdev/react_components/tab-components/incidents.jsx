@@ -19,6 +19,7 @@ var stage = false
 var savedsearch = false
 var savedfsearch;
 var Search = require('../components/esearch.jsx')
+var Listener = require('../activemq/listener.jsx')
 var columns = [
     { name: 'id', width: 111.183,style: {color: 'black'}},
     { name: 'doe',  width: 111.183, style: {color: 'black'}},
@@ -99,7 +100,7 @@ function configureTable(data, props){
 module.exports = React.createClass({
 
     getInitialState: function(){
-             return {viewfilter: false, viewevent: false, showevent: false, data: dataSource, csv:true,fsearch: ''};
+             return {reload: false, viewfilter: false, viewevent: false, showevent: false, data: dataSource, csv:true,fsearch: ''};
          },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
@@ -108,8 +109,12 @@ module.exports = React.createClass({
     componentWillMount: function(){
 	window.location.hash = '#/incident/'
 	window.location.href = window.location.hash
+    Listener.activeMq('incidentgroup', this.reloadactive)
     },
 
+    reloadactive:function(){
+    this.setState({reload:true})
+    },
     render: function() {
 	const rowFact = (rowProps) => {	
 	rowProps.onDoubleClick = this.viewEvent
@@ -139,7 +144,8 @@ module.exports = React.createClass({
             dataSource: this.state.data, 
             columns: columns, 
             onColumnResize: this.onColumnResize, 
-	    onFilter: this.handleFilter, 
+	    reload: this.state.reload,
+        onFilter: this.handleFilter, 
 	    selected: SELECTED_ID, 
 	    onSelectionChange: this.onSelectionChange, 
 	    defaultPageSize:50 ,  
@@ -204,13 +210,13 @@ module.exports = React.createClass({
 	colsort = value['name']	
 	valuesort = value['dir']
 	})
-	this.setState({})
+	this.setState({reload:false})
 	},
     handleColumnOrderChange : function(index, dropIndex){
 	var col = columns[index]
 	columns.splice(index,1)
 	columns.splice(dropIndex, 0, col)
-	this.setState({})
+	this.setState({reload:false})
 	},
     onSelectionChange: function(newSelection){
 	SELECTED_ID = newSelection
@@ -225,7 +231,7 @@ module.exports = React.createClass({
 	multiple = true
 	}
 	
-	this.setState({showevent: multiple})
+	this.setState({showevent: multiple, reload: false})
 	check = true
 
 	},
@@ -255,13 +261,13 @@ module.exports = React.createClass({
 	    filtersearch = filtersearch + key + ": " + JSON.stringify(value) + " "
 	    }
 	})
- 	setTimeout(function() {savedsearch = true; this.setState({viewfilter:true, fsearch: filtersearch})}.bind(this), 1000)	
+ 	setTimeout(function() {savedsearch = true; this.setState({reload:false, viewfilter:true, fsearch: filtersearch})}.bind(this), 1000)	
 	savedfsearch = filtersearch
 	}
 	else{
 	savedsearch = false
 	savedfsearch = ''
-	this.setState({viewfilter: false})
+	this.setState({reload:false, viewfilter: false})
 	}
     }
 
