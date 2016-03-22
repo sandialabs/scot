@@ -10,7 +10,7 @@ var Summary             = require('../components/summary.jsx');
 var Task                = require('../components/task.jsx');
 var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
-var Flair               = require('../modal/flair.jsx');
+var Flair               = require('../modal/flair_modal.jsx');
 var Store               = require('../flux/store.jsx');
 var AppActions          = require('../flux/actions.jsx');
 var SelectedEntry = React.createClass({
@@ -45,7 +45,7 @@ var SelectedEntry = React.createClass({
         var id = this.props.id;
         return (
             <div className="row-fluid entry-wrapper"> 
-                {this.state.showEntryData ? <EntryIterator data={data} type={type} id={id} updated={this.updated} /> : null}
+                {this.state.showEntryData ? <EntryIterator data={data} type={type} id={id} updated={this.updated}  /> : null} 
             </div>       
         );
     }
@@ -132,7 +132,7 @@ var EntryParent = React.createClass({
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
-        itemarr.push(<EntryData id={items.id} key={items.id} subitem = {items}/>);
+        itemarr.push(<EntryData id={items.id} key={items.id} subitem = {items} type={type} targetid={id} />);
         for (var prop in items) {
             function childfunc(prop){
                 if (prop == "children") {
@@ -150,14 +150,13 @@ var EntryParent = React.createClass({
         var header3 = ')'; 
         var createdTime = items.created;
         var updatedTime = items.updated; 
-        console.log(typeof(items.id));
         return (
             <div> 
                 <div className={outerClassName} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
                     <span className="anchor" id={"/"+ type + '/' + id + '/' + items.id}/>
                     <div className={innerClassName}>
                         <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/"+ type + '/' + id + '/' + items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
-                            <span className='pull-right' style={{display:'inline-flex'}}>
+                            <span className='pull-right' style={{display:'inline-flex',zIndex:0}}>
                                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} updated={updated} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle}> 
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
@@ -197,12 +196,13 @@ var EntryData = React.createClass({
                 var newcount = this.state.count;
                 newcount += 1;
                 this.setState({count:newcount});
-            }.bind(this),300);
-        }
-       //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
+            }.bind(this)); 
+        };
+        //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
     },
     componentDidMount: function () {
-        //this.setState({height:'2px'}); 
+        this.setState({height:'2px'}); 
+        //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
     },
     flairToggle: function() {
         if (this.state.flairToolbar == false) {
@@ -213,16 +213,14 @@ var EntryData = React.createClass({
     },
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
-        var id = this.props.id;
-        var spanEntity = $('span').attr('data-entity-type');
-        /*$('span').click(function() {
-            var test = spanEntity;
-            console.log(test);
-        }).bind(this);*/
+        if (this.props.subitem.body_flair == '') {
+            rawMarkup = this.props.subitem.body;
+        }
+        var id = this.props.id; 
         return (
             <div className={'row-fluid entry-body'}>
                 <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
-                    <Frame frameBorder={'0'} id={'iframe_' + id} onLoad={this.onLoad} sandbox={'allow-popups allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
+                    <Frame frameBorder={'0'} id={'iframe_' + id} onLoad={this.onLoad} sandbox={'allow-scripts allow-popups allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
                     <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
                     </Frame>
                 </div>
