@@ -1,16 +1,17 @@
-var AppActions = require('../flux/actions.jsx')
-var Store = require('../flux/store.jsx')
-var Listener = {
-
+var AppActions = require('./actions.jsx')
+var Store = require('./store.jsx')
+var Listeneraq = {
     activeMq: function(key, callback){
+    var sett = true
     Store.storeKey(key)
     Store.addChangeListener(callback)
-    AppActions.updateView(key, 'activemq')
+    AppActions.getClient()
+    AppActions.updateView()
     }
 }
 
 
-module.exports = Listener
+module.exports = Listeneraq
 
 
 

@@ -33,6 +33,15 @@ var eventtableid = []
 
 }
 
+var StoreData = React.createClass({
+    render: function() {
+        console.log('In StoreData');
+        return (
+            true
+        )
+    }
+});
+
 var App = React.createClass({
 
    getInitialState: function(){
@@ -259,6 +268,4 @@ ReactDOM.render((
     <Route path = '/:value/:id/:id2' component = {App} />
     </Router>
 ), document.getElementById('content'))
-
-
 
