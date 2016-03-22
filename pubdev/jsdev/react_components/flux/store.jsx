@@ -3,7 +3,7 @@ var EventEmitter = require('../../../node_modules/events').EventEmitter
 var Actions = ('./tab_actions.jsx')
 var assign = require('object-assign')
 var storekey;
-var Activemq = require('../activemq/handleupdate.jsx')
+var keyarray = []
 function updateStatus(payload) {
 	var data = new Object()
 	var type = 'PUT'
@@ -51,11 +51,6 @@ function headerUpdate(payload) {
     Store.emitChange(payload.action.item);
 }
 
-function activeMQ(payload){
-   
-    Activemq.handle_update(Store, payload)
-
-}
 
 var Store = assign({}, EventEmitter.prototype, {
 	emitChange: function(key){
@@ -66,12 +61,13 @@ var Store = assign({}, EventEmitter.prototype, {
 	},
 	storeKey: function(key){
 	storekey = key
-	}
+    }
     })
 
     Dispatcher.register(function(payload){
+
 	if(payload.message == 'alertstatusmessage') {
-		updateStatus(payload)
+        updateStatus(payload)
 	}
     else if(payload.message == 'headerUpdate') {
         headerUpdate(payload)
@@ -79,10 +75,7 @@ var Store = assign({}, EventEmitter.prototype, {
     else if(payload.message == 'deleteEvent') {
         deleteEvent(payload);
     }	 
-    else if (payload.message == 'activemq'){
-	    activeMQ(payload)
-	}
    	return true
-     })
+    })
 
 module.exports = Store
