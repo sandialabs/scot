@@ -44,7 +44,7 @@ var Actions = {
                 d: now.getTime(),
                 r: Math.random(),
                 json:'true',
-                username: 'rjeffer'
+                username: whoami
             }
         }).done(function(data) {
             console.log("Received Message")
