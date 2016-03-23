@@ -1,7 +1,7 @@
 'use strict';
 
 var React = require('react')
-var DataGrid = require('../../../node_modules/events-react-datagrid/react-datagrid');
+var DataGrid = require('../../../node_modules/intel-react-datagrid/react-datagrid');
 var Crouton = require('../../../node_modules/react-crouton')
 var SelectedContainer = require('../entry/selected_container.jsx')
 var Search = require('../components/esearch.jsx')
@@ -24,14 +24,13 @@ var columns =
 [
     { name: 'id', width: 111.183, style: {color:'black'}},
     { name: 'status', width:119.533},
-    { name: 'created',  width:261.45,style: {color:'black'}},
     { name: 'updated',  width: 261.45, style: {color:'black'}},
     { name: 'subject',  style: {color:'black'}},
     { name: 'sources',  width: 198.468,style: {color:'black'}},
     { name: 'tags',  width: 189.95,style: {color:'black'}},
     { name: 'owner', width:119.533,style: {color:'black'}},
     { name: 'entries',width:119.533,style: {color:'black'}},
-    { name: 'views',width:111.183,style: {color:'black'}}
+    { name: 'views',width: 104.4, style: {color:'black'}}
 ]
 
 function dataSource(query)
@@ -42,7 +41,7 @@ function dataSource(query)
 	sortarray[colsort] = valuesort
 	return $.ajax({
 	type: 'GET',
-	url: '/scot/api/v2/event',
+	url: '/scot/api/v2/intel',
 	data: {
 	limit: query.pageSize,
 	offset: query.skip,
@@ -103,9 +102,9 @@ module.exports = React.createClass({
         this.setState({})
     },
     componentWillMount: function(){
-	window.location.hash ='#/event/'
+	window.location.hash ='#/intel/'
 	window.location.href = window.location.hash
-    Listener.activeMq('eventgroup', this.reloadactive)
+    Listener.activeMq('intelgroup', this.reloadactive)
     },
 
     reloadactive: function(){
@@ -133,9 +132,9 @@ module.exports = React.createClass({
 	})
 	})
 	return (
-	    stage ? React.createElement(SelectedContainer, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
-	    this.state.viewevent ? React.createElement(SelectedContainer, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
-	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Events')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement(Search, null)),this.state.viewfilter ? React.createElement(Crouton, {style: {top: '75px', padding: '5px'}, message:"Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "Dismiss", type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.createevent, style: styles}, 'Create Event'), React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showevent ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewEvent, style:styles},"View Events") : null) : null, React.createElement(DataGrid, {
+	    stage ? React.createElement(SelectedContainer, {ids: ids, type: 'intel', viewEvent:this.viewEvent}) : 
+	    this.state.viewevent ? React.createElement(SelectedContainer, {ids: ids, type: 'intel', viewEvent:this.viewEvent}) : 
+	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Intel')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement(Search, null)),this.state.viewfilter ? React.createElement(Crouton, {style: {top: '75px', padding: '5px'}, message:"Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "Dismiss", type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showevent ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewEvent, style:styles},"View Intels") : null) : null, React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id", 
             dataSource: this.state.data, 
@@ -159,16 +158,6 @@ module.exports = React.createClass({
 	)
         ));
     },
-    createevent: function(){
-	var data = JSON.stringify({subject: 'No Subject', source: ['No Source']})
-	$.ajax({
-	type: 'POST',
-	url: '/scot/api/v2/event',
-	data: data
-	}).success(function(response){
-	window.location = '#/event/'+response.id
-	})
-    },
     viewEvent: function(){
 
         if (stage == false || this.state.viewevent == false) {
@@ -178,7 +167,7 @@ module.exports = React.createClass({
             stage = false;
             this.setState({viewevent: false});
         }
-	window.location.hash = '#/event/'+ids.join('+')
+	window.location.hash = '#/intel/'+ids.join('+')
 	window.location.href = window.location.hash
     },
     exportCSV: function(){
