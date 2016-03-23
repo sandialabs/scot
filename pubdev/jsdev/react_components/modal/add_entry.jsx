@@ -10,6 +10,7 @@ var Dropzone = require('../../../node_modules/react-dropzone')
 var finalfiles = []
 var ReactTime = require('react-time')
 var AppActions  = require('../flux/actions.jsx');
+var Activekey = require('../activemq/handleupdate.jsx')
 const  customStyles = {
         content : {
         top     : '1%',
