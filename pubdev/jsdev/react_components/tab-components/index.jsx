@@ -6,6 +6,7 @@ var Alerts          = require('./alert.jsx')
 var Events          = require('./events.jsx')
 var Incidents       = require('./incidents.jsx')
 var Tasks           = require('./tasks.jsx')
+var Intel           = require('./intel.jsx')
 var Router	    = require('../../../node_modules/react-router').Router
 var Route	    = require('../../../node_modules/react-router').Route
 var Link	    = require('../../../node_modules/react-router').Link
@@ -184,7 +185,7 @@ React.createElement(ExpandableNavContainer, {expanded: false}, React.createEleme
           React.createElement(ExpandableNavHeader, {small: headerSmall, full: headerFull, headerStyle: headerStyle, fullStyle: fullStyle}), 
            
 	React.createElement(ExpandableNavMenu, null, React.createElement(ExpandableNavMenuItem, {url: '#/home',active: sethome,small: menuItemsSmall[0], full: menuItemsFull[0], tooltip: "Home", jquery: window.$ ,onClick : this.handleHome}),
- 	React.createElement(ExpandableNavMenuItem, {active: setintel,small: menuItemsSmall[1], full: menuItemsFull[1], tooltip: "Intel", jquery: window.$, onClick: this.handleTasks}),
+ 	React.createElement(ExpandableNavMenuItem, {active: setintel,small: menuItemsSmall[1], full: menuItemsFull[1], tooltip: "Intel", jquery: window.$, onClick: this.handleIntel}),
             React.createElement(ExpandableNavMenuItem, {active:setalerts ,small: menuItemsSmall[2], full: menuItemsFull[2], tooltip: "Alert", jquery: window.$, onClick: this.handleAlerts}),
 	    React.createElement(ExpandableNavMenuItem, {active: setevents,small: menuItemsSmall[3], full: menuItemsFull[3], tooltip: "Event", jquery: window.$,onClick: this.handleEvents}),
 	    React.createElement(ExpandableNavMenuItem, {active: setincidents,small: menuItemsSmall[4], full: menuItemsFull[4], tooltip: "Incident", jquery: window.$, onClick: this.handleIncidents}),
@@ -217,7 +218,7 @@ React.createElement(ExpandableNavPage, null, React.createElement('div', {classNa
 	:
 	this.state.set == 4
 	?
-	null
+	React.createElement(ExpandableNavPage, null, React.createElement(Intel, null))
 	:
 	this.state.set == 6
 	?	
@@ -227,6 +228,9 @@ React.createElement(ExpandableNavPage, null, React.createElement('div', {classNa
 	)	
     );
 
+  },
+  handleIntel: function(){
+    this.setState({set:4})
   },
     handleHome: function(){
 
