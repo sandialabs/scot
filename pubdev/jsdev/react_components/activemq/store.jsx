@@ -5,7 +5,7 @@ var storekey;
 var Activemq = require('./handleupdate.jsx')
 
 function activeMQ(payload){
-    Activemq.handle_update(Storeaq,payload)
+    Activemq.handle_update(Storeaq,payload,storekey)
 }
 
 var Storeaq = assign({}, EventEmitter.prototype, {
