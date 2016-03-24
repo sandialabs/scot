@@ -74,3 +74,6 @@ MIME::Base64
 Net::Stomp
 Proc::InvokeEditor
 Test::JSON
+Math::Int128
+Net::Works::Network
+MaxMind::DB::Reader::XS
