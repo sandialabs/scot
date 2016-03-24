@@ -7,20 +7,21 @@ var Owner                   = require('../modal/owner.jsx');
 var Entities                = require('../modal/entities.jsx');
 var History                 = require('../modal/history.jsx');
 var SelectedPermission      = require('../components/permission.jsx');
-var AutoAffix               = require('react-overlays/lib/AutoAffix');
-var Affix                   = require('react-overlays/lib/Affix');
+var AutoAffix               = require('react-overlays/lib/AutoAffix.js');
+var Affix                   = require('react-overlays/lib/Affix.js');
 var Sticky                  = require('react-sticky');
 var Button                  = require('react-bootstrap/lib/Button');
 var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar');
 var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger');
 var Popover                 = require('react-bootstrap/lib/Popover');
 var DebounceInput           = require('react-debounce-input');
-var SelectedEntry           = require('./selected_entry.jsx').SelectedEntry;
+var SelectedEntry           = require('./selected_entry.jsx');
 var Tag                     = require('../components/tag.jsx');
 var Source                  = require('../components/source.jsx');
 var Crouton                 = require('react-crouton');
 var Store                   = require('../flux/store.jsx');
 var AppActions              = require('../flux/actions.jsx');
+var Flair                   = require('../modal/flair_modal.jsx');
 var SelectedHeader = React.createClass({
     getInitialState: function() {
         return {
@@ -40,6 +41,8 @@ var SelectedHeader = React.createClass({
             notificationMessage:null,
             showFlash:false,
             key:this.props.id,
+            entityid:null,
+            flairToolbar:false,
         }
     },
     componentDidMount: function() {
@@ -83,6 +86,13 @@ var SelectedHeader = React.createClass({
         }
         console.log('Ran update')  
     },
+    flairToolbarToggle: function(id) {
+        if (this.state.flairToolbar == false) {
+            this.setState({flairToolbar:true,entityid:id})
+        } else {
+            this.setState({flairToolbar:false})
+        }
+    },
     entityUpdate: function() {
         var count = 0;
         this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
@@ -98,6 +108,7 @@ var SelectedHeader = React.createClass({
             });
             for (var prop in entityResult) {
                 var entityValue = entityResult[prop].value;
+                var entityid = entityResult[prop].id;
                 $('iframe').each(function(index,ifr) {
                     if(ifr.contentDocument != null) {
                         var ifrContents = $(ifr).contents();
@@ -108,12 +119,19 @@ var SelectedHeader = React.createClass({
                             circle.addClass('extras');
                             circle.text(count += 1);
                             $(entity).append(circle);
-                        });
+                            $(entity).attr('data-entity-id',entityid)
+                            console.log('setting elements: ' + entity);
+                            $(entity).unbind('click');
+                            $(entity).click(function() {
+                                this.flairToolbarToggle($(entity).attr('data-entity-id'));
+                            }.bind(this));
+                        }.bind(this));
                     }
-                })
+                }.bind(this))
             }
-        });  
+        }.bind(this));  
     },
+
     viewedbyfunc: function(headerData) {
         var viewedbyarr = [];
         for (prop in headerData.view_history) {
@@ -179,6 +197,8 @@ var SelectedHeader = React.createClass({
         var notificationMessage = this.state.notificationMessage;
         return (
             <div>
+            <AutoAffix>
+                <div>
                 <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%'}}>
                     <div className='details-subject' style={{display: 'inline-flex',paddingLeft:'5px'}}>
                         {this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}
@@ -203,12 +223,15 @@ var SelectedHeader = React.createClass({
                     </div>
                 </div>
                 {this.state.showFlash == true ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} /> : null}   
+                {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} /> : null}
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} id={id} type={type} /> : null}
                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
                 {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type={type} targetid={id} id={id} addedentry={this.entryToggle} updated={this.updated}/> : null}  
                 {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
                 {type != 'alertgroup' ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
+                </div>
+                </AutoAffix>
                 {type != 'alertgroup' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated}  /> : null}
             </div>
         )
