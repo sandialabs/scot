@@ -186,18 +186,20 @@ var EntryData = React.createClass({
         }
     },
     componentDidUpdate: function() {
+        var id = this.props.id;
         if (this.state.count <= 1) {
             setTimeout(function() {
-                var newheight; 
-                newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-                newheight = newheight + 'px';
-                this.setState({height:newheight});
-                var newcount = this.state.count;
-                newcount += 1;
-                this.setState({count:newcount});
+                document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
+                    var newheight; 
+                    newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+                    newheight = newheight + 'px';
+                    this.setState({height:newheight});
+                    var newcount = this.state.count;
+                    newcount += 1;
+                    this.setState({count:newcount});
+                }.bind(this))
             }.bind(this)); 
         };
-        
         //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
     },
     componentDidMount: function () {
@@ -222,7 +224,7 @@ var EntryData = React.createClass({
         return (
             <div className={'row-fluid entry-body'}>
                 <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
-                    <Frame frameBorder={'0'} id={'iframe_' + id} onLoad={this.onLoad} sandbox={'allow-scripts allow-popups allow-same-origin allow-top-navigation'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
+                    <Frame frameBorder={'0'} id={'iframe_' + id} onLoad={this.onLoad} sandbox={'allow-scripts allow-popups allow-same-origin '} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
                     <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
                     </Frame>
                 </div>
