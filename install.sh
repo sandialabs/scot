@@ -244,6 +244,10 @@ EOF
             fi
         fi
 
+        if [[ ! -e /etc/apt/sources.list.d/maxmind-ppa-trusty.list ]]; then
+            add-apt-repository -y ppa:maxmind/ppa
+        fi
+
         if [ "$REFRESHAPT" == "yes" ]; then
             echo "= updating apt repository"
             apt-get update > /dev/null
@@ -419,7 +423,7 @@ EOF
         a2enmod -q rewrite
         a2enmod -q authnz_ldap
 
-        if [ ! -e $SITESAVAILABLE/scot.conf ]; then
+        if [ ! -e $SITESAVAILABLE/scot.conf ] || [ $REFRESHAPACHECONF == "yes"]; then
 
             echo -e "${yellow}+ adding scot configuration${NC}"
             REVPROXY=$DEVDIR/etc/scot-revproxy-$MYHOSTNAME
@@ -541,9 +545,9 @@ echo -e "${yellow} running grunt on reactjs files...${NC}"
 CURDIR=`pwd`
 
 #if [ $SKIPNODE == "no" ];then
-   # cd $DEVDIR/pubdev 
-  #  npm install
- #   cd $CURDIR
+#    cd $DEVDIR/pubdev 
+#    npm install
+#    cd $CURDIR
 #fi
 
 echo -e "${yellow} installing SCOT files ${NC}"
@@ -616,7 +620,7 @@ while [[ $? -ne 0 && $COUNTER -lt 100 ]]; do
     grep -q 'waiting for connections on port' /var/log/mongodb/mongod.log
 done
 
-if [ "$RESETDB" == "1" ];then
+if [ "$RESETDB" == "yes" ];then
     echo -e "${red}- Dropping mongodb scot database!${NC}"
     mongo scot-prod $DEVDIR/etc/database/reset.js
     mongo scot-prod $DBCONFIGJS

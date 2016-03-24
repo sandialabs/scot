@@ -26,6 +26,7 @@ use Scot::Env;
 use Scot::Util::Scot;
 use Scot::Util::EntityExtractor;
 use AnyEvent::STOMP::Client;
+use AnyEvent::ForkManager;
 use HTML::Entities;
 use strict;
 use warnings;
@@ -98,6 +99,18 @@ sub run {
     my $env     = $self->env;
     my $log     = $env->log;
 
+    my $pm  = AnyEvent::ForkManager->new(max_workers => 10);
+
+    $pm->on_start( sub {
+        my ($pm, $pid, $action, $type, $id) = @_;
+        $log->debug("Starting worker $pid to handle $action on $type $id");
+    });
+
+    $pm->on_finish( sub {
+        my ($pm, $pid, $status, $action, $type, $id) = @_;
+        $log->debug("Ending worker $pid to handle $action on $type $id");
+    });
+
     my $stomp   = new AnyEvent::STOMP::Client();
 
     $stomp->connect();
@@ -134,29 +147,36 @@ sub run {
                 return;
             }
 
-            my $url     = $self->base_url . "/$type/$id";
 
-            $log->debug("Getting $url");
+            $pm->start(
+                cb  => sub {
+                    my ($pm, $action, $type, $id) = @_;
 
-            # do a REST GET of that thing
-            my $tx  = $scot->get($url);
+                    my $url     = $self->base_url . "/$type/$id";
+                    $log->debug("Getting $url");
+                    # do a REST GET of that thing
+                    my $tx  = $scot->get($url);
 
-            # process through Entity Extractor
+                    # process through Entity Extractor
 
-            my $record  = $tx->res->json;
+                    my $record  = $tx->res->json;
 
-            $log->debug("GET Response: ", { filter => \&Dumper, value => $record });
+                    $log->debug("GET Response: ", 
+                                { filter => \&Dumper, value => $record });
 
-            if ( $record->{parsed} ) {
-                $log->debug("Already flaired!");
-                return;
-            }
+                    if ( $record->{parsed} ) {
+                        $log->debug("Already flaired!");
+                        return;
+                    }
 
-            if ( $type eq "alert" ) {
-                $self->process_alert($record);
-                return;
-            }
-            $self->process_entry($record);
+                    if ( $type eq "alert" ) {
+                        $self->process_alert($record);
+                        return;
+                    }
+                    $self->process_entry($record);
+                },
+                args    => [ $action, $type, $id ],
+            );
             $log->debug("-"x50);
         }
     );
@@ -207,6 +227,7 @@ sub process_alert  {
         }
     }
 
+
     # save via REST PUT
     my $url = $self->base_url."/alert/$record->{id}";
     my $tx  = $scot->put($url,{
@@ -214,6 +235,7 @@ sub process_alert  {
         entities        => \@entities,
         parsed          => 1,
     });
+    $self->enrich_entities(\@entities);
 }
 
 sub process_entry {
@@ -246,6 +268,40 @@ sub process_entry {
     $log->debug("Putting: ", { filter => \&Dumper, value => $json});
 
     my $tx  = $scot->put($url, $json);
+    $self->enrich_entities($eehref->{entities});
     
+}
+
+sub enrich_entities {
+    my $self    = shift;
+    my $aref    = shift;
+    my $env     = $self->env;
+
+    my %data    = ();   # hold all the enriching data
+
+    # Get GeoIP
+#    my $geo     = $env->geoip;
+
+    # Get SIDD
+    my $sidd    = $env->sidd;
+
+    foreach my $entity (@$aref) {
+        my $value   = $entity->{value};
+        my $type    = $entity->{type};
+
+        $data{$value}   = {
+            sidd    => $sidd->get_sidd_data($value),
+        };
+
+#        if ( $type eq "ipaddr" ) {
+#            $data{$value}{geoip} = $geoip->get_geo_data($value);
+#        }
+    }
+
+
+    # don't do this automatically, info lead potential 
+    # Get VirusTotal if (domain, ipaddr, hash)
+    
+    return wantarray ? %data : \%data;
 }
 1;
