@@ -101,7 +101,7 @@ sub send {
             });
         }
         catch {
-            $log->error("Erros sending to STOMP message: $_");
+            $log->error("Error sending to STOMP message: $_");
         };
     #}
     $log->level($savelevel);
@@ -126,6 +126,3 @@ Todd Bruner.  tbruner@sandia.gov.  505-844-9997.
 
 =cut
 
-
-
-    

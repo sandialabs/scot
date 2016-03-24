@@ -221,3 +221,6 @@ libmoosex-types-common-perl
 liblog-log4perl-perl
 nodejs
 npm
+libmaxminddb0
+libmaxminddb-dev
+mmdb-bin
