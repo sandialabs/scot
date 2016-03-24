@@ -227,6 +227,7 @@ sub process_alert  {
         }
     }
 
+
     # save via REST PUT
     my $url = $self->base_url."/alert/$record->{id}";
     my $tx  = $scot->put($url,{
@@ -234,6 +235,7 @@ sub process_alert  {
         entities        => \@entities,
         parsed          => 1,
     });
+    $self->enrich_entities(\@entities);
 }
 
 sub process_entry {
@@ -266,6 +268,40 @@ sub process_entry {
     $log->debug("Putting: ", { filter => \&Dumper, value => $json});
 
     my $tx  = $scot->put($url, $json);
+    $self->enrich_entities($eehref->{entities});
     
+}
+
+sub enrich_entities {
+    my $self    = shift;
+    my $aref    = shift;
+    my $env     = $self->env;
+
+    my %data    = ();   # hold all the enriching data
+
+    # Get GeoIP
+#    my $geo     = $env->geoip;
+
+    # Get SIDD
+    my $sidd    = $env->sidd;
+
+    foreach my $entity (@$aref) {
+        my $value   = $entity->{value};
+        my $type    = $entity->{type};
+
+        $data{$value}   = {
+            sidd    => $sidd->get_sidd_data($value),
+        };
+
+#        if ( $type eq "ipaddr" ) {
+#            $data{$value}{geoip} = $geoip->get_geo_data($value);
+#        }
+    }
+
+
+    # don't do this automatically, info lead potential 
+    # Get VirusTotal if (domain, ipaddr, hash)
+    
+    return wantarray ? %data : \%data;
 }
 1;
