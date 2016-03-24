@@ -40,50 +40,62 @@ function creation(state, callback, payload){
      callback.emitChange(payload.action.activemq.data.id) 
     }
     else if (state == 'event') {
-
-     callback.emitChange(payload.action.activemq.data.id)
+    $('.z-table').each(function(key, value){
+        $(value).find('.z-row').each(function(x,y){
+           $(y).find('.z-cell').each(function(r,s){
+           if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
+            $(y).css('background', 'green')
+            setTimeout(function(){$(y).css('background', "")}, 10000)
+            }
+        })
+      })
+    })
+     callback.emitChange('eventgroup') 
     }
     else if (state == 'intel'){
 
-     callback.emitChange(payload.action.activemq.data.id)
+     callback.emitChange('intelgroup') 
 
     }
    else if(state == 'incident'){
 
+     callback.emitChange('incidentgroup') 
      callback.emitChange(payload.action.activemq.data.id)
    }
    else if(state == 'alertgroup'){
+     
+     callback.emitChange('activealertgroup') 
      callback.emitChange(payload.action.activemq.data.id)
    }
 }
 
 function deletion(state, callback, payload){
-    if(state == 'alert'){
-    	
-     callback.emitChange(payload.action.activemq.data.id)
+    if(state == 'alert'){    	
     }
     else if (state == 'entry'){
-     callback.emitChange(payload.action.activemq.data.id)
+     callback.emitChange(payload.action.activemq.data.id) 
     }
     else if (state == 'event') {
 
-     callback.emitChange(payload.action.activemq.data.id)
+     callback.emitChange('eventgroup') 
     }
     else if (state == 'intel'){
 
-     callback.emitChange(payload.action.activemq.data.id)
+     callback.emitChange('intelgroup') 
 
     }
    else if(state == 'incident'){
 
+     callback.emitChange('incidentgroup') 
      callback.emitChange(payload.action.activemq.data.id)
    }
    else if(state == 'alertgroup'){
-
+     
+     callback.emitChange('activealertgroup') 
      callback.emitChange(payload.action.activemq.data.id)
    }
-
 }
+
 
 function views(state, callback, payload){
     if (state == 'entry'){
@@ -91,13 +103,16 @@ function views(state, callback, payload){
     }
     else if (state == 'event') {
 
+     callback.emitChange('eventgroup') 
     }
     else if (state == 'intel'){
 
+     callback.emitChange('intelgroup') 
 
     }
    else if(state == 'incident'){
 
+     callback.emitChange('incidentgroup') 
    }
    else if(state == 'alertgroup' || state == 'alert'){
      callback.emitChange('activealertgroup') 
@@ -131,7 +146,8 @@ var ActiveMQ = {
                         break;
                     case 'deleted':
                          deletion('event', callback, payload);
-                    case 'viewed':
+                    case 'views':
+                        views('event',callback,payload);
 
                 }
                 break;
@@ -146,9 +162,7 @@ var ActiveMQ = {
                     case 'deleted':
                         deletion('intel', callback, payload)
                     case 'views':
-                        if (json.id != null) {
-                            event_view(json.id, json.viewcount);
-                        }
+                        views('intel',callback,payload)
                 }
                 break;
             case 'alert':
@@ -176,6 +190,8 @@ var ActiveMQ = {
                         break;
                     case 'deleted':
                         deletion('incident', callback, payload);
+                    case 'views':
+                        views('incident',callback,payload)
                 }
                 break;
             case 'admin_notice':

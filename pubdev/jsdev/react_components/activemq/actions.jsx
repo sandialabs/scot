@@ -53,11 +53,15 @@ var Actions = {
             $.each(messages, function(key,message){
                 if(message != ""){
                     var json = JSON.parse(message);
-                    if(json.data.type == 'alertgroup' || json.data.type == 'event' || json.data.type == 'incident' || json.data.type == 'intel' || json.data.type == 'entry')
-                    Dispatcher.handleActivemq({
-                    activemq: json
-                })
-               }
+                    if( json.action != "viewed" || json.action == 'updated'  || json.action == 'created' || json.action == 'deleted'){
+                        if(json.data.type != 'alert'){
+                        console.log(json)
+                        Dispatcher.handleActivemq({
+                        activemq: json
+                    })
+                  }
+                }
+              }
             });       
         }).fail(function(){
             setTimeout(Actions.updateView(), 20)

@@ -526,19 +526,45 @@ sub get_subthing {
     my @things;
     if ( $subthing eq "entry" ) {
         @things = $self->thread_entries($cursor);
+        $self->do_render({
+            records => \@things,
+            queryRecordCount => scalar(@things),
+            totalRecordCount => scalar(@things),
+        });
     }
     else {
         # @things = map { $self->mypack($_) } $cursor->all;
-        @things = $cursor->all;
+        if ( $subthing eq "entity" ) {
+            # need to transform from an array of hashes to a a hash
+            # for efficiency in UI code
+            my %things  = ();
+            while ( my $entity = $cursor->next ) {
+                $things{$entity->value} = {
+                    count   => $self->get_entity_count($entity),
+                    type    => $entity->value,
+                    classes => $entity->classes,
+                    data    => $entity->data,
+                };
+            }
+            $self->do_render({
+                records             => \%things,
+                queryRecordCount    => keys %things,
+                totalRecordCount    => keys %things,
+            });
+        }
+        else {
+            @things = $cursor->all;
+            $self->do_render({
+                records => \@things,
+                queryRecordCount => scalar(@things),
+                totalRecordCount => scalar(@things),
+            });
+        }
     }
 
     # $log->trace("Records are ",{ filter => \&Dumper, value =>\@things});
 
-    $self->do_render({
-        records => \@things,
-        queryRecordCount => scalar(@things),
-        totalRecordCount => scalar(@things),
-    });
+
     $self->audit("get_subthing", $req_href);
     $env->mq->send("scot", {
         action  => "viewed",
@@ -1992,6 +2018,19 @@ sub whoami {
             data    => { error_msg => "$user not found" },
         });
     }
+}
+
+sub get_entity_count {
+    my $self    = shift;
+    my $entity  = shift;
+    my $value   = $entity->value;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $col     = $mongo->collecton('Link');
+    my $cursor  = $col->get_links(
+        'entity', $entity->id    
+    );
+    return $cursor->count;
 }
 
 
