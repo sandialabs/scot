@@ -10,7 +10,6 @@ var Summary             = require('../components/summary.jsx');
 var Task                = require('../components/task.jsx');
 var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
-var Flair               = require('../modal/flair_modal.jsx');
 var Store               = require('../flux/store.jsx');
 var AppActions          = require('../flux/actions.jsx');
 var SelectedEntry = React.createClass({
@@ -29,9 +28,9 @@ var SelectedEntry = React.createClass({
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated);
     },
-    /*componentWillReceiveProps: function() {
+    componentWillReceiveProps: function() {
         this.updated();
-    },*/
+    },
     updated: function () {
         this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
             var entryResult = result.records;
@@ -156,7 +155,7 @@ var EntryParent = React.createClass({
                     <span className="anchor" id={"/"+ type + '/' + id + '/' + items.id}/>
                     <div className={innerClassName}>
                         <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/"+ type + '/' + id + '/' + items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
-                            <span className='pull-right' style={{display:'inline-flex'}}>
+                            <span className='pull-right' style={{display:'inline-flex',zIndex:0}}>
                                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} updated={updated} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle}> 
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
@@ -198,6 +197,7 @@ var EntryData = React.createClass({
                 this.setState({count:newcount});
             }.bind(this)); 
         };
+        
         //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
     },
     componentDidMount: function () {
@@ -217,15 +217,12 @@ var EntryData = React.createClass({
             rawMarkup = this.props.subitem.body;
         }
         var id = this.props.id;
-        /*var spanEntity = $('span').attr('data-entity-type');
-        $('span').click(function() {
-            var test = spanEntity;
-            console.log(test);
-        }).bind(this);*/
+        //Lazy Loading Flair here as other components, namely Flair that need to access the parent component here "SelectedEntry" as it can not be accessed due to a cyclic dependency loop between Flair and SelectedEntry. Lazy loading solves this issue. This problem should go away upon upgrading everything to ES6 and using imports/exports. 
+        var Flair = require('../modal/flair_modal.jsx');
         return (
             <div className={'row-fluid entry-body'}>
                 <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
-                    <Frame frameBorder={'0'} id={'iframe_' + id} onLoad={this.onLoad} sandbox={'allow-popups allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
+                    <Frame frameBorder={'0'} id={'iframe_' + id} onLoad={this.onLoad} sandbox={'allow-scripts allow-popups allow-same-origin allow-top-navigation'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
                     <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
                     </Frame>
                 </div>
@@ -235,4 +232,4 @@ var EntryData = React.createClass({
     }
 });
 
-module.exports = {SelectedEntry:SelectedEntry, EntryData:EntryData}
+module.exports = SelectedEntry
