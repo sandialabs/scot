@@ -19,18 +19,19 @@ var ids = []
 var stage = false
 var savedsearch = false
 var savedfsearch;
+var Listener = require('../activemq/listener.jsx')
 var columns = 
 [
     { name: 'id', width: 111.183, style: {color:'black'}},
     { name: 'status', width:119.533},
-    { name: 'created',  width: 261.45,style: {color:'black'}},
+    { name: 'created',  width:261.45,style: {color:'black'}},
     { name: 'updated',  width: 261.45, style: {color:'black'}},
     { name: 'subject',  style: {color:'black'}},
     { name: 'sources',  width: 198.468,style: {color:'black'}},
     { name: 'tags',  width: 189.95,style: {color:'black'}},
     { name: 'owner', width:119.533,style: {color:'black'}},
     { name: 'entries',width:119.533,style: {color:'black'}},
-    { name: 'views',width: 104.4, style: {color:'black'}}
+    { name: 'views',width:111.183,style: {color:'black'}}
 ]
 
 function dataSource(query)
@@ -95,7 +96,7 @@ function configureTable(data, props){
 module.exports = React.createClass({
 
     getInitialState: function(){
-             return {viewfilter: false, viewevent: false, showevent: false, data: dataSource, csv:true,fsearch: ''};
+             return {reload: false, viewfilter: false, viewevent: false, showevent: false, data: dataSource, csv:true,fsearch: ''};
          },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
@@ -104,8 +105,12 @@ module.exports = React.createClass({
     componentWillMount: function(){
 	window.location.hash ='#/event/'
 	window.location.href = window.location.hash
+    Listener.activeMq('eventgroup', this.reloadactive)
     },
 
+    reloadactive: function(){
+    this.setState({reload: true})
+    },
     render: function() {
 	const rowFact = (rowProps) => {	
 	rowProps.onDoubleClick = this.viewEvent
@@ -135,6 +140,7 @@ module.exports = React.createClass({
             idProperty: "id", 
             dataSource: this.state.data, 
             columns: columns, 
+            reload: this.state.reload,
             onColumnResize: this.onColumnResize, 
 	    onFilter: this.handleFilter, 
 	    selected: SELECTED_ID, 
@@ -211,13 +217,13 @@ module.exports = React.createClass({
 	colsort = value['name']	
 	valuesort = value['dir']
 	})
-	this.setState({})
+	this.setState({reload:false})
 	},
     handleColumnOrderChange : function(index, dropIndex){
 	var col = columns[index]
 	columns.splice(index,1)
 	columns.splice(dropIndex, 0, col)
-	this.setState({})
+	this.setState({reload:false})
 	},
     onSelectionChange: function(newSelection){
 	SELECTED_ID = newSelection
@@ -232,7 +238,7 @@ module.exports = React.createClass({
 	multiple = true
 	}
 	
-	this.setState({showevent: multiple})
+	this.setState({reload:false, showevent: multiple})
 	check = true
 
 	},
@@ -262,13 +268,13 @@ module.exports = React.createClass({
 	    filtersearch = filtersearch + key + ": " + JSON.stringify(value) + " "
 	    }
 	})
- 	setTimeout(function() {savedsearch = true; this.setState({viewfilter:true, fsearch: filtersearch})}.bind(this), 1000)	
+ 	setTimeout(function() {savedsearch = true; this.setState({reload: false, viewfilter:true, fsearch: filtersearch})}.bind(this), 1000)	
 	savedfsearch = filtersearch
 	}
 	else{
 	savedsearch = false
 	savedfsearch = ''
-	this.setState({viewfilter: false})
+	this.setState({viewfilter: false, reload:false})
 	}
     }
 
