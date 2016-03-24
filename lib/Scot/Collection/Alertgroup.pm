@@ -100,8 +100,8 @@ sub create_from_api {
         $mq->send("scot", {
             action  => "created", 
             data    => {
-                type    => "alert",
-                id      => $alert->id
+                type        => "alert",
+                id          => $alert->id
             }
         });
 

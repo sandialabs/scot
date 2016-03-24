@@ -244,6 +244,10 @@ EOF
             fi
         fi
 
+        if [[ ! -e /etc/apt/sources.list.d/maxmind-ppa-trusty.list ]]; then
+            add-apt-repository -y ppa:maxmind/ppa
+        fi
+
         if [ "$REFRESHAPT" == "yes" ]; then
             echo "= updating apt repository"
             apt-get update > /dev/null
