@@ -19,6 +19,7 @@ sub create_from_api {
     my $env     = $self->env;
     my $log     = $env->log;
     my $mongo   = $env->mongo;
+    my $mq      = $env->mq;
 
     $log->trace("Custom create in Scot::Collection::Entry");
 
@@ -64,6 +65,15 @@ sub create_from_api {
     },{
         id      => $target_id,
         type    => $target_type,
+    });
+
+    $mq->send("scot", {
+        action  => 'updated',
+        data    => {
+            type    => $target_type,
+            id      => $target_id,
+            who     => $request->{user} // 'api',
+        }
     });
 
     return $entry_obj;
