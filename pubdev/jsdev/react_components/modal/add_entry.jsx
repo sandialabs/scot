@@ -30,24 +30,32 @@ output  = output + timestamp.toLocaleString()
 var AddEntryModal = React.createClass({
 	getInitialState: function(){
 	return {
-	files: [], edit: false, stagecolor: '#000',enable: true, addentry: true, saved: false, enablesave: true, modaloptions: [{value:' Please Save Entry First', label:'Please Save Entry First'}]}
+	files: [], edit: false, stagecolor: '#000',enable: true, addentry: true, saved: false, enablesave: true}
 	},
 	componentWillMount: function(){
 	if(this.props.stage == 'Edit'){
-	  reply = false;
+	  finalfiles = []
+      reply = false;
       $.ajax({
 	   type: 'GET',
 	   url:  '/scot/api/v2/entry/'+ this.props.id
 	   }).success(function(response){
+        if(response.body_flair == ""){
+	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(response.body)
+        }
+        else{
 	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(response.body_flair)
+        }
 	    })
 	}
 	else if (this.props.title == 'Add Entry'){
-	reply = false
+	finalfiles = []
+    reply = false
 	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").text('')
 	}
 	else if(this.props.title == 'Reply Entry'){
-	   reply = true
+	   finalfiles = []
+       reply = true
            $.ajax({
 	   type: 'GET',
 	   url:  '/scot/api/v2/entry/'+ this.props.id
@@ -66,15 +74,24 @@ var AddEntryModal = React.createClass({
 	},
 	componentWillReceiveProps: function(){
 	if(this.props.stage == 'Edit'){
-	  $.ajax({
+	  reply = false
+      finalfiles = []
+      $.ajax({
 	   type: 'GET',
 	   url:  '/scot/api/v2/entry/'+ this.props.id
 	   }).success(function(response){
+	    if(response.body_flair == ""){
+	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(response.body)
+        }
+        else{
 	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(response.body_flair)
-	    })
+        }
+        })
 	}
 	else if (this.props.title == 'Add Entry'){
-	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").text('')
+	reply = false
+    finalfiles = []
+    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text('')
 	var timestamp = new Date()
 	var output = "By You ";
 	timestamp = new Date(timestamp.toString())
@@ -84,7 +101,7 @@ var AddEntryModal = React.createClass({
     },
 	render: function() {
 	var item = this.state.subitem
- 	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").css('height', '394px')
+    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").css('height', '394px')
         return (
  	React.createElement(Modal, {onRequestClose: this.props.addedentry, style: customStyles, isOpen: this.state.addentry}, 
 	React.createElement("div", {className: "modal-content"}, 
@@ -114,7 +131,8 @@ var AddEntryModal = React.createClass({
 
     },
     onCancel: function(){
-	     this.props.addedentry()
+	     finalfiles = []
+         this.props.addedentry()
 	     this.setState({change:false})
 	     this.props.updated()
 	},
@@ -138,9 +156,8 @@ var AddEntryModal = React.createClass({
 	}
 	else {
 	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").attr('contenteditable', false)
-	this.state.modaloptions = [{value:'Move', label:'Move'}, {value: 'Delete', label: 'Delete'}, {value: 'Make Summary', label: 'Make Summary'}, {value: 'Make Task', label: 'Make Task'}, {value: 'Permissions', label: 'Permissions'}]
 	
-	this.setState({saved: true, edit: true, enablesave: false, modaloptions: this.state.modaloptions})
+	this.setState({saved: true, edit: true, enablesave: false})
 	}
         },
 	submit: function(){
@@ -153,20 +170,20 @@ var AddEntryModal = React.createClass({
 	type: 'post',
 	url: '/scot/api/v2/entry',
 	data: data
-	}).success(function(repsonse){
-		    /*if(this.state.files.length > 0){
-			for(var i = 0; i<this.state.files.length; i++){	
-			var file = {file:this.state.files[i].name}
+	}).success(function(response){
+		    if(finalfiles.length > 0){
+			for(var i = 0; i<finalfiles.length; i++){	
+			var file = {file:finalfiles[i].name}
 			data = JSON.stringify({upload: file, target_type: this.props.type, target_id: response.id, entry_id: ''})
-			$.ajax({
+            $.ajax({
 			   type: 'PUT',
 			   url: '/scot/api/v2/file',
 			   data: data
 			   }).success(function(response){
-			   })
+               }.bind(this))
 			}
-			}*/
-	})
+			}
+	}.bind(this))
 	this.props.addedentry()
 	AppActions.updateItem(this.props.targetid,'headerUpdate')
 	}
@@ -177,24 +194,24 @@ var AddEntryModal = React.createClass({
 	url: '/scot/api/v2/entry/'+this.props.id,
 	data: JSON.stringify(data)
 	}).success(function(response){
-		    /*if(this.state.files.length > 0){
-			for(var i = 0; i<this.state.files.length; i++){	
-			var file = {file:this.state.files[i].name}
+		    if(finalfiles.length > 0){
+			for(var i = 0; i<finalfiles.length; i++){	
+			var file = {file:finalfiles[i].name}
 			data = JSON.stringify({upload: file, target_type: this.props.type, target_id: response.id, entry_id: ''})
 			$.ajax({
 			   type: 'PUT',
 			   url: '/scot/api/v2/file',
 			   data: data
 			   }).success(function(response){
-			   })
+			   }.bind(this))
 			}
-			}*/
-	})
+			}
+	}.bind(this))
 	this.props.addedentry()
 	this.props.updated()
 	}
 	else  if(this.props.type == 'alert'){ 
-	 var data = new Object()
+     var data = new Object()
 	 $('.z-selected').each(function(key,value){
 	 $(value).find('.z-cell').each(function(x,y){
 	    if($(y).attr('name') == 'id'){  
@@ -204,10 +221,9 @@ var AddEntryModal = React.createClass({
 		url: '/scot/api/v2/entry',
 		data: data
 		}).success(function(response){
-		/* 
-		if(this.state.files !== undefined){
-			for(var i = 0; i<this.state.files.length; i++){	
-			var file = {file:this.state.files[i].name}
+        if(finalfiles.length > 0){
+			for(var i = 0; i<finalfiles.length; i++){	
+			var file = {file:finalfiles[i].name}
 			data = JSON.stringify({upload: file, target_type: 'alert', target_id: response.id, entry_id: ''})
 			$.ajax({
 			   type: 'PUT',
@@ -216,7 +232,7 @@ var AddEntryModal = React.createClass({
 			   }).success(function(response){
 			   })
 			}
-		}*/
+		}
 		})
 		}
 		})
@@ -232,130 +248,24 @@ var AddEntryModal = React.createClass({
 	url: '/scot/api/v2/entry',
 	data: JSON.stringify(data)
 	}).success(function(repsonse){
-		   /* if(this.state.files.length > 0){
-			for(var i = 0; i<this.state.files.length; i++){	
-			var file = {file:this.state.files[i].name}
+		   if(finalfiles.length > 0){
+			for(var i = 0; i<finalfiles.length; i++){	
+			var file = {file:finalfiles[i].name}
 			data = JSON.stringify({upload: file, target_type: this.props.type, target_id: response.id, entry_id: ''})
 			$.ajax({
 			   type: 'PUT',
 			   url: '/scot/api/v2/file',
 			   data: data
 			   }).success(function(response){
-			   })
+			   }.bind(this))
 			}
-			}*/
-	})
+			}
+	}.bind(this))
 	this.props.addedentry()
 	AppActions.updateItem(this.props.targetid,'headerUpdate');
     }
-	},
-	modalonSelect: function (option){
-	var newoptions
-	var color;
-	if(option.label == "Move"){
 	}
-	else if(option.label == "Delete"){
-	}
-	else if (option.label == "Make Summary"){
-	 $('.z-selected').each(function(key,value){
-	 $(value).find('.z-cell').each(function(x,y){
-	    if($(y).attr('name') == 'id'){
-		var json = {'summary': 0}
-		$.ajax({
-		type: 'PUT',
-		url: '/scot/api/v2/entry/' + $(y).text(),
-		data: json
-		}).success(function(response){
-		alert("Created Summary")
-		})
-		}
-		})
-		})
-	}
-	else if (option.label == "Make Task"){
-	$('.z-selected').each(function(key,value){
-	 $(value).find('.z-cell').each(function(x,y){
-	    if($(y).attr('name') == 'id'){
-		var data = {taskstatus: 'open', assignee: ''}
-		$.ajax({
-		type: 'PUT',
-		url: '/scot/api/v2/entry/' + $(y).text(),
-		data: JSON.stringify(data)
-		}).success(function(response){
-		alert("Made Task")
-		})
-		}
-		})
-		})
-	newoptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Make Summary", label: "Make Summary"}, {value: "Close Task", label: "Close Task"}, {value:"Permissions", label: "Permissions"}, {value: "Assign taks to me", label: "Assign task to me"}]
-	this.state.modaloptions = newoptions
-	color = 'red'
-	this.state.stagecolor = color 
-	}
-	else if(option.label == "Reopen Task"){
-	 $('.z-selected').each(function(key,value){
-	 $(value).find('.z-cell').each(function(x,y){
-	    if($(y).attr('name') == 'id'){
-		var data = {taskstatus: 'open', assignee: ''}
-		$.ajax({
-		type: 'PUT',
-		url: '/scot/api/v2/entry/' + $(y).text(),
-		data: JSON.stringify(data)
-		}).success(function(response){
-		alert("Reopened Task")
-		})
-		}
-		})
-		})
-	newoptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Make Summary", label: "Make Summary"}, {value: "Close Task", label: "Close Task"}, {value:"Permissions", label: "Permissions"}, {value: "Assign taks to me", label: "Assign task to me"}]
-	this.state.modaloptions = newoptions
-	color = 'red'
-	this.state.stagecolor = color
-	}
-	else if (option.label == "Close Task"){
-	 $('.z-selected').each(function(key,value){
-	 $(value).find('.z-cell').each(function(x,y){
-	    if($(y).attr('name') == 'id'){
-		var data = {taskstatus: 'completed', assignee: ''}
-		$.ajax({
-		type: 'PUT',
-		url: '/scot/api/v2/entry/' + $(y).text(),
-		data: JSON.stringify(data)
-		}).success(function(response){
-		alert("Assigned Task")
-		})
-		}
-		})
-		})
-	newoptions = [{value: "Move", label: "Move"}, {value: "Delete", label: "Delete"}, {value: "Make Summary", label: "Make Summary"}, {value: "Reopen Task", label: "Reopen Task"}, {value:"Permissions", label: "Permissions"}]
-	this.state.modaloptions = newoptions
-	color = 'green'
-	this.state.stagecolor = color
-	}
-	else if (option.label == "Assign task to me"){
-	 $('.z-selected').each(function(key,value){
-	 $(value).find('.z-cell').each(function(x,y){
-	    if($(y).attr('name') == 'id'){
-		var data = {taskstatus: 'assigned', assignee: ''}
-		$.ajax({
-		type: 'PUT',
-		url: '/scot/api/v2/entry/' + $(y).text(),
-		data: JSON.stringify(data)
-		}).success(function(response){
-		alert("Assigned Task")
-		})
-		}
-		})
-		})
-	color = '#C0C000'
-	this.state.stagecolor = color 
-	}	
-	else if (option.label == "Permissions"){
-	}
-
-	this.setState({modaloptions: this.state.modaloptions, stagecolor : this.state.stagecolor })
-	}
-    });
+});
 
 module.exports = AddEntryModal
 
