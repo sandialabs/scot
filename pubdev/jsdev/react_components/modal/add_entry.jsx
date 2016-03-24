@@ -10,6 +10,7 @@ var Dropzone = require('../../../node_modules/react-dropzone')
 var finalfiles = []
 var ReactTime = require('react-time')
 var AppActions  = require('../flux/actions.jsx');
+var Activekey = require('../activemq/handleupdate.jsx')
 const  customStyles = {
         content : {
         top     : '1%',
@@ -42,6 +43,7 @@ var AddEntryModal = React.createClass({
 	    })
 	}
 	else if (this.props.title == 'Add Entry'){
+	reply = false
 	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").text('')
 	}
 	else if(this.props.title == 'Reply Entry'){
@@ -79,7 +81,7 @@ var AddEntryModal = React.createClass({
 	output  = output + timestamp.toLocaleString()
 	}
 	this.setState({})
-        },
+    },
 	render: function() {
 	var item = this.state.subitem
  	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").css('height', '394px')

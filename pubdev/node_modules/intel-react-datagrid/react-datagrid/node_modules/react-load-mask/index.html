@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>React LoadMask</title>
+
+    <script src="./node_modules/react/dist/react-with-addons.js"></script>
+    <style>
+
+        body
+        body * {
+            box-sizing: border-box;
+        }
+        body,
+        #content {
+            padding: 0px;
+            margin: 0px;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+    </div>
+
+    <script src="http://localhost:9090/webpack-dev-server.js"></script>
+    <script type="text/javascript" src="http://localhost:9090/assets/bundle.js"></script>
+
+    <!-- <script type="text/javascript" src="./bundle.js"></script> -->
+</body>
+</html>
