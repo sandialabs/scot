@@ -1109,7 +1109,6 @@ var Summary             = require('../components/summary.jsx');
 var Task                = require('../components/task.jsx');
 var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
-var Flair               = require('../modal/flair_modal.jsx');
 var Store               = require('../flux/store.jsx');
 var AppActions          = require('../flux/actions.jsx');
 var SelectedEntry = React.createClass({displayName: "SelectedEntry",
@@ -1297,6 +1296,7 @@ var EntryData = React.createClass({displayName: "EntryData",
                 this.setState({count:newcount});
             }.bind(this)); 
         };
+        
         //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
     },
     componentDidMount: function () {
@@ -1315,11 +1315,13 @@ var EntryData = React.createClass({displayName: "EntryData",
         if (this.props.subitem.body_flair == '') {
             rawMarkup = this.props.subitem.body;
         }
-        var id = this.props.id; 
+        var id = this.props.id;
+        //Lazy Loading Flair here as other components, namely Flair that need to access the parent component here "SelectedEntry" as it can not be accessed due to a cyclic dependency loop between Flair and SelectedEntry. Lazy loading solves this issue. This problem should go away upon upgrading everything to ES6 and using imports/exports. 
+        var Flair = require('../modal/flair_modal.jsx');
         return (
             React.createElement("div", {className: 'row-fluid entry-body'}, 
                 React.createElement("div", {className: 'row-fluid entry-body-inner', style: {marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
-                    React.createElement(Frame, {frameBorder: '0', id: 'iframe_' + id, onLoad: this.onLoad, sandbox: 'allow-scripts allow-popups allow-same-origin', styleSheets: ['/css/sandbox.css'], style: {width:'100%',height:this.state.height}}, 
+                    React.createElement(Frame, {frameBorder: '0', id: 'iframe_' + id, onLoad: this.onLoad, sandbox: 'allow-scripts allow-popups allow-same-origin allow-top-navigation', styleSheets: ['/css/sandbox.css'], style: {width:'100%',height:this.state.height}}, 
                     React.createElement("div", {dangerouslySetInnerHTML: { __html: rawMarkup}})
                     )
                 ), 
@@ -1329,7 +1331,7 @@ var EntryData = React.createClass({displayName: "EntryData",
     }
 });
 
-module.exports = {SelectedEntry:SelectedEntry, EntryData:EntryData}
+module.exports = SelectedEntry
 
 },{"../components/permission.jsx":7,"../components/summary.jsx":10,"../components/task.jsx":12,"../flux/actions.jsx":17,"../flux/store.jsx":19,"../modal/add_entry.jsx":20,"../modal/delete.jsx":21,"../modal/flair_modal.jsx":23,"react":1848,"react-bootstrap/lib/Button.js":773,"react-bootstrap/lib/DropdownButton.js":779,"react-bootstrap/lib/MenuItem.js":783,"react-bootstrap/lib/SplitButton.js":790,"react-frame":995,"react-time":1658}],15:[function(require,module,exports){
 var React                   = require('react');
@@ -1349,7 +1351,7 @@ var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar');
 var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger');
 var Popover                 = require('react-bootstrap/lib/Popover');
 var DebounceInput           = require('react-debounce-input');
-var SelectedEntry           = require('./selected_entry.jsx').SelectedEntry;
+var SelectedEntry           = require('./selected_entry.jsx');
 var Tag                     = require('../components/tag.jsx');
 var Source                  = require('../components/source.jsx');
 var Crouton                 = require('react-crouton');
@@ -2477,6 +2479,8 @@ var ButtonGroup             = require('react-bootstrap/lib/ButtonGroup');
 var Tabs                    = require('react-bootstrap/lib/Tabs');
 var Tab                     = require('react-bootstrap/lib/Tab');
 var DataGrid                = require('react-datagrid');
+var SelectedEntry           = require('../entry/selected_entry.jsx');
+
 const customStyles = {
     content : {
         top     : '50%',
@@ -2511,7 +2515,7 @@ var Flair = React.createClass({displayName: "Flair",
                         React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) :null), 
                         React.createElement("div", null, React.createElement(EntityOptions, {value: this.state.entityData, entityid: this.props.entityid}))
                     ), 
-                    React.createElement("div", {className: "modal-body", style: {height: 'auto', overflowY:'auto',width:'800px'}}, 
+                    React.createElement("div", {className: "modal-body", style: {height: '75vh', overflowY:'auto',width:'800px'}}, 
                         React.createElement(EntityBody, {data: this.state.entityData, entityid: this.props.entityid})
                     ), 
                     React.createElement("div", {className: "modal-footer"}, 
@@ -2544,13 +2548,23 @@ var EntityOptions = React.createClass({displayName: "EntityOptions",
 });
 
 var EntityBody = React.createClass({displayName: "EntityBody",
+    getInitialState: function() {
+        return {
+            loading:"Loading Entries",
+            EntryData:null,
+        }
+    },
+    componentDidMount: function() {
+        this.setState({EntryData:React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid})})
+    },  
     render: function() {
+        var type = 'entity';
         return (
             React.createElement(Tabs, {defaultActiveKey: 1}, 
                 React.createElement(Tab, {eventKey: 1, title: "References"}, React.createElement(EntityEventReferences, {entityid: this.props.entityid})), 
                 React.createElement(Tab, {eventKey: 2, title: "SIDD Data"}, "SIDD Data Table"), 
                 React.createElement(Tab, {eventKey: 3, title: "Geo Location"}, "Geo Location Table"), 
-                React.createElement(Tab, {eventKey: 4, title: "Entry"}, "Entries go here")
+                React.createElement(Tab, {eventKey: 4, title: "Entry"}, this.state.EntryData)
             )
         )
     }
@@ -2562,20 +2576,35 @@ var EntityEventReferences = React.createClass({displayName: "EntityEventReferenc
             entityDataAlertGroup:null,
             entityDataEvent:null,
             entityDataIncident:null, 
+            defaultAlertGroupHeight:60,
+            defaultEventHeight:60,
+            defaultIncidentHeight:60,
+            entityDataAlertGroupLoading:true,
+            entityDataEventLoading:true,
+            entityDataIncidentLoading:true,
         }
     },
     componentDidMount: function() {
         this.sourceRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/alertgroup', function(result) {
             var result = result.records
-            this.setState({entityDataAlertGroup:result})
+            this.setState({entityDataAlertGroup:result,entityDataAlertGroupLoading:false})
+            if (result[0] != undefined) {
+                this.setState({defaultAlertGroupHeight:200})
+            }
         }.bind(this));
         this.sourceRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/event', function(result) {
             var result = result.records
-            this.setState({entityDataEvent:result})
+            this.setState({entityDataEvent:result,entityDataEventLoading:false})
+            if (result[0] != undefined) {
+                this.setState({defaultEventHeight:200})
+            }
         }.bind(this));
         this.sourceRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/incident', function(result) {
             var result = result.records
-            this.setState({entityDataIncident:result})
+            this.setState({entityDataIncident:result,entityDataIncidentLoading:false})
+            if (result[0] != undefined) {
+                this.setState({defaultIncidentHeight:200})
+            }
         }.bind(this));
     },
     onAlertGroupSelectionChange: function(newSelectedId, data) {
@@ -2601,23 +2630,43 @@ var EntityEventReferences = React.createClass({displayName: "EntityEventReferenc
         return (
             React.createElement("div", null, 
                 React.createElement("h4", null, "AlertGroups"), 
-                React.createElement(DataGrid, {idProperty: "id", dataSource: this.state.entityDataAlertGroup, columns: columns, style: {height:200}, onSelectionChange: this.onAlertGroupSelectionChange, selected: this.state.entityDataAlertGroup, emptyText: 'No records'}), 
+                React.createElement(DataGrid, {idProperty: "id", dataSource: this.state.entityDataAlertGroup, columns: columns, style: {height:this.state.defaultAlertGroupHeight}, onSelectionChange: this.onAlertGroupSelectionChange, selected: this.state.entityDataAlertGroup, emptyText: 'No records', loading: this.state.entityDataAlertGroupLoading, loadMaskOverHeader: false}), 
                 React.createElement("div", {style: {marginTop:'90px'}}, 
                     React.createElement("h4", null, "Events"), 
-                    React.createElement(DataGrid, {idProperty: "id", dataSource: this.state.entityDataEvent, columns: columns, style: {height:250}, onSelectionChange: this.onEventSelectionChange, selected: this.state.entityDataEvent, emptyText: 'No records'})
+                    React.createElement(DataGrid, {idProperty: "id", dataSource: this.state.entityDataEvent, columns: columns, style: {height:this.state.defaultEventHeight}, onSelectionChange: this.onEventSelectionChange, selected: this.state.entityDataEvent, emptyText: 'No records', loading: this.state.entityDataEventLoading, loadMaskOverHeader: false})
                 ), 
                 React.createElement("div", {style: {marginTop:'90px'}}, 
                     React.createElement("h4", null, "Incidents"), 
-                    React.createElement(DataGrid, {idProperty: "id", dataSource: this.state.entityDataIncident, columns: columns, style: {height:250}, onSelectionChange: this.onIncidentSelectionChange, selected: this.state.entityDataIncident, emptyText: 'No records'})
+                    React.createElement(DataGrid, {idProperty: "id", dataSource: this.state.entityDataIncident, columns: columns, style: {height:this.state.defaultIncidentHeight}, onSelectionChange: this.onIncidentSelectionChange, selected: this.state.entityDataIncident, emptyText: 'No records', loading: this.state.entityDataIncidentLoading, loadMaskOverHeader: false})
                 )
             )
         )
     }
+    /*render: function() {
+        var columns = [
+            { name: 'id', width:100 }
+            { name: 'subject' }
+        ]
+        return (
+            <div>
+                <h4>AlertGroups</h4>
+                <DataGrid idProperty='id' dataSource={this.state.entityDataAlertGroup} columns={columns} style={{height:this.state.defaultAlertGroupHeight}} onSelectionChange={this.onAlertGroupSelectionChange} selected={this.state.entityDataAlertGroup} emptyText={'No records'}/>
+                <div style={{marginTop:'90px'}}>
+                    <h4>Events</h4>
+                    <DataGrid idProperty='id' dataSource={this.state.entityDataEvent} columns={columns} style={{height:this.state.defaultEventHeight}} onSelectionChange={this.onEventSelectionChange} selected={this.state.entityDataEvent} emptyText={'No records'}/>
+                </div>
+                <div style={{marginTop:'90px'}}>
+                    <h4>Incidents</h4>
+                    <DataGrid idProperty='id' dataSource={this.state.entityDataIncident} columns={columns} style={{height:this.state.defaultIncidentHeight}} onSelectionChange={this.onIncidentSelectionChange} selected={this.state.entityDataIncident} emptyText={'No records'}/>
+                </div>
+            </div>
+        )
+    }*/
 });
 
 module.exports = Flair;
 
-},{"react":1848,"react-bootstrap/lib/Button":773,"react-bootstrap/lib/ButtonGroup":774,"react-bootstrap/lib/Tab":792,"react-bootstrap/lib/Tabs":793,"react-datagrid":828,"react-modal":1003}],24:[function(require,module,exports){
+},{"../entry/selected_entry.jsx":14,"react":1848,"react-bootstrap/lib/Button":773,"react-bootstrap/lib/ButtonGroup":774,"react-bootstrap/lib/Tab":792,"react-bootstrap/lib/Tabs":793,"react-datagrid":828,"react-modal":1003}],24:[function(require,module,exports){
 var React           = require('react');
 var ReactTime       = require('react-time');
 var Modal           = require('react-modal');
@@ -2865,7 +2914,7 @@ var Crouton = require('../../../node_modules/react-crouton')
 var Frame = require('../../../node_modules/react-frame')
 var finalfiles = []
 var checkfiles = false
-var Alertentry = require('../entry/selected_entry.jsx').SelectedEntry
+var Alertentry = require('../entry/selected_entry.jsx')
 var Header = require('../entry/selected_header.jsx')
 var Addentry = require('../modal/add_entry.jsx')
 var Appactions = require('../flux/actions.jsx')
