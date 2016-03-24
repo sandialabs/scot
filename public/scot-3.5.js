@@ -1285,18 +1285,20 @@ var EntryData = React.createClass({displayName: "EntryData",
         }
     },
     componentDidUpdate: function() {
+        var id = this.props.id;
         if (this.state.count <= 1) {
             setTimeout(function() {
-                var newheight; 
-                newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-                newheight = newheight + 'px';
-                this.setState({height:newheight});
-                var newcount = this.state.count;
-                newcount += 1;
-                this.setState({count:newcount});
+                document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
+                    var newheight; 
+                    newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+                    newheight = newheight + 'px';
+                    this.setState({height:newheight});
+                    var newcount = this.state.count;
+                    newcount += 1;
+                    this.setState({count:newcount});
+                }.bind(this))
             }.bind(this)); 
         };
-        
         //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
     },
     componentDidMount: function () {
@@ -1321,7 +1323,7 @@ var EntryData = React.createClass({displayName: "EntryData",
         return (
             React.createElement("div", {className: 'row-fluid entry-body'}, 
                 React.createElement("div", {className: 'row-fluid entry-body-inner', style: {marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
-                    React.createElement(Frame, {frameBorder: '0', id: 'iframe_' + id, onLoad: this.onLoad, sandbox: 'allow-scripts allow-popups allow-same-origin allow-top-navigation', styleSheets: ['/css/sandbox.css'], style: {width:'100%',height:this.state.height}}, 
+                    React.createElement(Frame, {frameBorder: '0', id: 'iframe_' + id, onLoad: this.onLoad, sandbox: 'allow-scripts allow-popups allow-same-origin ', styleSheets: ['/css/sandbox.css'], style: {width:'100%',height:this.state.height}}, 
                     React.createElement("div", {dangerouslySetInnerHTML: { __html: rawMarkup}})
                     )
                 ), 
@@ -1434,37 +1436,61 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
             var entityResult = result.records;
             $('iframe').each(function(index,ifr) {
-                if(ifr.contentDocument != null) {
-                    var ifrContents = $(ifr).contents();
-                    ifrContents.find('.entity').each(function(index,entity){
-                        var oldentity = $(this).attr('data-entity-value');
-                        $(this).attr('data-entity-value', oldentity.toLowerCase())
-                    });
-                }
+                //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
+                ifr.contentWindow.requestAnimationFrame( function() {
+                    if(ifr.contentDocument != null) {
+                        var ifrContents = $(ifr).contents();
+                        ifrContents.find('.entity').each(function(index,entity){
+                            var oldentity = $(this).attr('data-entity-value');
+                            $(this).attr('data-entity-value', oldentity.toLowerCase())
+                            console.log('lowercasing function');
+                        }); 
+                        for (var prop in entityResult) {
+                            var entityValue = entityResult[prop].value;
+                            var entityid = entityResult[prop].id;
+                            var entity = ifrContents.find('span[data-entity-value="' + entityValue + '"]');
+                            entity.each(function(index,entity) {
+                                var circle = $('<span class="noselect">')//.attr('alt', ref_text).attr('title', ref_text);
+                                circle.addClass('circleNumber');
+                                circle.addClass('extras');
+                                circle.text(count += 1);
+                                $(entity).append(circle);
+                                $(entity).attr('data-entity-id',entityid)
+                                console.log('setting elements: ' + entity);
+                                $(entity).unbind('click');
+                                $(entity).click(function() {
+                                    this.flairToolbarToggle($(entity).attr('data-entity-id'));
+                                }.bind(this));
+                            }.bind(this));
+                        }
+                    }
+                }.bind(this));
             });
-            for (var prop in entityResult) {
+            /*for (var prop in entityResult) {
                 var entityValue = entityResult[prop].value;
                 var entityid = entityResult[prop].id;
                 $('iframe').each(function(index,ifr) {
-                    if(ifr.contentDocument != null) {
-                        var ifrContents = $(ifr).contents();
-                        var entity = ifrContents.find('span[data-entity-value="' + entityValue + '"]');
-                        entity.each(function(index,entity) {
-                            var circle = $('<span class="noselect">')//.attr('alt', ref_text).attr('title', ref_text);
-                            circle.addClass('circleNumber');
-                            circle.addClass('extras');
-                            circle.text(count += 1);
-                            $(entity).append(circle);
-                            $(entity).attr('data-entity-id',entityid)
-                            console.log('setting elements: ' + entity);
-                            $(entity).unbind('click');
-                            $(entity).click(function() {
-                                this.flairToolbarToggle($(entity).attr('data-entity-id'));
+                    ifr.contentWindow.requestAnimationFrame( function() {
+                        if(ifr.contentDocument != null) {
+                            var ifrContents = $(ifr).contents();
+                            var entity = ifrContents.find('span[data-entity-value="' + entityValue + '"]');
+                            entity.each(function(index,entity) {
+                                var circle = $('<span class="noselect">')//.attr('alt', ref_text).attr('title', ref_text);
+                                circle.addClass('circleNumber');
+                                circle.addClass('extras');
+                                circle.text(count += 1);
+                                $(entity).append(circle);
+                                $(entity).attr('data-entity-id',entityid)
+                                console.log('setting elements: ' + entity);
+                                $(entity).unbind('click');
+                                $(entity).click(function() {
+                                    this.flairToolbarToggle($(entity).attr('data-entity-id'));
+                                }.bind(this));
                             }.bind(this));
-                        }.bind(this));
-                    }
+                        }
+                    }.bind(this));
                 }.bind(this))
-            }
+            }*/
         }.bind(this));  
     },
 
