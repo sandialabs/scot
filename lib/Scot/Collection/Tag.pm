@@ -32,6 +32,8 @@ sub create_from_api {
         return { error_msg => "No Tag value provided" };
     }
 
+    $value =~ s/ /_/g;  # tags should not have spaces!
+
     my $tag_obj         = $self->find_one({ value => $value });
 
     unless ( defined $tag_obj ) {
