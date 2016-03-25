@@ -51,7 +51,7 @@ sub is_permitted {
     $log->debug("Permitted groups for $operation: " . 
                 join(',', @{$perm_aref}) );
 
-    $log->debug("Users groups are ". join(',', @{$users_groups}));
+    # $log->debug("Users groups are ". join(',', @{$users_groups}));
 
     foreach my $group ( @$users_groups ) {
         if ( grep { /^$group$/ } @{$self->groups->{$operation}} ) {
