@@ -53,15 +53,13 @@ var Actions = {
             $.each(messages, function(key,message){
                 if(message != ""){
                     var json = JSON.parse(message);
+                    console.log(json)
                     if( json.action != "viewed" || json.action == 'updated'  || json.action == 'created' || json.action == 'deleted'){
-                        if(json.data.type != 'alert'){
-                        console.log(json)
                         Dispatcher.handleActivemq({
                         activemq: json
                     })
                   }
                 }
-              }
             });       
         }).fail(function(){
             setTimeout(Actions.updateView(), 20)
