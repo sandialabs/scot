@@ -17,7 +17,7 @@ function register_client(){
             message: 'chat',
             type: 'listen',
             clientId: client,
-            destination: '/scot'
+            destination: 'topic://scot'
         }
     }).done(function(){
         console.log('Registered client as '+client);
