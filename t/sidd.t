@@ -1,0 +1,26 @@
+#!/usr/bin/env perl
+
+use warnings;
+use strict;
+use v5.18;
+use lib '../lib';
+
+use Test::More;
+use Scot::Env;
+use Scot::Util::Sidd;
+use Data::Dumper;
+
+my $env     = Scot::Env->new();
+my $sidd    = Scot::Util::Sidd->new({
+    env         => $env,
+    servername  => 'sidd.sandia.gov',
+    username    => 'scot',
+    password    => '3mIn8g$doliq*7qIS-suopu88',
+});
+
+my $href    = $sidd->get_sidd_data("401k.com");
+
+say Dumper($href);
+
+
+
