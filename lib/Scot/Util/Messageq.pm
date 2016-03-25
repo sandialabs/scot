@@ -11,6 +11,7 @@ use Data::GUID;
 use Net::Stomp;
 use Scot::Env;
 use Data::Dumper;
+use Sys::Hostname;
 use Try::Tiny;
 use Try::Tiny::Retry;
 use namespace::autoclean;
@@ -83,20 +84,34 @@ sub send {
     my $href    = shift;
     my $log     = $self->env->log;
     my $stomp   = $self->stomp;
+    my $pid     = $$;
+    my $hostname = hostname();
+
+    $href->{pid}        = $pid;
+    $href->{fromhost}   = $hostname;
 
     my $savelevel   = $log->level();
-    $log->level(Log::Log4perl::Level::to_priority('WARN'));
+    $log->level(Log::Log4perl::Level::to_priority('TRACE'));
 
-    my $guid    = Data::GUID->new;
-    my $gstring = $guid->as_string;
+    $log->debug("Sending ",{filter=>\&Dumper, value => $href});
+
+    my $guid        = Data::GUID->new;
+    my $gstring     = $guid->as_string;
     $href->{guid}   = $gstring;
-    my $body    = encode_json($href);
+    my $body;
+
+    eval {
+        $body        = encode_json($href);
+    };
+    if ( $@ ) {
+        $log->error("Failed to encode json: $@");
+    }
 
     #if ( $self->is_connected ) {
         try {
             $stomp->send({
-                destination => "/".$dest,
-                body        => $body,
+                destination     => "/".$dest,
+                body            => $body,
                 'amq-msg-type'  => 'text',
             });
         }
