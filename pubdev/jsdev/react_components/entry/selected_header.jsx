@@ -98,37 +98,61 @@ var SelectedHeader = React.createClass({
         this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
             var entityResult = result.records;
             $('iframe').each(function(index,ifr) {
-                if(ifr.contentDocument != null) {
-                    var ifrContents = $(ifr).contents();
-                    ifrContents.find('.entity').each(function(index,entity){
-                        var oldentity = $(this).attr('data-entity-value');
-                        $(this).attr('data-entity-value', oldentity.toLowerCase())
-                    });
-                }
+                //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
+                ifr.contentWindow.requestAnimationFrame( function() {
+                    if(ifr.contentDocument != null) {
+                        var ifrContents = $(ifr).contents();
+                        ifrContents.find('.entity').each(function(index,entity){
+                            var oldentity = $(this).attr('data-entity-value');
+                            $(this).attr('data-entity-value', oldentity.toLowerCase())
+                            console.log('lowercasing function');
+                        }); 
+                        for (var prop in entityResult) {
+                            var entityValue = entityResult[prop].value;
+                            var entityid = entityResult[prop].id;
+                            var entity = ifrContents.find('span[data-entity-value="' + entityValue + '"]');
+                            entity.each(function(index,entity) {
+                                var circle = $('<span class="noselect">')//.attr('alt', ref_text).attr('title', ref_text);
+                                circle.addClass('circleNumber');
+                                circle.addClass('extras');
+                                circle.text(count += 1);
+                                $(entity).append(circle);
+                                $(entity).attr('data-entity-id',entityid)
+                                console.log('setting elements: ' + entity);
+                                $(entity).unbind('click');
+                                $(entity).click(function() {
+                                    this.flairToolbarToggle($(entity).attr('data-entity-id'));
+                                }.bind(this));
+                            }.bind(this));
+                        }
+                    }
+                }.bind(this));
             });
-            for (var prop in entityResult) {
+            /*for (var prop in entityResult) {
                 var entityValue = entityResult[prop].value;
                 var entityid = entityResult[prop].id;
                 $('iframe').each(function(index,ifr) {
-                    if(ifr.contentDocument != null) {
-                        var ifrContents = $(ifr).contents();
-                        var entity = ifrContents.find('span[data-entity-value="' + entityValue + '"]');
-                        entity.each(function(index,entity) {
-                            var circle = $('<span class="noselect">')//.attr('alt', ref_text).attr('title', ref_text);
-                            circle.addClass('circleNumber');
-                            circle.addClass('extras');
-                            circle.text(count += 1);
-                            $(entity).append(circle);
-                            $(entity).attr('data-entity-id',entityid)
-                            console.log('setting elements: ' + entity);
-                            $(entity).unbind('click');
-                            $(entity).click(function() {
-                                this.flairToolbarToggle($(entity).attr('data-entity-id'));
+                    ifr.contentWindow.requestAnimationFrame( function() {
+                        if(ifr.contentDocument != null) {
+                            var ifrContents = $(ifr).contents();
+                            var entity = ifrContents.find('span[data-entity-value="' + entityValue + '"]');
+                            entity.each(function(index,entity) {
+                                var circle = $('<span class="noselect">')//.attr('alt', ref_text).attr('title', ref_text);
+                                circle.addClass('circleNumber');
+                                circle.addClass('extras');
+                                circle.text(count += 1);
+                                $(entity).append(circle);
+                                $(entity).attr('data-entity-id',entityid)
+                                console.log('setting elements: ' + entity);
+                                $(entity).unbind('click');
+                                $(entity).click(function() {
+                                    this.flairToolbarToggle($(entity).attr('data-entity-id'));
+                                }.bind(this));
                             }.bind(this));
-                        }.bind(this));
-                    }
+                        }
+                    }.bind(this));
                 }.bind(this))
-            }
+            }*/
         }.bind(this));  
     },
 

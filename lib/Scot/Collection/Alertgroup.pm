@@ -137,6 +137,11 @@ sub refresh_data {
     my $self    = shift;
     my $id      = shift;
     my $user    = shift // "api";
+    my $env     = $self->env;
+    my $mq      = $env->mq;
+    my $log     = $env->log;
+
+    $log->trace("[Alertgroup $id] Refreshing Data after Alert update");
 
     my $alertgroup  = $self->find_iid($id);
 
@@ -153,9 +158,13 @@ sub refresh_data {
             closed_count    => $count{closed} // 0,
             promoted_count  => $count{promoted} // 0,
             alert_count     => $count{total},
+            updated         => $env->now,
         }
     });
-    $self->env->mq->send("scot", {
+
+    $log->trace("[Alertgroup $id] sending activemq update message");
+
+    $env->mq->send("scot", {
         action  => "updated", 
         data    => {
             type    => "alertgroup",
