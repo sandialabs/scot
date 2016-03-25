@@ -332,14 +332,14 @@ sub get_many {
     delete $req_href->{request}; # hack to kil error when '$' appears in match ref
 
     $self->audit("get_many", $req_href);
-    $env->mq->send("scot", {
-        action  => "viewed",
-        data    => {
-            who     => $user,
-            type    => $col_name,
-            id      => 'many',
-        }
-    });
+#    $env->mq->send("scot", {
+#        action  => "viewed",
+#        data    => {
+#            who     => $user,
+#            type    => $col_name,
+#            id      => 'many',
+#        }
+#    });
 }
 
 
@@ -460,14 +460,14 @@ sub get_one {
     $self->do_render($data_href);
 
     $self->audit("get_one", $req_href);
-    $env->mq->send("scot", {
-        action  => "viewed",
-        data    => {
-            who     => $user,
-            type    => $col_name,
-            id      => $id,
-        }
-    });
+#    $env->mq->send("scot", {
+#        action  => "viewed",
+#        data    => {
+#            who     => $user,
+#            type    => $col_name,
+#            id      => $id,
+#        }
+#    });
 }
 
 =item B<GET /scot/api/v2/:thing/:id/:subthing>
@@ -566,15 +566,15 @@ sub get_subthing {
 
 
     $self->audit("get_subthing", $req_href);
-    $env->mq->send("scot", {
-        action  => "viewed",
-        data    => {
-            who     => $user,
-            type    => $thing,
-            id      => $id,
-            subtype => $subthing,
-        }
-    });
+#    $env->mq->send("scot", {
+#        action  => "viewed",
+#        data    => {
+#            who     => $user,
+#            type    => $thing,
+#            id      => $id,
+#            subtype => $subthing,
+#        }
+#    });
 }
 
 =item B<PUT /scot/api/v2/:thing/:id>
@@ -653,7 +653,8 @@ sub update {
 
     if ( $object->meta->does_role("Scot::Role::Permission") ) {
         my $users_groups    = $self->session('groups');
-        $log->debug("User groups are ",{filter=>\&Dumper, value=>$users_groups});
+        # $log->debug("User groups are ",
+        #    {filter=>\&Dumper, value=>$users_groups});
         unless ( $object->is_modifiable($users_groups) ) {
             $self->modify_not_permitted_error($object, $users_groups);
             return;
@@ -1582,7 +1583,7 @@ sub thread_entries {
     my $user        = $self->session('user');
 
     $log->debug("Threading ". $cursor->count . " entries...");
-    $log->debug("users groups are: ".join(',',@$mygroups));
+    # $log->debug("users groups are: ".join(',',@$mygroups));
 
     my @threaded    = ();
     my %where       = ();
@@ -2012,11 +2013,20 @@ sub whoami {
             data    => $userobj->as_hash,
         });
     }
-    else {
-        $self->do_error(404, {
-            user    => "not valid",
-            data    => { error_msg => "$user not found" },
-        });
+    else {  
+        # TODO:  put code here that creates the users database entry
+        if ( $user ) {
+            $self->do_render({
+                user    => $user,
+                data    => {},
+            });
+        }
+        else {
+            $self->do_error(404, {
+                user    => "not valid",
+                data    => { error_msg => "$user not found" },
+            });
+        }
     }
 }
 

@@ -63,6 +63,10 @@ var supername;
 var setfilter = false
 var activequery;
 var array = []
+var OverlayTrigger  = require('react-bootstrap/lib/OverlayTrigger');
+var Popover = require('react-bootstrap/lib/Popover')
+var ButtonToolbar = require('react-bootstrap/lib/ButtonToolbar')
+var Button = require('react-bootstrap/lib/Button')
 var columns = 
 [
     { name: 'id' , width: 111.183, style: {color: 'black'}},
@@ -280,6 +284,18 @@ function dataSource(query)
 	    var date = new Date(1000 * item)
 	    finalarray[key][num] = date.toLocaleString()
 	}
+    else if (num == 'status'){
+    var ToolBar = React.createClass({
+        render: function(){
+            return (
+React.createElement(ButtonToolbar, null, React.createElement(OverlayTrigger, {trigger: "hover", placement: "bottom", overlay: React.createElement(Popover, null, "open/closed/promoted alerts")}, React.createElement(Button, {bsSize: "xsmall"}, React.createElement("span", {className: "alertgroup"}, React.createElement("span", {className: "alertgroup_open"}, value.open_count), " / ", React.createElement("span", {className: "alertgroup_closed"}, value.closed_count), " / ", React.createElement("span", {className: "alertgroup_promoted"}, value.promoted_count)))))
+
+    )
+    }
+    })
+    finalarray[key][num] = React.createElement(ToolBar, null)
+    }
+
 	else{
 	 finalarray[key][num] = item
 	}
@@ -377,7 +393,9 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	this.setState({columns: newarray})
 	}
 	}.bind(this)); 
-	},
+    setTimeout(function() {Store.storeKey(this.state.key)}.bind(this), 10)
+	setTimeout(function() {Store.addChangeListener(this.reloadentry)}.bind(this),10)    
+    },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
          firstCol.width = firstSize
          this.setState({})
@@ -413,9 +431,8 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	})
 	}, 100)
 	return (
-	this.state.history ? React.createElement(HistoryView, {type:'alertgroup', id: this.state.historyid, historyToggle: this.viewHistory}) 
-        :
-	React.createElement("div", {className: 'All Modal'}, /*style: {'padding-left': '25px'}},*/ this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', targetid: this.state.key, updated: this.reloadentry, addedentry: this.addEntry, type: 'alert'}) : null,
+	React.createElement("div", {className: 'All Modal'}, this.state.history ? React.createElement(HistoryView, {type:'alert', id: this.state.historyid, historyToggle: this.viewHistory}) : null, 
+/*style: {'padding-left': '25px'}},*/ this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', targetid: this.state.key, updated: this.reloadentry, addedentry: this.addEntry, type: 'alert'}) : null,
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
 	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alertgroup', id: this.state.key})), this.state.oneview ? React.createElement('btn-group', null, this.state.flair ? React.createElement('button',{className: 'btn btn-default', onClick: this.flairOn}, 'Flair On') : React.createElement('button', {className: 'btn btn-default', onClick: this.flairOff}, 'Flair Off'), React.createElement('button', {className: 'btn btn-default', onClick: this.viewGuide}, 'View Guide'), React.createElement('button', {className:'btn btn-default', onClick:this.viewSource}, 'View Source'), React.createElement('button', {className:'btn btn-default', onClick: this.viewHistory}, 'View History'), React.createElement('button', {className: 'btn btn-default', onClick:this.addEntry}, 'Add Entry'), React.createElement('button', {className: 'btn btn-default', onClick: this.openSelected}, 'Open Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.closeSelected}, 'Close Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.promoteSelected}, 'Promote Selected'), React.createElement('button', {className:'btn btn-default', onClick:this.selectExisting}, 'Add Selected to Existing Event'), React.createElement('button', {className:'btn btn-default', onClick:this.exportCSV}, 'Export to CSV'), React.createElement('button', {className:'btn btn-default', onClick:this.deleteSelected}, 'Delete Selected')) : null ,  React.createElement(Subgrid, {style: {height: '100%', 'z-index' : '0'},className: "Subgrid",
         ref: "dataGrid", 
@@ -495,9 +512,10 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	}
 
     },
+    
     viewHistory: function(){
-	historyview = ''
-        var id = 0;
+    historyview = ''
+    var id = 0;
 	if(storealertids.length > 1){
 	    alert("Select only one id to view history")
 	}
@@ -507,19 +525,16 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 		if($(y).attr('name') == 'id'){
 		    id = $(y).text()
 		}
-	/*
-	$.ajax({
-	    type: 'GET',
-	    url: '/scot/api/v2/alertgroup/'+$(y).text()+'/history',
-    	   }).done(function(response){
-		history += $(y).text() + "\n" + response.view_history +"\n"
-	})
-
-	*/
 	})
 	})
-	this.setState({historyid: id, history: true})
-	}
+	
+    if(!this.state.history){
+        this.setState({history:true, historyid:id})
+    }
+    else {
+        this.setState({history: false, historyid: id})
+     }
+    }
    },
    addEntry: function(){
 	if(!this.state.addentry) {
