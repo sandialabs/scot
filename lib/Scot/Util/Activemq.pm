@@ -119,7 +119,7 @@ sub send {
     my $href    = shift;
     my $log     = $self->env->log;
     my $clevel  = $log->level();
-    $log->level(Log::Log4perl::Level::to_priority('WARN'));
+    $log->level(Log::Log4perl::Level::to_priority('TRACE'));
 
     my $dest    = $href->{dest};
     delete $href->{dest};
@@ -139,6 +139,8 @@ sub send {
             destination     => $dest,
             body            => $json,
             'amq-msg-type'  => "text",
+            pid             => $$,
+            fromhost        => `hostname`,
         );
     };
     if ($@) {

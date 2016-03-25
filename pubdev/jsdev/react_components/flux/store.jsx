@@ -33,6 +33,7 @@ function updateStatus(payload) {
 	}
 	})
 	})
+    /*
     if(type == 'PUT'){
  	$.ajax({
 	type: type,
@@ -40,7 +41,7 @@ function updateStatus(payload) {
 	data: JSON.stringify({status:payload.action.data})
 	}).success(function(response){
 	})
-    }
+    }*/
 }
 
 function deleteEvent(payload) {

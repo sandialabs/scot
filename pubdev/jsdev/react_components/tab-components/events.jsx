@@ -166,7 +166,7 @@ module.exports = React.createClass({
 	url: '/scot/api/v2/event',
 	data: data
 	}).success(function(response){
-	window.location = '#/event/'+response.id
+	setTimeout(function(){window.location = '#/event/'+response.id}, 1000)
 	})
     },
     viewEvent: function(){

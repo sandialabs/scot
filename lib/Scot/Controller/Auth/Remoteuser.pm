@@ -48,7 +48,7 @@ sub check {
     my $user    = $self->session('user');
     $log->debug("Session user is ", {filter =>\&Dumper, value =>$user});
     my $groups  = $self->session('groups');
-    $log->debug("Session groups is ", {filter =>\&Dumper, value =>$groups});
+    # $log->debug("Session groups is ", {filter =>\&Dumper, value =>$groups});
 
     if ( defined $user ) {
         if ( defined $groups ) {
