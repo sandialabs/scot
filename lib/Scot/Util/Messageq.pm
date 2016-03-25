@@ -9,6 +9,7 @@ use Moose;
 use Mojo::JSON qw/decode_json encode_json/;
 use Data::GUID;
 use Net::Stomp;
+use Sys::Hostname;
 use Scot::Env;
 use Data::Dumper;
 use Sys::Hostname;
@@ -84,39 +85,35 @@ sub send {
     my $href    = shift;
     my $log     = $self->env->log;
     my $stomp   = $self->stomp;
-    my $pid     = $$;
-    my $hostname = hostname();
-
-    $href->{pid}        = $pid;
-    $href->{fromhost}   = $hostname;
+    
+    $href->{pid}        = $$;
+    $href->{hostname}   = hostname;
 
     my $savelevel   = $log->level();
     $log->level(Log::Log4perl::Level::to_priority('TRACE'));
 
-    $log->debug("Sending ",{filter=>\&Dumper, value => $href});
+    $log->trace("Sending STOMP message: ",{filter=>\&Dumper, value=>$href});
 
     my $guid        = Data::GUID->new;
     my $gstring     = $guid->as_string;
     $href->{guid}   = $gstring;
-    my $body;
+    my $body        = encode_json($href);
+    my $length      = length($body);
 
-    eval {
-        $body        = encode_json($href);
-    };
-    if ( $@ ) {
-        $log->error("Failed to encode json: $@");
-    }
-
+    my $rcvframe;
     #if ( $self->is_connected ) {
         try {
-            $stomp->send({
-                destination     => "/".$dest,
-                body            => $body,
-                'amq-msg-type'  => 'text',
-            });
+            $stomp->send_transactional({
+                destination         => "/topic/".$dest,
+                body                => $body,
+                'amq-msg-type'      => 'text',
+                'content-length'    => $length,
+                persistent          => 'true',
+            }, $rcvframe);
         }
         catch {
             $log->error("Error sending to STOMP message: $_");
+            $log->error($rcvframe->as_string);
         };
     #}
     $log->level($savelevel);
