@@ -63,6 +63,10 @@ var supername;
 var setfilter = false
 var activequery;
 var array = []
+var OverlayTrigger  = require('react-bootstrap/lib/OverlayTrigger');
+var Popover = require('react-bootstrap/lib/Popover')
+var ButtonToolbar = require('react-bootstrap/lib/ButtonToolbar')
+var Button = require('react-bootstrap/lib/Button')
 var columns = 
 [
     { name: 'id' , width: 111.183, style: {color: 'black'}},
@@ -280,6 +284,18 @@ function dataSource(query)
 	    var date = new Date(1000 * item)
 	    finalarray[key][num] = date.toLocaleString()
 	}
+    else if (num == 'status'){
+    var ToolBar = React.createClass({
+        render: function(){
+            return (
+React.createElement(ButtonToolbar, null, React.createElement(OverlayTrigger, {trigger: "hover", placement: "bottom", overlay: React.createElement(Popover, null, "open/closed/promoted alerts")}, React.createElement(Button, {bsSize: "xsmall"}, React.createElement("span", {className: "alertgroup"}, React.createElement("span", {className: "alertgroup_open"}, value.open_count), " / ", React.createElement("span", {className: "alertgroup_closed"}, value.closed_count), " / ", React.createElement("span", {className: "alertgroup_promoted"}, value.promoted_count)))))
+
+    )
+    }
+    })
+    finalarray[key][num] = React.createElement(ToolBar, null)
+    }
+
 	else{
 	 finalarray[key][num] = item
 	}

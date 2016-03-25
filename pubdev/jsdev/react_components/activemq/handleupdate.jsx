@@ -5,7 +5,6 @@ function update(state, callback, payload){
      callback.emitChange(payload.action.activemq.data.id)
     }
     else if (state == 'entry'){
-
      callback.emitChange(payload.action.activemq.data.id)
     }
     else if (state == 'intel'){
@@ -44,7 +43,7 @@ function creation(state, callback, payload){
         $(value).find('.z-row').each(function(x,y){
            $(y).find('.z-cell').each(function(r,s){
            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
-            $(y).css('background', 'green')
+            $(y).css('background', '#FF4646')
             setTimeout(function(){$(y).css('background', "")}, 10000)
             }
         })
