@@ -12,6 +12,7 @@ use Net::Stomp;
 use Sys::Hostname;
 use Scot::Env;
 use Data::Dumper;
+use Sys::Hostname;
 use Try::Tiny;
 use Try::Tiny::Retry;
 use namespace::autoclean;
