@@ -18,7 +18,7 @@ $stomp->connect();
 $stomp->on_connected(
     sub { 
         my $stomp   = shift;
-        $stomp->subscribe('/scot');
+        $stomp->subscribe('/topic/scot');
 
     }
 );
