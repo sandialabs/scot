@@ -20,6 +20,7 @@ the Link collection
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
+    Scot::Role::Entriable
     Scot::Role::Hashable
 );
 
