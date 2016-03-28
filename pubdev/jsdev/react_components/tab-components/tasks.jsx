@@ -19,6 +19,7 @@ var ids = []
 var stage = false
 var savedsearch = false
 var savedfsearch;
+var Listener = require('../activemq/listener.jsx')
 var columns = 
 [
     { name: 'type',width: 159.4,  style: {color: 'black'}},
@@ -91,7 +92,7 @@ function configureTable(data, props){
 module.exports = React.createClass({
 
     getInitialState: function(){
-             return {viewfilter: false, viewevent: false, showevent: false, data: dataSource, csv:true,fsearch: ''};
+             return {reload: false, viewfilter: false, viewevent: false, showevent: false, data: dataSource, csv:true,fsearch: ''};
          },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
@@ -100,8 +101,13 @@ module.exports = React.createClass({
     componentWillMount: function(){
 	window.location.hash = '#/task/'
 	window.location.href = window.location.hash
+    Listener.activeMq('taskgroup', this.reloadactive)
     },
+    reloadactive: function(){
 
+    this.setState({reload:true})
+
+    },
     render: function() {
 	const rowFact = (rowProps) => {	
 	rowProps.onDoubleClick = this.viewEvent
@@ -143,6 +149,7 @@ module.exports = React.createClass({
 	    onSortChange: this.handleSortChange, 
 	    showCellBorders: true,
 	    rowHeight: 55,
+        reload: this.state.reload,
 	    style: {height: '100%'},
 	    rowFactory: rowFact,
 	    rowStyle: configureTable}
@@ -203,7 +210,7 @@ module.exports = React.createClass({
 	var col = columns[index]
 	columns.splice(index,1)
 	columns.splice(dropIndex, 0, col)
-	this.setState({})
+	this.setState({reload: false})
 	},
     onSelectionChange: function(newSelection){
 	SELECTED_ID = newSelection
@@ -218,7 +225,7 @@ module.exports = React.createClass({
 	multiple = true
 	}
 	
-	this.setState({showevent: multiple})
+	this.setState({showevent: multiple, reload:false})
 	check = true
 
 	},
@@ -248,7 +255,7 @@ module.exports = React.createClass({
 	    filtersearch = filtersearch + key + ": " + JSON.stringify(value) + " "
 	    }
 	})
- 	setTimeout(function() {savedsearch = true; this.setState({viewfilter:true, fsearch: filtersearch})}.bind(this), 1000)	
+ 	setTimeout(function() {savedsearch = true; reload: false, this.setState({viewfilter:true, fsearch: filtersearch})}.bind(this), 1000)	
 	savedfsearch = filtersearch
 	}
 	else{
