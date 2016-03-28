@@ -40,7 +40,7 @@ var Actions = {
             data: {
                 /*loc: location.hash, */
                 clientId: client,
-                timeout: 2000,
+                timeout: 3000,
                 d: now.getTime(),
                 r: Math.random(),
                 json:'true',
