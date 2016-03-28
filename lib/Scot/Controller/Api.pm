@@ -2036,7 +2036,7 @@ sub get_entity_count {
     my $value   = $entity->value;
     my $env     = $self->env;
     my $mongo   = $env->mongo;
-    my $col     = $mongo->collecton('Link');
+    my $col     = $mongo->collection('Link');
     my $cursor  = $col->get_links(
         'entity', $entity->id    
     );
