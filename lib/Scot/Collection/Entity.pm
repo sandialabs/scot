@@ -51,38 +51,67 @@ sub update_entities {
     my $linkcol = $mongo->collection('Link');
 
     $log->trace("[$type $id] Updating associated entities");
+    $log->trace("[$type $id] ", {filter=>\&Dumper, value=>$earef});
     
     # find entity or create it.
+    # NOTE: this is a cool way to get MongoDB to do everything in one
+    # fell swoop, BUT, it will not create an iid for us when creating
+    # a new entity.  Bummer, so we are going to have to query and then
+    # update or create
+    #foreach my $entity (@$earef) {
+    #    my @command    = (
+    #        findAndModify   => "entity",
+    #        query           => { 
+    #            value   => $entity->{value}, 
+    #            type    => $entity->{type},
+    #        },
+    #        update          => {
+    #            '$setOnInsert'  => {
+    #                value   => $entity->{value},
+    #                type    => $entity->{type},
+    #            }
+    #        },
+    #        new     => 1,
+    #        upsert  => 1,
+    #    );
+    #
+    #    $log->trace("Attempting: ", {filter=>\&Dumper, value=>\@command});
+    #
+    #    my $return = $self->_try_mongo_op(
+    #        find_or_create => sub {
+    #            my $dbname  = $self->meerkat->database_name;
+    #            my $db      = $self->meerkat->_mongo_database($dbname);
+    #            my $job     = $db->run_command(\@command);
+    #            return $job;
+    #        }
+    #    );
+    #    $log->debug("FindAndModify returned: ",
+    #                { filter =>\&Dumper, value => $return });
+    #    my $entity_id    = $return->{id};
 
     foreach my $entity (@$earef) {
-        my @command    = (
-            findAndModify   => "entity",
-            query           => { 
-                value   => $entity->{value}, 
-                type    => $entity->{type},
-            },
-            update          => {
-                '$setOnInsert'  => {
-                    value   => $entity->{value},
-                    type    => $entity->{type},
-                }
-            },
-            new     => 1,
-            upsert  => 1,
-        );
 
-        my $return = $self->_try_mongo_op(
-            find_or_create => sub {
-                my $dbname  = $self->meerkat->database_name;
-                my $db      = $self->meerkat->_mongo_database($dbname);
-                my $job     = $db->run_command(\@command);
-                return $job;
-            }
-        );
 
-        $log->debug("FindAndModify returned: ",{ filter =>\&Dumper, value => $return });
+        my $value   = $entity->{value};
+        my $etype    = $entity->{type};
+        my $entity = $self->find_one({
+            value   => $value,
+            type    => $etype
+        });
 
-        my $entity_id    = $return->{id};
+        if ($entity) {
+            $log->trace("Found matching $type entity $value");
+        }
+        else {
+            $log->trace("Creating new $type entity $value");
+            $entity = $self->create({
+                value   => $value,
+                type    => $etype,
+            });
+        }
+        # $log->trace("entity is ",{filter=>\&Dumper, value=>$entity});
+        my $entity_id  = $entity->id;
+
 
         my $link    = $linkcol->create_link({
             type   => "entity",
@@ -91,7 +120,9 @@ sub update_entities {
             type => $type,
             id   => $id,
         });
+
     }
 }
+
 
 1;
