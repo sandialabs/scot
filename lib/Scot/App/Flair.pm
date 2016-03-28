@@ -25,6 +25,7 @@ use Mojo::UserAgent;
 use Scot::Env;
 use Scot::Util::Scot;
 use Scot::Util::EntityExtractor;
+use Scot::Util::ImgMunger;
 use AnyEvent::STOMP::Client;
 use AnyEvent::ForkManager;
 use HTML::Entities;
@@ -99,6 +100,8 @@ sub run {
     my $env     = $self->env;
     my $log     = $env->log;
 
+    $log->debug("Starting STOMP watcher");
+
     my $pm  = AnyEvent::ForkManager->new(max_workers => 10);
 
     $pm->on_start( sub {
@@ -118,7 +121,7 @@ sub run {
     $stomp->on_connected(
         sub {
             my $stomp    = shift;
-            $stomp->subscribe('/scot');
+            $stomp->subscribe('/topic/scot');
         }
     );
 
@@ -164,7 +167,7 @@ sub run {
                     $log->debug("GET Response: ", 
                                 { filter => \&Dumper, value => $record });
 
-                    if ( $record->{parsed} ) {
+                    if ( $record->{parsed} != 0 ) {
                         $log->debug("Already flaired!");
                         return;
                     }
@@ -191,6 +194,8 @@ sub process_alert  {
     my $env         = $self->env;
     my $log         = $env->log;
     my $scot        = $self->scot;
+
+    $log->trace("Processing Alert");
 
     my $data    = $record->{data};
     my $flair;
