@@ -12,6 +12,7 @@ use Try::Tiny;
 use Types::Standard qw/slurpy :types/;
 use Meerkat::Cursor;
 use Carp qw/croak/;
+use Module::Runtime qw(require_module);
 use Scot::Env;
 
 extends 'Meerkat::Collection';
@@ -167,81 +168,74 @@ sub get_subthing {
     my $thing       = shift;
     my $id          = shift;
     my $subthing    = shift;
+    my $env         = $self->env;
+    my $log         = $env->log;
+    my $mongo       = $env->mongo;
 
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
-    my $log     = $env->log;
 
-    my $linkcol;
-    my $subcol  = $mongo->collection(ucfirst($subthing));
-    my $cursor;
+    my $thing_class = "Scot::Model::".ucfirst($thing);
+    $log->trace("Getting subthing $subthing for $thing_class");
+    require_module($thing_class);
+    my $thing_meta  = Moose::Meta::Class->initialize($thing_class);
 
-    $log->trace("get_subthing");
-    # first see if there is a Link record
-    # then try for an attribute match
+    if ( $thing_meta->does_role('Scot::Role::Entriable') and 
+         $subthing eq "entry" ) {
 
-    try {
-        $linkcol  = $mongo->collection("Link");
+        $log->trace("We are getting Entries!");
+
+        # entries are now "special"  and map to one thing via the 
+        # target = { type => $type, id => $id } attribute
+
+        my $entry_collection = $mongo->collection('Entry');
+        my $match            = {
+            'target.id'     => $id + 0,
+            'target.type'   => $thing,
+        };
+        $log->trace("searching for ",{filter=>\&Dumper, value => $match});
+        my $subcursor  = $entry_collection->find($match);
+        $log->trace("got ".$subcursor->count." entries");
+        return $subcursor;
     }
-    catch {
-        $log->error("Failed to get the Link Collection!");
-        return undef;
-    };
 
-    unless ( $linkcol ) {
-        $log->error("Collection Link error!");
-        return undef;
-    }
+    # see if it a Linkable
 
-    $log->trace("DB is ". $mongo->database_name);
-    try {
-         $cursor = $linkcol->get_links( $thing, $id, $subthing);
-         $log->debug("cursor count is ".$cursor->count);
-    }
-    catch {
-        $log->error("Failed finding Link cursor!");
-        $log->error("cursor = ",{filter=>\&Dumper, value => $cursor});
-
-        $log->debug("trying for direct link");
-    };
+    my $linkcol = $mongo->collection('Link');
+    my $cursor  = $linkcol->get_links($thing, $id, $subthing);
 
     if ( defined $cursor and 
          ref($cursor) eq "Meerkat::Cursor" and
-         $cursor->count > 0) {
-        # now we have a cursor of Links, translate that into 
-        # a cursor of the subthing
-        # I wish I could figure out why meerkat is not returnin objects 
-        # with ->all
-        # my @ids = map { $_->{item_id} } $cursor->all;
-        my @ids;
-        while ( my $linkobj = $cursor->next ) {
+         $cursor->count > 0 ) {
 
-            my $pair    = $linkobj->pair;
+        my @ids = ();
+
+        while ( my $link = $cursor->next ) {
+            my $pair    = $link->pair;
             my $item_id;
-            if ( $pair->[0]->{id} == $id and $pair->[0]->{type} eq $thing ) {
-                $item_id = $pair->[1]->{id} + 0;
+
+            if ( $pair->[0]->{id} == $id and
+                 $pair->[0]->{type} eq $thing ) {
+
+                $item_id    = $pair->[1]->{id} + 0;
             }
             else {
-                $item_id = $pair->[0]->{id} + 0;
+                $item_id    = $pair->[0]->{id} + 0;
             }
-
             push @ids, $item_id;
         }
-        $log->debug("looking to match ids = ",{filter=>\&Dumper,value=>\@ids});
-        my $subcursor = $subcol->find({ id  => { '$in' => \@ids } });
+        my $subcol      = $mongo->collection(ucfirst($subthing));
+        my $subcursor   = $subcol->find({ id => {'$in' => \@ids }});
         return $subcursor;
     }
-    else {
-        # otherwise, assume the subthing has an 
-        # attribute named the same as the $thing
-        # and that it holds the matching ID
-        # alert -> alertgroup example
-        $cursor = $subcol->find({$thing => $id + 0});
-        return $cursor;
-    }
-        
 
+    # probably and alert/alertgroup thing 
+    # and we need to look for an attribute in the kids that is named
+    # after the parent that contains the id to link
+
+    my $subcol      = $mongo->collection(ucfirst($subthing));
+    my $subcursor   = $subcol->find({ $thing => $id + 0 });
+    return $subcursor;
 }
+
 
 sub get_targets {
     my $self    = shift;

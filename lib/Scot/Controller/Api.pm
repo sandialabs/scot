@@ -702,7 +702,7 @@ sub update {
                 $log->debug("we have some!");
                 my $ecol    = $mongo->collection('Entity');
                 # $ecol->update_entities_from_target($object, $json->{entities});
-                $ecol->update_entities($object, $json->{entities});
+                $ecol->update_entities($object, $earef);
             }
         }
     }
@@ -966,7 +966,7 @@ sub do_task_checks {
     my $env         = $self->env;
     my $log         = $env->log;
 
-    my $key;
+    my $key     = '';
     my $status;
     my $now     = $env->now();
     my $params  = $req_href->{request}->{json} // 
