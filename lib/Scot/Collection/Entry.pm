@@ -42,9 +42,6 @@ sub create_from_api {
         };
     }
 
-    my $entry_collection    = $mongo->collection("Entry");
-    my $entity_collection   = $mongo->collection("Entity");
-
     $request->{task} = $self->validate_task($request);
 
     unless ( $request->{readgroups} ) {
@@ -56,16 +53,14 @@ sub create_from_api {
 
     $log->debug("Creating entry with: ", { filter=>\&Dumper, value => $json});
 
-    my $entry_obj   = $entry_collection->create($json);
-
-    my $linkcol = $mongo->collection('Link');
-    my $linkobj = $linkcol->create_link({
-        type   => "entry",
-        id     => $entry_obj->id,
-    },{
-        id      => $target_id,
+    $json->{target} = {
         type    => $target_type,
-    });
+        id      => $target_id,
+    };
+
+    my $entry_obj   = $self->create($json);
+
+    # TODO: need to actually update the updated time in the target
 
     $mq->send("scot", {
         action  => 'updated',
@@ -79,19 +74,6 @@ sub create_from_api {
     return $entry_obj;
 
 }
-
-sub create_via_alert_promotion {
-    my $self    = shift;
-    my $href    = shift;
-    my $env     = $self->env;
-    my $mongo   = $self->meerkat;
-    my $col     = $mongo->collection('Entry');
-
-    die "implement this!";
-
-}
-
-
 
 sub validate_task {
     my $self    = shift;
@@ -181,8 +163,8 @@ EOF
         $fileobj->notes,
         $fileobj->id);
 
-    my $linkcol = $self->env->mongo->collection('Link');
     my $newentry;
+    my $parententry = $self->find_iid($entryid);
 
     # TODO: potential problem here that needs more thought
     #  groups is being set to default_groups and probably should inherit from parent
@@ -192,6 +174,10 @@ EOF
         body    => $html,
         parent  => $entryid,
         groups  => $env->default_groups,
+        target  => {
+            type    => $parententry->target->{type},
+            id      => $parententry->traget->{id},
+        },
     };
 
     $log->debug("Creating Entry with ", {filter=>\&Dumper, value => $href});
