@@ -9,7 +9,7 @@ my $env = Scot::Env->new();
 
 
 my $type    = $ARGV[0];
-my $id      = $ARGV[1];
+my $id      = $ARGV[1] + 0;
 my $mongo   = $env->mongo;
 my $col     = $mongo->collection('Link');
 my $entryc  = $mongo->collection('Entry');
