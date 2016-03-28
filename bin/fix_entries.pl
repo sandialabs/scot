@@ -4,6 +4,8 @@ use lib '../lib';
 use Scot::Env;
 use Meerkat;
 use Meerkat::Cursor;
+use v5.18;
+use Data::Dumper;
 
 my $env = Scot::Env->new();
 
@@ -19,6 +21,7 @@ my $links   = $col->get_links($type, $id, 'entry');
 while ( my $link = $links->next ) {
 
     my $pair    = $link->pair;
+    say Dumper($pair);
     my $entryid;
 
     if ( $pair->[0]->{type} eq "entry" ) {
