@@ -105,15 +105,17 @@ sub create_alert_entry {
     my $env     = $self->env;
     my $mongo   = $self->meerkat;
     my $entry_href = {
-        target_type => "event",
-        target_id   => $event->id,
+        target      => {
+            type => "event",
+            id   => $event->id,
+        },
         readgroups  => $event->readgroups,
         modifygroups=> $event->modifygroups,
         summary     => 0,
         body        => $body,
     };
     my $entrycol    = $mongo->collection('Entry');
-    my $entry       = $entrycol->create_via_alert_promotion($entry_href);
+    my $entry       = $entrycol->create($entry_href);
 
 }
 
@@ -213,14 +215,18 @@ sub build_from_alerts {
     my $event = $self->create($build_href);
     
     my $entry_href = {
-        target_type => "event",
-        target_id   => $event->id,
         readgroups  => $build_href->{readgroups},
         modifygroups=> $build_href->{modifygroups},
         summary     => 0,
         body        => $body,
+        target      => {
+            type    => "event",
+            id      => $event->id,
+        },
     };
-    my $entry   = $entrycol->create_via_alert_promotion($handler,$entry_href);
+    my $entry   = $entrycol->create($entry_href);
+
+    # TODO: I thing we need to add activemq calls here...
 
     return $event;
 }
