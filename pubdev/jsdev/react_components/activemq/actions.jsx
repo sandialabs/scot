@@ -17,7 +17,7 @@ function register_client(){
             message: 'chat',
             type: 'listen',
             clientId: client,
-            destination: '/scot'
+            destination: 'topic://scot'
         }
     }).done(function(){
         console.log('Registered client as '+client);
@@ -40,7 +40,7 @@ var Actions = {
             data: {
                 /*loc: location.hash, */
                 clientId: client,
-                timeout: 2000,
+                timeout: 3000,
                 d: now.getTime(),
                 r: Math.random(),
                 json:'true',
