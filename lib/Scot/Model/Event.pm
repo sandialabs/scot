@@ -17,6 +17,7 @@ The model of an individual event
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
+    Scot::Role::Entriable
     Scot::Role::Hashable
     Scot::Role::Permission
     Scot::Role::Promotable
