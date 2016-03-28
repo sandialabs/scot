@@ -39,17 +39,16 @@ function creation(state, callback, payload){
      callback.emitChange(payload.action.activemq.data.id) 
     }
     else if (state == 'event') {
-    $('.z-table').each(function(key, value){
-        $(value).find('.z-row').each(function(x,y){
-           $(y).find('.z-cell').each(function(r,s){
+    callback.emitChange('eventgroup') 
+    
+    setTimeout(function(){$('.z-row').each(function(key, value){
+           $(value).find('.z-cell').each(function(r,s){
            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
-            $(y).css('background', '#FF4646')
-            setTimeout(function(){$(y).css('background', "")}, 10000)
+            $(value).css('background', '#FFFF76')
+            setTimeout(function(){$(value).css('background', "")}, 10000)
             }
-        })
       })
-    })
-     callback.emitChange('eventgroup') 
+    }) }, 1000)
     }
     else if (state == 'intel'){
 
