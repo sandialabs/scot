@@ -31,7 +31,11 @@ while ( my $link = $links->next ) {
         $entryid    = $pair->[1]->{id} + 0;
     }
 
+    say "looking for ". Dumper($entryid);
+
     my $entry   = $entryc->find_iid($entryid);
+
+    say "Got ".Dumper($entry);
 
     $entry->update({
         '$set'   => {
