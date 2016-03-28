@@ -1,18 +1,27 @@
 var set;
 function update(state, callback, payload){
     if (state == 'event') {
-
+     callback.emitChange('eventgroup')
      callback.emitChange(payload.action.activemq.data.id)
+    setTimeout(function(){$('.z-row').each(function(key, value){
+           $(value).find('.z-cell').each(function(r,s){
+           if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
+            $(value).css('background', '#FFFF76')
+            setTimeout(function(){$(value).css('background', "")}, 10000)
+            }
+      })
+    }) }, 1000)
     }
     else if (state == 'entry'){
      callback.emitChange(payload.action.activemq.data.id)
     }
     else if (state == 'intel'){
-
+     callback.emitChange('intelgroup')
      callback.emitChange(payload.action.activemq.data.id)
     }
-   else if(state == 'incident'){
 
+   else if(state == 'incident'){
+     callback.emitChange('incidentgroup')
      callback.emitChange(payload.action.activemq.data.id)
    }
    else if(state == 'alertgroup'){
@@ -31,6 +40,20 @@ function update(state, callback, payload){
      callback.emitChange("activealertgroup")
      callback.emitChange(payload.action.activemq.data.id)
    }
+   else if (state == 'alert'){
+/*    $('.z-table').each(function(key, value){
+        $(value).find('.z-row').each(function(x,y){
+           $(y).find('.z-cell').each(function(r,s){
+           if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
+            $(y).css('background', '#FFFF76')
+            setTimeout(function(){$(y).css('background', "")}, 10000)
+            }
+        })
+      })
+    })
+
+*/
+   }
 }
 function creation(state, callback, payload){
     if(state == 'alert'){    	
@@ -39,8 +62,7 @@ function creation(state, callback, payload){
      callback.emitChange(payload.action.activemq.data.id) 
     }
     else if (state == 'event') {
-    callback.emitChange('eventgroup') 
-    
+    callback.emitChange('eventgroup')  
     setTimeout(function(){$('.z-row').each(function(key, value){
            $(value).find('.z-cell').each(function(r,s){
            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
@@ -159,8 +181,6 @@ var ActiveMQ = {
                         break;
                     case 'deleted':
                         deletion('intel', callback, payload)
-                    case 'views':
-                        views('intel',callback,payload)
                 }
                 break;
             case 'alert':
@@ -174,8 +194,6 @@ var ActiveMQ = {
                     case 'deleted':
                         deletion('alert', callback, payload);
                         break;
-		    case 'views':
-		        alert_view(json.id, json);
 			break;
                 }
             case 'incident':
@@ -188,8 +206,6 @@ var ActiveMQ = {
                         break;
                     case 'deleted':
                         deletion('incident', callback, payload);
-                    case 'views':
-                        views('incident',callback,payload)
                 }
                 break;
             case 'admin_notice':
