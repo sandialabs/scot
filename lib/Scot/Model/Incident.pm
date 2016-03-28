@@ -22,6 +22,7 @@ The model of an individual incident
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
+    Scot::Role::Entriable
     Scot::Role::Events
     Scot::Role::Hashable
     Scot::Role::Permission

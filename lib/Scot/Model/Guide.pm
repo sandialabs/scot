@@ -19,6 +19,7 @@ instructions on how to handle various alerts.
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
+    Scot::Role::Entriable
     Scot::Role::Hashable
     Scot::Role::Permission
     Scot::Role::Subject

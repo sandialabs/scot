@@ -33,16 +33,12 @@ sub create_from_api {
             };
             $entry->{body}      = $entry->{body};
             $entry->{is_task}   = 1;
+            $entry->{target}    = {
+                type    => "checklist",
+                id      => $checklist->id,
+            };
 
             my $obj = $ecoll->create($entry);
-
-            $env->mongo->collection('Link')->create_link({
-                type   => "entry",
-                id     => $obj->id,
-            },{
-                type => "checklist",
-                id   => $checklist->id,
-            });
         }
     }
     
