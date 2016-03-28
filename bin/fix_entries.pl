@@ -35,6 +35,11 @@ while ( my $link = $links->next ) {
 
     my $entry   = $entryc->find_iid($entryid);
 
+    unless ( $entry ) {
+        say "Missing the entry $entryid";
+        next;
+    }
+
     say "Got ".Dumper($entry);
 
     $entry->update({
