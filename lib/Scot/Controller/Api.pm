@@ -540,6 +540,7 @@ sub get_subthing {
             my %things  = ();
             while ( my $entity = $cursor->next ) {
                 $things{$entity->value} = {
+                    id      => $entity->id,
                     count   => $self->get_entity_count($entity),
                     type    => $entity->value,
                     classes => $entity->classes,
