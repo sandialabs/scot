@@ -17,6 +17,7 @@ The model of an individual intel item
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
+    Scot::Role::Entriable
     Scot::Role::Hashable
     Scot::Role::Permission
     Scot::Role::Sources

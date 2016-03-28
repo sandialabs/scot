@@ -1,4 +1,4 @@
-package Scot::Role::Target1;
+package Scot::Role::Target;
 
 use Moose::Role;
 
@@ -9,7 +9,7 @@ a target is a hashref of
 
 =cut
 
-has targets => (
+has target  => (
     is      => 'ro',
     isa     => 'HashRef',
     traits  => [ 'Hash' ],

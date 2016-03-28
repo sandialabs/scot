@@ -53,14 +53,11 @@ sub create_from_api {
         my $lcoll   = $mongo->collection('Link');
         foreach my $entry ( @entries ) {
             $entry->{owner} = $entry->{owner} // $request->{user};
+            $entry->{target}    = {
+                type    => "guide",
+                id      => $guide->id,
+            };
             my $obj = $ecoll->create($entry);
-            $lcoll->create_link({
-                type => "guide",
-                id   => $guide->id,
-            },{
-                type   => "entry",
-                id     => $obj->id,
-            });
         }
     }
 
