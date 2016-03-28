@@ -112,7 +112,7 @@ var AddEntryModal = React.createClass({
 	React.createElement(TinyMCE, {style: {height: '394px'}, content: "", className: "inputtext",config: {plugins: 'autolink link image lists print preview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'},onChange: this.handleEditorChange}
 	)), 
 	React.createElement("div", {className: "modal-footer"}, React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width': '2px','border-color':'#000','border-radius':'4px',margin:'30px' ,padding: '30px','border-style': 'dashed', 'text-align' : 'center'}}, React.createElement("div",null,"Drop some files here or click to  select files to upload")),
-	this.state.files ? React.createElement("div", null, this.state.files.map((file) => React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("a", {href:file.preview, target:"_blank"}, file.name),React.createElement('button', {style: {width: '2em', height: '1em', 'line-height':'1px'}, className: 'btn btn-info', id: file.name, onClick: this.Close}, 'x'))))): null, 
+	this.state.files ? React.createElement("div", null, this.state.files.map((file) => React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p",{style:{display:'inline'}}, file.name),React.createElement('button', {style: {/*width: '2em', height: '1em',*/ 'line-height':'1px'}, className: 'btn btn-info', id: file.name, onClick: this.Close}, 'x'))))): null, 
 	React.createElement("button", {className: 'btn', onClick: this.onCancel}, " Cancel"), this.state.edit ? React.createElement(
 'button', {className: 'btn btn-primary', onClick: this.Edit}, 'Edit') : null,
 	this.state.saved ? React.createElement("button", {className: 'btn btn-info', onClick: this.submit}, 'Submit') : null,
@@ -171,18 +171,26 @@ var AddEntryModal = React.createClass({
 	url: '/scot/api/v2/entry',
 	data: data
 	}).success(function(response){
-		    if(finalfiles.length > 0){
+        if(finalfiles.length > 0){
 			for(var i = 0; i<finalfiles.length; i++){	
-			var file = {file:finalfiles[i].name}
-			data = JSON.stringify({upload: file, target_type: this.props.type, target_id: response.id, entry_id: ''})
-            $.ajax({
-			   type: 'PUT',
+			var file = {file : finalfiles[i].name}
+            data  = new FormData()
+            data.append('upload', finalfiles[i])
+            data.append('target_type',this.props.type)
+            data.append('target_id',Number(this.props.targetid))
+            data.append('entry_id',response.id)
+			$.ajax({
+			   type: 'POST',
 			   url: '/scot/api/v2/file',
-			   data: data
-			   }).success(function(response){
-               }.bind(this))
+               data: data,
+               processData: false,
+               contentType: false,
+               dataType: 'json',
+               cache: false
+            }).success(function(response){
+			   }.bind(this))
 			}
-			}
+		}
 	}.bind(this))
 	this.props.addedentry()
 	AppActions.updateItem(this.props.targetid,'headerUpdate')
@@ -194,24 +202,32 @@ var AddEntryModal = React.createClass({
 	url: '/scot/api/v2/entry/'+this.props.id,
 	data: JSON.stringify(data)
 	}).success(function(response){
-		    if(finalfiles.length > 0){
+        if(finalfiles.length > 0){
 			for(var i = 0; i<finalfiles.length; i++){	
-			var file = {file:finalfiles[i].name}
-			data = JSON.stringify({upload: file, target_type: this.props.type, target_id: response.id, entry_id: ''})
+			var file = {file : finalfiles[i].name}
+            data  = new FormData()
+            data.append('upload', finalfiles[i])
+            data.append('target_type',this.props.type)
+            data.append('target_id',Number(this.props.targetid))
+            data.append('entry_id',response.id)
 			$.ajax({
-			   type: 'PUT',
+			   type: 'POST',
 			   url: '/scot/api/v2/file',
-			   data: data
-			   }).success(function(response){
+               data: data,
+               processData: false,
+               contentType: false,
+               dataType: 'json',
+               cache: false
+            }).success(function(response){
 			   }.bind(this))
 			}
-			}
+		}
 	}.bind(this))
 	this.props.addedentry()
 	this.props.updated()
 	}
 	else  if(this.props.type == 'alert'){ 
-     var data = new Object()
+     var data;
 	 $('.z-selected').each(function(key,value){
 	 $(value).find('.z-cell').each(function(x,y){
 	    if($(y).attr('name') == 'id'){  
@@ -223,12 +239,20 @@ var AddEntryModal = React.createClass({
 		}).success(function(response){
         if(finalfiles.length > 0){
 			for(var i = 0; i<finalfiles.length; i++){	
-			var file = {file:finalfiles[i].name}
-			data = JSON.stringify({upload: file, target_type: 'alert', target_id: response.id, entry_id: ''})
+			var file = {file : finalfiles[i].name}
+            data  = new FormData()
+            data.append('upload', finalfiles[i])
+            data.append('target_type','alert')
+            data.append('target_id',Number($(y).text()))
+            data.append('entry_id',response.id)
 			$.ajax({
-			   type: 'PUT',
+			   type: 'POST',
 			   url: '/scot/api/v2/file',
-			   data: data
+               data: data,
+               processData: false,
+               contentType: false,
+               dataType: 'json',
+               cache: false
 			   }).success(function(response){
 			   })
 			}
@@ -247,15 +271,22 @@ var AddEntryModal = React.createClass({
 	type: 'post',
 	url: '/scot/api/v2/entry',
 	data: JSON.stringify(data)
-	}).success(function(repsonse){
+	}).success(function(response){
 		   if(finalfiles.length > 0){
 			for(var i = 0; i<finalfiles.length; i++){	
-			var file = {file:finalfiles[i].name}
-			data = JSON.stringify({upload: file, target_type: this.props.type, target_id: response.id, entry_id: ''})
+            data  = new FormData()
+            data.append('upload', finalfiles[i])
+            data.append('target_type',this.props.type)
+            data.append('target_id',Number(this.props.targetid))
+            data.append('entry_id',response.id)
 			$.ajax({
-			   type: 'PUT',
+			   type: 'POST',
 			   url: '/scot/api/v2/file',
-			   data: data
+               data: data,
+               processData: false,
+               contentType: false,
+               dataType: 'json',
+               cache: false
 			   }).success(function(response){
 			   }.bind(this))
 			}
