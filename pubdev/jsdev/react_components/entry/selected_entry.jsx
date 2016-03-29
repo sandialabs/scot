@@ -213,6 +213,9 @@ var EntryData = React.createClass({
             this.setState({flairToolbar:false})
         }
     },
+    onLoad: function() {
+        console.log('onload for iframe');
+    },
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
         if (this.props.subitem.body_flair == '') {
@@ -224,7 +227,7 @@ var EntryData = React.createClass({
         return (
             <div className={'row-fluid entry-body'}>
                 <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
-                    <Frame frameBorder={'0'} id={'iframe_' + id} onLoad={this.onLoad} sandbox={'allow-scripts allow-popups allow-same-origin '} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
+                    <Frame frameBorder={'0'} id={'iframe_' + id} onload={this.onLoad()} sandbox={'allow-popups allow-same-origin '} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
                     <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
                     </Frame>
                 </div>
