@@ -22,6 +22,9 @@ var Crouton                 = require('react-crouton');
 var Store                   = require('../flux/store.jsx');
 var AppActions              = require('../flux/actions.jsx');
 var Flair                   = require('../modal/flair_modal.jsx');
+    
+    
+
 var SelectedHeader = React.createClass({
     getInitialState: function() {
         return {
@@ -93,37 +96,74 @@ var SelectedHeader = React.createClass({
             this.setState({flairToolbar:false})
         }
     },
-    entityUpdate: function() {
-        this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
-            var entityResult = result.records;
-            $('iframe').each(function(index,ifr) {
-                //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
-                ifr.contentWindow.requestAnimationFrame( function() {
-                    if(ifr.contentDocument != null) {
-                        var ifrContents = $(ifr).contents();
-                        ifrContents.find('.entity').each(function(index,entity){
-                            var currentEntityValue = $(entity).attr('data-entity-value');
-                            //$(this).attr('data-entity-value', oldentity.toLowerCase())
-                            if (currentEntityValue.toLowerCase() === entityResult[currentEntityValue.toLowerCase()].type) {
-                                var entityType = entityResult[currentEntityValue.toLowerCase()].type;
-                                var entityid = entityResult[currentEntityValue.toLowerCase()].id;
-                                var entityCount = entityResult[currentEntityValue.toLowerCase()].count;   
-                                var circle = $('<span class="noselect">');
-                                circle.addClass('circleNumber');
-                                circle.addClass('extras');
-                                circle.text(entityCount);
-                                $(entity).append(circle);
-                                $(entity).attr('data-entity-id',entityid)
-                                $(entity).unbind('click');
-                                $(entity).click(function() {
-                                    this.flairToolbarToggle($(entity).attr('data-entity-id'));
-                                }.bind(this));
-                            }
-                        }.bind(this));  
-                    }
-                }.bind(this));
+    infopop: function(ifr,entityid) {
+        this.flairToolbarToggle(entityid);
+    }, 
+    checkFlairHover:function (iframe) {
+        if(iframe.contentDocument != null) {
+            $(iframe).contents().find('.entity').each(function(index, entity) {
+                if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
+                    $(entity).data('state', 'down');
+                } else if ($(entity).data('state') == 'down') {
+                    $(entity).data('state', 'up'); 
+                    var entityid = $(entity).attr('data-entity-id');
+                    this.infopop(iframe,entityid);
+                }
+
             }.bind(this));
-        }.bind(this));  
+            // detect clicks outside of entity popup and clear popup
+           /* var iframebg = $(iframe.contentDocument.body).css('background-color');
+            if((iframebg != "rgba(0, 0, 0, 0)") && (iframebg != 'transparent')) {
+                $('.qtip').remove();
+            }*/ 
+        }
+    },
+    pentry:function (ifr) { 
+        $(ifr).mouseenter(function() {
+            var intervalID = setInterval(this.checkFlairHover, 100, ifr);
+            $(ifr).data('intervalID', intervalID);
+            console.log('Now watching iframe ' + intervalID);
+        }.bind(this));
+        $(ifr).mouseleave(function() {
+            var intervalID = $(this).data('intervalID');
+            window.clearInterval(intervalID);
+            console.log('No longer watching iframe ' + intervalID);
+        }.bind(this));
+    },
+    entityUpdate: function() {
+        setTimeout(function() {
+            this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
+                var entityResult = result.records;
+                $('iframe').each(function(index,ifr) {
+                    //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
+                    ifr.contentWindow.requestAnimationFrame( function() {
+                        if(ifr.contentDocument != null) {
+                            var ifrContents = $(ifr).contents();
+                            $(ifr.contentDocument.body).find('a').attr('target','_blank');
+                            $(ifr.contentDocument.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
+                            $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
+                            ifrContents.find('.entity').each(function(index,entity){
+                                var currentEntityValue = $(entity).attr('data-entity-value');
+                                //$(this).attr('data-entity-value', oldentity.toLowerCase())
+                                if (currentEntityValue.toLowerCase() === entityResult[currentEntityValue.toLowerCase()].type) {
+                                    var entityType = entityResult[currentEntityValue.toLowerCase()].type;
+                                    var entityid = entityResult[currentEntityValue.toLowerCase()].id;
+                                    var entityCount = entityResult[currentEntityValue.toLowerCase()].count;   
+                                    var circle = $('<span class="noselect">');
+                                    circle.addClass('circleNumber');
+                                    circle.addClass('extras');
+                                    circle.text(entityCount);
+                                    $(entity).append(circle);
+                                    $(entity).attr('data-entity-id',entityid)
+                                    $(entity).unbind('click');
+                                    this.pentry(ifr);
+                                }
+                            }.bind(this));  
+                        }
+                    }.bind(this));
+                }.bind(this));
+            }.bind(this));  
+        }.bind(this));
     },
 
     viewedbyfunc: function(headerData) {
