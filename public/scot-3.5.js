@@ -1144,7 +1144,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         Store.addChangeListener(this.updated);
     },
     componentWillReceiveProps: function() {
-        this.updated();
+        //this.updated();
     },
     updated: function () {
         this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
@@ -1272,7 +1272,7 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                         React.createElement("div", {className: "entry-header-inner"}, "[", React.createElement("a", {style: {color:'black'}, href: "#/"+ type + '/' + id + '/' + items.id}, items.id), "] ", React.createElement(ReactTime, {value: items.created * 1000, format: "MM/DD/YYYY hh:mm:ss a"}), " by ", items.owner, " ", taskOwner, "(updated on ", React.createElement(ReactTime, {value: items.updated * 1000, format: "MM/DD/YYYY hh:mm:ss a"}), ")", 
                             React.createElement("span", {className: "pull-right", style: {display:'inline-flex'}}, 
                                 this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: items.id, type: 'entry', permissionData: items, permissionsToggle: this.permissionsToggle, updated: updated}) : null, 
-                                React.createElement(SplitButton, {bsSize: "xsmall", title: "Reply", key: items.id, id: 'Reply '+items.id, onClick: this.replyEntryToggle, style: {zIndex:'-1'}}, 
+                                React.createElement(SplitButton, {bsSize: "xsmall", title: "Reply", key: items.id, id: 'Reply '+items.id, onClick: this.replyEntryToggle}, 
                                     React.createElement(MenuItem, {eventKey: "2", onClick: this.deleteToggle}, "Delete"), 
                                     React.createElement(MenuItem, {eventKey: "3"}, React.createElement(Summary, {type: type, id: id, entryid: items.id, summary: summary, updated: updated})), 
                                     React.createElement(MenuItem, {eventKey: "4"}, React.createElement(Task, {type: type, id: id, entryid: items.id, updated: updated})), 
@@ -1300,7 +1300,7 @@ var EntryData = React.createClass({displayName: "EntryData",
             flairToolbar: false,
         }
     },
-    componentDidUpdate: function() {
+    /*componentDidUpdate: function() {
         var id = this.props.id;
         if (this.state.count <= 1) {
             setTimeout(function() {
@@ -1320,7 +1320,7 @@ var EntryData = React.createClass({displayName: "EntryData",
     componentDidMount: function () {
         this.setState({height:'2px'}); 
         //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
-    },
+    },*/
     flairToggle: function() {
         if (this.state.flairToolbar == false) {
             this.setState({flairToolbar:true})
@@ -1330,6 +1330,19 @@ var EntryData = React.createClass({displayName: "EntryData",
     },
     onLoad: function() {
         console.log('onload for iframe');
+        if (this.state.count < 1 ) {
+        setTimeout(function() {
+                document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
+                    var newheight; 
+                    newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+                    newheight = newheight + 'px';
+                    this.setState({height:newheight});
+                    var newcount = this.state.count;
+                    newcount += 1;
+                    this.setState({count:newcount});
+                }.bind(this))
+            }.bind(this)); 
+        }
     },
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
