@@ -13,7 +13,11 @@ function update(state, callback, payload){
     }) }, 1000)
     }
     else if (state == 'entry'){
-     callback.emitChange(payload.action.activemq.data.id)
+     activemqwho = payload.action.activemq.data.who
+     activemqmessage = " updated " + state + " : " 
+     activemqid = payload.action.activemq.data.id
+     activemqtype = state
+    callback.emitChange(payload.action.activemq.data.id)
     }
     else if (state == 'intel'){
      callback.emitChange('intelgroup')
@@ -21,7 +25,13 @@ function update(state, callback, payload){
     }
 
    else if(state == 'incident'){
+     activemqwho = payload.action.activemq.data.who
+     activemqmessage = " updated " + state + " : " 
+     activemqid = payload.action.activemq.data.id
+     activemqtype = state
      callback.emitChange('incidentgroup')
+     callback.emitChange("activealertgroup")
+     callback.emitChange('eventgroup')
      callback.emitChange(payload.action.activemq.data.id)
    }
    else if(state == 'alertgroup'){
@@ -36,8 +46,13 @@ function update(state, callback, payload){
         })
       })
     })
-
+     activemqwho = payload.action.activemq.data.who
+     activemqmessage = " updated " + state + " : " 
+     activemqid = payload.action.activemq.data.id
+     activemqtype = state
      callback.emitChange("activealertgroup")
+     callback.emitChange('incidentgroup')
+     callback.emitChange('eventgroup')
      callback.emitChange(payload.action.activemq.data.id)
    }
    else if (state == 'alert'){
@@ -62,7 +77,12 @@ function creation(state, callback, payload){
      callback.emitChange(payload.action.activemq.data.id) 
     }
     else if (state == 'event') {
+    activemqwho = payload.action.activemq.data.who
+    activemqmessage = " created " + state + " : " 
+    activemqid = payload.action.activemq.data.id
+    activemqtype = state
     callback.emitChange('eventgroup')  
+    callback.emitChange('activealertgroup')
     setTimeout(function(){$('.z-row').each(function(key, value){
            $(value).find('.z-cell').each(function(r,s){
            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
@@ -78,25 +98,40 @@ function creation(state, callback, payload){
 
     }
    else if(state == 'incident'){
-
+     activemqwho = payload.action.activemq.data.who
+     activemqmessage = " created " + state + " : " 
+     activemqid = payload.action.activemq.data.id
+     activemqtype = state
      callback.emitChange('incidentgroup') 
      callback.emitChange(payload.action.activemq.data.id)
    }
    else if(state == 'alertgroup'){
-     
-     callback.emitChange('activealertgroup') 
+     activemqwho = payload.action.activemq.data.who
+     activemqmessage = " created " + state + " : " 
+     activemqid = payload.action.activemq.data.id
+     activemqtype = state
+     callback.emitChange('activealertgroup')
+     callback.emitChange('eventgroup')
      callback.emitChange(payload.action.activemq.data.id)
    }
 }
 
 function deletion(state, callback, payload){
-    if(state == 'alert'){    	
+    if(state == 'alert'){
+     activemqwho = payload.action.activemq.data.who
+     activemqmessage = " deleted " + state + " : " 
+     activemqid = payload.action.activemq.data.id
+     activemqtype = state
+     callback.emitChange('activealertgroup') 
     }
     else if (state == 'entry'){
      callback.emitChange(payload.action.activemq.data.id) 
     }
     else if (state == 'event') {
-
+     activemqwho = payload.action.activemq.data.who
+     activemqmessage = " deleted " + state + " : " 
+     activemqid = payload.action.activemq.data.id
+     activemqtype = state
      callback.emitChange('eventgroup') 
     }
     else if (state == 'intel'){
@@ -105,12 +140,18 @@ function deletion(state, callback, payload){
 
     }
    else if(state == 'incident'){
-
+     activemqwho = payload.action.activemq.data.who
+     activemqmessage = " deleted " + state + " : " 
+     activemqid = payload.action.activemq.data.id
+     activemqtype = state
      callback.emitChange('incidentgroup') 
      callback.emitChange(payload.action.activemq.data.id)
    }
    else if(state == 'alertgroup'){
-     
+     activemqwho = payload.action.activemq.data.who
+     activemqmessage = " deleted " + state + " : " 
+     activemqid = payload.action.activemq.data.id
+     activemqtype = state
      callback.emitChange('activealertgroup') 
      callback.emitChange(payload.action.activemq.data.id)
    }
@@ -166,9 +207,10 @@ var ActiveMQ = {
                         break;
                     case 'deleted':
                          deletion('event', callback, payload);
+                         break;
                     case 'views':
                         views('event',callback,payload);
-
+                        break;
                 }
                 break;
             case 'intel': 
@@ -181,6 +223,7 @@ var ActiveMQ = {
                         break;
                     case 'deleted':
                         deletion('intel', callback, payload)
+                        break;
                 }
                 break;
             case 'alert':
@@ -194,8 +237,8 @@ var ActiveMQ = {
                     case 'deleted':
                         deletion('alert', callback, payload);
                         break;
-			break;
                 }
+			break;
             case 'incident':
                 switch (payload.action.activemq.action) {
                     case 'updated':
@@ -206,6 +249,7 @@ var ActiveMQ = {
                         break;
                     case 'deleted':
                         deletion('incident', callback, payload);
+                        break;
                 }
                 break;
             case 'admin_notice':
