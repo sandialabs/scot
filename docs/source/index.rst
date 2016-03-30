@@ -7,10 +7,11 @@ Contents:
 .. toctree::
    :maxdepth: 3
 
-   Overview <overview>
    License  <license>
-   Why SCOT? <why>
+   Overview <overview>
+   Terminology <terminology>
    Installation <install>
+   Authentication/Authorization <auth>
    Initial Configuration <config>
    Admin / Maintenance <maintenance>
    Login to SCOT <login>
