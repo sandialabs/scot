@@ -111,7 +111,7 @@ var EntityEventReferences = React.createClass({
         }
     },
     componentDidMount: function() {
-        this.sourceRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/alertgroup', function(result) {
+        this.sourceRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/alert', function(result) {
             var result = result.records
             this.setState({entityDataAlertGroup:result,entityDataAlertGroupLoading:false})
             if (result[0] != undefined) {
@@ -153,10 +153,14 @@ var EntityEventReferences = React.createClass({
             { name: 'id', width:100 },
             { name: 'subject' }
         ]
+        var alertColumns = [
+            { name: 'alertgroup', width:100},
+            { name: 'subject' }
+        ]
         return (
             <div>
                 <h4>AlertGroups</h4>
-                <DataGrid idProperty='id' dataSource={this.state.entityDataAlertGroup} columns={columns} style={{height:this.state.defaultAlertGroupHeight}} onSelectionChange={this.onAlertGroupSelectionChange} selected={this.state.entityDataAlertGroup} emptyText={'No records'} loading={this.state.entityDataAlertGroupLoading} loadMaskOverHeader={false}/>
+                <DataGrid idProperty='alertgroup' dataSource={this.state.entityDataAlertGroup} columns={alertColumns} style={{height:this.state.defaultAlertGroupHeight}} onSelectionChange={this.onAlertGroupSelectionChange} selected={this.state.entityDataAlertGroup} emptyText={'No records'} loading={this.state.entityDataAlertGroupLoading} loadMaskOverHeader={false}/>
                 <div style={{marginTop:'90px'}}>
                     <h4>Events</h4>
                     <DataGrid idProperty='id' dataSource={this.state.entityDataEvent} columns={columns} style={{height:this.state.defaultEventHeight}} onSelectionChange={this.onEventSelectionChange} selected={this.state.entityDataEvent} emptyText={'No records'} loading={this.state.entityDataEventLoading} loadMaskOverHeader={false}/>
