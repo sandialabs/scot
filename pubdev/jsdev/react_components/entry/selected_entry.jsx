@@ -43,7 +43,7 @@ var SelectedEntry = React.createClass({
         var type = this.props.type;
         var id = this.props.id;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
-        if (type =='alert') {
+        if (type =='alert' || type == 'entity') {
             divClass = 'row-fluid entry-wrapper'
         }
         return (
