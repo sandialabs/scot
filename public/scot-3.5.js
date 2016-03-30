@@ -1144,7 +1144,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         Store.addChangeListener(this.updated);
     },
     componentWillReceiveProps: function() {
-        this.updated();
+        //this.updated();
     },
     updated: function () {
         this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
@@ -1157,8 +1157,12 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         var data = this.state.entryData; 
         var type = this.props.type;
         var id = this.props.id;
+        var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
+        if (type =='alert') {
+            divClass = 'row-fluid entry-wrapper'
+        }
         return (
-            React.createElement("div", {className: "row-fluid entry-wrapper"}, 
+            React.createElement("div", {className: divClass}, 
                 this.state.showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, updated: this.updated}) : null
             )       
         );
@@ -1272,7 +1276,7 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                         React.createElement("div", {className: "entry-header-inner"}, "[", React.createElement("a", {style: {color:'black'}, href: "#/"+ type + '/' + id + '/' + items.id}, items.id), "] ", React.createElement(ReactTime, {value: items.created * 1000, format: "MM/DD/YYYY hh:mm:ss a"}), " by ", items.owner, " ", taskOwner, "(updated on ", React.createElement(ReactTime, {value: items.updated * 1000, format: "MM/DD/YYYY hh:mm:ss a"}), ")", 
                             React.createElement("span", {className: "pull-right", style: {display:'inline-flex'}}, 
                                 this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: items.id, type: 'entry', permissionData: items, permissionsToggle: this.permissionsToggle, updated: updated}) : null, 
-                                React.createElement(SplitButton, {bsSize: "xsmall", title: "Reply", key: items.id, id: 'Reply '+items.id, onClick: this.replyEntryToggle, style: {zIndex:'-1'}}, 
+                                React.createElement(SplitButton, {bsSize: "xsmall", title: "Reply", key: items.id, id: 'Reply '+items.id, onClick: this.replyEntryToggle}, 
                                     React.createElement(MenuItem, {eventKey: "2", onClick: this.deleteToggle}, "Delete"), 
                                     React.createElement(MenuItem, {eventKey: "3"}, React.createElement(Summary, {type: type, id: id, entryid: items.id, summary: summary, updated: updated})), 
                                     React.createElement(MenuItem, {eventKey: "4"}, React.createElement(Task, {type: type, id: id, entryid: items.id, updated: updated})), 
@@ -1300,7 +1304,7 @@ var EntryData = React.createClass({displayName: "EntryData",
             flairToolbar: false,
         }
     },
-    componentDidUpdate: function() {
+    /*componentDidUpdate: function() {
         var id = this.props.id;
         if (this.state.count <= 1) {
             setTimeout(function() {
@@ -1320,12 +1324,28 @@ var EntryData = React.createClass({displayName: "EntryData",
     componentDidMount: function () {
         this.setState({height:'2px'}); 
         //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
-    },
+    },*/
     flairToggle: function() {
         if (this.state.flairToolbar == false) {
             this.setState({flairToolbar:true})
         } else {
             this.setState({flairToolbar:false})
+        }
+    },
+    onLoad: function() {
+        console.log('onload for iframe');
+        if (this.state.count < 1 ) {
+        setTimeout(function() {
+                document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
+                    var newheight; 
+                    newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+                    newheight = newheight + 'px';
+                    this.setState({height:newheight});
+                    var newcount = this.state.count;
+                    newcount += 1;
+                    this.setState({count:newcount});
+                }.bind(this))
+            }.bind(this)); 
         }
     },
     render: function() {
@@ -1339,7 +1359,7 @@ var EntryData = React.createClass({displayName: "EntryData",
         return (
             React.createElement("div", {className: 'row-fluid entry-body'}, 
                 React.createElement("div", {className: 'row-fluid entry-body-inner', style: {marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
-                    React.createElement(Frame, {frameBorder: '0', id: 'iframe_' + id, onLoad: this.onLoad, sandbox: 'allow-scripts allow-popups allow-same-origin ', styleSheets: ['/css/sandbox.css'], style: {width:'100%',height:this.state.height}}, 
+                    React.createElement(Frame, {frameBorder: '0', id: 'iframe_' + id, onload: this.onLoad(), sandbox: 'allow-popups allow-same-origin ', styleSheets: ['/css/sandbox.css'], style: {width:'100%',height:this.state.height}}, 
                     React.createElement("div", {dangerouslySetInnerHTML: { __html: rawMarkup}})
                     )
                 ), 
@@ -1376,6 +1396,9 @@ var Crouton                 = require('react-crouton');
 var Store                   = require('../flux/store.jsx');
 var AppActions              = require('../flux/actions.jsx');
 var Flair                   = require('../modal/flair_modal.jsx');
+    
+    
+
 var SelectedHeader = React.createClass({displayName: "SelectedHeader",
     getInitialState: function() {
         return {
@@ -1447,67 +1470,74 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             this.setState({flairToolbar:false})
         }
     },
+    infopop: function(ifr,entityid) {
+        this.flairToolbarToggle(entityid);
+    }, 
+    checkFlairHover:function (iframe) {
+        if(iframe.contentDocument != null) {
+            $(iframe).contents().find('.entity').each(function(index, entity) {
+                if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
+                    $(entity).data('state', 'down');
+                } else if ($(entity).data('state') == 'down') {
+                    $(entity).data('state', 'up'); 
+                    var entityid = $(entity).attr('data-entity-id');
+                    this.infopop(iframe,entityid);
+                }
+
+            }.bind(this));
+            // detect clicks outside of entity popup and clear popup
+           /* var iframebg = $(iframe.contentDocument.body).css('background-color');
+            if((iframebg != "rgba(0, 0, 0, 0)") && (iframebg != 'transparent')) {
+                $('.qtip').remove();
+            }*/ 
+        }
+    },
+    pentry:function (ifr) { 
+        $(ifr).mouseenter(function() {
+            var intervalID = setInterval(this.checkFlairHover, 100, ifr);
+            $(ifr).data('intervalID', intervalID);
+            console.log('Now watching iframe ' + intervalID);
+        }.bind(this));
+        $(ifr).mouseleave(function() {
+            var intervalID = $(this).data('intervalID');
+            window.clearInterval(intervalID);
+            console.log('No longer watching iframe ' + intervalID);
+        }.bind(this));
+    },
     entityUpdate: function() {
-        var count = 0;
-        this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
-            var entityResult = result.records;
-            $('iframe').each(function(index,ifr) {
-                //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
-                ifr.contentWindow.requestAnimationFrame( function() {
-                    if(ifr.contentDocument != null) {
-                        var ifrContents = $(ifr).contents();
-                        ifrContents.find('.entity').each(function(index,entity){
-                            var oldentity = $(this).attr('data-entity-value');
-                            $(this).attr('data-entity-value', oldentity.toLowerCase())
-                            console.log('lowercasing function');
-                        }); 
-                        for (var prop in entityResult) {
-                            var entityValue = entityResult[prop].value;
-                            var entityid = entityResult[prop].id;
-                            var entity = ifrContents.find('span[data-entity-value="' + entityValue + '"]');
-                            entity.each(function(index,entity) {
-                                var circle = $('<span class="noselect">')//.attr('alt', ref_text).attr('title', ref_text);
-                                circle.addClass('circleNumber');
-                                circle.addClass('extras');
-                                circle.text(count += 1);
-                                $(entity).append(circle);
-                                $(entity).attr('data-entity-id',entityid)
-                                console.log('setting elements: ' + entity);
-                                $(entity).unbind('click');
-                                $(entity).click(function() {
-                                    this.flairToolbarToggle($(entity).attr('data-entity-id'));
-                                }.bind(this));
-                            }.bind(this));
-                        }
-                    }
-                }.bind(this));
-            });
-            /*for (var prop in entityResult) {
-                var entityValue = entityResult[prop].value;
-                var entityid = entityResult[prop].id;
+        setTimeout(function() {
+            this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
+                var entityResult = result.records;
                 $('iframe').each(function(index,ifr) {
+                    //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
                     ifr.contentWindow.requestAnimationFrame( function() {
                         if(ifr.contentDocument != null) {
                             var ifrContents = $(ifr).contents();
-                            var entity = ifrContents.find('span[data-entity-value="' + entityValue + '"]');
-                            entity.each(function(index,entity) {
-                                var circle = $('<span class="noselect">')//.attr('alt', ref_text).attr('title', ref_text);
-                                circle.addClass('circleNumber');
-                                circle.addClass('extras');
-                                circle.text(count += 1);
-                                $(entity).append(circle);
-                                $(entity).attr('data-entity-id',entityid)
-                                console.log('setting elements: ' + entity);
-                                $(entity).unbind('click');
-                                $(entity).click(function() {
-                                    this.flairToolbarToggle($(entity).attr('data-entity-id'));
-                                }.bind(this));
-                            }.bind(this));
+                            $(ifr.contentDocument.body).find('a').attr('target','_blank');
+                            $(ifr.contentDocument.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
+                            $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
+                            ifrContents.find('.entity').each(function(index,entity){
+                                var currentEntityValue = $(entity).attr('data-entity-value');
+                                //$(this).attr('data-entity-value', oldentity.toLowerCase())
+                                if (currentEntityValue.toLowerCase() === entityResult[currentEntityValue.toLowerCase()].type) {
+                                    var entityType = entityResult[currentEntityValue.toLowerCase()].type;
+                                    var entityid = entityResult[currentEntityValue.toLowerCase()].id;
+                                    var entityCount = entityResult[currentEntityValue.toLowerCase()].count;   
+                                    var circle = $('<span class="noselect">');
+                                    circle.addClass('circleNumber');
+                                    circle.addClass('extras');
+                                    circle.text(entityCount);
+                                    $(entity).append(circle);
+                                    $(entity).attr('data-entity-id',entityid)
+                                    $(entity).unbind('click');
+                                    this.pentry(ifr);
+                                }
+                            }.bind(this));  
                         }
                     }.bind(this));
-                }.bind(this))
-            }*/
-        }.bind(this));  
+                }.bind(this));
+            }.bind(this));  
+        }.bind(this));
     },
 
     viewedbyfunc: function(headerData) {
@@ -2894,14 +2924,13 @@ var columns =
 
 
 
-const customStyles = {
-    content : {
-        top     : '50%',
-        left    : '50%',
-        right   : 'auto',
+const  customStyles = {
+        content : {
+        top     : '3%',
+        right   : '60%',
         bottom  : 'auto',
-        marginRight: '-50%',
-        transform:  'translate(-50%, -50%)',
+        left: '10%',
+	    width: '80%',
 	    'z-index' : '99'
 //	height: '80%'
     }
