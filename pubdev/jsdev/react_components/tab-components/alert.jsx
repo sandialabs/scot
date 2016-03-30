@@ -1,15 +1,15 @@
 'use strict';
 
-
 var React = require('react')
 var HistoryView = require('../modal/history.jsx')
 var Search = require('../components/esearch.jsx')
 var DataGrid = require('../../../node_modules/alert-react-datagrid/react-datagrid');
 var SORT_INFO;
 var colsort = "id"
+var savedid
 var valuesort = -1
 var SELECTED_ID = {}
-var SELECTED_ID_GRID = {}
+var selected_dict = []
 var filter = {}
 var passids = {}
 var storealertids = []
@@ -67,6 +67,8 @@ var OverlayTrigger  = require('react-bootstrap/lib/OverlayTrigger');
 var Popover = require('react-bootstrap/lib/Popover')
 var ButtonToolbar = require('react-bootstrap/lib/ButtonToolbar')
 var Button = require('react-bootstrap/lib/Button')
+var Notificationactivemq = require('../../../node_modules/react-notification-system')
+var Notificationactive = require('../../../node_modules/react-notification-system')
 var columns = 
 [
     { name: 'id' , width: 111.183, style: {color: 'black'}},
@@ -345,10 +347,9 @@ var Subtable = React.createClass({
 	}
         return {
 
-flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
+activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
     },
    componentDidMount: function(){ 
-    SELECTED_ID_GRID = {}
 	var project = getColumns(this.state.key)
 	project.success(function(realData){
 	var last = realData.columns
@@ -431,7 +432,7 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	})
 	}, 100)
 	return (
-	React.createElement("div", {className: 'All Modal'}, this.state.history ? React.createElement(HistoryView, {type:'alert', id: this.state.historyid, historyToggle: this.viewHistory}) : null, 
+	React.createElement("div", {className: 'All Modal'}, React.createElement('div', null,React.createElement(Notificationactivemq,{ref: 'notificationSystem'})),  this.state.history ? React.createElement(HistoryView, {type:'alert', id: this.state.historyid, historyToggle: this.viewHistory}) : null, 
 /*style: {'padding-left': '25px'}},*/ this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', targetid: this.state.key, updated: this.reloadentry, addedentry: this.addEntry, type: 'alert'}) : null,
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
 	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alertgroup', id: this.state.key})), this.state.oneview ? React.createElement('btn-group', null, this.state.flair ? React.createElement('button',{className: 'btn btn-default', onClick: this.flairOn}, 'Flair On') : React.createElement('button', {className: 'btn btn-default', onClick: this.flairOff}, 'Flair Off'), React.createElement('button', {className: 'btn btn-default', onClick: this.viewGuide}, 'View Guide'), React.createElement('button', {className:'btn btn-default', onClick:this.viewSource}, 'View Source'), React.createElement('button', {className:'btn btn-default', onClick: this.viewHistory}, 'View History'), React.createElement('button', {className: 'btn btn-default', onClick:this.addEntry}, 'Add Entry'), React.createElement('button', {className: 'btn btn-default', onClick: this.openSelected}, 'Open Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.closeSelected}, 'Close Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.promoteSelected}, 'Promote Selected'), React.createElement('button', {className:'btn btn-default', onClick:this.selectExisting}, 'Add Selected to Existing Event'), React.createElement('button', {className:'btn btn-default', onClick:this.exportCSV}, 'Export to CSV'), React.createElement('button', {className:'btn btn-default', onClick:this.deleteSelected}, 'Delete Selected')) : null ,  React.createElement(Subgrid, {style: {height: '100%', 'z-index' : '0'},className: "Subgrid",
@@ -440,8 +441,9 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	    setColumns: true, 
         dataSource: this.state.data, 
         columns: this.state.columns, 
-	    onColumnResize: this.onColumnResize, 
-	    selected: SELECTED_ID_GRID, 
+	    emptyText: 'No records',
+        onColumnResize: this.onColumnResize, 
+	    selected: this.state.selected, 
 	    onSelectionChange: this.onSelectionChange, 
 	    defaultPageSize:20 ,
 	    onColumnOrderChange: this.handleColumnOrderChange, 
@@ -456,10 +458,28 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
         )
 	));
    },
+    viewNotification: function(event){
+    event.preventDefault();
+    },
     reloadactive: function(){
+    
     supervalue = []
     supervalue.push(this.state.key)
     this.reloadentry()
+    var notification = this.refs.notificationSystem
+    if(activemqwho != "" && notification != undefined && activemqtype != 'alert' && activemqwho != 'api'){
+    notification.addNotification({
+        message: activemqwho + activemqmessage + activemqid,
+        level: 'info',
+        autoDismiss: 5,
+        action: {
+            label: 'View',
+            callback: function(){
+            window.open('#/' + activemqtype + '/' + activemqid) 
+            }
+        }
+        })
+      }
     },
    flairOn: function(){
 	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
@@ -546,7 +566,6 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 
     },
     reloadentry: function(){
-    SELECTED_ID_GRID = {}
 	var getID = []	
     var finalarray = [];
 	var sortarray = {}
@@ -648,10 +667,9 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	finalarray[key]["index"] = count
 	count++
 	})
-	this.setState({oneview: false, data:finalarray})
+	this.setState({selected: {}, oneview: false, data:finalarray})
     }.bind(this))
-  	}
-    this.setState({})
+    }
     },
     openSelected: function(){
 	var data = new Object();
@@ -730,7 +748,6 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
     },
     goBack : function(){
 	stage = false
-	SELECTED_ID_GRID = {}
 	changestate = false
 	passids = {}
 	url = '/scot/api/v2/alertgroup'	
@@ -743,18 +760,19 @@ flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: fal
 	this.setState({})
 	},
     onSelectionChange: function(newSelection, data){
+    var SELECTED_ID_GRID = {}
     array = []
     supervalue = []	
 	supervalue.push(this.state.key)
-	SELECTED_ID_GRID = newSelection
-	var selected = []
+	SELECTED_ID_GRID = newSelection 
+    var selected = []
 	Object.keys(newSelection).forEach(function(id){
 	selected.push(newSelection[id].index)
 	array.push(newSelection[id].id)
     })
 	var ids = selected.length? selected.join(',') : 'none'
 	storealertids = ids.split(',')		
-    this.setState({oneview:true,setcss: false, key:supervalue[0] })
+    this.setState({selected: SELECTED_ID_GRID, oneview:true,setcss: false, key:supervalue[0] })
 	},
     closeHistory: function(){
 	this.setState({history: false})	
@@ -788,7 +806,6 @@ var Maintable = React.createClass({
 		window.location.location = window.location.hash
 		url = '/scot/api/v2/alertgroup'
 		stage = false
-		SELECTED_ID_GRID = {}
 		changestate = false
 		passids = {}	
 		this.setState({})
@@ -844,7 +861,7 @@ var Maintable = React.createClass({
 	
 	    stage ?  React.createElement('div', null, passids.map((num) => React.createElement(Subtable, {number: num}))) :  
 
-	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Alerts')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement(Search, null)),this.state.viewfilter ? React.createElement(Crouton, {color: '#119FE1',style: {top: '75px', padding: '5px'}, message:"Filtered: ( " + this.state.fsearch + ")", onDismiss: 'onDismiss', type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewAlerts, style:styles},"View Alerts") : null) : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : React.createElement(DataGrid, {
+	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}},  React.createElement('div', null,React.createElement(Notificationactive,{ref: 'notificationSystems'})), React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Alert')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement(Search, null)),this.state.viewfilter ? React.createElement(Crouton, {color: '#119FE1',style: {top: '75px', padding: '5px'}, message:"Filtered: ( " + this.state.fsearch + ")", onDismiss: 'onDismiss', type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showAlertbutton ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewAlerts, style:styles},"View Alerts") : null) : null, this.state.viewAlert ? React.createElement("div" , {className: "subtable"}, React.createElement(Subtable,null)) : React.createElement(DataGrid, {
         ref: "dataGrid", 
         idProperty: "id",
         dataSource: this.state.data, 
@@ -863,7 +880,8 @@ var Maintable = React.createClass({
 	    rowHeight: 55,
 	    reloaddata: this.state.reloaddata,
         style: {height: '100%'},
-	    rowFactory:rowFact,
+	    emptyText: 'No records',
+        rowFactory:rowFact,
 	    rowStyle: configureTable}
 	)
         ));
@@ -977,6 +995,21 @@ var Maintable = React.createClass({
 	}	
 	},
 	activecallback: function(){
+    var notification = this.refs.notificationSystems
+    if(activemqwho != 'api' && activemqtype != 'alert' && notification != undefined && activemqwho != ""){
+    notification.addNotification({
+        message: activemqwho + activemqmessage + activemqid,
+        level: 'info',
+        autoDismiss: 5,
+        action: {
+            label: 'View',
+            callback: function(){
+            window.open('#/' + activemqtype + '/' + activemqid) 
+            }
+        }
+        })
+      }
+ 
     this.setState({reloaddata:true})
     
     }
