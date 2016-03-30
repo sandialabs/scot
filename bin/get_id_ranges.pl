@@ -32,15 +32,17 @@ my $opts   = {
 };
 if ( $multi ) {
     $opts->{num_proc}   = $multi;
-    $opts->{idranges}   = [
-        [977857  , 18679217],
-        [18679218 , 22587483],
-        [22587484 , 26495731],
-        [26495732 , 30403965],
-    ];
+#    $opts->{idranges}   = [
+#        [0  , 18430988],
+#        [18430989 , 21987375],
+#        [21987376 , 25543744],
+#        [25543745 , 39100097],
+#    ];
 }
 
-$mover->migrate($colname, $opts);
+my @ranges = $mover->get_id_ranges($colname, $opts->{num_proc}, $opts);
+
+say Dumper(@ranges);
 
 
     
