@@ -4,6 +4,7 @@ var React = require('react')
 var DataGrid = require('../../../node_modules/events-react-datagrid/react-datagrid');
 var Crouton = require('../../../node_modules/react-crouton')
 var SelectedContainer = require('../entry/selected_container.jsx')
+var Notificationactivemq = require('../../../node_modules/react-notification-system')
 var Search = require('../components/esearch.jsx')
 var SORT_INFO;
 var colsort = "id"
@@ -20,6 +21,8 @@ var stage = false
 var savedsearch = false
 var savedfsearch;
 var Listener = require('../activemq/listener.jsx')
+var setfilter = false
+var savedid;
 var columns = 
 [
     { name: 'id', width: 111.183, style: {color:'black'}},
@@ -37,7 +40,11 @@ var columns =
 function dataSource(query)
 {
 
-      	var finalarray = [];
+    if(setfilter){
+        query.skip = 0
+        setfilter = false
+    }
+    var finalarray = [];
 	var sortarray = {}
 	sortarray[colsort] = valuesort
 	return $.ajax({
@@ -109,7 +116,22 @@ module.exports = React.createClass({
     },
 
     reloadactive: function(){
-    this.setState({reload: true})
+       var notification = this.refs.notificationSystem
+    if(notification != undefined && activemqwho != "" && activemqtype != 'alert' && activemqwho != 'api'){
+    notification.addNotification({
+        message: activemqwho + activemqmessage + activemqid,
+        level: 'info',
+        autoDismiss: 5,
+        action: {
+            label: 'View',
+            callback: function(){
+            window.open('#/' + activemqtype + '/' + activemqid)
+            }
+        }
+        })
+        savedid = activemqid
+      } 
+      this.setState({reload: true})
     },
     render: function() {
 	const rowFact = (rowProps) => {	
@@ -135,7 +157,7 @@ module.exports = React.createClass({
 	return (
 	    stage ? React.createElement(SelectedContainer, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
 	    this.state.viewevent ? React.createElement(SelectedContainer, {ids: ids, type: 'event', viewEvent:this.viewEvent}) : 
-	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Events')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement(Search, null)),this.state.viewfilter ? React.createElement(Crouton, {style: {top: '75px', padding: '5px'}, message:"Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "Dismiss", type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.createevent, style: styles}, 'Create Event'), React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showevent ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewEvent, style:styles},"View Events") : null) : null, React.createElement(DataGrid, {
+	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, React.createElement('div', null, React.createElement(Notificationactivemq, {ref: 'notificationSystem'})), React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Event')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement(Search, null)),this.state.viewfilter ? React.createElement(Crouton, {style: {top: '75px', padding: '5px'}, message:"Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "Dismiss", type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.createevent, style: styles}, 'Create Event'), React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showevent ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewEvent, style:styles},"View Events") : null) : null, React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id", 
             dataSource: this.state.data, 
@@ -152,7 +174,8 @@ module.exports = React.createClass({
 	    sortInfo: SORT_INFO, 
 	    onSortChange: this.handleSortChange, 
 	    showCellBorders: true,
-	    rowHeight: 55,
+	    emptyText: 'No records',
+        rowHeight: 55,
 	    style: {height: '100%'},
 	    rowFactory: rowFact,
 	    rowStyle: configureTable}
@@ -262,7 +285,8 @@ module.exports = React.createClass({
 	})
 	if(Object.keys(filter).length > 0){
 	savedsearch = false
-	this.setState({viewfilter: false})
+	setfilter = true
+    this.setState({viewfilter: false})
 	$.each(allFilterValues, function(key,value){
 	    if(value != ""){
 	    filtersearch = filtersearch + key + ": " + JSON.stringify(value) + " "

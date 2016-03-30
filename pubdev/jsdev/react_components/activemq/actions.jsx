@@ -54,7 +54,7 @@ var Actions = {
                 if(message != ""){
                     var json = JSON.parse(message);
                     console.log(json)
-                    if( json.action != "viewed" || json.action == 'updated'  || json.action == 'created' || json.action == 'deleted'){
+                    if(json.action != "viewed" || json.action == 'updated'  || json.action == 'created' || json.action == 'deleted'){
                         Dispatcher.handleActivemq({
                         activemq: json
                     })
