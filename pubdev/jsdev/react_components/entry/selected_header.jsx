@@ -22,7 +22,7 @@ var Crouton                 = require('react-crouton');
 var Store                   = require('../flux/store.jsx');
 var AppActions              = require('../flux/actions.jsx');
 var Flair                   = require('../modal/flair_modal.jsx');
-    
+var AddFlair                = require('../components/add_flair.jsx');
     
 
 var SelectedHeader = React.createClass({
@@ -67,7 +67,8 @@ var SelectedHeader = React.createClass({
     },
     componentWillReceiveProps: function() {
         this.updated();    
-        setTimeout(function(){this.entityUpdate()}.bind(this));
+        //setTimeout(function(){this.entityUpdate()}.bind(this));
+        setTimeout(function(){AddFlair.entityUpdate(this.props.type,this.props.id,this.flairToolbarToggle)}.bind(this));
     },
     updated: function(_type,_message) {
         this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
@@ -96,7 +97,7 @@ var SelectedHeader = React.createClass({
             this.setState({flairToolbar:false})
         }
     },
-    infopop: function(ifr,entityid) {
+    /*infopop: function(ifr,entityid) {
         this.flairToolbarToggle(entityid);
     }, 
     checkFlairHover:function (iframe) {
@@ -110,12 +111,7 @@ var SelectedHeader = React.createClass({
                     this.infopop(iframe,entityid);
                 }
 
-            }.bind(this));
-            // detect clicks outside of entity popup and clear popup
-           /* var iframebg = $(iframe.contentDocument.body).css('background-color');
-            if((iframebg != "rgba(0, 0, 0, 0)") && (iframebg != 'transparent')) {
-                $('.qtip').remove();
-            }*/ 
+            }.bind(this)); 
         }
     },
     pentry:function (ifr) { 
@@ -164,7 +160,7 @@ var SelectedHeader = React.createClass({
                 }.bind(this));
             }.bind(this));  
         }.bind(this));
-    },
+    },*/
 
     viewedbyfunc: function(headerData) {
         var viewedbyarr = [];
