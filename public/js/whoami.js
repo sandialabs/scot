@@ -1,4 +1,8 @@
 var whoami = '';
+var activemqwho = ''
+var activemqid = ''
+var activemqmessage = ''
+var activemqtype = ''
 $.ajax({
     type: 'get',
     url:'scot/api/v2/whoami',
