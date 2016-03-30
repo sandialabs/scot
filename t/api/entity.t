@@ -71,8 +71,22 @@ $t  ->put_ok("/scot/api/v2/entry/$entry2" => json => $json)
 $t  ->get_ok("/scot/api/v2/event/$event_id/entity")
     ->status_is(200)
     ->json_is('/totalRecordCount' => 2)
-    ->json_is('/records/0/id'   => $entry1)
-    ->json_is('/records/1/id'   => $entry2);
+    ->json_is('/records/google.com/type'   => 'domain')
+    ->json_is('/records/10.12.14.16/type'   => 'ipaddr');
+
+my $googleid = $t->tx->res->json->{records}->{'google.com'}->{id};
+my $ipid     = $t->tx->res->json->{records}->{'10.12.14.16'}->{id};
+
+$t  ->get_ok("/scot/api/v2/entity/$googleid/event")
+    ->status_is(200)
+    ->json_is('/records/0/id'       => 1)
+    ->json_is('/records/0/subject'  => 'Test Event 1');
+    
+$t  ->get_ok("/scot/api/v2/entity/$ipid/event")
+    ->status_is(200)
+    ->json_is('/records/0/id'       => 1)
+    ->json_is('/records/0/subject'  => 'Test Event 1');
+
 
  print Dumper($t->tx->res->json);
  done_testing();

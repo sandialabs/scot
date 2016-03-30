@@ -542,15 +542,15 @@ sub get_subthing {
                 $things{$entity->value} = {
                     id      => $entity->id,
                     count   => $self->get_entity_count($entity),
-                    type    => $entity->value,
+                    type    => $entity->type,
                     classes => $entity->classes,
                     data    => $entity->data,
                 };
             }
             $self->do_render({
                 records             => \%things,
-                queryRecordCount    => keys %things,
-                totalRecordCount    => keys %things,
+                queryRecordCount    => scalar(keys %things),
+                totalRecordCount    => scalar(keys %things),
             });
         }
         else {

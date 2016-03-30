@@ -58,7 +58,7 @@ CLEARLOGS="no"              # clear the logs in $LOGDIR
 REFRESH_AMQ_CONFIG="no"     # install new config for activemq and restart
 AUTHMODE="Remoteuser"       # authentication type to use
 DEFAULFILE=""               # override file for all the above
-DBCONFIGJS="./private.js"   # initial config data you entered for DB
+DBCONFIGJS="./config.custom.js"   # initial config data you entered for DB
 REFRESHAPACHECONF="no"      # refresh the apache config for SCOT
 SKIPNODE="no"               # skip the node/npm/grunt stuff
 
@@ -137,7 +137,7 @@ while getopts "adigmsrflqA:F:J:wN" opt; do
             echo -e "${yellow} !!!! INVALID option -$OPTARG ${NC}";
             cat << EOF
 
-Usage: $0 [-abigmsrflq] [-A mode] [-F file]
+Usage: $0 [-abigmsrflq] [-A mode] 
 
     -a      do not attempt to perform an "apt-get update"
     -d      do not delete $SCOTDIR before installation
@@ -155,7 +155,6 @@ Usage: $0 [-abigmsrflq] [-A mode] [-F file]
     
     -A mode     mode = Local | Ldap | Remoteuser
                 default is Remoteuser (see docs for details)
-    -F file.sh  Read your prefered options from "file" 
     -J file.js  bootstrap SCOT's config and scotmod collections from this file
 EOF
             exit 1;
