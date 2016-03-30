@@ -19,6 +19,7 @@ var ids = []
 var stage = false
 var savedsearch = false
 var savedfsearch;
+var setfilter = false
 var Listener = require('../activemq/listener.jsx')
 var columns = 
 [
@@ -32,8 +33,12 @@ var columns =
 
 function dataSource(query)
 {
+    if(setfilter){
+    query.skip = 0
+    setfilter = false
+    }
 
-      	var finalarray = [];
+    var finalarray = [];
 	var sortarray = {}
 	sortarray[colsort] = valuesort
 	return $.ajax({
@@ -132,7 +137,7 @@ module.exports = React.createClass({
 	return (
 	    stage ? React.createElement(SelectedContainer, {ids: ids, type: 'task', viewEvent:this.viewEvent}) : 
 	    this.state.viewevent ? React.createElement(SelectedContainer, {ids: ids, type: 'task', viewEvent:this.viewEvent}) : 
-	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Tasks')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement(Search, null)),this.state.viewfilter ? React.createElement(Crouton, {style: {top: '75px', padding: '5px'}, message:"Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "Dismiss", type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showevent ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewEvent, style:styles},"View Tasks") : null) : null, React.createElement(DataGrid, {
+	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Task')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement(Search, null)),this.state.viewfilter ? React.createElement(Crouton, {style: {top: '75px', padding: '5px'}, message:"Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "Dismiss", type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showevent ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewEvent, style:styles},"View Tasks") : null) : null, React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id", 
             dataSource: this.state.data, 
@@ -147,7 +152,8 @@ module.exports = React.createClass({
 	    onColumnOrderChange: this.handleColumnOrderChange, 
 	    sortInfo: SORT_INFO, 
 	    onSortChange: this.handleSortChange, 
-	    showCellBorders: true,
+	    emptyText: 'No records',
+        showCellBorders: true,
 	    rowHeight: 55,
         reload: this.state.reload,
 	    style: {height: '100%'},
@@ -249,7 +255,8 @@ module.exports = React.createClass({
 	})
 	if(Object.keys(filter).length > 0){
 	savedsearch = false
-	this.setState({viewfilter: false})
+	setfilter = true
+    this.setState({viewfilter: false})
 	$.each(allFilterValues, function(key,value){
 	    if(value != ""){
 	    filtersearch = filtersearch + key + ": " + JSON.stringify(value) + " "
