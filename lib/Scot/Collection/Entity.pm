@@ -46,6 +46,9 @@ sub update_entities {
     my $log     = $env->log;
     my $mongo   = $env->mongo;
 
+    #$self->env->log->debug("updating entities on target ",
+    #                        { filter =>\&Dumper, value => $target});
+
     my $type    = $target->get_collection_name;
     my $id      = $target->id;
     my $linkcol = $mongo->collection('Link');
@@ -120,6 +123,19 @@ sub update_entities {
             type => $type,
             id   => $id,
         });
+
+        if ( $type eq "entry" ) {
+            my $target_id   = $target->target->{id};
+            my $target_type = $target->target->{type};
+
+            my $addlink = $linkcol->create_link({
+                type    => "entity",
+                id      => $entity_id,
+            },{
+                type    => $target_type,
+                id      => $target_id,
+            });
+        }
 
     }
 }
