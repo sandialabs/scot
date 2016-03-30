@@ -364,7 +364,7 @@ module.exports = Storeaq
 
 },{"../../../node_modules/events-activemq/events":233,"./dispatcher.jsx":2,"./handleupdate.jsx":3,"object-assign":772}],6:[function(require,module,exports){
         function infopop(ifr,entityid,flairToolbarToggle) {
-            flairToolbarToggle(entityid,flairToolbarToggle);
+            flairToolbarToggle(entityid);
         }
         function checkFlairHover(iframe,flairToolbarToggle) {
             if(iframe.contentDocument != null) {
@@ -378,11 +378,6 @@ module.exports = Storeaq
                     }
 
                 }.bind(this));
-                // detect clicks outside of entity popup and clear popup
-            /* var iframebg = $(iframe.contentDocument.body).css('background-color');
-                if((iframebg != "rgba(0, 0, 0, 0)") && (iframebg != 'transparent')) {
-                    $('.qtip').remove();
-                }*/
             }
         }
         function pentry(ifr,flairToolbarToggle) {
@@ -398,21 +393,20 @@ module.exports = Storeaq
             }.bind(this));
         }
     var AddFlair = {
-       entityUpdate: function(type,id,flairToolbarToggle) {
+        entityUpdate: function(entityData,flairToolbarToggle) {
             setTimeout(function() {
-                this.entityRequest = $.get('scot/api/v2/' + type + '/' + id + '/entity', function(result) {
-                    var entityResult = result.records;
-                    $('iframe').each(function(index,ifr) {
-                        //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
-                        ifr.contentWindow.requestAnimationFrame( function() {
-                            if(ifr.contentDocument != null) {
-                                var ifrContents = $(ifr).contents();
+                var entityResult = entityData;
+                $('iframe').each(function(index,ifr) {
+                    //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
+                    ifr.contentWindow.requestAnimationFrame( function() {
+                        if(ifr.contentDocument != null) {
+                            var ifrContents = $(ifr).contents();
+                            if($(ifr.contentDocument.body).find('.extras')[0] == null) {
                                 $(ifr.contentDocument.body).find('a').attr('target','_blank');
                                 $(ifr.contentDocument.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
                                 $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
                                 ifrContents.find('.entity').each(function(index,entity){
                                     var currentEntityValue = $(entity).attr('data-entity-value');
-                                    //$(this).attr('data-entity-value', oldentity.toLowerCase())
                                     if (currentEntityValue !== undefined) {
                                         if (entityResult[currentEntityValue.toLowerCase()] !== undefined ) {
                                             var entityType = entityResult[currentEntityValue.toLowerCase()].type;
@@ -430,7 +424,7 @@ module.exports = Storeaq
                                     }
                                 }.bind(this));
                             }
-                        }.bind(this));
+                        }
                     }.bind(this));
                 }.bind(this));
             }.bind(this));
@@ -1205,12 +1199,18 @@ var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
 var Store               = require('../flux/store.jsx');
 var AppActions          = require('../flux/actions.jsx');
+var AddFlair            = require('../components/add_flair.jsx');
+var Flair               = require('../modal/flair_modal.jsx');
+
 var SelectedEntry = React.createClass({displayName: "SelectedEntry",
     getInitialState: function() {
         return {
             showEntryData:false,
+            showEntityData:false,
             entryData:'',
+            entityData:'',
             key:this.props.id,
+            flairToolbar:false,
         }
     },
     componentDidMount: function() {
@@ -1218,12 +1218,27 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
         }.bind(this));
+        this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
+            var entityResult = result.records;
+            this.setState({showEntityData:true, entityData:entityResult})
+            var waitForEntry = {
+                waitEntry: function() {
+                    if(this.state.showEntryData == false){
+                        setTimeout(waitForEntry.waitEntry,50);
+                    } else {
+                        console.log('entries are done')   
+                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                    }
+                }.bind(this)
+            };
+            waitForEntry.waitEntry();
+        }.bind(this));
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated);
     },
-    componentWillReceiveProps: function() {
+    //componentWillReceiveProps: function() {
         //this.updated();
-    },
+    //},
     updated: function () {
         this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
             var entryResult = result.records;
@@ -1231,8 +1246,15 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         }.bind(this));
         console.log('Ran update');
     },
+    flairToolbarToggle: function(id) {
+        if (this.state.flairToolbar == false) {
+            this.setState({flairToolbar:true,entityid:id})
+        } else {
+            this.setState({flairToolbar:false})
+        }
+    },
     render: function() { 
-        var data = this.state.entryData; 
+        var data = this.state.entryData;
         var type = this.props.type;
         var id = this.props.id;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
@@ -1241,7 +1263,8 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         }
         return (
             React.createElement("div", {className: divClass}, 
-                this.state.showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, updated: this.updated}) : null
+                this.state.showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, updated: this.updated}) : null, 
+                this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid}) : null
             )       
         );
     }
@@ -1377,9 +1400,9 @@ var EntryParent = React.createClass({displayName: "EntryParent",
 var EntryData = React.createClass({displayName: "EntryData", 
     getInitialState: function() {
         return {
-            height:'1px',    
+            height:'1px',
+            entityid:null,
             count:0,
-            flairToolbar: false,
         }
     },
     /*componentDidUpdate: function() {
@@ -1402,29 +1425,21 @@ var EntryData = React.createClass({displayName: "EntryData",
     componentDidMount: function () {
         this.setState({height:'2px'}); 
         //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
-    },*/
-    flairToggle: function() {
-        if (this.state.flairToolbar == false) {
-            this.setState({flairToolbar:true})
-        } else {
-            this.setState({flairToolbar:false})
-        }
-    },
+    },*/ 
     onLoad: function() {
-        console.log('onload for iframe');
         if (this.state.count < 1 ) {
-        setTimeout(function() {
-                document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
-                    var newheight; 
-                    newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-                    newheight = newheight + 'px';
-                    this.setState({height:newheight});
-                    var newcount = this.state.count;
-                    newcount += 1;
-                    this.setState({count:newcount});
-                }.bind(this))
-            }.bind(this)); 
-        }
+            setTimeout(function() {
+                    document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
+                        var newheight; 
+                        newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+                        newheight = newheight + 'px';
+                        this.setState({height:newheight});
+                        var newcount = this.state.count;
+                        newcount += 1;
+                        this.setState({count:newcount});
+                    }.bind(this))
+                }.bind(this)); 
+            }
     },
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
@@ -1433,15 +1448,14 @@ var EntryData = React.createClass({displayName: "EntryData",
         }
         var id = this.props.id;
         //Lazy Loading Flair here as other components, namely Flair that need to access the parent component here "SelectedEntry" as it can not be accessed due to a cyclic dependency loop between Flair and SelectedEntry. Lazy loading solves this issue. This problem should go away upon upgrading everything to ES6 and using imports/exports. 
-        var Flair = require('../modal/flair_modal.jsx');
+        //var Flair = require('../modal/flair_modal.jsx');
         return (
             React.createElement("div", {className: 'row-fluid entry-body'}, 
                 React.createElement("div", {className: 'row-fluid entry-body-inner', style: {marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
                     React.createElement(Frame, {frameBorder: '0', id: 'iframe_' + id, onload: this.onLoad(), sandbox: 'allow-popups allow-same-origin ', styleSheets: ['/css/sandbox.css'], style: {width:'100%',height:this.state.height}}, 
                     React.createElement("div", {dangerouslySetInnerHTML: { __html: rawMarkup}})
                     )
-                ), 
-            this.state.flairToolbar ? React.createElement(Flair, {flairToggle: this.flairToggle}) : null
+                )
             )
         )
     }
@@ -1449,7 +1463,7 @@ var EntryData = React.createClass({displayName: "EntryData",
 
 module.exports = SelectedEntry
 
-},{"../components/permission.jsx":8,"../components/summary.jsx":11,"../components/task.jsx":13,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/flair_modal.jsx":24,"react":1849,"react-bootstrap/lib/Button.js":774,"react-bootstrap/lib/DropdownButton.js":780,"react-bootstrap/lib/MenuItem.js":784,"react-bootstrap/lib/SplitButton.js":791,"react-frame":996,"react-time":1659}],16:[function(require,module,exports){
+},{"../components/add_flair.jsx":6,"../components/permission.jsx":8,"../components/summary.jsx":11,"../components/task.jsx":13,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/flair_modal.jsx":24,"react":1849,"react-bootstrap/lib/Button.js":774,"react-bootstrap/lib/DropdownButton.js":780,"react-bootstrap/lib/MenuItem.js":784,"react-bootstrap/lib/SplitButton.js":791,"react-frame":996,"react-time":1659}],16:[function(require,module,exports){
 var React                   = require('react');
 var ReactTime               = require('react-time');
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
@@ -1473,8 +1487,6 @@ var Source                  = require('../components/source.jsx');
 var Crouton                 = require('react-crouton');
 var Store                   = require('../flux/store.jsx');
 var AppActions              = require('../flux/actions.jsx');
-var Flair                   = require('../modal/flair_modal.jsx');
-var AddFlair                = require('../components/add_flair.jsx');
     
 
 var SelectedHeader = React.createClass({displayName: "SelectedHeader",
@@ -1497,7 +1509,6 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             showFlash:false,
             key:this.props.id,
             entityid:null,
-            flairToolbar:false,
         }
     },
     componentDidMount: function() {
@@ -1519,8 +1530,6 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
     },
     componentWillReceiveProps: function() {
         this.updated();    
-        //setTimeout(function(){this.entityUpdate()}.bind(this));
-        setTimeout(function(){AddFlair.entityUpdate(this.props.type,this.props.id,this.flairToolbarToggle)}.bind(this));
     },
     updated: function(_type,_message) {
         this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
@@ -1541,79 +1550,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             this.setState({notificationType:null,notificationMessage:null,showFlash:false}); 
         }
         console.log('Ran update')  
-    },
-    flairToolbarToggle: function(id) {
-        if (this.state.flairToolbar == false) {
-            this.setState({flairToolbar:true,entityid:id})
-        } else {
-            this.setState({flairToolbar:false})
-        }
-    },
-    /*infopop: function(ifr,entityid) {
-        this.flairToolbarToggle(entityid);
     }, 
-    checkFlairHover:function (iframe) {
-        if(iframe.contentDocument != null) {
-            $(iframe).contents().find('.entity').each(function(index, entity) {
-                if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
-                    $(entity).data('state', 'down');
-                } else if ($(entity).data('state') == 'down') {
-                    $(entity).data('state', 'up'); 
-                    var entityid = $(entity).attr('data-entity-id');
-                    this.infopop(iframe,entityid);
-                }
-
-            }.bind(this)); 
-        }
-    },
-    pentry:function (ifr) { 
-        $(ifr).mouseenter(function() {
-            var intervalID = setInterval(this.checkFlairHover, 100, ifr);
-            $(ifr).data('intervalID', intervalID);
-            console.log('Now watching iframe ' + intervalID);
-        }.bind(this));
-        $(ifr).mouseleave(function() {
-            var intervalID = $(this).data('intervalID');
-            window.clearInterval(intervalID);
-            console.log('No longer watching iframe ' + intervalID);
-        }.bind(this));
-    },
-    entityUpdate: function() {
-        setTimeout(function() {
-            this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
-                var entityResult = result.records;
-                $('iframe').each(function(index,ifr) {
-                    //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
-                    ifr.contentWindow.requestAnimationFrame( function() {
-                        if(ifr.contentDocument != null) {
-                            var ifrContents = $(ifr).contents();
-                            $(ifr.contentDocument.body).find('a').attr('target','_blank');
-                            $(ifr.contentDocument.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
-                            $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
-                            ifrContents.find('.entity').each(function(index,entity){
-                                var currentEntityValue = $(entity).attr('data-entity-value');
-                                //$(this).attr('data-entity-value', oldentity.toLowerCase())
-                                if (currentEntityValue.toLowerCase() === entityResult[currentEntityValue.toLowerCase()].type) {
-                                    var entityType = entityResult[currentEntityValue.toLowerCase()].type;
-                                    var entityid = entityResult[currentEntityValue.toLowerCase()].id;
-                                    var entityCount = entityResult[currentEntityValue.toLowerCase()].count;   
-                                    var circle = $('<span class="noselect">');
-                                    circle.addClass('circleNumber');
-                                    circle.addClass('extras');
-                                    circle.text(entityCount);
-                                    $(entity).append(circle);
-                                    $(entity).attr('data-entity-id',entityid)
-                                    $(entity).unbind('click');
-                                    this.pentry(ifr);
-                                }
-                            }.bind(this));  
-                        }
-                    }.bind(this));
-                }.bind(this));
-            }.bind(this));  
-        }.bind(this));
-    },*/
-
     viewedbyfunc: function(headerData) {
         var viewedbyarr = [];
         for (prop in headerData.view_history) {
@@ -1705,7 +1642,6 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                     )
                 ), 
                 this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
-                this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid}) : null, 
                 this.state.historyToolbar ? React.createElement(History, {historyToggle: this.historyToggle, id: id, type: type}) : null, 
                 this.state.entitiesToolbar ? React.createElement(Entities, {entitiesToggle: this.entitiesToggle, id: id, type: type}) : null, 
                 this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: id, type: type, permissionData: this.state.headerData, permissionsToggle: this.permissionsToggle, updated: this.updated}) : null, 
@@ -1826,7 +1762,7 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
 
 module.exports = SelectedHeader;
 
-},{"../components/add_flair.jsx":6,"../components/permission.jsx":8,"../components/source.jsx":10,"../components/tag.jsx":12,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/entities.jsx":23,"../modal/flair_modal.jsx":24,"../modal/history.jsx":25,"../modal/owner.jsx":26,"./selected_entry.jsx":15,"./selected_header_options.jsx":17,"react":1849,"react-bootstrap/lib/Button":774,"react-bootstrap/lib/ButtonToolbar":776,"react-bootstrap/lib/OverlayTrigger":788,"react-bootstrap/lib/Popover":789,"react-crouton":815,"react-debounce-input":979,"react-overlays/lib/Affix.js":1018,"react-overlays/lib/AutoAffix.js":1019,"react-sticky":1276,"react-time":1659}],17:[function(require,module,exports){
+},{"../components/permission.jsx":8,"../components/source.jsx":10,"../components/tag.jsx":12,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/entities.jsx":23,"../modal/history.jsx":25,"../modal/owner.jsx":26,"./selected_entry.jsx":15,"./selected_header_options.jsx":17,"react":1849,"react-bootstrap/lib/Button":774,"react-bootstrap/lib/ButtonToolbar":776,"react-bootstrap/lib/OverlayTrigger":788,"react-bootstrap/lib/Popover":789,"react-crouton":815,"react-debounce-input":979,"react-overlays/lib/Affix.js":1018,"react-overlays/lib/AutoAffix.js":1019,"react-sticky":1276,"react-time":1659}],17:[function(require,module,exports){
 var React           = require('react');
 var ButtonGroup     = require('react-bootstrap/lib/ButtonGroup.js');
 var Button          = require('react-bootstrap/lib/Button.js');
@@ -2734,26 +2670,6 @@ var EntityEventReferences = React.createClass({displayName: "EntityEventReferenc
             )
         )
     }
-    /*render: function() {
-        var columns = [
-            { name: 'id', width:100 }
-            { name: 'subject' }
-        ]
-        return (
-            <div>
-                <h4>AlertGroups</h4>
-                <DataGrid idProperty='id' dataSource={this.state.entityDataAlertGroup} columns={columns} style={{height:this.state.defaultAlertGroupHeight}} onSelectionChange={this.onAlertGroupSelectionChange} selected={this.state.entityDataAlertGroup} emptyText={'No records'}/>
-                <div style={{marginTop:'90px'}}>
-                    <h4>Events</h4>
-                    <DataGrid idProperty='id' dataSource={this.state.entityDataEvent} columns={columns} style={{height:this.state.defaultEventHeight}} onSelectionChange={this.onEventSelectionChange} selected={this.state.entityDataEvent} emptyText={'No records'}/>
-                </div>
-                <div style={{marginTop:'90px'}}>
-                    <h4>Incidents</h4>
-                    <DataGrid idProperty='id' dataSource={this.state.entityDataIncident} columns={columns} style={{height:this.state.defaultIncidentHeight}} onSelectionChange={this.onIncidentSelectionChange} selected={this.state.entityDataIncident} emptyText={'No records'}/>
-                </div>
-            </div>
-        )
-    }*/
 });
 
 module.exports = Flair;
