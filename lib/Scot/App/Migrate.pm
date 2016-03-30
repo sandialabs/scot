@@ -136,6 +136,29 @@ sub get_starting_id {
     unless ($object) {
         return 0;
     }
+    return $object->id + 1;
+}
+
+sub get_starting_id_in_range {
+    my $self    = shift;
+    my $type    = shift;
+    my $aref    = shift;
+
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+
+    my $cursor  = $mongo->collection(ucfirst($type))->find({
+        id  => { 
+            '$gt' => $aref->[0], 
+            '$lt' => $aref->[1],
+        },
+    });
+    $cursor->sort({id => -1});
+    my $object  = $cursor->next;
+    unless ($object) {
+        return $aref->[0];
+    }
     return $object->id;
 }
 
@@ -440,7 +463,20 @@ sub get_id_ranges{
         return wantarray ? @ids : \@ids;
     }
 
+    if ( $opts->{idranges} ) {
+
+        my @startingids = ();
+
+        foreach my $aref (@$opts->{idranges}) {
+            # XXX
+            my $startid = $self->get_starting_id_in_range($mtype, $aref);
+            push @startingids, $startid;
+        }
+        die Dumper(\@startingids);
+    }
+
     my $cursor  = $collection->find({ $idfield => { '$gte' => $starting_id}});
+    $cursor->immortal(1);
     my $remain  = $cursor->count();
     my $dpp     = int($remain/$numproc);
     if ( $opts->{verbose} ) {
@@ -489,10 +525,22 @@ sub migrate {
     my @idranges    = ();
     if ( $opts->{idranges} ) {
         @idranges = @{$opts->{idranges}};
+        say "Old Ranges: ".Dumper(\@idranges);
+        for (my $i = 0; $i < scalar(@idranges); $i++ ) {
+            my $aref    = $idranges[$i];
+            say "looking for starting point in range ".
+                $aref->[0]. " -- " .$aref->[1];
+            my $startingpt = $self->get_starting_id_in_range($mtype,$aref);
+            say "New starting point is $startingpt";
+            $aref->[0]  = $startingpt;
+            $idranges[$i] = $aref;
+        }
+        say "New Ranges: ".Dumper(\@idranges);
     }
     else {
         if ( $mtype ne "handler" and $mtype ne "guide" ) {
             @idranges   = $self->get_id_ranges($mtype, $num_proc, $opts);
+
         }
         else {
             say "skipping idrange check because we are converting $mtype";
@@ -537,10 +585,17 @@ sub migrate {
 
             my $maxid   = 0;
             ITEM:
-            while ( my $item = $legcursor->next ) {
+            # while ( my $item = $legcursor->next ) {
+            while ( my $item = $self->get_next_item($legcursor) ) {
+                
+                if ( $item eq "skip" ) {
+                    $log->error("Potential error in retrieving next item.");
+                    next;
+                }
+
                 my $timer   = $env->get_timer(
                     "[$mname ". $item->{$idfield}."] Migration"
-                ) if ($mtype ne "handler" and $mtype ne "guide");
+                ); # if ($mtype ne "handler" and $mtype ne "guide");
                 my $pct     = $self->get_pct($remaining_docs, $total_docs);
                 my $href    = $self->transform($mtype, $item);
                 next unless ($href);
@@ -563,7 +618,7 @@ sub migrate {
                 catch {
                     $log->error("[$mname $href->{id}] Error: failed migration");
                     if ( $opts->{verbose} ) {
-                        say "[$mname $href->{id}] ERROR: Failed Create!";
+                        say "[$mname $href->{id}] ERROR: Failed Create! $_";
                     }
                     next ITEM;
                 };
@@ -595,6 +650,23 @@ sub migrate {
         $forkmgr->finish;
     }
     $forkmgr->wait_all_children;
+}
+
+sub get_next_item {
+    my $self    = shift;
+    my $cursor  = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $item;
+    try {
+        $item = $cursor->next;
+    }
+    catch {
+        $log->error("ERROR fetching next item: $_");
+        say "Error retrieving item: $_";
+        return "skip";
+    };
+    return $item;
 }
 
 sub lookup_legacy_colname {
@@ -673,11 +745,13 @@ sub transform {
     my $id      = delete $href->{$idfield};
 
     $log->debug("[$type $id] transformation");
+
     my $timer   = $env->get_timer("[$type $id] Transform");
 
 
     $href->{id} = $id // '';
 
+    $log->trace("[$type $id] removing unneeded fields");
     foreach my $attribute ( @{ $self->get_unneeded_fields($type) }) {
         delete $href->{$attribute};
     }
@@ -886,6 +960,8 @@ sub xform_entry {
     my $entities;
     my $id  = $href->{id};
 
+    $log->trace("[entry $id] xforming entry");
+
     if ( length($href->{body} ) > 2000000 ) {
         $log->warn("[entry $id] HUGE BODY! Saving for later splitting");
         $self->handle_huge_entry($id);
@@ -895,6 +971,8 @@ sub xform_entry {
     if ( ref($href->{body}) eq "MongoDB::BSON::Binary" ) {
         $href->{body} = "<html>".$href->{plaintext}."</html>";
     }
+
+    $log->trace("[entry $id] flairing");
 
     ( $href->{body_flair},
         $href->{body_plain},
@@ -906,20 +984,20 @@ sub xform_entry {
     my $target_type = delete $href->{target_type};
     my $target_id   = delete $href->{target_id};
 
-    push @promos, { 
-        type    => $target_type, 
-        id      => $target_id, 
-        when    => $href->{created} 
+    $href->{target} = {
+        type    => $target_type,
+        id      => $target_id,
     };
 
     # need something here because entities are not linking to the higher
     # object
     foreach my $entity (@{$entities}) {
         $entity->{ltype} = $target_type;
-        $entity->{lid}  = $target_id;
-        $entity->{when} = $href->{created};
+        $entity->{lid}   = $target_id;
+        $entity->{when}  = $href->{created};
     }
-    say "Entry $id had these Entities: ".Dumper($entities);
+    $log->debug("Entry $id had these Entities: ",
+                { filter=>\&Dumper, value=>$entities});
     return \@promos, $entities;
 }
 
@@ -948,6 +1026,7 @@ sub xform_guide {
 
     my $guide   = delete $href->{guide};
     $href->{applies_to} = [ $guide ];
+    return [];
 }
  
 sub xform_user {

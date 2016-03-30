@@ -67,18 +67,20 @@ sub _build_suffix {
 }
 
 Readonly my $DOMAIN_REGEX_2 => qr{
-    \b                                      # word boundary
-    (?<!@)                                  # negative lookbehind for an '@' symbol
-    (?!\d+\.\d+)                            # negative look ahead for number.number
-    (?=.{4,255})                            # positive look ahead to see if we have 4 to 255 characters
+    \b                                  # word boundary
+    (?<!@)                              # negative lookbehind for an '@' symbol
+    (?!\d+\.\d+)                        # negative look ahead for number.number
+    (?=.{4,255})                        # positive look ahead to see if we 
+                                        #   have 4 to 255 characters
     (
-        (?:[a-zA-Z0-9-]{1,63}(?<!-)\(*\[*\{*\.\)*\]*\}*)+     # first through n "words"
+        (?:[a-zA-Z0-9-]{1,63}(?<!-)\(*\[*\{*\.\)*\]*\}*)+ # 1st -- n "words"
         [a-zA-Z0-9-]{2,63}                  # last word, can catpute punycode
-        (?<!php|cgi|cfm|pdf|exe|doc|htm|txt|scr|jsp|jar|rar|zip)   # knock out common filenames
+        # knock out common filenames
+        (?<!php|cgi|cfm|pdf|exe|doc|htm|txt|scr|jsp|jar|rar|zip)   
         (?<!htlm|docx|pptx)
         (?<!pl|py)
     )
-    \b                                      # word boundary
+    \b                                   # word boundary
 }xms;
 
 Readonly my $DOMAIN_REGEX => qr{
@@ -230,8 +232,11 @@ sub process_html {
     my $log     = $self->env->log;
     my %entities;
 
-#     $log->debug("===============");
-    # $log->debug("Processing HTML");
+    my $previous_level = $log->level();
+    $log->level(Log::Log4perl::Level::to_priority('TRACE'));
+
+    $log->debug("===============");
+    $log->debug("Processing HTML");
 
     my $tree    = HTML::TreeBuilder->new;
        $tree    ->implicit_tags(1);
@@ -272,6 +277,7 @@ sub process_html {
 
     $tree->delete; # prevent memory leaks
 
+    $log->level($previous_level);
     return \%entities;
 }
 
@@ -284,11 +290,11 @@ sub walk_tree {
 
     $level  += 4;
 
-#    $log->debug(" "x$level . "Walking Node: ". $element->starttag);
-#    $log->debug(" "x$level . "Adress      : ". $element->address);
+    $log->debug(" "x$level . "Walking Node: ". $element->starttag);
+    $log->debug(" "x$level . "Adress      : ". $element->address);
 
     if ( $element->is_empty ) {
-#        $log->debug(" "x$level . "------------- empty node --------");
+        $log->debug(" "x$level . "------------- empty node --------");
         return;
     }
 
@@ -300,12 +306,13 @@ sub walk_tree {
 
     for( my $index = 0; $index < scalar(@content); $index++ ) {
 
-#        $log->debug(" "x$level . "Index $index");
+        $log->debug(" "x$level . "Index $index");
 
         if ( ref $content[$index] ) {
 
             my $child   = $content[$index];
-#            $log->debug(" "x$level . " Element ".$child->address." found, recursing");
+            $log->debug(" "x$level . " Element ".
+                        $child->address." found, recursing");
 
             # special case for splunk Ip addresses
             $self->find_splunk_ipaddrs($child, $level);
@@ -315,7 +322,7 @@ sub walk_tree {
         }
         else {
             my $text    = $content[$index];
-#            $log->debug(" "x$level . " Leaf Node content = ". $text);
+            $log->debug(" "x$level . " Leaf Node content = ". $text);
             push @new, $self->process_words(
                 $level,
                 $dbhref,
@@ -323,11 +330,11 @@ sub walk_tree {
                 $index,
                 $text
             );
-#            $log->debug(" "x$level."^^^^ NEW is ", join(',',@new));
+            $log->debug(" "x$level."^^^^ NEW is ", join(',',@new));
         }
     }
     $element->splice_content(0, scalar(@content), @new);
-#    $log->debug(" "x$level." NEWCONTENT = ".$element->as_HTML);
+    $log->debug(" "x$level." NEWCONTENT = ".$element->as_HTML);
 }
 
 sub process_words {
@@ -337,34 +344,35 @@ sub process_words {
     my $element = shift;
     my $index   = shift;
     my $text    = shift;
-    # my $offset  = $index + 1; # tack on new stuff to existing element, we'll remove the orig later
-    my $offset  = $index + 0; # tack on new stuff to existing element, we'll remove the orig later
+    # tack on new stuff to existing element, we'll remove the orig later
+    my $offset  = $index + 0; 
     my $log     = $self->env->log;
 
     my @words   = split(/\s+/, $text);
     my @spaces  = ( $text =~ m/(\s+)/g );
 
-#    $log->debug(" "x$level."There are ".scalar(@words)." words and ".scalar(@spaces). " spaces");
+    $log->debug(" "x$level."There are ".scalar(@words).
+                " words and ".scalar(@spaces). " spaces");
 
     for (my $j = 0; $j < scalar(@spaces); $j++ ) {
         if ( $spaces[$j] =~ /\n/ ) {
             $spaces[$j] = HTML::Element->new('br');
-            # $log->debug(" "x$level." newline detected, replacing with <br>");
+            $log->debug(" "x$level." newline detected, replacing with <br>");
         }
         if ( $spaces[$j] =~ /\t/ ) {
             $spaces[$j] = '    ';
-            # $log->debug(" "x$level." tab detected, replacing with 4 spaces");
+            $log->debug(" "x$level." tab detected, replacing with 4 spaces");
         }
     }
-    # $log->debug(" "x$level."\@spaces = ". join(',',map { ref($_) ? $_->as_HTML : $_ } @spaces));
-
+    $log->debug(" "x$level."\@spaces = ". 
+                join(',',map { ref($_) ? $_->as_HTML : $_ } @spaces));
 
     my @new = ();
 
     WORDS:
     foreach my $word (@words) {
 
-        # $log->debug(" "x$level."Working with Word = $word.");
+        $log->debug(" "x$level."Working with Word = $word.");
 
         my $flairflag = 0;
 
@@ -374,43 +382,48 @@ sub process_words {
             my $type    = $re->{type};
             my $regex   = $re->{regex};
 
-            # $log->debug(" "x$level."Looking for $type");
-            # $log->debug(" "x$level." regex ",{ filter => \&Dumper, value => $regex });
+            $log->debug(" "x$level."Looking for $type");
+            $log->debug(" "x$level." regex ",
+                        { filter => \&Dumper, value => $regex });
 
             if ( $word  =~ m/$regex/ ) {
 
-                # $log->debug(" "x$level."Match Found");
+                $log->debug(" "x$level."Match Found");
 
                 # there should be no whitespace at this point
-                # pre and post matches are to catch things like http://domain.com/foo
-                #                                               ^^^^^^           ^^^^
+                # pre and post matches are to catch things 
+                # like http://domain.com/foo
+                #      ^^^^^^           ^^^^
 
 
                 my $pre     = substr($word, 0, $-[0]);
                 if ( $pre ) {
-                    # $log->debug(" "x$level." Insert prematch text ".$pre);
+                    $log->debug(" "x$level." Insert prematch text ".$pre);
                     push @new, $pre;
                 }
 
                 my $match   = substr($word, $-[0], $+[0] - $-[0]);
 
-                if ( $type eq "ipaddr" ) {# remove the obsfucating [.] or {.} or (.)
+                if ( $type eq "ipaddr" ) {
+                    # remove the obsfucating [.] or {.} or (.)
                     $match  = $self->ipaddr_processing($match);
                 }
-                if ( $type eq "domain" ) { # remove the obsfucation [.] or {.} or (.)
+                if ( $type eq "domain" ) { 
+                    # remove the obsfucation [.] or {.} or (.)
                     $match = $self->domain_processing($match);
                 }
 
                 my $flair   = $self->do_span($type, $match);
 
-                # $log->debug(" "x$level." Insert Match flair ". $flair->as_HTML);
+                $log->debug(" "x$level." Insert Match flair ". $flair->as_HTML);
                 push @new, $flair;
 
-                push @{$dbhref->{entities}}, { value => lc($match), type => $type };
+                push @{$dbhref->{entities}}, 
+                        { value => lc($match), type => $type };
 
                 my $post    = substr($word, $+[0]);
                 if ( $post ) {
-                    # $log->debug(" "x$level." Insert post text ".$post);
+                    $log->debug(" "x$level." Insert post text ".$post);
                     push @new, $post;
                 }
 
@@ -426,31 +439,33 @@ sub process_words {
 
                 $flairflag++;
                 
-                last REGEX; # only match one thing.  later we will have to put special match cases for
-                            # emails with domains, recursive domains, etc.
+                last REGEX; 
+                # only match one thing.  later 
+                # we will have to put special match cases for
+                # emails with domains, recursive domains, etc.
             }
         }
         unless ($flairflag) {
             # if nothing is inserted, put plain text
-            # $log->debug(" "x$level."No flairable content detected.");
+            $log->debug(" "x$level."No flairable content detected.");
             if ( $word ) {
                 # $log->debug(" "x$level."...but there is a word here");
                 push @new, $word;
 
                 my $next_space  = shift @spaces;
                 if ( $next_space ) {
-                    # $log->debug(" "x$level."...and a blank space");
+                    $log->debug(" "x$level."...and a blank space");
                     push @new, $next_space;
                 }
                 else {
                     push @new, ' ';
                 }
-                # $log->debug(" "x$level."splicing in $word.");
+                $log->debug(" "x$level."splicing in $word.");
             }
             else {
                 my $next_space  = shift @spaces;
                 if ( $next_space ) {
-                    # $log->debug(" "x$level."...and a blank space");
+                    $log->debug(" "x$level."...and a blank space");
                     push @new, $next_space;
                 }
                 else {
@@ -462,7 +477,8 @@ sub process_words {
     }
     # remove the original content of the element stored at index 0
     # $element->splice_content(0,1);
-    # $log->debug(" "x$level." Done processing words in element ".$element->address);
+    $log->debug(" "x$level." Done processing words in element ".
+                $element->address);
     return wantarray ? @new : \@new;
 }
 
@@ -481,8 +497,6 @@ sub domain_processing {
 
     return join('.',@parts);
 }
-    
-
 
 sub do_span {
     my $self    = shift;
@@ -499,20 +513,19 @@ sub do_span {
     return $element;
 }
 
-
 sub dump_children {
     my $self    = shift;
     my $level   = shift;
     my @content = @_;
     my $log     = $self->env->log;
-    # $log->debug(" "x$level . "Children: ");
+    $log->debug(" "x$level . "Children: ");
     $level      +=4;
     foreach my $child (@content) {
         if ( ref($child) ) {
-            # $log->debug(" "x$level." ".$child->address . " ". $child->starttag);
+            $log->debug(" "x$level." ".$child->address . " ". $child->starttag);
         }
         else {
-            # $log->debug(" "x$level." Text= ".$child);
+            $log->debug(" "x$level." Text= ".$child);
         }
     }
 }
@@ -523,12 +536,14 @@ sub find_splunk_ipaddrs {
     my $level   = shift;
     my $log     = $self->env->log;
 
-    # $log->debug(" "x$level."looking for crappy splunk ipaddresses");
+    $log->debug(" "x$level."looking for crappy splunk ipaddresses");
     # splunk likes to the following crappy thing when displaying an IPAddr
     # <em>10</em>.<em>10</em>.<em>1</em>.<em>12</em>
 
     my @content = $element->content_list;
     my $count   = scalar(@content);
+
+    $log->trace(" "x$level."Scanning $count elements");
     
     for ( my $i = 0; $i < $count - 6; $i ++ ) {
         if ( $self->has_splunk_ip_pattern($i, @content) ) {
@@ -537,7 +552,8 @@ sub find_splunk_ipaddrs {
                                         $content[$i+4]->as_text,
                                         $content[$i+6]->as_text);
             $element->splice_content($i, 7, $new_ipaddr);
-            # $log->debug("Found one! Spliced element content to: ". $element->as_HTML);
+            $log->debug("Found one! Spliced element content to: ". 
+                        $element->as_HTML);
         }
     }
 }
