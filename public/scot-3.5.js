@@ -1157,8 +1157,12 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         var data = this.state.entryData; 
         var type = this.props.type;
         var id = this.props.id;
+        var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
+        if (type =='alert') {
+            divClass = 'row-fluid entry-wrapper'
+        }
         return (
-            React.createElement("div", {className: "row-fluid entry-wrapper"}, 
+            React.createElement("div", {className: divClass}, 
                 this.state.showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, updated: this.updated}) : null
             )       
         );
