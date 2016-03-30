@@ -532,35 +532,48 @@ sub get_subthing {
             totalRecordCount => scalar(@things),
         });
     }
+    elsif ( $subthing eq "alert" ) {
+        # add in subject from alertgroup
+        my $agcol   = $mongo->collection('Alertgroup');
+        while (my $alert = $cursor->next) {
+            my $agobj   = $agcol->find_one({id => $alert->alertgroup});
+            my $subject = $agobj->subject;
+            my $href    = $alert->as_hash;
+            $href->{subject} = $subject;
+            push @things, $href;
+        }
+        $self->do_render({
+            records => \@things,
+            queryRecordCount => scalar(@things),
+            totalRecordCount => scalar(@things),
+        });
+    }
+    elsif ($subthing eq "entity")  {
+        # need to transform from an array of hashes to a a hash
+        # for efficiency in UI code
+        my %things  = ();
+        while ( my $entity = $cursor->next ) {
+            $things{$entity->value} = {
+                id      => $entity->id,
+                count   => $self->get_entity_count($entity),
+                type    => $entity->type,
+                classes => $entity->classes,
+                data    => $entity->data,
+            };
+        }
+        $self->do_render({
+            records             => \%things,
+            queryRecordCount    => scalar(keys %things),
+            totalRecordCount    => scalar(keys %things),
+        });
+    }
     else {
-        # @things = map { $self->mypack($_) } $cursor->all;
-        if ( $subthing eq "entity" ) {
-            # need to transform from an array of hashes to a a hash
-            # for efficiency in UI code
-            my %things  = ();
-            while ( my $entity = $cursor->next ) {
-                $things{$entity->value} = {
-                    id      => $entity->id,
-                    count   => $self->get_entity_count($entity),
-                    type    => $entity->type,
-                    classes => $entity->classes,
-                    data    => $entity->data,
-                };
-            }
-            $self->do_render({
-                records             => \%things,
-                queryRecordCount    => scalar(keys %things),
-                totalRecordCount    => scalar(keys %things),
-            });
-        }
-        else {
-            @things = $cursor->all;
-            $self->do_render({
-                records => \@things,
-                queryRecordCount => scalar(@things),
-                totalRecordCount => scalar(@things),
-            });
-        }
+        @things = $cursor->all;
+        $self->do_render({
+            records => \@things,
+            queryRecordCount => scalar(@things),
+            totalRecordCount => scalar(@things),
+        });
     }
 
     # $log->trace("Records are ",{ filter => \&Dumper, value =>\@things});

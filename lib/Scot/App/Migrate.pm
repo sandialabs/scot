@@ -904,14 +904,33 @@ sub xform_alertgroup {
     if ( $href->{status} eq "revisit" ) {
         $href->{status} = "closed";
     }
-    $href->{total}            = delete $href->{alert_count} // 0;        
-    $href->{open_count}       = delete $href->{open} // 0;        
-    $href->{closed_count}     = delete $href->{closed} // 0;        
-    $href->{promoted_count}   = delete $href->{promoted} // 0;        
+    delete $href->{total};
+
+    my $athref  = $self->get_alert_counts($href->{id});
+    $log->debug("alert counts ",{ filter => \&Dumper, value=> $athref});
+    $href->{alert_count}    = $athref->{alert_count}// 0;
+    $href->{open_count}     = $athref->{open} // 0;
+    $href->{closed_count}   = $athref->{closed} // 0;
+    $href->{promoted_count} = $athref->{promoted} // 0;
+
     $href->{body}             = delete $href->{body_html};
     $href->{body_plain}       = delete $href->{body_plain};
 
     return \@promos;
+}
+
+sub get_alert_counts {
+    my $self    = shift;
+    my $agid    = shift;
+    my %totals;
+    my $env     = $self->env;
+    my $col     = $self->legacydb->get_collection('alerts');
+    my $cursor  = $col->find({alertgroup   => $agid});
+    while ( my $alert = $cursor->next ) {
+        $totals{alert_count}++;
+        $totals{$alert->{status}}++;
+    }
+    return \%totals;
 }
 
 sub xform_event {
