@@ -18,6 +18,7 @@ var datasource
 var ids = []
 var stage = false
 var savedsearch = false
+var setfilter = false
 var savedfsearch;
 var Listener = require('../activemq/listener.jsx')
 var columns = 
@@ -35,8 +36,12 @@ var columns =
 
 function dataSource(query)
 {
+    if(setfilter){
+        query.skip = 0
+        setfilter = false
+    }
 
-      	var finalarray = [];
+    var finalarray = [];
 	var sortarray = {}
 	sortarray[colsort] = valuesort
 	return $.ajax({
@@ -147,7 +152,8 @@ module.exports = React.createClass({
 	    defaultPageSize: 50,  
 	    pagination: true, 
 	    paginationToolbarProps: {pageSizes: [5,10,20, 50]}, 
-	    onColumnOrderChange: this.handleColumnOrderChange, 
+	    emptyText: 'No records',
+        onColumnOrderChange: this.handleColumnOrderChange, 
 	    sortInfo: SORT_INFO, 
 	    onSortChange: this.handleSortChange, 
 	    showCellBorders: true,
@@ -250,7 +256,8 @@ module.exports = React.createClass({
 	}
 	})
 	if(Object.keys(filter).length > 0){
-	savedsearch = false
+	setfilter = true
+    savedsearch = false
 	this.setState({viewfilter: false})
 	$.each(allFilterValues, function(key,value){
 	    if(value != ""){
