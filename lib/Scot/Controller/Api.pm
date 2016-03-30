@@ -540,16 +540,17 @@ sub get_subthing {
             my %things  = ();
             while ( my $entity = $cursor->next ) {
                 $things{$entity->value} = {
+                    id      => $entity->id,
                     count   => $self->get_entity_count($entity),
-                    type    => $entity->value,
+                    type    => $entity->type,
                     classes => $entity->classes,
                     data    => $entity->data,
                 };
             }
             $self->do_render({
                 records             => \%things,
-                queryRecordCount    => keys %things,
-                totalRecordCount    => keys %things,
+                queryRecordCount    => scalar(keys %things),
+                totalRecordCount    => scalar(keys %things),
             });
         }
         else {
@@ -2036,7 +2037,7 @@ sub get_entity_count {
     my $value   = $entity->value;
     my $env     = $self->env;
     my $mongo   = $env->mongo;
-    my $col     = $mongo->collecton('Link');
+    my $col     = $mongo->collection('Link');
     my $cursor  = $col->get_links(
         'entity', $entity->id    
     );

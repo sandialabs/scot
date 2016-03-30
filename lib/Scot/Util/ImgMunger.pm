@@ -39,7 +39,7 @@ sub _get_conf {
     my $self    = shift;
     my $env     = $self->env;
     # {
-    #   html_root   => 'the / where the webserver will find the cached_images dir
+    #   html_root   => 'the / where the webserver finds the cached_images dir
     #   image_dir   => the real dir on the server where to store the file
     #   storage     => local | api
     # }
