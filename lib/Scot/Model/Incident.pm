@@ -25,6 +25,7 @@ with    qw(
     Scot::Role::Entriable
     Scot::Role::Events
     Scot::Role::Hashable
+    Scot::Role::Historable
     Scot::Role::Permission
     Scot::Role::Promotable
     Scot::Role::Sources
