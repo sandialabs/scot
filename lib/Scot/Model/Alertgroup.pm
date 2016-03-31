@@ -31,6 +31,7 @@ with    qw(
     Meerkat::Role::Document
     Scot::Role::Body
     Scot::Role::Hashable
+    Scot::Role::Historable
     Scot::Role::Permission
     Scot::Role::Promotable
     Scot::Role::Parsed
@@ -46,6 +47,7 @@ with    qw(
     Meerkat::Role::Document
     Scot::Role::Body
     Scot::Role::Hashable
+    Scot::Role::Historable
     Scot::Role::Permission
     Scot::Role::Promotable
     Scot::Role::Parsed
