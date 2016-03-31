@@ -19,6 +19,7 @@ with    qw(
     Meerkat::Role::Document
     Scot::Role::Entriable
     Scot::Role::Hashable
+    Scot::Role::Historable
     Scot::Role::Permission
     Scot::Role::Sources
     Scot::Role::Subject
