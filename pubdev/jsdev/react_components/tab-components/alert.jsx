@@ -369,11 +369,29 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	setTimeout(function() { this.setState({columns: newarray})}.bind(this), 800)
 	}
 	}.bind(this));
-
     Listener.activeMq(this.state.key, this.reloadactive)
+    Listener.activeMq('alertgroupnotification', this.notification)
     setTimeout(function() {Store.storeKey(this.state.key)}.bind(this), 10)
 	setTimeout(function() {Store.addChangeListener(this.reloadentry)}.bind(this),10)
 	},
+   notification: function(){
+    var notification = this.refs.notificationSystem
+    if(activemqwho != "" && notification != undefined && activemqtype != 'alert' && activemqwho != 'api'){
+    notification.addNotification({
+        message: activemqwho + activemqmessage + activemqid,
+        level: 'info',
+        autoDismiss: 5,
+        action: {
+            label: 'View',
+            callback: function(){
+            window.open('#/' + activemqtype + '/' + activemqid) 
+            }
+        }
+        })
+      }
+
+
+   },
   componentWillReceiveProps: function(){
     var project = getColumns(this.state.key)
 	project.success(function(realData){
@@ -467,19 +485,6 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
     supervalue.push(this.state.key)
     this.reloadentry()
     var notification = this.refs.notificationSystem
-    if(activemqwho != "" && notification != undefined && activemqtype != 'alert' && activemqwho != 'api'){
-    notification.addNotification({
-        message: activemqwho + activemqmessage + activemqid,
-        level: 'info',
-        autoDismiss: 5,
-        action: {
-            label: 'View',
-            callback: function(){
-            window.open('#/' + activemqtype + '/' + activemqid) 
-            }
-        }
-        })
-      }
     },
    flairOn: function(){
 	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
