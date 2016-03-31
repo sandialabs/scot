@@ -5,6 +5,7 @@ function update(state, callback, payload){
      activemqmessage = " updated " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('alertgroupnotification')
      callback.emitChange('eventgroup')
      callback.emitChange('activealertgroup')
      callback.emitChange('incidentgroup')
@@ -35,6 +36,7 @@ function update(state, callback, payload){
      activemqmessage = " updated " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('alertgroupnotification')
      callback.emitChange('incidentgroup')
      callback.emitChange("activealertgroup")
      callback.emitChange('eventgroup')
@@ -56,6 +58,7 @@ function update(state, callback, payload){
      activemqmessage = " updated " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('alertgroupnotification')
      callback.emitChange("activealertgroup")
      callback.emitChange('incidentgroup')
      callback.emitChange('eventgroup')
@@ -88,6 +91,7 @@ function creation(state, callback, payload){
     callback.emitChange('eventgroup') 
     callback.emitChange('activealertgroup')
     callback.emitChange('incidentgroup') 
+    callback.emitChange('alertgroupnotification')
     }
     else if (state == 'event') {
     activemqwho = payload.action.activemq.data.who
@@ -97,6 +101,7 @@ function creation(state, callback, payload){
     callback.emitChange('incidentgroup') 
     callback.emitChange('eventgroup')  
     callback.emitChange('activealertgroup')
+    callback.emitChange('alertgroupnotification')
     setTimeout(function(){$('.z-row').each(function(key, value){
            $(value).find('.z-cell').each(function(r,s){
            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
@@ -119,6 +124,7 @@ function creation(state, callback, payload){
      callback.emitChange('incidentgroup') 
      callback.emitChange('eventgroup')  
      callback.emitChange('activealertgroup')
+     callback.emitChange('alertgroupnotification')
      callback.emitChange(payload.action.activemq.data.id)
    }
    else if(state == 'alertgroup'){
@@ -128,7 +134,8 @@ function creation(state, callback, payload){
      activemqtype = state
      callback.emitChange('activealertgroup')
      callback.emitChange('eventgroup')
-     callback.emitChange('incidentgroup') 
+     callback.emitChange('incidentgroup')
+     callback.emitChange('alertgroupnotification')
      callback.emitChange(payload.action.activemq.data.id)
    }
 }
@@ -139,7 +146,8 @@ function deletion(state, callback, payload){
      activemqmessage = " deleted " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
-     callback.emitChange('activealertgroup') 
+     callback.emitChange('activealertgroup')
+
     }
     else if (state == 'entry'){
      callback.emitChange(payload.action.activemq.data.id) 
@@ -152,6 +160,7 @@ function deletion(state, callback, payload){
      callback.emitChange('activealertgroup') 
      callback.emitChange('incidentgroup') 
      callback.emitChange('eventgroup') 
+     callback.emitChange('alertgroupnotification')
     }
     else if (state == 'intel'){
 
@@ -166,7 +175,8 @@ function deletion(state, callback, payload){
      callback.emitChange('incidentgroup')
      callback.emitChange('activealertgroup') 
      callback.emitChange('eventgroup') 
-     callback.emitChange(payload.action.activemq.data.id)
+    callback.emitChange('alertgroupnotification')
+    callback.emitChange(payload.action.activemq.data.id)
    }
    else if(state == 'alertgroup'){
      activemqwho = payload.action.activemq.data.who
@@ -176,6 +186,7 @@ function deletion(state, callback, payload){
      callback.emitChange('incidentgroup')
      callback.emitChange('eventgroup') 
      callback.emitChange('activealertgroup') 
+     callback.emitChange('alertgroupnotification')
      callback.emitChange(payload.action.activemq.data.id)
    }
 }
