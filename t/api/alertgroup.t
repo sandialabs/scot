@@ -96,6 +96,7 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
     ->json_is('/records/1/data/boom'     => 9)
     ->json_is('/records/1/columns/2'   => 'boom');
 
+print Dumper($t->tx->res->json), "\n";
 # $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
  #    "Getting alertgroup again to see if stuff is updated")
   #   ->status_is(200);
@@ -109,7 +110,6 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/tag" => {},
 
     
 
-# print Dumper($t->tx->res->json), "\n";
 done_testing();
 exit 0;
 
