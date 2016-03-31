@@ -21,7 +21,7 @@ var Source                  = require('../components/source.jsx');
 var Crouton                 = require('react-crouton');
 var Store                   = require('../flux/store.jsx');
 var AppActions              = require('../flux/actions.jsx');
-    
+var Listener                = require('../activemq/listener.jsx');    
 
 var SelectedHeader = React.createClass({
     getInitialState: function() {
@@ -61,6 +61,7 @@ var SelectedHeader = React.createClass({
         console.log('Ran componentDidMount');
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated);
+        Listener.activeMq(this.state.key,this.updated);
     },
     componentWillReceiveProps: function() {
         this.updated();    
