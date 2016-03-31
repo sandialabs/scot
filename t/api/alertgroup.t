@@ -39,6 +39,7 @@ $t->post_ok(
     }
 )->status_is(200);
 
+
 my $alertgroup_id   = $t->tx->res->json->{id};
 my $updated         = $t->tx->res->json->{updated};
 
@@ -108,8 +109,11 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/tag" => {},
     ->json_is('/totalRecordCount'   => 2)
     ->json_is('/queryRecordCount'   => 2);
 
+$t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/history" => {},
+    "Getting alertgroup history")
+    ->status_is(200);
     
-
+print Dumper($t->tx->res->json), "\n";
 done_testing();
 exit 0;
 
