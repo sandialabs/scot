@@ -89,7 +89,9 @@ has data_with_flair => (
 
 the columns parsed from the data
 not sure this is needed in scot like it was in vast
+but tests break without it
 
+=cut
 
 has columns     => (
     is          => 'ro',
@@ -99,7 +101,6 @@ has columns     => (
     default     => sub {[]},
 );
 
-=cut
 
 __PACKAGE__->meta->make_immutable;
 1;

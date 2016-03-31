@@ -12,12 +12,18 @@ var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
 var Store               = require('../flux/store.jsx');
 var AppActions          = require('../flux/actions.jsx');
+var AddFlair            = require('../components/add_flair.jsx');
+var Flair               = require('../modal/flair_modal.jsx');
+
 var SelectedEntry = React.createClass({
     getInitialState: function() {
         return {
             showEntryData:false,
+            showEntityData:false,
             entryData:'',
+            entityData:'',
             key:this.props.id,
+            flairToolbar:false,
         }
     },
     componentDidMount: function() {
@@ -25,12 +31,27 @@ var SelectedEntry = React.createClass({
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
         }.bind(this));
+        this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
+            var entityResult = result.records;
+            this.setState({showEntityData:true, entityData:entityResult})
+            var waitForEntry = {
+                waitEntry: function() {
+                    if(this.state.showEntryData == false){
+                        setTimeout(waitForEntry.waitEntry,50);
+                    } else {
+                        console.log('entries are done')   
+                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                    }
+                }.bind(this)
+            };
+            waitForEntry.waitEntry();
+        }.bind(this));
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated);
     },
-    componentWillReceiveProps: function() {
+    //componentWillReceiveProps: function() {
         //this.updated();
-    },
+    //},
     updated: function () {
         this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
             var entryResult = result.records;
@@ -38,8 +59,15 @@ var SelectedEntry = React.createClass({
         }.bind(this));
         console.log('Ran update');
     },
+    flairToolbarToggle: function(id) {
+        if (this.state.flairToolbar == false) {
+            this.setState({flairToolbar:true,entityid:id})
+        } else {
+            this.setState({flairToolbar:false})
+        }
+    },
     render: function() { 
-        var data = this.state.entryData; 
+        var data = this.state.entryData;
         var type = this.props.type;
         var id = this.props.id;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
@@ -49,6 +77,7 @@ var SelectedEntry = React.createClass({
         return (
             <div className={divClass}> 
                 {this.state.showEntryData ? <EntryIterator data={data} type={type} id={id} updated={this.updated}  /> : null} 
+                {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid}/> : null}
             </div>       
         );
     }
@@ -184,9 +213,9 @@ var EntryParent = React.createClass({
 var EntryData = React.createClass({ 
     getInitialState: function() {
         return {
-            height:'1px',    
+            height:'1px',
+            entityid:null,
             count:0,
-            flairToolbar: false,
         }
     },
     /*componentDidUpdate: function() {
@@ -209,29 +238,21 @@ var EntryData = React.createClass({
     componentDidMount: function () {
         this.setState({height:'2px'}); 
         //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
-    },*/
-    flairToggle: function() {
-        if (this.state.flairToolbar == false) {
-            this.setState({flairToolbar:true})
-        } else {
-            this.setState({flairToolbar:false})
-        }
-    },
+    },*/ 
     onLoad: function() {
-        console.log('onload for iframe');
         if (this.state.count < 1 ) {
-        setTimeout(function() {
-                document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
-                    var newheight; 
-                    newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-                    newheight = newheight + 'px';
-                    this.setState({height:newheight});
-                    var newcount = this.state.count;
-                    newcount += 1;
-                    this.setState({count:newcount});
-                }.bind(this))
-            }.bind(this)); 
-        }
+            setTimeout(function() {
+                    document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
+                        var newheight; 
+                        newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+                        newheight = newheight + 'px';
+                        this.setState({height:newheight});
+                        var newcount = this.state.count;
+                        newcount += 1;
+                        this.setState({count:newcount});
+                    }.bind(this))
+                }.bind(this)); 
+            }
     },
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
@@ -240,7 +261,7 @@ var EntryData = React.createClass({
         }
         var id = this.props.id;
         //Lazy Loading Flair here as other components, namely Flair that need to access the parent component here "SelectedEntry" as it can not be accessed due to a cyclic dependency loop between Flair and SelectedEntry. Lazy loading solves this issue. This problem should go away upon upgrading everything to ES6 and using imports/exports. 
-        var Flair = require('../modal/flair_modal.jsx');
+        //var Flair = require('../modal/flair_modal.jsx');
         return (
             <div className={'row-fluid entry-body'}>
                 <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
@@ -248,7 +269,6 @@ var EntryData = React.createClass({
                     <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
                     </Frame>
                 </div>
-            {this.state.flairToolbar ? <Flair flairToggle={this.flairToggle} /> : null}
             </div>
         )
     }
