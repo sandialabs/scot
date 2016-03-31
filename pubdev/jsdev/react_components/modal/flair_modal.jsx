@@ -172,26 +172,6 @@ var EntityEventReferences = React.createClass({
             </div>
         )
     }
-    /*render: function() {
-        var columns = [
-            { name: 'id', width:100 }
-            { name: 'subject' }
-        ]
-        return (
-            <div>
-                <h4>AlertGroups</h4>
-                <DataGrid idProperty='id' dataSource={this.state.entityDataAlertGroup} columns={columns} style={{height:this.state.defaultAlertGroupHeight}} onSelectionChange={this.onAlertGroupSelectionChange} selected={this.state.entityDataAlertGroup} emptyText={'No records'}/>
-                <div style={{marginTop:'90px'}}>
-                    <h4>Events</h4>
-                    <DataGrid idProperty='id' dataSource={this.state.entityDataEvent} columns={columns} style={{height:this.state.defaultEventHeight}} onSelectionChange={this.onEventSelectionChange} selected={this.state.entityDataEvent} emptyText={'No records'}/>
-                </div>
-                <div style={{marginTop:'90px'}}>
-                    <h4>Incidents</h4>
-                    <DataGrid idProperty='id' dataSource={this.state.entityDataIncident} columns={columns} style={{height:this.state.defaultIncidentHeight}} onSelectionChange={this.onIncidentSelectionChange} selected={this.state.entityDataIncident} emptyText={'No records'}/>
-                </div>
-            </div>
-        )
-    }*/
 });
 
 module.exports = Flair;
