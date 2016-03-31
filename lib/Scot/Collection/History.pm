@@ -27,16 +27,15 @@ sub add_history_entry {
     my $log     = $env->log;
 
     my $target  = delete $href->{targets};
-
-    my $obj = $self->create($href);
+    my $obj     = $self->create($href);
 
     # now link it to the object
     my $link = $env->mongo->collection('Link')->create_link({
-        type   => "history",
-        id     => $obj->id,
+        type    => "history",
+        id      => $obj->id,
     },{
-        type => $target->{type},
-        id   => $target->{id},
+        type    => $target->{type},
+        id      => $target->{id},
     });
 
     unless ($obj) {
