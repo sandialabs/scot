@@ -12,21 +12,21 @@ var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
 var Store               = require('../flux/store.jsx');
 var AppActions          = require('../flux/actions.jsx');
-var AddFlair            = require('../components/add_flair.jsx');
-var Flair               = require('../modal/flair_modal.jsx');
+//var AddFlair            = require('../components/add_flair.jsx');
+//var Flair               = require('../modal/flair_modal.jsx');
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
         return {
-            showEntryData:false,
-            showEntityData:false,
-            entryData:'',
-            entityData:'',
+            showEntryData:this.props.showEntryData,
+            showEntityData:this.props.showEntityData,
+            entryData:this.props.entryData,
+            entityData:this.props.entityData,
             key:this.props.id,
             flairToolbar:false,
         }
     },
-    componentDidMount: function() {
+    /*componentDidMount: function() {
         this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
@@ -49,16 +49,16 @@ var SelectedEntry = React.createClass({
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated);
     },
-    //componentWillReceiveProps: function() {
-        //this.updated();
-    //},
+    componentWillReceiveProps: function() {
+        this.updated();
+    },
     updated: function () {
         this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
         }.bind(this));
         console.log('Ran update');
-    },
+    },*/
     flairToolbarToggle: function(id) {
         if (this.state.flairToolbar == false) {
             this.setState({flairToolbar:true,entityid:id})
@@ -67,7 +67,7 @@ var SelectedEntry = React.createClass({
         }
     },
     render: function() { 
-        var data = this.state.entryData;
+        var data = this.props.entryData;
         var type = this.props.type;
         var id = this.props.id;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
@@ -76,7 +76,7 @@ var SelectedEntry = React.createClass({
         }
         return (
             <div className={divClass}> 
-                {this.state.showEntryData ? <EntryIterator data={data} type={type} id={id} updated={this.updated}  /> : null} 
+                {this.props.showEntryData ? <EntryIterator data={data} type={type} id={id} updated={this.updated}  /> : null} 
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid}/> : null}
             </div>       
         );
