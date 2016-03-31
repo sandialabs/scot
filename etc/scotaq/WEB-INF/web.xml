@@ -39,6 +39,7 @@
 	<filter>
 		<filter-name>session</filter-name>
 		<filter-class>org.apache.activemq.web.SessionFilter</filter-class>
+        <async-supported>true</async-supported>
 	</filter>
 	<filter-mapping>
 		<filter-name>session</filter-name>
@@ -57,6 +58,7 @@
         <servlet-name>AjaxServlet</servlet-name>
         <servlet-class>org.apache.activemq.web.AjaxServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
+        <async-supported>true</async-supported>
 	<init-param>
                 <param-name>defaultContentType</param-name>
                 <param-value>application/json</param-value>
@@ -67,6 +69,7 @@
         <servlet-name>MessageServlet</servlet-name>
         <servlet-class>org.apache.activemq.web.MessageServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
+        <async-supported>true</async-supported>
 	<init-param>
                 <param-name>defaultContentType</param-name>
                 <param-value>application/json</param-value>
@@ -77,6 +80,7 @@
     <servlet>
         <servlet-name>QueueBrowseServlet</servlet-name>
         <servlet-class>org.apache.activemq.web.QueueBrowseServlet</servlet-class>
+        <async-supported>true</async-supported>
     </servlet>
 
 
@@ -86,6 +90,7 @@
         <servlet-name>PortfolioPublishServlet</servlet-name>
         <servlet-class>org.apache.activemq.web.PortfolioPublishServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
+        <async-supported>true</async-supported>
     </servlet>
 
 	<!-- servlet mappings -->

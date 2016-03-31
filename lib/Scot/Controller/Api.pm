@@ -121,7 +121,9 @@ sub create {
         status  => 'ok',
     });
 
-    if ( $object->meta->does_role("Historable") ) {
+    $log->debug("Checking if $thing object is Historable");
+    if ( $object->meta->does_role("Scot::Role::Historable") ) {
+        $log->debug("Historable: let's write history!");
         $mongo->collection('History')->add_history_entry({
             who     => $user,
             what    => "created via api",
@@ -760,7 +762,8 @@ sub update {
         status  => "successfully updated",
     });
 
-    if ( $object->meta->does_role("Historable") ) {
+    if ( $object->meta->does_role("Scot::Role::Historable") ) {
+        $log->debug("Historable object!  let's write history...");
         $mongo->collection('History')->add_history_entry({
             who     => $user,
             what    => "updated via api",
@@ -920,7 +923,7 @@ sub handle_promotion {
             status  => "successfully promoted",
         });
 
-        if ( $object->meta->does_role("Historable") ) {
+        if ( $object->meta->does_role("Scot::Role::Historable") ) {
             $mongo->collection('History')->add_history_entry({
                 who     => $self->session('user'),
                 what    => "$object_type promotion to $proname",
@@ -962,7 +965,7 @@ sub write_promotion_history_notification {
     my $type    = shift // "update";
     my $mongo   = $self->env->mongo;
 
-    if ( $object->meta->does_role("Historable") ) {
+    if ( $object->meta->does_role("Scot::Role::Historable") ) {
         $mongo->collection('History')->add_history_entry({
             who     => $user,
             what    => $what,
