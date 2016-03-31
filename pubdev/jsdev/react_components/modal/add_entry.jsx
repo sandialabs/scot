@@ -30,7 +30,7 @@ output  = output + timestamp.toLocaleString()
 var AddEntryModal = React.createClass({
 	getInitialState: function(){
 	return {
-	files: [], edit: false, stagecolor: '#000',enable: true, addentry: true, saved: false, enablesave: true}
+	files: [], edit: false, stagecolor: '#000',enable: true, addentry: true, saved: true, enablesave: true}
 	},
 	componentWillMount: function(){
 	if(this.props.stage == 'Edit'){
@@ -113,14 +113,14 @@ var AddEntryModal = React.createClass({
 	)), 
 	React.createElement("div", {className: "modal-footer"}, React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width': '2px','border-color':'#000','border-radius':'4px',margin:'30px' ,padding: '30px','border-style': 'dashed', 'text-align' : 'center'}}, React.createElement("div",null,"Drop some files here or click to  select files to upload")),
 	this.state.files ? React.createElement("div", null, this.state.files.map((file) => React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p",{style:{display:'inline'}}, file.name),React.createElement('button', {style: {/*width: '2em', height: '1em',*/ 'line-height':'1px'}, className: 'btn btn-info', id: file.name, onClick: this.Close}, 'x'))))): null, 
-	React.createElement("button", {className: 'btn', onClick: this.onCancel}, " Cancel"), this.state.edit ? React.createElement(
-'button', {className: 'btn btn-primary', onClick: this.Edit}, 'Edit') : null,
-	this.state.saved ? React.createElement("button", {className: 'btn btn-info', onClick: this.submit}, 'Submit') : null,
-        this.state.enablesave ? React.createElement('button', {className: 'btn btn-success', onClick: this.Save},'Save') : null
+	React.createElement("button", {className: 'btn', onClick: this.onCancel}, " Cancel"),//, this.state.edit ? React.createElement(
+//'button', {className: 'btn btn-primary', onClick: this.Edit}, 'Edit') : null,
+	this.state.saved ? React.createElement("button", {className: 'btn btn-info', onClick: this.submit}, 'Submit') : null
+        //this.state.enablesave ? React.createElement('button', {className: 'btn btn-success', onClick: this.Save},'Save') : null
 	)
 	)
 	) 
-        )
+    )
     },
      clickable: function(){
 	this.setState({addentry: false})
@@ -161,7 +161,11 @@ var AddEntryModal = React.createClass({
 	}
         },
 	submit: function(){
-	if(this.props.stage == 'Reply')
+	if($('#react-tinymce-addentry_ifr').contents().find("#tinymce").text() == ""){
+	alert("Please fill in Text")
+	}
+    else {    
+    if(this.props.stage == 'Reply')
 	{
 	var data = new Object()
 	data = JSON.stringify({parent: Number(this.props.id), body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
@@ -296,6 +300,7 @@ var AddEntryModal = React.createClass({
 	AppActions.updateItem(this.props.targetid,'headerUpdate');
     }
 	}
+    }
 });
 
 module.exports = AddEntryModal
