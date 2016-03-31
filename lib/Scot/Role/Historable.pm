@@ -1,4 +1,4 @@
-package Scot::Role::Entitiable;
+package Scot::Role::Historable;
 
 use Moose::Role;
 
