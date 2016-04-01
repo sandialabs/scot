@@ -65,9 +65,7 @@ var EntityOptions = React.createClass({
     render: function() {
         return (
             <ButtonGroup>
-                <Button>Search SCOT</Button>
                 <Button>Search Splunk</Button>
-                <Button>Robtex Lookup<img style={{height:'15px'}} src='/images/warning.png'/></Button>
             </ButtonGroup>
         )
     }
