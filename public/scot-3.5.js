@@ -1303,8 +1303,8 @@ var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
 var Store               = require('../flux/store.jsx');
 var AppActions          = require('../flux/actions.jsx');
-//var AddFlair            = require('../components/add_flair.jsx');
-//var Flair               = require('../modal/flair_modal.jsx');
+var AddFlair            = require('../components/add_flair.jsx');
+var Flair               = require('../modal/flair_modal.jsx');
 
 var SelectedEntry = React.createClass({displayName: "SelectedEntry",
     getInitialState: function() {
@@ -1317,30 +1317,32 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             flairToolbar:false,
         }
     },
-    /*componentDidMount: function() {
-        this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
-            var entryResult = result.records;
-            this.setState({showEntryData:true, entryData:entryResult})
-        }.bind(this));
-        this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
-            var entityResult = result.records;
-            this.setState({showEntityData:true, entityData:entityResult})
-            var waitForEntry = {
-                waitEntry: function() {
-                    if(this.state.showEntryData == false){
-                        setTimeout(waitForEntry.waitEntry,50);
-                    } else {
-                        console.log('entries are done')   
-                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
-                    }
-                }.bind(this)
-            };
-            waitForEntry.waitEntry();
-        }.bind(this));
-        Store.storeKey(this.state.key);
-        Store.addChangeListener(this.updated);
+    componentDidMount: function() {
+        if (this.props.type == 'alert' || this.props.type == 'entity') {
+            this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
+                var entryResult = result.records;
+                this.setState({showEntryData:true, entryData:entryResult})
+            }.bind(this));
+            this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
+                var entityResult = result.records;
+                this.setState({showEntityData:true, entityData:entityResult})
+                var waitForEntry = {
+                    waitEntry: function() {
+                        if(this.state.showEntryData == false){
+                            setTimeout(waitForEntry.waitEntry,50);
+                        } else {
+                            console.log('entries are done')   
+                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                        }
+                    }.bind(this)
+                };
+                waitForEntry.waitEntry();
+            }.bind(this));
+        }
+        //Store.storeKey(this.state.key);
+        //Store.addChangeListener(this.updated);
     },
-    componentWillReceiveProps: function() {
+    /*componentWillReceiveProps: function() {
         this.updated();
     },
     updated: function () {
@@ -1361,13 +1363,16 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         var data = this.props.entryData;
         var type = this.props.type;
         var id = this.props.id;
+        var showEntryData = this.props.showEntryData;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
         if (type =='alert' || type == 'entity') {
             divClass = 'row-fluid entry-wrapper'
+            data = this.state.entryData;
+            showEntryData = this.state.showEntryData;
         }
         return (
             React.createElement("div", {className: divClass}, 
-                this.props.showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, updated: this.updated}) : null, 
+                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, updated: this.updated}) : null, 
                 this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid}) : null
             )       
         );
@@ -1479,9 +1484,9 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                     React.createElement("span", {className: "anchor", id: "/"+ type + '/' + id + '/' + items.id}), 
                     React.createElement("div", {className: innerClassName}, 
                         React.createElement("div", {className: "entry-header-inner"}, "[", React.createElement("a", {style: {color:'black'}, href: "#/"+ type + '/' + id + '/' + items.id}, items.id), "] ", React.createElement(ReactTime, {value: items.created * 1000, format: "MM/DD/YYYY hh:mm:ss a"}), " by ", items.owner, " ", taskOwner, "(updated on ", React.createElement(ReactTime, {value: items.updated * 1000, format: "MM/DD/YYYY hh:mm:ss a"}), ")", 
-                            React.createElement("span", {className: "pull-right", style: {display:'inline-flex'}}, 
+                            React.createElement("span", {className: "pull-right", style: {display:'inline-flex',paddingRight:'3px'}}, 
                                 this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: items.id, type: 'entry', permissionData: items, permissionsToggle: this.permissionsToggle, updated: updated}) : null, 
-                                React.createElement(SplitButton, {bsSize: "xsmall", title: "Reply", key: items.id, id: 'Reply '+items.id, onClick: this.replyEntryToggle}, 
+                                React.createElement(SplitButton, {bsSize: "xsmall", title: "Reply", key: items.id, id: 'Reply '+items.id, onClick: this.replyEntryToggle, pullRight: true}, 
                                     React.createElement(MenuItem, {eventKey: "2", onClick: this.deleteToggle}, "Delete"), 
                                     React.createElement(MenuItem, {eventKey: "3"}, React.createElement(Summary, {type: type, id: id, entryid: items.id, summary: summary, updated: updated})), 
                                     React.createElement(MenuItem, {eventKey: "4"}, React.createElement(Task, {type: type, id: id, entryid: items.id, updated: updated})), 
@@ -1567,7 +1572,7 @@ var EntryData = React.createClass({displayName: "EntryData",
 
 module.exports = SelectedEntry
 
-},{"../components/permission.jsx":8,"../components/summary.jsx":11,"../components/task.jsx":13,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"react":1855,"react-bootstrap/lib/Button.js":774,"react-bootstrap/lib/DropdownButton.js":780,"react-bootstrap/lib/MenuItem.js":784,"react-bootstrap/lib/SplitButton.js":791,"react-frame":996,"react-time":1665}],16:[function(require,module,exports){
+},{"../components/add_flair.jsx":6,"../components/permission.jsx":8,"../components/summary.jsx":11,"../components/task.jsx":13,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/flair_modal.jsx":24,"react":1855,"react-bootstrap/lib/Button.js":774,"react-bootstrap/lib/DropdownButton.js":780,"react-bootstrap/lib/MenuItem.js":784,"react-bootstrap/lib/SplitButton.js":791,"react-frame":996,"react-time":1665}],16:[function(require,module,exports){
 var React                   = require('react');
 var ReactTime               = require('react-time');
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
@@ -1623,24 +1628,38 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             entityid:null,
             flairToolbar:false,        
             refreshing:false,
+            loading: false,
         }
     },
     componentDidMount: function() {
+        this.setState({loading:true});
         this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
             var sourceResult = result.records;
             this.setState({showSource:true, sourceData:sourceResult})
+            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({loading:false});        
+            }        
         }.bind(this));
         this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
             var eventResult = result;
             this.setState({showEventData:true, headerData:eventResult})
+            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({loading:false});        
+            }
         }.bind(this));
         this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
             var tagResult = result.records;
             this.setState({showTag:true, tagData:tagResult});
+            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({loading:false});
+            }        
         }.bind(this));
         this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
+            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({loading:false});
+            }        
         }.bind(this));
         this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
             var entityResult = result.records;
@@ -1652,6 +1671,9 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                     } else {
                         console.log('entries are done')
                         setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                        if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                            this.setState({loading:false});        
+                        }
                     }
                 }.bind(this)
             };
@@ -1817,7 +1839,8 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 React.createElement("div", {id: "NewEventInfo", className: "entry-header-info-null", style: {width:'100%'}}, 
                     React.createElement("div", {className: "details-subject", style: {display: 'inline-flex',paddingLeft:'5px'}}, 
                         this.state.showEventData ? React.createElement(EntryDataSubject, {data: this.state.headerData.subject, type: subjectType, id: this.props.id, updated: this.updated}): null, 
-                        this.state.refreshing ? React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'info'}, React.createElement("span", null, "Refreshing...")) :null
+                        this.state.refreshing ? React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'info'}, React.createElement("span", null, "Refreshing...")) :null, 
+                        this.state.loading ? React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'info'}, React.createElement("span", null, "Loading...")) :null
                     ), 
                     React.createElement("div", {className: "details-table toolbar"}, 
                         React.createElement("table", null, 
@@ -2212,7 +2235,7 @@ output  = output + timestamp.toLocaleString()
 var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	getInitialState: function(){
 	return {
-	files: [], edit: false, stagecolor: '#000',enable: true, addentry: true, saved: false, enablesave: true}
+	files: [], edit: false, stagecolor: '#000',enable: true, addentry: true, saved: true, enablesave: true}
 	},
 	componentWillMount: function(){
 	if(this.props.stage == 'Edit'){
@@ -2295,14 +2318,14 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	)), 
 	React.createElement("div", {className: "modal-footer"}, React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width': '2px','border-color':'#000','border-radius':'4px',margin:'30px' ,padding: '30px','border-style': 'dashed', 'text-align' : 'center'}}, React.createElement("div",null,"Drop some files here or click to  select files to upload")),
 	this.state.files ? React.createElement("div", null, this.state.files.map((file) => React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p",{style:{display:'inline'}}, file.name),React.createElement('button', {style: {/*width: '2em', height: '1em',*/ 'line-height':'1px'}, className: 'btn btn-info', id: file.name, onClick: this.Close}, 'x'))))): null, 
-	React.createElement("button", {className: 'btn', onClick: this.onCancel}, " Cancel"), this.state.edit ? React.createElement(
-'button', {className: 'btn btn-primary', onClick: this.Edit}, 'Edit') : null,
-	this.state.saved ? React.createElement("button", {className: 'btn btn-info', onClick: this.submit}, 'Submit') : null,
-        this.state.enablesave ? React.createElement('button', {className: 'btn btn-success', onClick: this.Save},'Save') : null
+	React.createElement("button", {className: 'btn', onClick: this.onCancel}, " Cancel"),//, this.state.edit ? React.createElement(
+//'button', {className: 'btn btn-primary', onClick: this.Edit}, 'Edit') : null,
+	this.state.saved ? React.createElement("button", {className: 'btn btn-info', onClick: this.submit}, 'Submit') : null
+        //this.state.enablesave ? React.createElement('button', {className: 'btn btn-success', onClick: this.Save},'Save') : null
 	)
 	)
 	) 
-        )
+    )
     },
      clickable: function(){
 	this.setState({addentry: false})
@@ -2343,7 +2366,11 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	}
         },
 	submit: function(){
-	if(this.props.stage == 'Reply')
+	if($('#react-tinymce-addentry_ifr').contents().find("#tinymce").text() == ""){
+	alert("Please fill in Text")
+	}
+    else {    
+    if(this.props.stage == 'Reply')
 	{
 	var data = new Object()
 	data = JSON.stringify({parent: Number(this.props.id), body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
@@ -2478,6 +2505,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	AppActions.updateItem(this.props.targetid,'headerUpdate');
     }
 	}
+    }
 });
 
 module.exports = AddEntryModal
@@ -2547,7 +2575,7 @@ var DeleteEntry = React.createClass({displayName: "DeleteEntry",
     toggle: function() {
         $.ajax({
            type: 'delete',
-           url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id + '/entry/' + this.props.entryid,
+           url: 'scot/api/v2/entry/' + this.props.entryid,
            success: function(data) {
                console.log('success: ' + data);
                var key = this.state.key;
@@ -2642,7 +2670,7 @@ var EntitiesData = React.createClass({displayName: "EntitiesData",
         var obj = originalobj.entities;
         for (var prop in data) {
             var type = data[prop].type;
-            var value = data[prop].value;
+            var value = prop;
             if (obj.hasOwnProperty(type)) { 
                 obj[type].push(value); 
             } else { 
@@ -2780,7 +2808,7 @@ var EntityBody = React.createClass({displayName: "EntityBody",
         }
     },
     componentDidMount: function() {
-        this.setState({EntryData:React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid})})
+        //this.setState({EntryData:<SelectedEntry type={'entity'} id={this.props.entityid}/>})
     },  
     render: function() {
         var type = 'entity';
