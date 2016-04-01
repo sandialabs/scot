@@ -91,9 +91,17 @@ module.exports = Dispatcher
 var set;
 function update(state, callback, payload){
     if (state == 'event') {
+     activemqwho = payload.action.activemq.data.who
+     activemqmessage = " updated " + state + " : " 
+     activemqid = payload.action.activemq.data.id
+     activemqtype = state
+     callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('alertgroupnotification')
      callback.emitChange('eventgroup')
+     callback.emitChange('activealertgroup')
+     callback.emitChange('incidentgroup')
      callback.emitChange(payload.action.activemq.data.id)
-    setTimeout(function(){$('.z-row').each(function(key, value){
+     setTimeout(function(){$('.z-row').each(function(key, value){
            $(value).find('.z-cell').each(function(r,s){
            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
             $(value).css('background', '#FFFF76')
@@ -119,6 +127,8 @@ function update(state, callback, payload){
      activemqmessage = " updated " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('alertgroupnotification')
      callback.emitChange('incidentgroup')
      callback.emitChange("activealertgroup")
      callback.emitChange('eventgroup')
@@ -140,6 +150,8 @@ function update(state, callback, payload){
      activemqmessage = " updated " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('alertgroupnotification')
      callback.emitChange("activealertgroup")
      callback.emitChange('incidentgroup')
      callback.emitChange('eventgroup')
@@ -164,15 +176,27 @@ function creation(state, callback, payload){
     if(state == 'alert'){    	
     }
     else if (state == 'entry'){
-     callback.emitChange(payload.action.activemq.data.id) 
+    activemqwho = payload.action.activemq.data.who
+    activemqmessage = " created " + state + " : " 
+    activemqid = payload.action.activemq.data.id
+    activemqtype = state
+    callback.emitChange(payload.action.activemq.data.id) 
+    callback.emitChange('selectedHeaderEntry');
+    callback.emitChange('eventgroup') 
+    callback.emitChange('activealertgroup')
+    callback.emitChange('incidentgroup') 
+    callback.emitChange('alertgroupnotification')
     }
     else if (state == 'event') {
     activemqwho = payload.action.activemq.data.who
     activemqmessage = " created " + state + " : " 
     activemqid = payload.action.activemq.data.id
     activemqtype = state
+    callback.emitChange('selectedHeaderEntry');
+    callback.emitChange('incidentgroup') 
     callback.emitChange('eventgroup')  
     callback.emitChange('activealertgroup')
+    callback.emitChange('alertgroupnotification')
     setTimeout(function(){$('.z-row').each(function(key, value){
            $(value).find('.z-cell').each(function(r,s){
            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
@@ -192,7 +216,11 @@ function creation(state, callback, payload){
      activemqmessage = " created " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('selectedHeaderEntry');
      callback.emitChange('incidentgroup') 
+     callback.emitChange('eventgroup')  
+     callback.emitChange('activealertgroup')
+     callback.emitChange('alertgroupnotification')
      callback.emitChange(payload.action.activemq.data.id)
    }
    else if(state == 'alertgroup'){
@@ -200,8 +228,11 @@ function creation(state, callback, payload){
      activemqmessage = " created " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('selectedHeaderEntry');
      callback.emitChange('activealertgroup')
      callback.emitChange('eventgroup')
+     callback.emitChange('incidentgroup')
+     callback.emitChange('alertgroupnotification')
      callback.emitChange(payload.action.activemq.data.id)
    }
 }
@@ -212,7 +243,8 @@ function deletion(state, callback, payload){
      activemqmessage = " deleted " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
-     callback.emitChange('activealertgroup') 
+     callback.emitChange('activealertgroup')
+
     }
     else if (state == 'entry'){
      callback.emitChange(payload.action.activemq.data.id) 
@@ -222,7 +254,11 @@ function deletion(state, callback, payload){
      activemqmessage = " deleted " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('activealertgroup') 
+     callback.emitChange('incidentgroup') 
      callback.emitChange('eventgroup') 
+     callback.emitChange('alertgroupnotification')
     }
     else if (state == 'intel'){
 
@@ -234,15 +270,23 @@ function deletion(state, callback, payload){
      activemqmessage = " deleted " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
-     callback.emitChange('incidentgroup') 
-     callback.emitChange(payload.action.activemq.data.id)
+     callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('incidentgroup')
+     callback.emitChange('activealertgroup') 
+     callback.emitChange('eventgroup') 
+    callback.emitChange('alertgroupnotification')
+    callback.emitChange(payload.action.activemq.data.id)
    }
    else if(state == 'alertgroup'){
      activemqwho = payload.action.activemq.data.who
      activemqmessage = " deleted " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('incidentgroup')
+     callback.emitChange('eventgroup') 
      callback.emitChange('activealertgroup') 
+     callback.emitChange('alertgroupnotification')
      callback.emitChange(payload.action.activemq.data.id)
    }
 }
@@ -1259,21 +1303,21 @@ var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
 var Store               = require('../flux/store.jsx');
 var AppActions          = require('../flux/actions.jsx');
-var AddFlair            = require('../components/add_flair.jsx');
-var Flair               = require('../modal/flair_modal.jsx');
+//var AddFlair            = require('../components/add_flair.jsx');
+//var Flair               = require('../modal/flair_modal.jsx');
 
 var SelectedEntry = React.createClass({displayName: "SelectedEntry",
     getInitialState: function() {
         return {
-            showEntryData:false,
-            showEntityData:false,
-            entryData:'',
-            entityData:'',
+            showEntryData:this.props.showEntryData,
+            showEntityData:this.props.showEntityData,
+            entryData:this.props.entryData,
+            entityData:this.props.entityData,
             key:this.props.id,
             flairToolbar:false,
         }
     },
-    componentDidMount: function() {
+    /*componentDidMount: function() {
         this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
@@ -1296,16 +1340,16 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated);
     },
-    //componentWillReceiveProps: function() {
-        //this.updated();
-    //},
+    componentWillReceiveProps: function() {
+        this.updated();
+    },
     updated: function () {
         this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
         }.bind(this));
         console.log('Ran update');
-    },
+    },*/
     flairToolbarToggle: function(id) {
         if (this.state.flairToolbar == false) {
             this.setState({flairToolbar:true,entityid:id})
@@ -1314,7 +1358,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         }
     },
     render: function() { 
-        var data = this.state.entryData;
+        var data = this.props.entryData;
         var type = this.props.type;
         var id = this.props.id;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
@@ -1323,7 +1367,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         }
         return (
             React.createElement("div", {className: divClass}, 
-                this.state.showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, updated: this.updated}) : null, 
+                this.props.showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, updated: this.updated}) : null, 
                 this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid}) : null
             )       
         );
@@ -1523,7 +1567,7 @@ var EntryData = React.createClass({displayName: "EntryData",
 
 module.exports = SelectedEntry
 
-},{"../components/add_flair.jsx":6,"../components/permission.jsx":8,"../components/summary.jsx":11,"../components/task.jsx":13,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/flair_modal.jsx":24,"react":1855,"react-bootstrap/lib/Button.js":774,"react-bootstrap/lib/DropdownButton.js":780,"react-bootstrap/lib/MenuItem.js":784,"react-bootstrap/lib/SplitButton.js":791,"react-frame":996,"react-time":1665}],16:[function(require,module,exports){
+},{"../components/permission.jsx":8,"../components/summary.jsx":11,"../components/task.jsx":13,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"react":1855,"react-bootstrap/lib/Button.js":774,"react-bootstrap/lib/DropdownButton.js":780,"react-bootstrap/lib/MenuItem.js":784,"react-bootstrap/lib/SplitButton.js":791,"react-frame":996,"react-time":1665}],16:[function(require,module,exports){
 var React                   = require('react');
 var ReactTime               = require('react-time');
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
@@ -1547,7 +1591,10 @@ var Source                  = require('../components/source.jsx');
 var Crouton                 = require('react-crouton');
 var Store                   = require('../flux/store.jsx');
 var AppActions              = require('../flux/actions.jsx');
-    
+var Listener                = require('../activemq/listener.jsx');    
+var Notification            = require('react-notification-system');
+var AddFlair                = require('../components/add_flair.jsx');
+var Flair                   = require('../modal/flair_modal.jsx');
 
 var SelectedHeader = React.createClass({displayName: "SelectedHeader",
     getInitialState: function() {
@@ -1569,6 +1616,13 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             showFlash:false,
             key:this.props.id,
             entityid:null,
+            showEntryData:false,
+            entryData:'',
+            showEntityData:false,
+            entityData:'',
+            entityid:null,
+            flairToolbar:false,        
+            refreshing:false,
         }
     },
     componentDidMount: function() {
@@ -1583,34 +1637,116 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
             var tagResult = result.records;
             this.setState({showTag:true, tagData:tagResult});
+        }.bind(this));
+        this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
+            var entryResult = result.records;
+            this.setState({showEntryData:true, entryData:entryResult})
+        }.bind(this));
+        this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
+            var entityResult = result.records;
+            this.setState({showEntityData:true, entityData:entityResult})
+            var waitForEntry = {
+                waitEntry: function() {
+                    if(this.state.showEntryData == false){
+                        setTimeout(waitForEntry.waitEntry,50);
+                    } else {
+                        console.log('entries are done')
+                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                    }
+                }.bind(this)
+            };
+            waitForEntry.waitEntry();
         }.bind(this)); 
         console.log('Ran componentDidMount');
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated);
+        Listener.activeMq(this.state.key,this.updated);
+        Listener.activeMq('selectedHeaderEntry',this.notification)
     },
-    componentWillReceiveProps: function() {
+    /*componentWillReceiveProps: function() {
         this.updated();    
-    },
-    updated: function(_type,_message) {
-        this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
-            var sourceResult = result.records;
-            this.setState({showSource:true, sourceData:sourceResult})
-        }.bind(this));
-        this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
-            var eventResult = result;
-            this.setState({showEventData:true, headerData:eventResult})
-        }.bind(this));
-        this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
-            var tagResult = result.records;
-            this.setState({showTag:true, tagData:tagResult});
-        }.bind(this));
+    },*/
+    updated: function(_type,_message) { 
+        this.setState({refreshing:true});
+        setTimeout(function(){
+            this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
+                var sourceResult = result.records;
+                this.setState({showSource:true, sourceData:sourceResult})
+                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                    this.setState({refreshing:false});
+                }
+            }.bind(this));
+            this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
+                var eventResult = result;
+                this.setState({showEventData:true, headerData:eventResult})
+                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                    this.setState({refreshing:false});
+                }
+            }.bind(this));
+            this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
+                var tagResult = result.records;
+                this.setState({showTag:true, tagData:tagResult});
+                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                    this.setState({refreshing:false});
+                }            
+            }.bind(this));
+            this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
+                var entryResult = result.records;
+                this.setState({showEntryData:true, entryData:entryResult})
+                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                    this.setState({refreshing:false});
+                }
+            }.bind(this));
+            this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
+                var entityResult = result.records;
+                this.setState({showEntityData:true, entityData:entityResult})
+                var waitForEntry = {
+                    waitEntry: function() {
+                        if(this.state.showEntryData == false){
+                            setTimeout(waitForEntry.waitEntry,50);
+                        } else {
+                            console.log('entries are done')
+                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                                this.setState({refreshing:false});
+                            }
+                        }
+                    }.bind(this)
+                };
+                waitForEntry.waitEntry();
+            }.bind(this));
+        }.bind(this),2000)
         if (_type!= undefined && _message != undefined) {
             this.setState({notificationMessage:_message, notificationType:_type, showFlash:true});
         } else {
             this.setState({notificationType:null,notificationMessage:null,showFlash:false}); 
         }
+         
         console.log('Ran update')  
     }, 
+    notification: function() {
+        var notification = this.refs.notificationSystem
+        if(activemqwho != "" && notification != undefined && activemqtype != 'alert' && activemqwho != 'api'){
+            notification.addNotification({
+                message: activemqwho + activemqmessage + activemqid,
+                level: 'info',
+                autoDismiss: 5,
+                action: {
+                    label: 'View',
+                    callback: function(){
+                        window.open('#/' + activemqtype + '/' + activemqid)
+                    }
+                }
+            })
+        }
+    },
+    flairToolbarToggle: function(id){
+        if (this.state.flairToolbar == false) {
+            this.setState({flairToolbar:true,entityid:id})
+        } else {
+            this.setState({flairToolbar:false})
+        }
+    },
     viewedbyfunc: function(headerData) {
         var viewedbyarr = [];
         for (prop in headerData.view_history) {
@@ -1680,7 +1816,8 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 React.createElement("div", null, 
                 React.createElement("div", {id: "NewEventInfo", className: "entry-header-info-null", style: {width:'100%'}}, 
                     React.createElement("div", {className: "details-subject", style: {display: 'inline-flex',paddingLeft:'5px'}}, 
-                        this.state.showEventData ? React.createElement(EntryDataSubject, {data: this.state.headerData.subject, type: subjectType, id: this.props.id, updated: this.updated}): null
+                        this.state.showEventData ? React.createElement(EntryDataSubject, {data: this.state.headerData.subject, type: subjectType, id: this.props.id, updated: this.updated}): null, 
+                        this.state.refreshing ? React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'info'}, React.createElement("span", null, "Refreshing...")) :null
                     ), 
                     React.createElement("div", {className: "details-table toolbar"}, 
                         React.createElement("table", null, 
@@ -1701,7 +1838,10 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                         )
                     )
                 ), 
-                this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
+                React.createElement(Notification, {ref: "notificationSystem"}), 
+                
+                this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid}) : null, 
+                   
                 this.state.historyToolbar ? React.createElement(History, {historyToggle: this.historyToggle, id: id, type: type}) : null, 
                 this.state.entitiesToolbar ? React.createElement(Entities, {entitiesToggle: this.entitiesToggle, id: id, type: type}) : null, 
                 this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: id, type: type, permissionData: this.state.headerData, permissionsToggle: this.permissionsToggle, updated: this.updated}) : null, 
@@ -1710,7 +1850,8 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 type != 'alertgroup' ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, historyToggle: this.historyToggle, deleteToggle: this.deleteToggle, updated: this.updated}) :null
                 )
                 ), 
-                type != 'alertgroup' ? React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated}) : null
+                this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
+                type != 'alertgroup' ? React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData}) : null
             )
         )
     }
@@ -1822,7 +1963,7 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
 
 module.exports = SelectedHeader;
 
-},{"../components/permission.jsx":8,"../components/source.jsx":10,"../components/tag.jsx":12,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/entities.jsx":23,"../modal/history.jsx":25,"../modal/owner.jsx":26,"./selected_entry.jsx":15,"./selected_header_options.jsx":17,"react":1855,"react-bootstrap/lib/Button":774,"react-bootstrap/lib/ButtonToolbar":776,"react-bootstrap/lib/OverlayTrigger":788,"react-bootstrap/lib/Popover":789,"react-crouton":815,"react-debounce-input":979,"react-overlays/lib/Affix.js":1024,"react-overlays/lib/AutoAffix.js":1025,"react-sticky":1282,"react-time":1665}],17:[function(require,module,exports){
+},{"../activemq/listener.jsx":4,"../components/add_flair.jsx":6,"../components/permission.jsx":8,"../components/source.jsx":10,"../components/tag.jsx":12,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/entities.jsx":23,"../modal/flair_modal.jsx":24,"../modal/history.jsx":25,"../modal/owner.jsx":26,"./selected_entry.jsx":15,"./selected_header_options.jsx":17,"react":1855,"react-bootstrap/lib/Button":774,"react-bootstrap/lib/ButtonToolbar":776,"react-bootstrap/lib/OverlayTrigger":788,"react-bootstrap/lib/Popover":789,"react-crouton":815,"react-debounce-input":979,"react-notification-system":1020,"react-overlays/lib/Affix.js":1024,"react-overlays/lib/AutoAffix.js":1025,"react-sticky":1282,"react-time":1665}],17:[function(require,module,exports){
 var React           = require('react');
 var ButtonGroup     = require('react-bootstrap/lib/ButtonGroup.js');
 var Button          = require('react-bootstrap/lib/Button.js');
@@ -3267,11 +3408,29 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	setTimeout(function() { this.setState({columns: newarray})}.bind(this), 800)
 	}
 	}.bind(this));
-
     Listener.activeMq(this.state.key, this.reloadactive)
+    Listener.activeMq('alertgroupnotification', this.notification)
     setTimeout(function() {Store.storeKey(this.state.key)}.bind(this), 10)
 	setTimeout(function() {Store.addChangeListener(this.reloadentry)}.bind(this),10)
 	},
+   notification: function(){
+    var notification = this.refs.notificationSystem
+    if(activemqwho != "" && notification != undefined && activemqtype != 'alert' && activemqwho != 'api'){
+    notification.addNotification({
+        message: activemqwho + activemqmessage + activemqid,
+        level: 'info',
+        autoDismiss: 5,
+        action: {
+            label: 'View',
+            callback: function(){
+            window.open('#/' + activemqtype + '/' + activemqid) 
+            }
+        }
+        })
+      }
+
+
+   },
   componentWillReceiveProps: function(){
     var project = getColumns(this.state.key)
 	project.success(function(realData){
@@ -3365,19 +3524,6 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
     supervalue.push(this.state.key)
     this.reloadentry()
     var notification = this.refs.notificationSystem
-    if(activemqwho != "" && notification != undefined && activemqtype != 'alert' && activemqwho != 'api'){
-    notification.addNotification({
-        message: activemqwho + activemqmessage + activemqid,
-        level: 'info',
-        autoDismiss: 5,
-        action: {
-            label: 'View',
-            callback: function(){
-            window.open('#/' + activemqtype + '/' + activemqid) 
-            }
-        }
-        })
-      }
     },
    flairOn: function(){
 	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
