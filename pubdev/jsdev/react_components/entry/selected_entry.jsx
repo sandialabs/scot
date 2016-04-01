@@ -48,19 +48,7 @@ var SelectedEntry = React.createClass({
                 waitForEntry.waitEntry();
             }.bind(this));
         }
-        //Store.storeKey(this.state.key);
-        //Store.addChangeListener(this.updated);
-    },
-    /*componentWillReceiveProps: function() {
-        this.updated();
-    },
-    updated: function () {
-        this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
-            var entryResult = result.records;
-            this.setState({showEntryData:true, entryData:entryResult})
-        }.bind(this));
-        console.log('Ran update');
-    },*/
+    }, 
     flairToolbarToggle: function(id) {
         if (this.state.flairToolbar == false) {
             this.setState({flairToolbar:true,entityid:id})
@@ -222,31 +210,11 @@ var EntryData = React.createClass({
             entityid:null,
             count:0,
         }
-    },
-    /*componentDidUpdate: function() {
-        var id = this.props.id;
-        if (this.state.count <= 1) {
-            setTimeout(function() {
-                document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
-                    var newheight; 
-                    newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-                    newheight = newheight + 'px';
-                    this.setState({height:newheight});
-                    var newcount = this.state.count;
-                    newcount += 1;
-                    this.setState({count:newcount});
-                }.bind(this))
-            }.bind(this)); 
-        };
-        //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
-    },
-    componentDidMount: function () {
-        this.setState({height:'2px'}); 
-        //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
-    },*/ 
+    }, 
     onLoad: function() {
-        if (this.state.count < 1 ) {
-            setTimeout(function() {
+        if (this.props.type != 'alert' && this.props.type !='entity') {
+            if (this.state.count < 1 ) {
+                setTimeout(function() {
                     document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
                         var newheight; 
                         newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
@@ -258,6 +226,9 @@ var EntryData = React.createClass({
                     }.bind(this))
                 }.bind(this)); 
             }
+        } else {
+            this.setState({height:'200px'})
+        }
     },
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;

@@ -1339,19 +1339,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 waitForEntry.waitEntry();
             }.bind(this));
         }
-        //Store.storeKey(this.state.key);
-        //Store.addChangeListener(this.updated);
-    },
-    /*componentWillReceiveProps: function() {
-        this.updated();
-    },
-    updated: function () {
-        this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
-            var entryResult = result.records;
-            this.setState({showEntryData:true, entryData:entryResult})
-        }.bind(this));
-        console.log('Ran update');
-    },*/
+    }, 
     flairToolbarToggle: function(id) {
         if (this.state.flairToolbar == false) {
             this.setState({flairToolbar:true,entityid:id})
@@ -1513,31 +1501,11 @@ var EntryData = React.createClass({displayName: "EntryData",
             entityid:null,
             count:0,
         }
-    },
-    /*componentDidUpdate: function() {
-        var id = this.props.id;
-        if (this.state.count <= 1) {
-            setTimeout(function() {
-                document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
-                    var newheight; 
-                    newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-                    newheight = newheight + 'px';
-                    this.setState({height:newheight});
-                    var newcount = this.state.count;
-                    newcount += 1;
-                    this.setState({count:newcount});
-                }.bind(this))
-            }.bind(this)); 
-        };
-        //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
-    },
-    componentDidMount: function () {
-        this.setState({height:'2px'}); 
-        //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
-    },*/ 
+    }, 
     onLoad: function() {
-        if (this.state.count < 1 ) {
-            setTimeout(function() {
+        if (this.props.type != 'alert' && this.props.type !='entity') {
+            if (this.state.count < 1 ) {
+                setTimeout(function() {
                     document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
                         var newheight; 
                         newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
@@ -1549,6 +1517,9 @@ var EntryData = React.createClass({displayName: "EntryData",
                     }.bind(this))
                 }.bind(this)); 
             }
+        } else {
+            this.setState({height:'200px'})
+        }
     },
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
@@ -1600,7 +1571,7 @@ var Listener                = require('../activemq/listener.jsx');
 var Notification            = require('react-notification-system');
 var AddFlair                = require('../components/add_flair.jsx');
 var Flair                   = require('../modal/flair_modal.jsx');
-
+var ESearch                 = require('../components/esearch.jsx');
 var SelectedHeader = React.createClass({displayName: "SelectedHeader",
     getInitialState: function() {
         return {
@@ -1834,7 +1805,6 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         var notificationMessage = this.state.notificationMessage;
         return (
             React.createElement("div", null, 
-            React.createElement(AutoAffix, null, 
                 React.createElement("div", null, 
                 React.createElement("div", {id: "NewEventInfo", className: "entry-header-info-null", style: {width:'100%'}}, 
                     React.createElement("div", {className: "details-subject", style: {display: 'inline-flex',paddingLeft:'5px'}}, 
@@ -1871,7 +1841,6 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: type, targetid: id, id: id, addedentry: this.entryToggle, updated: this.updated}) : null, 
                 this.state.deleteToolbar ? React.createElement(DeleteEvent, {subjectType: subjectType, type: type, id: id, deleteToggle: this.deleteToggle, updated: this.updated}) :null, 
                 type != 'alertgroup' ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, historyToggle: this.historyToggle, deleteToggle: this.deleteToggle, updated: this.updated}) :null
-                )
                 ), 
                 this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
                 type != 'alertgroup' ? React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData}) : null
@@ -1986,7 +1955,7 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
 
 module.exports = SelectedHeader;
 
-},{"../activemq/listener.jsx":4,"../components/add_flair.jsx":6,"../components/permission.jsx":8,"../components/source.jsx":10,"../components/tag.jsx":12,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/entities.jsx":23,"../modal/flair_modal.jsx":24,"../modal/history.jsx":25,"../modal/owner.jsx":26,"./selected_entry.jsx":15,"./selected_header_options.jsx":17,"react":1855,"react-bootstrap/lib/Button":774,"react-bootstrap/lib/ButtonToolbar":776,"react-bootstrap/lib/OverlayTrigger":788,"react-bootstrap/lib/Popover":789,"react-crouton":815,"react-debounce-input":979,"react-notification-system":1020,"react-overlays/lib/Affix.js":1024,"react-overlays/lib/AutoAffix.js":1025,"react-sticky":1282,"react-time":1665}],17:[function(require,module,exports){
+},{"../activemq/listener.jsx":4,"../components/add_flair.jsx":6,"../components/esearch.jsx":7,"../components/permission.jsx":8,"../components/source.jsx":10,"../components/tag.jsx":12,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/entities.jsx":23,"../modal/flair_modal.jsx":24,"../modal/history.jsx":25,"../modal/owner.jsx":26,"./selected_entry.jsx":15,"./selected_header_options.jsx":17,"react":1855,"react-bootstrap/lib/Button":774,"react-bootstrap/lib/ButtonToolbar":776,"react-bootstrap/lib/OverlayTrigger":788,"react-bootstrap/lib/Popover":789,"react-crouton":815,"react-debounce-input":979,"react-notification-system":1020,"react-overlays/lib/Affix.js":1024,"react-overlays/lib/AutoAffix.js":1025,"react-sticky":1282,"react-time":1665}],17:[function(require,module,exports){
 var React           = require('react');
 var ButtonGroup     = require('react-bootstrap/lib/ButtonGroup.js');
 var Button          = require('react-bootstrap/lib/Button.js');
@@ -2812,12 +2781,13 @@ var EntityBody = React.createClass({displayName: "EntityBody",
     },  
     render: function() {
         var type = 'entity';
+        var SelectedEntry = require('../entry/selected_entry.jsx');
         return (
             React.createElement(Tabs, {defaultActiveKey: 1}, 
                 React.createElement(Tab, {eventKey: 1, title: "References"}, React.createElement(EntityEventReferences, {entityid: this.props.entityid})), 
                 React.createElement(Tab, {eventKey: 2, title: "SIDD Data"}, "SIDD Data Table"), 
                 React.createElement(Tab, {eventKey: 3, title: "Geo Location"}, "Geo Location Table"), 
-                React.createElement(Tab, {eventKey: 4, title: "Entry"}, this.state.EntryData)
+                React.createElement(Tab, {eventKey: 4, title: "Entry"}, React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid}))
             )
         )
     }
