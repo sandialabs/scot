@@ -25,7 +25,7 @@ var Listener                = require('../activemq/listener.jsx');
 var Notification            = require('react-notification-system');
 var AddFlair                = require('../components/add_flair.jsx');
 var Flair                   = require('../modal/flair_modal.jsx');
-
+var ESearch                 = require('../components/esearch.jsx');
 var SelectedHeader = React.createClass({
     getInitialState: function() {
         return {
@@ -259,7 +259,6 @@ var SelectedHeader = React.createClass({
         var notificationMessage = this.state.notificationMessage;
         return (
             <div>
-            <AutoAffix>
                 <div>
                 <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%'}}>
                     <div className='details-subject' style={{display: 'inline-flex',paddingLeft:'5px'}}>
@@ -297,7 +296,6 @@ var SelectedHeader = React.createClass({
                 {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
                 {type != 'alertgroup' ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
                 </div>
-                </AutoAffix>
                 {this.state.showFlash == true ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} /> : null}
                 {type != 'alertgroup' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} /> : null}
             </div>
