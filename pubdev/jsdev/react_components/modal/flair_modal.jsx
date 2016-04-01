@@ -79,18 +79,17 @@ var EntityBody = React.createClass({
             loading:"Loading Entries",
             EntryData:null,
         }
-    },
-    componentDidMount: function() {
-        //this.setState({EntryData:<SelectedEntry type={'entity'} id={this.props.entityid}/>})
-    },  
+    }, 
     render: function() {
         var type = 'entity';
+        //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
+        var SelectedEntry = require('../entry/selected_entry.jsx');
         return (
             <Tabs defaultActiveKey={1}>
                 <Tab eventKey={1} title="References"><EntityEventReferences entityid={this.props.entityid}/></Tab>
                 <Tab eventKey={2} title="SIDD Data">SIDD Data Table</Tab>
                 <Tab eventKey={3} title="Geo Location">Geo Location Table</Tab>
-                <Tab eventKey={4} title="Entry">{this.state.EntryData}</Tab>
+                <Tab eventKey={4} title="Entry"><SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
             </Tabs>
         )
     }
