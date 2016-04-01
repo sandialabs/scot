@@ -127,6 +127,7 @@ $t  ->delete_ok("/scot/api/v2/event/$event_3")
     ->status_is(200)
     ->json_is('/status' => 'ok');
 
+sleep 1;
 
 $t  ->post_ok('/scot/api/v2/entry'    => json => {
         body        => "The fifth symphony",
@@ -140,6 +141,12 @@ $t  ->post_ok('/scot/api/v2/entry'    => json => {
     ->json_is('/status' => 'ok');
 
 my $entry2  = $t->tx->res->json->{id};
+
+$t  ->get_ok("/scot/api/v2/event/$event_id")
+    ->status_is(200);
+my $updatedbyentry = $t->tx->res->json->{updated};
+
+ok($updatedbyentry > $orig_updated, "Updated was updated");
 
 $t  ->get_ok("/scot/api/v2/event/$event_id/entry")
     ->status_is(200)
