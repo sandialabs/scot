@@ -57,7 +57,7 @@ var EntitiesData = React.createClass({
         var obj = originalobj.entities;
         for (var prop in data) {
             var type = data[prop].type;
-            var value = data[prop].value;
+            var value = prop;
             if (obj.hasOwnProperty(type)) { 
                 obj[type].push(value); 
             } else { 
