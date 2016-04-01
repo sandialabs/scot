@@ -12,8 +12,8 @@ var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
 var Store               = require('../flux/store.jsx');
 var AppActions          = require('../flux/actions.jsx');
-//var AddFlair            = require('../components/add_flair.jsx');
-//var Flair               = require('../modal/flair_modal.jsx');
+var AddFlair            = require('../components/add_flair.jsx');
+var Flair               = require('../modal/flair_modal.jsx');
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
@@ -26,30 +26,32 @@ var SelectedEntry = React.createClass({
             flairToolbar:false,
         }
     },
-    /*componentDidMount: function() {
-        this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
-            var entryResult = result.records;
-            this.setState({showEntryData:true, entryData:entryResult})
-        }.bind(this));
-        this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
-            var entityResult = result.records;
-            this.setState({showEntityData:true, entityData:entityResult})
-            var waitForEntry = {
-                waitEntry: function() {
-                    if(this.state.showEntryData == false){
-                        setTimeout(waitForEntry.waitEntry,50);
-                    } else {
-                        console.log('entries are done')   
-                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
-                    }
-                }.bind(this)
-            };
-            waitForEntry.waitEntry();
-        }.bind(this));
-        Store.storeKey(this.state.key);
-        Store.addChangeListener(this.updated);
+    componentDidMount: function() {
+        if (this.props.type == 'alert' || this.props.type == 'entity') {
+            this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
+                var entryResult = result.records;
+                this.setState({showEntryData:true, entryData:entryResult})
+            }.bind(this));
+            this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
+                var entityResult = result.records;
+                this.setState({showEntityData:true, entityData:entityResult})
+                var waitForEntry = {
+                    waitEntry: function() {
+                        if(this.state.showEntryData == false){
+                            setTimeout(waitForEntry.waitEntry,50);
+                        } else {
+                            console.log('entries are done')   
+                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                        }
+                    }.bind(this)
+                };
+                waitForEntry.waitEntry();
+            }.bind(this));
+        }
+        //Store.storeKey(this.state.key);
+        //Store.addChangeListener(this.updated);
     },
-    componentWillReceiveProps: function() {
+    /*componentWillReceiveProps: function() {
         this.updated();
     },
     updated: function () {
@@ -70,13 +72,16 @@ var SelectedEntry = React.createClass({
         var data = this.props.entryData;
         var type = this.props.type;
         var id = this.props.id;
+        var showEntryData = this.props.showEntryData;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
         if (type =='alert' || type == 'entity') {
             divClass = 'row-fluid entry-wrapper'
+            data = this.state.entryData;
+            showEntryData = this.state.showEntryData;
         }
         return (
             <div className={divClass}> 
-                {this.props.showEntryData ? <EntryIterator data={data} type={type} id={id} updated={this.updated}  /> : null} 
+                {showEntryData ? <EntryIterator data={data} type={type} id={id} updated={this.updated}  /> : null} 
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid}/> : null}
             </div>       
         );

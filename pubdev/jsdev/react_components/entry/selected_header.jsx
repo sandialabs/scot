@@ -53,24 +53,38 @@ var SelectedHeader = React.createClass({
             entityid:null,
             flairToolbar:false,        
             refreshing:false,
+            loading: false,
         }
     },
     componentDidMount: function() {
+        this.setState({loading:true});
         this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
             var sourceResult = result.records;
             this.setState({showSource:true, sourceData:sourceResult})
+            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({loading:false});        
+            }        
         }.bind(this));
         this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
             var eventResult = result;
             this.setState({showEventData:true, headerData:eventResult})
+            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({loading:false});        
+            }
         }.bind(this));
         this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
             var tagResult = result.records;
             this.setState({showTag:true, tagData:tagResult});
+            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({loading:false});
+            }        
         }.bind(this));
         this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
+            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({loading:false});
+            }        
         }.bind(this));
         this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
             var entityResult = result.records;
@@ -82,6 +96,9 @@ var SelectedHeader = React.createClass({
                     } else {
                         console.log('entries are done')
                         setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                        if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                            this.setState({loading:false});        
+                        }
                     }
                 }.bind(this)
             };
@@ -248,6 +265,7 @@ var SelectedHeader = React.createClass({
                     <div className='details-subject' style={{display: 'inline-flex',paddingLeft:'5px'}}>
                         {this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}
                         {this.state.refreshing ? <Button bsSize={'xsmall'} bsStyle={'info'}><span>Refreshing...</span></Button> :null }
+                        {this.state.loading ? <Button bsSize={'xsmall'} bsStyle={'info'}><span>Loading...</span></Button> :null}    
                     </div> 
                     <div className='details-table toolbar'>
                         <table>
