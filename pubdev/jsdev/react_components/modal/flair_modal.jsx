@@ -81,7 +81,7 @@ var EntityBody = React.createClass({
         }
     },
     componentDidMount: function() {
-        this.setState({EntryData:<SelectedEntry type={'entity'} id={this.props.entityid}/>})
+        //this.setState({EntryData:<SelectedEntry type={'entity'} id={this.props.entityid}/>})
     },  
     render: function() {
         var type = 'entity';
