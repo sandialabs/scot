@@ -61,7 +61,7 @@ var DeleteEntry = React.createClass({
     toggle: function() {
         $.ajax({
            type: 'delete',
-           url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id + '/entry/' + this.props.entryid,
+           url: 'scot/api/v2/entry/' + this.props.entryid,
            success: function(data) {
                console.log('success: ' + data);
                var key = this.state.key;
