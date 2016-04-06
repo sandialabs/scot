@@ -18,47 +18,37 @@ var Flair               = require('../modal/flair_modal.jsx');
 var SelectedEntry = React.createClass({
     getInitialState: function() {
         return {
-            showEntryData:false,
-            showEntityData:false,
-            entryData:'',
-            entityData:'',
+            showEntryData:this.props.showEntryData,
+            showEntityData:this.props.showEntityData,
+            entryData:this.props.entryData,
+            entityData:this.props.entityData,
             key:this.props.id,
             flairToolbar:false,
         }
     },
     componentDidMount: function() {
-        this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
-            var entryResult = result.records;
-            this.setState({showEntryData:true, entryData:entryResult})
-        }.bind(this));
-        this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
-            var entityResult = result.records;
-            this.setState({showEntityData:true, entityData:entityResult})
-            var waitForEntry = {
-                waitEntry: function() {
-                    if(this.state.showEntryData == false){
-                        setTimeout(waitForEntry.waitEntry,50);
-                    } else {
-                        console.log('entries are done')   
-                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
-                    }
-                }.bind(this)
-            };
-            waitForEntry.waitEntry();
-        }.bind(this));
-        Store.storeKey(this.state.key);
-        Store.addChangeListener(this.updated);
-    },
-    //componentWillReceiveProps: function() {
-        //this.updated();
-    //},
-    updated: function () {
-        this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
-            var entryResult = result.records;
-            this.setState({showEntryData:true, entryData:entryResult})
-        }.bind(this));
-        console.log('Ran update');
-    },
+        if (this.props.type == 'alert' || this.props.type == 'entity') {
+            this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
+                var entryResult = result.records;
+                this.setState({showEntryData:true, entryData:entryResult})
+            }.bind(this));
+            this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
+                var entityResult = result.records;
+                this.setState({showEntityData:true, entityData:entityResult})
+                var waitForEntry = {
+                    waitEntry: function() {
+                        if(this.state.showEntryData == false){
+                            setTimeout(waitForEntry.waitEntry,50);
+                        } else {
+                            console.log('entries are done')   
+                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                        }
+                    }.bind(this)
+                };
+                waitForEntry.waitEntry();
+            }.bind(this));
+        }
+    }, 
     flairToolbarToggle: function(id) {
         if (this.state.flairToolbar == false) {
             this.setState({flairToolbar:true,entityid:id})
@@ -67,16 +57,19 @@ var SelectedEntry = React.createClass({
         }
     },
     render: function() { 
-        var data = this.state.entryData;
+        var data = this.props.entryData;
         var type = this.props.type;
         var id = this.props.id;
+        var showEntryData = this.props.showEntryData;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
         if (type =='alert' || type == 'entity') {
             divClass = 'row-fluid entry-wrapper'
+            data = this.state.entryData;
+            showEntryData = this.state.showEntryData;
         }
         return (
             <div className={divClass}> 
-                {this.state.showEntryData ? <EntryIterator data={data} type={type} id={id} updated={this.updated}  /> : null} 
+                {showEntryData ? <EntryIterator data={data} type={type} id={id} updated={this.updated}  /> : null} 
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid}/> : null}
             </div>       
         );
@@ -188,9 +181,9 @@ var EntryParent = React.createClass({
                     <span className="anchor" id={"/"+ type + '/' + id + '/' + items.id}/>
                     <div className={innerClassName}>
                         <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/"+ type + '/' + id + '/' + items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
-                            <span className='pull-right' style={{display:'inline-flex'}}>
+                            <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
                                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} updated={updated} /> : null}
-                                <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} > 
+                                <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} updated={updated} /></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} updated={updated}/></MenuItem>
@@ -217,31 +210,11 @@ var EntryData = React.createClass({
             entityid:null,
             count:0,
         }
-    },
-    /*componentDidUpdate: function() {
-        var id = this.props.id;
-        if (this.state.count <= 1) {
-            setTimeout(function() {
-                document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
-                    var newheight; 
-                    newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-                    newheight = newheight + 'px';
-                    this.setState({height:newheight});
-                    var newcount = this.state.count;
-                    newcount += 1;
-                    this.setState({count:newcount});
-                }.bind(this))
-            }.bind(this)); 
-        };
-        //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
-    },
-    componentDidMount: function () {
-        this.setState({height:'2px'}); 
-        //document.getElementById('iframe_'+this.props.id).contentWindow.location.reload(true);
-    },*/ 
+    }, 
     onLoad: function() {
-        if (this.state.count < 1 ) {
-            setTimeout(function() {
+        if (this.props.type != 'alert' && this.props.type !='entity') {
+            if (this.state.count < 1 ) {
+                setTimeout(function() {
                     document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
                         var newheight; 
                         newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
@@ -253,6 +226,9 @@ var EntryData = React.createClass({
                     }.bind(this))
                 }.bind(this)); 
             }
+        } else {
+            this.setState({height:'200px'})
+        }
     },
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;

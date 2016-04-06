@@ -132,6 +132,14 @@ sub create {
         });
     }
 
+    if ( ref($object) eq "Scot::Model::Entry" ) {
+        my $target_id   = $object->target->{id};
+        my $target_type = $object->target->{type};
+        my $col         = $mongo->collection(ucfirst($target_type));
+        my $obj         = $col->find_iid($target_id);
+        $obj->update_set(updated => $env->now);
+    }
+
     $self->audit("create_thing", {
         thing   => $self->get_object_collection($object),
         id      => $object->id,
