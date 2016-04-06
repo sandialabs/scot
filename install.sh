@@ -207,11 +207,24 @@ enabled=1
 EOF
         fi
 
+        if grep --quiet eleastic /etc/yum.repos.d/elasticsearch.repo; then
+            echo "= elastic search stanza present"
+        else 
+            echo "+ adding elastic search to yum repos"
+            cat <<- EOF > /etc/yum.repos.d/elasticsearch.repo
+[elasticsearch-2.x]
+name=Elasticsearch repository for 2.x packages
+baseurl=https://packages.elastic.co/elasticsearch/2.x/centos
+gpgcheck=1
+gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+EOF
+        fi
+
         for pkg in `cat $DEVDIR/etc/install/rpms_list`; do
             echo "+ package = $pkg";
             yum install $pkg -y
         done
-
 
         #
         # get cpanm going for later use
@@ -247,6 +260,14 @@ EOF
             add-apt-repository -y ppa:maxmind/ppa
         fi
 
+        if [[ ! -e /etc/apt/scources.list.d/elasticsearch-2.x.list ]]; then
+            wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+
+            echo "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-2.x.list
+        fi
+
+
+
         if [ "$REFRESHAPT" == "yes" ]; then
             echo "= updating apt repository"
             apt-get update > /dev/null
@@ -266,6 +287,7 @@ EOF
         done
         apt-get -qq install $pkgs > /dev/null
     fi
+
 
     ##
     ## ActiveMQ install 
@@ -656,6 +678,11 @@ fi
 
 echo "= restarting scot"
 /etc/init.d/scot restart
+    
+#
+# add elastic search to startup
+# TODO: add other (activemq?) to start here 
+chkconfig -add elasticsearch
 
 echo "----"
 echo "----"
