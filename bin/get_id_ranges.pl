@@ -5,6 +5,7 @@ use Parallel::ForkManager;
 use Scot::Env;
 use Scot::App::Migrate;
 use Getopt::Long qw(GetOptions);
+use Data::Dumper;
 
 use v5.18;
 

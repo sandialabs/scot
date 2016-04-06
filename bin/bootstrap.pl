@@ -29,13 +29,105 @@ correct this at the end.
 Let's begin...
 
 ##
+## Authentication Mode
+##
+
+SCOT can utilize 4 different authentication Modes.  Please See Docs
+for additional details, but your choices are Remoteuser, LDAP, Local, 
+or Testing.  (NOTE: Testing really means NO authentication!)
+
+EOF
+
+prompt -menu => {
+    "Remoteuser"    => "Remoteuser",
+    "LDAP"          => "Ldap",
+    "Local"         => "Local",
+    "Testing"       => "Testing",
+};
+
+my $auth_type   = $_;
+
+
+push @configs, {
+    id      => $confindex++,
+    module  => 'Scot::Env',
+    item    => {
+        authtype  => $auth_type,
+    },
+};
+
+print <<EOF;
+
+##
+## Default Groups
+##
+
+SCOT utilizes group based access controls.  There are times when we need
+to assign a set of default groups to access controlled items.  Please
+enter a comma seperated list of group names that you wish to be the 
+default for Read and Modify operations.  (NOTE: Best practice is to 
+include a common string say '-scot-' in all group names)
+
+Default read will be:  'wg-scot'
+Default modify wil be: 'wg-scot'
+
+EOF
+
+prompt -d => 'wg-scot', -p => 'Default READ groups > ';
+my $defread = $_;
+my @dr  = split(/,/,$defread);
+prompt -d => 'wg-scot', -p => 'Default MODIFY groups > ';
+my $defmodify = $_;
+my @dm  = split(/,/,$defmodify);
+
+push @configs, {
+    id      => $confindex++,
+    module  => 'Scot::Env',
+    item    => {
+        default_groups  => {
+            read    => \@dr,
+            modify  => \@dm,
+        }
+    },
+};
+
+EOF
+
+print <<EOF;
+
+##
+## Admin Group
+##
+
+One group needs to be designated as the Admin group.  This is effectively,
+root for SCOT.  Default is "wg-scot-admin"
+
+EOF
+
+prompt -d => 'wg-scot-admin', -p "Admin Group Name > ";
+my $admingroup = $_;
+
+push @configs, {
+    id      => $confindex++,
+    module  => 'Scot::Env',
+    item    => {
+        admin_group => $admingroup,
+    },
+};
+
+EOF
+
+print <<EOF;
+
+##
 ## ActiveMQ configuration
 ##
 
-SCOT utilizes ActiveMQ for message passing between components.  Default install of SCOT
-will install an instance of ActiveMQ on the same server of SCOT.  You may already have
-an ActiveMQ installation that you will wish to utilize, if so, enter the hostaname and
-port of where SCOT can communicate with that instance.  Otherwise accept the defaults.
+SCOT utilizes ActiveMQ for message passing between components.  Default 
+install of SCOT will install an instance of ActiveMQ on the same server 
+of SCOT.  You may already have an ActiveMQ installation that you will 
+wish to utilize, if so, enter the hostaname and port of where SCOT can 
+communicate with that instance.  Otherwise accept the defaults.
 
 Pressing enter will give you the following defaults:
 hostname    = 127.0.0.1
