@@ -51,6 +51,16 @@ sub create_link {
         when    => $when,
     });
 
+    # Should linking to something update that object's updated time
+
+    foreach my $href ($a, $b) {
+        my $col = $env->mongo->collection(ucfirst($href->{type}));
+        my $obj = $col->find_iid($href->{id});
+        if ( $obj->meta->does_role('Scot::Role::Times') ) {
+            $obj->update_set( updated => $when );
+        }
+    }
+
     return $link;
 }
 
@@ -76,6 +86,13 @@ sub link_objects {
             { id    => $b->id, type => $b->get_collection_name },
         ]
     });
+
+    foreach my $obj ($a, $b) {
+        if ( $obj->meta->does_role('Scot::Role::Times') ) {
+            $obj->update_set( updated => $when );
+        }
+    }
+
     return $link;
 }
 
