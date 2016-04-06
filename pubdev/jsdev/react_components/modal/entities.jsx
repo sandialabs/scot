@@ -15,15 +15,8 @@ const customStyles = {
 var Entities = React.createClass({
     getInitialState: function() {
         return {
-            entitiesBody:false,
-            data: ''
+            entitiesBody:true,
         }
-    },
-    componentDidMount: function() {
-    this.serverRequest = $.get('/scot/api/v2/'+ this.props.type + '/' + this.props.id + '/entity', function (result) {
-            var result = result.records;
-            this.setState({entitiesBody:true, data:result})
-        }.bind(this));
     }, 
     render: function() {
         return (
@@ -37,7 +30,7 @@ var Entities = React.createClass({
                         <h3 id="myModalLabel">List of Entities</h3>
                     </div>                        
                     <div className="modal-body" style={{height:'600px', overflowY:'auto'}}>
-                        {this.state.entitiesBody ? <EntitiesData data={this.state.data} /> :null}
+                        {this.state.entitiesBody ? <EntitiesData data={this.props.entityData} /> :null}
                     </div>
                     <div className="modal-footer">
                         <button class="btn" onClick={this.props.entitiesToggle}>Done</button>
@@ -57,7 +50,7 @@ var EntitiesData = React.createClass({
         var obj = originalobj.entities;
         for (var prop in data) {
             var type = data[prop].type;
-            var value = data[prop].value;
+            var value = prop;
             if (obj.hasOwnProperty(type)) { 
                 obj[type].push(value); 
             } else { 
@@ -66,7 +59,6 @@ var EntitiesData = React.createClass({
                 obj[type] = arr;
             } 
         }
-        console.dir(obj);
         for (var prop in obj) {
             var type = prop;
             var value = obj[prop];
@@ -103,7 +95,6 @@ var EntitiesDataHeaderIterator = React.createClass({
 var EntitiesDataValueIterator = React.createClass({
     render: function() {
         var eachValue = this.props.eachValue;
-        console.log(eachValue);
         return (
             <span>{eachValue}<br/></span>
         )
