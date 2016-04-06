@@ -30,6 +30,7 @@ has servername => (
     isa         => 'Str',
     required    => 1,
     default     => '127.0.0.1',
+    predicate   => 'has_servername',
 );
 
 has mojo    => (
@@ -38,6 +39,7 @@ has mojo    => (
     required    => 1,
     lazy        => 1,
     builder     => '_get_mojo_defaults',
+    predicate   => 'has_mojo',
 );
 
 sub _get_mojo_defaults {
@@ -52,6 +54,7 @@ has mode    => (
     isa         => 'Str',
     required    => 1,
     builder     => '_get_mode',
+    predicate   => 'has_mode',
 );
 
 sub _get_mode {
@@ -63,6 +66,7 @@ has authmode    => (
     isa         => 'Str',
     required    => 1,
     builder     => '_get_authmode',
+    predicate   => 'has_authmode',
 );
 
 sub _get_authmode {
@@ -74,6 +78,7 @@ has group_mode  => (
     isa         => 'Str',
     required    => 1,
     default     => 'ldap', # local is other option
+    predicate   => 'has_group_mode',
 );
 
 has default_owner   => (
@@ -81,7 +86,8 @@ has default_owner   => (
     isa             => 'Str',
     required        => 1,
     lazy            => 1,
-    builder         => '_get_default_owner'
+    builder         => '_get_default_owner',
+    predicate       => 'has_default_owner',
 );
 
 sub _get_default_owner {
@@ -103,7 +109,8 @@ has default_groups  => (
     isa             => 'HashRef',
     required        => 1,
     lazy            => 1,
-    builder         => '_get_default_groups'
+    builder         => '_get_default_groups',
+    predicate       => 'has_default_groups',
 );
 
 sub _get_default_groups {
@@ -127,6 +134,29 @@ sub _get_default_groups {
     }
 }
 
+has admin_group => (
+    is                  => 'rw',
+    isa                 => 'Str',
+    required            => 1,
+    lazy                => 1,
+    builder             => '_get_admin_group',
+    predicate           => 'has_admin_group',
+);
+
+sub _get_admin_group {
+    my $self    = shift;
+    my $mongo   = $self->mongo;
+    my $item    = $mongo->collection('Config')->find_one({
+        module    => "admin_group",
+    });
+    if ( $item ) {
+        return $item->item->{group};
+    } 
+    else {
+        return "wg-scot-admin";
+    }
+}
+
 sub get_test_groups {
     return [ qw(wg-scot-ir) ];
 }
@@ -137,6 +167,7 @@ has authtype    => (
     lazy            => 1,
     required        => 1,
     builder         => '_get_authtype',
+    predicate       => 'has_authtype',
 );
 
 sub _get_authtype {
@@ -157,6 +188,7 @@ has authclass => (
     lazy        => 1,
     required    => 1,
     builder     => '_get_authclass',
+    predicate   => 'has_authclass',
 );
 
 sub _get_authclass {
@@ -219,6 +251,7 @@ has 'filestorage'   => (
     isa         => 'Str',
     required    => 1,
     default     => '/opt/scotfiles',
+    predicate   => 'has_filestorage',
 );
 
 has 'log_level' => (
@@ -226,6 +259,7 @@ has 'log_level' => (
     isa         => 'Str',
     required    => 1,
     default     => "$TRACE",
+    predicate   => 'has_log_level',
 );
 
 has 'log'   => (
@@ -242,6 +276,7 @@ has 'logfile'   => (
     required    => 1,
     lazy        => 1,
     builder     => '_get_log_file',
+    predicate   => 'has_logfile',
 );
 
 sub _get_log_file {
@@ -278,6 +313,7 @@ has tor_url => (
     isa         => 'Str',
     required    => 1,
     default     => 'http://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=132.175.81.4',
+    predicate   => 'has_tor_url',
 );
 
 sub BUILD {
@@ -356,6 +392,49 @@ sub BUILD {
 }
 
 sub load_env_config_items {
+    my $self    = shift;
+    my $mongo   = $self->mongo;
+    my $log     = $self->log;
+    my $col     = $mongo->collection('Config');
+    my $cursor  = $col->find({module => 'Scot::Env'});
+    my $meta    = $self->meta;
+
+    $log->debug("Loading Scot::Env configuration from DB");
+
+    while ( my $cobj = $cursor->next ) {
+        my $item    = $cobj->item;
+        
+        foreach my $attribute (keys %{$item}) {
+            my $predicate   = 'has_'.$attribute;
+            if ( $self->$predicate ) {
+                $log->debug("Setting $attribute to ", 
+                            { filter => \&Dumper, value=> $item});
+                $self->$attribute($item);
+            }
+            else {
+                my $type    = "Str";
+                if ( ref($item->{$attribute}) eq "ARRAY" ) {
+                    $type   = "ArrayRef";
+                }
+                if ( ref($item->{$attribute}) eq "HASH" ) {
+                    $type   = "HashRef";
+                }
+                $log->debug("creating attribute $attribute of type $type");
+                $meta->add_attribute(
+                    $attribute    => (
+                        is  => 'rw',
+                        isa => $type,
+                    )
+                );
+                $log->debug("Creating $attribute and setting to ",
+                            {filter=>\&Dumper, value=>$item->{$attribute}});
+                $self->$attribute($item->{$attribute});
+            }
+        }
+    }
+}
+
+sub load_env_config_items_ {
     my $self    = shift;
     my $mongo   = $self->mongo;
     my $log     = $self->log;
@@ -496,6 +575,17 @@ sub get_req_array {
         delete $json->{$type};
     }
     return @tags;
+}
+
+sub get_config_item {
+    my $self        = shift;
+    my $module      = shift;
+    my $attribute   = shift;
+    my $mongo       = $self->mongo;
+    my $col         = $mongo->collection('Config');
+    my $obj         = $col->find({ module => $module });
+    my $item        = $obj->item;
+    return $item->{$attribute};
 }
 
 1;

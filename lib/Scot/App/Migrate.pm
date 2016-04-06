@@ -576,6 +576,7 @@ sub migrate {
             else {
                 $legcursor  = $legcol->find();
             }
+            $legcursor->immortal(1);
 
             my $remaining_docs  = $legcursor->count();
             my $migrated_docs   = 0;
@@ -638,7 +639,9 @@ sub migrate {
                 my $etastr  = sprintf("%5.3f hours", $eta);
                 my $elapstr = sprintf("%5.2f", $elapsed);
                 if ($opts->{verbose} ) {
-                    say "$procindex: [ $mname ". $object->id.
+                    my $postspace   = 4 - $procindex;
+                    say " "x$procindex .$procindex.
+                        " "x$postspace.": [ $mname ". $object->id.
                         "] $elapstr secs -- $ratestr $etastr ".
                         $self->commify($remaining_docs). " remain";
                 }
