@@ -412,8 +412,8 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	this.setState({columns: newarray})
 	}
 	}.bind(this)); 
-    setTimeout(function() {Store.storeKey(this.state.key)}.bind(this), 10)
-	setTimeout(function() {Store.addChangeListener(this.reloadentry)}.bind(this),10)    
+    //setTimeout(function() {Store.storeKey(this.state.key)}.bind(this), 10)
+	//setTimeout(function() {Store.addChangeListener(this.reloadentry)}.bind(this),10)    
     },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
          firstCol.width = firstSize
@@ -480,11 +480,9 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
     event.preventDefault();
     },
     reloadactive: function(){
-    
     supervalue = []
     supervalue.push(this.state.key)
     this.reloadentry()
-    var notification = this.refs.notificationSystem
     },
    flairOn: function(){
 	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
@@ -571,7 +569,7 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 
     },
     reloadentry: function(){
-	var getID = []	
+    var getID = []	
     var finalarray = [];
 	var sortarray = {}
 	sortarray[colsort] = valuesort
@@ -777,7 +775,7 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
     })
 	var ids = selected.length? selected.join(',') : 'none'
 	storealertids = ids.split(',')		
-    this.setState({selected: SELECTED_ID_GRID, oneview:true,setcss: false, key:supervalue[0] })
+    this.setState({selected: SELECTED_ID_GRID, oneview:true,setcss: false})
 	},
     closeHistory: function(){
 	this.setState({history: false})	
