@@ -745,6 +745,14 @@ sub update {
 
         my $ret =  $self->handle_promotion($object, $req_href);
         if ( $ret >= 0 ) {
+            $env->mq->send("scot", {
+                action  => 'updated',
+                data    => {
+                    who     => $user,
+                    type    => $object->get_collection_name,
+                    id      => $object->id,
+                }
+            });
             return;
         }
     }
@@ -789,6 +797,17 @@ sub update {
             id      => $id,
         }
     });
+
+    if ( ref($object) eq "Scot::Model::Entry" ) {
+        $env->mq->send("scot", {
+            action  => 'updated',
+            data    => {
+                who     => $user,
+                type    => $object->target->{type},
+                id      => $object->target->{id},
+            }
+        });
+    }
 }
 
 sub build_update_doc {
@@ -808,7 +827,17 @@ sub build_update_doc {
 
         foreach my $key ( keys %{$params} ) {
             my $value       = $params->{$key};
-            $update{$key}   = $value;
+            if ( $key eq "groups" ) {
+                if ( scalar(@{$value->{read}}) < 1 ) {
+                    $update{$key}   = $env->admin_groups;    
+                }
+                if ( scalar(@{$value->{modify}}) < 1 ) {
+                    $update{$key}   = $env->admin_groups;    
+                }
+            } 
+            else {
+                $update{$key}   = $value;
+            }
         }
     }
     if (defined $json) {
@@ -891,6 +920,14 @@ sub handle_promotion {
                 return 0;
             }
             $promote_to = $proobj->id;
+            $env->mq->send("scot", {
+                action  => 'created',
+                data    => {
+                    who     => $self->session('user'),
+                    type    => $proobj->get_collection_name,
+                    id      => $proobj->id,
+                }
+            });
         }
 
         my $lhref_a     = {
