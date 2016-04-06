@@ -16,4 +16,4 @@ krb5-devel
 mod_ssl
 openssl
 redhat-lsb
-
+elasticsearch
