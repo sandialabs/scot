@@ -52,19 +52,35 @@ has interactive => (
     default => 'no',
 );
 
-# has scotserver  => (
-#     is          => 'ro',
-#     isa         => 'Str',
-#     required    => 1,
-#     lazy        => 1,
-#     builder     => '_get_scot_server',
-# );
-# 
-# sub _get_scot_server {
-#     my $self    = shift;
-#     my $env     = $self->env;
-#     return $env->servername;
-# }
+has approved_accounts   => (
+    is      => 'rw',
+    isa     => 'ArrayRef',
+    required=> 1,
+    lazy    => 1,
+    builder => "_get_approved_accounts",
+);
+
+sub _get_approved_accounts {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $value   = $env->get_config_item(__PACKAGE__, "approved_accounts");
+    return $value;
+}
+
+has approved_alert_domains  => (
+    is      => 'rw',
+    isa     => 'ArrayRef',
+    required=> 1,
+    lazy    => 1,
+    builder => "_get_approved_alert_domains",
+);
+
+sub _get_approved_alert_domains {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $value   = $env->get_config_item(__PACKAGE__, "approved_alert_domains");
+    return $value;
+}
 
 has scot => (
     is          => 'ro',
