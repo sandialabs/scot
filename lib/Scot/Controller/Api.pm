@@ -1215,6 +1215,16 @@ sub delete {
             who     => $user,
         }
     });
+    if ( ref($object) eq "Scot::Model::Entry" ) {
+        $env->mq->send("scot", {
+            action  => 'updated',
+            data    => {
+                type    => $object->target->{type},
+                id      => $object->target->{id},
+                who     => $user,
+            },
+        });
+    }
 }
 
 =item B<DELETE /scot/api/v2/:thing/:id/:/subthing/:subid>
