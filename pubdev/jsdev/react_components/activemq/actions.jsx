@@ -34,13 +34,13 @@ var Actions = {
     },
     updateView: function(){
         var now = new Date();
-        $.ajax({
+        setTimeout(function(){$.ajax({
             type: 'GET',
             url:  '/scotaq/amq',
             data: {
                 /*loc: location.hash, */
                 clientId: client,
-                timeout: 3000,
+                timeout: 2000,
                 d: now.getTime(),
                 r: Math.random(),
                 json:'true',
@@ -53,17 +53,16 @@ var Actions = {
             $.each(messages, function(key,message){
                 if(message != ""){
                     var json = JSON.parse(message);
-                    console.log(json)
-                    if(json.action != "viewed" || json.action == 'updated'  || json.action == 'created' || json.action == 'deleted'){
+                        console.log(json)
                         Dispatcher.handleActivemq({
                         activemq: json
                     })
-                  }
                 }
             });       
         }).fail(function(){
             setTimeout(Actions.updateView(), 20)
         })
+        }, 2)
     }
 
 }

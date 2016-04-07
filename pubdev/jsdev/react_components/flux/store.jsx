@@ -28,7 +28,7 @@ function updateStatus(payload) {
 			url: '/scot/api/v2/alert/'+$(y).text(),
 			data: data
 		}).success(function(response){
-            Store.emitChange(payload.action.item)
+//            Store.emitChange(payload.action.item)
 		})
 	}
 	})

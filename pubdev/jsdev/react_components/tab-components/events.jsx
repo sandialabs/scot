@@ -20,7 +20,7 @@ var ids = []
 var stage = false
 var savedsearch = false
 var savedfsearch;
-var Listener = require('../activemq/listener.jsx')
+var Store = require('../activemq/store.jsx')
 var setfilter = false
 var savedid;
 var columns = 
@@ -112,7 +112,8 @@ module.exports = React.createClass({
     componentWillMount: function(){
 	window.location.hash ='#/event/'
 	window.location.href = window.location.hash
-    Listener.activeMq('eventgroup', this.reloadactive)
+    Store.storeKey('eventgroup')
+    Store.addChangeListener(this.reloadactive)
     },
 
     reloadactive: function(){
