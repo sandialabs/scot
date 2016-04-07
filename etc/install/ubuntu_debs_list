@@ -224,3 +224,4 @@ npm
 libmaxminddb0
 libmaxminddb-dev
 mmdb-bin
+elasticsearch
