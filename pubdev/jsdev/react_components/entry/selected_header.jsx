@@ -19,9 +19,8 @@ var SelectedEntry           = require('./selected_entry.jsx');
 var Tag                     = require('../components/tag.jsx');
 var Source                  = require('../components/source.jsx');
 var Crouton                 = require('react-crouton');
-var Store                   = require('../flux/store.jsx');
+var Store                   = require('../activemq/store.jsx');
 var AppActions              = require('../flux/actions.jsx');
-var Listener                = require('../activemq/listener.jsx');    
 var Notification            = require('react-notification-system');
 var AddFlair                = require('../components/add_flair.jsx');
 var Flair                   = require('../modal/flair_modal.jsx');
@@ -106,9 +105,7 @@ var SelectedHeader = React.createClass({
         }.bind(this)); 
         console.log('Ran componentDidMount');
         Store.storeKey(this.state.key);
-        Store.addChangeListener(this.updated);
-        Listener.activeMq(this.state.key,this.updated);
-        Listener.activeMq('selectedHeaderEntry',this.notification)
+        Store.addChangeListener(this.updated); 
     },
     /*componentWillReceiveProps: function() {
         this.updated();    
@@ -262,7 +259,7 @@ var SelectedHeader = React.createClass({
                 <div>
                 <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%'}}>
                     <div className='details-subject' style={{display: 'inline-flex',paddingLeft:'5px'}}>
-                        {this.state.showEventData ? <EntryDataSubject data={this.state.headerData.subject} type={subjectType} id={this.props.id} updated={this.updated} />: null}
+                        {this.state.showEventData ? <EntryDataSubject data={this.state.headerData} subjectType={subjectType} type={type} id={this.props.id} updated={this.updated} />: null}
                         {this.state.refreshing ? <Button bsSize={'xsmall'} bsStyle={'info'}><span>Refreshing...</span></Button> :null }
                         {this.state.loading ? <Button bsSize={'xsmall'} bsStyle={'info'}><span>Loading...</span></Button> :null}    
                     </div> 
@@ -372,22 +369,22 @@ var EntryDataStatus = React.createClass({
 
 var EntryDataSubject = React.createClass({
     getInitialState: function() {
-        return {value:this.props.data, type:this.props.type, id:this.props.id}
+        return {value:this.props.data.subject}
     },
     componentWillReceiveProps: function() {
-        this.setState({value:this.props.data});
+        this.setState({value:this.props.data.subject});
     },
     handleChange: function(event) {
         this.setState({value:event.target.value});
-        if (this.state.value != this.props.data) {
+        if (this.state.value != this.props.data.subject) {
             var json = {subject:this.state.value}
             $.ajax({
                 type: 'put',
-                url: 'scot/api/v2/' + this.state.type + '/' + this.state.id,
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
                 data: json,
                 success: function(data) {
                     console.log('success: ' + data);
-                    AppActions(this.state.id,'headerUpdate'); 
+                    AppActions.updateItem(this.props.id,'headerUpdate'); 
                 }.bind(this),
                 error: function() { 
                     this.props.updated('error','Failed to update the subject');
@@ -402,7 +399,7 @@ var EntryDataSubject = React.createClass({
             subjectWidth = 200;
         }
         return (
-            <div>{this.state.type} {this.state.id}: <DebounceInput debounceTimeout={500} forceNotifyOnBlur={true} type='text' value={this.state.value} onChange={this.handleChange} style={{width:subjectWidth+'px'}} /></div>
+            <div>{this.props.subjectType} {this.props.id}: <DebounceInput debounceTimeout={500} forceNotifyOnBlur={true} type='text' value={this.state.value} onChange={this.handleChange} style={{width:subjectWidth+'px'}} /></div>
         )
     }
 });

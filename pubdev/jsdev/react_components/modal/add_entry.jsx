@@ -311,7 +311,7 @@ var AddEntryModal = React.createClass({
     forEdit: function(set){
         console.log(set)
         if(set){
-    var data = {parent: Number(this.props.id), body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
+    var data = {parent: Number(this.props.parent), body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
 	$.ajax({
 	type: 'put',
 	url: '/scot/api/v2/entry/'+this.props.id,
