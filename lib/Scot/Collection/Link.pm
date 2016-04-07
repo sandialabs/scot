@@ -56,6 +56,10 @@ sub create_link {
     foreach my $href ($a, $b) {
         my $col = $env->mongo->collection(ucfirst($href->{type}));
         my $obj = $col->find_iid($href->{id});
+        unless ($obj) {
+            $log->warn("[".$href->{type}." ".$href->{id}."] does not exist");
+            next;
+        }
         if ( $obj->meta->does_role('Scot::Role::Times') ) {
             $obj->update_set( updated => $when );
         }
