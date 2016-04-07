@@ -1,10 +1,7 @@
 var AppActions = require('./actions.jsx')
 var Store = require('./store.jsx')
 var Listeneraq = {
-    activeMq: function(key, callback){
-    var sett = true
-    Store.storeKey(key)
-    Store.addChangeListener(callback)
+    activeMq: function(){
     AppActions.getClient()
     AppActions.updateView()
     }

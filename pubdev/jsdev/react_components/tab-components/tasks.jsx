@@ -20,7 +20,7 @@ var stage = false
 var savedsearch = false
 var savedfsearch;
 var setfilter = false
-var Listener = require('../activemq/listener.jsx')
+var Store = require('../activemq/store.jsx')
 var columns = 
 [
     { name: 'type',width: 159.4,  style: {color: 'black'}},
@@ -106,7 +106,8 @@ module.exports = React.createClass({
     componentWillMount: function(){
 	window.location.hash = '#/task/'
 	window.location.href = window.location.hash
-    Listener.activeMq('taskgroup', this.reloadactive)
+    Store.storeKey('taskgroup')
+    Store.addChangeListener(this.reloadactive)
     },
     reloadactive: function(){
 
