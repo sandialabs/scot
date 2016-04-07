@@ -145,6 +145,12 @@ sub refresh_data {
 
     my $alertgroup  = $self->find_iid($id);
 
+    unless ( $alertgroup ) {
+        $log->error("[Alertgroup $id] NOT FOUND!");
+        return;
+        # die "Alertgroup $id not found!!!";
+    }
+
     my $cursor  = $self->meerkat->collection('Alert')->find({alertgroup => $id});
 
     my %count   = ();
