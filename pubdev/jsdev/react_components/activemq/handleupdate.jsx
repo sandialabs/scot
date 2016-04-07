@@ -255,6 +255,9 @@ var ActiveMQ = {
                     case 'views':
                         views('event',callback,payload);
                         break;
+                    case 'unlinked':
+                        update('event',callback,payload);
+                        break;
                 }
                 break;
             case 'intel': 
