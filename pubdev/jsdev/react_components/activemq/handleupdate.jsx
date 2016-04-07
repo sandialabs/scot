@@ -11,14 +11,14 @@ function update(state, callback, payload){
      callback.emitChange('activealertgroup')
      callback.emitChange('incidentgroup')
      callback.emitChange(payload.action.activemq.data.id)
-     setTimeout(function(){$('.z-row').each(function(key, value){
+    /* setTimeout(function(){$('.z-row').each(function(key, value){
            $(value).find('.z-cell').each(function(r,s){
            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
             $(value).css('background', '#FFFF76')
             setTimeout(function(){$(value).css('background', "")}, 10000)
             }
       })
-    }) }, 1000)
+    }) }, 1000) */
     }
     else if (state == 'entry'){
      activemqwho = payload.action.activemq.data.who
@@ -45,7 +45,7 @@ function update(state, callback, payload){
      callback.emitChange(payload.action.activemq.data.id)
    }
    else if(state == 'alertgroup'){
-    
+    /*
     $('.z-table').each(function(key, value){
         $(value).find('.z-row').each(function(x,y){
            $(y).find('.z-cell').each(function(r,s){
@@ -55,7 +55,7 @@ function update(state, callback, payload){
             }
         })
       })
-    })
+    }) */
      activemqwho = payload.action.activemq.data.who
      activemqmessage = " updated " + state + " : " 
      activemqid = payload.action.activemq.data.id
@@ -65,7 +65,7 @@ function update(state, callback, payload){
      callback.emitChange("activealertgroup")
      callback.emitChange('incidentgroup')
      callback.emitChange('eventgroup')
-     setTimeout(function(){callback.emitChange(payload.action.activemq.data.id)}, 30)
+     callback.emitChange(payload.action.activemq.data.id)
    }
    else if (state == 'alert'){
 /*    $('.z-table').each(function(key, value){
@@ -107,14 +107,14 @@ function creation(state, callback, payload){
     callback.emitChange('eventgroup')  
     callback.emitChange('activealertgroup')
     callback.emitChange('alertgroupnotification')
-    setTimeout(function(){$('.z-row').each(function(key, value){
+/*    setTimeout(function(){$('.z-row').each(function(key, value){
            $(value).find('.z-cell').each(function(r,s){
            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
             $(value).css('background', '#FFFF76')
             setTimeout(function(){$(value).css('background', "")}, 10000)
             }
       })
-    }) }, 1000)
+    }) }, 1000) */
     }
     else if (state == 'intel'){
 

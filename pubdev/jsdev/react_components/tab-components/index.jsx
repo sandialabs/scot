@@ -11,6 +11,7 @@ var Router	    = require('../../../node_modules/react-router').Router
 var Route	    = require('../../../node_modules/react-router').Route
 var Link	    = require('../../../node_modules/react-router').Link
 var browserHistory  = require('../../../node_modules/react-router/').hashHistory
+var Listener        = require('../activemq/listener.jsx')
 var ExpandableNavContainer = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavContainer.js')
 var ExpandableNavbar = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavbar.js')
 var ExpandableNavHeader = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavHeader.js')
@@ -179,7 +180,10 @@ state = 0
 	];
 	var headerStyle = { paddingLeft: 5 };
 	var fullStyle   = { paddingLeft: 50};
-	return (
+	
+    setTimeout(function(){Listener.activeMq()}, 3000)
+
+    return (
 React.createElement(ExpandableNavContainer, {expanded: false}, React.createElement(ExpandableNavToggleButton, {smallClass: "s", className: "shared"}),
         React.createElement(ExpandableNavbar, {fullClass: "full", smallClass: "small"}, 
           React.createElement(ExpandableNavHeader, {small: headerSmall, full: headerFull, headerStyle: headerStyle, fullStyle: fullStyle}), 
