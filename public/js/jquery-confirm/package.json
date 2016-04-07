@@ -1,0 +1,85 @@
+{
+  "_args": [
+    [
+      "jquery-confirm",
+      "/home/rjeffer"
+    ]
+  ],
+  "_from": "jquery-confirm@latest",
+  "_id": "jquery-confirm@1.5.1",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/jquery-confirm",
+  "_npmUser": {
+    "email": "bonifacepereira@gmail.com",
+    "name": "bonifacepereira"
+  },
+  "_npmVersion": "1.4.28",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "jquery-confirm",
+    "raw": "jquery-confirm",
+    "rawSpec": "",
+    "scope": null,
+    "spec": "latest",
+    "type": "tag"
+  },
+  "_requiredBy": [
+    "#USER"
+  ],
+  "_resolved": "http://registry.npmjs.org/jquery-confirm/-/jquery-confirm-1.5.1.tgz",
+  "_shasum": "6c7e2c2e941923106c5b46701358a7a59b47a689",
+  "_shrinkwrap": null,
+  "_spec": "jquery-confirm",
+  "_where": "/home/rjeffer",
+  "author": {
+    "name": "Boniface Periera",
+    "url": "http://github.com/craftpip/"
+  },
+  "bugs": {
+    "url": "https://github.com/craftpip/jquery-confirm/issues"
+  },
+  "dependencies": {},
+  "description": "A jQuery plugin that provides great set of features like, Auto-close, Ajax-loading, background-dismiss, themes and more.",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "shasum": "6c7e2c2e941923106c5b46701358a7a59b47a689",
+    "tarball": "https://registry.npmjs.org/jquery-confirm/-/jquery-confirm-1.5.1.tgz"
+  },
+  "gitHead": "305b9f9b54d810aaf7f7026d6daf1d4bc137883a",
+  "homepage": "http://craftpip.github.io/jquery-confirm/",
+  "keywords": [
+    "alert",
+    "confirm",
+    "dialog",
+    "jquery",
+    "jquery-plugin"
+  ],
+  "license": "MIT",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/craftpip/jquery-confirm/blob/master/LICENSE"
+    }
+  ],
+  "main": "dist/jquery-confirm.min.js",
+  "maintainers": [
+    {
+      "name": "bonifacepereira",
+      "email": "bonifacepereira@gmail.com"
+    }
+  ],
+  "name": "jquery-confirm",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/craftpip/jquery-confirm.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "title": "jquery-confirm.js | A multipurpose alert and confirm plugin",
+  "version": "1.5.1"
+}
