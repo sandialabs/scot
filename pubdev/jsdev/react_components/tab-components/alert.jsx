@@ -53,7 +53,7 @@ var Alertentry = require('../entry/selected_entry.jsx')
 var Header = require('../entry/selected_header.jsx')
 var Addentry = require('../modal/add_entry.jsx')
 var Appactions = require('../flux/actions.jsx')
-var Store = require('../flux/store.jsx')
+var Store = require('../activemq/store.jsx')
 var Listener = require('../activemq/listener.jsx')
 var supervalue = [];
 var supercolumns = []
@@ -369,10 +369,10 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	setTimeout(function() { this.setState({columns: newarray})}.bind(this), 800)
 	}
 	}.bind(this));
-    Listener.activeMq(this.state.key, this.reloadactive)
-    Listener.activeMq('alertgroupnotification', this.notification)
-    setTimeout(function() {Store.storeKey(this.state.key)}.bind(this), 10)
-	setTimeout(function() {Store.addChangeListener(this.reloadentry)}.bind(this),10)
+    Store.storeKey(this.state.key)
+	Store.addChangeListener(this.reloadactive)
+    Store.storeKey('alertgroupnotification')
+    Store.addChangeListener(this.notification)
 	},
    notification: function(){
     var notification = this.refs.notificationSystem
@@ -393,6 +393,7 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 
    },
   componentWillReceiveProps: function(){
+    /*
     var project = getColumns(this.state.key)
 	project.success(function(realData){
 	var last = realData.columns
@@ -410,10 +411,11 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	}	    
 	}
 	this.setState({columns: newarray})
-	}
-	}.bind(this)); 
-    setTimeout(function() {Store.storeKey(this.state.key)}.bind(this), 10)
-	setTimeout(function() {Store.addChangeListener(this.reloadentry)}.bind(this),10)    
+	*/
+   // }
+	//}.bind(this)); 
+    //setTimeout(function() {Store.storeKey(this.state.key)}.bind(this), 10)
+	//setTimeout(function() {Store.addChangeListener(this.reloadentry)}.bind(this),10)    
     },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
          firstCol.width = firstSize
@@ -480,11 +482,9 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
     event.preventDefault();
     },
     reloadactive: function(){
-    
     supervalue = []
     supervalue.push(this.state.key)
     this.reloadentry()
-    var notification = this.refs.notificationSystem
     },
    flairOn: function(){
 	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
@@ -571,11 +571,11 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 
     },
     reloadentry: function(){
-	var getID = []	
+    var getID = []	
     var finalarray = [];
 	var sortarray = {}
 	sortarray[colsort] = valuesort
-	if(changestate){
+    if(changestate){
 	var count = 0
 	return $.ajax({
 	type: 'GET',
@@ -679,16 +679,19 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
     openSelected: function(){
 	var data = new Object();
 	var state = this.state.key
-	Appactions.updateItem(state, 'alertstatusmessage', 'open')
+	
+    Appactions.updateItem(state, 'alertstatusmessage', 'open')
     },
 
     closeSelected: function(){
 	var state = this.state.key
-	Appactions.updateItem(state, 'alertstatusmessage', 'closed')
+	
+    Appactions.updateItem(state, 'alertstatusmessage', 'closed')
    },
    promoteSelected: function(){
 	var state = this.state.key
-	Appactions.updateItem(state, 'alertstatusmessage', 'promoted')
+	
+    Appactions.updateItem(state, 'alertstatusmessage', 'promoted')
    },
 
    selectExisting: function(){
@@ -777,7 +780,7 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
     })
 	var ids = selected.length? selected.join(',') : 'none'
 	storealertids = ids.split(',')		
-    this.setState({selected: SELECTED_ID_GRID, oneview:true,setcss: false, key:supervalue[0] })
+    this.setState({selected: SELECTED_ID_GRID, oneview:true,setcss: false})
 	},
     closeHistory: function(){
 	this.setState({history: false})	
@@ -803,10 +806,13 @@ var Maintable = React.createClass({
 		stage = true
 		changestate = true
 		url = '/scot/api/v2/supertable'
-        Listener.activeMq('activealertgroup', this.activecallback)
+        Listener.activeMq
+        Store.storeKey('activealertgroup')
+        Store.addChangeListener(this.activecallback)
         }
 		else {
-        Listener.activeMq('activealertgroup', this.activecallback)
+        Store.storeKey('activealertgroup')
+        Store.addChangeListener(this.activecallback)
         window.location.hash = '#/alertgroup/'
 		window.location.location = window.location.hash
 		url = '/scot/api/v2/alertgroup'
@@ -817,7 +823,8 @@ var Maintable = React.createClass({
 		}
 	}
 	else {
-    Listener.activeMq('activealertgroup', this.activecallback)
+    Store.storeKey('activealertgroup')
+    Store.addChangeListener(this.activecallback)
 	window.location.hash = '#/alertgroup/'
 	window.location.href = window.location.hash
 	this.setState({})

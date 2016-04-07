@@ -11,6 +11,7 @@ var finalfiles = []
 var ReactTime = require('react-time')
 var AppActions  = require('../flux/actions.jsx');
 var Activekey = require('../activemq/handleupdate.jsx')
+var recently_updated = 0
 const  customStyles = {
         content : {
         top     : '1%',
@@ -40,6 +41,7 @@ var AddEntryModal = React.createClass({
 	   type: 'GET',
 	   url:  '/scot/api/v2/entry/'+ this.props.id
 	   }).success(function(response){
+        recently_updated = response.updated
         if(response.body_flair == ""){
 	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(response.body)
         }
@@ -80,7 +82,8 @@ var AddEntryModal = React.createClass({
 	   type: 'GET',
 	   url:  '/scot/api/v2/entry/'+ this.props.id
 	   }).success(function(response){
-	    if(response.body_flair == ""){
+        recently_updated = response.updated
+        if(response.body_flair == ""){
 	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(response.body)
         }
         else{
@@ -200,36 +203,40 @@ var AddEntryModal = React.createClass({
 	AppActions.updateItem(this.props.targetid,'headerUpdate')
 	}
 	else if (this.props.stage == 'Edit'){
-	var data = {parent: Number(this.props.id), body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
-	$.ajax({
-	type: 'put',
-	url: '/scot/api/v2/entry/'+this.props.id,
-	data: JSON.stringify(data)
-	}).success(function(response){
-        if(finalfiles.length > 0){
-			for(var i = 0; i<finalfiles.length; i++){	
-			var file = {file : finalfiles[i].name}
-            data  = new FormData()
-            data.append('upload', finalfiles[i])
-            data.append('target_type',this.props.type)
-            data.append('target_id',Number(this.props.targetid))
-            data.append('entry_id',response.id)
-			$.ajax({
-			   type: 'POST',
-			   url: '/scot/api/v2/file',
-               data: data,
-               processData: false,
-               contentType: false,
-               dataType: 'json',
-               cache: false
-            }).success(function(response){
-			   }.bind(this))
-			}
-		}
-	}.bind(this))
-	this.props.addedentry()
-	this.props.updated()
-	}
+    $.ajax({
+        type: 'GET',
+        url: '/scot/api/v2/entry/'+this.props.id
+    }).success(function(response){
+    if(recently_updated != response.updated){
+            this.forEdit(false)
+            var set = false
+    var Confirm = {
+        launch: function(set){
+            this.forEdit(set)
+        }.bind(this)
+    }
+            $.confirm({
+                icon: 'glyphicon glyphicon-warning',
+                confirmButtonClass: 'btn-info',
+                cancelButtonClass: 'btn-info',
+                confirmButton: 'Yes, override',
+                cancelButton: 'Keep change',
+                content: response.body + "\n\n" + "DO YOU WANT TO KEEP YOUR CHANGES?",
+                backgroundDismiss: false,
+                title: "Edit Conflict with: " + response.owner,
+                confirm: function(){
+                Confirm.launch(true)
+                },
+                cancel: function(){
+                Confirm.launch(false)
+                }
+            })
+        }
+        else {
+            this.forEdit(true)
+        }
+    }.bind(this))
+    }
 	else  if(this.props.type == 'alert'){ 
      var data;
 	 $('.z-selected').each(function(key,value){
@@ -300,6 +307,40 @@ var AddEntryModal = React.createClass({
 	AppActions.updateItem(this.props.targetid,'headerUpdate');
     }
 	}
+    },
+    forEdit: function(set){
+        console.log(set)
+        if(set){
+    var data = {parent: Number(this.props.id), body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
+	$.ajax({
+	type: 'put',
+	url: '/scot/api/v2/entry/'+this.props.id,
+	data: JSON.stringify(data)
+	}).success(function(response){
+        if(finalfiles.length > 0){
+			for(var i = 0; i<finalfiles.length; i++){	
+			var file = {file : finalfiles[i].name}
+            data  = new FormData()
+            data.append('upload', finalfiles[i])
+            data.append('target_type',this.props.type)
+            data.append('target_id',Number(this.props.targetid))
+            data.append('entry_id',response.id)
+			$.ajax({
+			   type: 'POST',
+			   url: '/scot/api/v2/file',
+               data: data,
+               processData: false,
+               contentType: false,
+               dataType: 'json',
+               cache: false
+            }).success(function(response){
+			   }.bind(this))
+			}
+		}
+	}.bind(this))
+	this.props.addedentry()
+	AppActions.updateItem(this.props.targetid, 'headerUpdate')
+    }
     }
 });
 
