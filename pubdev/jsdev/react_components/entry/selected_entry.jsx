@@ -218,6 +218,7 @@ var EntryData = React.createClass({
                     document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
                         var newheight; 
                         newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+                        newheight = newheight + 2; //adding 2 px for Firefox so it doesn't make a scroll bar
                         newheight = newheight + 'px';
                         this.setState({height:newheight});
                         var newcount = this.state.count;
