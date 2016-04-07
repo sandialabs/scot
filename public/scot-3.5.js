@@ -35,13 +35,13 @@ var Actions = {
     },
     updateView: function(){
         var now = new Date();
-        $.ajax({
+        setTimeout(function(){$.ajax({
             type: 'GET',
             url:  '/scotaq/amq',
             data: {
                 /*loc: location.hash, */
                 clientId: client,
-                timeout: 3000,
+                timeout: 2000,
                 d: now.getTime(),
                 r: Math.random(),
                 json:'true',
@@ -54,17 +54,16 @@ var Actions = {
             $.each(messages, function(key,message){
                 if(message != ""){
                     var json = JSON.parse(message);
-                    console.log(json)
-                    if(json.action != "viewed" || json.action == 'updated'  || json.action == 'created' || json.action == 'deleted'){
+                        console.log(json)
                         Dispatcher.handleActivemq({
                         activemq: json
                     })
-                  }
                 }
             });       
         }).fail(function(){
             setTimeout(Actions.updateView(), 20)
         })
+        }, 2)
     }
 
 }
@@ -101,14 +100,14 @@ function update(state, callback, payload){
      callback.emitChange('activealertgroup')
      callback.emitChange('incidentgroup')
      callback.emitChange(payload.action.activemq.data.id)
-     setTimeout(function(){$('.z-row').each(function(key, value){
+    /* setTimeout(function(){$('.z-row').each(function(key, value){
            $(value).find('.z-cell').each(function(r,s){
            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
             $(value).css('background', '#FFFF76')
             setTimeout(function(){$(value).css('background', "")}, 10000)
             }
       })
-    }) }, 1000)
+    }) }, 1000) */
     }
     else if (state == 'entry'){
      activemqwho = payload.action.activemq.data.who
@@ -135,7 +134,7 @@ function update(state, callback, payload){
      callback.emitChange(payload.action.activemq.data.id)
    }
    else if(state == 'alertgroup'){
-    
+    /*
     $('.z-table').each(function(key, value){
         $(value).find('.z-row').each(function(x,y){
            $(y).find('.z-cell').each(function(r,s){
@@ -145,7 +144,7 @@ function update(state, callback, payload){
             }
         })
       })
-    })
+    }) */
      activemqwho = payload.action.activemq.data.who
      activemqmessage = " updated " + state + " : " 
      activemqid = payload.action.activemq.data.id
@@ -197,14 +196,14 @@ function creation(state, callback, payload){
     callback.emitChange('eventgroup')  
     callback.emitChange('activealertgroup')
     callback.emitChange('alertgroupnotification')
-    setTimeout(function(){$('.z-row').each(function(key, value){
+/*    setTimeout(function(){$('.z-row').each(function(key, value){
            $(value).find('.z-cell').each(function(r,s){
            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
             $(value).css('background', '#FFFF76')
             setTimeout(function(){$(value).css('background', "")}, 10000)
             }
       })
-    }) }, 1000)
+    }) }, 1000) */
     }
     else if (state == 'intel'){
 
@@ -345,6 +344,9 @@ var ActiveMQ = {
                     case 'views':
                         views('event',callback,payload);
                         break;
+                    case 'unlinked':
+                        update('event',callback,payload);
+                        break;
                 }
                 break;
             case 'intel': 
@@ -418,10 +420,7 @@ module.exports = ActiveMQ
 var AppActions = require('./actions.jsx')
 var Store = require('./store.jsx')
 var Listeneraq = {
-    activeMq: function(key, callback){
-    var sett = true
-    Store.storeKey(key)
-    Store.addChangeListener(callback)
+    activeMq: function(){
     AppActions.getClient()
     AppActions.updateView()
     }
@@ -467,70 +466,112 @@ var Storeaq = assign({}, EventEmitter.prototype, {
 module.exports = Storeaq
 
 },{"../../../node_modules/events-activemq/events":233,"./dispatcher.jsx":2,"./handleupdate.jsx":3,"object-assign":772}],6:[function(require,module,exports){
+        
         function infopop(ifr,entityid,flairToolbarToggle) {
             flairToolbarToggle(entityid);
         }
-        function checkFlairHover(iframe,flairToolbarToggle) {
-            if(iframe.contentDocument != null) {
-                $(iframe).contents().find('.entity').each(function(index, entity) {
-                    if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
-                        $(entity).data('state', 'down');
-                    } else if ($(entity).data('state') == 'down') {
-                        $(entity).data('state', 'up');
-                        var entityid = $(entity).attr('data-entity-id');
-                        infopop(iframe,entityid,flairToolbarToggle);
-                    }
-
-                }.bind(this));
-            }
-        }
-        function pentry(ifr,flairToolbarToggle) {
-            $(ifr).mouseenter(function() {
-                var intervalID = setInterval(checkFlairHover, 100, ifr, flairToolbarToggle);
-                $(ifr).data('intervalID', intervalID);
-                console.log('Now watching iframe ' + intervalID);
-            }.bind(this));
-            $(ifr).mouseleave(function() {
-                var intervalID = $(this).data('intervalID');
-                window.clearInterval(intervalID);
-                console.log('No longer watching iframe ' + intervalID);
-            }.bind(this));
-        }
-    var AddFlair = {
-        entityUpdate: function(entityData,flairToolbarToggle) {
-            setTimeout(function() {
-                var entityResult = entityData;
-                $('iframe').each(function(index,ifr) {
-                    //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
-                    ifr.contentWindow.requestAnimationFrame( function() {
-                        if(ifr.contentDocument != null) {
-                            var ifrContents = $(ifr).contents();
-                            if($(ifr.contentDocument.body).find('.extras')[0] == null) {
-                                $(ifr.contentDocument.body).find('a').attr('target','_blank');
-                                $(ifr.contentDocument.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
-                                $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
-                                ifrContents.find('.entity').each(function(index,entity){
-                                    var currentEntityValue = $(entity).attr('data-entity-value');
-                                    if (currentEntityValue !== undefined) {
-                                        if (entityResult[currentEntityValue.toLowerCase()] !== undefined ) {
-                                            var entityType = entityResult[currentEntityValue.toLowerCase()].type;
-                                            var entityid = entityResult[currentEntityValue.toLowerCase()].id;
-                                            var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
-                                            var circle = $('<span class="noselect">');
-                                            circle.addClass('circleNumber');
-                                            circle.addClass('extras');
-                                            circle.text(entityCount);
-                                            $(entity).append(circle);
-                                            $(entity).attr('data-entity-id',entityid)
-                                            $(entity).unbind('click');
-                                            pentry(ifr,flairToolbarToggle);
-                                        }
-                                    }
-                                }.bind(this));
-                            }
+        function checkFlairHover(iframe,flairToolbarToggle,type) {
+            if(type != 'alertgroup') {
+                if(iframe.contentDocument != null) {
+                    $(iframe).contents().find('.entity').each(function(index, entity) {
+                        if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
+                            $(entity).data('state', 'down');
+                        } else if ($(entity).data('state') == 'down') {
+                            $(entity).data('state', 'up');
+                            var entityid = $(entity).attr('data-entity-id');
+                            infopop(iframe,entityid,flairToolbarToggle);
                         }
                     }.bind(this));
+                }
+            } else {
+               $(document.body).find('.entity').each(function(index, entity) {
+                        if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
+                            $(entity).data('state', 'down');
+                        } else if ($(entity).data('state') == 'down') {
+                            $(entity).data('state', 'up');
+                            var entityid = $(entity).attr('data-entity-id');
+                            infopop(null,entityid,flairToolbarToggle);
+                        }
+                    }.bind(this));
+            }
+        }
+        function pentry(ifr,flairToolbarToggle,type) {
+            if(type != 'alertgroup') { 
+                $(ifr).mouseenter(function() {
+                    var intervalID = setInterval(checkFlairHover, 100, ifr, flairToolbarToggle);
+                    $(ifr).data('intervalID', intervalID);
+                    console.log('Now watching iframe ' + intervalID);
                 }.bind(this));
+                $(ifr).mouseleave(function() {
+                    var intervalID = $(this).data('intervalID');
+                    window.clearInterval(intervalID);
+                    console.log('No longer watching iframe ' + intervalID);
+                }.bind(this));
+            } else {
+                setInterval(checkFlairHover, 100, null, flairToolbarToggle,type);
+            }
+        }
+    var AddFlair = {
+        entityUpdate: function(entityData,flairToolbarToggle,type) {
+            setTimeout(function() {
+                var entityResult = entityData;
+                if (type != 'alertgroup') {
+                    $('iframe').each(function(index,ifr) {
+                        //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
+                        ifr.contentWindow.requestAnimationFrame( function() {
+                            if(ifr.contentDocument != null) {
+                                var ifrContents = $(ifr).contents();
+                                if($(ifr.contentDocument.body).find('.extras')[0] == null) {
+                                    $(ifr.contentDocument.body).find('a').attr('target','_blank');
+                                    $(ifr.contentDocument.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
+                                    $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
+                                    ifrContents.find('.entity').each(function(index,entity){
+                                        var currentEntityValue = $(entity).attr('data-entity-value');
+                                        if (currentEntityValue !== undefined) {
+                                            if (entityResult[currentEntityValue.toLowerCase()] !== undefined ) {
+                                                var entityType = entityResult[currentEntityValue.toLowerCase()].type;
+                                                var entityid = entityResult[currentEntityValue.toLowerCase()].id;
+                                                var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
+                                                var circle = $('<span class="noselect">');
+                                                circle.addClass('circleNumber');
+                                                circle.addClass('extras');
+                                                circle.text(entityCount);
+                                                $(entity).append(circle);
+                                                $(entity).attr('data-entity-id',entityid)
+                                                $(entity).unbind('click');
+                                                pentry(ifr,flairToolbarToggle,type);
+                                            }
+                                        }
+                                    }.bind(this));
+                                }
+                            }
+                        }.bind(this));
+                    }.bind(this));
+                } else {
+                    if($(document.body).find('.extras')[0] == null) {
+                        $(document.body).find('a').attr('target','_blank');
+                        $(document.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
+                        $(document.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
+                        $(document.body).find('.entity').each(function(index,entity){
+                            var currentEntityValue = $(entity).attr('data-entity-value');
+                            if (currentEntityValue !== undefined) {
+                                if (entityResult[currentEntityValue.toLowerCase()] !== undefined ) {
+                                    var entityType = entityResult[currentEntityValue.toLowerCase()].type;
+                                    var entityid = entityResult[currentEntityValue.toLowerCase()].id;
+                                    var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
+                                    var circle = $('<span class="noselect">');
+                                    circle.addClass('circleNumber');
+                                    circle.addClass('extras');
+                                    circle.text(entityCount);
+                                    $(entity).append(circle);
+                                    $(entity).attr('data-entity-id',entityid)
+                                    $(entity).unbind('click');
+                                    pentry(null,flairToolbarToggle,type);
+                                }
+                            }
+                        }.bind(this));
+                    }
+                }
             }.bind(this));
         },
     }
@@ -1486,7 +1527,7 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                     ), 
                 itemarr
                 ), 
-                this.state.editEntryToolbar ? React.createElement(AddEntryModal, {type: this.props.type, title: "Edit Entry", header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, targetid: id, updated: updated, type: type, stage: 'Edit', id: items.id, addedentry: this.editEntryToggle}) : null, 
+                this.state.editEntryToolbar ? React.createElement(AddEntryModal, {type: this.props.type, title: "Edit Entry", header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, parent: items.parent, targetid: id, updated: updated, type: type, stage: 'Edit', id: items.id, addedentry: this.editEntryToggle}) : null, 
                 this.state.replyEntryToolbar ? React.createElement(AddEntryModal, {title: "Reply Entry", stage: 'Reply', type: type, header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, targetid: id, updated: updated, id: items.id, addedentry: this.replyEntryToggle}) : null, 
                 this.state.deleteToolbar ? React.createElement(DeleteEntry, {type: type, id: id, deleteToggle: this.deleteToggle, entryid: items.id, updated: updated}) : null
             )
@@ -1509,6 +1550,7 @@ var EntryData = React.createClass({displayName: "EntryData",
                     document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
                         var newheight; 
                         newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+                        newheight = newheight + 2; //adding 2 px for Firefox so it doesn't make a scroll bar
                         newheight = newheight + 'px';
                         this.setState({height:newheight});
                         var newcount = this.state.count;
@@ -1565,9 +1607,8 @@ var SelectedEntry           = require('./selected_entry.jsx');
 var Tag                     = require('../components/tag.jsx');
 var Source                  = require('../components/source.jsx');
 var Crouton                 = require('react-crouton');
-var Store                   = require('../flux/store.jsx');
+var Store                   = require('../activemq/store.jsx');
 var AppActions              = require('../flux/actions.jsx');
-var Listener                = require('../activemq/listener.jsx');    
 var Notification            = require('react-notification-system');
 var AddFlair                = require('../components/add_flair.jsx');
 var Flair                   = require('../modal/flair_modal.jsx');
@@ -1652,9 +1693,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         }.bind(this)); 
         console.log('Ran componentDidMount');
         Store.storeKey(this.state.key);
-        Store.addChangeListener(this.updated);
-        Listener.activeMq(this.state.key,this.updated);
-        Listener.activeMq('selectedHeaderEntry',this.notification)
+        Store.addChangeListener(this.updated); 
     },
     /*componentWillReceiveProps: function() {
         this.updated();    
@@ -1808,7 +1847,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 React.createElement("div", null, 
                 React.createElement("div", {id: "NewEventInfo", className: "entry-header-info-null", style: {width:'100%'}}, 
                     React.createElement("div", {className: "details-subject", style: {display: 'inline-flex',paddingLeft:'5px'}}, 
-                        this.state.showEventData ? React.createElement(EntryDataSubject, {data: this.state.headerData.subject, type: subjectType, id: this.props.id, updated: this.updated}): null, 
+                        this.state.showEventData ? React.createElement(EntryDataSubject, {data: this.state.headerData, subjectType: subjectType, type: type, id: this.props.id, updated: this.updated}): null, 
                         this.state.refreshing ? React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'info'}, React.createElement("span", null, "Refreshing...")) :null, 
                         this.state.loading ? React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'info'}, React.createElement("span", null, "Loading...")) :null
                     ), 
@@ -1836,7 +1875,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid}) : null, 
                    
                 this.state.historyToolbar ? React.createElement(History, {historyToggle: this.historyToggle, id: id, type: type}) : null, 
-                this.state.entitiesToolbar ? React.createElement(Entities, {entitiesToggle: this.entitiesToggle, id: id, type: type}) : null, 
+                this.state.entitiesToolbar ? React.createElement(Entities, {entitiesToggle: this.entitiesToggle, entityData: this.state.entityData}) : null, 
                 this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: id, type: type, permissionData: this.state.headerData, permissionsToggle: this.permissionsToggle, updated: this.updated}) : null, 
                 this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: type, targetid: id, id: id, addedentry: this.entryToggle, updated: this.updated}) : null, 
                 this.state.deleteToolbar ? React.createElement(DeleteEvent, {subjectType: subjectType, type: type, id: id, deleteToggle: this.deleteToggle, updated: this.updated}) :null, 
@@ -1918,22 +1957,22 @@ var EntryDataStatus = React.createClass({displayName: "EntryDataStatus",
 
 var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
     getInitialState: function() {
-        return {value:this.props.data, type:this.props.type, id:this.props.id}
+        return {value:this.props.data.subject}
     },
     componentWillReceiveProps: function() {
-        this.setState({value:this.props.data});
+        this.setState({value:this.props.data.subject});
     },
     handleChange: function(event) {
         this.setState({value:event.target.value});
-        if (this.state.value != this.props.data) {
+        if (this.state.value != this.props.data.subject) {
             var json = {subject:this.state.value}
             $.ajax({
                 type: 'put',
-                url: 'scot/api/v2/' + this.state.type + '/' + this.state.id,
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
                 data: json,
                 success: function(data) {
                     console.log('success: ' + data);
-                    AppActions(this.state.id,'headerUpdate'); 
+                    AppActions.updateItem(this.props.id,'headerUpdate'); 
                 }.bind(this),
                 error: function() { 
                     this.props.updated('error','Failed to update the subject');
@@ -1948,14 +1987,14 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
             subjectWidth = 200;
         }
         return (
-            React.createElement("div", null, this.state.type, " ", this.state.id, ": ", React.createElement(DebounceInput, {debounceTimeout: 500, forceNotifyOnBlur: true, type: "text", value: this.state.value, onChange: this.handleChange, style: {width:subjectWidth+'px'}}))
+            React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement(DebounceInput, {debounceTimeout: 500, forceNotifyOnBlur: true, type: "text", value: this.state.value, onChange: this.handleChange, style: {width:subjectWidth+'px'}}))
         )
     }
 });
 
 module.exports = SelectedHeader;
 
-},{"../activemq/listener.jsx":4,"../components/add_flair.jsx":6,"../components/esearch.jsx":7,"../components/permission.jsx":8,"../components/source.jsx":10,"../components/tag.jsx":12,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/entities.jsx":23,"../modal/flair_modal.jsx":24,"../modal/history.jsx":25,"../modal/owner.jsx":26,"./selected_entry.jsx":15,"./selected_header_options.jsx":17,"react":1855,"react-bootstrap/lib/Button":774,"react-bootstrap/lib/ButtonToolbar":776,"react-bootstrap/lib/OverlayTrigger":788,"react-bootstrap/lib/Popover":789,"react-crouton":815,"react-debounce-input":979,"react-notification-system":1020,"react-overlays/lib/Affix.js":1024,"react-overlays/lib/AutoAffix.js":1025,"react-sticky":1282,"react-time":1665}],17:[function(require,module,exports){
+},{"../activemq/store.jsx":5,"../components/add_flair.jsx":6,"../components/esearch.jsx":7,"../components/permission.jsx":8,"../components/source.jsx":10,"../components/tag.jsx":12,"../flux/actions.jsx":18,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/entities.jsx":23,"../modal/flair_modal.jsx":24,"../modal/history.jsx":25,"../modal/owner.jsx":26,"./selected_entry.jsx":15,"./selected_header_options.jsx":17,"react":1855,"react-bootstrap/lib/Button":774,"react-bootstrap/lib/ButtonToolbar":776,"react-bootstrap/lib/OverlayTrigger":788,"react-bootstrap/lib/Popover":789,"react-crouton":815,"react-debounce-input":979,"react-notification-system":1020,"react-overlays/lib/Affix.js":1024,"react-overlays/lib/AutoAffix.js":1025,"react-sticky":1282,"react-time":1665}],17:[function(require,module,exports){
 var React           = require('react');
 var ButtonGroup     = require('react-bootstrap/lib/ButtonGroup.js');
 var Button          = require('react-bootstrap/lib/Button.js');
@@ -2118,7 +2157,7 @@ function updateStatus(payload) {
 			url: '/scot/api/v2/alert/'+$(y).text(),
 			data: data
 		}).success(function(response){
-            Store.emitChange(payload.action.item)
+//            Store.emitChange(payload.action.item)
 		})
 	}
 	})
@@ -2185,6 +2224,7 @@ var finalfiles = []
 var ReactTime = require('react-time')
 var AppActions  = require('../flux/actions.jsx');
 var Activekey = require('../activemq/handleupdate.jsx')
+var recently_updated = 0
 const  customStyles = {
         content : {
         top     : '1%',
@@ -2214,6 +2254,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	   type: 'GET',
 	   url:  '/scot/api/v2/entry/'+ this.props.id
 	   }).success(function(response){
+        recently_updated = response.updated
         if(response.body_flair == ""){
 	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(response.body)
         }
@@ -2254,7 +2295,8 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	   type: 'GET',
 	   url:  '/scot/api/v2/entry/'+ this.props.id
 	   }).success(function(response){
-	    if(response.body_flair == ""){
+        recently_updated = response.updated
+        if(response.body_flair == ""){
 	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(response.body)
         }
         else{
@@ -2374,36 +2416,40 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	AppActions.updateItem(this.props.targetid,'headerUpdate')
 	}
 	else if (this.props.stage == 'Edit'){
-	var data = {parent: Number(this.props.id), body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
-	$.ajax({
-	type: 'put',
-	url: '/scot/api/v2/entry/'+this.props.id,
-	data: JSON.stringify(data)
-	}).success(function(response){
-        if(finalfiles.length > 0){
-			for(var i = 0; i<finalfiles.length; i++){	
-			var file = {file : finalfiles[i].name}
-            data  = new FormData()
-            data.append('upload', finalfiles[i])
-            data.append('target_type',this.props.type)
-            data.append('target_id',Number(this.props.targetid))
-            data.append('entry_id',response.id)
-			$.ajax({
-			   type: 'POST',
-			   url: '/scot/api/v2/file',
-               data: data,
-               processData: false,
-               contentType: false,
-               dataType: 'json',
-               cache: false
-            }).success(function(response){
-			   }.bind(this))
-			}
-		}
-	}.bind(this))
-	this.props.addedentry()
-	this.props.updated()
-	}
+    $.ajax({
+        type: 'GET',
+        url: '/scot/api/v2/entry/'+this.props.id
+    }).success(function(response){
+    if(recently_updated != response.updated){
+            this.forEdit(false)
+            var set = false
+    var Confirm = {
+        launch: function(set){
+            this.forEdit(set)
+        }.bind(this)
+    }
+            $.confirm({
+                icon: 'glyphicon glyphicon-warning',
+                confirmButtonClass: 'btn-info',
+                cancelButtonClass: 'btn-info',
+                confirmButton: 'Yes, override',
+                cancelButton: 'Keep change',
+                content: response.body + "\n\n" + "DO YOU WANT TO KEEP YOUR CHANGES?",
+                backgroundDismiss: false,
+                title: "Edit Conflict with: " + response.owner,
+                confirm: function(){
+                Confirm.launch(true)
+                },
+                cancel: function(){
+                Confirm.launch(false)
+                }
+            })
+        }
+        else {
+            this.forEdit(true)
+        }
+    }.bind(this))
+    }
 	else  if(this.props.type == 'alert'){ 
      var data;
 	 $('.z-selected').each(function(key,value){
@@ -2474,6 +2520,40 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	AppActions.updateItem(this.props.targetid,'headerUpdate');
     }
 	}
+    },
+    forEdit: function(set){
+        console.log(set)
+        if(set){
+    var data = {parent: Number(this.props.parent), body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
+	$.ajax({
+	type: 'put',
+	url: '/scot/api/v2/entry/'+this.props.id,
+	data: JSON.stringify(data)
+	}).success(function(response){
+        if(finalfiles.length > 0){
+			for(var i = 0; i<finalfiles.length; i++){	
+			var file = {file : finalfiles[i].name}
+            data  = new FormData()
+            data.append('upload', finalfiles[i])
+            data.append('target_type',this.props.type)
+            data.append('target_id',Number(this.props.targetid))
+            data.append('entry_id',response.id)
+			$.ajax({
+			   type: 'POST',
+			   url: '/scot/api/v2/file',
+               data: data,
+               processData: false,
+               contentType: false,
+               dataType: 'json',
+               cache: false
+            }).success(function(response){
+			   }.bind(this))
+			}
+		}
+	}.bind(this))
+	this.props.addedentry()
+	AppActions.updateItem(this.props.targetid, 'headerUpdate')
+    }
     }
 });
 
@@ -2597,15 +2677,8 @@ const customStyles = {
 var Entities = React.createClass({displayName: "Entities",
     getInitialState: function() {
         return {
-            entitiesBody:false,
-            data: ''
+            entitiesBody:true,
         }
-    },
-    componentDidMount: function() {
-    this.serverRequest = $.get('/scot/api/v2/'+ this.props.type + '/' + this.props.id + '/entity', function (result) {
-            var result = result.records;
-            this.setState({entitiesBody:true, data:result})
-        }.bind(this));
     }, 
     render: function() {
         return (
@@ -2619,7 +2692,7 @@ var Entities = React.createClass({displayName: "Entities",
                         React.createElement("h3", {id: "myModalLabel"}, "List of Entities")
                     ), 
                     React.createElement("div", {className: "modal-body", style: {height:'600px', overflowY:'auto'}}, 
-                        this.state.entitiesBody ? React.createElement(EntitiesData, {data: this.state.data}) :null
+                        this.state.entitiesBody ? React.createElement(EntitiesData, {data: this.props.entityData}) :null
                     ), 
                     React.createElement("div", {className: "modal-footer"}, 
                         React.createElement("button", {class: "btn", onClick: this.props.entitiesToggle}, "Done")
@@ -2648,7 +2721,6 @@ var EntitiesData = React.createClass({displayName: "EntitiesData",
                 obj[type] = arr;
             } 
         }
-        console.dir(obj);
         for (var prop in obj) {
             var type = prop;
             var value = obj[prop];
@@ -2685,7 +2757,6 @@ var EntitiesDataHeaderIterator = React.createClass({displayName: "EntitiesDataHe
 var EntitiesDataValueIterator = React.createClass({displayName: "EntitiesDataValueIterator",
     render: function() {
         var eachValue = this.props.eachValue;
-        console.log(eachValue);
         return (
             React.createElement("span", null, eachValue, React.createElement("br", null))
         )
@@ -2761,9 +2832,7 @@ var EntityOptions = React.createClass({displayName: "EntityOptions",
     render: function() {
         return (
             React.createElement(ButtonGroup, null, 
-                React.createElement(Button, null, "Search SCOT"), 
-                React.createElement(Button, null, "Search Splunk"), 
-                React.createElement(Button, null, "Robtex Lookup", React.createElement("img", {style: {height:'15px'}, src: "/images/warning.png"}))
+                React.createElement(Button, null, "Search Splunk")
             )
         )
     }
@@ -2775,12 +2844,10 @@ var EntityBody = React.createClass({displayName: "EntityBody",
             loading:"Loading Entries",
             EntryData:null,
         }
-    },
-    componentDidMount: function() {
-        //this.setState({EntryData:<SelectedEntry type={'entity'} id={this.props.entityid}/>})
-    },  
+    }, 
     render: function() {
         var type = 'entity';
+        //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
         var SelectedEntry = require('../entry/selected_entry.jsx');
         return (
             React.createElement(Tabs, {defaultActiveKey: 1}, 
@@ -2913,7 +2980,7 @@ var History = React.createClass({displayName: "History",
                         React.createElement("img", {src: "/images/close_toolbar.png", className: "close_toolbar", onClick: this.props.historyToggle}), 
                         React.createElement("h3", {id: "myModalLabel"}, "Current History")
                     ), 
-                    React.createElement("div", {className: "modal-body", style: {height: '75vh', overflowY:'auto'}}, 
+                    React.createElement("div", {className: "modal-body", style: {height: '75vh', width:'700px',overflowY:'auto'}}, 
                        this.state.historyBody ? React.createElement(HistoryData, {data: this.state.data}) : null
                     ), 
                     React.createElement("div", {className: "modal-footer"}, 
@@ -3090,7 +3157,7 @@ var Alertentry = require('../entry/selected_entry.jsx')
 var Header = require('../entry/selected_header.jsx')
 var Addentry = require('../modal/add_entry.jsx')
 var Appactions = require('../flux/actions.jsx')
-var Store = require('../flux/store.jsx')
+var Store = require('../activemq/store.jsx')
 var Listener = require('../activemq/listener.jsx')
 var supervalue = [];
 var supercolumns = []
@@ -3406,10 +3473,10 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	setTimeout(function() { this.setState({columns: newarray})}.bind(this), 800)
 	}
 	}.bind(this));
-    Listener.activeMq(this.state.key, this.reloadactive)
-    Listener.activeMq('alertgroupnotification', this.notification)
-    setTimeout(function() {Store.storeKey(this.state.key)}.bind(this), 10)
-	setTimeout(function() {Store.addChangeListener(this.reloadentry)}.bind(this),10)
+    Store.storeKey(this.state.key)
+	Store.addChangeListener(this.reloadactive)
+    Store.storeKey('alertgroupnotification')
+    Store.addChangeListener(this.notification)
 	},
    notification: function(){
     var notification = this.refs.notificationSystem
@@ -3430,6 +3497,7 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 
    },
   componentWillReceiveProps: function(){
+    /*
     var project = getColumns(this.state.key)
 	project.success(function(realData){
 	var last = realData.columns
@@ -3447,10 +3515,11 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	}	    
 	}
 	this.setState({columns: newarray})
-	}
-	}.bind(this)); 
-    setTimeout(function() {Store.storeKey(this.state.key)}.bind(this), 10)
-	setTimeout(function() {Store.addChangeListener(this.reloadentry)}.bind(this),10)    
+	*/
+   // }
+	//}.bind(this)); 
+    //setTimeout(function() {Store.storeKey(this.state.key)}.bind(this), 10)
+	//setTimeout(function() {Store.addChangeListener(this.reloadentry)}.bind(this),10)    
     },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
          firstCol.width = firstSize
@@ -3517,11 +3586,9 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
     event.preventDefault();
     },
     reloadactive: function(){
-    
     supervalue = []
     supervalue.push(this.state.key)
     this.reloadentry()
-    var notification = this.refs.notificationSystem
     },
    flairOn: function(){
 	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
@@ -3608,11 +3675,11 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 
     },
     reloadentry: function(){
-	var getID = []	
+    var getID = []	
     var finalarray = [];
 	var sortarray = {}
 	sortarray[colsort] = valuesort
-	if(changestate){
+    if(changestate){
 	var count = 0
 	return $.ajax({
 	type: 'GET',
@@ -3716,16 +3783,19 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
     openSelected: function(){
 	var data = new Object();
 	var state = this.state.key
-	Appactions.updateItem(state, 'alertstatusmessage', 'open')
+	
+    Appactions.updateItem(state, 'alertstatusmessage', 'open')
     },
 
     closeSelected: function(){
 	var state = this.state.key
-	Appactions.updateItem(state, 'alertstatusmessage', 'closed')
+	
+    Appactions.updateItem(state, 'alertstatusmessage', 'closed')
    },
    promoteSelected: function(){
 	var state = this.state.key
-	Appactions.updateItem(state, 'alertstatusmessage', 'promoted')
+	
+    Appactions.updateItem(state, 'alertstatusmessage', 'promoted')
    },
 
    selectExisting: function(){
@@ -3814,7 +3884,7 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
     })
 	var ids = selected.length? selected.join(',') : 'none'
 	storealertids = ids.split(',')		
-    this.setState({selected: SELECTED_ID_GRID, oneview:true,setcss: false, key:supervalue[0] })
+    this.setState({selected: SELECTED_ID_GRID, oneview:true,setcss: false})
 	},
     closeHistory: function(){
 	this.setState({history: false})	
@@ -3840,10 +3910,13 @@ var Maintable = React.createClass({displayName: "Maintable",
 		stage = true
 		changestate = true
 		url = '/scot/api/v2/supertable'
-        Listener.activeMq('activealertgroup', this.activecallback)
+        Listener.activeMq
+        Store.storeKey('activealertgroup')
+        Store.addChangeListener(this.activecallback)
         }
 		else {
-        Listener.activeMq('activealertgroup', this.activecallback)
+        Store.storeKey('activealertgroup')
+        Store.addChangeListener(this.activecallback)
         window.location.hash = '#/alertgroup/'
 		window.location.location = window.location.hash
 		url = '/scot/api/v2/alertgroup'
@@ -3854,7 +3927,8 @@ var Maintable = React.createClass({displayName: "Maintable",
 		}
 	}
 	else {
-    Listener.activeMq('activealertgroup', this.activecallback)
+    Store.storeKey('activealertgroup')
+    Store.addChangeListener(this.activecallback)
 	window.location.hash = '#/alertgroup/'
 	window.location.href = window.location.hash
 	this.setState({})
@@ -4060,7 +4134,7 @@ var Maintable = React.createClass({displayName: "Maintable",
 module.exports = Maintable
 
 
-},{"../../../node_modules/alert-react-datagrid/react-datagrid":46,"../../../node_modules/react-crouton":815,"../../../node_modules/react-datagrid":829,"../../../node_modules/react-dropdown":982,"../../../node_modules/react-dropzone":984,"../../../node_modules/react-frame":996,"../../../node_modules/react-modal":1004,"../../../node_modules/react-notification-system":1020,"../../../node_modules/react-panels":1054,"../../../node_modules/react-textarea-autosize":1662,"../../../node_modules/react-tinymce":1669,"../activemq/listener.jsx":4,"../components/esearch.jsx":7,"../entry/selected_entry.jsx":15,"../entry/selected_header.jsx":16,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/history.jsx":25,"react":1855,"react-bootstrap/lib/Button":774,"react-bootstrap/lib/ButtonToolbar":776,"react-bootstrap/lib/OverlayTrigger":788,"react-bootstrap/lib/Popover":789}],28:[function(require,module,exports){
+},{"../../../node_modules/alert-react-datagrid/react-datagrid":46,"../../../node_modules/react-crouton":815,"../../../node_modules/react-datagrid":829,"../../../node_modules/react-dropdown":982,"../../../node_modules/react-dropzone":984,"../../../node_modules/react-frame":996,"../../../node_modules/react-modal":1004,"../../../node_modules/react-notification-system":1020,"../../../node_modules/react-panels":1054,"../../../node_modules/react-textarea-autosize":1662,"../../../node_modules/react-tinymce":1669,"../activemq/listener.jsx":4,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../entry/selected_entry.jsx":15,"../entry/selected_header.jsx":16,"../flux/actions.jsx":18,"../modal/add_entry.jsx":21,"../modal/history.jsx":25,"react":1855,"react-bootstrap/lib/Button":774,"react-bootstrap/lib/ButtonToolbar":776,"react-bootstrap/lib/OverlayTrigger":788,"react-bootstrap/lib/Popover":789}],28:[function(require,module,exports){
 'use strict';
 
 var React = require('react')
@@ -4083,7 +4157,7 @@ var ids = []
 var stage = false
 var savedsearch = false
 var savedfsearch;
-var Listener = require('../activemq/listener.jsx')
+var Store = require('../activemq/store.jsx')
 var setfilter = false
 var savedid;
 var columns = 
@@ -4175,7 +4249,8 @@ module.exports = React.createClass({displayName: "exports",
     componentWillMount: function(){
 	window.location.hash ='#/event/'
 	window.location.href = window.location.hash
-    Listener.activeMq('eventgroup', this.reloadactive)
+    Store.storeKey('eventgroup')
+    Store.addChangeListener(this.reloadactive)
     },
 
     reloadactive: function(){
@@ -4400,7 +4475,7 @@ module.exports = React.createClass({displayName: "exports",
 
 
 
-},{"../../../node_modules/events-react-datagrid/react-datagrid":247,"../../../node_modules/react-crouton":815,"../../../node_modules/react-notification-system":1020,"../activemq/listener.jsx":4,"../components/esearch.jsx":7,"../entry/selected_container.jsx":14,"react":1855}],29:[function(require,module,exports){
+},{"../../../node_modules/events-react-datagrid/react-datagrid":247,"../../../node_modules/react-crouton":815,"../../../node_modules/react-notification-system":1020,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../entry/selected_container.jsx":14,"react":1855}],29:[function(require,module,exports){
 'use strict';
 
 var React = require('react')
@@ -4424,7 +4499,7 @@ var savedsearch = false
 var savedfsearch;
 var Search = require('../components/esearch.jsx')
 var setfilter = false
-var Listener = require('../activemq/listener.jsx')
+var Store = require('../activemq/store.jsx')
 var columns = [
     { name: 'id', width: 111.183,style: {color: 'black'}},
     { name: 'doe',  width: 111.183, style: {color: 'black'}},
@@ -4518,7 +4593,8 @@ module.exports = React.createClass({displayName: "exports",
     componentWillMount: function(){
 	window.location.hash = '#/incident/'
 	window.location.href = window.location.hash
-    Listener.activeMq('incidentgroup', this.reloadactive)
+    Store.storeKey('incidentgroup')
+    Store.addChangeListener(this.reloadactive)
     },
 
     reloadactive:function(){
@@ -4701,7 +4777,7 @@ module.exports = React.createClass({displayName: "exports",
 
 
 
-},{"../../../node_modules/incident-react-datagrid/react-datagrid":430,"../../../node_modules/react-crouton":815,"../../../node_modules/react-notification-system":1020,"../activemq/listener.jsx":4,"../components/esearch.jsx":7,"../entry/selected_container.jsx":14,"react":1855}],30:[function(require,module,exports){
+},{"../../../node_modules/incident-react-datagrid/react-datagrid":430,"../../../node_modules/react-crouton":815,"../../../node_modules/react-notification-system":1020,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../entry/selected_container.jsx":14,"react":1855}],30:[function(require,module,exports){
 'use strict';
 var ReactDOM	    = require('react-dom')
 var React           = require('react')
@@ -4715,6 +4791,7 @@ var Router	    = require('../../../node_modules/react-router').Router
 var Route	    = require('../../../node_modules/react-router').Route
 var Link	    = require('../../../node_modules/react-router').Link
 var browserHistory  = require('../../../node_modules/react-router/').hashHistory
+var Listener        = require('../activemq/listener.jsx')
 var ExpandableNavContainer = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavContainer.js')
 var ExpandableNavbar = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavbar.js')
 var ExpandableNavHeader = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavHeader.js')
@@ -4883,7 +4960,10 @@ state = 0
 	];
 	var headerStyle = { paddingLeft: 5 };
 	var fullStyle   = { paddingLeft: 50};
-	return (
+	
+    setTimeout(function(){Listener.activeMq()}, 3000)
+
+    return (
 React.createElement(ExpandableNavContainer, {expanded: false}, React.createElement(ExpandableNavToggleButton, {smallClass: "s", className: "shared"}),
         React.createElement(ExpandableNavbar, {fullClass: "full", smallClass: "small"}, 
           React.createElement(ExpandableNavHeader, {small: headerSmall, full: headerFull, headerStyle: headerStyle, fullStyle: fullStyle}), 
@@ -4978,7 +5058,7 @@ ReactDOM.render((
 ), document.getElementById('content'))
 
 
-},{"../../../node_modules/react-expandable-nav":993,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavContainer.js":985,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavHeader.js":986,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavMenu.js":988,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavMenuItem.js":989,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavPage.js":990,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavToggleButton.js":991,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavbar.js":992,"../../../node_modules/react-router":1275,"../../../node_modules/react-router/":1275,"../entry/selected_container.jsx":14,"./alert.jsx":27,"./events.jsx":28,"./incidents.jsx":29,"./intel.jsx":31,"./tasks.jsx":32,"react":1855,"react-dom":981}],31:[function(require,module,exports){
+},{"../../../node_modules/react-expandable-nav":993,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavContainer.js":985,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavHeader.js":986,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavMenu.js":988,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavMenuItem.js":989,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavPage.js":990,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavToggleButton.js":991,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavbar.js":992,"../../../node_modules/react-router":1275,"../../../node_modules/react-router/":1275,"../activemq/listener.jsx":4,"../entry/selected_container.jsx":14,"./alert.jsx":27,"./events.jsx":28,"./incidents.jsx":29,"./intel.jsx":31,"./tasks.jsx":32,"react":1855,"react-dom":981}],31:[function(require,module,exports){
 'use strict';
 
 var React = require('react')
@@ -5313,7 +5393,7 @@ var stage = false
 var savedsearch = false
 var savedfsearch;
 var setfilter = false
-var Listener = require('../activemq/listener.jsx')
+var Store = require('../activemq/store.jsx')
 var columns = 
 [
     { name: 'type',width: 159.4,  style: {color: 'black'}},
@@ -5399,7 +5479,8 @@ module.exports = React.createClass({displayName: "exports",
     componentWillMount: function(){
 	window.location.hash = '#/task/'
 	window.location.href = window.location.hash
-    Listener.activeMq('taskgroup', this.reloadactive)
+    Store.storeKey('taskgroup')
+    Store.addChangeListener(this.reloadactive)
     },
     reloadactive: function(){
 
@@ -5570,7 +5651,7 @@ module.exports = React.createClass({displayName: "exports",
 
 
 
-},{"../../../node_modules/react-crouton":815,"../../../node_modules/tasks-react-datagrid/react-datagrid":1870,"../activemq/listener.jsx":4,"../components/esearch.jsx":7,"../entry/selected_container.jsx":14,"react":1855}],33:[function(require,module,exports){
+},{"../../../node_modules/react-crouton":815,"../../../node_modules/tasks-react-datagrid/react-datagrid":1870,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../entry/selected_container.jsx":14,"react":1855}],33:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
