@@ -21,7 +21,7 @@ var savedsearch = false
 var savedfsearch;
 var Search = require('../components/esearch.jsx')
 var setfilter = false
-var Listener = require('../activemq/listener.jsx')
+var Store = require('../activemq/store.jsx')
 var columns = [
     { name: 'id', width: 111.183,style: {color: 'black'}},
     { name: 'doe',  width: 111.183, style: {color: 'black'}},
@@ -115,7 +115,8 @@ module.exports = React.createClass({
     componentWillMount: function(){
 	window.location.hash = '#/incident/'
 	window.location.href = window.location.hash
-    Listener.activeMq('incidentgroup', this.reloadactive)
+    Store.storeKey('incidentgroup')
+    Store.addChangeListener(this.reloadactive)
     },
 
     reloadactive:function(){
