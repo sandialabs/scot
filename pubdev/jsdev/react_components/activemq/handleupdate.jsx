@@ -65,7 +65,7 @@ function update(state, callback, payload){
      callback.emitChange("activealertgroup")
      callback.emitChange('incidentgroup')
      callback.emitChange('eventgroup')
-     callback.emitChange(payload.action.activemq.data.id)
+     setTimeout(function(){callback.emitChange(payload.action.activemq.data.id)}, 30)
    }
    else if (state == 'alert'){
 /*    $('.z-table').each(function(key, value){
