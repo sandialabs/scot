@@ -376,7 +376,7 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	},
    notification: function(){
     var notification = this.refs.notificationSystem
-    if(activemqwho != "" && notification != undefined && activemqtype != 'alert' && activemqwho != 'api'){
+    if(activemqwho != "" && notification != undefined && activemqwho != 'api'){
     notification.addNotification({
         message: activemqwho + activemqmessage + activemqid,
         level: 'info',
