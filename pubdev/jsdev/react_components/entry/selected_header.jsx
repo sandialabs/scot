@@ -106,6 +106,8 @@ var SelectedHeader = React.createClass({
         console.log('Ran componentDidMount');
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated); 
+        Store.storeKey('entryNotification')
+        Store.addChangeListener(this.notification);
     },
     /*componentWillReceiveProps: function() {
         this.updated();    
@@ -170,7 +172,7 @@ var SelectedHeader = React.createClass({
     }, 
     notification: function() {
         var notification = this.refs.notificationSystem
-        if(activemqwho != "" && notification != undefined && activemqtype != 'alert' && activemqwho != 'api'){
+        if(activemqwho != "" && notification != undefined && activemqwho != 'api'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
@@ -260,7 +262,7 @@ var SelectedHeader = React.createClass({
                 <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%'}}>
                     <div className='details-subject' style={{display: 'inline-flex',paddingLeft:'5px'}}>
                         {this.state.showEventData ? <EntryDataSubject data={this.state.headerData} subjectType={subjectType} type={type} id={this.props.id} updated={this.updated} />: null}
-                        {this.state.refreshing ? <Button bsSize={'xsmall'} bsStyle={'info'}><span>Refreshing...</span></Button> :null }
+                        {this.state.refreshing ? <Button bsSize={'xsmall'} bsStyle={'info'}><span>Refreshing Data...</span></Button> :null }
                         {this.state.loading ? <Button bsSize={'xsmall'} bsStyle={'info'}><span>Loading...</span></Button> :null}    
                     </div> 
                     <div className='details-table toolbar'>

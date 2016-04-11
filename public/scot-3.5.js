@@ -94,6 +94,7 @@ function update(state, callback, payload){
      activemqmessage = " updated " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('entryNotification');
      callback.emitChange('selectedHeaderEntry');
      callback.emitChange('alertgroupnotification')
      callback.emitChange('eventgroup')
@@ -127,6 +128,7 @@ function update(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('alertgroupnotification')
      callback.emitChange('incidentgroup')
      callback.emitChange("activealertgroup")
@@ -150,6 +152,7 @@ function update(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('alertgroupnotification')
      callback.emitChange("activealertgroup")
      callback.emitChange('incidentgroup')
@@ -181,6 +184,7 @@ function creation(state, callback, payload){
     activemqtype = state
     callback.emitChange(payload.action.activemq.data.id) 
     callback.emitChange('selectedHeaderEntry');
+    callback.emitChange('entryNotification');
     callback.emitChange('eventgroup') 
     callback.emitChange('activealertgroup')
     callback.emitChange('incidentgroup') 
@@ -192,6 +196,7 @@ function creation(state, callback, payload){
     activemqid = payload.action.activemq.data.id
     activemqtype = state
     callback.emitChange('selectedHeaderEntry');
+    callback.emitChange('entryNotification');
     callback.emitChange('incidentgroup') 
     callback.emitChange('eventgroup')  
     callback.emitChange('activealertgroup')
@@ -216,6 +221,7 @@ function creation(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('incidentgroup') 
      callback.emitChange('eventgroup')  
      callback.emitChange('activealertgroup')
@@ -228,6 +234,7 @@ function creation(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('activealertgroup')
      callback.emitChange('eventgroup')
      callback.emitChange('incidentgroup')
@@ -254,6 +261,7 @@ function deletion(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('activealertgroup') 
      callback.emitChange('incidentgroup') 
      callback.emitChange('eventgroup') 
@@ -270,6 +278,7 @@ function deletion(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('incidentgroup')
      callback.emitChange('activealertgroup') 
      callback.emitChange('eventgroup') 
@@ -282,6 +291,7 @@ function deletion(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('incidentgroup')
      callback.emitChange('eventgroup') 
      callback.emitChange('activealertgroup') 
@@ -1379,8 +1389,33 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 };
                 waitForEntry.waitEntry();
             }.bind(this));
+            Store.storeKey(this.props.id) //this will be the id of alert or entity
+            Store.addChangeListener(this.updatedCB);
         }
     }, 
+    updatedCB: function() {
+       if (this.props.type == 'alert' || this.props.type == 'entity') {
+            this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
+                var entryResult = result.records;
+                this.setState({showEntryData:true, entryData:entryResult})
+            }.bind(this));
+            this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
+                var entityResult = result.records;
+                this.setState({showEntityData:true, entityData:entityResult})
+                var waitForEntry = {
+                    waitEntry: function() {
+                        if(this.state.showEntryData == false){
+                            setTimeout(waitForEntry.waitEntry,50);
+                        } else {
+                            console.log('entries are done')
+                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                        }
+                    }.bind(this)
+                };
+                waitForEntry.waitEntry();
+            }.bind(this)); 
+        }
+    },
     flairToolbarToggle: function(id) {
         if (this.state.flairToolbar == false) {
             this.setState({flairToolbar:true,entityid:id})
@@ -1537,10 +1572,18 @@ var EntryParent = React.createClass({displayName: "EntryParent",
 
 var EntryData = React.createClass({displayName: "EntryData", 
     getInitialState: function() {
-        return {
-            height:'1px',
-            entityid:null,
-            count:0,
+        if (this.props.type == 'alert' || this.props.type == 'entity') {
+            return {
+                height:'200px',
+                entityid:null,
+                count:0,
+            }
+        } else {
+            return {
+                height:'1px',
+                entityid:null,
+                count:0,
+            }
         }
     }, 
     onLoad: function() {
@@ -1560,7 +1603,7 @@ var EntryData = React.createClass({displayName: "EntryData",
                 }.bind(this)); 
             }
         } else {
-            this.setState({height:'200px'})
+            
         }
     },
     render: function() {
@@ -1694,6 +1737,8 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         console.log('Ran componentDidMount');
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated); 
+        Store.storeKey('entryNotification')
+        Store.addChangeListener(this.notification);
     },
     /*componentWillReceiveProps: function() {
         this.updated();    
@@ -1758,7 +1803,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
     }, 
     notification: function() {
         var notification = this.refs.notificationSystem
-        if(activemqwho != "" && notification != undefined && activemqtype != 'alert' && activemqwho != 'api'){
+        if(activemqwho != "" && notification != undefined && activemqwho != 'api'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
@@ -1848,7 +1893,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 React.createElement("div", {id: "NewEventInfo", className: "entry-header-info-null", style: {width:'100%'}}, 
                     React.createElement("div", {className: "details-subject", style: {display: 'inline-flex',paddingLeft:'5px'}}, 
                         this.state.showEventData ? React.createElement(EntryDataSubject, {data: this.state.headerData, subjectType: subjectType, type: type, id: this.props.id, updated: this.updated}): null, 
-                        this.state.refreshing ? React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'info'}, React.createElement("span", null, "Refreshing...")) :null, 
+                        this.state.refreshing ? React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'info'}, React.createElement("span", null, "Refreshing Data...")) :null, 
                         this.state.loading ? React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'info'}, React.createElement("span", null, "Loading...")) :null
                     ), 
                     React.createElement("div", {className: "details-table toolbar"}, 
