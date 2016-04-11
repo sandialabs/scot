@@ -47,8 +47,33 @@ var SelectedEntry = React.createClass({
                 };
                 waitForEntry.waitEntry();
             }.bind(this));
+            Store.storeKey(this.props.id) //this will be the id of alert or entity
+            Store.addChangeListener(this.updatedCB);
         }
     }, 
+    updatedCB: function() {
+       if (this.props.type == 'alert' || this.props.type == 'entity') {
+            this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
+                var entryResult = result.records;
+                this.setState({showEntryData:true, entryData:entryResult})
+            }.bind(this));
+            this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
+                var entityResult = result.records;
+                this.setState({showEntityData:true, entityData:entityResult})
+                var waitForEntry = {
+                    waitEntry: function() {
+                        if(this.state.showEntryData == false){
+                            setTimeout(waitForEntry.waitEntry,50);
+                        } else {
+                            console.log('entries are done')
+                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                        }
+                    }.bind(this)
+                };
+                waitForEntry.waitEntry();
+            }.bind(this)); 
+        }
+    },
     flairToolbarToggle: function(id) {
         if (this.state.flairToolbar == false) {
             this.setState({flairToolbar:true,entityid:id})
@@ -205,10 +230,18 @@ var EntryParent = React.createClass({
 
 var EntryData = React.createClass({ 
     getInitialState: function() {
-        return {
-            height:'1px',
-            entityid:null,
-            count:0,
+        if (this.props.type == 'alert' || this.props.type == 'entity') {
+            return {
+                height:'200px',
+                entityid:null,
+                count:0,
+            }
+        } else {
+            return {
+                height:'1px',
+                entityid:null,
+                count:0,
+            }
         }
     }, 
     onLoad: function() {
@@ -228,7 +261,7 @@ var EntryData = React.createClass({
                 }.bind(this)); 
             }
         } else {
-            this.setState({height:'200px'})
+            
         }
     },
     render: function() {
