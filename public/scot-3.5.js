@@ -95,6 +95,7 @@ function update(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('entryNotification');
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
      callback.emitChange('alertgroupnotification')
      callback.emitChange('eventgroup')
@@ -127,6 +128,7 @@ function update(state, callback, payload){
      activemqmessage = " updated " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
      callback.emitChange('entryNotification');
      callback.emitChange('alertgroupnotification')
@@ -151,6 +153,7 @@ function update(state, callback, payload){
      activemqmessage = " updated " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
      callback.emitChange('entryNotification');
      callback.emitChange('alertgroupnotification')
@@ -160,18 +163,30 @@ function update(state, callback, payload){
      callback.emitChange(payload.action.activemq.data.id)
    }
    else if (state == 'alert'){
-/*    $('.z-table').each(function(key, value){
+     
+    $('.z-table').each(function(key, value){
         $(value).find('.z-row').each(function(x,y){
            $(y).find('.z-cell').each(function(r,s){
            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
-            $(y).css('background', '#FFFF76')
-            setTimeout(function(){$(y).css('background', "")}, 10000)
+                $(y).find('.z-cell').each(function(p,o){
+                    if($(o).attr('name') == 'alertgroup'){
+                    callback.emitChange($(o).text())
+                    }
+                })
             }
         })
       })
     })
-
-*/
+     activemqwho = payload.action.activemq.data.who
+     activemqmessage = " updated " + state + " id: " 
+     activemqid = payload.action.activemq.data.id
+     activemqtype = state
+     callback.emitChange('taskgroup')
+     callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('alertgroupnotification')
+     callback.emitChange("activealertgroup")
+     callback.emitChange('incidentgroup')
+     callback.emitChange('eventgroup')    
    }
 }
 function creation(state, callback, payload){
@@ -183,6 +198,7 @@ function creation(state, callback, payload){
     activemqid = payload.action.activemq.data.id
     activemqtype = state
     callback.emitChange(payload.action.activemq.data.id) 
+    callback.emitChange('taskgroup')
     callback.emitChange('selectedHeaderEntry');
     callback.emitChange('entryNotification');
     callback.emitChange('eventgroup') 
@@ -195,12 +211,14 @@ function creation(state, callback, payload){
     activemqmessage = " created " + state + " : " 
     activemqid = payload.action.activemq.data.id
     activemqtype = state
+    callback.emitChange('taskgroup')
     callback.emitChange('selectedHeaderEntry');
     callback.emitChange('entryNotification');
     callback.emitChange('incidentgroup') 
     callback.emitChange('eventgroup')  
     callback.emitChange('activealertgroup')
     callback.emitChange('alertgroupnotification')
+    callback.emitChange(payload.action.activemq.data.id)
 /*    setTimeout(function(){$('.z-row').each(function(key, value){
            $(value).find('.z-cell').each(function(r,s){
            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
@@ -220,6 +238,7 @@ function creation(state, callback, payload){
      activemqmessage = " created " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
      callback.emitChange('entryNotification');
      callback.emitChange('incidentgroup') 
@@ -233,6 +252,7 @@ function creation(state, callback, payload){
      activemqmessage = " created " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
      callback.emitChange('entryNotification');
      callback.emitChange('activealertgroup')
@@ -250,7 +270,24 @@ function deletion(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('activealertgroup')
-
+     callback.emitChange('incidentgroup') 
+     callback.emitChange('eventgroup') 
+     callback.emitChange('alertgroupnotification')
+     callback.emitChange('taskgroup')
+     callback.emitChange('selectedHeaderEntry')
+    $('.z-table').each(function(key, value){
+        $(value).find('.z-row').each(function(x,y){
+           $(y).find('.z-cell').each(function(r,s){
+           if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
+                $(y).find('.z-cell').each(function(p,o){
+                    if($(o).attr('name') == 'alertgroup'){
+                    callback.emitChange($(o).text())
+                    }
+                })
+            }
+        })
+      })
+    })
     }
     else if (state == 'entry'){
      callback.emitChange(payload.action.activemq.data.id) 
@@ -260,12 +297,14 @@ function deletion(state, callback, payload){
      activemqmessage = " deleted " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
      callback.emitChange('entryNotification');
      callback.emitChange('activealertgroup') 
      callback.emitChange('incidentgroup') 
      callback.emitChange('eventgroup') 
      callback.emitChange('alertgroupnotification')
+     callback.emitChange(payload.action.activemq.data.id)
     }
     else if (state == 'intel'){
 
@@ -277,6 +316,7 @@ function deletion(state, callback, payload){
      activemqmessage = " deleted " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
      callback.emitChange('entryNotification');
      callback.emitChange('incidentgroup')
@@ -290,6 +330,7 @@ function deletion(state, callback, payload){
      activemqmessage = " deleted " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
      callback.emitChange('entryNotification');
      callback.emitChange('incidentgroup')
@@ -2301,7 +2342,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	   }).success(function(response){
         recently_updated = response.updated
         if(response.body_flair == ""){
-	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(response.body)
+	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(response.body)
         }
         else{
 	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(response.body_flair)
@@ -2312,7 +2353,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	finalfiles = []
     reply = false
 	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").text('')
-	}
+    }
 	else if(this.props.title == 'Reply Entry'){
 	   finalfiles = []
        reply = true
@@ -2331,7 +2372,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 		newheight = newheight + 'px'
 		this.setState({height: newheight})
 	}
-	},
+    },
 	componentWillReceiveProps: function(){
 	if(this.props.stage == 'Edit'){
 	  reply = false
@@ -2342,7 +2383,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	   }).success(function(response){
         recently_updated = response.updated
         if(response.body_flair == ""){
-	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text(response.body)
+	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(response.body)
         }
         else{
 	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(response.body_flair)
@@ -2370,7 +2411,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	React.createElement("h4", {className: "modal-title"}, this.props.title), React.createElement('div', {className: 'entry-header-info-null', style: {top: '1px', width: '100%', background: '#FFF'}}, React.createElement('h2', {style: {color: '#6C2B2B', 'font-size':'24px', 'text-align': 'left'}}, this.props.header1 ? React.createElement("div" , {style: {display: 'inline-flex'}}, React.createElement("p", null, this.props.header1), React.createElement(ReactTime, { value: this.props.createdTime * 1000, format:"MM/DD/YYYY hh:mm:ss a"}) , React.createElement("p", null, this.props.header2), React.createElement(ReactTime, {value: this.props.updatedTime * 1000,format:"MM/DD/YYYY hh:mm:ss a"}), React.createElement("p", null, this.props.header3)): output)), reply ? React.createElement('div', null, React.createElement(Frame, {id: 'iframe_'+this.props.id, styleSheets: ['/css/sandbox.css'], style: {overflow:'auto',width:'100%', height:'300px'}, frameBorder: '1', sandbox: 'allow-popups allow-same-origin'}, React.createElement('div', {dangerouslySetInnerHTML : {__html:item}}))) : null 
 	), 
 	React.createElement("div", {className: "modal-body", style: {height: '90%'}}, 
-	React.createElement(TinyMCE, {style: {height: '394px'}, content: "", className: "inputtext",config: {plugins: 'autolink link image lists print preview',toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'},onChange: this.handleEditorChange}
+	React.createElement(TinyMCE, {style: {height: '394px'}, content: "", className: "inputtext",config: {plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'},onChange: this.handleEditorChange}
 	)), 
 	React.createElement("div", {className: "modal-footer"}, React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width': '2px','border-color':'#000','border-radius':'4px',margin:'30px' ,padding: '30px','border-style': 'dashed', 'text-align' : 'center'}}, React.createElement("div",null,"Drop some files here or click to  select files to upload")),
 	this.state.files ? React.createElement("div", null, this.state.files.map((file) => React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p",{style:{display:'inline'}}, file.name),React.createElement('button', {style: {/*width: '2em', height: '1em',*/ 'line-height':'1px'}, className: 'btn btn-info', id: file.name, onClick: this.Close}, 'x'))))): null, 
@@ -2395,8 +2436,8 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	     finalfiles = []
          this.props.addedentry()
 	     this.setState({change:false})
-	     this.props.updated()
-	},
+	     AppActions.updateItem(this.props.targetid, 'headerUpdate')
+    },
    	Close: function(i) {
 	for(var x = 0; x< finalfiles.length; x++){
 	 if(i.target.id == finalfiles[x].name){
@@ -2423,13 +2464,30 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
         },
 	submit: function(){
 	if($('#react-tinymce-addentry_ifr').contents().find("#tinymce").text() == ""){
-	alert("Please fill in Text")
+	alert("Please Add Some Text")
 	}
     else {    
     if(this.props.stage == 'Reply')
 	{
 	var data = new Object()
-	data = JSON.stringify({parent: Number(this.props.id), body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
+	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").each(function(x,y){
+        $(y).find('p').each(function(r,s){
+                $(s).find('img').each(function(key, value){ 
+                var canvas = document.createElement('canvas')
+                var set = new Image()
+                set = $(value)
+                canvas.width =  set[0].width
+                canvas.height = set[0].height
+                var ctx = canvas.getContext('2d')
+                ctx.drawImage(set[0], 0, 0)
+                var dataURL = canvas.toDataURL("image/png")
+                //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
+                $(value).attr('src', dataURL)
+              })
+        })
+    })
+
+    data = JSON.stringify({parent: Number(this.props.id), body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
 
 	$.ajax({
 	type: 'post',
@@ -2461,6 +2519,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	AppActions.updateItem(this.props.targetid,'headerUpdate')
 	}
 	else if (this.props.stage == 'Edit'){
+
     $.ajax({
         type: 'GET',
         url: '/scot/api/v2/entry/'+this.props.id
@@ -2477,16 +2536,16 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                 icon: 'glyphicon glyphicon-warning',
                 confirmButtonClass: 'btn-info',
                 cancelButtonClass: 'btn-info',
-                confirmButton: 'Yes, override',
-                cancelButton: 'Keep change',
-                content: response.body + "\n\n" + "DO YOU WANT TO KEEP YOUR CHANGES?",
+                confirmButton: 'Yes, override change?',
+                cancelButton: 'No, Keep change from ' + response.owner + '?',
+                content: response.body,
                 backgroundDismiss: false,
-                title: "Edit Conflict with: " + response.owner,
+                title: "Edit Conflict with: " + response.owner + '\n\n',
                 confirm: function(){
                 Confirm.launch(true)
                 },
                 cancel: function(){
-                Confirm.launch(false)
+                Confirm.launch(true)
                 }
             })
         }
@@ -2497,7 +2556,24 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
     }
 	else  if(this.props.type == 'alert'){ 
      var data;
-	 $('.z-selected').each(function(key,value){
+	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").each(function(x,y){
+        $(y).find('p').each(function(r,s){
+                $(s).find('img').each(function(key, value){ 
+                var canvas = document.createElement('canvas')
+                var set = new Image()
+                set = $(value)
+                canvas.width =  set[0].width
+                canvas.height = set[0].height
+                var ctx = canvas.getContext('2d')
+                ctx.drawImage(set[0], 0, 0)
+                var dataURL = canvas.toDataURL("image/png")
+                //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
+                $(value).attr('src', dataURL)
+              })
+        })
+    })
+    
+    $('.z-selected').each(function(key,value){
 	 $(value).find('.z-cell').each(function(x,y){
 	    if($(y).attr('name') == 'id'){  
 	     data = JSON.stringify({body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number($(y).text()), target_type: 'alert',  parent: 0})
@@ -2535,7 +2611,23 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	}	
 	else {
     var data = new Object();
-	data = {parent: 0, body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
+	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").each(function(x,y){
+        $(y).find('p').each(function(r,s){
+                $(s).find('img').each(function(key, value){ 
+                var canvas = document.createElement('canvas')
+                var set = new Image()
+                set = $(value)
+                canvas.width =  set[0].width
+                canvas.height = set[0].height
+                var ctx = canvas.getContext('2d')
+                ctx.drawImage(set[0], 0, 0)
+                var dataURL = canvas.toDataURL("image/png")
+                //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
+                $(value).attr('src', dataURL)
+              })
+        })
+    })
+    data = {parent: 0, body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
     $.ajax({
 	type: 'post',
 	url: '/scot/api/v2/entry',
@@ -2567,8 +2659,24 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	}
     },
     forEdit: function(set){
-        console.log(set)
         if(set){
+	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").each(function(x,y){
+        $(y).find('p').each(function(r,s){
+                $(s).find('img').each(function(key, value){ 
+                var canvas = document.createElement('canvas')
+                var set = new Image()
+                set = $(value)
+                canvas.width =  set[0].width
+                canvas.height = set[0].height
+                var ctx = canvas.getContext('2d')
+                ctx.drawImage(set[0], 0, 0)
+                var dataURL = canvas.toDataURL("image/png")
+                //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
+                $(value).attr('src', dataURL)
+              })
+        })
+    })
+
     var data = {parent: Number(this.props.parent), body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
 	$.ajax({
 	type: 'put',
@@ -3525,7 +3633,7 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	},
    notification: function(){
     var notification = this.refs.notificationSystem
-    if(activemqwho != "" && notification != undefined && activemqtype != 'alert' && activemqwho != 'api'){
+    if(activemqwho != "" && notification != undefined && activemqwho != 'api'){
     notification.addNotification({
         message: activemqwho + activemqmessage + activemqid,
         level: 'info',
@@ -4300,7 +4408,7 @@ module.exports = React.createClass({displayName: "exports",
 
     reloadactive: function(){
        var notification = this.refs.notificationSystem
-    if(notification != undefined && activemqwho != "" && activemqtype != 'alert' && activemqwho != 'api'){
+    if(notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
     notification.addNotification({
         message: activemqwho + activemqmessage + activemqid,
         level: 'info',
@@ -4644,7 +4752,7 @@ module.exports = React.createClass({displayName: "exports",
 
     reloadactive:function(){
        var notification = this.refs.notificationSystem
-    if(activemqwho != 'api' && activemqtype != 'alert' && notification != undefined && activemqwho != ""){
+    if(activemqwho != 'api' && notification != undefined && activemqwho != ""){
     notification.addNotification({
         message: activemqwho + activemqmessage + activemqid,
         level: 'info',
@@ -5423,6 +5531,7 @@ var DataGrid = require('../../../node_modules/tasks-react-datagrid/react-datagri
 var Crouton = require('../../../node_modules/react-crouton')
 var SelectedContainer = require('../entry/selected_container.jsx')
 var Search = require('../components/esearch.jsx')
+var Notificationactivemq = require('../../../node_modules/react-notification-system')
 var SORT_INFO;
 var colsort = "id"
 var valuesort = 1
@@ -5528,7 +5637,20 @@ module.exports = React.createClass({displayName: "exports",
     Store.addChangeListener(this.reloadactive)
     },
     reloadactive: function(){
-
+     var notification = this.refs.notificationSystem
+    if(notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
+    notification.addNotification({
+        message: activemqwho + activemqmessage + activemqid,
+        level: 'info',
+        autoDismiss: 5,
+        action: {
+            label: 'View',
+            callback: function(){
+            window.open('#/' + activemqtype + '/' + activemqid)
+            }
+        }
+        })
+      }
     this.setState({reload:true})
 
     },
@@ -5556,7 +5678,7 @@ module.exports = React.createClass({displayName: "exports",
 	return (
 	    stage ? React.createElement(SelectedContainer, {ids: ids, type: 'task', viewEvent:this.viewEvent}) : 
 	    this.state.viewevent ? React.createElement(SelectedContainer, {ids: ids, type: 'task', viewEvent:this.viewEvent}) : 
-	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Task')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement(Search, null)),this.state.viewfilter ? React.createElement(Crouton, {style: {top: '75px', padding: '5px'}, message:"Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "Dismiss", type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showevent ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewEvent, style:styles},"View Tasks") : null) : null, React.createElement(DataGrid, {
+	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, React.createElement('div', null, React.createElement(Notificationactivemq, {ref: 'notificationSystem'})), React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Task')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement(Search, null)),this.state.viewfilter ? React.createElement(Crouton, {style: {top: '75px', padding: '5px'}, message:"Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "Dismiss", type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showevent ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewEvent, style:styles},"View Tasks") : null) : null, React.createElement(DataGrid, {
             ref: "dataGrid", 
             idProperty: "id", 
             dataSource: this.state.data, 
@@ -5696,7 +5818,7 @@ module.exports = React.createClass({displayName: "exports",
 
 
 
-},{"../../../node_modules/react-crouton":815,"../../../node_modules/tasks-react-datagrid/react-datagrid":1870,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../entry/selected_container.jsx":14,"react":1855}],33:[function(require,module,exports){
+},{"../../../node_modules/react-crouton":815,"../../../node_modules/react-notification-system":1020,"../../../node_modules/tasks-react-datagrid/react-datagrid":1870,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../entry/selected_container.jsx":14,"react":1855}],33:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -112424,6 +112546,7 @@ HANDLER_NAMES.forEach(function (name) {
 });
 
 module.exports = TinyMCE;
+
 },{"../helpers/ucFirst":1667,"../helpers/uuid":1668,"lodash/lang/clone":1699,"lodash/lang/isEqual":1702,"react":1855,"react-dom":981}],1667:[function(require,module,exports){
 "use strict";
 
