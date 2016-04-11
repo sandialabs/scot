@@ -225,7 +225,7 @@ var AddEntryModal = React.createClass({
         type: 'GET',
         url: '/scot/api/v2/entry/'+this.props.id
     }).success(function(response){
-    if(recently_updated == response.updated){
+    if(recently_updated != response.updated){
             this.forEdit(false)
             var set = false
     var Confirm = {
