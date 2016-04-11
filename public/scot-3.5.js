@@ -1477,7 +1477,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         }
         return (
             React.createElement("div", {className: divClass}, 
-                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, updated: this.updated}) : null, 
+                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id}) : null, 
                 this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid}) : null
             )       
         );
@@ -1490,9 +1490,8 @@ var EntryIterator = React.createClass({displayName: "EntryIterator",
         var data = this.props.data;
         var type = this.props.type;
         var id = this.props.id;  
-        var updated = this.props.updated;
         data.forEach(function(data) {
-            rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id, updated: updated}));
+            rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id}));
         });
         return (
             React.createElement("div", null, 
@@ -1545,7 +1544,6 @@ var EntryParent = React.createClass({displayName: "EntryParent",
         var items = this.props.items;
         var type = this.props.type;
         var id = this.props.id;
-        var updated = this.props.updated;
         var summary = items.summary;
         var outerClassName = 'row-fluid entry-outer';
         var innerClassName = 'row-fluid entry-header';
@@ -1571,7 +1569,7 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(React.createElement(EntryParent, {items: childobj, updated: updated, id: id, type: type})));  
+                        subitemarr.push(new Array(React.createElement(EntryParent, {items: childobj, id: id, type: type})));  
                     });
                 }
             }
@@ -1590,11 +1588,11 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                     React.createElement("div", {className: innerClassName}, 
                         React.createElement("div", {className: "entry-header-inner"}, "[", React.createElement("a", {style: {color:'black'}, href: "#/"+ type + '/' + id + '/' + items.id}, items.id), "] ", React.createElement(ReactTime, {value: items.created * 1000, format: "MM/DD/YYYY hh:mm:ss a"}), " by ", items.owner, " ", taskOwner, "(updated on ", React.createElement(ReactTime, {value: items.updated * 1000, format: "MM/DD/YYYY hh:mm:ss a"}), ")", 
                             React.createElement("span", {className: "pull-right", style: {display:'inline-flex',paddingRight:'3px'}}, 
-                                this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: items.id, type: 'entry', permissionData: items, permissionsToggle: this.permissionsToggle, updated: updated}) : null, 
+                                this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: items.id, type: 'entry', permissionData: items, permissionsToggle: this.permissionsToggle}) : null, 
                                 React.createElement(SplitButton, {bsSize: "xsmall", title: "Reply", key: items.id, id: 'Reply '+items.id, onClick: this.replyEntryToggle, pullRight: true}, 
                                     React.createElement(MenuItem, {eventKey: "2", onClick: this.deleteToggle}, "Delete"), 
-                                    React.createElement(MenuItem, {eventKey: "3"}, React.createElement(Summary, {type: type, id: id, entryid: items.id, summary: summary, updated: updated})), 
-                                    React.createElement(MenuItem, {eventKey: "4"}, React.createElement(Task, {type: type, id: id, entryid: items.id, updated: updated})), 
+                                    React.createElement(MenuItem, {eventKey: "3"}, React.createElement(Summary, {type: type, id: id, entryid: items.id, summary: summary})), 
+                                    React.createElement(MenuItem, {eventKey: "4"}, React.createElement(Task, {type: type, id: id, entryid: items.id})), 
                                     React.createElement(MenuItem, {eventKey: "5", onClick: this.permissionsToggle}, "Permissions")
                                 ), 
                                 React.createElement(Button, {bsSize: "xsmall", onClick: this.editEntryToggle}, "Edit")
@@ -1603,9 +1601,9 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                     ), 
                 itemarr
                 ), 
-                this.state.editEntryToolbar ? React.createElement(AddEntryModal, {type: this.props.type, title: "Edit Entry", header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, parent: items.parent, targetid: id, updated: updated, type: type, stage: 'Edit', id: items.id, addedentry: this.editEntryToggle}) : null, 
-                this.state.replyEntryToolbar ? React.createElement(AddEntryModal, {title: "Reply Entry", stage: 'Reply', type: type, header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, targetid: id, updated: updated, id: items.id, addedentry: this.replyEntryToggle}) : null, 
-                this.state.deleteToolbar ? React.createElement(DeleteEntry, {type: type, id: id, deleteToggle: this.deleteToggle, entryid: items.id, updated: updated}) : null
+                this.state.editEntryToolbar ? React.createElement(AddEntryModal, {type: this.props.type, title: "Edit Entry", header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, parent: items.parent, targetid: id, type: type, stage: 'Edit', id: items.id, addedentry: this.editEntryToggle}) : null, 
+                this.state.replyEntryToolbar ? React.createElement(AddEntryModal, {title: "Reply Entry", stage: 'Reply', type: type, header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, targetid: id, id: items.id, addedentry: this.replyEntryToggle}) : null, 
+                this.state.deleteToolbar ? React.createElement(DeleteEntry, {type: type, id: id, deleteToggle: this.deleteToggle, entryid: items.id}) : null
             )
         );
     }
@@ -1617,19 +1615,24 @@ var EntryData = React.createClass({displayName: "EntryData",
             return {
                 height:'200px',
                 entityid:null,
-                count:0,
+                resize:false,
             }
         } else {
             return {
                 height:'1px',
                 entityid:null,
-                count:0,
+                resize:false,
             }
         }
-    }, 
+    },
+    componentWillReceiveProps: function () {
+        if (this.state.resize == false) {
+            this.setState({resize:true})
+        }
+    },
     onLoad: function() {
         if (this.props.type != 'alert' && this.props.type !='entity') {
-            if (this.state.count < 1 ) {
+            if (this.state.height == '1px') {
                 setTimeout(function() {
                     document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
                         var newheight; 
@@ -1637,14 +1640,20 @@ var EntryData = React.createClass({displayName: "EntryData",
                         newheight = newheight + 2; //adding 2 px for Firefox so it doesn't make a scroll bar
                         newheight = newheight + 'px';
                         this.setState({height:newheight});
-                        var newcount = this.state.count;
-                        newcount += 1;
-                        this.setState({count:newcount});
+                        this.setState({resize:false})
+                    }.bind(this))
+                }.bind(this)); 
+            } else if (this.state.resize == true) {
+                setTimeout(function() {
+                    document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
+                        var newheight; 
+                        newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+                        newheight = newheight + 'px';
+                        this.setState({height:newheight});
+                        this.setState({resize:false})
                     }.bind(this))
                 }.bind(this)); 
             }
-        } else {
-            
         }
     },
     render: function() {
