@@ -5,6 +5,7 @@ function update(state, callback, payload){
      activemqmessage = " updated " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('entryNotification');
      callback.emitChange('selectedHeaderEntry');
      callback.emitChange('alertgroupnotification')
      callback.emitChange('eventgroup')
@@ -38,6 +39,7 @@ function update(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('alertgroupnotification')
      callback.emitChange('incidentgroup')
      callback.emitChange("activealertgroup")
@@ -61,6 +63,7 @@ function update(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('alertgroupnotification')
      callback.emitChange("activealertgroup")
      callback.emitChange('incidentgroup')
@@ -92,6 +95,7 @@ function creation(state, callback, payload){
     activemqtype = state
     callback.emitChange(payload.action.activemq.data.id) 
     callback.emitChange('selectedHeaderEntry');
+    callback.emitChange('entryNotification');
     callback.emitChange('eventgroup') 
     callback.emitChange('activealertgroup')
     callback.emitChange('incidentgroup') 
@@ -103,6 +107,7 @@ function creation(state, callback, payload){
     activemqid = payload.action.activemq.data.id
     activemqtype = state
     callback.emitChange('selectedHeaderEntry');
+    callback.emitChange('entryNotification');
     callback.emitChange('incidentgroup') 
     callback.emitChange('eventgroup')  
     callback.emitChange('activealertgroup')
@@ -127,6 +132,7 @@ function creation(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('incidentgroup') 
      callback.emitChange('eventgroup')  
      callback.emitChange('activealertgroup')
@@ -139,6 +145,7 @@ function creation(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('activealertgroup')
      callback.emitChange('eventgroup')
      callback.emitChange('incidentgroup')
@@ -165,6 +172,7 @@ function deletion(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('activealertgroup') 
      callback.emitChange('incidentgroup') 
      callback.emitChange('eventgroup') 
@@ -181,6 +189,7 @@ function deletion(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('incidentgroup')
      callback.emitChange('activealertgroup') 
      callback.emitChange('eventgroup') 
@@ -193,6 +202,7 @@ function deletion(state, callback, payload){
      activemqid = payload.action.activemq.data.id
      activemqtype = state
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('incidentgroup')
      callback.emitChange('eventgroup') 
      callback.emitChange('activealertgroup') 
