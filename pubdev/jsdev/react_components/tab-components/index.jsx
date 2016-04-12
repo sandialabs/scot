@@ -59,6 +59,19 @@ if(this.props.params.value  != null){
 	setevents = false
 	settask = false
 	}
+    else if(this.props.params.value.toLowerCase() == 'guide'){
+	setevents = true	
+	setintel = false
+	sethome = false
+	setalerts = false
+	setincidents = false
+	settask = false
+    if(this.props.params.id != null) {
+	state = 5
+	statetype = 'guide'	
+	array = this.props.params.id.split('+')
+	}
+    }
 	else if( this.props.params.value.toLowerCase() == "alertgroup"){
 	if(this.props.params.id != null){
 	supertableid = this.props.params.id.split('+')
@@ -101,7 +114,12 @@ if(this.props.params.value  != null){
 	}
 	else if(this.props.params.value.toLowerCase() == "intel") {
 	state = 4
-	setintel = true
+	if(this.props.params.id != null) {
+	state = 5
+	statetype = 'intel'	
+	array = this.props.params.id.split('+')
+	}
+    setintel = true
 	sethome = false
 	setalerts = false
 	setincidents = false
