@@ -161,7 +161,7 @@ var SelectedHeader = React.createClass({
                 };
                 waitForEntry.waitEntry();
             }.bind(this));
-        }.bind(this),2000)
+        }.bind(this),0)
         if (_type!= undefined && _message != undefined) {
             this.setState({notificationMessage:_message, notificationType:_type, showFlash:true});
         } else {
@@ -371,10 +371,15 @@ var EntryDataStatus = React.createClass({
 
 var EntryDataSubject = React.createClass({
     getInitialState: function() {
-        return {value:this.props.data.subject}
+        return {
+            value:this.props.data.subject,
+            updatedSubject: false,
+        }
     },
     componentWillReceiveProps: function() {
-        this.setState({value:this.props.data.subject});
+        if (this.state.updatedSubject != true) {
+            this.setState({value:this.props.data.subject});
+        }
     },
     handleChange: function(event) {
         this.setState({value:event.target.value});
@@ -386,6 +391,7 @@ var EntryDataSubject = React.createClass({
                 data: json,
                 success: function(data) {
                     console.log('success: ' + data);
+                    this.setState({updatedSubject: true});
                     AppActions.updateItem(this.props.id,'headerUpdate'); 
                 }.bind(this),
                 error: function() { 
@@ -401,7 +407,7 @@ var EntryDataSubject = React.createClass({
             subjectWidth = 200;
         }
         return (
-            <div>{this.props.subjectType} {this.props.id}: <DebounceInput debounceTimeout={500} forceNotifyOnBlur={true} type='text' value={this.state.value} onChange={this.handleChange} style={{width:subjectWidth+'px'}} /></div>
+            <div>{this.props.subjectType} {this.props.id}: <DebounceInput debounceTimeout={1000} forceNotifyOnBlur={true} type='text' value={this.state.value} onChange={this.handleChange} style={{width:subjectWidth+'px'}} /></div>
         )
     }
 });
