@@ -175,9 +175,16 @@ sub do_linkables {
     my $entitycol   = $mongo->collection('Entity');
     my $linkcol     = $mongo->collection('Link');
 
+    my $entity_total_timer = $env->get_timer("[".$object->get_collection_name.
+                                        " ".$object->id."] {Entity Processing}");
+
     foreach my $entity (@{ $href->{entity} }) {
         # entity = { value => , type => }
         next unless $entity;
+
+        my $entity_timer = $env->get_timer("[".$object->get_collection_name.
+                                           " ".$object->id."] {Entity ".
+                                           $entity->{value}."} timer");
 
         $log->debug("working on entity {".$entity->{value}.
                     ",".$entity->{type}."}");
@@ -210,8 +217,13 @@ sub do_linkables {
                 $entity->{when},
             );
         }
+        my $entity_elapsed = &$entity_timer;
     }
 
+    my $entity_total_elapsed = &$entity_total_timer; 
+
+    my $history_total_timer = $env->get_timer("[".$object->get_collection_name.
+                                        " ".$object->id."] {History Processing}");
     my $historycol  = $mongo->collection('History');
     foreach my $history (@{ $href->{history} }) {
         next unless $history;
@@ -226,6 +238,9 @@ sub do_linkables {
                         { filter => \&Dumper, value => $history } );
         };
     }
+    my $history_total_elapsed = &$history_total_timer; 
+    my $source_total_timer = $env->get_timer("[".$object->get_collection_name.
+                                        " ".$object->id."] {Source Processing}");
 
     my $srccol  = $mongo->collection('Source');
     foreach my $source  (@{ $href->{sources}} ) {
@@ -238,6 +253,9 @@ sub do_linkables {
         }
         $self->link($object, $sobj);
     }
+    my $source_total_elapsed = &$source_total_timer; 
+    my $tag_total_timer = $env->get_timer("[".$object->get_collection_name.
+                                        " ".$object->id."] {Tag Processing}");
 
     my $tagcol  = $mongo->collection('Tag');
     foreach my $tag     (@{ $href->{tags}} ) {
@@ -247,6 +265,9 @@ sub do_linkables {
         }
         $self->link($object, $tobj);
     }
+    my $tag_total_elapsed = &$tag_total_timer; 
+    my $link_total_timer = $env->get_timer("[".$object->get_collection_name.
+                                        " ".$object->id."] {Link Processing}");
 
     foreach my $link   (@{ $href->{links}}) {
 
@@ -274,6 +295,7 @@ sub do_linkables {
             $when,
         );
     }
+    my $link_total_elapsed = &$link_total_timer;
     my $elapsed = &$timer;
 }
 
@@ -506,6 +528,44 @@ sub get_id_ranges{
         }
     }
     return wantarray ? @ids : \@ids;
+}
+
+sub get_unfinished {
+    my $self    = shift;
+    my $mtype   = shift;
+    my $numproc = shift;
+    my $opts    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my @ranges  = ();
+
+    my $idfield     = $self->lookup_idfield($mtype);
+    my $colname     = $self->lookup_legacy_colname($mtype);
+    my $collection  = $self->legacydb->get_collection($colname);
+
+    my $cursor  = $collection->find();
+    my $total_to_migrate    = $cursor->count();
+
+    my $mongo   = $env->mongo();
+    my $col     = $mongo->collection($mtype);
+    my $mcursor = $col->find();
+    my $total_migrated      = $cursor->count();
+
+    my $count_needing_migration = $total_to_migrate - $total_migrated;
+    my $batch_size              = int( $count_needing_migration /$numproc )+1;
+
+    my $batch_count = 0;
+    my @batch       = ();
+
+    while ( my $href = $cursor->next ) {
+        my $id  = $href->{$idfield};
+        my $obj = $col->find_iid($id);
+        unless ( $obj ) {
+            push @batch, $id;
+        }
+    }
+
+
 }
 
 

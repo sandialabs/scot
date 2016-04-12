@@ -155,14 +155,15 @@ sub run {
                 cb  => sub {
                     my ($pm, $action, $type, $id) = @_;
 
-                    my $url     = $self->base_url . "/$type/$id";
-                    $log->debug("Getting $url");
+                    my $record = $scot->get($type,$id);
+
+# leaving until tested above line
+                    #my $url     = $self->base_url . "/$type/$id";
+                    #$log->debug("Getting $url");
                     # do a REST GET of that thing
-                    my $tx  = $scot->get($url);
-
+                    #my $tx  = $scot->get($url);
                     # process through Entity Extractor
-
-                    my $record  = $tx->res->json;
+                    #my $record  = $tx->res->json;
 
                     $log->debug("GET Response: ", 
                                 { filter => \&Dumper, value => $record });
