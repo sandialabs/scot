@@ -55,6 +55,7 @@ var Addentry = require('../modal/add_entry.jsx')
 var Appactions = require('../flux/actions.jsx')
 var Store = require('../activemq/store.jsx')
 var Listener = require('../activemq/listener.jsx')
+var SelectedContainer = require('../entry/selected_container.jsx')
 var supervalue = [];
 var supercolumns = []
 var getUser
@@ -173,30 +174,8 @@ function dataSource(query)
 	$.each(value, function(num, item){	
 	if(num == 'id'){
 	addentrydata = true
-	$.ajax({
-	   type: 'GET',
-	   url: '/scot/api/v2/alert/' + item + '/entry'
-	   }).success(function(response){
-	   if(response.totalRecordCount != 0){
-	var View = React.createClass({
-		getInitialState: function(){
-		return {view:false, refe: 0}
-		  },
-		 render: function(){
-		 return( 
-	this.state.view ? React.createElement('div', {className: 'ViewEntry'} , React.createElement(Viewentry, {id: this.state.refe}), React.createElement('button', {className: 'btn btn-default', onClick:this.view}, 'Re-Open Entry')) :
-			React.createElement('button', {className: 'btn btn-default', onClick: this.view}, 'View Entry')
-			)
-		},
-		view: function(){
-		ventry = false;		
-		this.setState({view:true, refe: item})
-		}
-		});	
-		finalarray[key]["Entry"] = React.createElement(View, {change: true})
-		}
-		})
-		finalarray[key][num] = item
+	finalarray[key]["Entries"] = 7
+	finalarray[key][num] = item
 	}
 	else if(num == 'when')
 	{
@@ -347,7 +326,7 @@ var Subtable = React.createClass({
 	}
         return {
 
-activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
+viewentries:false, viewentriesid: 0,guideid: 0, setGuide: false, activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
     },
    componentDidMount: function(){ 
 	var project = getColumns(this.state.key)
@@ -356,7 +335,7 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	if(this.isMounted()){
 	var newarray = []
 	if(true){
-	newarray[0] = {name:"Entry", width: 180, style: {color: 'black'}}
+	newarray[0] = {name:"Entries", width: 180, style: {color: 'black'}}
 	for(var i = 1; i<last.length; i++) {
 	newarray[i] = {name:last[i-1],width: 200, style:{color:'black'}}
 	}}
@@ -373,7 +352,7 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	Store.addChangeListener(this.reloadactive)
     Store.storeKey('alertgroupnotification')
     Store.addChangeListener(this.notification)
-	},
+    },
    notification: function(){
     var notification = this.refs.notificationSystem
     if(activemqwho != "" && notification != undefined && activemqwho != 'api'){
@@ -390,6 +369,19 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
         })
       }
 
+   },
+   viewEntries: function(){
+   var id
+   $('.subtable'+this.state.key).find('.z-selected').each(function(key,value){
+    $(value).find('.z-cell').each(function(x,y){
+        if($(y).attr('name') == 'id'){
+            id = $(y).text()
+        }
+    })
+   })
+
+   ventry = false
+   this.setState({viewentries:true, viewentriesid:id})
 
    },
   componentWillReceiveProps: function(){
@@ -430,7 +422,10 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	  this.setState({files:finalfiles})
 	},
 	render: function(){
-	$('.mac-fix').css('position', 'relative')	
+	const rowFact = (rowProps) => {
+	rowProps.onDoubleClick = this.viewEntries
+	}
+    $('.mac-fix').css('position', 'relative')	
 	$('.z-table').each(function(key,value){
 	$(value).find('.z-cell').each(function(x,y){
 	$(y).css({'height' : '120px', 'overflow':'auto'})
@@ -452,10 +447,10 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	})
 	}, 100)
 	return (
-	React.createElement("div", {className: 'All Modal'}, React.createElement('div', null,React.createElement(Notificationactivemq,{ref: 'notificationSystem'})),  this.state.history ? React.createElement(HistoryView, {type:'alert', id: this.state.historyid, historyToggle: this.viewHistory}) : null, 
-/*style: {'padding-left': '25px'}},*/ this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', targetid: this.state.key, updated: this.reloadentry, addedentry: this.addEntry, type: 'alert'}) : null,
-	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :  
-	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alertgroup', id: this.state.key})), this.state.oneview ? React.createElement('btn-group', null, this.state.flair ? React.createElement('button',{className: 'btn btn-default', onClick: this.flairOn}, 'Flair On') : React.createElement('button', {className: 'btn btn-default', onClick: this.flairOff}, 'Flair Off'), React.createElement('button', {className: 'btn btn-default', onClick: this.viewGuide}, 'View Guide'), React.createElement('button', {className:'btn btn-default', onClick:this.viewSource}, 'View Source'), React.createElement('button', {className:'btn btn-default', onClick: this.viewHistory}, 'View History'), React.createElement('button', {className: 'btn btn-default', onClick:this.addEntry}, 'Add Entry'), React.createElement('button', {className: 'btn btn-default', onClick: this.openSelected}, 'Open Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.closeSelected}, 'Close Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.promoteSelected}, 'Promote Selected'), React.createElement('button', {className:'btn btn-default', onClick:this.selectExisting}, 'Add Selected to Existing Event'), React.createElement('button', {className:'btn btn-default', onClick:this.exportCSV}, 'Export to CSV'), React.createElement('button', {className:'btn btn-default', onClick:this.deleteSelected}, 'Delete Selected')) : null ,  React.createElement(Subgrid, {style: {height: '100%', 'z-index' : '0'},className: "Subgrid",
+	this.state.setGuide ? React.createElement(SelectedContainer, {type:'Guide', id:this.state.guideid}) : React.createElement("div", {className: 'All Modal'}, React.createElement('div', null,React.createElement(Notificationactivemq,{ref: 'notificationSystem'})),  this.state.history ? React.createElement(HistoryView, {type:'alert', id: this.state.historyid, historyToggle: this.viewHistory}) : null, 
+/*style: {'padding-left': '25px'}},*/ this.state.viewentries ? React.createElement(Viewentry, {id: this.state.viewentriesid}) : null, this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', targetid: this.state.key, updated: this.reloadentry, addedentry: this.addEntry, type: 'alert'}) : null,
+	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :
+	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alertgroup', id: this.state.key})), React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.viewGuide}, 'View Guide'), React.createElement('button', {className:'btn btn-default', onClick:this.viewSource}, 'View Source')), this.state.oneview ? React.createElement('btn-group', null, this.state.flair ? React.createElement('button',{className: 'btn btn-default', onClick: this.flairOn}, 'Flair On') : React.createElement('button', {className: 'btn btn-default', onClick: this.flairOff}, 'Flair Off'),React.createElement('button', {className:'btn btn-default', onClick: this.viewHistory}, 'View History'), React.createElement('button', {className: 'btn btn-default', onClick:this.addEntry}, 'Add Entry'), React.createElement('button', {className: 'btn btn-default', onClick: this.openSelected}, 'Open Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.closeSelected}, 'Close Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.promoteSelected}, 'Promote Selected'), React.createElement('button', {className:'btn btn-default', onClick:this.selectExisting}, 'Add Selected to Existing Event'), React.createElement('button', {className:'btn btn-default', onClick:this.exportCSV}, 'Export to CSV'), React.createElement('button', {className:'btn btn-default', onClick:this.deleteSelected}, 'Delete Selected')) : null ,  React.createElement(Subgrid, {style: {height: '100%', 'z-index' : '0'},className: "Subgrid",
         ref: "dataGrid", 
         idProperty: "index",
 	    setColumns: true, 
@@ -473,7 +468,8 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	    showCellBorders: true,
 	    sortable: false,
 	    rowHeight: 120,
-	    rowStyle: configureTable}
+	    rowFactory: rowFact,
+        rowStyle: configureTable}
 	)
         )
 	));
@@ -511,31 +507,42 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	this.setState({flair: true})
     },
     viewGuide: function(){
-	    if(storealertids.length > 1){
-		alert("Select only one id to view guide")
-	    }
-	    else {
-	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
-	    $(value).find('.z-cell').each(function(x,y){
-		if($(y).attr('name') == 'id'){
-	    	window.open('/guide.html#' + $(y).text());
-		}
-		})
-		})
-	    }
+    var id;
+    $('.z-table').each(function(key,value){
+        $(value).find('.z-cell').each(function(x,y){
+            if($(y).attr('name') == 'alertgroup'){
+            id = $(y).text()
+            }
+        })
+        })   
+    //this.setState({setGuide:true,guideid: id})
+    window.location.hash = '#/guide/' + id
+    window.location.href = window.location.hash
     },
     viewSource: function(){
-	var win = window.open('viewSource.html', '_blank')
-	var html = $('.subtable'+this.state.key).find('.z-selected').html()	
-	var plain = $('.subtable'+this.state.key).find('.z-selected').text()
-	win.onload = function() {   if(html != undefined){
-	$(win.document).find('#html').text(html)
-	} else {$(win.document).find('.html').remove() }
-	if(plain != undefined) {
-	$(win.document).find('#plain').text(plain)
-	} else { $(win.document).find('.plain').remove() }
-	}
-
+    var id;
+    $('.subtable'+this.state.key).each(function(key,value){
+        $(value).find('.z-cell').each(function(x,y){
+            if($(y).attr('name') == 'alertgroup'){
+            id = $(y).text()
+            }
+        })
+    })
+        $.ajax({
+        type: 'GET',
+        url: '/scot/api/v2/alertgroup/'+id
+        }).success(function(response){
+	    var win = window.open('viewSource.html') //, '_blank')
+	    var html =  response.body	
+	    var plain = response.body_plain
+	    win.onload = function() {   if(html != undefined){
+	    $(win.document).find('#html').text(html)
+	    } else {$(win.document).find('.html').remove() }
+	    if(plain != undefined) {
+	    $(win.document).find('#plain').text(plain)
+	    } else { $(win.document).find('.plain').remove() }
+        }
+        })
     },
     
     viewHistory: function(){
@@ -590,30 +597,8 @@ activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyi
 	$.each(value, function(num, item){	
 	if(num == 'id'){
 	addentrydata = true
-	$.ajax({
-	   type: 'GET',
-	   url: '/scot/api/v2/alert/' + item + '/entry'
-	   }).success(function(response){
-	   if(response.totalRecordCount != 0){
-	var View = React.createClass({
-		getInitialState: function(){
-		return {view:false, refe: 0}
-		  },
-		 render: function(){
-		 return( 
-	this.state.view ? React.createElement('div', {className: 'ViewEntry'} , React.createElement(Viewentry, {id: this.state.refe}), React.createElement('button', {className: 'btn btn-default', onClick:this.view}, 'Re-Open Entry')) :
-			React.createElement('button', {className: 'btn btn-default', onClick: this.view}, 'View Entry')
-			)
-		},
-		view: function(){
-		ventry = false;		
-		this.setState({view:true, refe: item})
-		}
-		});	
-		finalarray[key]["Entry"] = React.createElement(View, {change: true})
-		}
-		})
-		finalarray[key][num] = item
+	finalarray[key]["Entries"] = 7
+	finalarray[key][num] = item
 	}
 	else if(num == 'when')
 	{
@@ -1014,7 +999,7 @@ var Maintable = React.createClass({
         level: 'info',
         autoDismiss: 5,
         action: {
-            label: 'View',
+            label: '',
             callback: function(){
             window.open('#/' + activemqtype + '/' + activemqid) 
             }
