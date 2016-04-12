@@ -1842,7 +1842,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 };
                 waitForEntry.waitEntry();
             }.bind(this));
-        }.bind(this),2000)
+        }.bind(this),0)
         if (_type!= undefined && _message != undefined) {
             this.setState({notificationMessage:_message, notificationType:_type, showFlash:true});
         } else {
@@ -2052,10 +2052,15 @@ var EntryDataStatus = React.createClass({displayName: "EntryDataStatus",
 
 var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
     getInitialState: function() {
-        return {value:this.props.data.subject}
+        return {
+            value:this.props.data.subject,
+            updatedSubject: false,
+        }
     },
     componentWillReceiveProps: function() {
-        this.setState({value:this.props.data.subject});
+        if (this.state.updatedSubject != true) {
+            this.setState({value:this.props.data.subject});
+        }
     },
     handleChange: function(event) {
         this.setState({value:event.target.value});
@@ -2067,6 +2072,7 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
                 data: json,
                 success: function(data) {
                     console.log('success: ' + data);
+                    this.setState({updatedSubject: true});
                     AppActions.updateItem(this.props.id,'headerUpdate'); 
                 }.bind(this),
                 error: function() { 
@@ -2082,7 +2088,7 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
             subjectWidth = 200;
         }
         return (
-            React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement(DebounceInput, {debounceTimeout: 500, forceNotifyOnBlur: true, type: "text", value: this.state.value, onChange: this.handleChange, style: {width:subjectWidth+'px'}}))
+            React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement(DebounceInput, {debounceTimeout: 1000, forceNotifyOnBlur: true, type: "text", value: this.state.value, onChange: this.handleChange, style: {width:subjectWidth+'px'}}))
         )
     }
 });
