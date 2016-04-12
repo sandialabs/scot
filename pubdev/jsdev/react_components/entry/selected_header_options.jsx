@@ -66,7 +66,7 @@ var SelectedHeaderOptions = React.createClass({
                 newType = "Event"
             } else if (type == "event") {
                 newType = "Incident"
-            } else if (type == "incident") {
+            } else if (type == "incident" || type == "guide") {
                 showPromote = false;
             } 
         } else {
