@@ -360,12 +360,23 @@ var EntryDataStatus = React.createClass({
             open = this.props.data.open_count;
             closed = this.props.data.closed_count;
             promoted = this.props.data.promoted_count;
-        }        
-        return (
-            <div>
-                {this.props.type == 'alertgroup' ? <ButtonToolbar><OverlayTrigger trigger='hover' placement='bottom' overlay={<Popover id={this.props.id}>open/closed/promoted alerts</Popover>}><Button bsSize='xsmall'><span className='alertgroup'><span className='alertgroup_open'>{open}</span> / <span className='alertgroup_closed'>{closed}</span> / <span className='alertgroup_promoted'>{promoted}</span></span></Button></OverlayTrigger></ButtonToolbar> : <Button bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: '14pt', width: '100%', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button > }
-            </div>
-        )
+        }
+        if (this.props.type == 'guide') {
+            return(<div/>)
+        } else {
+            return (
+                <div>
+                    {this.props.type == 'alertgroup' ? <ButtonToolbar>
+                        <OverlayTrigger trigger='hover' placement='bottom' overlay={<Popover id={this.props.id}>open/closed/promoted alerts</Popover>}>
+                            <Button bsSize='xsmall'>
+                                <span className='alertgroup'>
+                                    <span className='alertgroup_open'>{open}</span> / <span className='alertgroup_closed'>{closed}</span> / <span className='alertgroup_promoted'>{promoted}</span>
+                                </span>
+                            </Button>
+                        </OverlayTrigger></ButtonToolbar> : <Button bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: '14pt', width: '100%', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button > }
+                </div>
+            )
+        }
     }
 });
 
