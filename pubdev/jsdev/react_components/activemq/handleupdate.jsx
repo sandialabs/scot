@@ -179,7 +179,7 @@ function deletion(state, callback, payload){
      activemqwho = payload.action.activemq.data.who
      activemqmessage = " deleted " + state + " : " 
      activemqid = payload.action.activemq.data.id
-     activemqtype = state
+     activemqtype = 'alertgroup'
      callback.emitChange('activealertgroup')
      callback.emitChange('incidentgroup') 
      callback.emitChange('eventgroup') 
