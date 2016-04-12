@@ -199,6 +199,13 @@ sub _build_useragent {
     return $ua;
 }
 
+has base_url    => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => '/scot/api/v2',
+);
+
 sub check_if_forked {
     my $self    = shift;
 
@@ -217,6 +224,18 @@ sub check_if_forked {
 }
 
 sub get {
+    my $self    = shift;
+    my $col     = shift;
+    my $id      = shift;
+
+    my $url = $self->base_url . "/$col/$id";
+
+    my $tx  = $self->get_url($url);
+    my $json= $tx->res->json;
+    return $json;
+}
+
+sub get_url {
     my $self    = shift;
     my $path    = shift;
     my $json    = shift;
