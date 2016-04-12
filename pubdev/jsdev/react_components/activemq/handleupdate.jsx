@@ -5,6 +5,8 @@ function update(state, callback, payload){
      activemqmessage = " updated " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('entryNotification');
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
      callback.emitChange('alertgroupnotification')
      callback.emitChange('eventgroup')
@@ -37,7 +39,9 @@ function update(state, callback, payload){
      activemqmessage = " updated " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('alertgroupnotification')
      callback.emitChange('incidentgroup')
      callback.emitChange("activealertgroup")
@@ -60,7 +64,9 @@ function update(state, callback, payload){
      activemqmessage = " updated " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('alertgroupnotification')
      callback.emitChange("activealertgroup")
      callback.emitChange('incidentgroup')
@@ -68,18 +74,30 @@ function update(state, callback, payload){
      callback.emitChange(payload.action.activemq.data.id)
    }
    else if (state == 'alert'){
-/*    $('.z-table').each(function(key, value){
+     
+    $('.z-table').each(function(key, value){
         $(value).find('.z-row').each(function(x,y){
            $(y).find('.z-cell').each(function(r,s){
            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
-            $(y).css('background', '#FFFF76')
-            setTimeout(function(){$(y).css('background', "")}, 10000)
+                $(y).find('.z-cell').each(function(p,o){
+                    if($(o).attr('name') == 'alertgroup'){
+                    callback.emitChange($(o).text())
+                    }
+                })
             }
         })
       })
     })
-
-*/
+     activemqwho = payload.action.activemq.data.who
+     activemqmessage = " updated " + state + " id: " 
+     activemqid = payload.action.activemq.data.id
+     activemqtype = state
+     callback.emitChange('taskgroup')
+     callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('alertgroupnotification')
+     callback.emitChange("activealertgroup")
+     callback.emitChange('incidentgroup')
+     callback.emitChange('eventgroup')    
    }
 }
 function creation(state, callback, payload){
@@ -91,7 +109,9 @@ function creation(state, callback, payload){
     activemqid = payload.action.activemq.data.id
     activemqtype = state
     callback.emitChange(payload.action.activemq.data.id) 
+    callback.emitChange('taskgroup')
     callback.emitChange('selectedHeaderEntry');
+    callback.emitChange('entryNotification');
     callback.emitChange('eventgroup') 
     callback.emitChange('activealertgroup')
     callback.emitChange('incidentgroup') 
@@ -102,11 +122,14 @@ function creation(state, callback, payload){
     activemqmessage = " created " + state + " : " 
     activemqid = payload.action.activemq.data.id
     activemqtype = state
+    callback.emitChange('taskgroup')
     callback.emitChange('selectedHeaderEntry');
+    callback.emitChange('entryNotification');
     callback.emitChange('incidentgroup') 
     callback.emitChange('eventgroup')  
     callback.emitChange('activealertgroup')
     callback.emitChange('alertgroupnotification')
+    callback.emitChange(payload.action.activemq.data.id)
 /*    setTimeout(function(){$('.z-row').each(function(key, value){
            $(value).find('.z-cell').each(function(r,s){
            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
@@ -126,7 +149,9 @@ function creation(state, callback, payload){
      activemqmessage = " created " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('incidentgroup') 
      callback.emitChange('eventgroup')  
      callback.emitChange('activealertgroup')
@@ -138,7 +163,9 @@ function creation(state, callback, payload){
      activemqmessage = " created " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('activealertgroup')
      callback.emitChange('eventgroup')
      callback.emitChange('incidentgroup')
@@ -152,9 +179,26 @@ function deletion(state, callback, payload){
      activemqwho = payload.action.activemq.data.who
      activemqmessage = " deleted " + state + " : " 
      activemqid = payload.action.activemq.data.id
-     activemqtype = state
+     activemqtype = 'alertgroup'
      callback.emitChange('activealertgroup')
-
+     callback.emitChange('incidentgroup') 
+     callback.emitChange('eventgroup') 
+     callback.emitChange('alertgroupnotification')
+     callback.emitChange('taskgroup')
+     callback.emitChange('selectedHeaderEntry')
+    $('.z-table').each(function(key, value){
+        $(value).find('.z-row').each(function(x,y){
+           $(y).find('.z-cell').each(function(r,s){
+           if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
+                $(y).find('.z-cell').each(function(p,o){
+                    if($(o).attr('name') == 'alertgroup'){
+                    callback.emitChange($(o).text())
+                    }
+                })
+            }
+        })
+      })
+    })
     }
     else if (state == 'entry'){
      callback.emitChange(payload.action.activemq.data.id) 
@@ -164,11 +208,14 @@ function deletion(state, callback, payload){
      activemqmessage = " deleted " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('activealertgroup') 
      callback.emitChange('incidentgroup') 
      callback.emitChange('eventgroup') 
      callback.emitChange('alertgroupnotification')
+     callback.emitChange(payload.action.activemq.data.id)
     }
     else if (state == 'intel'){
 
@@ -180,7 +227,9 @@ function deletion(state, callback, payload){
      activemqmessage = " deleted " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('incidentgroup')
      callback.emitChange('activealertgroup') 
      callback.emitChange('eventgroup') 
@@ -192,7 +241,9 @@ function deletion(state, callback, payload){
      activemqmessage = " deleted " + state + " : " 
      activemqid = payload.action.activemq.data.id
      activemqtype = state
+     callback.emitChange('taskgroup')
      callback.emitChange('selectedHeaderEntry');
+     callback.emitChange('entryNotification');
      callback.emitChange('incidentgroup')
      callback.emitChange('eventgroup') 
      callback.emitChange('activealertgroup') 
@@ -254,6 +305,9 @@ var ActiveMQ = {
                          break;
                     case 'views':
                         views('event',callback,payload);
+                        break;
+                    case 'unlinked':
+                        update('event',callback,payload);
                         break;
                 }
                 break;
