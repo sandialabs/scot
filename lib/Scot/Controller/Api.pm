@@ -545,11 +545,26 @@ sub get_subthing {
     elsif ( $subthing eq "alert" ) {
         # add in subject from alertgroup
         my $agcol   = $mongo->collection('Alertgroup');
+        my $linkcol = $mongo->collection('Link');
         while (my $alert = $cursor->next) {
             my $agobj   = $agcol->find_one({id => $alert->alertgroup});
             my $subject = $agobj->subject;
             my $href    = $alert->as_hash;
             $href->{subject} = $subject;
+
+            # look for entries
+            my $lcur    = $linkcol->get_links(
+                'alert', $alert->id, 'entry'
+            );
+            my $entry_count = 0;
+
+            if ( $lcur ) {
+                $entry_count    = $lcur->count;
+            };
+
+            $href->{'entries'} = $entry_count;
+            
+
             push @things, $href;
         }
         $self->do_render({
