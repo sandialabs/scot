@@ -25,6 +25,7 @@ var Notification            = require('react-notification-system');
 var AddFlair                = require('../components/add_flair.jsx');
 var Flair                   = require('../modal/flair_modal.jsx');
 var ESearch                 = require('../components/esearch.jsx');
+var LinkWarning             = require('../modal/link_warning.jsx');
 var SelectedHeader = React.createClass({
     getInitialState: function() {
         return {
@@ -50,7 +51,8 @@ var SelectedHeader = React.createClass({
             showEntityData:false,
             entityData:'',
             entityid:null,
-            flairToolbar:false,        
+            flairToolbar:false,
+            linkWarningToolbar:false,
             refreshing:false,
             loading: false,
         }
@@ -94,7 +96,7 @@ var SelectedHeader = React.createClass({
                         setTimeout(waitForEntry.waitEntry,50);
                     } else {
                         console.log('entries are done')
-                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle)}.bind(this));
                         if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false});        
                         }
@@ -152,7 +154,7 @@ var SelectedHeader = React.createClass({
                             setTimeout(waitForEntry.waitEntry,50);
                         } else {
                             console.log('entries are done')
-                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle)}.bind(this));
                             if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                                 this.setState({refreshing:false});
                             }
@@ -191,6 +193,13 @@ var SelectedHeader = React.createClass({
             this.setState({flairToolbar:true,entityid:id})
         } else {
             this.setState({flairToolbar:false})
+        }
+    },
+    linkWarningToggle: function(href) {
+        if (this.state.linkWarningToolbar == false) {
+            this.setState({linkWarningToolbar:true,link:href})
+        } else {
+            this.setState({linkWarningToolbar:false})
         }
     },
     viewedbyfunc: function(headerData) {
@@ -287,7 +296,7 @@ var SelectedHeader = React.createClass({
                 <Notification ref="notificationSystem" /> 
                 
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid}/> : null}
-                   
+                {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData}/> : null}
                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
