@@ -2,7 +2,10 @@
         function infopop(ifr,entityid,flairToolbarToggle) {
             flairToolbarToggle(entityid);
         }
-        function checkFlairHover(iframe,flairToolbarToggle,type) {
+        function linkWarningPopup(ifr,url,linkWarningToggle) {
+            linkWarningToggle(url);
+        }
+        function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle) {
             if(type != 'alertgroup') {
                 if(iframe.contentDocument != null) {
                     $(iframe).contents().find('.entity').each(function(index, entity) {
@@ -26,11 +29,22 @@
                         }
                     }.bind(this));
             }
+            if(iframe.contentDocument != null) {
+                $(iframe).contents().find('a').each(function(index,a) {
+                    if($(a).css('color') == 'rgb(255, 0, 0)') {
+                        $(a).data('state','down');
+                    } else if ($(a).data('state') == 'down') {
+                        $(a).data('state','up');
+                        var url = $(a).attr('url');
+                        linkWarningPopup(iframe,url,linkWarningToggle);
+                    }
+                }.bind(this));
+            }
         }
-        function pentry(ifr,flairToolbarToggle,type) {
+        function pentry(ifr,flairToolbarToggle,type,linkWarningToggle) {
             if(type != 'alertgroup') { 
                 $(ifr).mouseenter(function() {
-                    var intervalID = setInterval(checkFlairHover, 100, ifr, flairToolbarToggle);
+                    var intervalID = setInterval(checkFlairHover, 100, ifr, flairToolbarToggle,type,linkWarningToggle);
                     $(ifr).data('intervalID', intervalID);
                     console.log('Now watching iframe ' + intervalID);
                 }.bind(this));
@@ -40,11 +54,11 @@
                     console.log('No longer watching iframe ' + intervalID);
                 }.bind(this));
             } else {
-                setInterval(checkFlairHover, 100, null, flairToolbarToggle,type);
+                setInterval(checkFlairHover, 100, null, flairToolbarToggle,type,linkWarningToggle);
             }
         }
     var AddFlair = {
-        entityUpdate: function(entityData,flairToolbarToggle,type) {
+        entityUpdate: function(entityData,flairToolbarToggle,type,linkWarningToggle) {
             setTimeout(function() {
                 var entityResult = entityData;
                 if (type != 'alertgroup') {
@@ -54,7 +68,15 @@
                             if(ifr.contentDocument != null) {
                                 var ifrContents = $(ifr).contents();
                                 if($(ifr.contentDocument.body).find('.extras')[0] == null) {
+                                    //This makes all href point to blank so they don't reload the iframe
                                     $(ifr.contentDocument.body).find('a').attr('target','_blank');
+                                    //Copies href to a new attribute, url, before we make href an anchor (so it doesn't go anywhere when clicked)
+                                    ifrContents.find('a').each(function(index,a) {
+                                        var url = $(a).attr('href');
+                                        $(a).attr('url',url);
+                                    }.bind(this))
+                                    //Make href an anchor so it doesn't go anywhere when clicked and instead opens up the modal in linkWarningPopup
+                                    $(ifr.contentDocument.body).find('a').attr('href','#');
                                     $(ifr.contentDocument.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
                                     $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
                                     ifrContents.find('.entity').each(function(index,entity){
@@ -71,11 +93,11 @@
                                                 $(entity).append(circle);
                                                 $(entity).attr('data-entity-id',entityid)
                                                 $(entity).unbind('click');
-                                                pentry(ifr,flairToolbarToggle,type);
                                             }
                                         }
                                     }.bind(this));
                                 }
+                            pentry(ifr,flairToolbarToggle,type,linkWarningToggle);
                             }
                         }.bind(this));
                     }.bind(this));
