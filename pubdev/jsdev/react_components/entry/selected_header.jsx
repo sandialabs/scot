@@ -55,6 +55,11 @@ var SelectedHeader = React.createClass({
             linkWarningToolbar:false,
             refreshing:false,
             loading: false,
+            sourceLoaded:false,
+            eventLoaded:false,
+            tagLoaded:false,
+            entryLoaded:false,
+            entityLoaded:false,
         }
     },
     componentDidMount: function() {
@@ -115,47 +120,47 @@ var SelectedHeader = React.createClass({
         this.updated();    
     },*/
     updated: function(_type,_message) { 
-        this.setState({refreshing:true});
+        this.setState({refreshing:true, sourceLoaded:false,eventLoaded:false,tagLoaded:false,entryLoaded:false,entityLoaded:false});
         setTimeout(function(){
             this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
                 var sourceResult = result.records;
-                this.setState({showSource:true, sourceData:sourceResult})
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({showSource:true, sourceLoaded:true, sourceData:sourceResult})
+                if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 }
             }.bind(this));
             this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
                 var eventResult = result;
-                this.setState({showEventData:true, headerData:eventResult})
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({showEventData:true, eventLoaded:true, headerData:eventResult})
+                if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 }
             }.bind(this));
             this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
                 var tagResult = result.records;
-                this.setState({showTag:true, tagData:tagResult});
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({showTag:true, tagLoaded:true, tagData:tagResult});
+                if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 }            
             }.bind(this));
             this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
                 var entryResult = result.records;
-                this.setState({showEntryData:true, entryData:entryResult})
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult})
+                if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 }
             }.bind(this));
             this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
                 var entityResult = result.records;
-                this.setState({showEntityData:true, entityData:entityResult})
+                this.setState({showEntityData:true, entityLoaded:true, entityData:entityResult})
                 var waitForEntry = {
                     waitEntry: function() {
-                        if(this.state.showEntryData == false){
+                        if(this.state.entryLoaded == false){
                             setTimeout(waitForEntry.waitEntry,50);
                         } else {
                             console.log('entries are done')
                             setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle)}.bind(this));
-                            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                            if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {                                
                                 this.setState({refreshing:false});
                             }
                         }
