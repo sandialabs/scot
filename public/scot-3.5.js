@@ -1404,6 +1404,7 @@ module.exports = SelectedContainer;
 
 },{"./selected_header.jsx":16,"react":1856}],15:[function(require,module,exports){
 var React               = require('react');
+var ReactDOM            = require('react-dom');
 var ReactTime           = require('react-time');
 var SplitButton         = require('react-bootstrap/lib/SplitButton.js');
 var DropdownButton      = require('react-bootstrap/lib/DropdownButton.js');
@@ -1646,13 +1647,9 @@ var EntryData = React.createClass({displayName: "EntryData",
                 resize:false,
             }
         }
-    },
-    componentWillReceiveProps: function () {
-        if (this.state.resize == false) {
-            this.setState({resize:true})
-        }
-    },
+    }, 
     onLoad: function() {
+        if (document.getElementById('iframe_'+this.props.id).contentDocument.readyState === 'complete') {
         if (this.props.type != 'alert' && this.props.type !='entity') {
             if (this.state.height == '1px') {
                 setTimeout(function() {
@@ -1662,20 +1659,34 @@ var EntryData = React.createClass({displayName: "EntryData",
                         newheight = newheight + 2; //adding 2 px for Firefox so it doesn't make a scroll bar
                         newheight = newheight + 'px';
                         this.setState({height:newheight});
-                        this.setState({resize:false})
+                        this.setState({resize:true})
                     }.bind(this))
                 }.bind(this)); 
-            } else if (this.state.resize == true) {
+            } else if (this.state.resize == false) {
                 setTimeout(function() {
                     document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
                         var newheight; 
                         newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
                         newheight = newheight + 'px';
                         this.setState({height:newheight});
-                        this.setState({resize:false})
+                        this.setState({resize:true})
+                        console.log('resized');
                     }.bind(this))
                 }.bind(this)); 
             }
+        }
+        } else {
+            setTimeout(this.onLoad,0);
+        }
+    },
+    shouldComponentUpdate: function(nextProps,nextState) {
+        if (this.props.subitem.body !== nextProps.subitem.body) {
+            return (true)
+        } else if (nextState.resize == true){
+            this.setState({resize:false})
+            return (true)
+        } else {
+            return (false)
         }
     },
     render: function() {
@@ -1687,20 +1698,26 @@ var EntryData = React.createClass({displayName: "EntryData",
         //Lazy Loading Flair here as other components, namely Flair that need to access the parent component here "SelectedEntry" as it can not be accessed due to a cyclic dependency loop between Flair and SelectedEntry. Lazy loading solves this issue. This problem should go away upon upgrading everything to ES6 and using imports/exports. 
         //var Flair = require('../modal/flair_modal.jsx');
         return (
-            React.createElement("div", {className: 'row-fluid entry-body'}, 
+            React.createElement("div", {key: this.props.id, className: 'row-fluid entry-body'}, 
                 React.createElement("div", {className: 'row-fluid entry-body-inner', style: {marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
-                    React.createElement(Frame, {frameBorder: '0', id: 'iframe_' + id, onload: this.onLoad(), sandbox: 'allow-same-origin ', styleSheets: ['/css/sandbox.css'], style: {width:'100%',height:this.state.height}}, 
+                    React.createElement(Frame, {frameBorder: '0', id: 'iframe_' + id, sandbox: 'allow-same-origin ', styleSheets: ['/css/sandbox.css'], style: {width:'100%',height:this.state.height}}, 
                     React.createElement("div", {dangerouslySetInnerHTML: { __html: rawMarkup}})
                     )
                 )
             )
         )
+    },
+    componentDidMount: function() {
+        this.onLoad();
+    },
+    componentDidUpdate: function() {
+        this.onLoad();
     }
 });
 
 module.exports = SelectedEntry
 
-},{"../components/add_flair.jsx":6,"../components/permission.jsx":8,"../components/summary.jsx":11,"../components/task.jsx":13,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/flair_modal.jsx":24,"react":1856,"react-bootstrap/lib/Button.js":775,"react-bootstrap/lib/DropdownButton.js":781,"react-bootstrap/lib/MenuItem.js":785,"react-bootstrap/lib/SplitButton.js":792,"react-frame":997,"react-time":1666}],16:[function(require,module,exports){
+},{"../components/add_flair.jsx":6,"../components/permission.jsx":8,"../components/summary.jsx":11,"../components/task.jsx":13,"../flux/actions.jsx":18,"../flux/store.jsx":20,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/flair_modal.jsx":24,"react":1856,"react-bootstrap/lib/Button.js":775,"react-bootstrap/lib/DropdownButton.js":781,"react-bootstrap/lib/MenuItem.js":785,"react-bootstrap/lib/SplitButton.js":792,"react-dom":982,"react-frame":997,"react-time":1666}],16:[function(require,module,exports){
 var React                   = require('react');
 var ReactTime               = require('react-time');
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
@@ -1758,6 +1775,11 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             linkWarningToolbar:false,
             refreshing:false,
             loading: false,
+            sourceLoaded:false,
+            eventLoaded:false,
+            tagLoaded:false,
+            entryLoaded:false,
+            entityLoaded:false,
         }
     },
     componentDidMount: function() {
@@ -1818,47 +1840,47 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         this.updated();    
     },*/
     updated: function(_type,_message) { 
-        this.setState({refreshing:true});
+        this.setState({refreshing:true, sourceLoaded:false,eventLoaded:false,tagLoaded:false,entryLoaded:false,entityLoaded:false});
         setTimeout(function(){
             this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
                 var sourceResult = result.records;
-                this.setState({showSource:true, sourceData:sourceResult})
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({showSource:true, sourceLoaded:true, sourceData:sourceResult})
+                if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 }
             }.bind(this));
             this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
                 var eventResult = result;
-                this.setState({showEventData:true, headerData:eventResult})
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({showEventData:true, eventLoaded:true, headerData:eventResult})
+                if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 }
             }.bind(this));
             this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
                 var tagResult = result.records;
-                this.setState({showTag:true, tagData:tagResult});
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({showTag:true, tagLoaded:true, tagData:tagResult});
+                if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 }            
             }.bind(this));
             this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
                 var entryResult = result.records;
-                this.setState({showEntryData:true, entryData:entryResult})
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult})
+                if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 }
             }.bind(this));
             this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
                 var entityResult = result.records;
-                this.setState({showEntityData:true, entityData:entityResult})
+                this.setState({showEntityData:true, entityLoaded:true, entityData:entityResult})
                 var waitForEntry = {
                     waitEntry: function() {
-                        if(this.state.showEntryData == false){
+                        if(this.state.entryLoaded == false){
                             setTimeout(waitForEntry.waitEntry,50);
                         } else {
                             console.log('entries are done')
                             setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle)}.bind(this));
-                            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                            if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {                                
                                 this.setState({refreshing:false});
                             }
                         }
@@ -3015,8 +3037,7 @@ var Flair = React.createClass({displayName: "Flair",
                     style: customStyles}, 
                     React.createElement("div", {className: "modal-header"}, 
                         React.createElement("img", {src: "/images/close_toolbar.png", className: "close_toolbar", onClick: this.props.flairToolbarToggle}), 
-                        React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) :null), 
-                        React.createElement("div", null, React.createElement(EntityOptions, {value: this.state.entityData, entityid: this.props.entityid}))
+                        React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) :null)
                     ), 
                     React.createElement("div", {className: "modal-body", style: {height: '75vh', overflowY:'auto',width:'800px'}}, 
                         React.createElement(EntityBody, {data: this.state.entityData, entityid: this.props.entityid})
