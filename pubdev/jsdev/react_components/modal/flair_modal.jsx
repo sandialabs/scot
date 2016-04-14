@@ -39,7 +39,6 @@ var Flair = React.createClass({
                     <div className="modal-header">
                         <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.flairToolbarToggle} />
                         <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> :null }</h3>
-                        <div><EntityOptions value={this.state.entityData} entityid={this.props.entityid} /></div>
                     </div>
                     <div className="modal-body" style={{height: '75vh', overflowY:'auto',width:'800px'}}>
                         <EntityBody data={this.state.entityData} entityid={this.props.entityid}/> 
