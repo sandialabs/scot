@@ -16,17 +16,17 @@ const customStyles = {
 var Task = React.createClass({
     getInitialState: function () {
         return {
-            taskOwner:null,
-            taskStatus:null, 
+            taskOwner:this.props.taskData.who,
+            taskStatus:this.props.taskData.status, 
             key:this.props.id,
         }
     },
     componentWillMount: function () { 
-        this.taskRequest = $.get('scot/api/v2/entry/' + this.props.entryid, function(result) {
+        /*this.taskRequest = $.get('scot/api/v2/entry/' + this.props.entryid, function(result) {
             var taskOwner = result.task.who;
             var taskStatus = result.task.status;
             this.setState({taskOwner:taskOwner, taskStatus:taskStatus})
-        }.bind(this)); 
+        }.bind(this));*/ 
     },
     makeTask: function () {
         var json = {'make_task':1}
