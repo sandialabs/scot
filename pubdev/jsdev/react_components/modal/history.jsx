@@ -1,6 +1,7 @@
 var React           = require('react');
 var ReactTime       = require('react-time');
 var Modal           = require('react-modal');
+var Button          = require('react-bootstrap/lib/Button');
 var type;
 const customStyles = {
     content : {
@@ -41,7 +42,7 @@ var History = React.createClass({
                        {this.state.historyBody ? <HistoryData data={this.state.data} /> : null }
                     </div>
                     <div className="modal-footer">
-                        <button class="btn" onClick={this.props.historyToggle}>Done</button>
+                        <Button onClick={this.props.historyToggle}>Done</Button>
                     </div>
                 </Modal>
             </div>

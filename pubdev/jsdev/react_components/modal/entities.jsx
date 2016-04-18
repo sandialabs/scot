@@ -1,6 +1,6 @@
 var React           = require('react');
 var Modal           = require('react-modal');
-
+var Button          = require('react-bootstrap/lib/Button');
 const customStyles = {
     content : {
         top     : '50%',
@@ -33,7 +33,7 @@ var Entities = React.createClass({
                         {this.state.entitiesBody ? <EntitiesData data={this.props.entityData} /> :null}
                     </div>
                     <div className="modal-footer">
-                        <button class="btn" onClick={this.props.entitiesToggle}>Done</button>
+                        <Button onClick={this.props.entitiesToggle}>Done</Button> 
                     </div>
                 </Modal>         
             </div>        
