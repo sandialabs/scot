@@ -1,11 +1,12 @@
 'use strict';
 
-var React = require('react')
-var DataGrid = require('../../../node_modules/tasks-react-datagrid/react-datagrid');
-var Crouton = require('../../../node_modules/react-crouton')
-var SelectedContainer = require('../entry/selected_container.jsx')
-var Search = require('../components/esearch.jsx')
-var Notificationactivemq = require('../../../node_modules/react-notification-system')
+var React                       = require('react')
+var DataGrid                    = require('../../../node_modules/tasks-react-datagrid/react-datagrid');
+var Crouton                     = require('../../../node_modules/react-crouton')
+var SelectedContainer           = require('../entry/selected_container.jsx')
+var Search                      = require('../components/esearch.jsx')
+var Notificationactivemq        = require('../../../node_modules/react-notification-system')
+var Store                       = require('../activemq/store.jsx')
 var SORT_INFO;
 var colsort = "id"
 var valuesort = 1
@@ -21,7 +22,6 @@ var stage = false
 var savedsearch = false
 var savedfsearch;
 var setfilter = false
-var Store = require('../activemq/store.jsx')
 var columns = 
 [
     { name: 'type',width: 159.4,  style: {color: 'black'}},
@@ -35,40 +35,40 @@ var columns =
 function dataSource(query)
 {
     if(setfilter){
-    query.skip = 0
-    setfilter = false
+        query.skip = 0
+        setfilter = false
     }
 
     var finalarray = [];
 	var sortarray = {}
 	sortarray[colsort] = valuesort
 	return $.ajax({
-	type: 'GET',
-	url: '/scot/api/v2/task',
-	data: {
-	limit: query.pageSize,
-	offset: query.skip,
-	sort:  JSON.stringify(sortarray),
-	match: JSON.stringify(filter)
+	    type: 'GET',
+	    url: '/scot/api/v2/task',
+	    data: {
+	        limit: query.pageSize,
+	        offset: query.skip,
+	        sort:  JSON.stringify(sortarray),
+	        match: JSON.stringify(filter)
 	}
 	}).then(function(response){
-  	datasource = response	
-	$.each(datasource.records, function(key, value){
-	finalarray[key] = {}
-	$.each(value, function(num, item){
-	if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
-	{
-	    var date = new Date(1000 * item)
-	    finalarray[key][num] = date.toLocaleString()
+  	    datasource = response	
+	    $.each(datasource.records, function(key, value){
+	    finalarray[key] = {}
+	    $.each(value, function(num, item){
+	    if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
+	    {
+	        var date = new Date(1000 * item)
+	        finalarray[key][num] = date.toLocaleString()
 	}
 	else{
-	 finalarray[key][num] = item
+	    finalarray[key][num] = item
 	}
 	})
 	})
 	return {
-	data: finalarray,	
-	count: response.totalRecordCount
+	    data: finalarray,	
+	    count: response.totalRecordCount
 	}
 	})
 	
@@ -105,8 +105,8 @@ module.exports = React.createClass({
         this.setState({})
     },
     componentWillMount: function(){
-	window.location.hash = '#/task/'
-	window.location.href = window.location.hash
+	//window.location.hash = '#/task/'
+	//window.location.href = window.location.hash
     Store.storeKey('taskgroup')
     Store.addChangeListener(this.reloadactive)
     },
@@ -153,11 +153,11 @@ module.exports = React.createClass({
 	    stage ? React.createElement(SelectedContainer, {ids: ids, type: 'task', viewEvent:this.viewEvent}) : 
 	    this.state.viewevent ? React.createElement(SelectedContainer, {ids: ids, type: 'task', viewEvent:this.viewEvent}) : 
 	    React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, React.createElement('div', null, React.createElement(Notificationactivemq, {ref: 'notificationSystem'})), React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, React.createElement('h2', {style: {'font-size': '30px'}}, 'Task')), React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), React.createElement(Search, null)),this.state.viewfilter ? React.createElement(Crouton, {style: {top: '75px', padding: '5px'}, message:"Filtered: ( " + this.state.fsearch + ")", buttons: "close", onDismiss: "Dismiss", type: "info"}) : null, this.state.csv ? React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV') , this.state.showevent ? React.createElement('button',{className: 'btn btn-default',onClick: this.viewEvent, style:styles},"View Tasks") : null) : null, React.createElement(DataGrid, {
-            ref: "dataGrid", 
-            idProperty: "id", 
-            dataSource: this.state.data, 
-            columns: columns, 
-            onColumnResize: this.onColumnResize, 
+        ref: "dataGrid", 
+        idProperty: "id", 
+        dataSource: this.state.data, 
+        columns: columns, 
+        onColumnResize: this.onColumnResize, 
 	    onFilter: this.handleFilter, 
 	    selected: SELECTED_ID, 
 	    onSelectionChange: this.onSelectionChange, 
@@ -174,11 +174,11 @@ module.exports = React.createClass({
 	    style: {height: '100%'},
 	    rowFactory: rowFact,
 	    rowStyle: configureTable}
-	)
-        ));
+	)    
+    )
+    );
     },
     viewEvent: function(){
-
         if (stage == false || this.state.viewevent == false) {
             stage = true;
             this.setState({viewevent: true});
@@ -190,31 +190,31 @@ module.exports = React.createClass({
 	window.location.href = window.location.hash
     },
     exportCSV: function(){
-        var keys = []
+    var keys = []
 	$.each(columns, function(key, value){
-            keys.push(value['name']);
+        keys.push(value['name']);
 	  });
 	var csv = ''
 	$('.z-even').each(function(key, value){
-	var storearray = []
+	    var storearray = []
         $(value).find('.z-content').each(function(x,y) {
             var obj = $(y).text()
-		obj = obj.replace(/,/g,'|')
-		storearray.push(obj)
+		    obj = obj.replace(/,/g,'|')
+		    storearray.push(obj)
 	});
-	    csv += storearray.join() + '\n'
+	        csv += storearray.join() + '\n'
 	});
 
 	$('.z-odd').each(function(key, value){
         var storearray = []
         $(value).find('.z-content').each(function(x,y) {
             var obj = $(y).text()
-		obj = obj.replace(/,/g,'|')
-		storearray.push(obj)
+		    obj = obj.replace(/,/g,'|')
+	    	storearray.push(obj)
 	});
-	    csv += storearray.join() + '\n'
+	        csv += storearray.join() + '\n'
 	});
-        var result = keys.join() + "\n"
+    var result = keys.join() + "\n"
 	csv = result + csv;
 	var data_uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
 	window.open(data_uri)		
@@ -222,8 +222,8 @@ module.exports = React.createClass({
     handleSortChange : function(sortInfo){
 	SORT_INFO = sortInfo
 	$.each(SORT_INFO, function(key,value){
-	colsort = value['name']	
-	valuesort = value['dir']
+	    colsort = value['name']	
+	    valuesort = value['dir']
 	})
 	this.setState({})
 	},
@@ -238,12 +238,12 @@ module.exports = React.createClass({
 	var selected = []
 	var multiple = false
 	Object.keys(newSelection).forEach(function(id){
-	selected.push(newSelection[id].id)
+	    selected.push(newSelection[id].id)
 	})
 	names = selected.length? selected.join(',') : 'none'
 	ids = names.split(',')
 	if(ids.length > 1){
-	multiple = true
+	    multiple = true
 	}
 	
 	this.setState({showevent: multiple, reload:false})
@@ -254,37 +254,37 @@ module.exports = React.createClass({
 	var filtersearch = ''
 	filter = {}
 	Object.keys(allFilterValues).forEach(function(name){
-	var columnFilter = allFilterValues[name]
-	if(columnFilter == ''){
-	return
+	    var columnFilter = allFilterValues[name]
+	    if(columnFilter == ''){
+	        return
 	}
-	if(name == "id" || name == "views"){
-	filter[name] = [columnFilter]
+	    if(name == "id" || name == "views"){
+	        filter[name] = [columnFilter]
 	}
-	else if(name == "created"){
-	filter[name] = columnFilter;
+	    else if(name == "created"){
+	        filter[name] = columnFilter;
 	}
-	else{
-	filter[name] = columnFilter	
+	    else{
+	        filter[name] = columnFilter	
 	}
 	})
 	if(Object.keys(filter).length > 0){
-	savedsearch = false
-	setfilter = true
-    this.setState({viewfilter: false})
-	$.each(allFilterValues, function(key,value){
-	    if(value != ""){
-	    filtersearch = filtersearch + key + ": " + JSON.stringify(value) + " "
-	    }
+	        savedsearch = false
+	        setfilter = true
+            this.setState({viewfilter: false})
+	        $.each(allFilterValues, function(key,value){
+	        if(value != ""){
+	            filtersearch = filtersearch + key + ": " + JSON.stringify(value) + " "
+	        }
 	})
- 	setTimeout(function() {savedsearch = true; reload: false, this.setState({viewfilter:true, fsearch: filtersearch})}.bind(this), 1000)	
-	savedfsearch = filtersearch
+ 	    setTimeout(function() {savedsearch = true; reload: false, this.setState({viewfilter:true, fsearch: filtersearch})}.bind(this), 1000)	
+	    savedfsearch = filtersearch
 	}
 	else{
-	savedsearch = false
-	savedfsearch = ''
-	this.setState({viewfilter: false})
-	}
+	    savedsearch = false
+	    savedfsearch = ''
+	    this.setState({viewfilter: false})
+	    }
     }
 
 });
