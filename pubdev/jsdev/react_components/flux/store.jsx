@@ -1,7 +1,7 @@
-var Dispatcher = require('./dispatcher.jsx')
-var EventEmitter = require('../../../node_modules/events').EventEmitter
-var Actions = ('./tab_actions.jsx')
-var assign = require('object-assign')
+var Dispatcher      = require('./dispatcher.jsx')
+var EventEmitter    = require('../../../node_modules/events').EventEmitter
+var Actions         = ('./tab_actions.jsx')
+var assign          = require('object-assign')
 var storekey;
 var keyarray = []
 function updateStatus(payload) {
@@ -66,7 +66,7 @@ var Store = assign({}, EventEmitter.prototype, {
     })
 
     Dispatcher.register(function(payload){
-
+    console.log("My Lord")
 	if(payload.message == 'alertstatusmessage') {
         updateStatus(payload)
 	}
