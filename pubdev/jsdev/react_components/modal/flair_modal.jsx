@@ -44,7 +44,7 @@ var Flair = React.createClass({
                         <EntityBody data={this.state.entityData} entityid={this.props.entityid}/> 
                     </div>
                     <div className="modal-footer">
-                        <button class="btn" onClick={this.props.flairToolbarToggle}>Done</button>
+                        <Button onClick={this.props.flairToolbarToggle}>Done</Button>
                     </div>
                 </Modal>
             </div>
