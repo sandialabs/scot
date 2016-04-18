@@ -11,7 +11,7 @@ var Summary             = require('../components/summary.jsx');
 var Task                = require('../components/task.jsx');
 var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
-var Store               = require('../flux/store.jsx');
+var Store               = require('../activemq/store.jsx');
 var AppActions          = require('../flux/actions.jsx');
 var AddFlair            = require('../components/add_flair.jsx');
 var Flair               = require('../modal/flair_modal.jsx');
@@ -89,7 +89,7 @@ var SelectedEntry = React.createClass({
         var showEntryData = this.props.showEntryData;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
         if (type =='alert' || type == 'entity') {
-            divClass = 'row-fluid entry-wrapper'
+            divClass = 'row-fluid entry-wrapper entry-wrapper-main-75'
             data = this.state.entryData;
             showEntryData = this.state.showEntryData;
         }
