@@ -1289,17 +1289,17 @@ const customStyles = {
 var Task = React.createClass({displayName: "Task",
     getInitialState: function () {
         return {
-            taskOwner:null,
-            taskStatus:null, 
+            taskOwner:this.props.taskData.who,
+            taskStatus:this.props.taskData.status, 
             key:this.props.id,
         }
     },
     componentWillMount: function () { 
-        this.taskRequest = $.get('scot/api/v2/entry/' + this.props.entryid, function(result) {
+        /*this.taskRequest = $.get('scot/api/v2/entry/' + this.props.entryid, function(result) {
             var taskOwner = result.task.who;
             var taskStatus = result.task.status;
             this.setState({taskOwner:taskOwner, taskStatus:taskStatus})
-        }.bind(this)); 
+        }.bind(this));*/ 
     },
     makeTask: function () {
         var json = {'make_task':1}
@@ -1615,7 +1615,7 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                                 React.createElement(SplitButton, {bsSize: "xsmall", title: "Reply", key: items.id, id: 'Reply '+items.id, onClick: this.replyEntryToggle, pullRight: true}, 
                                     React.createElement(MenuItem, {eventKey: "2", onClick: this.deleteToggle}, "Delete"), 
                                     React.createElement(MenuItem, {eventKey: "3"}, React.createElement(Summary, {type: type, id: id, entryid: items.id, summary: summary})), 
-                                    React.createElement(MenuItem, {eventKey: "4"}, React.createElement(Task, {type: type, id: id, entryid: items.id})), 
+                                    React.createElement(MenuItem, {eventKey: "4"}, React.createElement(Task, {type: type, id: id, entryid: items.id, taskData: items.task})), 
                                     React.createElement(MenuItem, {eventKey: "5", onClick: this.permissionsToggle}, "Permissions")
                                 ), 
                                 React.createElement(Button, {bsSize: "xsmall", onClick: this.editEntryToggle}, "Edit")
@@ -2894,7 +2894,7 @@ module.exports = {
 },{"../flux/actions.jsx":18,"react":1856,"react-bootstrap/lib/Button":775,"react-modal":1005}],23:[function(require,module,exports){
 var React           = require('react');
 var Modal           = require('react-modal');
-
+var Button          = require('react-bootstrap/lib/Button');
 const customStyles = {
     content : {
         top     : '50%',
@@ -2927,7 +2927,7 @@ var Entities = React.createClass({displayName: "Entities",
                         this.state.entitiesBody ? React.createElement(EntitiesData, {data: this.props.entityData}) :null
                     ), 
                     React.createElement("div", {className: "modal-footer"}, 
-                        React.createElement("button", {class: "btn", onClick: this.props.entitiesToggle}, "Done")
+                        React.createElement(Button, {onClick: this.props.entitiesToggle}, "Done")
                     )
                 )
             )        
@@ -2996,7 +2996,7 @@ var EntitiesDataValueIterator = React.createClass({displayName: "EntitiesDataVal
 });
 module.exports = Entities;
 
-},{"react":1856,"react-modal":1005}],24:[function(require,module,exports){
+},{"react":1856,"react-bootstrap/lib/Button":775,"react-modal":1005}],24:[function(require,module,exports){
 var React                   = require('react');
 var Modal                   = require('react-modal');
 var Button                  = require('react-bootstrap/lib/Button');
@@ -3043,7 +3043,7 @@ var Flair = React.createClass({displayName: "Flair",
                         React.createElement(EntityBody, {data: this.state.entityData, entityid: this.props.entityid})
                     ), 
                     React.createElement("div", {className: "modal-footer"}, 
-                        React.createElement("button", {class: "btn", onClick: this.props.flairToolbarToggle}, "Done")
+                        React.createElement(Button, {onClick: this.props.flairToolbarToggle}, "Done")
                     )
                 )
             )
@@ -3175,6 +3175,7 @@ module.exports = Flair;
 var React           = require('react');
 var ReactTime       = require('react-time');
 var Modal           = require('react-modal');
+var Button          = require('react-bootstrap/lib/Button');
 var type;
 const customStyles = {
     content : {
@@ -3215,7 +3216,7 @@ var History = React.createClass({displayName: "History",
                        this.state.historyBody ? React.createElement(HistoryData, {data: this.state.data}) : null
                     ), 
                     React.createElement("div", {className: "modal-footer"}, 
-                        React.createElement("button", {class: "btn", onClick: this.props.historyToggle}, "Done")
+                        React.createElement(Button, {onClick: this.props.historyToggle}, "Done")
                     )
                 )
             )
@@ -3251,7 +3252,7 @@ var HistoryDataIterator = React.createClass({displayName: "HistoryDataIterator",
 
 module.exports = History;
 
-},{"react":1856,"react-modal":1005,"react-time":1666}],26:[function(require,module,exports){
+},{"react":1856,"react-bootstrap/lib/Button":775,"react-modal":1005,"react-time":1666}],26:[function(require,module,exports){
 var React                   = require('react');
 var Modal                   = require('react-modal');
 var Button                  = require('react-bootstrap/lib/Button');
