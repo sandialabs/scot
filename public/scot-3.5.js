@@ -1131,7 +1131,7 @@ var Summary = React.createClass({displayName: "Summary",
             onClick = this.toggle;
         }
         return (
-            React.createElement("span", {onClick: onClick}, summaryDisplay)
+            React.createElement("span", {style: {display:'block'}, onClick: onClick}, summaryDisplay)
         )
     }  
 });
@@ -1369,7 +1369,7 @@ var Task = React.createClass({displayName: "Task",
             onClick = this.takeTask;
         }
         return (
-            React.createElement("span", {onClick: onClick}, taskDisplay)
+            React.createElement("span", {style: {display:'block'}, onClick: onClick}, taskDisplay)
         )
     }
 });
