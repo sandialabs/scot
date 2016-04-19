@@ -96,7 +96,7 @@ var Task = React.createClass({
             onClick = this.takeTask;
         }
         return (
-            <span onClick={onClick}>{taskDisplay}</span>
+            <span style={{display:'block'}} onClick={onClick}>{taskDisplay}</span>
         )
     }
 });
