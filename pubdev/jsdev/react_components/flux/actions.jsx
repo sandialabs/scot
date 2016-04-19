@@ -1,5 +1,5 @@
-var React = require('react');
-var Dispatcher = require('./dispatcher.jsx');
+var React       = require('react');
+var Dispatcher  = require('./dispatcher.jsx');
 var client;
 var msgs_received   = 0;
 var clientId;
