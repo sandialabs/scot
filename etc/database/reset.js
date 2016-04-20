@@ -17,9 +17,9 @@ db.users.drop();
 db.link.drop();
 
 print ("Creating indexes...");
-load("../../etc/database/indexes.js");
+load("../etc/database/indexes.js");
 print ("Zero-ing the nexid collection...");
-load("../../etc/database/zero_nextid.js");
+load("../etc/database/zero_nextid.js");
 
 print ("Clearing config and re-creating...");
 db.config.drop();
