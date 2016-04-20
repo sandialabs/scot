@@ -979,11 +979,11 @@ html.u-app body * {
 }
 .react-datagrid .z-row,
 .react-datagrid .react-datagrid-pagination-toolbar {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -o-user-select: none;
-  user-select: none;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  -o-user-select: text;
+  user-select: text;
 }
 .react-datagrid .loadmask {
 
