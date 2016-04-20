@@ -41,6 +41,24 @@ coerce  'Num',
 from    'Str', 
 via     { $_ + 0 };
 
+=item B<AlertgroupStatus>
+
+=cut
+
+subtype 'AlertgroupStatus',
+as      'Str',
+where   { grep { /$_/ } qw(open promoted closed) };
+
+coerce  'AlertgroupStatus',
+from    'Str',
+via     {
+    my ($n,$d) = split(/\//, $_, 2);
+    if ($n =~ /\d+/ and $n >=1 ) {
+        return 'promoted';
+    }
+    return 'open';
+};
+
 =item B<alert_status>
 
 Valid statuses for Alerts/Alertgroups
