@@ -52,7 +52,7 @@ var Summary = React.createClass({
             onClick = this.toggle;
         }
         return (
-            <span onClick={onClick}>{summaryDisplay}</span>
+            <span style={{display:'block'}} onClick={onClick}>{summaryDisplay}</span>
         )
     }  
 });
