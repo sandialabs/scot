@@ -21,6 +21,8 @@ use Try::Tiny;
 use HTML::Entities;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Safe::Isa;
+use Storable;
+use HTML::TreeBuilder;
 use v5.18;
 use strict;
 use warnings;
@@ -131,6 +133,23 @@ sub _get_db {
     return MongoDB->connect->db($self->db_name);
 }
 
+sub get_min_id {
+    my $self    = shift;
+    my $mtype   = shift;
+    my $idrange = shift;
+    my $col     = $self->db->get_collection($mtype);
+    my $cursor  = $col->find({
+        id => { '$gte' => $idrange->[0], '$lte' => $idrange->[1] }
+    });
+    $cursor->sort({ id => 1});
+    my $doc = $cursor->next;
+    unless ($doc) {
+        return $idrange->[1];
+    }
+    return $doc->{id};
+}
+
+
 sub migrate {
     my $self    = shift;
     my $mtype   = shift;
@@ -155,18 +174,22 @@ sub migrate {
         $self->legacy_client->reconnect();
         $self->client->reconnect();
 
+        my $min_migrated_id = $self->get_min_id($mtype, $id_range);
+
         my $colname     = $self->lookup_legacy_colname($mtype);
         my $legcol      = $self->legacydb->get_collection($colname);
         my $legcursor   = $legcol->find({
             $idfield    => {
                 '$gte'  => $id_range->[0],
-                '$lte'  => $id_range->[1],
+                '$lte'  => $min_migrated_id,
             }
         });
         $legcursor->immortal(1);
+        $legcursor->sort({$idfield => -1});
         my $remaining_docs  = $legcursor->count();
         my $migrated_docs   = 0;
         my $total_docs      = $remaining_docs;
+        my $total_time      = 0;
 
         ITEM:
         while ( my $item = $self->get_next_item($legcursor) ) {
@@ -180,6 +203,22 @@ sub migrate {
                             "] Migration");
             
             my $pct = $self->get_pct($remaining_docs, $total_docs);
+
+            my $alert_count; # only for alertgroup special case
+            if ( $mtype eq "alertgroup" ) {
+                $alert_count = scalar(@{$item->{alert_ids}}) // 0;
+            }
+
+            if ($opts->{verbose} ) {
+                my $postspace   = 4 - $procindex;
+                print " "x$procindex .$procindex.
+                    " "x$postspace.": {". $$ ."}[ $mname ". $item->{$idfield}.
+                    "] ";
+                if ( $mtype eq "alertgroup" ) {
+                    my $acfmt   = sprintf("%15s", $alert_count);
+                    print "$acfmt alerts to process \r";
+                }
+            }
             
             unless ( $self->transform($mtype, $item) ) {
                 $log->error("Error: $mtype Transform failed ",
@@ -187,19 +226,25 @@ sub migrate {
             }
             
             my $elapsed = &$timer;
+            $total_time += $elapsed;
             $remaining_docs--;
             $migrated_docs++;
             my ($rate, $eta) = $self->calc_rate_eta($elapsed, $remaining_docs);
+            # my ($rate, $eta) = $self->calc_rate_eta($total_time, $remaining_docs);
 
-            my $ratestr = sprintf("%5.3f docs/sec", $rate);
-            my $etastr  = sprintf("%5.3f hours", $eta);
+            my $ratestr = sprintf("%16s", sprintf("%5.3f docs/sec", $rate));
+            my $etastr  = sprintf("%16s", sprintf("%5.3f hours", $eta));
             my $elapstr = sprintf("%5.2f", $elapsed);
             if ($opts->{verbose} ) {
                 my $postspace   = 4 - $procindex;
-                say " "x$procindex .$procindex.
-                    " "x$postspace.": [ $mname ". $item->{id}.
-                    "] $elapstr secs -- $ratestr $etastr ".
-                    $self->commify($remaining_docs). " remain";
+                print " "x$procindex .$procindex.
+                    " "x$postspace.": {". $$ ."}[ $mname ". $item->{id}.
+                    "] $elapstr secs - ";
+                if ( $mtype eq "alertgroup" ) {
+                    my $acfmt   = sprintf("%5s", $alert_count);
+                    print "$acfmt alerts - ";
+                }
+                print " $ratestr $etastr ".  $self->commify($remaining_docs). " remain\n";
             }
         }
 
@@ -215,6 +260,11 @@ sub get_idranges {
     my $idfield = $self->lookup_idfield($mtype);
 
     my @ids    = ();
+
+    if ( -e $mtype."_idranges" ) {
+        @ids    = retrieve($mtype."_idranges");
+        return wantarray ? @ids : \@ids;
+    }
 
     if ( $opts->{idranges} ) {
         return wantarray ? @{$opts->{idranges}} : $opts->{idranges};
@@ -257,6 +307,7 @@ sub get_idranges {
                 say "... contains  ".$self->commify(scalar(@range))." ids";
                 say "... start_id = " . $range[0];
                 say "... end_id   = " . $range[-1];
+                say "";
             }
             push @ids, [ $range[0], $range[-1] ];
             @range = ();
@@ -264,6 +315,8 @@ sub get_idranges {
     }
 
     $self->env->log->debug("$mtype idranges ",{filter=>\&Dumper, value=>\@ids});
+
+    store @ids, $mtype."_idranges";
 
     return wantarray ? @ids : \@ids;
 
@@ -296,7 +349,7 @@ sub transform {
 
     if ( $item->{readgroups} ) {
         $item->{groups} = {
-            read    => delete $item->{readgroups} // $self->default_read,
+            read    => delete $item->{readgroups}   // $self->default_read,
             modify  => delete $item->{modifygroups} // $self->default_modify,
         };
     }
@@ -310,6 +363,135 @@ sub transform {
 
 }
 
+sub xform_event {
+    my $self    = shift;
+    my $col     = shift;
+    my $href    = shift;
+    my $verbose = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $id      = $href->{id};
+
+    $log->debug("[Event $id] transformation");
+
+    my @links;
+    my @alinks = map {
+        { pair  => [ { type => "alert", id => $_ },
+                     { type => "event", id => $id }, ],
+          when  => $href->{created} // $href->{updated} }
+    } @{ delete $href->{alerts} // [] };
+    my @ilinks = map {
+        { pair  => [ { type => "incident", id => $_ },
+                     { type => "event", id => $id }, ],
+          when  => $href->{created} // $href->{updated} }
+    } @{ delete $href->{incidents} // [] };
+    push @links, @alinks, @ilinks;
+
+    my @history = map {
+        { event => $id, history => $_ }
+    } @{ delete $href->{history} //[] };
+    my @tags    = map {
+        { events => $id, tag => { value => $_ } }   
+    } @{ delete $href->{tags} //[] };
+    my @sources = map {
+        { events => $id, source => { value => $_, } }
+    } @{ delete $href->{sources} //[] };
+
+    $href->{views}  = delete $href->{view_count};
+
+    $col->insert_one($href);
+
+    push @links, $self->create_history(@history);
+    push @links, $self->create_sources(@sources);
+    push @links, $self->create_tags(@tags);
+    $self->create_links(@links);
+
+    return 1;
+
+}
+
+sub xform_incident {
+    my $self    = shift;
+    my $col     = shift;
+    my $href    = shift;
+    my $verbose = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $id      = $href->{id};
+
+    $log->debug("[Incident $id] transformation ");
+
+    my @links = map { 
+        { pair  => [ {type  => "event", id    => $_, }, 
+                     {type  => "incident", id => $id }, ],
+          when  => $href->{created}//$href->{updated} } 
+    } @{ delete $href->{events} // [] };
+
+    unless ( defined $href->{owner} ) {
+        $href->{owner} = "unknown";
+    }
+    my @history = map {
+        { event => $id, history => $_ }
+    } @{ delete $href->{history} //[] };
+    my @tags    = map {
+        { events => $id, tag => { value => $_ } }   
+    } @{ delete $href->{tags} //[] };
+    my @sources = map {
+        { events => $id, source => { value => $_, } }
+    } @{ delete $href->{sources} //[] };
+
+    $col->insert_one($href);
+
+    push @links, $self->create_history(@history);
+    push @links, $self->create_sources(@sources);
+    push @links, $self->create_tags(@tags);
+    $self->create_links(@links);
+
+    return 1;
+}
+sub xform_entry {
+    my $self    = shift;
+    my $col     = shift;
+    my $href    = shift;
+    my $verbose = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $id      = $href->{id};
+
+    $log->debug("[Entry $id] transformation ");
+
+    if ( length($href->{body}) > 2000000 ) {
+        $log->warn("[Entry $id] is HUGE! Saving for later splitting");
+        $self->handle_huge_entry($id);
+        return undef;
+    }
+
+    if ( ref($href->{body}) eq "MongoDB::BSON::Binary" ) {
+        $href->{body} = '<html>'.$href->{plaintext}.'</html>';
+    }
+
+    my $entities;
+
+    ( $href->{body_flair},
+      $href->{body_plain},
+      $entities )   = $self->flair_entry_data($href);
+
+    $href->{parent}     = 0 unless ($href->{parent});
+    $href->{owner}      = 'unknown' unless ($href->{owner});
+    # this must be after the flairing bc flairing looks for target_type/id
+    $href->{target}     = {
+        type        => delete $href->{target_type},
+        id          => delete $href->{target_id},
+    };
+    my @history = map {
+        { event => $id, history => $_ }
+    } @{ delete $href->{history} //[] };
+    my @links;
+    push @links, $self->create_history(@history);
+    push @links, $self->create_entities($entities);
+    $self->create_links(@links);
+    return 1;
+}
 
 sub xform_alertgroup {
     my $self    = shift;
@@ -332,15 +514,13 @@ sub xform_alertgroup {
         { alertgroup => $id, history => $_ }
     } @{ delete $href->{history} //[] };
     my @tags    = map {
-        { alertgroup => $id, tag => $_ }   
+        { alertgroup => $id, tag => { value => $_ } }   
     } @{ delete $href->{tags} //[] };
     my @sources = map {
-        { alertgroup => $id, source => $_ }
+        { alertgroup => $id, source => { value => $_, } }
     } @{ delete $href->{sources} //[] };
 
     $href->{body}        = delete $href->{body_html};
-    $href->{body_plain}  = delete $href->{body_plain};
-
 
     my $newalertcol     = $self->db->get_collection('alert');
     my $leg_alert_col   = $self->legacydb->get_collection('alerts');
@@ -350,15 +530,17 @@ sub xform_alertgroup {
     my $entities;
     my @alert_promotions    = ();
     my %status;
+    my @allentities = ();
 
     ALERT:
     while ( my $alert = $leg_alert_cursor->next ) {
         my $alertid     = $alert->{alert_id};
         $alert->{id}    = delete $alert->{alert_id};
+        die "No AlertID! ".Dumper($alert) unless (defined $alertid);
         $status{$alert->{status}}++;
         $log->trace("[alert $alertid] removing unneeded fields");
         foreach my $attribute ( @{ $self->get_unneeded_fields('alert') }) {
-            delete $href->{$attribute};
+            delete $alert->{$attribute};
         }
         if ( $alert->{updated} ) {
             $alert->{updated}    = int($alert->{updated});
@@ -366,20 +548,29 @@ sub xform_alertgroup {
 
         if ( $alert->{readgroups} ) {
             $alert->{groups} = {
-                read    => delete $href->{readgroups} // $self->default_read,
-                modify  => delete $href->{modifygroups} // $self->default_modify,
+                read    => delete $alert->{readgroups} // $self->default_read,
+                modify  => delete $alert->{modifygroups} // $self->default_modify,
             };
         }
+        my @alerthistory = map {
+            { alert => $id, history => $_ }
+        } @{ delete $alert->{history} //[] };
+        push @history, @alerthistory;
+
         ( $alert->{data_with_flair},
-          $entities ) = $href->{data};
-        unless ( $href->{data_with_flair} ) {
-            $href->{data_with_flair} = $href->{data};
+          $entities ) = $self->flair_alert_data($alert);
+
+        push @allentities, @$entities;
+
+        unless ( $alert->{data_with_flair} ) {
+            $alert->{data_with_flair} = $alert->{data};
         }
         @alert_promotions = map {
             { pair  => [ {type => "event", id   => $_, },
                          {type => "alert", id => $alertid }, ],
-              when => $href->{created} // $href->{updated} }
-        } @{ delete $href->{events} // [] };
+              when => $alert->{created} // $alert->{updated} }
+        } @{ delete $alert->{events} // [] };
+
         $newalertcol->insert_one($alert);
     }
     push @links, @alert_promotions;
@@ -394,9 +585,87 @@ sub xform_alertgroup {
     push @links, $self->create_history(@history);
     push @links, $self->create_sources(@sources);
     push @links, $self->create_tags(@tags);
-    push @links, $self->create_entities($entities);
+    push @links, $self->create_entities(\@allentities);
     $self->create_links(@links);
 
+    return 1;
+}
+
+sub xform_handler {
+    my $self    = shift;
+    my $col     = shift;
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $start   = delete $href->{date};
+    my $end     = DateTime->new(
+        year    => $start->year,
+        month   => $start->month,
+        day     => $start->day,
+        hour    => 23,
+        minute  => 59,
+        second  => 59,
+        time_zone => "Etc/UTC",
+    );
+
+    my $name            = delete $href->{user};
+    $href->{start}      = $start->epoch;
+    $href->{end}        = $end->epoch;
+    $href->{username}   = $name;
+    delete $href->{groups};
+
+    $col->insert_one($href);
+    return 1;
+}
+
+sub xform_file {
+    my $self    = shift;
+    my $col     = shift;
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my @links   = ();
+
+    $href->{directory} = delete $href->{dir};
+    push @links, (
+        { type  => "entry", id => delete $href->{entry_id} },
+        { type  => delete $href->{target_type}, id => delete $href->{target_id}}
+    );
+
+    $col->insert_one($href);
+    $self->create_links(@links);
+    return 1;
+}
+
+sub xform_user {
+    my $self    = shift;
+    my $col     = shift;
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    delete $href->{groups};
+    if ( $href->{hash} ) {
+        $href->{pwhash} = delete $href->{hash};
+    }
+    $href->{last_login_attempt} = $href->{lastvisit};
+
+    $col->insert_one($href);
+    return 1;
+}
+
+sub xform_guide {
+    my $self    = shift;
+    my $col     = shift;
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+
+    my $guide   = delete $href->{guide};
+    $href->{applies_to} = [ $guide ];
+
+    $col->insert_one($href);
     return 1;
 }
 
@@ -406,6 +675,9 @@ sub create_links {
     my $linkcol = $self->db->get_collection('link');
     my $env     = $self->env;
     my $log     = $env->log;
+
+    return if (scalar(@links) < 1);
+
     my $timer   = $env->get_timer("[Links] Bulk created ");
     my $bulk    = $linkcol->initialize_unordered_bulk_op;
 
@@ -448,6 +720,8 @@ sub create_history {
     my $bulk    = $col->initialize_unordered_bulk_op;
     my @links   = ();
 
+    return () if (scalar(@history) < 1);
+
     foreach my $h (@history) {
         my $data;
         my $type;
@@ -463,11 +737,12 @@ sub create_history {
         }
 
         $data->{when} = int($data->{when});
+        $data->{id}   = $self->get_next_id('history');
         $bulk->insert_one($data);
         push @links, {
             pair    => [
-                { id    => $self->get_next_id('history'), type => 'history' },
-                { id    => $id,      type => $type },
+                { id    => $data->{id}, type => 'history' },
+                { id    => $id,         type => $type },
             ],
             when    => $data->{when},
         };
@@ -497,6 +772,9 @@ sub create_sources {
     my $bulk        = $col->initialize_unordered_bulk_op;
     my @links       = ();
 
+    return () if (scalar(@sources) < 1);
+    my $insertions  = 0;
+
     foreach my $h (@sources) {
         my ($data, $type, $id );
         foreach my $k (keys %$h) {
@@ -511,26 +789,40 @@ sub create_sources {
         if ( ref($data) eq "ARRAY" ) {
             $data = pop $data;
         }
-        $bulk->insert_one($data);
+        
+        my $doc = $col->find_one({ value => $data->{value} });
+        my $docid;
+        unless ($doc) {
+            $docid  = $self->get_next_id('source');
+            $data->{id} = $docid;
+            $bulk->insert_one($data);
+            $insertions++;
+        }
+        else {
+            $docid  = $doc->{$id};
+        }
+
         push @links, {
             pair    => [
-                { id    => $self->get_next_id('source'), type => 'source' },
+                { id    => $docid, type => 'source' },
                 { id    => $id,      type   => $type },
             ],
             when    => 1,
         };
     }
-    my $result = try {
-        $bulk->execute;
+    if ( $insertions > 0 ) {
+        my $result = try {
+            $bulk->execute;
+        }
+        catch {
+            if ( $_->isa("MongoDB::WriteConcernError") ) {
+                warn "Write concern failed";
+            }
+            else {
+                $log->error("Error Inserting Bulk Sources: $_.  Data =", {filter=>\&Dumper,value=>\@sources});
+            }
+        };
     }
-    catch {
-        if ( $_->isa("MongoDB::WriteConcernError") ) {
-            warn "Write concern failed";
-        }
-        else {
-            $log->error("Error: $_");
-        }
-    };
     &$timer;
     return @links;
 }
@@ -544,6 +836,9 @@ sub create_tags {
     my $timer       = $env->get_timer("[tag] Bulk create");
     my $bulk        = $col->initialize_unordered_bulk_op;
     my @links       = ();
+    my $insertions  = 0;
+
+    return () if (scalar(@tags) < 1);
 
     foreach my $h (@tags) {
         my ($data, $type, $id );
@@ -559,26 +854,39 @@ sub create_tags {
         if ( ref($data) eq "ARRAY" ) {
             $data = pop $data;
         }
-        $bulk->insert_one($data);
+
+        my $docid;
+        my $doc = $col->find_one({ value => $data->{value} });
+        unless ( $doc ) {
+            $docid  = $self->get_next_id('tag');
+            $data->{id} = $docid;
+            $bulk->insert_one($data);
+            $insertions++;
+        }
+        else {
+            $docid  = $doc->{id};
+        }
         push @links, {
             pair    => [
-                { id    => $self->get_next_id('tag'), type => 'tag' },
-                { id    => $id,      type   => $type },
+                { id    => $docid,   type => 'tag' },
+                { id    => $id,      type => $type },
             ],
             when    => 1,
         };
     }
-    my $result = try {
-        $bulk->execute;
+    if ( $insertions > 0) {
+        my $result = try {
+            $bulk->execute;
+        }
+        catch {
+            if ( $_->isa("MongoDB::WriteConcernError") ) {
+                warn "Write concern failed";
+            }
+            else {
+                $log->error("Error: $_");
+            }
+        };
     }
-    catch {
-        if ( $_->isa("MongoDB::WriteConcernError") ) {
-            warn "Write concern failed";
-        }
-        else {
-            $log->error("Error: $_");
-        }
-    };
     &$timer;
     return @links;
 
@@ -586,10 +894,17 @@ sub create_tags {
 
 sub create_entities {
     my $self        = shift;
-    my $entities    = shift;
+    my $entities    = shift; # should be array ref
     my $env         = $self->env;
     my $log         = $env->log;
     my @links       = ();
+    my $insertions  = 0;
+
+    $log->debug("entities are ",{filter=>\&Dumper, value=>$entities});
+
+    return () unless ( defined $entities );
+    return () if ( scalar(@$entities) < 1 );
+
 
     my $timer   = $env->get_timer("[Entities] Create Time");
 
@@ -606,6 +921,7 @@ sub create_entities {
             $entity->{id}   = $self->get_next_id('entity');
             my $res = $bulk->insert_one($entity);
             $id = $entity->{id};
+            $insertions++;
         }
         else {
             $id = $existing->{id};
@@ -625,17 +941,19 @@ sub create_entities {
             push @links, $link;
         }
     }
-    my $result = try {
-        $bulk->execute;
+    if ( $insertions > 0 ) {
+        my $result = try {
+            $bulk->execute;
+        }
+        catch {
+            if ( $_->isa("MongoDB::WriteConcernError") ) {
+                warn "Write concern failed";
+            }
+            else {
+                $log->error("Error: $_");
+            }
+        };
     }
-    catch {
-        if ( $_->isa("MongoDB::WriteConcernError") ) {
-            warn "Write concern failed";
-        }
-        else {
-            $log->error("Error: $_");
-        }
-    };
     my $elapsed = &$timer;
     return @links;
 }
@@ -646,6 +964,7 @@ sub get_next_item {
     my $env     = $self->env;
     my $log     = $env->log;
     my $item;
+    $log->debug("Fetching next item...");
     try {
         $item = $cursor->next;
     }
@@ -701,20 +1020,38 @@ sub commify {
 sub flair_alert_data {
     my $self    = shift;
     my $alert   = shift;
-    my $id      = $alert->{id};
+    my $id      = $alert->{id} // $alert->{alert_id};
     my $data    = $alert->{data};
     my @entities    = ();
     my %flair;
     my %seen;
     my $when    = $alert->{when} // $alert->{create};
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    die "unknown alert id! ".Dumper($alert) unless ($id);
+
+    # $log->debug("flairing: ",{filter=>\&Dumper, value=>$alert});
+    $log->debug("flairing: ");
 
     my $timer = $self->env->get_timer("[Alert $id] Flair");
 
     TUPLE:
     while ( my ($key, $value) = each %{$data} ) {
+        unless ( $value ) {
+            $log->error("[Alert $id] ERROR Key $key with no Value!");
+            next TUPLE;
+        }
         my $encoded = '<html>' . encode_entities($value) . '</html>';
         if ( $key =~ /^message_id$/i ) {
-            push @entities, { value => $value, type => "message_id" };
+            push @entities, { 
+                value   => $self->strip_flair($value), 
+                type    => "message_id" ,
+                targets    => [
+                    {   type => 'alert', id => $id },
+                    {   type => 'alertgroup', id => $alert->{alertgroup} },
+                ],
+            };
             next TUPLE;
         }
 
@@ -741,7 +1078,51 @@ sub flair_alert_data {
         $self->env->log->error("[Alert $id] ERROR flair command is too large");
         return;
     }
+    $log->debug("Found ".scalar(@entities). " entities", {filter=>\&Dumper, value=>\@entities});
+    $log->debug("Flair is ",{filter=>\&Dumper, value=>\%flair});
     return \%flair, \@entities;
+}
+
+sub flair_entry_data {
+    my $self    = shift;
+    my $href    = shift;
+    my $id      = $href->{id} // $href->{entry_id};
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my @entities    = ();
+    my %flair       = ();
+    my %seen        = ();
+    my $when        = $href->{when} // $href->{create};
+    
+    my $timer   = $env->get_timer("[Entry $id] Flair");
+    my $flair   = $self->extractor->process_html($href->{body});
+
+    foreach my $entityhref (@{$flair->{entities}}) {
+        $entityhref->{when}     = $when;
+        $entityhref->{targets}  = [
+            { type => 'entry', id => $id },
+            { type => $href->{target_type}, id => $href->{target_id} },
+        ];
+        unless ( defined $seen{$entityhref->{value}} ) {
+            push @entities, $entityhref;
+            $seen{$entityhref->{value}}++;
+        }
+    }
+
+    my $elapsed = &$timer;
+    return $flair->{flair}, $flair->{text}, \@entities;
+}
+
+
+sub strip_flair {
+    my $self    = shift;
+    my $flaired = shift;
+    my $tree    = HTML::TreeBuilder->new();
+       $tree->parse_content($flaired);
+
+    my $element = $tree->look_down( _tag => 'span' );
+    return '' unless (defined $element);
+    return $element->as_trimmed_text;
 }
 
 sub get_next_id {
@@ -761,6 +1142,56 @@ sub get_next_id {
     my $id      = $output->{value}->{last_id};
     return $id;
 }
+
+sub lookup_idfield {
+    my $self        = shift;
+    my $collection  = shift;
+    my %map         = (
+        alert       => "alert_id",
+        alertgroup   => "alertgroup_id",
+        event       => "event_id",
+        entry       => "entry_id",
+        incident    => "incident_id",
+        guide       => "guide_id",
+        user        => "user_id",
+        file        => "file_id",
+    );
+
+    return $map{$collection};
+}
+
+sub get_pct {
+    my $self    = shift;
+    my $remain  = shift;
+    my $total   = shift;
+
+    my $numerator   = $total - $remain;
+    if ( $total > 0 ) {
+        return int(($numerator/$total)*10000)/100;
+    }
+    return "";
+}
+
+sub get_unneeded_fields {
+    my $self        = shift;
+    my $collection  = shift;
+    my %unneeded    = (
+        alert   => [ qw(_id collection data_with_flair searchtext entities scot2_id 
+                        triage_ranking triage_feedback triage_probs
+                        disposition downvotes upvotes) ],
+        alertgroup  => [ qw( _id collection closed searchtext files scot2_id downvotes upvotes open promoted) ],
+        event       => [ qw( _id collection ) ],
+        incident    => [ qw( _id collection ) ],
+        entry       => [ qw( _id collection body_flaired body_plaintext) ],
+        handler     => [ qw( _id parsed )],
+        guide       => [ qw( _id history )],
+        user        => [ qw( _id display_orientation theme tzpref flair last_activity_check) ],
+        file        => [ qw( _id scot2_id fullname )],
+    );
+    return $unneeded{$collection};
+}
+
+        
 
 1;
 

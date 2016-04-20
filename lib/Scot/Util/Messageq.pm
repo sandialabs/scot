@@ -23,6 +23,7 @@ has stomp   => (
     required    => 1,
     lazy    => 1,
     builder => '_build_stomp',
+    clearer => '_clear_stomp',
 );
 
 has env     => (
@@ -85,6 +86,15 @@ sub send {
     my $href    = shift;
     my $log     = $self->env->log;
     my $stomp   = $self->stomp;
+
+    unless ($stomp) {
+        $self->_clear_stomp
+    }
+
+    unless ($stomp) {
+        $log->error("not able to send STOMP message!",{filter=>\&Dumper, value=> $href});
+        return;
+    }
     
     $href->{pid}        = $$;
     $href->{hostname}   = hostname;
