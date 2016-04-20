@@ -1,4 +1,5 @@
 var React               = require('react');
+var ReactDOM            = require('react-dom');
 var ReactTime           = require('react-time');
 var SplitButton         = require('react-bootstrap/lib/SplitButton.js');
 var DropdownButton      = require('react-bootstrap/lib/DropdownButton.js');
@@ -10,7 +11,7 @@ var Summary             = require('../components/summary.jsx');
 var Task                = require('../components/task.jsx');
 var SelectedPermission  = require('../components/permission.jsx');
 var Frame               = require('react-frame');
-var Store               = require('../flux/store.jsx');
+var Store               = require('../activemq/store.jsx');
 var AppActions          = require('../flux/actions.jsx');
 var AddFlair            = require('../components/add_flair.jsx');
 var Flair               = require('../modal/flair_modal.jsx');
@@ -88,7 +89,7 @@ var SelectedEntry = React.createClass({
         var showEntryData = this.props.showEntryData;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
         if (type =='alert' || type == 'entity') {
-            divClass = 'row-fluid entry-wrapper'
+            divClass = 'row-fluid entry-wrapper entry-wrapper-main-75'
             data = this.state.entryData;
             showEntryData = this.state.showEntryData;
         }
@@ -209,7 +210,7 @@ var EntryParent = React.createClass({
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} /></MenuItem>
-                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} /></MenuItem>
+                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items.task} /></MenuItem>
                                     <MenuItem eventKey='5' onClick={this.permissionsToggle}>Permissions</MenuItem>
                                 </SplitButton>
                                 <Button bsSize='xsmall' onClick={this.editEntryToggle}>Edit</Button>
@@ -241,13 +242,9 @@ var EntryData = React.createClass({
                 resize:false,
             }
         }
-    },
-    componentWillReceiveProps: function () {
-        if (this.state.resize == false) {
-            this.setState({resize:true})
-        }
-    },
+    }, 
     onLoad: function() {
+        if (document.getElementById('iframe_'+this.props.id).contentDocument.readyState === 'complete') {
         if (this.props.type != 'alert' && this.props.type !='entity') {
             if (this.state.height == '1px') {
                 setTimeout(function() {
@@ -257,20 +254,34 @@ var EntryData = React.createClass({
                         newheight = newheight + 2; //adding 2 px for Firefox so it doesn't make a scroll bar
                         newheight = newheight + 'px';
                         this.setState({height:newheight});
-                        this.setState({resize:false})
+                        this.setState({resize:true})
                     }.bind(this))
                 }.bind(this)); 
-            } else if (this.state.resize == true) {
+            } else if (this.state.resize == false) {
                 setTimeout(function() {
                     document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
                         var newheight; 
                         newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
                         newheight = newheight + 'px';
                         this.setState({height:newheight});
-                        this.setState({resize:false})
+                        this.setState({resize:true})
+                        console.log('resized');
                     }.bind(this))
                 }.bind(this)); 
             }
+        }
+        } else {
+            setTimeout(this.onLoad,0);
+        }
+    },
+    shouldComponentUpdate: function(nextProps,nextState) {
+        if (this.props.subitem.body !== nextProps.subitem.body) {
+            return (true)
+        } else if (nextState.resize == true){
+            this.setState({resize:false})
+            return (true)
+        } else {
+            return (false)
         }
     },
     render: function() {
@@ -282,14 +293,20 @@ var EntryData = React.createClass({
         //Lazy Loading Flair here as other components, namely Flair that need to access the parent component here "SelectedEntry" as it can not be accessed due to a cyclic dependency loop between Flair and SelectedEntry. Lazy loading solves this issue. This problem should go away upon upgrading everything to ES6 and using imports/exports. 
         //var Flair = require('../modal/flair_modal.jsx');
         return (
-            <div className={'row-fluid entry-body'}>
+            <div key={this.props.id} className={'row-fluid entry-body'}>
                 <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
-                    <Frame frameBorder={'0'} id={'iframe_' + id} onload={this.onLoad()} sandbox={'allow-same-origin '} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
+                    <Frame frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-same-origin '} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
                     <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
                     </Frame>
                 </div>
             </div>
         )
+    },
+    componentDidMount: function() {
+        this.onLoad();
+    },
+    componentDidUpdate: function() {
+        this.onLoad();
     }
 });
 
