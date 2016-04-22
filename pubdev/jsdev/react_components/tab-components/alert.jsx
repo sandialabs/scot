@@ -271,7 +271,11 @@ function dataSource(query)
             finalarray[key][num] = React.createElement(ToolBar, null)
     }
 
-	else{
+    else if (num == 'view_count'){
+        finalarray[key]['views'] = item
+    }
+
+	else if(num != 'views'){
 	    finalarray[key][num] = item
 	}
 	})
