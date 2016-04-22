@@ -322,4 +322,12 @@ sub get_value_from_request {
             $req->{request}->{json}  ->{$key};
 } 
 
+# default sub, designed to be overridden in Collection/*.pm modules
+# if that collection has a column like "tags" or "entry_count" that
+# needs to be computed at fetch time
+sub has_computed_attributes {
+    my $self    = shift;
+    return undef;
+}
+
 1;

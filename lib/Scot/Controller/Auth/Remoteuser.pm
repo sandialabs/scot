@@ -111,6 +111,11 @@ sub get_groups {
         $log->debug("group mode is ldap");
         my $ldap    = $env->ldap;
 
+        unless ( defined $ldap ) {
+            $log->error("GROUP mode is LDAP, but LDAP is not defined!");
+            return wantarray ? ():[];
+        }
+
         my $results = $ldap->get_users_groups($user);
         if ( $results < 0 ) {
             $log->error("GOT ERROR FROM LDAP!");
