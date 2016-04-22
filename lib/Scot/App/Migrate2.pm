@@ -218,6 +218,10 @@ sub migrate {
                     my $acfmt   = sprintf("%15s", $alert_count);
                     print "$acfmt alerts to process \r";
                 }
+                if ( $mtype eq "entry" ) {
+                    my $entrysize = sprintf("%15s", length($item->{body}));
+                    print "$entrysize characters in entry \r";
+                }
             }
             
             unless ( $self->transform($mtype, $item) ) {
@@ -243,6 +247,10 @@ sub migrate {
                 if ( $mtype eq "alertgroup" ) {
                     my $acfmt   = sprintf("%5s", $alert_count);
                     print "$acfmt alerts - ";
+                }
+                if ( $mtype eq "entry" ) {
+                    my $esize   = sprintf("%7s", length($item->{body}));
+                    print "$esize characters - ";
                 }
                 print " $ratestr $etastr ".  $self->commify($remaining_docs). " remain\n";
             }
@@ -486,6 +494,7 @@ sub xform_entry {
     my @history = map {
         { event => $id, history => $_ }
     } @{ delete $href->{history} //[] };
+    $col->insert_one($href);
     my @links;
     push @links, $self->create_history(@history);
     push @links, $self->create_entities($entities);
@@ -560,7 +569,9 @@ sub xform_alertgroup {
         ( $alert->{data_with_flair},
           $entities ) = $self->flair_alert_data($alert);
 
-        push @allentities, @$entities;
+        if ( defined($entities) and ref($entities) eq "ARRAY" ) {
+            push @allentities, @$entities;
+        }
 
         unless ( $alert->{data_with_flair} ) {
             $alert->{data_with_flair} = $alert->{data};
@@ -1191,6 +1202,14 @@ sub get_unneeded_fields {
     return $unneeded{$collection};
 }
 
+sub handle_huge_entry {
+    my $self    = shift;
+    my $id      = shift;
+    open my $out, ">>", "/tmp/huge.entries.txt";
+    print $out $id."\n";
+    close $out;
+}
+    
         
 
 1;
