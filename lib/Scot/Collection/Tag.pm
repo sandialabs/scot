@@ -93,5 +93,33 @@ sub add_tag_to {
     return $tag_obj;
 }
 
+sub get_linked_tags {
+    my $self    = shift;
+    my $obj     = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $lnkcol  = $mongo->collection('Link');
+    my $target_type  = $obj->get_collection_name;
+    my $target_id    = $obj->id;
+    my $target_link_cursor  = $lnkcol->get_links(
+        $target_type,
+        $target_id,
+        "tag"
+    );
+    my @ids = ();
+    while ( my $link = $target_link_cursor->next ) {
+        my $pair = $link->pair;
+        if ( $pair->[0]->{type} eq $target_type ) {
+            push @ids, $pair->[1]->{id};
+        }
+        else {
+            push @ids, $pair->[0]->{id};
+        }
+    }
+    my $cursor  = $self->find({id => {'$in' => \@ids}});
+    return $cursor;
+}
+
 
 1;
+
