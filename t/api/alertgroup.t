@@ -39,9 +39,16 @@ $t->post_ok(
     }
 )->status_is(200);
 
-
 my $alertgroup_id   = $t->tx->res->json->{id};
 my $updated         = $t->tx->res->json->{updated};
+
+$t->get_ok("/scot/api/v2/alertgroup" => {},
+    "Get alertgroup list")
+    ->status_is(200)
+    ->json_is('/records/0/tags/0'   => 'test')
+    ->json_is('/records/0/tags/1'   => 'testing')
+    ->json_is('/records/0/sources/0'    => 'todd')
+    ->json_is('/records/0/sources/1'    => 'scot');
 
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
            "Get alertgroup $alertgroup_id" )
@@ -49,6 +56,9 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
   ->json_is('/subject'      => 'test message 1')
   ->json_is('/views'   => 1)
   ->json_is('/alert_count'  => 2);
+# print Dumper($t->tx->res->json), "\n";
+#done_testing();
+#exit 0;
 
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
            "seeing if views increases")
@@ -97,7 +107,7 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
     ->json_is('/records/1/data/boom'     => 9)
     ->json_is('/records/1/columns/2'   => 'boom');
 
-print Dumper($t->tx->res->json), "\n";
+#print Dumper($t->tx->res->json), "\n";
 # $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
  #    "Getting alertgroup again to see if stuff is updated")
   #   ->status_is(200);

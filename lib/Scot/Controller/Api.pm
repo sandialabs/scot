@@ -330,8 +330,22 @@ sub get_many {
         $cursor->skip($offset);
     }
 
-    # my @things = map { $self->mypack($_) } $cursor->all;
-    my @things = $cursor->all;
+    my @things;
+
+    # alertgroups have tags, that need a secondary fetch through links to get
+    if ( $collection->has_computed_attributes ) {
+        while ( my $obj = $cursor->next ) {
+            my $comphref = $collection->get_computed_attributes($obj);
+            my $objhash = $obj->as_hash;
+            foreach my $k (keys %$comphref) {
+                $objhash->{$k} = $comphref->{$k};
+            }
+            push @things, $objhash;
+        }
+    }
+    else {
+        @things = $cursor->all;
+    }
 
     $self->do_render({
         records             => \@things,

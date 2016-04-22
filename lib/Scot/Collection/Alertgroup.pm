@@ -55,6 +55,9 @@ sub create_from_api {
     my $tags    = $request->{tags};
     delete $request->{tags};
 
+    my $sources = $request->{sources};
+    delete $request->{sources};
+
     my $alertgroup  = $self->create($request);
 
     unless ( defined $alertgroup ) {
@@ -67,7 +70,13 @@ sub create_from_api {
 
     if ( defined $tags && scalar(@$tags) > 0 ) {
         foreach my $tag (@$tags) {
-            my $tag = $mongo->collection('Tag')->add_tag_to("alertgroup",$id, $tag);
+            my $t = $mongo->collection('Tag')->add_tag_to("alertgroup",$id, $tag);
+        }
+    }
+
+    if ( defined $sources && scalar(@$sources) > 0 ) {
+        foreach my $src (@$sources) {
+            my $s = $mongo->collection('Source')->add_source_to("alertgroup", $id, $src);
         }
     }
 
@@ -180,6 +189,30 @@ sub refresh_data {
     });
 }
 
+override 'has_computed_attributes' => sub {
+    my $self    = shift;
+    return 1;
+};
+
+# return href of computed attributes 
+sub get_computed_attributes {
+    my $self    = shift;
+    my $obj     = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+
+    # need sources and tags
+    my $src_cursor = $mongo->collection('Source')->get_linked_sources($obj);
+    my $tag_cursor = $mongo->collection('Tag')->get_linked_tags($obj);
+
+    my @sources = map { $_->{value} } $src_cursor->all;
+    my @tags    = map { $_->{value} } $tag_cursor->all;
+
+    return {
+        sources => \@sources,
+        tags    => \@tags,
+    };
+}
 
 
 
