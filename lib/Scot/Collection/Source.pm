@@ -93,4 +93,33 @@ sub add_source_to {
     return 1;
 }
 
+sub get_linked_sources {
+    my $self    = shift;
+    my $obj     = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $lnkcol  = $mongo->collection('Link');
+    my $target_type  = $obj->get_collection_name;
+    my $target_id    = $obj->id;
+    my $srclnkcursor = $lnkcol->get_links(
+        $target_type,
+        $target_id,
+        "source"
+    );
+
+    my @src_ids = ();
+    while ( my $linkobj = $srclnkcursor->next ) {
+        my $pair    = $linkobj->pair;
+        if ( $pair->[0]->{type} eq $target_type ) {
+            push @src_ids, $pair->[1]->{id};
+        }
+        else {
+            push @src_ids, $pair->[0]->{id};
+        }
+    }
+    
+    my $cursor  = $self->find({id => {'$in' => \@src_ids}});
+    return $cursor;
+}
+
 1;
