@@ -110,8 +110,8 @@ sub get_entries {
     $id         +=0;
 
     my $cursor  = $self->find({
-        type => $thing,
-        id   => $id,
+        'target.type' => $thing,
+        'target.id'   => $id,
     });
     return $cursor;
 }
@@ -192,5 +192,24 @@ EOF
     return $newentry;
 }
 
+sub get_entries_on_alertgroups_alerts {
+    my $self        = shift;
+    my $alertgroup  = shift;
+    my $env         = $self->env;
+    my $mongo       = $env->mongo;
+
+    my $id  = $alertgroup->id;
+    my $ac  = $mongo->collection('Alert')->find({alertgroup => $id});
+
+    return undef unless ( $ac );
+
+    my @aids = map { $_->id } $ac->all;
+
+    my $cursor = $self->find({
+        'target.id'   => { '$in' => \@aids },
+        'target.type' => 'alert',
+    });
+    return $cursor;
+}
 
 1;
