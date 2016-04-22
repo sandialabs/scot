@@ -1908,7 +1908,7 @@ sub supertable {
     $log->debug("alertgroup_ids are ", {filter=>\&Dumper, value=>\@alertgroup_ids});
 
     my %cols    = ();
-    my @columns = (qw(id status when alertgroup));
+    my @columns = (qw(id alertgroup when status));
     my @rows    = ();
 
     my $alertcol    = $mongo->collection('Alert');
@@ -1920,8 +1920,8 @@ sub supertable {
         my $href    = {
             when        => $alert->when,
             alertgroup  => $alert->alertgroup,
-	    status 	=> $alert->status,
-	    id		=> $alert->id,
+	        status 	=> $alert->status,
+	        id		=> $alert->id,
         };
         
         my $data    = $alert->data_with_flair // $alert->data;
