@@ -204,6 +204,12 @@ sub get_computed_attributes {
     # need sources and tags
     my $src_cursor = $mongo->collection('Source')->get_linked_sources($obj);
     my $tag_cursor = $mongo->collection('Tag')->get_linked_tags($obj);
+    my $entry_cursor = $mongo->collection('Entry')->get_entries_on_alertgroups_alerts($obj);
+
+    my $entry_count = 0;
+    if ($entry_cursor) {
+        $entry_count = $entry_cursor->count;
+    }
 
     my @sources = map { $_->{value} } $src_cursor->all;
     my @tags    = map { $_->{value} } $tag_cursor->all;
@@ -211,6 +217,7 @@ sub get_computed_attributes {
     return {
         sources => \@sources,
         tags    => \@tags,
+        entry_count => $entry_count,
     };
 }
 
