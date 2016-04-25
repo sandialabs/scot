@@ -472,6 +472,15 @@ sub get_one {
         }
     }
 
+    if ( ref($object) eq "Scot::Model::Entity" ) {
+        # check and see if $env->entity_enrichements exist
+
+        # if so, we are done.  will be sent in json automatically
+
+        # if not, call $env->entity_enrichments->{enricher}->lookup or whatever to store that data in object
+
+    }
+
     my $data_href   = {};
     if ( $req_href->{fields} and 
          $object->meta->does_role("Scot::Role::Hashable")) {
@@ -1908,7 +1917,7 @@ sub supertable {
     $log->debug("alertgroup_ids are ", {filter=>\&Dumper, value=>\@alertgroup_ids});
 
     my %cols    = ();
-    my @columns = (qw(id status when alertgroup));
+    my @columns = (qw(id alertgroup when status));
     my @rows    = ();
 
     my $alertcol    = $mongo->collection('Alert');
@@ -1920,8 +1929,8 @@ sub supertable {
         my $href    = {
             when        => $alert->when,
             alertgroup  => $alert->alertgroup,
-	    status 	=> $alert->status,
-	    id		=> $alert->id,
+	        status 	=> $alert->status,
+	        id		=> $alert->id,
         };
         
         my $data    = $alert->data_with_flair // $alert->data;
