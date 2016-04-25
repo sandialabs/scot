@@ -330,8 +330,22 @@ sub get_many {
         $cursor->skip($offset);
     }
 
-    # my @things = map { $self->mypack($_) } $cursor->all;
-    my @things = $cursor->all;
+    my @things;
+
+    # alertgroups have tags, that need a secondary fetch through links to get
+    if ( $collection->has_computed_attributes ) {
+        while ( my $obj = $cursor->next ) {
+            my $comphref = $collection->get_computed_attributes($obj);
+            my $objhash = $obj->as_hash;
+            foreach my $k (keys %$comphref) {
+                $objhash->{$k} = $comphref->{$k};
+            }
+            push @things, $objhash;
+        }
+    }
+    else {
+        @things = $cursor->all;
+    }
 
     $self->do_render({
         records             => \@things,
@@ -1903,7 +1917,7 @@ sub supertable {
     $log->debug("alertgroup_ids are ", {filter=>\&Dumper, value=>\@alertgroup_ids});
 
     my %cols    = ();
-    my @columns = (qw(id status when alertgroup));
+    my @columns = (qw(id alertgroup when status));
     my @rows    = ();
 
     my $alertcol    = $mongo->collection('Alert');
@@ -1915,8 +1929,8 @@ sub supertable {
         my $href    = {
             when        => $alert->when,
             alertgroup  => $alert->alertgroup,
-	    status 	=> $alert->status,
-	    id		=> $alert->id,
+	        status 	=> $alert->status,
+	        id		=> $alert->id,
         };
         
         my $data    = $alert->data_with_flair // $alert->data;
