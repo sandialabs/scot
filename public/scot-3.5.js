@@ -1495,7 +1495,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         var showEntryData = this.props.showEntryData;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
         if (type =='alert' || type == 'entity') {
-            divClass = 'row-fluid entry-wrapper entry-wrapper-main-75'
+            divClass = 'row-fluid entry-wrapper entry-wrapper-main-70'
             data = this.state.entryData;
             showEntryData = this.state.showEntryData;
         }
