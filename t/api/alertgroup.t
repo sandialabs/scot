@@ -142,7 +142,7 @@ $t->get_ok("/scot/api/v2/alertgroup" => {},
     "checking entry_count in alertgroup listing")
     ->status_is(200);
     
- print Dumper($t->tx->res->json), "\n";
+# print Dumper($t->tx->res->json), "\n";
 done_testing();
 exit 0;
 
