@@ -134,6 +134,19 @@ sub _get_default_groups {
     }
 }
 
+has entity_enrichers    => (
+    is                  => 'rw',
+    isa                 => 'ArrayRef',
+    required            => 1,
+    lazy                => 1,
+    builder             => '_get_entity_enrichers',
+    predicate           => 'has_entity_enrichers',
+);
+
+sub _get_enitity_enrichers {
+
+}
+
 has admin_group => (
     is                  => 'rw',
     isa                 => 'Str',
