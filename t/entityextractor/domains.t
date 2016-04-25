@@ -48,10 +48,17 @@ my @domains = (
     },
     {
         source  => 'https://support.online',
-        flair   => '<div>https://<span class="entity domain" data-entity-type="domain" data-entity-value="support.online">support.online</span> </div>',
+        flair   => '<div>https://support.online </div>',
         plain   => 'https://support.online',
-        entity  => [ { type => 'domain', value => 'support.online' } ],
+        entity  => undef,
     },
+    {
+        source  => '8a.93.8c.99.8d.61.62.86.97.88.86.91.91.8e.4e.97.8a.99',
+        flair   => '<div>8a.93.8c.99.8d.61.62.86.97.88.86.91.91.8e.4e.97.8a.99 </div>',
+        plain   => '8a.93.8c.99.8d.61.62.86.97.88.86.91.91.8e.4e.97.8a.99',
+        entity  => undef,
+    },
+
 );
 
 foreach my $href (@domains) {
@@ -59,7 +66,9 @@ foreach my $href (@domains) {
     my $result  = $extractor->process_html($href->{source});
     is($result->{text}, $href->{plain}, "For $href->{source}, plain text is correct");
     is($result->{flair}, $href->{flair}, "For $href->{source}, flair html is corrent");
-    cmp_bag($result->{entities}, $href->{entity}, "For $href->{source}, entities are correct");
+    if (defined($result->{entities}) and defined ($href->{entity}) ) {
+        cmp_bag($result->{entities}, $href->{entity}, "For $href->{source}, entities are correct");
+    }
 
 }
 
