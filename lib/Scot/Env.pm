@@ -143,7 +143,7 @@ has entity_enrichers    => (
     predicate           => 'has_entity_enrichers',
 );
 
-sub _get_enitity_enrichers {
+sub _get_entity_enrichers {
     my $self    = shift;
     my $mongo   = $self->mongo;
     my $item    = $mongo->collection('Config')->find_one({
