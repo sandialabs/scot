@@ -282,28 +282,23 @@ sub enrich_entities {
     my $self    = shift;
     my $aref    = shift;
     my $env     = $self->env;
-
     my %data    = ();   # hold all the enriching data
 
-    # Get GeoIP
-#    my $geo     = $env->geoip;
+    my $enrichers   = $env->entity_enrichers;
 
-    # Get SIDD
-    my $sidd    = $env->sidd;
 
     foreach my $entity (@$aref) {
         my $value   = $entity->{value};
         my $type    = $entity->{type};
 
-        $data{$value}   = {
-            sidd    => $sidd->get_sidd_data($value),
-        };
-
-#        if ( $type eq "ipaddr" ) {
-#            $data{$value}{geoip} = $geoip->get_geo_data($value);
-#        }
+        foreach my $ehref (@{$enrichers}) {
+            my ($name,$href) = each %$ehref;
+            if ( $href->{type} eq "native" ) {
+                my $module = $href->{module};
+                $data{$value}{$name} = $env->$module->get_data($type, $value);
+            }
+        }
     }
-
 
     # don't do this automatically, info lead potential 
     # Get VirusTotal if (domain, ipaddr, hash)

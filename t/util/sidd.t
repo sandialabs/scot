@@ -3,7 +3,7 @@
 use warnings;
 use strict;
 use v5.18;
-use lib '../lib';
+use lib '../../lib';
 
 use Test::More;
 use Scot::Env;
@@ -18,7 +18,7 @@ my $sidd    = Scot::Util::Sidd->new({
     password    => '3mIn8g$doliq*7qIS-suopu88',
 });
 
-my $href    = $sidd->get_sidd_data("401k.com");
+my $href    = $sidd->get_data("domain", "401k.com");
 
 say Dumper($href);
 
