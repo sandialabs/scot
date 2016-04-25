@@ -3,7 +3,7 @@
 use warnings;
 use strict;
 use v5.18;
-use lib '../lib';
+use lib '../../lib';
 
 use Test::More;
 use Scot::Env;
@@ -24,11 +24,14 @@ is ( $rec->{isp}, "Sandia National Laboratories", "Correct ISP");
 is ( $rec->{timezone}, "America/Denver", "Correct Timezone");
 is ( $rec->{asn}, 377, "Correct ASN");
 is ( $rec->{asorg}, "Sandia National Laboratories", "Correct AS ORG");
-is ( $rec->{latitude}, "35.0995", "Correct Latitude");
-is ( $rec->{longitude}, "-106.5178", "Correct Longitude");
+is ( int($rec->{latitude}), 35, "Correct Latitude");
+is ( int($rec->{longitude}), -106, "Correct Longitude");
 is ( $rec->{continent}, "North America", "Correct Continent");
 is ( $rec->{country}, "United States", "Correct country");
 is ( $rec->{isocode}, "US", "Correct ISO country code");
+
+my $href    = $geoip->get_data("ipaddr", $ip);
+say Dumper($href);
 
 done_testing();
 exit 0;

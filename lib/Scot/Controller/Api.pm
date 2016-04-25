@@ -463,22 +463,21 @@ sub get_one {
         my $download    = $self->param('download');
         if ( $download ) {
             $self->res->content->headers->header(
-                'Content-Type', 'application/x-download; name="'.$object->filename.'"');
+                'Content-Type', 
+                'application/x-download; name="'.$object->filename.'"');
             $self->res->content->headers->header(
-                'Content-Disposition', 'attachment; filename="'.$object->filename.'"');
-            my $static = Mojolicious::Static->new( paths => [ $object->directory ]);
+                'Content-Disposition', 
+                'attachment; filename="'.$object->filename.'"');
+            my $static = Mojolicious::Static->new( 
+                paths => [ $object->directory ]
+            );
             $static->serve($self, $object->filename);
             $self->rendered;
         }
     }
 
     if ( ref($object) eq "Scot::Model::Entity" ) {
-        # check and see if $env->entity_enrichements exist
-
-        # if so, we are done.  will be sent in json automatically
-
-        # if not, call $env->entity_enrichments->{enricher}->lookup or whatever to store that data in object
-
+        $self->check_entity_enrichments($object);
     }
 
     my $data_href   = {};
@@ -501,6 +500,72 @@ sub get_one {
 #            id      => $id,
 #        }
 #    });
+}
+
+sub check_entity_enrichments {
+    my $self    = shift;
+    my $entity  = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $data    = {};
+    my $changes = 0;
+    my $enrichers   = $env->entity_enrichments;
+
+    foreach my $enricher (@$enrichers) {
+        my ($name, $href) = each %$enricher;
+        if (defined $entity->data->{$name} and %{$entity->data->{$name}} ) {
+            $log->debug("Enrichment $name is cached...");
+            $data->{$name} = $entity->data->{$name};
+        }
+        else {
+            $log->debug("Missing enrichment $name, fetching...");
+            my $edata   = $self->enrich_entity($href, $entity);
+            if ($edata) {
+                $changes++;
+                $data->{$name} = $edata;
+            }
+        }
+    }
+    if ( $changes > 0 ) {
+        $log->debug("updating cache of entity enrichments");
+        $entity->update_set( data => $data );
+    }
+}
+
+sub tablify {
+    my $self    = shift;
+    my $title   = shift;
+    my $aref    = shift;
+    my $html    = "<h2>$title</h2>\n".
+                  "<table class=\"entity_data\">\n";
+    foreach my $href (@$aref) {
+        my ( $key, $value ) = each %$href;
+        $html .= "  <tr>\n".
+                 "   <th>$key</th><td>$value</td>\n".
+                 "  </tr>\n";
+    }
+    $html .= "</table>\n";
+    return $html;
+}
+
+sub enrich_entity {
+    my $self    = shift;
+    my $href    = shift;
+    my $entity  = shift;
+    my $env     = $self->env;
+
+    if ( $href->{type} eq "native" ) {
+        my $module  = $href->{module};
+        my $data    = $env->$module->get_data($entity->type, $entity->value);
+        my $entry   = $self->mongo->collection('Entry')->create({
+            body    => $self->tablify($module, $data),
+            target  => {
+                type    => "entity",
+                id      => $entity->id,
+            }
+        });
+        return $data;
+    }
 }
 
 =item B<GET /scot/api/v2/:thing/:id/:subthing>
