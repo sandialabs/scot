@@ -259,6 +259,10 @@ sub get_subject {
     }
 }
 
+override 'has_computed_attributes' => sub {
+    my $self    = shift;
+    return undef;
+};
 
 
 
