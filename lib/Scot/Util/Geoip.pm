@@ -119,4 +119,21 @@ sub get_scot_geo_record {
     return wantarray ? %data : \%data;
 }
 
+# necessary for entity_enrichers
+sub get_data {
+    my $self    = shift;
+    my $type    = shift;
+    my $value   = shift;
+
+    if ($type ne "ipaddr") {
+        # nothing to do here...
+        return {};
+    }
+
+    my $href    = $self->get_scot_geo_record($value);
+    return $href;
+}
+
+
+
 1;
