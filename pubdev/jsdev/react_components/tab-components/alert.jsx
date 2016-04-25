@@ -271,7 +271,11 @@ function dataSource(query)
             finalarray[key][num] = React.createElement(ToolBar, null)
     }
 
-	else{
+    else if (num == 'view_count'){
+        finalarray[key]['views'] = item
+    }
+
+	else if(num != 'views'){
 	    finalarray[key][num] = item
 	}
 	})
@@ -327,10 +331,17 @@ var Subtable = React.createClass({
 	if(this.isMounted()){
 	    var newarray = []
 	if(true){
-	    newarray[0] = {name:"Entries", width: 180, style: {color: 'black'}}
-	    for(var i = 1; i<last.length; i++) {
-	        newarray[i] = {name:last[i-1],width: 200, style:{color:'black'}}
-	    }
+	    for(var i = 0; i<last.length; i++) {
+            if(last[i] == 'id' || last[i] == 'alertgroup' || last[i] == 'status' || last[i] == 'when'){
+                newarray[i] = {name:last[i],width: 111.83, style:{color:'black'}}
+            }
+            if(last[i] == 'status'){
+                newarray.push({name:"Entries", style: {color: 'black'}})
+	        }
+            else{
+                newarray[i] = {name:last[i], style:{color:'black'}}
+            }
+        }
     }
 	else
 	{
@@ -432,7 +443,7 @@ var Subtable = React.createClass({
 	    this.state.setGuide ? React.createElement(SelectedContainer, {type:'Guide', id:this.state.guideid}) : React.createElement("div", {className: 'All Modal'}, React.createElement('div', null,React.createElement(Notificationactivemq,{ref: 'notificationSystem'})),  this.state.history ? React.createElement(HistoryView, {type:'alert', id: this.state.historyid, historyToggle: this.viewHistory}) : null, 
 /*style: {'padding-left': '25px'}},*/ this.state.viewentries ? React.createElement(Viewentry, {id: this.state.viewentriesid, callback: this.openEntry}) : null, this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', targetid: this.state.key, updated: this.reloadentry, addedentry: this.addEntry, type: 'alert'}) : null,
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :
-	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alertgroup', id: this.state.key})), React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.viewGuide}, 'View Guide'), React.createElement('button', {className:'btn btn-default', onClick:this.viewSource}, 'View Source')), this.state.oneview ? React.createElement('btn-group', null, this.state.flair ? React.createElement('button',{className: 'btn btn-default', onClick: this.flairOn}, 'Flair On') : React.createElement('button', {className: 'btn btn-default', onClick: this.flairOff}, 'Flair Off'),React.createElement('button', {className:'btn btn-default', onClick: this.viewHistory}, 'View History'), React.createElement('button', {className: 'btn btn-default', onClick:this.addEntry}, 'Add Entry'), React.createElement('button', {className: 'btn btn-default', onClick: this.openSelected}, 'Open Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.closeSelected}, 'Close Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.promoteSelected}, 'Promote Selected'), React.createElement('button', {className:'btn btn-default', onClick:this.selectExisting}, 'Add Selected to Existing Event'), React.createElement('button', {className:'btn btn-default', onClick:this.exportCSV}, 'Export to CSV'), React.createElement('button', {className:'btn btn-default', onClick:this.deleteSelected}, 'Delete Selected')) : null ,  React.createElement(Subgrid, {style: {height: '100%', 'z-index' : '0'},className: "Subgrid",
+	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alertgroup', id: this.state.key})), React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.viewGuide}, 'View Guide'), React.createElement('button', {className:'btn btn-default', onClick:this.viewSource}, 'View Source'), this.state.flair ? React.createElement('button',{className: 'btn btn-default', onClick: this.flairOn}, 'Flair On') : React.createElement('button', {className: 'btn btn-default', onClick: this.flairOff}, 'Flair Off')), this.state.oneview ? React.createElement('btn-group', null, React.createElement('button', {className:'btn btn-default', onClick: this.viewHistory}, 'View History'), React.createElement('button', {className: 'btn btn-default', onClick:this.addEntry}, 'Add Entry'), React.createElement('button', {className: 'btn btn-default', onClick: this.openSelected}, 'Open Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.closeSelected}, 'Close Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.promoteSelected}, 'Promote Selected'), React.createElement('button', {className:'btn btn-default', onClick:this.selectExisting}, 'Add Selected to Existing Event'), React.createElement('button', {className:'btn btn-default', onClick:this.exportCSV}, 'Export to CSV'), React.createElement('button', {className:'btn btn-default', onClick:this.deleteSelected}, 'Delete Selected')) : null ,  React.createElement(Subgrid, {style: {height: '100%', 'z-index' : '0'},className: "Subgrid",
         ref: "dataGrid", 
         idProperty: "index",
 	    setColumns: true, 
@@ -466,7 +477,7 @@ var Subtable = React.createClass({
     this.reloadentry()
     },
    flairOn: function(){
-	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
+	$('.subtable'+this.state.key).find('.z-row').each(function(key, value){
 	    $(value).find('.z-cell').each(function(num,content){
 		var con = $(content).find('.entity-off')
 		con.each(function(x,y){
@@ -478,7 +489,7 @@ var Subtable = React.createClass({
 	this.setState({flair:false})
     },
    flairOff: function(){
-	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
+	$('.subtable'+this.state.key).find('.z-row').each(function(key, value){
 	    $(value).find('.z-cell').each(function(num,content){
 		var con = $(content).find('.entity')
 		con.each(function(x,y){
