@@ -331,25 +331,27 @@ var Subtable = React.createClass({
 	if(this.isMounted()){
 	    var newarray = []
 	if(true){
+        newarray[0] = {name: 'Entries', width: 100, style: {color: 'black'}}
 	    for(var i = 0; i<last.length; i++) {
-            if(last[i] == 'id' || last[i] == 'alertgroup' || last[i] == 'status' || last[i] == 'when'){
-                newarray[i] = {name:last[i],width: 111.83, style:{color:'black'}}
+            if(last[i].toLowerCase() == 'id'){ 
+                newarray[i+1] = {name:last[i],width: 100, style:{color:'black'}}
             }
-            if(last[i] == 'status'){
-                newarray.push({name:"Entries", style: {color: 'black'}})
+            else if(last[i].toLowerCase() == 'alertgroup'){
+                newarray.push({name:last[i], width: 100, style: {color: 'black'}})
 	        }
-            else{
-                newarray[i] = {name:last[i], style:{color:'black'}}
+            else if(last[i].toLowerCase() == 'when'){
+                newarray[i+1] = {name:last[i], width: 150, style:{color:'black'}}
+            }
+            else if(last[i].toLowerCase() == 'status'){
+                newarray[i+1] = {name:last[i], width: 110, style:{color:'black'}}
+            }
+            else if(last[i].toLowerCase() != 'index' || last[i].toLowerCase() != 'column'){
+                newarray[i+1] = {name:last[i], width: 250,style:{color:'black'}}
             }
         }
+            
     }
-	else
-	{
-	    for(var i = 0; i<last.length; i++) {
-	        newarray[i] = {name:last[i],width: 200, style:{color:'black'}}
-	}	    
-	}
-	    setTimeout(function() { this.setState({columns: newarray})}.bind(this), 800)
+	    setTimeout(function() {this.setState({columns: newarray})}.bind(this), 800)
 	}
 	}.bind(this));
         Store.storeKey(this.state.key)
