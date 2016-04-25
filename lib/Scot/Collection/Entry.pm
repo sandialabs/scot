@@ -203,7 +203,7 @@ sub get_entries_on_alertgroups_alerts {
 
     return undef unless ( $ac );
 
-    my @aids = map { $_->id } $ac->all;
+    my @aids = map { $_->{id} } $ac->all;
 
     my $cursor = $self->find({
         'target.id'   => { '$in' => \@aids },
