@@ -682,7 +682,15 @@ echo "= restarting scot"
 #
 # add elastic search to startup
 # TODO: add other (activemq?) to start here 
-chkconfig -add elasticsearch
+if [[ $OS == "RedHatEnterpriseServer" ]]; then
+    chkconfig -add elasticsearch
+    chkconfig -add scot
+    chkconfig -add activemq
+else 
+    update-rc.d elasticsearch defaults
+    update-rc.d scot defaults
+    update-rc.d activemq defaults
+fi
 
 echo "----"
 echo "----"
