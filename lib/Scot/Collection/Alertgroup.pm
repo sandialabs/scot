@@ -34,7 +34,7 @@ sub create_from_api {
     my $env     = $self->env;
     my $mongo   = $env->mongo;
     my $log     = $env->log;
-    my $mq     = $env->mq;
+    my $mq      = $env->mq;
 
     $log->trace("Create Alertgroup");
 

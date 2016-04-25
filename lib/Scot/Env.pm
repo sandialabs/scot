@@ -144,7 +144,17 @@ has entity_enrichers    => (
 );
 
 sub _get_enitity_enrichers {
-
+    my $self    = shift;
+    my $mongo   = $self->mongo;
+    my $item    = $mongo->collection('Config')->find_one({
+        module  => 'entity_enrichers',
+    });
+    if ( $item ) {
+        return $item->item->{list};
+    }
+    else {
+        return [];
+    }
 }
 
 has admin_group => (
@@ -257,6 +267,33 @@ sub _build_mongo {
         },
     );
     return $mongo;
+}
+
+has mq  => (
+    is          => 'ro',
+    isa         => 'Scot::Util::Messageq',
+    lazy        => 1,
+    required    => 1,
+    builder     => '_get_messageq',
+);
+
+sub _get_messageq {
+    my $self    = shift;
+    my $mongo   = $self->mongo;
+    my $col     = $mongo->collection('Config');
+    my $conf    = $col->find_one({module => 'Scot::Util::Messageq'});
+    my $chref   = {};
+    if ($conf) {
+        if ( $conf->item ) {
+            $chref  = $conf->item;
+        }
+        else {
+            $chref  = {};
+        }
+    }
+    require_module('Scot::Util::Messageq');
+    my $mq      = Scot::Util::Messageq->new($chref);
+    return $mq;
 }
 
 has 'filestorage'   => (

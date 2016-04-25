@@ -33,6 +33,8 @@ cmp_deeply( $env->default_groups, {
     modify  => [ qw(wg-scot-ir ) ],
 }, "Correct default groups from config db");
 
+say Dumper($env->default_groups);
+
 while ( my $mod = $cursor->next ) {
     my $class   = $mod->module;
     my $attr    = $mod->attribute;

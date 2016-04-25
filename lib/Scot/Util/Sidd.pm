@@ -161,8 +161,9 @@ sub try_mongo_op {
     );
 }
 
-sub get_sidd_data {
+sub get_data {
     my $self    = shift;
+    my $type    = shift;
     my $value   = shift;
     my $log     = $self->env->log;
 
@@ -176,7 +177,6 @@ sub get_sidd_data {
     my $href  = $self->try_mongo_op(
         find_one    => sub { $collection->find_one($match) },
     );
-
     return $href;
 }
 
