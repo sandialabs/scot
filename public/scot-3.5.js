@@ -612,6 +612,17 @@ function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle) {
                 }
             }.bind(this));
         }
+        if(iframe.contentDocument != null) {
+            $(iframe).contents().find('a').each(function(index,a) {
+                if($(a).css('color') == 'rgb(255, 0, 0)') {
+                    $(a).data('state','down');
+                } else if ($(a).data('state') == 'down') {
+                    $(a).data('state','up');
+                    var url = $(a).attr('url');
+                    linkWarningPopup(iframe,url,linkWarningToggle);
+                }
+            }.bind(this));
+        }
     } else {
         $(document.body).find('.entity').each(function(index, entity) {
                 if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
@@ -621,10 +632,8 @@ function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle) {
                     var entityid = $(entity).attr('data-entity-id');
                     infopop(null,entityid,flairToolbarToggle);
                 }
-            }.bind(this));
-    }
-    if(iframe.contentDocument != null) {
-        $(iframe).contents().find('a').each(function(index,a) {
+        }.bind(this));
+        $(document.body).find('a').each(function(index,a) {
             if($(a).css('color') == 'rgb(255, 0, 0)') {
                 $(a).data('state','down');
             } else if ($(a).data('state') == 'down') {
@@ -1486,7 +1495,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         var showEntryData = this.props.showEntryData;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
         if (type =='alert' || type == 'entity') {
-            divClass = 'row-fluid entry-wrapper entry-wrapper-main-75'
+            divClass = 'row-fluid entry-wrapper entry-wrapper-main-70'
             data = this.state.entryData;
             showEntryData = this.state.showEntryData;
         }
@@ -1822,7 +1831,6 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             };
             waitForEntry.waitEntry();
         }.bind(this)); 
-        console.log('Ran componentDidMount');
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated); 
         Store.storeKey('entryNotification')
@@ -1989,7 +1997,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                     React.createElement("div", {className: "details-subject", style: {display: 'inline-flex',paddingLeft:'5px'}}, 
                         this.state.showEventData ? React.createElement(EntryDataSubject, {data: this.state.headerData, subjectType: subjectType, type: type, id: this.props.id, updated: this.updated}): null, 
                         this.state.refreshing ? React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'info'}, React.createElement("span", null, "Refreshing Data...")) :null, 
-                        this.state.loading ? React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'info'}, React.createElement("span", null, "Loading...")) :null
+                        this.state.loading ? React.createElement("span", null, "Loading...") :null
                     ), 
                     React.createElement("div", {className: "details-table toolbar"}, 
                         React.createElement("table", null, 
@@ -2993,7 +3001,7 @@ var Tabs                    = require('react-bootstrap/lib/Tabs');
 var Tab                     = require('react-bootstrap/lib/Tab');
 var DataGrid                = require('react-datagrid');
 var SelectedEntry           = require('../entry/selected_entry.jsx');
-
+var AddEntryModal           = require('./add_entry.jsx');
 const customStyles = {
     content : {
         top     : '50%',
@@ -3009,6 +3017,7 @@ var Flair = React.createClass({displayName: "Flair",
     getInitialState: function() {
         return {
             entityData:null,
+            entryToolbar:false,    
         }
     },
     componentDidMount: function () {
@@ -3028,15 +3037,23 @@ var Flair = React.createClass({displayName: "Flair",
                         React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) :null)
                     ), 
                     React.createElement("div", {className: "modal-body", style: {height: '80vh', overflowY:'auto',width:'800px'}}, 
-                        React.createElement(EntityBody, {data: this.state.entityData, entityid: this.props.entityid})
+                        React.createElement(EntityBody, {data: this.state.entityData, entityid: this.props.entityid, entryToggle: this.entryToggle})
                     ), 
                     React.createElement("div", {className: "modal-footer"}, 
                         React.createElement(Button, {onClick: this.props.flairToolbarToggle}, "Done")
                     )
-                )
+                ), 
+                this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "entity", targetid: this.props.entityid, id: this.props.entityid, addedentry: this.entryToggle}) : null
             )
         )
-    }
+    },
+    entryToggle: function() {
+        if (this.state.entryToolbar == false) {
+            this.setState({entryToolbar:true})
+        } else {
+            this.setState({entryToolbar:false})
+        }
+    },
 });
 
 var EntityValue = React.createClass({displayName: "EntityValue",
@@ -3073,7 +3090,7 @@ var EntityBody = React.createClass({displayName: "EntityBody",
                 React.createElement(Tab, {eventKey: 1, title: "References"}, React.createElement(EntityEventReferences, {entityid: this.props.entityid})), 
                 React.createElement(Tab, {eventKey: 2, title: "SIDD Data"}, "SIDD Data Table"), 
                 React.createElement(Tab, {eventKey: 3, title: "Geo Location"}, "Geo Location Table"), 
-                React.createElement(Tab, {eventKey: 4, title: "Entry"}, React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid}))
+                React.createElement(Tab, {eventKey: 4, title: "Entry"}, React.createElement(Button, {onClick: this.props.entryToggle}, "Add Entry"), React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid}))
             )
         )
     }
@@ -3163,7 +3180,7 @@ var EntityEventReferences = React.createClass({displayName: "EntityEventReferenc
 
 module.exports = Flair;
 
-},{"../entry/selected_entry.jsx":15,"react":1883,"react-bootstrap/lib/Button":773,"react-bootstrap/lib/ButtonGroup":774,"react-bootstrap/lib/Tab":792,"react-bootstrap/lib/Tabs":793,"react-datagrid":828,"react-modal":1003}],25:[function(require,module,exports){
+},{"../entry/selected_entry.jsx":15,"./add_entry.jsx":21,"react":1883,"react-bootstrap/lib/Button":773,"react-bootstrap/lib/ButtonGroup":774,"react-bootstrap/lib/Tab":792,"react-bootstrap/lib/Tabs":793,"react-datagrid":828,"react-modal":1003}],25:[function(require,module,exports){
 var React           = require('react');
 var ReactTime       = require('react-time');
 var Modal           = require('react-modal');
@@ -3645,7 +3662,11 @@ function dataSource(query)
             finalarray[key][num] = React.createElement(ToolBar, null)
     }
 
-	else{
+    else if (num == 'view_count'){
+        finalarray[key]['views'] = item
+    }
+
+	else if(num != 'views'){
 	    finalarray[key][num] = item
 	}
 	})
@@ -3701,18 +3722,27 @@ var Subtable = React.createClass({displayName: "Subtable",
 	if(this.isMounted()){
 	    var newarray = []
 	if(true){
-	    newarray[0] = {name:"Entries", width: 180, style: {color: 'black'}}
-	    for(var i = 1; i<last.length; i++) {
-	        newarray[i] = {name:last[i-1],width: 200, style:{color:'black'}}
-	    }
-    }
-	else
-	{
+        newarray[0] = {name: 'Entries', width: 100, style: {color: 'black'}}
 	    for(var i = 0; i<last.length; i++) {
-	        newarray[i] = {name:last[i],width: 200, style:{color:'black'}}
-	}	    
-	}
-	    setTimeout(function() { this.setState({columns: newarray})}.bind(this), 800)
+            if(last[i].toLowerCase() == 'id'){ 
+                newarray[i+1] = {name:last[i],width: 100, style:{color:'black'}}
+            }
+            else if(last[i].toLowerCase() == 'alertgroup'){
+                newarray.push({name:last[i], width: 100, style: {color: 'black'}})
+	        }
+            else if(last[i].toLowerCase() == 'when'){
+                newarray[i+1] = {name:last[i], width: 150, style:{color:'black'}}
+            }
+            else if(last[i].toLowerCase() == 'status'){
+                newarray[i+1] = {name:last[i], width: 110, style:{color:'black'}}
+            }
+            else if(last[i].toLowerCase() != 'index' || last[i].toLowerCase() != 'column'){
+                newarray[i+1] = {name:last[i], width: 250,style:{color:'black'}}
+            }
+        }
+            
+    }
+	    setTimeout(function() {this.setState({columns: newarray})}.bind(this), 800)
 	}
 	}.bind(this));
         Store.storeKey(this.state.key)
@@ -3806,7 +3836,7 @@ var Subtable = React.createClass({displayName: "Subtable",
 	    this.state.setGuide ? React.createElement(SelectedContainer, {type:'Guide', id:this.state.guideid}) : React.createElement("div", {className: 'All Modal'}, React.createElement('div', null,React.createElement(Notificationactivemq,{ref: 'notificationSystem'})),  this.state.history ? React.createElement(HistoryView, {type:'alert', id: this.state.historyid, historyToggle: this.viewHistory}) : null, 
 /*style: {'padding-left': '25px'}},*/ this.state.viewentries ? React.createElement(Viewentry, {id: this.state.viewentriesid, callback: this.openEntry}) : null, this.state.addentry ? React.createElement(Addentry, {title: 'Add Entry', targetid: this.state.key, updated: this.reloadentry, addedentry: this.addEntry, type: 'alert'}) : null,
 	this.state.reload ? React.createElement(Subtable, {className: "MainSubtable"},null) :
-	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alertgroup', id: this.state.key})), React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.viewGuide}, 'View Guide'), React.createElement('button', {className:'btn btn-default', onClick:this.viewSource}, 'View Source')), this.state.oneview ? React.createElement('btn-group', null, this.state.flair ? React.createElement('button',{className: 'btn btn-default', onClick: this.flairOn}, 'Flair On') : React.createElement('button', {className: 'btn btn-default', onClick: this.flairOff}, 'Flair Off'),React.createElement('button', {className:'btn btn-default', onClick: this.viewHistory}, 'View History'), React.createElement('button', {className: 'btn btn-default', onClick:this.addEntry}, 'Add Entry'), React.createElement('button', {className: 'btn btn-default', onClick: this.openSelected}, 'Open Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.closeSelected}, 'Close Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.promoteSelected}, 'Promote Selected'), React.createElement('button', {className:'btn btn-default', onClick:this.selectExisting}, 'Add Selected to Existing Event'), React.createElement('button', {className:'btn btn-default', onClick:this.exportCSV}, 'Export to CSV'), React.createElement('button', {className:'btn btn-default', onClick:this.deleteSelected}, 'Delete Selected')) : null ,  React.createElement(Subgrid, {style: {height: '100%', 'z-index' : '0'},className: "Subgrid",
+	this.state.back ? React.createElement(Maintable, null) : React.createElement("div" , {className: "subtable" + this.state.key}, React.createElement('div', null, React.createElement(Header, {type: 'alertgroup', id: this.state.key})), React.createElement('btn-group', null, React.createElement('button', {className: 'btn btn-default', onClick: this.viewGuide}, 'View Guide'), React.createElement('button', {className:'btn btn-default', onClick:this.viewSource}, 'View Source'), this.state.flair ? React.createElement('button',{className: 'btn btn-default', onClick: this.flairOn}, 'Flair On') : React.createElement('button', {className: 'btn btn-default', onClick: this.flairOff}, 'Flair Off')), this.state.oneview ? React.createElement('btn-group', null, React.createElement('button', {className:'btn btn-default', onClick: this.viewHistory}, 'View History'), React.createElement('button', {className: 'btn btn-default', onClick:this.addEntry}, 'Add Entry'), React.createElement('button', {className: 'btn btn-default', onClick: this.openSelected}, 'Open Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.closeSelected}, 'Close Selected'), React.createElement('button', {className: 'btn btn-default', onClick: this.promoteSelected}, 'Promote Selected'), React.createElement('button', {className:'btn btn-default', onClick:this.selectExisting}, 'Add Selected to Existing Event'), React.createElement('button', {className:'btn btn-default', onClick:this.exportCSV}, 'Export to CSV'), React.createElement('button', {className:'btn btn-default', onClick:this.deleteSelected}, 'Delete Selected')) : null ,  React.createElement(Subgrid, {style: {height: '100%', 'z-index' : '0'},className: "Subgrid",
         ref: "dataGrid", 
         idProperty: "index",
 	    setColumns: true, 
@@ -3840,7 +3870,7 @@ var Subtable = React.createClass({displayName: "Subtable",
     this.reloadentry()
     },
    flairOn: function(){
-	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
+	$('.subtable'+this.state.key).find('.z-row').each(function(key, value){
 	    $(value).find('.z-cell').each(function(num,content){
 		var con = $(content).find('.entity-off')
 		con.each(function(x,y){
@@ -3852,7 +3882,7 @@ var Subtable = React.createClass({displayName: "Subtable",
 	this.setState({flair:false})
     },
    flairOff: function(){
-	$('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
+	$('.subtable'+this.state.key).find('.z-row').each(function(key, value){
 	    $(value).find('.z-cell').each(function(num,content){
 		var con = $(content).find('.entity')
 		con.each(function(x,y){
@@ -41544,8 +41574,536 @@ module.exports = {
 
 
 },{"../../react-daterange-picker":956,"moment":770,"object-assign":847,"react":1883,"react-menus":865,"react-tag-input":1538}],817:[function(require,module,exports){
-arguments[4][237][0].apply(exports,arguments)
-},{"../Cell":815,"../utils/asArray":836,"../utils/findIndexBy":837,"../utils/findIndexByName":838,"./setupColumnDrag":818,"./setupColumnResize":819,"clone":841,"dup":237,"moment":770,"object-assign":847,"react":1883,"react-menus":865,"react-style-normalizer":889,"region":903}],818:[function(require,module,exports){
+'use strict';
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var React = require('react');
+var Region = require('region');
+var ReactMenu = React.createFactory(require('react-menus'));
+var assign = require('object-assign');
+var clone = require('clone');
+var asArray = require('../utils/asArray');
+var findIndexBy = require('../utils/findIndexBy');
+var findIndexByName = require('../utils/findIndexByName');
+var Cell = require('../Cell');
+var setupColumnDrag = require('./setupColumnDrag');
+var setupColumnResize = require('./setupColumnResize');
+var normalize = require('react-style-normalizer');
+var moment = require('moment');
+function emptyFn() {}
+
+function getColumnSortInfo(column, sortInfo) {
+
+    sortInfo = asArray(sortInfo);
+
+    var index = findIndexBy(sortInfo, function (info) {
+        return info.name === column.name;
+    });
+     
+        return sortInfo[index];
+}
+
+function removeColumnSort(column, sortInfo) {
+    sortInfo = asArray(sortInfo);
+    var index = findIndexBy(sortInfo, function (info) {
+        return info.name === column.name;
+    });
+
+    if (~index) {
+        sortInfo.splice(index, 1);
+    }
+
+    return sortInfo;
+}
+
+function getDropState() {
+    return {
+        dragLeft: null,
+        dragColumn: null,
+        dragColumnIndex: null,
+        dragging: false,
+        dropIndex: null,
+
+        shiftIndexes: null,
+        shiftSize: null
+    };
+}
+
+module.exports = React.createClass({
+
+    displayName: 'ReactDataGrid.Header',
+
+    propTypes: {
+        columns: React.PropTypes.array
+    },
+
+    onDrop: function onDrop(event) {
+        var state = this.state;
+        var props = this.props;
+
+        if (state.dragging) {
+            event.stopPropagation();
+        }
+
+        var dragIndex = state.dragColumnIndex;
+        var dropIndex = state.dropIndex;
+
+        if (dropIndex != null) {
+
+            //since we need the indexes in the array of all columns
+            //not only in the array of the visible columns
+            //we need to search them and make this transform
+            var dragColumn = props.columns[dragIndex];
+            var dropColumn = props.columns[dropIndex];
+
+            dragIndex = findIndexByName(props.allColumns, dragColumn.name);
+            dropIndex = findIndexByName(props.allColumns, dropColumn.name);
+
+            this.props.onDropColumn(dragIndex, dropIndex);
+        }
+
+        this.setState(getDropState());
+    },
+
+    getDefaultProps: function getDefaultProps() {
+        return {
+            defaultClassName: 'z-header-wrapper',
+            draggingClassName: 'z-dragging',
+            cellClassName: 'z-column-header',
+            defaultStyle: {},
+            sortInfo: null,
+            scrollLeft: 0,
+            scrollTop: 0
+        };
+    },
+
+    getInitialState: function getInitialState() {
+
+        return {
+            mouseOver: true,
+            dragging: false,
+
+            shiftSize: null,
+            dragColumn: null,
+            shiftIndexes: null,
+	    showCalendar: false
+        };
+    },
+
+    render: function render() {
+        var props = this.prepareProps(this.props);
+        var state = this.state;
+
+        var cellMap = {};
+        var cells = props.columns.map(function (col, index) {
+            var cell = this.renderCell(props, state, col, index);
+            cellMap[col.name] = cell;
+
+            return cell;
+        }, this);
+
+        if (props.columnGroups && props.columnGroups.length) {
+
+            cells = props.columnGroups.map(function (colGroup) {
+                var cellProps = {};
+                var columns = [];
+
+                var cells = colGroup.columns.map(function (colName) {
+                    var col = props.columnMap[colName];
+                    columns.push(col);
+                    return cellMap[colName];
+                });
+
+                return React.createElement(
+                    Cell,
+                    cellProps,
+                    cells
+                );
+            }, this);
+        }
+
+        var style = normalize(props.style);
+        var headerStyle = normalize({
+            paddingRight: props.scrollbarSize,
+            transform: 'translate3d(' + -props.scrollLeft + 'px, ' + -props.scrollTop + 'px, 0px)'
+        });
+
+        return React.createElement(
+            'div',
+            { style: style, className: props.className },
+            React.createElement(
+                'div',
+                { className: 'z-header', style: headerStyle },
+                cells
+            )
+        );
+    },
+
+    renderCell: function renderCell(props, state, column, index) {
+        var resizing = props.resizing;
+        var text = column.title;
+        var className = props.cellClassName || '';
+        var style = {
+            left: 0
+        };
+
+        var menu = this.renderColumnMenu(props, state, column, index);
+
+        if (state.dragColumn && state.shiftIndexes && state.shiftIndexes[index]) {
+            style.left = state.shiftSize;
+        }
+
+        if (state.dragColumn === column) {
+            className += ' z-drag z-over';
+            style.zIndex = 1;
+            style.left = state.dragLeft || 0;
+        }
+
+        var filterIcon = props.filterIcon || React.createElement(
+            'svg',
+            { version: '1.1', style: { transform: 'translate3d(0,0,0)', height: '100%', width: '100%', padding: '0px 2px' }, viewBox: '0 0 3 4' },
+            React.createElement('polygon', { points: '0,0 1,2 1,4 2,4 2,2 3,0 ', style: { fill: props.filterIconColor, strokeWidth: 0, fillRule: 'nonZero' } })
+        );
+
+        var filter = column.filterable ? React.createElement(
+            'div',
+            { className: 'z-show-filter', onMouseUp: this.handleFilterMouseUp.bind(this, column) },
+            filterIcon
+        ) : null;
+
+	
+        var resizer = column.resizable ? React.createElement('span', { className: 'z-column-resize', onMouseDown: this.handleResizeMouseDown.bind(this, column) }) : null;
+
+        if (column.sortable) {
+            text = React.createElement(
+                'span',
+                null,
+                text,
+                React.createElement('span', { className: 'z-icon-sort-info' })
+            );
+            var sortInfo = getColumnSortInfo(column, props.sortInfo);
+            if (sortInfo && sortInfo.dir) {
+                className += sortInfo.dir === -1 || sortInfo.dir === 'desc' ? ' z-desc' : ' z-asc';
+		if(props.sortInfo.length > 1){
+
+		props.sortInfo.shift()
+		}
+            }
+
+            className += ' z-sortable';
+        }
+	
+        if (filter) {
+            className += ' z-filterable';
+        }
+
+        if (state.mouseOver === column.name && !resizing) {
+            className += ' z-over';
+        }
+
+        if (props.menuColumn === column.name) {
+            className += ' z-active';
+        }
+
+        className += ' z-unselectable';
+
+        var events = {};
+
+        events.onMouseDown = this.handleMouseDown.bind(this, column);
+        events.onMouseUp = this.handleMouseUp.bind(this, column);
+
+        return React.createElement(
+            Cell,
+            _extends({
+                key: column.name,
+                contentPadding: props.cellPadding,
+                columns: props.columns || [],
+                index: index,
+                column: props.columns[index],
+                className: className,
+                style: style,
+                text: text,
+                header: true,
+                onMouseOut: this.handleMouseOut.bind(this, column),
+                onMouseOver: this.handleMouseOver.bind(this, column)
+            }, events),
+            filter,
+            menu,
+            resizer
+        );
+    },
+
+    toggleSort: function toggleSort(column) {
+        var sortInfo = asArray(clone(this.props.sortInfo));
+        var columnSortInfo = getColumnSortInfo(column, sortInfo);
+	   if (!columnSortInfo) {
+            columnSortInfo = {
+                name: column.name,
+                type: column.type,
+                fn: column.sortFn
+            };
+
+            sortInfo.push(columnSortInfo);
+	    console.log(sortInfo)
+	  }
+
+        if (typeof column.toggleSort === 'function') {
+            column.toggleSort(columnSortInfo, sortInfo);
+        } else {
+
+            var dir = columnSortInfo.dir;
+            var dirSign = dir === 'asc' ? 1 : dir === 'desc' ? -1 : dir;
+            var newDir = dirSign === 1 ? -1 : dirSign === -1 ? 0 : 1;
+
+            columnSortInfo.dir = newDir;
+
+            if (!newDir) {
+                sortInfo = removeColumnSort(column, sortInfo);
+            }
+        }
+
+        ;(this.props.onSortChange || emptyFn)(sortInfo);
+	
+    },
+
+    renderColumnMenu: function renderColumnMenu(props, state, column, index) {
+        if (!props.withColumnMenu) {
+            return;
+        }
+
+        var menuIcon = props.menuIcon || React.createElement(
+            'svg',
+            { version: '1.1', style: { transform: 'translate3d(0,0,0)', height: '100%', width: '100%', padding: '0px 2px' }, viewBox: '0 0 3 4' },
+            React.createElement('polygon', { points: '0,0 1.5,3 3,0 ', style: { fill: props.menuIconColor, strokeWidth: 0, fillRule: 'nonZero' } })
+        );
+
+        return React.createElement(
+            'div',
+            { className: 'z-show-menu', onMouseUp: this.handleShowMenuMouseUp.bind(this, props, column, index) },
+            menuIcon
+        );
+    },
+
+    handleShowMenuMouseUp: function handleShowMenuMouseUp(props, column, index, event) {
+        event.nativeEvent.stopSort = true;
+
+        this.showMenu(column, event);
+    },
+
+    showMenu: function showMenu(column, event) {
+
+        var menuItem = (function (column) {
+            var visibility = this.props.columnVisibility;
+
+            var visible = column.visible;
+
+            if (column.name in visibility) {
+                visible = visibility[column.name];
+            }
+            return {
+                cls: visible ? 'z-selected' : '',
+                selected: visible ? React.createElement(
+                    'span',
+                    { style: { fontSize: '0.95em' } },
+                    '+'
+                ) : '',
+                label: column.title,
+                fn: this.toggleColumn.bind(this, column)
+            };
+        }).bind(this);
+
+        function menu(eventTarget, props) {
+
+            var columns = props.gridColumns;
+
+            props.columns = ['selected', 'label'];
+            props.items = columns.map(menuItem);
+            props.alignTo = eventTarget;
+            props.alignPositions = ['tl-bl', 'tr-br', 'bl-tl', 'br-tr'];
+            props.style = {
+                position: 'absolute',
+                overflow: 'auto',
+                width: '216px',
+                height: '119px'
+            };
+
+            var factory = this.props.columnMenuFactory || ReactMenu;
+            var fact
+            var result = factory(props);
+
+            return result === undefined ? ReactMenu(props) : result;
+        }
+
+        this.props.showMenu(menu.bind(this, event.currentTarget), {
+            menuColumn: column.name
+        });
+    },
+
+    showCalendarMenu: function showCalendarMenu(column, event) {
+
+	function menu(eventTarget, props){
+	 var defaultFactory = this.props.calendarFactory;
+	 var factory = defaultFactory;
+	 console.log(factory)	
+
+	}
+    },
+	
+    showFilterMenu: function showFilterMenu(column, event) {
+	
+        function menu(eventTarget, props) {
+            var defaultFactory = this.props.filterMenuFactory;
+            var factory = column.filterMenuFactory || defaultFactory;
+            props.columns = ['component'];
+            props.column = column;
+            props.alignTo = eventTarget;
+            props.alignPositions = ['tl-bl', 'tr-br', 'bl-tl', 'br-tr'];
+            props.style = {
+                position: 'absolute'
+            };
+
+            var result = factory(props);
+
+            return result === undefined ? defaultFactory(props) : result;
+        }
+        this.props.showMenu(menu.bind(this, event.currentTarget), {
+            menuColumn: column.name
+        });
+    },
+	
+    toggleColumn: function toggleColumn(column) {
+        this.props.toggleColumn(column);
+    },
+
+    hideMenu: function hideMenu() {
+        this.props.showColumnMenu(null, null);
+    },
+
+    handleResizeMouseDown: function handleResizeMouseDown(column, event) {
+        setupColumnResize(this, this.props, column, event);
+
+        //in order to prevent setupColumnDrag in handleMouseDown
+        // event.stopPropagation()
+
+        //we are doing setupColumnDrag protection using the resizing flag on native event
+        if (event.nativeEvent) {
+            event.nativeEvent.resizing = true;
+        }
+    },
+
+   handleFilterCalendarUp: function handleFilterCalendarUp(column, event) {
+
+        event.nativeEvent.stopSort = true;
+             this.showCalendarMenu(column, event);
+	
+        // event.stopPropagation()
+    },
+
+    handleFilterMouseUp: function handleFilterMouseUp(column, event) {
+        event.nativeEvent.stopSort = true;
+             this.showFilterMenu(column, event);
+
+	
+        // event.stopPropagation()
+    },
+
+    handleMouseUp: function handleMouseUp(column, event) {
+        if (this.state.dragging) {
+            return;
+        }
+
+        if (this.state.resizing) {
+            return;
+        }
+
+        if (event && event.nativeEvent && event.nativeEvent.stopSort) {
+            return;
+        }
+
+        if (column.sortable) {
+            this.toggleSort(column);
+        }
+    },
+
+    handleMouseOut: function handleMouseOut(column) {
+        this.setState({
+            mouseOver: false
+        });
+    },
+
+    handleMouseOver: function handleMouseOver(column) {
+        this.setState({
+            mouseOver: column.name
+        });
+    },
+
+    handleMouseDown: function handleMouseDown(column, event) {
+        if (event && event.nativeEvent && event.nativeEvent.resizing) {
+            return;
+        }
+
+        if (!this.props.reorderColumns) {
+            return;
+        }
+
+        setupColumnDrag(this, this.props, column, event);
+    },
+
+    onResizeDragStart: function onResizeDragStart(config) {
+        this.setState({
+            resizing: true
+        });
+        this.props.onColumnResizeDragStart(config);
+    },
+
+    onResizeDrag: function onResizeDrag(config) {
+        this.props.onColumnResizeDrag(config);
+    },
+
+    onResizeDrop: function onResizeDrop(config, resizeInfo, event) {
+        this.setState({
+            resizing: false
+        });
+
+        this.props.onColumnResizeDrop(config, resizeInfo);
+    },
+
+    prepareProps: function prepareProps(thisProps) {
+        var props = {};
+
+        assign(props, thisProps);
+
+        this.prepareClassName(props);
+        this.prepareStyle(props);
+
+        var columnMap = {};(props.columns || []).forEach(function (col) {
+            columnMap[col.name] = col;
+        });
+
+        props.columnMap = columnMap;
+
+        return props;
+    },
+
+    prepareClassName: function prepareClassName(props) {
+        props.className = props.className || '';
+        props.className += ' ' + props.defaultClassName;
+
+        if (this.state.dragging) {
+            props.className += ' ' + props.draggingClassName;
+        }
+    },
+
+    prepareStyle: function prepareStyle(props) {
+        var style = props.style = {};
+
+        assign(style, props.defaultStyle);
+    }
+});
+
+
+},{"../Cell":815,"../utils/asArray":836,"../utils/findIndexBy":837,"../utils/findIndexByName":838,"./setupColumnDrag":818,"./setupColumnResize":819,"clone":841,"moment":770,"object-assign":847,"react":1883,"react-menus":865,"react-style-normalizer":889,"region":903}],818:[function(require,module,exports){
 arguments[4][37][0].apply(exports,arguments)
 },{"drag-helper":842,"dup":37,"region":903}],819:[function(require,module,exports){
 arguments[4][38][0].apply(exports,arguments)

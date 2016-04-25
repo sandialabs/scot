@@ -6,7 +6,7 @@ var Tabs                    = require('react-bootstrap/lib/Tabs');
 var Tab                     = require('react-bootstrap/lib/Tab');
 var DataGrid                = require('react-datagrid');
 var SelectedEntry           = require('../entry/selected_entry.jsx');
-
+var AddEntryModal           = require('./add_entry.jsx');
 const customStyles = {
     content : {
         top     : '50%',
@@ -22,6 +22,7 @@ var Flair = React.createClass({
     getInitialState: function() {
         return {
             entityData:null,
+            entryToolbar:false,    
         }
     },
     componentDidMount: function () {
@@ -41,15 +42,23 @@ var Flair = React.createClass({
                         <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> :null }</h3>
                     </div>
                     <div className="modal-body" style={{height: '80vh', overflowY:'auto',width:'800px'}}>
-                        <EntityBody data={this.state.entityData} entityid={this.props.entityid}/> 
+                        <EntityBody data={this.state.entityData} entityid={this.props.entityid} entryToggle={this.entryToggle}/> 
                     </div>
                     <div className="modal-footer">
                         <Button onClick={this.props.flairToolbarToggle}>Done</Button>
                     </div>
                 </Modal>
+                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type='entity' targetid={this.props.entityid} id={this.props.entityid} addedentry={this.entryToggle} /> : null}
             </div>
         )
-    }
+    },
+    entryToggle: function() {
+        if (this.state.entryToolbar == false) {
+            this.setState({entryToolbar:true})
+        } else {
+            this.setState({entryToolbar:false})
+        }
+    },
 });
 
 var EntityValue = React.createClass({
@@ -86,7 +95,7 @@ var EntityBody = React.createClass({
                 <Tab eventKey={1} title="References"><EntityEventReferences entityid={this.props.entityid}/></Tab>
                 <Tab eventKey={2} title="SIDD Data">SIDD Data Table</Tab>
                 <Tab eventKey={3} title="Geo Location">Geo Location Table</Tab>
-                <Tab eventKey={4} title="Entry"><SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
+                <Tab eventKey={4} title="Entry"><Button onClick={this.props.entryToggle}>Add Entry</Button><SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
             </Tabs>
         )
     }
