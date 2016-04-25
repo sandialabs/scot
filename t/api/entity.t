@@ -87,6 +87,44 @@ $t  ->get_ok("/scot/api/v2/entity/$ipid/event")
     ->json_is('/records/0/id'       => 1)
     ->json_is('/records/0/subject'  => 'Test Event 1');
 
+$t  ->post_ok('/scot/api/v2/entry'  => json => {
+    body    => qq|
+        chosun.com apture.com and cnomy.com
+    |,
+    target_id   => $event_id,
+    target_type => "event",
+    parent      => 0,
+})->status_is(200)
+    ->json_is('/status' => 'ok');
+
+my $sidd_entry_id = $t->tx->res->json->{id};
+$t  ->get_ok("/scot/api/v2/entry/$sidd_entry_id")
+    ->status_is(200);
+my $siddentrydata   = $t->tx->res->json;
+my $eehref = $ee->process_html($siddentrydata->{body});
+print Dumper($eehref);
+my $json   = {
+    parsed  => 1,
+    body_plain  => $eehref->{text},
+    body_flair  => $eehref->{flair},
+    entities    => $eehref->{entities},
+};
+
+$t  ->put_ok("/scot/api/v2/entry/$sidd_entry_id" => json => $json)
+    ->status_is(200);
+
+$t->get_ok("/scot/api/v2/entry/$sidd_entry_id/entity")
+    ->status_is(200)
+    ->json_is('/totalRecordCount'   => 3)
+    ->json_is('/records/chosun.com/type'    => 'domain');
+
+my $eid1 = $t->tx->res->json->{records}->{'chosun.com'}->{id};
+my $eid2 = $t->tx->res->json->{records}->{'apture.com'}->{id};
+my $eid3 = $t->tx->res->json->{records}->{'cnomy.com'}->{id};
+
+$t->get_ok("/scot/api/v2/entity/$eid1")
+    ->status_is(200);
+
 
  print Dumper($t->tx->res->json);
  done_testing();
