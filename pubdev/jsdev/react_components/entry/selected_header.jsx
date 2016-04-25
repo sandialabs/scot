@@ -110,7 +110,6 @@ var SelectedHeader = React.createClass({
             };
             waitForEntry.waitEntry();
         }.bind(this)); 
-        console.log('Ran componentDidMount');
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated); 
         Store.storeKey('entryNotification')
@@ -277,7 +276,7 @@ var SelectedHeader = React.createClass({
                     <div className='details-subject' style={{display: 'inline-flex',paddingLeft:'5px'}}>
                         {this.state.showEventData ? <EntryDataSubject data={this.state.headerData} subjectType={subjectType} type={type} id={this.props.id} updated={this.updated} />: null}
                         {this.state.refreshing ? <Button bsSize={'xsmall'} bsStyle={'info'}><span>Refreshing Data...</span></Button> :null }
-                        {this.state.loading ? <Button bsSize={'xsmall'} bsStyle={'info'}><span>Loading...</span></Button> :null}    
+                        {this.state.loading ? <span>Loading...</span> :null}    
                     </div> 
                     <div className='details-table toolbar'>
                         <table>
@@ -300,7 +299,7 @@ var SelectedHeader = React.createClass({
                 </div>
                 <Notification ref="notificationSystem" /> 
                 
-                {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid}/> : null}
+                {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} /> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null}
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData}/> : null}
