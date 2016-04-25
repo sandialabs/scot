@@ -127,7 +127,7 @@ sub get_data {
 
     if ($type ne "ipaddr") {
         # nothing to do here...
-        return {};
+        return undef;
     }
 
     my $href    = $self->get_scot_geo_record($value);

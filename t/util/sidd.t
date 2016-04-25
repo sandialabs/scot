@@ -19,8 +19,11 @@ my $sidd    = Scot::Util::Sidd->new({
 });
 
 my $href    = $sidd->get_data("domain", "401k.com");
-
 say Dumper($href);
 
+my $href    = $sidd->get_data("domain", "apture.com");
+say Dumper($href);
+my @identifiers = $sidd->list_identifiers_of_type('domain',10);
+say Dumper(@identifiers);
 
 
