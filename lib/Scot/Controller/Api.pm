@@ -557,7 +557,7 @@ sub enrich_entity {
     if ( $href->{type} eq "native" ) {
         my $module  = $href->{module};
         my $data    = $env->$module->get_data($entity->type, $entity->value);
-        my $entry   = $self->mongo->collection('Entry')->create({
+        my $entry   = $env->mongo->collection('Entry')->create({
             body    => $self->tablify($module, $data),
             target  => {
                 type    => "entity",
