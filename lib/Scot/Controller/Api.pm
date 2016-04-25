@@ -477,6 +477,7 @@ sub get_one {
     }
 
     if ( ref($object) eq "Scot::Model::Entity" ) {
+        $log->debug("Enity asked for, checking for enrichments");
         $self->check_entity_enrichments($object);
     }
 
@@ -510,6 +511,8 @@ sub check_entity_enrichments {
     my $data    = {};
     my $changes = 0;
     my $enrichers   = $env->entity_enrichers;
+
+    $log->debug("enrichers are: ",{filter=>\&Dumper,value=>$enrichers});
 
     foreach my $enricher (@$enrichers) {
         my ($name, $href) = each %$enricher;
@@ -553,17 +556,21 @@ sub enrich_entity {
     my $href    = shift;
     my $entity  = shift;
     my $env     = $self->env;
+    my $log     = $env->log;
 
     if ( $href->{type} eq "native" ) {
         my $module  = $href->{module};
+        $log->debug("using module $module to get_data about ".$entity->value);
         my $data    = $env->$module->get_data($entity->type, $entity->value);
-        my $entry   = $env->mongo->collection('Entry')->create({
-            body    => $self->tablify($module, $data),
-            target  => {
-                type    => "entity",
-                id      => $entity->id,
-            }
-        });
+        if ($data) {
+            my $entry   = $env->mongo->collection('Entry')->create({
+                body    => $self->tablify($module, $data),
+                target  => {
+                    type    => "entity",
+                    id      => $entity->id,
+                }
+            });
+        }
         return $data;
     }
 }
