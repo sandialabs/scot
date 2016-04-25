@@ -535,11 +535,11 @@ sub check_entity_enrichments {
 sub tablify {
     my $self    = shift;
     my $title   = shift;
-    my $aref    = shift;
+    my $href    = shift;
     my $html    = "<h2>$title</h2>\n".
                   "<table class=\"entity_data\">\n";
-    foreach my $href (@$aref) {
-        my ( $key, $value ) = each %$href;
+    foreach my $key (sort keys %$href) {
+        my $value  = $href->{$key};
         $html .= "  <tr>\n".
                  "   <th>$key</th><td>$value</td>\n".
                  "  </tr>\n";
