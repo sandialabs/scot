@@ -458,6 +458,15 @@ sub get_one {
         }
     }
 
+    if ( ref($object) eq "Scot::Model::Entity" ) {
+        # check and see if $env->entity_enrichements exist
+
+        # if so, we are done.  will be sent in json automatically
+
+        # if not, call $env->entity_enrichments->{enricher}->lookup or whatever to store that data in object
+
+    }
+
     my $data_href   = {};
     if ( $req_href->{fields} and 
          $object->meta->does_role("Scot::Role::Hashable")) {
