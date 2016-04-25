@@ -6,7 +6,7 @@ var Tabs                    = require('react-bootstrap/lib/Tabs');
 var Tab                     = require('react-bootstrap/lib/Tab');
 var DataGrid                = require('react-datagrid');
 var SelectedEntry           = require('../entry/selected_entry.jsx');
-
+var SNLFlairModalOptions    = require('../sandia/flair_modal_options.jsx');
 const customStyles = {
     content : {
         top     : '50%',
