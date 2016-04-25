@@ -3001,6 +3001,7 @@ var Tabs                    = require('react-bootstrap/lib/Tabs');
 var Tab                     = require('react-bootstrap/lib/Tab');
 var DataGrid                = require('react-datagrid');
 var SelectedEntry           = require('../entry/selected_entry.jsx');
+var AddEntryModal           = require('./add_entry.jsx');
 const customStyles = {
     content : {
         top     : '50%',
@@ -3016,6 +3017,7 @@ var Flair = React.createClass({displayName: "Flair",
     getInitialState: function() {
         return {
             entityData:null,
+            entryToolbar:false,    
         }
     },
     componentDidMount: function () {
@@ -3035,15 +3037,23 @@ var Flair = React.createClass({displayName: "Flair",
                         React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) :null)
                     ), 
                     React.createElement("div", {className: "modal-body", style: {height: '80vh', overflowY:'auto',width:'800px'}}, 
-                        React.createElement(EntityBody, {data: this.state.entityData, entityid: this.props.entityid})
+                        React.createElement(EntityBody, {data: this.state.entityData, entityid: this.props.entityid, entryToggle: this.entryToggle})
                     ), 
                     React.createElement("div", {className: "modal-footer"}, 
                         React.createElement(Button, {onClick: this.props.flairToolbarToggle}, "Done")
                     )
-                )
+                ), 
+                this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "entity", targetid: this.props.entityid, id: this.props.entityid, addedentry: this.entryToggle}) : null
             )
         )
-    }
+    },
+    entryToggle: function() {
+        if (this.state.entryToolbar == false) {
+            this.setState({entryToolbar:true})
+        } else {
+            this.setState({entryToolbar:false})
+        }
+    },
 });
 
 var EntityValue = React.createClass({displayName: "EntityValue",
@@ -3080,7 +3090,7 @@ var EntityBody = React.createClass({displayName: "EntityBody",
                 React.createElement(Tab, {eventKey: 1, title: "References"}, React.createElement(EntityEventReferences, {entityid: this.props.entityid})), 
                 React.createElement(Tab, {eventKey: 2, title: "SIDD Data"}, "SIDD Data Table"), 
                 React.createElement(Tab, {eventKey: 3, title: "Geo Location"}, "Geo Location Table"), 
-                React.createElement(Tab, {eventKey: 4, title: "Entry"}, React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid}))
+                React.createElement(Tab, {eventKey: 4, title: "Entry"}, React.createElement(Button, {onClick: this.props.entryToggle}, "Add Entry"), React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid}))
             )
         )
     }
@@ -3170,7 +3180,7 @@ var EntityEventReferences = React.createClass({displayName: "EntityEventReferenc
 
 module.exports = Flair;
 
-},{"../entry/selected_entry.jsx":15,"react":1883,"react-bootstrap/lib/Button":773,"react-bootstrap/lib/ButtonGroup":774,"react-bootstrap/lib/Tab":792,"react-bootstrap/lib/Tabs":793,"react-datagrid":828,"react-modal":1003}],25:[function(require,module,exports){
+},{"../entry/selected_entry.jsx":15,"./add_entry.jsx":21,"react":1883,"react-bootstrap/lib/Button":773,"react-bootstrap/lib/ButtonGroup":774,"react-bootstrap/lib/Tab":792,"react-bootstrap/lib/Tabs":793,"react-datagrid":828,"react-modal":1003}],25:[function(require,module,exports){
 var React           = require('react');
 var ReactTime       = require('react-time');
 var Modal           = require('react-modal');
@@ -3712,25 +3722,27 @@ var Subtable = React.createClass({displayName: "Subtable",
 	if(this.isMounted()){
 	    var newarray = []
 	if(true){
+        newarray[0] = {name: 'Entries', width: 100, style: {color: 'black'}}
 	    for(var i = 0; i<last.length; i++) {
-            if(last[i] == 'id' || last[i] == 'alertgroup' || last[i] == 'status' || last[i] == 'when'){
-                newarray[i] = {name:last[i],width: 111.83, style:{color:'black'}}
+            if(last[i].toLowerCase() == 'id'){ 
+                newarray[i+1] = {name:last[i],width: 100, style:{color:'black'}}
             }
-            if(last[i] == 'status'){
-                newarray.push({name:"Entries", style: {color: 'black'}})
+            else if(last[i].toLowerCase() == 'alertgroup'){
+                newarray.push({name:last[i], width: 100, style: {color: 'black'}})
 	        }
-            else{
-                newarray[i] = {name:last[i], style:{color:'black'}}
+            else if(last[i].toLowerCase() == 'when'){
+                newarray[i+1] = {name:last[i], width: 150, style:{color:'black'}}
+            }
+            else if(last[i].toLowerCase() == 'status'){
+                newarray[i+1] = {name:last[i], width: 110, style:{color:'black'}}
+            }
+            else if(last[i].toLowerCase() != 'index' || last[i].toLowerCase() != 'column'){
+                newarray[i+1] = {name:last[i], width: 250,style:{color:'black'}}
             }
         }
+            
     }
-	else
-	{
-	    for(var i = 0; i<last.length; i++) {
-	        newarray[i] = {name:last[i],width: 200, style:{color:'black'}}
-	}	    
-	}
-	    setTimeout(function() { this.setState({columns: newarray})}.bind(this), 800)
+	    setTimeout(function() {this.setState({columns: newarray})}.bind(this), 800)
 	}
 	}.bind(this));
         Store.storeKey(this.state.key)
