@@ -509,7 +509,7 @@ sub check_entity_enrichments {
     my $log     = $env->log;
     my $data    = {};
     my $changes = 0;
-    my $enrichers   = $env->entity_enrichments;
+    my $enrichers   = $env->entity_enrichers;
 
     foreach my $enricher (@$enrichers) {
         my ($name, $href) = each %$enricher;
