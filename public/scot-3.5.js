@@ -94,6 +94,7 @@ function update(state, callback, payload){
         activemqmessage = " updated " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
+        callback.emitChange('intelgroup')
         callback.emitChange('entryNotification');
         callback.emitChange('taskgroup')
         callback.emitChange('selectedHeaderEntry');
@@ -119,15 +120,57 @@ function update(state, callback, payload){
         callback.emitChange(payload.action.activemq.data.id)
     }
     else if (state == 'intel'){
+        activemqwho = payload.action.activemq.data.who
+        activemqmessage = " updated " + state + " : " 
+        activemqid = payload.action.activemq.data.id
+        activemqtype = state
         callback.emitChange('intelgroup')
+        callback.emitChange('taskgroup')
+        callback.emitChange('selectedHeaderEntry');
+        callback.emitChange('entryNotification');
+        callback.emitChange('alertgroupnotification')
+        callback.emitChange('incidentgroup')
+        callback.emitChange("activealertgroup")
+        callback.emitChange('eventgroup')
+    callback.emitChange(payload.action.activemq.data.id)
+    }
+   else if(state == 'task'){
+        activemqwho = payload.action.activemq.data.who
+        activemqmessage = " updated " + state + " : " 
+        activemqid = payload.action.activemq.data.id
+        activemqtype = state
+        callback.emitChange('intelgroup')
+        callback.emitChange('taskgroup')
+        callback.emitChange('selectedHeaderEntry');
+        callback.emitChange('entryNotification');
+        callback.emitChange('alertgroupnotification')
+        callback.emitChange('incidentgroup')
+        callback.emitChange("activealertgroup")
+        callback.emitChange('eventgroup')
         callback.emitChange(payload.action.activemq.data.id)
     }
 
+    else if(state == 'entity'){
+        activemqwho = payload.action.activemq.data.who
+        activemqmessage = " updated " + state + " : " 
+        activemqid = payload.action.activemq.data.id
+        activemqtype = state
+        callback.emitChange('intelgroup')
+        callback.emitChange('taskgroup')
+        callback.emitChange('selectedHeaderEntry');
+        callback.emitChange('entryNotification');
+        callback.emitChange('alertgroupnotification')
+        callback.emitChange('incidentgroup')
+        callback.emitChange("activealertgroup")
+        callback.emitChange('eventgroup')
+        callback.emitChange(payload.action.activemq.data.id)
+    }
    else if(state == 'incident'){
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " updated " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
+        callback.emitChange('intelgroup')
         callback.emitChange('taskgroup')
         callback.emitChange('selectedHeaderEntry');
         callback.emitChange('entryNotification');
@@ -153,6 +196,7 @@ function update(state, callback, payload){
         activemqmessage = " updated " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state 
+        callback.emitChange('intelgroup')
         callback.emitChange('viewentrykey')
         callback.emitChange('taskgroup')
         callback.emitChange('selectedHeaderEntry');
@@ -182,6 +226,7 @@ function update(state, callback, payload){
         activemqmessage = " updated " + state + " id: " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
+        callback.emitChange('intelgroup')
         callback.emitChange(payload.action.activemq.data.id)
         callback.emitChange('taskgroup')
         callback.emitChange('selectedHeaderEntry');
@@ -201,6 +246,7 @@ function creation(state, callback, payload){
         activemqtype = state
         callback.emitChange(payload.action.activemq.data.id) 
         callback.emitChange('taskgroup')
+        callback.emitChange('intelgroup')
         callback.emitChange('selectedHeaderEntry');
         callback.emitChange('entryNotification');
         callback.emitChange('eventgroup') 
@@ -208,12 +254,28 @@ function creation(state, callback, payload){
         callback.emitChange('incidentgroup') 
         callback.emitChange('alertgroupnotification')
     }
+   else if(state == 'task'){
+        activemqwho = payload.action.activemq.data.who
+        activemqmessage = " updated " + state + " : " 
+        activemqid = payload.action.activemq.data.id
+        activemqtype = state
+        callback.emitChange('intelgroup')
+        callback.emitChange('taskgroup')
+        callback.emitChange('selectedHeaderEntry');
+        callback.emitChange('entryNotification');
+        callback.emitChange('alertgroupnotification')
+        callback.emitChange('incidentgroup')
+        callback.emitChange("activealertgroup")
+        callback.emitChange('eventgroup')
+        callback.emitChange(payload.action.activemq.data.id)
+    }
     else if (state == 'event') {
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " created " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
         callback.emitChange('taskgroup')
+        callback.emitChange('intelgroup')
         callback.emitChange('selectedHeaderEntry');
         callback.emitChange('entryNotification');
         callback.emitChange('incidentgroup') 
@@ -231,13 +293,26 @@ function creation(state, callback, payload){
         }) }, 1000) */
     }
     else if (state == 'intel'){
-        callback.emitChange('intelgroup') 
+        activemqwho = payload.action.activemq.data.who
+        activemqmessage = " created " + state + " : " 
+        activemqid = payload.action.activemq.data.id
+        activemqtype = state
+        callback.emitChange('intelgroup')
+        callback.emitChange('taskgroup')
+        callback.emitChange('selectedHeaderEntry');
+        callback.emitChange('entryNotification');
+        callback.emitChange('incidentgroup') 
+        callback.emitChange('eventgroup')  
+        callback.emitChange('activealertgroup')
+        callback.emitChange('alertgroupnotification')
+        callback.emitChange(payload.action.activemq.data.id)
     }
    else if(state == 'incident'){
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " created " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
+        callback.emitChange('intelgroup')
         callback.emitChange('taskgroup')
         callback.emitChange('selectedHeaderEntry');
         callback.emitChange('entryNotification');
@@ -252,6 +327,22 @@ function creation(state, callback, payload){
         activemqmessage = " created " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
+        callback.emitChange('intelgroup')
+        callback.emitChange('taskgroup')
+        callback.emitChange('selectedHeaderEntry');
+        callback.emitChange('entryNotification');
+        callback.emitChange('activealertgroup')
+        callback.emitChange('eventgroup')
+        callback.emitChange('incidentgroup')
+        callback.emitChange('alertgroupnotification')
+        callback.emitChange(payload.action.activemq.data.id)
+   }
+   else if(state == 'entity'){
+        activemqwho = payload.action.activemq.data.who
+        activemqmessage = " created " + state + " : " 
+        activemqid = payload.action.activemq.data.id
+        activemqtype = state
+        callback.emitChange('intelgroup')
         callback.emitChange('taskgroup')
         callback.emitChange('selectedHeaderEntry');
         callback.emitChange('entryNotification');
@@ -269,6 +360,7 @@ function deletion(state, callback, payload){
         activemqmessage = " deleted " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = 'alertgroup'
+        callback.emitChange('intelgroup')
         callback.emitChange('activealertgroup')
         callback.emitChange('incidentgroup') 
         callback.emitChange('eventgroup') 
@@ -292,11 +384,12 @@ function deletion(state, callback, payload){
     else if (state == 'entry'){
          callback.emitChange(payload.action.activemq.data.id) 
     }
-    else if (state == 'event') {
+    else if (state == 'entity') {
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " deleted " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
+        callback.emitChange('intelgroup')
         callback.emitChange('taskgroup')
         callback.emitChange('selectedHeaderEntry');
         callback.emitChange('entryNotification');
@@ -306,14 +399,58 @@ function deletion(state, callback, payload){
         callback.emitChange('alertgroupnotification')
         callback.emitChange(payload.action.activemq.data.id)
     }
-    else if (state == 'intel'){
-        callback.emitChange('intelgroup') 
+    else if (state == 'event') {
+        activemqwho = payload.action.activemq.data.who
+        activemqmessage = " deleted " + state + " : " 
+        activemqid = payload.action.activemq.data.id
+        activemqtype = state
+        callback.emitChange('intelgroup')
+        callback.emitChange('taskgroup')
+        callback.emitChange('selectedHeaderEntry');
+        callback.emitChange('entryNotification');
+        callback.emitChange('activealertgroup') 
+        callback.emitChange('incidentgroup') 
+        callback.emitChange('eventgroup') 
+        callback.emitChange('alertgroupnotification')
+        callback.emitChange(payload.action.activemq.data.id)
     }
+    else if (state == 'task'){
+        activemqwho = payload.action.activemq.data.who
+        activemqmessage = " deleted " + state + " : " 
+        activemqid = payload.action.activemq.data.id
+        activemqtype = state
+        callback.emitChange('intelgroup') 
+        callback.emitChange('taskgroup')
+        callback.emitChange('selectedHeaderEntry');
+        callback.emitChange('entryNotification');
+        callback.emitChange('incidentgroup')
+        callback.emitChange('activealertgroup') 
+        callback.emitChange('eventgroup') 
+        callback.emitChange('alertgroupnotification')
+        callback.emitChange(payload.action.activemq.data.id)
+}
+
+    else if (state == 'intel'){
+        activemqwho = payload.action.activemq.data.who
+        activemqmessage = " deleted " + state + " : " 
+        activemqid = payload.action.activemq.data.id
+        activemqtype = state
+        callback.emitChange('intelgroup') 
+        callback.emitChange('taskgroup')
+        callback.emitChange('selectedHeaderEntry');
+        callback.emitChange('entryNotification');
+        callback.emitChange('incidentgroup')
+        callback.emitChange('activealertgroup') 
+        callback.emitChange('eventgroup') 
+        callback.emitChange('alertgroupnotification')
+        callback.emitChange(payload.action.activemq.data.id)
+}
    else if(state == 'incident'){
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " deleted " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
+        callback.emitChange('intelgroup')
         callback.emitChange('taskgroup')
         callback.emitChange('selectedHeaderEntry');
         callback.emitChange('entryNotification');
@@ -328,6 +465,7 @@ function deletion(state, callback, payload){
         activemqmessage = " deleted " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
+        callback.emitChange('intelgroup')
         callback.emitChange('taskgroup')
         callback.emitChange('selectedHeaderEntry');
         callback.emitChange('entryNotification');
@@ -363,6 +501,32 @@ function views(state, callback, payload){
 var ActiveMQ = {
     handle_update: function(callback, payload){
     switch (payload.action.activemq.data.type) {
+            case 'entity': 
+                switch (payload.action.activemq.action) {
+                    case 'updated':
+                        update('entity', callback, payload);
+                        break;
+                    case 'created':
+                         creation('entity', callback, payload)
+                        break;
+                    case 'deleted':
+                        deletion('entity', callback, payload)
+                        break;
+                }
+                break;           
+            case 'task': 
+                switch (payload.action.activemq.action) {
+                    case 'updated':
+                        update('task', callback, payload);
+                        break;
+                    case 'created':
+                         creation('task', callback, payload)
+                        break;
+                    case 'deleted':
+                        deletion('task', callback, payload)
+                        break;
+                }
+                break; 
             case 'entry': 
                 switch (payload.action.activemq.action) {
                     case 'updated':
@@ -3421,6 +3585,7 @@ var querysize;
 var querypage;
 var SORT_INFO;
 var colsort = "id"
+var savedid
 var valuesort = -1
 var SELECTED_ID = {}
 var selected_dict = []
@@ -3714,7 +3879,6 @@ var Subtable = React.createClass({displayName: "Subtable",
     var count = 0
 	querysize = query.pageSize
     querypage = query.skip
-    console.log(supervalue)
     return $.ajax({
 	    type: 'GET',
 	    url: url,
@@ -3995,10 +4159,11 @@ var Subtable = React.createClass({displayName: "Subtable",
         onColumnResize: this.onColumnResize, 
 	    selected: this.state.selected, 
 	    onSelectionChange: this.onSelectionChange, 
-	    defaultPageSize: 3,
-	    onColumnOrderChange: this.handleColumnOrderChange, 
-	    pagination: true, 
-	    paginationToolbarProps: {pageSizes: [3,5]},  
+	    defaultPageSize: 10,
+	    callbackkey: this.state.key,
+        onColumnOrderChange: this.handleColumnOrderChange, 
+        pagination: true, 
+	    paginationToolbarProps: {pageSizes: [3,5,10]},  
 	    withColumnMenu: true, 
 	    showCellBorders: true,
 	    sortable: false,
@@ -5491,6 +5656,20 @@ module.exports = React.createClass({displayName: "exports",
     },
 
     reloadactive: function(){
+    var notification = this.refs.notificationSystem
+    if(notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
+    notification.addNotification({
+        message: activemqwho + activemqmessage + activemqid,
+        level: 'info',
+        autoDismiss: 5,
+        action: {
+            label: 'View',
+            callback: function(){
+            window.open('#/' + activemqtype + '/' + activemqid)
+            }
+        }
+        })
+      } 
     this.setState({reload: true})
     },
     render: function() {
@@ -42715,11 +42894,12 @@ var getGroupedRows = require('./render/getGroupedRows');
 var renderMenu = require('./render/renderMenu');
 
 var preventDefault = require('./utils/preventDefault');
-
+var Store = require('../../../jsdev/react_components/activemq/store.jsx')
 var isArray = Array.isArray;
 
 var SIZING_ID = '___SIZING___';
 var check = false
+var nextpage;
 function clamp(value, min, max) {
     return value < min ? min : value > max ? max : value;
 }
@@ -43129,7 +43309,7 @@ module.exports = React.createClass({
                 pageSize: props.pageSize,
                 minPage: minPage,
                 maxPage: maxPage,
-                reload: this.reload,
+                reload: this.reload2,
                 onPageChange: this.gotoPage,
                 onPageSizeChange: this.setPageSize,
                 border: props.style.border
@@ -43172,7 +43352,11 @@ module.exports = React.createClass({
 
         return result;
     },
+    reload2: function(){
+       this.reload()
+       Store.emitChange(nextpage)
 
+    },
     getTableProps: function getTableProps(props, state) {
         var table;
         var rows;
@@ -43296,7 +43480,7 @@ module.exports = React.createClass({
 
     prepareProps: function prepareProps(thisProps, state) {
         var props = assign({}, thisProps);
-
+        
         props.loading = this.prepareLoading(props);
         props.data = this.prepareData(props);
         props.dataSource = this.prepareDataSource(props);
@@ -43452,7 +43636,7 @@ module.exports = React.createClass({
 
         var count = this.prepareDataSourceCount(props) || 1;
         var pageSize = this.preparePageSize(props);
-
+        Store.emitChange(nextpage)
         return Math.ceil(count / pageSize);
     },
 
@@ -43504,12 +43688,15 @@ module.exports = React.createClass({
 	         scrollTop: 0},"fast")
 	    }
             this.setState(newState);
-	    this.reload();
+	        this.reload();
+        
         }
+        Store.emitChange(nextpage)
     },
 
     gotoPage: function gotoPage(page) {
-        if (typeof this.props.onPageChange == 'function') {
+    
+    if (typeof this.props.onPageChange == 'function') {
             this.props.onPageChange(page);
         } else {
             this.state.defaultPage = page;
@@ -43519,7 +43706,7 @@ module.exports = React.createClass({
                 defaultPage: page,
 		scrollTop: 0
             });
-
+            Store.emitChange(nextpage)
             return result;
         }
     },
@@ -43652,7 +43839,7 @@ module.exports = React.createClass({
     componentWillMount: function componentWillMount() {
         this.rowCache = {};
         this.groupData(this.props);
-
+        nextpage = this.props.callbackkey
         if (this.isRemoteDataSource(this.props)) {
             this.loadDataSource(this.props.dataSource, this.props);
         }
@@ -43835,7 +44022,7 @@ module.exports = React.createClass({
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./ColumnFilter":816,"./Header":817,"./PaginationToolbar":820,"./PropTypes":821,"./ResizeProxy":822,"./RowSelect":824,"./Wrapper":825,"./getDefaultProps":826,"./models/Column":829,"./render/getGroupedRows":830,"./render/getTableProps":831,"./render/renderMenu":832,"./render/slice":834,"./utils/findIndexByName":838,"./utils/group":839,"./utils/preventDefault":840,"es6-promise":845,"object-assign":847,"react":1883,"react-load-mask":849,"region":903}],829:[function(require,module,exports){
+},{"../../../jsdev/react_components/activemq/store.jsx":5,"./ColumnFilter":816,"./Header":817,"./PaginationToolbar":820,"./PropTypes":821,"./ResizeProxy":822,"./RowSelect":824,"./Wrapper":825,"./getDefaultProps":826,"./models/Column":829,"./render/getGroupedRows":830,"./render/getTableProps":831,"./render/renderMenu":832,"./render/slice":834,"./utils/findIndexByName":838,"./utils/group":839,"./utils/preventDefault":840,"es6-promise":845,"object-assign":847,"react":1883,"react-load-mask":849,"region":903}],829:[function(require,module,exports){
 arguments[4][249][0].apply(exports,arguments)
 },{"dup":249,"object-assign":847,"ustring":910}],830:[function(require,module,exports){
 arguments[4][49][0].apply(exports,arguments)
