@@ -17,12 +17,6 @@ system("mongo scot-testing <../../etc/database/reset.js 2>&1 > /dev/null");
 
 my $t = Test::Mojo->new('Scot');
 my $env = Scot::Env->instance;
-my $amq = $env->amq;
-$amq->subscribe("alert", "alert_queue");
-$amq->get_message(sub{
-    my ($self, $frame) = @_;
-    print "AMQ received: ". Dumper($frame). "\n";
-});
 
 
 $t->post_ok(
@@ -41,15 +35,31 @@ $t->post_ok(
 
 my $alertgroup_id   = $t->tx->res->json->{id};
 
+$t->post_ok(
+    '/scot/api/v2/entry'    => json => {
+        body    => 'test entry',
+        target_id   => $alertgroup_id,
+        target_type => "alertgroup",
+    })
+    ->status_is(200);
+
+my $entry_id    = $t->tx->res->json->{id};
+
+$t->put_ok(
+    "/scot/api/v2/entry/$entry_id" => json => {
+        body    => "updated test entry"
+    })
+    ->status_is(200);
+
 
 $t->get_ok("/scot/api/v2/audit" => {},
            "Get audit records " )
   ->status_is(200)
-  ->json_is('/records/0/data/id'    => $alertgroup_id)
-  ->json_is('/records/0/data/thing' => 'alertgroup')
-  ->json_is('/records/0/what'       => 'create_thing');
+  ->json_is('/records/2/data/id'    => $alertgroup_id)
+  ->json_is('/records/2/data/thing' => 'alertgroup')
+  ->json_is('/records/2/what'       => 'create_thing');
 
-#  print Dumper($t->tx->res->json), "\n";
+print Dumper($t->tx->res->json), "\n";
 done_testing();
 exit 0;
 
