@@ -2756,7 +2756,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	$.ajax({
 	type: 'put',
 	url: '/scot/api/v2/entry/'+this.props.id,
-	data: JSON.stringify(data)
+	data: data
 	}).success(function(response){
         if(finalfiles.length > 0){
 			for(var i = 0; i<finalfiles.length; i++){	
@@ -3417,9 +3417,10 @@ var Appactions              = require('../flux/actions.jsx')
 var Store                   = require('../activemq/store.jsx')
 var Listener                = require('../activemq/listener.jsx')
 var SelectedContainer       = require('../entry/selected_container.jsx')
+var querysize;
+var querypage;
 var SORT_INFO;
 var colsort = "id"
-var savedid
 var valuesort = -1
 var SELECTED_ID = {}
 var selected_dict = []
@@ -3483,74 +3484,23 @@ const  customStyles = {
 	    'z-index' : '99'
     }
 }
-function getColumns(key)
-{
-    var data = []
-    data.push(key)
-    return $.ajax({
-	    type: 'GET',
-	    url: url,
-	    data: {
-	        alertgroup: JSON.stringify(data)
-	    }
-	}).success(function(data){
-	    datacolumns = data
-	});
-}
-	var Viewentry = React.createClass({displayName: "Viewentry",
-    getInitialState: function() {
-	    return{open: true}
-	},
-	componentWillMount: function(){
-    },
-	componentWillReceiveProps: function() {
-    },
-	render: function() {
-
-	return (
-        React.createElement("div", {className: "modal-grid"}, 
-        React.createElement(Modal, {onRequestClose: this.props.callback, style: customStyles, className: "Modal__Bootstrap modal-dialog", isOpen: this.state.open}, 
-        React.createElement("div", {className: "modal-content", style: {height: '100%'}}, 
-        React.createElement("div", {className: "modal-header"}, 
-        React.createElement("h4", {className: "modal-title"}, " View Entry")
-        ), 
-        React.createElement("div", {className: "modal-body", style: {height: '80%'}}, 
-        React.createElement('div', {style: {height: '100%'}}, React.createElement(Alertentry, {type: 'alert', id: this.props.id}))
-        ), 
-        React.createElement("div", {className: "modal-footer"}, 
-        React.createElement("button", {type: "button", onClick: this.onCancel, className: 'btn'}, "Close")
-        )
-        )
-        )
-        )
-        )
-	},
-	clickable1: function(){
-	if(!ventry){
-	    this.setState({open: true})
-	} 
-    else{
-	    this.setState({open:false})
-	  }
-	},
-	onCancel: function(){
-        this.setState({open:false, change:false})
-	}
-	});
-
-function dataSource(query)
-{	
+function dataSource(query){
     var getID = []	
     var finalarray = [];
 	var sortarray = {}
 	sortarray[colsort] = valuesort
 	if(changestate){
     var count = 0
-	return $.ajax({
+	querysize = query.pageSize
+    querypage = query.skip
+    console.log(query)
+    return $.ajax({
 	    type: 'GET',
 	    url: url,
 	    data: {
-	        alertgroup: JSON.stringify(supervalue)
+                limit: query.pageSize,
+	            offset: query.skip,
+	            alertgroup: JSON.stringify(supervalue)
 	}
 	}).then(function(response){
   	    datasource = response
@@ -3678,7 +3628,6 @@ function dataSource(query)
 	})
 	}
 }
-
 function configureTable(data, props){
     var style = {}
     if(data.status == "open")
@@ -3699,9 +3648,209 @@ function configureTable(data, props){
 	}	
 	return style;
 }
+function getColumns(key)
+{
+    var data = []
+    data.push(key)
+    return $.ajax({
+	    type: 'GET',
+	    url: url,
+	    data: {
+	        alertgroup: JSON.stringify(data)
+	    }
+	}).success(function(data){
+	    datacolumns = data
+	});
+}
+	var Viewentry = React.createClass({displayName: "Viewentry",
+    getInitialState: function() {
+	    return{open: true}
+	},
+	componentWillMount: function(){
+    },
+	componentWillReceiveProps: function() {
+    },
+	render: function() {
+
+	return (
+        React.createElement("div", {className: "modal-grid"}, 
+        React.createElement(Modal, {onRequestClose: this.props.callback, style: customStyles, className: "Modal__Bootstrap modal-dialog", isOpen: this.state.open}, 
+        React.createElement("div", {className: "modal-content", style: {height: '100%'}}, 
+        React.createElement("div", {className: "modal-header"}, 
+        React.createElement("h4", {className: "modal-title"}, " View Entry")
+        ), 
+        React.createElement("div", {className: "modal-body", style: {height: '80%'}}, 
+        React.createElement('div', {style: {height: '100%'}}, React.createElement(Alertentry, {type: 'alert', id: this.props.id}))
+        ), 
+        React.createElement("div", {className: "modal-footer"}, 
+        React.createElement("button", {type: "button", onClick: this.onCancel, className: 'btn'}, "Close")
+        )
+        )
+        )
+        )
+        )
+	},
+	clickable1: function(){
+	if(!ventry){
+	    this.setState({open: true})
+	} 
+    else{
+	    this.setState({open:false})
+	  }
+	},
+	onCancel: function(){
+        this.setState({open:false, change:false})
+	}
+	});
+
 
 var Subtable = React.createClass({displayName: "Subtable",
+    dataSource: function(query){
+    var getID = []	
+    var finalarray = [];
+	var sortarray = {}
+	sortarray[colsort] = valuesort
+	if(changestate){
+    var count = 0
+	querysize = query.pageSize
+    querypage = query.skip
+    console.log(supervalue)
+    return $.ajax({
+	    type: 'GET',
+	    url: url,
+	    data: {
+                limit: query.pageSize,
+	            offset: query.skip,
+	            alertgroup: JSON.stringify(supervalue)
+	}
+	}).then(function(response){
+  	    datasource = response
+	    $.each(datasource.records, function(key, value){
+	        finalarray[key] = {}
 	
+	$.each(value, function(num, item){	
+	if(num == 'id'){
+	    addentrydata = true
+	    finalarray[key]["Entries"] = 7
+	    finalarray[key][num] = item
+	}
+	else if(num == 'when')
+	{
+	    var date = new Date(1000 * item)
+	    finalarray[key][num] = date.toLocaleString()
+	}
+	else if (item == 'promoted'){	
+	var Promote = React.createClass({displayName: "Promote",
+	render: function() {
+	    return (
+	        React.createElement('button', {className: 'btn btn-warning', onClick: this.launch}, 'promoted')
+	    )
+	},
+	launch: function(){
+    var set;
+	$('.z-selected').each(function(key, value){
+	$(value).find('.z-cell').each(function(x,y){	  
+	    if($(y).attr('name') == 'id'){
+		$.ajax({
+			type: 'GET',
+			url: '/scot/api/v2/alert/'+$(y).text() + '/event'
+		}).success(function(response){
+		    $.each(response, function(x,y){
+	        $.each(y, function(key, value){
+		    $.each(value, function(r,s){
+	            if(r == 'id'){
+                    set = s
+	            }
+	           })
+        })
+	})   	
+        window.location = '#/event/' + set
+	});
+	}
+	});
+	});
+	}
+	});
+	    finalarray[key][num] = React.createElement(Promote, null)
+	}
+	else{	
+	var Link = React.createClass({displayName: "Link",
+	render:function(){
+	return(
+        React.createElement("div", null, 
+  	        React.createElement("div", {className: "subrender", dangerouslySetInnerHTML: {__html:item}})
+	    )	
+	)
+	}
+	})
+        finalarray[key][num] = React.createElement(Link, null)
+	}
+	})
+	    finalarray[key]["index"] = count
+	    count++
+	})
+	return {
+	    data:  finalarray,	
+	    count: response.totalRecordCount,
+	    columns: response.columns
+	  }
+	})
+    }
+    else {
+	if(setfilter){
+	    query.skip = 0
+	    setfilter = false
+	}
+	activequery = query
+	return $.ajax({
+	    type: 'GET',
+	    url: url,
+	    data: {
+	        limit: query.pageSize,
+	        offset: query.skip,
+	        sort:  JSON.stringify(sortarray),
+	        match: JSON.stringify(filter)
+	    }
+	}).then(function(response){
+  	    datasource = response
+	    $.each(response.records, function(key, value){
+	        finalarray[key] = {}
+	    $.each(value, function(num, item){	
+	        if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
+	        {
+	            var date = new Date(1000 * item)
+	            finalarray[key][num] = date.toLocaleString()
+	    }
+    else if (num == 'status'){
+        var ToolBar = React.createClass({displayName: "ToolBar",
+            render: function(){
+                return (
+                    React.createElement(ButtonToolbar, null, React.createElement(OverlayTrigger, {trigger: "hover", placement: "bottom", overlay: React.createElement(Popover, null, "open/closed/promoted alerts")}, React.createElement(Button, {bsSize: "xsmall"}, React.createElement("span", {className: "alertgroup"}, React.createElement("span", {className: "alertgroup_open"}, value.open_count), " / ", React.createElement("span", {className: "alertgroup_closed"}, value.closed_count), " / ", React.createElement("span", {className: "alertgroup_promoted"}, value.promoted_count)))))
+
+    )
+    }
+    })
+            finalarray[key][num] = React.createElement(ToolBar, null)
+    }
+
+    else if (num == 'view_count'){
+        finalarray[key]['views'] = item
+    }
+
+	else if(num != 'views'){
+	    finalarray[key][num] = item
+	}
+	})
+	})
+	return {
+	    data: finalarray,	
+	    count: response.totalRecordCount
+	  }
+	})
+	}
+},
+
+       	
     getInitialState: function(){
 	if(this.props.number !== undefined)
 	{
@@ -3713,7 +3862,7 @@ var Subtable = React.createClass({displayName: "Subtable",
 	    supername = supervalue[0]
 	}
         return {
-            viewentries:false, viewentriesid: 0,guideid: 0, setGuide: false, activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
+            setreload: false, viewentries:false, viewentriesid: 0,guideid: 0, setGuide: false, activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: this.dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
     },
     componentDidMount: function(){ 
 	var project = getColumns(this.state.key)
@@ -3846,14 +3995,15 @@ var Subtable = React.createClass({displayName: "Subtable",
         onColumnResize: this.onColumnResize, 
 	    selected: this.state.selected, 
 	    onSelectionChange: this.onSelectionChange, 
-	    defaultPageSize:20 ,
+	    defaultPageSize: 3,
 	    onColumnOrderChange: this.handleColumnOrderChange, 
-	    pagination: false, 
-	    paginationToolbarProps: {pageSizes: [5,10,20]},  
+	    pagination: true, 
+	    paginationToolbarProps: {pageSizes: [3,5]},  
 	    withColumnMenu: true, 
 	    showCellBorders: true,
 	    sortable: false,
-	    rowHeight: 120,
+	    reloadsupertable: this.state.setreload,
+        rowHeight: 120,
 	    rowFactory: rowFact,
         rowStyle: configureTable}
 	)
@@ -3879,7 +4029,7 @@ var Subtable = React.createClass({displayName: "Subtable",
 	});
 	});
 	});
-	this.setState({flair:false})
+	this.setState({flair:false, setreload: false})
     },
    flairOff: function(){
 	$('.subtable'+this.state.key).find('.z-row').each(function(key, value){
@@ -3891,7 +4041,7 @@ var Subtable = React.createClass({displayName: "Subtable",
 	});
 	});
 	});
-	this.setState({flair: true})
+	this.setState({flair: true, setreload: false})
     },
     viewGuide: function(){
     var id;
@@ -3951,19 +4101,19 @@ var Subtable = React.createClass({displayName: "Subtable",
 	})
 	
     if(!this.state.history){
-        this.setState({history:true, historyid:id})
+        this.setState({history:true, historyid:id, setreload:false})
     }
     else {
-        this.setState({history: false, historyid: id})
+        this.setState({history: false, historyid: id, setreload: false})
       } 
     }
    },
    addEntry: function(){
 	if(!this.state.addentry) {
-	    this.setState({addentry: true})
+	    this.setState({addentry: true,setreload: false})
 	}
 	else {
-	    this.setState({addentry: false})
+	    this.setState({addentry: false, setreload: false})
 	}
     },
     openEntry: function(){
@@ -3976,94 +4126,14 @@ var Subtable = React.createClass({displayName: "Subtable",
       })
    })
     if(!this.state.viewentries) {
-	    this.setState({viewentries: true,viewentriesid:id})
+	    this.setState({viewentries: true,viewentriesid:id, setreload: false})
 	}
 	else {
-	    this.setState({viewentries: false})
+	    this.setState({viewentries: false, setreload: false})
 	}
     },
     reloadentry: function(){
-    var getID = []	
-    var finalarray = [];
-	var sortarray = {}
-	sortarray[colsort] = valuesort
-    if(changestate){
-	    var count = 0
-	    return $.ajax({
-	        type: 'GET',
-	        url: url,
-	        data: {
-	            alertgroup: JSON.stringify(supervalue)
-	    }
-	}).success(function(response){
-  	    datasource = response
-	    $.each(datasource.records, function(key, value){
-	        finalarray[key] = {}	
-	        $.each(value, function(num, item){	
-	            if(num == 'id'){
-	                addentrydata = true
-	                finalarray[key]["Entries"] = 7
-	                finalarray[key][num] = item
-	}
-	else if(num == 'when')
-	{
-	    var date = new Date(1000 * item)
-	    finalarray[key][num] = date.toLocaleString()
-	}
-	else if (item == 'promoted'){	
-	var Promote = React.createClass({displayName: "Promote",
-	    render: function() {
-	        return (
-	            React.createElement('button', {className: 'btn btn-warning', onClick: this.launch}, 'promoted')
-	    )
-	},
-	launch: function(){
-    var set;
-	$('.z-selected').each(function(key, value){
-	    $(value).find('.z-cell').each(function(x,y){	  
-	        if($(y).attr('name') == 'id'){
-		        $.ajax({
-			        type: 'GET',
-			        url: '/scot/api/v2/alert/'+$(y).text() + '/event'
-		        }).success(function(response){
-		            $.each(response, function(x,y){
-	                $.each(y, function(key, value){
-		            $.each(value, function(r,s){
-	                if(r == 'id'){
-	                    set = s
-                  }
-	           })
-		})
-		})
-           	window.location = '#/event/' + set
-
-	});
-	}
-	});
-	});
-	}
-	});
-	    finalarray[key][num] = React.createElement(Promote, null)
-	}
-	else{	
-	var Link = React.createClass({displayName: "Link",
-	    render:function(){
-	        return(
-	            React.createElement("div", null, 
-  	                React.createElement("div", {className: "subrender", dangerouslySetInnerHTML: {__html:item}})
-	            )	
-	        )
-	}
-	})
-        finalarray[key][num] = React.createElement(Link, null)
-	}
-	})
-	    finalarray[key]["index"] = count
-	    count++
-	})
-	    this.setState({selected: {}, oneview: false, data:finalarray})
-    }.bind(this))
-    }
+	    this.setState({selected: {}, oneview: false, setreload: true})
     },
     openSelected: function(){
 	var data = new Object();
@@ -4121,7 +4191,7 @@ var Subtable = React.createClass({displayName: "Subtable",
 	function() {
 	    this.reloadentry()
 	}.bind(this), 1000)
-	    this.setState({})
+	    this.setState({setreload: false})
 	    window.open(data_uri)
     },
     deleteSelected: function(){
@@ -4134,7 +4204,7 @@ var Subtable = React.createClass({displayName: "Subtable",
 	var col = this.state.columns[index]
 	this.state.columns.splice(index,1)
 	this.state.columns.splice(dropIndex, 0, col)
-	this.setState({})
+	this.setState({setreload: false})
 	},
     onSelectionChange: function(newSelection, data){
     var SELECTED_ID_GRID = {}
@@ -4149,10 +4219,10 @@ var Subtable = React.createClass({displayName: "Subtable",
     })
 	var ids = selected.length? selected.join(',') : 'none'
 	storealertids = ids.split(',')		
-    this.setState({selected: SELECTED_ID_GRID, oneview:true,setcss: false})
+    this.setState({setreload: false,selected: SELECTED_ID_GRID, oneview:true,setcss: false})
 	},
     closeHistory: function(){
-	this.setState({history: false})	
+	this.setState({history: false,setreload: false})	
     }
 });
 
@@ -42575,7 +42645,7 @@ module.exports = function () {
         headerPadding: '10px 5px',
         filterIconColor: '#6EB8F1',
         menuIconColor: '#6EB8F1',
-        scrollbarSize: 20,
+        scrollbarSize: null,
 
         scrollBy: undefined,
         virtualRendering: true,
@@ -42709,7 +42779,8 @@ module.exports = React.createClass({
         cellEllipsis: React.PropTypes.bool,
         sortable: React.PropTypes.bool,
         loadMaskOverHeader: React.PropTypes.bool,
-	setColumns: React.PropTypes.bool,
+	    setColumns: React.PropTypes.bool,
+        reloadsupertable: React.PropTypes.bool,
         idProperty: React.PropTypes.string.isRequired,
 
         //you can customize the column menu by specifying a factory
@@ -43010,9 +43081,23 @@ module.exports = React.createClass({
     },
 
     render: function render() {
+       setTimeout(function(){$('.z-table').each(function(key, value){
+       $(value).find('.z-content').each(function(x,y){
+        if($(y).text() == 'closed'){
+            $(y).css({'color':'green', 'font-weight' : 'bold'})
+        }
+        else if($(y).text() == 'open'){
+            $(y).css({'color' : 'red', 'font-weight':'bold'})
+        }
+        else {
+            $(y).css('color', 'black')
+        }
+        })
+        })
+        },100)
         var props = this.prepareProps(this.props, this.state);	
         this.p = props;
-	this.data = props.data;
+	    this.data = props.data;
         this.dataSource = props.dataSource;
         var header = this.prepareHeader(props, this.state);
         var wrapper = this.prepareWrapper(props, this.state);
@@ -43165,7 +43250,7 @@ module.exports = React.createClass({
             ref: 'wrapper',
             onMount: this.onWrapperMount,
             scrollLeft: state.scrollLeft,
-            scrollTop: this.scrollTop,
+            //scrollTop: this.scrollTop,
             topOffset: state.topOffset,
             startIndex: startIndex,
             totalLength: totalLength,
@@ -43237,7 +43322,9 @@ module.exports = React.createClass({
 
     prepareLoading: function prepareLoading(props) {
         var showLoadMask = props.showLoadMask || !this.isMounted(); //ismounted check for initial load
-        return props.loading == null ? showLoadMask && this.state.defaultLoading : props.loading;
+        if(!props.reloadsupertable){
+            return props.loading == null ? showLoadMask && this.state.defaultLoading : props.loading;
+        }
     },
 
     preparePaging: function preparePaging(props, state) {
@@ -43298,7 +43385,7 @@ module.exports = React.createClass({
         }
 
         if (isArray(props.dataSource)) {
-            data = props.dataSource;
+            data = null;
         }
 
         data = data == null ? this.state.defaultData : data;
@@ -43574,6 +43661,9 @@ module.exports = React.createClass({
     componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
         this.rowCache = {};
         this.groupData(nextProps);
+        if(nextProps.reloadsupertable){
+            this.reload()
+        }
 
         if (this.isRemoteDataSource(nextProps)) {
             var otherPage = this.props.page != nextProps.page;
