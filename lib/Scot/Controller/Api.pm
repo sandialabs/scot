@@ -15,6 +15,7 @@ use Data::Dumper;
 use Try::Tiny;
 use DateTime;
 use Mojo::JSON qw(decode_json encode_json);
+use Data::Dumper::HTML qw(dumper_html);
 use strict;
 use warnings;
 use base 'Mojolicious::Controller';
@@ -539,15 +540,9 @@ sub tablify {
     my $self    = shift;
     my $title   = shift;
     my $href    = shift;
-    my $html    = "<h2>$title</h2>\n".
-                  "<table class=\"entity_data\">\n";
-    foreach my $key (sort keys %$href) {
-        my $value  = $href->{$key};
-        $html .= "  <tr>\n".
-                 "   <th>$key</th><td>$value</td>\n".
-                 "  </tr>\n";
-    }
-    $html .= "</table>\n";
+    my $html    = qq{<div style="font-family: monospace">\n};
+    $html .= dumper_html($href);
+    $html .= "</div>\n";
     return $html;
 }
 
@@ -888,6 +883,8 @@ sub update {
         status  => "successfully updated",
     });
 
+    $log->trace("Checking Historable...");
+
     if ( $object->meta->does_role("Scot::Role::Historable") ) {
         $log->debug("Historable object!  let's write history...");
         $mongo->collection('History')->add_history_entry({
@@ -898,7 +895,12 @@ sub update {
         });
     }
 
+    $log->trace("Audit...");
+
     $self->audit("update_thing", $req_href);
+
+    $log->trace("mq messages...");
+
     $env->mq->send("scot", {
         action  => "updated",
         data    => {
@@ -1866,6 +1868,7 @@ sub audit {
     my $env         = $self->env;
     my $mongo       = $env->mongo;
     my $col         = $mongo->collection('Audit');
+    $env->log->debug("creating audit record");
     my $audit       = $col->create({
         who     => $self->session('user') // 'unknown',
         when    => $env->now(),

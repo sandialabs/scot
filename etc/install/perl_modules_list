@@ -77,3 +77,4 @@ Test::JSON
 Math::Int128
 Net::Works::Network
 MaxMind::DB::Reader::XS
+Data::Dumper::HTML
