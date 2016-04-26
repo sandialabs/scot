@@ -1988,14 +1988,25 @@ sub supertable {
     my $alertcol    = $mongo->collection('Alert');
     my $match_ref   = { alertgroup   => { '$in'  => \@alertgroup_ids } };
     my $cursor      = $alertcol->find($match_ref);
+    
+    if ( my $limit  = $self->build_limit($req_params) ) {
+        $cursor->limit($limit);
+    }
+    else {
+        $cursor->limit(50);
+    }
+
+    if ( my $offset = $self->build_offset($req_params) ) {
+        $cursor->skip($offset);
+    }
     while ( my $alert = $cursor->next ) {
         # $log->debug("Alert ", {filter=>\&Dumper, value=>$alert});
 
         my $href    = {
             when        => $alert->when,
             alertgroup  => $alert->alertgroup,
-	        status 	=> $alert->status,
-	        id		=> $alert->id,
+	        status 	    => $alert->status,
+	        id		    => $alert->id,
         };
         
         my $data    = $alert->data_with_flair // $alert->data;
@@ -2016,7 +2027,7 @@ sub supertable {
         records             => \@rows,
         columns             => \@columns,
         queryRecordCount    => scalar(@rows),
-        totalRecordCount    => scalar(@rows),
+        totalRecordCount    => $cursor->count,
     });
 }
 
