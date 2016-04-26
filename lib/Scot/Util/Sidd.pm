@@ -180,5 +180,18 @@ sub get_data {
     return $href;
 }
 
+sub list_identifiers_of_type {
+    my $self    = shift;
+    my $type    = shift;
+    my $limit   = shift // 100;
+
+    my $col = $self->client->get_database('sidd')->get_collection('sidd');
+    my $cursor  = $self->try_mongo_op(
+        find    => sub {$col->find({}); }
+    );
+    $cursor->limit($limit);
+    return map { $_->{identifier} } $cursor->all;
+}
+
 1;
 

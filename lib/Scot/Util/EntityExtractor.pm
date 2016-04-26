@@ -397,52 +397,56 @@ sub process_words {
 
 
                 my $pre     = substr($word, 0, $-[0]);
-                if ( $pre ) {
-                    $log->debug(" "x$level." Insert prematch text ".$pre);
-                    push @new, $pre;
-                }
-
                 my $match   = substr($word, $-[0], $+[0] - $-[0]);
+                my $post    = substr($word, $+[0]);
+                
+                my $processed_match;
+
 
                 if ( $type eq "ipaddr" ) {
                     # remove the obsfucating [.] or {.} or (.)
-                    $match  = $self->ipaddr_processing($match);
+                    $processed_match = $self->ipaddr_processing($match);
                 }
+
                 if ( $type eq "domain" ) { 
-                    # remove the obsfucation [.] or {.} or (.)
-                    $match = $self->domain_processing($match);
+                    $processed_match = $self->domain_processing($match);
                 }
 
-                my $flair   = $self->do_span($type, $match);
+                if ( defined $processed_match ) {
 
-                $log->debug(" "x$level." Insert Match flair ". $flair->as_HTML);
-                push @new, $flair;
+                    my $flair   = $self->do_span($type, $processed_match);
+                    $log->debug(" "x$level." Insert Match flair ". 
+                            $flair->as_HTML);
 
-                push @{$dbhref->{entities}}, 
-                        { value => lc($match), type => $type };
+                    push @new, $pre     if ($pre);
+                    push @new, $flair;
+                    push @new, $post    if ($post);
 
-                my $post    = substr($word, $+[0]);
-                if ( $post ) {
-                    $log->debug(" "x$level." Insert post text ".$post);
-                    push @new, $post;
-                }
+                    push @{$dbhref->{entities}}, 
+                            { value => lc($processed_match), type => $type };
 
-                # place a space entry after this word if there are space entries
-                my $next_space  = shift @spaces;
-                if ( $next_space ) {# insert the proper space element
-                    # $log->debug(" "x$level."inserting space...");
-                    push @new, $next_space;
+                    # place a space entry after this word if there 
+                    # are space entries
+                    my $next_space  = shift @spaces;
+                    if ( $next_space ) {# insert the proper space element
+                        # $log->debug(" "x$level."inserting space...");
+                        push @new, $next_space;
+                    }
+                    else {
+                        push @new, ' '; # assume a space
+                    }
+
+                    $flairflag++;
+                
+                    last REGEX; 
+                    # only match one thing.  later 
+                    # we will have to put special match cases for
+                    # emails with domains, recursive domains, etc.
                 }
                 else {
-                    push @new, ' '; # assume a space
+                    # like it never happened?
+                    next REGEX;
                 }
-
-                $flairflag++;
-                
-                last REGEX; 
-                # only match one thing.  later 
-                # we will have to put special match cases for
-                # emails with domains, recursive domains, etc.
             }
         }
         unless ($flairflag) {
@@ -494,18 +498,29 @@ sub domain_processing {
     my $self    = shift;
     my $domain  = shift;
     my @parts   = split (/[\[\{\(]*\.[\]\}\)]*/, $domain);
+    my $log     = $self->env->log;
 
-    return join('.',@parts);
+    my $reassembled = join('.', @parts);
+
+    $log->warn("checking public_suffix for $reassembled");
+    if ( public_suffix($reassembled) ) {
+        $log->warn('its valid');
+        return $reassembled;
+    }
+    $log->error("public suffix doesn't recognize");
+    return undef;
 }
 
 sub do_span {
     my $self    = shift;
     my $type    = shift;
     my $text    = shift;
+    my $log     = $self->env->log;
+    my $class   = "entity $type";
 
     my $element = HTML::Element->new(
         'span',
-        'class'     => "entity $type",
+        'class'     => $class,
         'data-entity-type'  => $type,
         'data-entity-value' => $text,
     );

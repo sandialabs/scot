@@ -314,9 +314,15 @@ EOF
 
     if [ $REFRESH_AMQ_CONFIG == "yes" ]; then
         echo "+ adding/refreshing scot activemq config"
+        echo "- removing $AMQDIR/webapps/scot"
+        rm -rf $AMQDIR/webapps/scot
+        echo "- removing $AMQDIR/webapps/scotaq"
+        rm -rf $AMQDIR/webapps/scotaq
         cp $DEVDIR/etc/scotamq.xml     $AMQDIR/conf
         cp $DEVDIR/etc/jetty.xml       $AMQDIR/conf
+        echo "+ copying $DEVDIR/etc/scotaq to $AMQDIR/webapps"
         cp -R $DEVDIR/etc/scotaq       $AMQDIR/webapps
+        echo "+ renaming $AMQDIR/webapps/scotaq to $AMQDIR/webapps/scot"
         mv $AMQDIR/webapps/scotaq      $AMQDIR/webapps/scot
         cp $DEVDIR/etc/activemq-init   /etc/init.d/activemq
         chmod +x /etc/init.d/activemq
