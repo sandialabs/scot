@@ -324,7 +324,6 @@ var Subtable = React.createClass({
     var count = 0
 	querysize = query.pageSize
     querypage = query.skip
-    console.log(supervalue)
     return $.ajax({
 	    type: 'GET',
 	    url: url,
@@ -605,10 +604,11 @@ var Subtable = React.createClass({
         onColumnResize: this.onColumnResize, 
 	    selected: this.state.selected, 
 	    onSelectionChange: this.onSelectionChange, 
-	    defaultPageSize: 3,
-	    onColumnOrderChange: this.handleColumnOrderChange, 
-	    pagination: true, 
-	    paginationToolbarProps: {pageSizes: [3,5]},  
+	    defaultPageSize: 10,
+	    callbackkey: this.state.key,
+        onColumnOrderChange: this.handleColumnOrderChange, 
+        pagination: true, 
+	    paginationToolbarProps: {pageSizes: [3,5,10]},  
 	    withColumnMenu: true, 
 	    showCellBorders: true,
 	    sortable: false,
