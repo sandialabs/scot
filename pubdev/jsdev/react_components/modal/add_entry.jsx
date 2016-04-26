@@ -380,7 +380,7 @@ var AddEntryModal = React.createClass({
 	$.ajax({
 	type: 'put',
 	url: '/scot/api/v2/entry/'+this.props.id,
-	data: JSON.stringify(data)
+	data: data
 	}).success(function(response){
         if(finalfiles.length > 0){
 			for(var i = 0; i<finalfiles.length; i++){	
