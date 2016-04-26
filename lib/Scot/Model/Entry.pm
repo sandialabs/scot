@@ -20,6 +20,7 @@ with    qw(
     Scot::Role::Body
     Scot::Role::Entitiable
     Scot::Role::Hashable
+    Scot::Role::Historable
     Scot::Role::Parsed
     Scot::Role::Permission
     Scot::Role::Target
