@@ -176,14 +176,14 @@ var EntityEventReferences = React.createClass({
         return (
             <div>
                 <h4>AlertGroups</h4>
-                <DataGrid idProperty='id' dataSource={this.state.entityDataAlertGroup} columns={alertColumns} style={{height:this.state.defaultAlertGroupHeight}} onSelectionChange={this.onAlertGroupSelectionChange} selected={this.state.selected} emptyText={'No records'} loading={this.state.entityDataAlertGroupLoading} rowFactory={rowFact} loadMaskOverHeader={false}/>
+                <DataGrid idProperty='id' data={this.state.entityDataAlertGroup} columns={alertColumns} style={{height:this.state.defaultAlertGroupHeight}} onSelectionChange={this.onAlertGroupSelectionChange} selected={this.state.selected} emptyText={'No records'} loading={this.state.entityDataAlertGroupLoading} rowFactory={rowFact} loadMaskOverHeader={false}/>
                 <div style={{marginTop:'90px'}}>
                     <h4>Events</h4>
-                    <DataGrid idProperty='id' dataSource={this.state.entityDataEvent} columns={columns} style={{height:this.state.defaultEventHeight}} onSelectionChange={this.onEventSelectionChange} selected={this.state.selected} emptyText={'No records'} loading={this.state.entityDataEventLoading} rowFactory={rowFact} loadMaskOverHeader={false}/>
+                    <DataGrid idProperty='id' data={this.state.entityDataEvent} columns={columns} style={{height:this.state.defaultEventHeight}} onSelectionChange={this.onEventSelectionChange} selected={this.state.selected} emptyText={'No records'} loading={this.state.entityDataEventLoading} rowFactory={rowFact} loadMaskOverHeader={false}/>
                 </div>
                 <div style={{marginTop:'90px'}}>
                     <h4>Incidents</h4>
-                    <DataGrid idProperty='id' dataSource={this.state.entityDataIncident} columns={columns} style={{height:this.state.defaultIncidentHeight}} onSelectionChange={this.onIncidentSelectionChange} selected={this.state.selected} emptyText={'No records'} loading={this.state.entityDataIncidentLoading} rowFactory={rowFact} loadMaskOverHeader={false}/>
+                    <DataGrid idProperty='id' data={this.state.entityDataIncident} columns={columns} style={{height:this.state.defaultIncidentHeight}} onSelectionChange={this.onIncidentSelectionChange} selected={this.state.selected} emptyText={'No records'} loading={this.state.entityDataIncidentLoading} rowFactory={rowFact} loadMaskOverHeader={false}/>
                 </div>
             </div>
         )
