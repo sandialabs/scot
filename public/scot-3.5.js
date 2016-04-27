@@ -227,7 +227,7 @@ function update(state, callback, payload){
         activemqid = payload.action.activemq.data.id
         activemqtype = state
         callback.emitChange('intelgroup')
-        callback.emitChange(payload.action.activemq.data.id)
+        //callback.emitChange(payload.action.activemq.data.id)
         callback.emitChange('taskgroup')
         callback.emitChange('selectedHeaderEntry');
         callback.emitChange('alertgroupnotification')
@@ -3650,15 +3650,16 @@ const  customStyles = {
     }
 }
 function dataSource(query){
-    var getID = []	
+    var getID = []
     var finalarray = [];
 	var sortarray = {}
 	sortarray[colsort] = valuesort
 	if(changestate){
     var count = 0
+    supervalue = []
+    supervalue.push(query.key)
 	querysize = query.pageSize
     querypage = query.skip
-    console.log(query)
     return $.ajax({
 	    type: 'GET',
 	    url: url,
@@ -3733,6 +3734,7 @@ function dataSource(query){
 	    finalarray[key]["index"] = count
 	    count++
 	})
+    alertgroupforentity = true
 	return {
 	    data:  finalarray,	
 	    count: response.totalRecordCount,
@@ -3870,150 +3872,6 @@ function getColumns(key)
 
 
 var Subtable = React.createClass({displayName: "Subtable",
-    dataSource: function(query){
-    var getID = []	
-    var finalarray = [];
-	var sortarray = {}
-	sortarray[colsort] = valuesort
-	if(changestate){
-    var count = 0
-	querysize = query.pageSize
-    querypage = query.skip
-    return $.ajax({
-	    type: 'GET',
-	    url: url,
-	    data: {
-                limit: query.pageSize,
-	            offset: query.skip,
-	            alertgroup: JSON.stringify(supervalue)
-	}
-	}).then(function(response){
-  	    datasource = response
-	    $.each(datasource.records, function(key, value){
-	        finalarray[key] = {}
-	
-	$.each(value, function(num, item){	
-	if(num == 'id'){
-	    addentrydata = true
-	    finalarray[key]["Entries"] = 7
-	    finalarray[key][num] = item
-	}
-	else if(num == 'when')
-	{
-	    var date = new Date(1000 * item)
-	    finalarray[key][num] = date.toLocaleString()
-	}
-	else if (item == 'promoted'){	
-	var Promote = React.createClass({displayName: "Promote",
-	render: function() {
-	    return (
-	        React.createElement('button', {className: 'btn btn-warning', onClick: this.launch}, 'promoted')
-	    )
-	},
-	launch: function(){
-    var set;
-	$('.z-selected').each(function(key, value){
-	$(value).find('.z-cell').each(function(x,y){	  
-	    if($(y).attr('name') == 'id'){
-		$.ajax({
-			type: 'GET',
-			url: '/scot/api/v2/alert/'+$(y).text() + '/event'
-		}).success(function(response){
-		    $.each(response, function(x,y){
-	        $.each(y, function(key, value){
-		    $.each(value, function(r,s){
-	            if(r == 'id'){
-                    set = s
-	            }
-	           })
-        })
-	})   	
-        window.location = '#/event/' + set
-	});
-	}
-	});
-	});
-	}
-	});
-	    finalarray[key][num] = React.createElement(Promote, null)
-	}
-	else{	
-	var Link = React.createClass({displayName: "Link",
-	render:function(){
-	return(
-        React.createElement("div", null, 
-  	        React.createElement("div", {className: "subrender", dangerouslySetInnerHTML: {__html:item}})
-	    )	
-	)
-	}
-	})
-        finalarray[key][num] = React.createElement(Link, null)
-	}
-	})
-	    finalarray[key]["index"] = count
-	    count++
-	})
-	return {
-	    data:  finalarray,	
-	    count: response.totalRecordCount,
-	    columns: response.columns
-	  }
-	})
-    }
-    else {
-	if(setfilter){
-	    query.skip = 0
-	    setfilter = false
-	}
-	activequery = query
-	return $.ajax({
-	    type: 'GET',
-	    url: url,
-	    data: {
-	        limit: query.pageSize,
-	        offset: query.skip,
-	        sort:  JSON.stringify(sortarray),
-	        match: JSON.stringify(filter)
-	    }
-	}).then(function(response){
-  	    datasource = response
-	    $.each(response.records, function(key, value){
-	        finalarray[key] = {}
-	    $.each(value, function(num, item){	
-	        if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
-	        {
-	            var date = new Date(1000 * item)
-	            finalarray[key][num] = date.toLocaleString()
-	    }
-    else if (num == 'status'){
-        var ToolBar = React.createClass({displayName: "ToolBar",
-            render: function(){
-                return (
-                    React.createElement(ButtonToolbar, null, React.createElement(OverlayTrigger, {trigger: "hover", placement: "bottom", overlay: React.createElement(Popover, null, "open/closed/promoted alerts")}, React.createElement(Button, {bsSize: "xsmall"}, React.createElement("span", {className: "alertgroup"}, React.createElement("span", {className: "alertgroup_open"}, value.open_count), " / ", React.createElement("span", {className: "alertgroup_closed"}, value.closed_count), " / ", React.createElement("span", {className: "alertgroup_promoted"}, value.promoted_count)))))
-
-    )
-    }
-    })
-            finalarray[key][num] = React.createElement(ToolBar, null)
-    }
-
-    else if (num == 'view_count'){
-        finalarray[key]['views'] = item
-    }
-
-	else if(num != 'views'){
-	    finalarray[key][num] = item
-	}
-	})
-	})
-	return {
-	    data: finalarray,	
-	    count: response.totalRecordCount
-	  }
-	})
-	}
-},
-
        	
     getInitialState: function(){
 	if(this.props.number !== undefined)
@@ -4026,7 +3884,7 @@ var Subtable = React.createClass({displayName: "Subtable",
 	    supername = supervalue[0]
 	}
         return {
-            setreload: false, viewentries:false, viewentriesid: 0,guideid: 0, setGuide: false, activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: this.dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
+            setreload: false, viewentries:false, viewentriesid: 0,guideid: 0, setGuide: false, activemq: false, selected: {}, flair: false, key: supername, viewby: [],historyid: 0, history: false, edit: false, stagecolor : 'black',enable:true, enablesave: false, modaloptions: [{value:"Please Save Entry First", label:"Please Save Entry First"}],addentry: false, reload: false, data: dataSource, back: false, columns: [],oneview: false,options:[ {value: 'Flair Off', label: 'Flair Off'}, {value: 'View Guide', label: 'View Guide'}, {value: 'View Source', label: 'View Source'}, {value:'View History', label: 'View History'}, {value: 'Add Entry', label: 'Add Entry'}, {value: 'Open Selected', label: 'Open Selected'}, {value:'Closed Selected', label: 'Closed Selected'}, {value:'Promote Selected', label:'Promote Selected'}, {value: 'Add Selected to existing event', label: 'Add Selected to existing event'}, {value: 'Export to CSV', label: 'Export to CSV'}, {value: 'Delete Selected', label: 'Delete Selected'}]}
     },
     componentDidMount: function(){ 
 	var project = getColumns(this.state.key)
@@ -4161,6 +4019,7 @@ var Subtable = React.createClass({displayName: "Subtable",
 	    onSelectionChange: this.onSelectionChange, 
 	    defaultPageSize: 10,
 	    callbackkey: this.state.key,
+        toolbarname: '.subtable'+this.state.key,
         onColumnOrderChange: this.handleColumnOrderChange, 
         pagination: true, 
 	    paginationToolbarProps: {pageSizes: [3,5,10]},  
@@ -4298,7 +4157,7 @@ var Subtable = React.createClass({displayName: "Subtable",
 	}
     },
     reloadentry: function(){
-	    this.setState({selected: {}, oneview: false, setreload: true})
+        this.setState({selected: {}, oneview: false, setreload: true, callbackkey: supervalue[0]})
     },
     openSelected: function(){
 	var data = new Object();
@@ -42896,7 +42755,7 @@ var renderMenu = require('./render/renderMenu');
 var preventDefault = require('./utils/preventDefault');
 var Store = require('../../../jsdev/react_components/activemq/store.jsx')
 var isArray = Array.isArray;
-
+var array = [];var array = [];
 var SIZING_ID = '___SIZING___';
 var check = false
 var nextpage;
@@ -43224,7 +43083,7 @@ module.exports = React.createClass({
             toggleColumn: this.toggleColumn.bind(this, props),
             showMenu: this.showMenu,
             filterMenuFactory: this.filterMenuFactory,
-	    calendarFactory:   this.calendarFactory,
+	        calendarFactory:   this.calendarFactory,
             menuColumn: state.menuColumn,
             columnMenuFactory: props.columnMenuFactory
 
@@ -43261,6 +43120,10 @@ module.exports = React.createClass({
     },
 
     render: function render() {
+      $(this.props.toolbarname).find('.react-datagrid-pagination-toolbar').attr('id',this.props.callbackkey)
+      $(this.props.toolbarname).find('.react-datagrid-pagination-toolbar').click(function(event){
+        nextpage = $(this.props.toolbarname).find('.react-datagrid-pagination-toolbar').attr('id') 
+      }.bind(this))
        setTimeout(function(){$('.z-table').each(function(key, value){
        $(value).find('.z-content').each(function(x,y){
         if($(y).text() == 'closed'){
@@ -43352,10 +43215,12 @@ module.exports = React.createClass({
 
         return result;
     },
-    reload2: function(){
-       this.reload()
-       Store.emitChange(nextpage)
 
+    reload2: function(){
+      setTimeout(function(){
+            this.reload()
+            Store.emitChange(nextpage)
+      }.bind(this), 1000)
     },
     getTableProps: function getTableProps(props, state) {
         var table;
@@ -43741,7 +43606,8 @@ module.exports = React.createClass({
             assign(dataSourceQuery, {
                 pageSize: pageSize,
                 page: page,
-                skip: (page - 1) * pageSize
+                skip: (page - 1) * pageSize,
+                key: this.props.callbackkey
             });
         }
 
@@ -43817,7 +43683,7 @@ module.exports = React.createClass({
                     }
 
                     if (count != null) {
-			newState.columns = props.columns
+			            newState.columns = props.columns
                         newState.defaultDataSourceCount = count;
                     }
                     this.setState(newState);
@@ -43839,7 +43705,6 @@ module.exports = React.createClass({
     componentWillMount: function componentWillMount() {
         this.rowCache = {};
         this.groupData(this.props);
-        nextpage = this.props.callbackkey
         if (this.isRemoteDataSource(this.props)) {
             this.loadDataSource(this.props.dataSource, this.props);
         }
