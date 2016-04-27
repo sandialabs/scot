@@ -179,7 +179,6 @@ function dataSource(query){
 	    finalarray[key]["index"] = count
 	    count++
 	})
-    alertgroupforentity = true
 	return {
 	    data:  finalarray,	
 	    count: response.totalRecordCount,
@@ -381,6 +380,7 @@ var Subtable = React.createClass({
           }
         })
       }
+      this.setState({setreload:false})
    },
    viewEntries: function(){
 
@@ -427,6 +427,7 @@ var Subtable = React.createClass({
 	    const rowFact = (rowProps) => {
 	        rowProps.onDoubleClick = this.openEntry
 	    }
+
     $('.mac-fix').css('position', 'relative')	
 	$('.z-table').each(function(key,value){
 	    $(value).find('.z-cell').each(function(x,y){
@@ -462,7 +463,7 @@ var Subtable = React.createClass({
         onColumnResize: this.onColumnResize, 
 	    selected: this.state.selected, 
 	    onSelectionChange: this.onSelectionChange, 
-	    defaultPageSize: 10,
+	    defaultPageSize: 3,
 	    callbackkey: this.state.key,
         toolbarname: '.subtable'+this.state.key,
         onColumnOrderChange: this.handleColumnOrderChange, 
