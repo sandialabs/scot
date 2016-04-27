@@ -3360,14 +3360,14 @@ var EntityEventReferences = React.createClass({displayName: "EntityEventReferenc
         return (
             React.createElement("div", null, 
                 React.createElement("h4", null, "AlertGroups"), 
-                React.createElement(DataGrid, {idProperty: "id", dataSource: this.state.entityDataAlertGroup, columns: alertColumns, style: {height:this.state.defaultAlertGroupHeight}, onSelectionChange: this.onAlertGroupSelectionChange, selected: this.state.selected, emptyText: 'No records', loading: this.state.entityDataAlertGroupLoading, rowFactory: rowFact, loadMaskOverHeader: false}), 
+                React.createElement(DataGrid, {idProperty: "id", data: this.state.entityDataAlertGroup, columns: alertColumns, style: {height:this.state.defaultAlertGroupHeight}, onSelectionChange: this.onAlertGroupSelectionChange, selected: this.state.selected, emptyText: 'No records', loading: this.state.entityDataAlertGroupLoading, rowFactory: rowFact, loadMaskOverHeader: false}), 
                 React.createElement("div", {style: {marginTop:'90px'}}, 
                     React.createElement("h4", null, "Events"), 
-                    React.createElement(DataGrid, {idProperty: "id", dataSource: this.state.entityDataEvent, columns: columns, style: {height:this.state.defaultEventHeight}, onSelectionChange: this.onEventSelectionChange, selected: this.state.selected, emptyText: 'No records', loading: this.state.entityDataEventLoading, rowFactory: rowFact, loadMaskOverHeader: false})
+                    React.createElement(DataGrid, {idProperty: "id", data: this.state.entityDataEvent, columns: columns, style: {height:this.state.defaultEventHeight}, onSelectionChange: this.onEventSelectionChange, selected: this.state.selected, emptyText: 'No records', loading: this.state.entityDataEventLoading, rowFactory: rowFact, loadMaskOverHeader: false})
                 ), 
                 React.createElement("div", {style: {marginTop:'90px'}}, 
                     React.createElement("h4", null, "Incidents"), 
-                    React.createElement(DataGrid, {idProperty: "id", dataSource: this.state.entityDataIncident, columns: columns, style: {height:this.state.defaultIncidentHeight}, onSelectionChange: this.onIncidentSelectionChange, selected: this.state.selected, emptyText: 'No records', loading: this.state.entityDataIncidentLoading, rowFactory: rowFact, loadMaskOverHeader: false})
+                    React.createElement(DataGrid, {idProperty: "id", data: this.state.entityDataIncident, columns: columns, style: {height:this.state.defaultIncidentHeight}, onSelectionChange: this.onIncidentSelectionChange, selected: this.state.selected, emptyText: 'No records', loading: this.state.entityDataIncidentLoading, rowFactory: rowFact, loadMaskOverHeader: false})
                 )
             )
         )
