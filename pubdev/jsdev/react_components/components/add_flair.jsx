@@ -27,6 +27,7 @@ var AddFlair = {
                                             var entityType = entityResult[currentEntityValue.toLowerCase()].type;
                                             var entityid = entityResult[currentEntityValue.toLowerCase()].id;
                                             var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
+                                            var entitydata = entityResult[currentEntityValue.toLowerCase()].data;
                                             var circle = $('<span class="noselect">');
                                             circle.addClass('circleNumber');
                                             circle.addClass('extras');
@@ -34,6 +35,21 @@ var AddFlair = {
                                             $(entity).append(circle);
                                             $(entity).attr('data-entity-id',entityid)
                                             $(entity).unbind('click');
+                                            if (entitydata !== undefined) {
+                                                if (entitydata.geoip !== undefined) {
+                                                    if (entitydata.geoip.isocode !== undefined) {
+                                                        var country_code;
+                                                        if (entitydata.geoip.isp == 'Sandia National Laboratories') {
+                                                            country_code = 'sandia';    
+                                                        } else {
+                                                            country_code = entitydata.geoip.isocode;
+                                                        }
+                                                        var flag = $('<img class="noselect">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
+                                                        flag.addClass('extras');
+                                                        $(entity).append(flag);
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }.bind(this));
