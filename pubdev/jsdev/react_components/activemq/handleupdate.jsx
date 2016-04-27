@@ -138,7 +138,7 @@ function update(state, callback, payload){
         activemqid = payload.action.activemq.data.id
         activemqtype = state
         callback.emitChange('intelgroup')
-        callback.emitChange(payload.action.activemq.data.id)
+       // callback.emitChange(payload.action.activemq.data.id)
         callback.emitChange('taskgroup')
         callback.emitChange('selectedHeaderEntry');
         callback.emitChange('alertgroupnotification')

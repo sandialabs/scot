@@ -227,7 +227,7 @@ function update(state, callback, payload){
         activemqid = payload.action.activemq.data.id
         activemqtype = state
         callback.emitChange('intelgroup')
-        //callback.emitChange(payload.action.activemq.data.id)
+       // callback.emitChange(payload.action.activemq.data.id)
         callback.emitChange('taskgroup')
         callback.emitChange('selectedHeaderEntry');
         callback.emitChange('alertgroupnotification')
@@ -3766,7 +3766,6 @@ function dataSource(query){
 	    finalarray[key]["index"] = count
 	    count++
 	})
-    alertgroupforentity = true
 	return {
 	    data:  finalarray,	
 	    count: response.totalRecordCount,
@@ -3968,6 +3967,7 @@ var Subtable = React.createClass({displayName: "Subtable",
           }
         })
       }
+      this.setState({setreload:false})
    },
    viewEntries: function(){
 
@@ -4014,6 +4014,7 @@ var Subtable = React.createClass({displayName: "Subtable",
 	    const rowFact = (rowProps) => {
 	        rowProps.onDoubleClick = this.openEntry
 	    }
+
     $('.mac-fix').css('position', 'relative')	
 	$('.z-table').each(function(key,value){
 	    $(value).find('.z-cell').each(function(x,y){
@@ -4049,7 +4050,7 @@ var Subtable = React.createClass({displayName: "Subtable",
         onColumnResize: this.onColumnResize, 
 	    selected: this.state.selected, 
 	    onSelectionChange: this.onSelectionChange, 
-	    defaultPageSize: 10,
+	    defaultPageSize: 3,
 	    callbackkey: this.state.key,
         toolbarname: '.subtable'+this.state.key,
         onColumnOrderChange: this.handleColumnOrderChange, 
@@ -43244,7 +43245,7 @@ module.exports = React.createClass({
             renderMenu(menuProps),
             bottomToolbar
         );
-
+        alertgroupforentity = true
         return result;
     },
 
@@ -43403,7 +43404,7 @@ module.exports = React.createClass({
 
     prepareLoading: function prepareLoading(props) {
         var showLoadMask = props.showLoadMask || !this.isMounted(); //ismounted check for initial load
-        if(!props.reloadsupertable){
+        if(props.reloadsupertable){
             return props.loading == null ? showLoadMask && this.state.defaultLoading : props.loading;
         }
     },
@@ -55785,12 +55786,12 @@ var ExpandableNavPage = React.createClass({displayName: "ExpandableNavPage",
     return {
       fullStyle: {
         paddingTop: 0,
-        paddingBottom: 10,
+        //paddingBottom: 10,
         paddingLeft: 239
       },
       smallStyle: {
         paddingTop: 0,
-        paddingBottom: 10,
+        //paddingBottom: 10,
         paddingLeft: 45
       }
     };
