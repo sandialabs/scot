@@ -5,8 +5,10 @@ var ButtonGroup             = require('react-bootstrap/lib/ButtonGroup');
 var Tabs                    = require('react-bootstrap/lib/Tabs');
 var Tab                     = require('react-bootstrap/lib/Tab');
 var DataGrid                = require('react-datagrid');
+var Inspector               = require('react-inspector');
 var SelectedEntry           = require('../entry/selected_entry.jsx');
 var AddEntryModal           = require('./add_entry.jsx');
+
 const customStyles = {
     content : {
         top     : '50%',
@@ -42,7 +44,7 @@ var Flair = React.createClass({
                         <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> :null }</h3>
                     </div>
                     <div className="modal-body" style={{height: '80vh', overflowY:'auto',width:'800px'}}>
-                        <EntityBody data={this.state.entityData} entityid={this.props.entityid} entryToggle={this.entryToggle}/> 
+                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.props.entityid} entryToggle={this.entryToggle}/> :null} 
                     </div>
                     <div className="modal-footer">
                         <Button onClick={this.props.flairToolbarToggle}>Done</Button>
@@ -69,16 +71,6 @@ var EntityValue = React.createClass({
     }
 });
 
-var EntityOptions = React.createClass({
-    render: function() {
-        return (
-            <ButtonGroup>
-                <Button>Search Splunk</Button>
-            </ButtonGroup>
-        )
-    }
-});
-
 var EntityBody = React.createClass({
     getInitialState: function() {
         return {
@@ -87,18 +79,34 @@ var EntityBody = React.createClass({
         }
     }, 
     render: function() {
-        var type = 'entity';
+        var entityEnrichmentArr = [];
+        var enrichmentEventKey = 3;
+        if (this.props.data != undefined) {
+            var entityData = this.props.data['data'];
+            for (var prop in entityData) {
+                entityEnrichmentArr.push(<Tab eventKey={enrichmentEventKey} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} /></Tab>);
+                enrichmentEventKey++;
+            }
+        }
         //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
         var SelectedEntry = require('../entry/selected_entry.jsx');
         return (
             <Tabs defaultActiveKey={1}>
                 <Tab eventKey={1} title="References"><EntityEventReferences entityid={this.props.entityid}/></Tab>
-                <Tab eventKey={2} title="SIDD Data">SIDD Data Table</Tab>
-                <Tab eventKey={3} title="Geo Location">Geo Location Table</Tab>
-                <Tab eventKey={4} title="Entry"><Button onClick={this.props.entryToggle}>Add Entry</Button><SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
+                <Tab eventKey={2} title="Entry"><Button onClick={this.props.entryToggle}>Add Entry</Button><SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
+                {entityEnrichmentArr}
             </Tabs>
         )
     }
+});
+
+var EntityEnrichmentButtons = React.createClass({
+    render: function() { 
+        var dataSource = this.props.dataSource; 
+        return (
+            <Inspector.default data={dataSource} expandLevel={4} />
+        ) 
+    },
 });
 
 var EntityEventReferences = React.createClass({
@@ -157,7 +165,6 @@ var EntityEventReferences = React.createClass({
         const rowFact = (rowProps) => {
             rowProps.onDoubleClick = this.viewId;
         }
-        entityIdSelected = [];
         var columns = [
             { name: 'id', width:100 },
             { name: 'subject' }
