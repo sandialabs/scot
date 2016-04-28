@@ -675,7 +675,7 @@ module.exports = Storeaq
 
 },{"../../../node_modules/events-activemq/events":234,"./dispatcher.jsx":2,"./handleupdate.jsx":3,"object-assign":771}],6:[function(require,module,exports){
 var AddFlair = {
-    entityUpdate: function(entityData,flairToolbarToggle,type,linkWarningToggle) {
+    entityUpdate: function(entityData,flairToolbarToggle,type,linkWarningToggle,id) {
         setTimeout(function() {
             var entityResult = entityData;
             if (type != 'alertgroup') {
@@ -730,22 +730,24 @@ var AddFlair = {
                                     }
                                 }.bind(this));
                             }
-                        pentry(ifr,flairToolbarToggle,type,linkWarningToggle);
+                        pentry(ifr,flairToolbarToggle,type,linkWarningToggle,id);
                         }
                     }.bind(this));
                 }.bind(this));
-            } else {
-                if($(document.body).find('.extras')[0] == null) {
-                    $(document.body).find('a').attr('target','_blank');
-                    $(document.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
-                    $(document.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
-                    $(document.body).find('.entity').each(function(index,entity){
+            } else if (type == 'alertgroup') {
+                var subtable = $(document.body).find('.subtable' + id);
+                if(subtable.find('.extras')[0] == null) {
+                    subtable.find('a').attr('target','_blank');
+                    subtable.append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
+                    subtable.find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
+                    subtable.find('.entity').each(function(index,entity){
                         var currentEntityValue = $(entity).attr('data-entity-value');
                         if (currentEntityValue !== undefined) {
                             if (entityResult[currentEntityValue.toLowerCase()] !== undefined ) {
                                 var entityType = entityResult[currentEntityValue.toLowerCase()].type;
                                 var entityid = entityResult[currentEntityValue.toLowerCase()].id;
                                 var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
+                                var entitydata = entityResult[currentEntityValue.toLowerCase()].data;
                                 var circle = $('<span class="noselect">');
                                 circle.addClass('circleNumber');
                                 circle.addClass('extras');
@@ -753,17 +755,32 @@ var AddFlair = {
                                 $(entity).append(circle);
                                 $(entity).attr('data-entity-id',entityid)
                                 $(entity).unbind('click');
-                                pentry(null,flairToolbarToggle,type);
+                                if (entitydata !== undefined) {
+                                    if (entitydata.geoip !== undefined) {
+                                        if (entitydata.geoip.isocode !== undefined) {
+                                            var country_code;
+                                            if (entitydata.geoip.isp == 'Sandia National Laboratories') {
+                                                country_code = 'sandia';    
+                                            } else {
+                                                country_code = entitydata.geoip.isocode;
+                                            }
+                                            var flag = $('<img class="noselect">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
+                                            flag.addClass('extras');
+                                            $(entity).append(flag);
+                                        }
+                                    }
+                                }
+                                pentry(null,flairToolbarToggle,type,linkWarningToggle,id);
                             }
                         }
                     }.bind(this));
                 }
             }
-        }.bind(this));
+        }.bind(this),1000);
     },
 }
 
-function pentry(ifr,flairToolbarToggle,type,linkWarningToggle) {
+function pentry(ifr,flairToolbarToggle,type,linkWarningToggle,id) {
             if(type != 'alertgroup') { 
                 $(ifr).mouseenter(function() {
                     var intervalID = setInterval(checkFlairHover, 100, ifr, flairToolbarToggle,type,linkWarningToggle);
@@ -776,10 +793,10 @@ function pentry(ifr,flairToolbarToggle,type,linkWarningToggle) {
                     console.log('No longer watching iframe ' + intervalID);
                 }.bind(this));
             } else {
-                setInterval(checkFlairHover, 100, null, flairToolbarToggle,type,linkWarningToggle);
+                setInterval(checkFlairHover, 100, null, flairToolbarToggle,type,linkWarningToggle,id);
             }
         }
-function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle) {
+function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle,id) {
     if(type != 'alertgroup') {
         if(iframe.contentDocument != null) {
             $(iframe).contents().find('.entity').each(function(index, entity) {
@@ -803,17 +820,18 @@ function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle) {
                 }
             }.bind(this));
         }
-    } else {
-        $(document.body).find('.entity').each(function(index, entity) {
-                if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
-                    $(entity).data('state', 'down');
-                } else if ($(entity).data('state') == 'down') {
-                    $(entity).data('state', 'up');
-                    var entityid = $(entity).attr('data-entity-id');
-                    infopop(null,entityid,flairToolbarToggle);
-                }
+    } else if (type == 'alertgroup') {
+        var subtable = $(document.body).find('.subtable' + id);
+        subtable.find('.entity').each(function(index, entity) {
+            if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
+                $(entity).data('state', 'down');
+            } else if ($(entity).data('state') == 'down') {
+                $(entity).data('state', 'up');
+                var entityid = $(entity).attr('data-entity-id');
+                infopop(null,entityid,flairToolbarToggle);
+            }
         }.bind(this));
-        $(document.body).find('a').each(function(index,a) {
+        subtable.find('a').each(function(index,a) {
             if($(a).css('color') == 'rgb(255, 0, 0)') {
                 $(a).data('state','down');
             } else if ($(a).data('state') == 'down') {
@@ -1601,7 +1619,7 @@ var Store               = require('../activemq/store.jsx');
 var AppActions          = require('../flux/actions.jsx');
 var AddFlair            = require('../components/add_flair.jsx');
 var Flair               = require('../modal/flair_modal.jsx');
-
+var LinkWarning         = require('../modal/link_warning.jsx'); 
 var SelectedEntry = React.createClass({displayName: "SelectedEntry",
     getInitialState: function() {
         return {
@@ -1627,8 +1645,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                         if(this.state.showEntryData == false){
                             setTimeout(waitForEntry.waitEntry,50);
                         } else {
-                            console.log('entries are done')   
-                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
                         }
                     }.bind(this)
                 };
@@ -1652,8 +1669,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                         if(this.state.showEntryData == false){
                             setTimeout(waitForEntry.waitEntry,50);
                         } else {
-                            console.log('entries are done')
-                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
                         }
                     }.bind(this)
                 };
@@ -1666,6 +1682,13 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             this.setState({flairToolbar:true,entityid:id})
         } else {
             this.setState({flairToolbar:false})
+        }
+    },
+    linkWarningToggle: function(href) {
+        if (this.state.linkWarningToolbar == false) {
+            this.setState({linkWarningToolbar:true,link:href})
+        } else {
+            this.setState({linkWarningToolbar:false})
         }
     },
     render: function() { 
@@ -1682,7 +1705,8 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         return (
             React.createElement("div", {className: divClass}, 
                 showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id}) : null, 
-                this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid}) : null
+                this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid}) : null, 
+                this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null
             )       
         );
     }
@@ -1898,7 +1922,7 @@ var EntryData = React.createClass({displayName: "EntryData",
 
 module.exports = SelectedEntry
 
-},{"../activemq/store.jsx":5,"../components/add_flair.jsx":6,"../components/permission.jsx":8,"../components/summary.jsx":11,"../components/task.jsx":13,"../flux/actions.jsx":18,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/flair_modal.jsx":24,"react":1894,"react-bootstrap/lib/Button.js":773,"react-bootstrap/lib/DropdownButton.js":779,"react-bootstrap/lib/MenuItem.js":783,"react-bootstrap/lib/SplitButton.js":790,"react-dom":980,"react-frame":995,"react-time":1675}],16:[function(require,module,exports){
+},{"../activemq/store.jsx":5,"../components/add_flair.jsx":6,"../components/permission.jsx":8,"../components/summary.jsx":11,"../components/task.jsx":13,"../flux/actions.jsx":18,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/flair_modal.jsx":24,"../modal/link_warning.jsx":26,"react":1894,"react-bootstrap/lib/Button.js":773,"react-bootstrap/lib/DropdownButton.js":779,"react-bootstrap/lib/MenuItem.js":783,"react-bootstrap/lib/SplitButton.js":790,"react-dom":980,"react-frame":995,"react-time":1675}],16:[function(require,module,exports){
 var React                   = require('react');
 var ReactTime               = require('react-time');
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
@@ -2001,7 +2025,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                         setTimeout(waitForEntry.waitEntry,50);
                     } else {
                         alertgroupforentity = false;
-                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle)}.bind(this));
+                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
                         if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false});        
                         }
@@ -2055,7 +2079,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                             setTimeout(waitForEntry.waitEntry,50);
                         } else {
                             alertgroupforentity = false;
-                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle)}.bind(this));
+                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
                             if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {                                
                                 this.setState({refreshing:false});
                             }
@@ -2411,7 +2435,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
             showPromote = false;
         }
         return (
-            React.createElement("div", {className: "entry-header", style: {marginBottom:'2px'}}, 
+            React.createElement("div", {className: "entry-header"}, 
                 React.createElement(ButtonGroup, {bsSize: "small"}, 
                     React.createElement(Button, {bsStyle: "success", onClick: this.props.entryToggle}, "Add Entry"), 
                     React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair}, "Toggle ", React.createElement("b", null, "Flair")), 
