@@ -15,7 +15,7 @@ var Store               = require('../activemq/store.jsx');
 var AppActions          = require('../flux/actions.jsx');
 var AddFlair            = require('../components/add_flair.jsx');
 var Flair               = require('../modal/flair_modal.jsx');
-
+var LinkWarning         = require('../modal/link_warning.jsx'); 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
         return {
@@ -41,8 +41,7 @@ var SelectedEntry = React.createClass({
                         if(this.state.showEntryData == false){
                             setTimeout(waitForEntry.waitEntry,50);
                         } else {
-                            console.log('entries are done')   
-                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
                         }
                     }.bind(this)
                 };
@@ -66,8 +65,7 @@ var SelectedEntry = React.createClass({
                         if(this.state.showEntryData == false){
                             setTimeout(waitForEntry.waitEntry,50);
                         } else {
-                            console.log('entries are done')
-                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle)}.bind(this));
+                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
                         }
                     }.bind(this)
                 };
@@ -80,6 +78,13 @@ var SelectedEntry = React.createClass({
             this.setState({flairToolbar:true,entityid:id})
         } else {
             this.setState({flairToolbar:false})
+        }
+    },
+    linkWarningToggle: function(href) {
+        if (this.state.linkWarningToolbar == false) {
+            this.setState({linkWarningToolbar:true,link:href})
+        } else {
+            this.setState({linkWarningToolbar:false})
         }
     },
     render: function() { 
@@ -97,6 +102,7 @@ var SelectedEntry = React.createClass({
             <div className={divClass}> 
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} /> : null} 
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid}/> : null}
+                {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
             </div>       
         );
     }
