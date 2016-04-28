@@ -100,7 +100,7 @@ var SelectedHeader = React.createClass({
                         setTimeout(waitForEntry.waitEntry,50);
                     } else {
                         alertgroupforentity = false;
-                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle)}.bind(this));
+                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
                         if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false});        
                         }
@@ -154,7 +154,7 @@ var SelectedHeader = React.createClass({
                             setTimeout(waitForEntry.waitEntry,50);
                         } else {
                             alertgroupforentity = false;
-                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle)}.bind(this));
+                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
                             if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {                                
                                 this.setState({refreshing:false});
                             }
