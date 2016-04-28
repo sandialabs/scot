@@ -73,7 +73,7 @@ var SelectedHeaderOptions = React.createClass({
             showPromote = false;
         }
         return (
-            <div className="entry-header" style={{marginBottom:'2px'}}>
+            <div className="entry-header">
                 <ButtonGroup bsSize='small'> 
                     <Button bsStyle='success' onClick={this.props.entryToggle}>Add Entry</Button>
                     <Button eventKey="1" onClick={this.toggleFlair}>Toggle <b>Flair</b></Button>
