@@ -469,7 +469,7 @@ var Subtable = React.createClass({
         onColumnOrderChange: this.handleColumnOrderChange, 
         pagination: true, 
 	    paginationToolbarProps: {pageSizes: [3,5,10]},  
-	    withColumnMenu: true, 
+	    withColumnMenu: false, 
 	    showCellBorders: true,
 	    sortable: false,
 	    reloadsupertable: this.state.setreload,
