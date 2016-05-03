@@ -15,6 +15,7 @@ db.source.drop();
 db.tag.drop();
 db.users.drop();
 db.link.drop();
+db.appearance.drop();
 
 print ("Creating indexes...");
 load("../etc/database/indexes.js");

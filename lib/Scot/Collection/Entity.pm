@@ -94,10 +94,9 @@ sub update_entities {
 
     foreach my $entity (@$earef) {
 
-
         my $value   = $entity->{value};
-        my $etype    = $entity->{type};
-        my $entity = $self->find_one({
+        my $etype   = $entity->{type};
+        my $entity  = $self->find_one({
             value   => $value,
             type    => $etype
         });
@@ -116,27 +115,18 @@ sub update_entities {
         my $entity_id  = $entity->id;
 
 
-        my $link    = $linkcol->create_link({
-            type   => "entity",
-            id     => $entity_id,
-        },{
-            type => $type,
-            id   => $id,
-        });
+        my $link    = $linkcol->create_link(
+            $entity, { type => $type, id   => $id, }
+        );
 
         if ( $type eq "entry" ) {
             my $target_id   = $target->target->{id};
             my $target_type = $target->target->{type};
 
-            my $addlink = $linkcol->create_link({
-                type    => "entity",
-                id      => $entity_id,
-            },{
-                type    => $target_type,
-                id      => $target_id,
-            });
+            my $addlink = $linkcol->create_link(
+                $entity, { type => $target_type, id => $target_id, }
+            );
         }
-
     }
 }
 

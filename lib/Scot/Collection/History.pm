@@ -27,7 +27,7 @@ sub add_history_entry {
     my $env     = $self->env;
     my $log     = $env->log;
 
-    my $target  = delete $href->{targets};
+    my $target  = $href->{targets}; # { id => x, type => y }
 
     $log->debug("adding history to ",{filter=>\&Dumper, value=>$target});
 
@@ -35,33 +35,6 @@ sub add_history_entry {
     unless ($obj) {
         $log->error("Failed to create History record for $href->{what}");
         return;
-    }
-
-    # now link it to the object
-    my $src  = {
-        type    => "history",
-        id      => $obj->id,
-    };
-
-    $log->debug("src = ", { filter =>\&Dumper, value =>$src });
-
-    if ( ref($target) eq "ARRAY" ) {
-        foreach my $dhref (@$target) {
-            my $dst = {
-                type    => $dhref->{type},
-                id      => $dhref->{id},
-            };
-            $log->debug("dst = ", { filter =>\&Dumper, value =>$dst });
-            my $link = $env->mongo->collection('Link')->create_link($src,$dst);
-        }
-    }
-    else {
-        my $dst = {
-            type    => $target->{type},
-            id      => $target->{id},
-        };
-        $log->debug("dst = ", { filter =>\&Dumper, value =>$dst });
-        my $link = $env->mongo->collection('Link')->create_link($src,$dst);
     }
 
 }

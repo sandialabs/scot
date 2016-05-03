@@ -54,7 +54,7 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
            "Get alertgroup $alertgroup_id" )
   ->status_is(200)
   ->json_is('/subject'      => 'test message 1')
-  ->json_is('/views'   => 1)
+  ->json_is('/views'        => 1)
   ->json_is('/alert_count'  => 2);
 # print Dumper($t->tx->res->json), "\n";
 #done_testing();
