@@ -17,209 +17,67 @@ sub create_from_api {
 # link creation or update
 sub create_link {
     my $self    = shift;
-    my $a       = shift; # href = { id: 123, type: "foo" }
-    my $b       = shift; # href = { id: 124, type: "bar" }
-    my $env     = $self->env;
-    my $when    = shift // $env->now();
-    my $log     = $env->log;
+    my $entity  = shift; # expecting $entity object or HREF { id =>x, value=>y }
+    my $target  = shift; # href { id => x, type => y }
+    my $when    = shift // $self->env->now();
+    my $eid;
+    my $value;
 
-    $log->debug("CREATE LINK from ".Dumper($a)." to ".Dumper($b));
-
-    if ( ref($a) ne "HASH" or ref($b) ne "HASH" ) {
-        $log->error("Arg[0] and Arg[1] must be Hash Refs");
+    if ( ref($entity) eq 'Scot::Model::Entity') {
+        $eid    = $entity->id;
+        $value  = $entity->value;
+    }
+    elsif ( ref($entity) eq "HASH" ) {
+        $eid    = $entity->{id};
+        $value  = $entity->{value};
+    }
+    else {
+        $self->env->log->error("param 1 (entity) invalid!");
         return undef;
     }
 
-    unless (defined($a->{id}) and defined($a->{type}) ) {
-        $log->error("Arg[0] invalid hash");
+    if ( ref($target) ne "HASH" ) {
+        $self->env->log->error("param 2 (target) is not HashRef!");
         return undef;
     }
 
-    unless (defined($b->{id}) and defined($b->{type}) ) {
-        $log->error("Arg[1] invalid hash");
+    unless ( $target->{id} or $target->{type} ) {
+        $self->env->log->error("param 2 (target) is not valid!");
         return undef;
     }
 
-    my $test = $self->get_link($a,$b);
-    if ( $test ) {
-        $log->debug("link exists, returning existing...");
-        return $test;
-    }
-
-    my $link   = $self->create({
-        pair    => [ $a, $b ],
-        when    => $when,
-    });
-
-    # Should linking to something update that object's updated time
-
-    foreach my $href ($a, $b) {
-        my $col = $env->mongo->collection(ucfirst($href->{type}));
-        my $obj = $col->find_iid($href->{id});
-        unless ($obj) {
-            $log->warn("[".$href->{type}." ".$href->{id}."] does not exist");
-            next;
-        }
-        if ( $obj->meta->does_role('Scot::Role::Times') ) {
-            $obj->update_set( updated => $when );
-        }
-    }
-
-    return $link;
-}
-
-sub link_objects {
-    my $self    = shift;
-    my $a       = shift; # object
-    my $b       = shift; # object
-    my $env     = $self->env;
-    my $when    = shift // $env->now;
-    my $log     = $env->log;
-    
-    if ( ref($a) !~ /Scot::Model/ ) {
-        $log->error("Arg[0] must be a Scot::Model::* object");
-        return undef;
-    }
-    if ( ref($b) !~ /Scot::Model/ ) {
-        $log->error("Arg[1] must be a Scot::Model::* object");
-        return undef;
-    }
     my $link    = $self->create({
-        pair    => [
-            { id    => $a->id, type => $a->get_collection_name },
-            { id    => $b->id, type => $b->get_collection_name },
-        ]
+        when        => $when,
+        entity_id   => $eid,
+        value       => $value,
+        target      => $target,
     });
-
-    foreach my $obj ($a, $b) {
-        if ( $obj->meta->does_role('Scot::Role::Times') ) {
-            $obj->update_set( updated => $when );
-        }
-    }
 
     return $link;
 }
 
-sub get_links {
-    my $self        = shift;
-    my $type        = shift;
-    my $id          = shift;
-    my $linktype    = shift;
-    my $log         = $self->env->log;
-
-    my @ematches    = ({ '$elemMatch' => { id => $id + 0, type => $type } });
-
-    if ( $linktype ) {
-        push @ematches, { '$elemMatch' => { type => $linktype }};
-    }
-
-    my $match   = {
-        pair    => { '$all' => \@ematches }
-    };
-
-    $log->debug("Searching for links matching:",{filter=>\&Dumper, value=>$match});
-
-    my $cursor  = $self->find($match);
+sub get_links_by_value {
+    my $self    = shift;
+    my $value   = shift;
+    my $cursor  = $self->find({value => $value});
     return $cursor;
 }
 
-sub get_link { 
-    my $self    = shift;
-    my $a       = shift;
-    my $b       = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-
-    $a->{id} += 0;
-    $b->{id} += 0;
-
-    my @ematches = (
-        { '$elemMatch'  => $a },
-        { '$elemMatch'  => $b }
-    );
-    my $match   = { pair => {'$all' => \@ematches } };
-    
-    # $log->debug("Looking for Links matching: ",
-    #            { filter => \&Dumper, value => $match});
-     
-    my $cursor  = $self->find($match);
-
-    if ( $cursor->count > 0 ) {
-        return $cursor;
-    }
-    return undef;
-
-}
-
-
-sub remove_links {
-    my $self    = shift;
-    my $type    = shift;
-    my $id      = shift;
-    my $linktype= shift;
-    my $linkid  = shift;
-
-    my @ematches    = ({ '$elemMatch' => { id => $id, type => $type } });
-    if ( $linktype ) {
-        if ( $linkid ) { 
-            push @ematches, {'$elemMatch' => { id => $linkid, type => $linktype }};
-        } 
-        else {
-            push @ematches, {'$elemMatch' => { type => $linktype }};
-        }
-    }
-    my $match  = { pair => {'$all' => \@ematches} };
-    my $cursor = $self->find($match);
-    while ( my $link = $cursor->next ) {
-        $link->remove;
-    }
-    return;
-}
-
-sub get_entry_target {
+sub get_links_by_entity_id {
     my $self    = shift;
     my $id      = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-
-    $id += 0; 
-
-    my @ematches    = (
-        { '$elemMatch' => { id => $id, type => "entry" } },
-        { '$elemMatch' => { 
-            type => {
-                '$in'   => [ "event", 
-                             "incident", 
-                             "alert", 
-                             "alertgroup", 
-                             "intel" ]
-            }
-        }},
-    );
-    my $match   = { pair => { '$all'    => \@ematches } };
-
-    $log->debug("Looking for entry target ",
-                { filter => \&Dumper, value => $match});
-
-    my $object  = $self->find_one($match);
-
-    # $log->debug("Got :", { filter => \&Dumper, value => $object});
-
-    if ($object) {
-        my $pair    = $object->pair;
-        my ( $type, $id );
-        if ( $pair->[0]->{type} eq "entry" ) {
-            $type    = $pair->[1]->{type};
-            $id      = $pair->[1]->{id} + 0;
-        }
-        else {
-            $type    = $pair->[0]->{type};
-            $id      = $pair->[0]->{id} + 0;
-        }
-        return $type, $id;
-    }
-    return undef;
+    my $cursor  = $self->find({ entity_id => $id });
+    return $cursor;
 }
 
+sub get_links_by_target {
+    my $self    = shift;
+    my $target  = shift;
+    my $cursor  = $self->find({
+        'target.id'     => $target->{id},
+        'target.type'   => $target->{type},
+    });
+    return $cursor;
+}
 
 1;
