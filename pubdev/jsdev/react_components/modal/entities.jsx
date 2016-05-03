@@ -1,6 +1,7 @@
 var React           = require('react');
 var Modal           = require('react-modal');
 var Button          = require('react-bootstrap/lib/Button');
+var Flair           = require('../modal/flair_modal.jsx');
 const customStyles = {
     content : {
         top     : '50%',
@@ -30,7 +31,7 @@ var Entities = React.createClass({
                         <h3 id="myModalLabel">List of Entities</h3>
                     </div>                        
                     <div className="modal-body" style={{height:'600px', overflowY:'auto'}}>
-                        {this.state.entitiesBody ? <EntitiesData data={this.props.entityData} /> :null}
+                        {this.state.entitiesBody ? <EntitiesData data={this.props.entityData} flairToolbarToggle={this.props.flairToolbarToggle}/> :null}
                     </div>
                     <div className="modal-footer">
                         <Button onClick={this.props.entitiesToggle}>Done</Button> 
@@ -49,20 +50,23 @@ var EntitiesData = React.createClass({
         originalobj['entities'] = {};
         var obj = originalobj.entities;
         for (var prop in data) {
+            var subobj = {};
             var type = data[prop].type;
+            var id = data[prop].id;
             var value = prop;
+            subobj[id] = value;
             if (obj.hasOwnProperty(type)) { 
-                obj[type].push(value); 
+                obj[type].push(subobj); 
             } else { 
                 var arr = [];
-                arr.push(value);
+                arr.push(subobj);
                 obj[type] = arr;
             } 
         }
         for (var prop in obj) {
             var type = prop;
             var value = obj[prop];
-            rows.push(<EntitiesDataHeaderIterator type={type} value={value}/>);
+            rows.push(<EntitiesDataHeaderIterator type={type} value={value} flairToolbarToggle={this.props.flairToolbarToggle}/>);
         }
         return (
             <div>
@@ -79,7 +83,13 @@ var EntitiesDataHeaderIterator = React.createClass({
         var value = this.props.value;
         for (var i=0;i<value.length;i++) {
             var eachValue = value[i];
-            rows.push(<EntitiesDataValueIterator eachValue={eachValue} />);
+            var entityId = null;
+            var entityValue = null;
+            for (var prop in eachValue) {
+                entityId = prop;
+                entityValue = eachValue[prop];
+            }
+            rows.push(<EntitiesDataValueIterator entityValue={entityValue} entityId={entityId} flairToolbarToggle={this.props.flairToolbarToggle}/>);
         }
         return (
             <div style={{border:'1px solid black',width:'500px'}}>
@@ -93,10 +103,13 @@ var EntitiesDataHeaderIterator = React.createClass({
 });
 
 var EntitiesDataValueIterator = React.createClass({
+    toggle: function() {
+        this.props.flairToolbarToggle(this.props.entityId); 
+    },
     render: function() {
-        var eachValue = this.props.eachValue;
+        var entityValue = this.props.entityValue;
         return (
-            <span>{eachValue}<br/></span>
+            <a href="javascript: void(0)" onClick={this.toggle}>{entityValue}<br/></a>
         )
     }
 });
