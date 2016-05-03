@@ -1,7 +1,7 @@
 'use strict';
 
 var React                   = require('react')
-var DataGrid                = require('../../../node_modules/incident-react-datagrid/react-datagrid');
+var DataGrid                = require('../../../node_modules/events-react-datagrid/react-datagrid');
 var Notificationactivemq    = require('../../../node_modules/react-notification-system')
 var Crouton                 = require('../../../node_modules/react-crouton')
 var SelectedContainer       = require('../entry/selected_container.jsx')
