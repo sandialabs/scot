@@ -48,6 +48,22 @@ frm Scot::Role::Promotable
 
 =cut
 
+=item B<promoted_from>
+
+the event id that promted this incident
+[] implies not as a result from promotion
+
+=cut
+
+has promoted_from => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    traits      => ['Array'],
+    required    => 1,
+    default     => sub {[]},
+);
+
+
 
 =item B<reportable>
 

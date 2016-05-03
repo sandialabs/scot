@@ -68,6 +68,8 @@ my $json   = {
 $t  ->put_ok("/scot/api/v2/entry/$entry2" => json => $json)
     ->status_is(200);
 
+
+
 $t  ->get_ok("/scot/api/v2/event/$event_id/entity")
     ->status_is(200)
     ->json_is('/totalRecordCount' => 2)
@@ -77,11 +79,16 @@ $t  ->get_ok("/scot/api/v2/event/$event_id/entity")
 my $googleid = $t->tx->res->json->{records}->{'google.com'}->{id};
 my $ipid     = $t->tx->res->json->{records}->{'10.12.14.16'}->{id};
 
+
 $t  ->get_ok("/scot/api/v2/entity/$googleid/event")
     ->status_is(200)
     ->json_is('/records/0/id'       => 1)
     ->json_is('/records/0/subject'  => 'Test Event 1');
     
+#print Dumper($t->tx->res->json),"\n";
+#done_testing();
+#exit 0;
+
 $t  ->get_ok("/scot/api/v2/entity/$ipid/event")
     ->status_is(200)
     ->json_is('/records/0/id'       => 1)
@@ -102,7 +109,7 @@ $t  ->get_ok("/scot/api/v2/entry/$sidd_entry_id")
     ->status_is(200);
 my $siddentrydata   = $t->tx->res->json;
 my $eehref = $ee->process_html($siddentrydata->{body});
-print Dumper($eehref);
+# print Dumper($eehref);
 my $json   = {
     parsed  => 1,
     body_plain  => $eehref->{text},
@@ -126,7 +133,7 @@ $t->get_ok("/scot/api/v2/entity/$eid1")
     ->status_is(200);
 
 
- print Dumper($t->tx->res->json);
+#  print Dumper($t->tx->res->json);
  done_testing();
  exit 0;
 
