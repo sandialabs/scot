@@ -95,6 +95,13 @@ sub _build_scot_scot {
     return Scot::Util::Scot->new();
 }
 
+has fetch_mode  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'timed', # 'unseen' is other option
+);
+
 sub run {
     my $self    = shift;
     my $env     = $self->env;
@@ -103,7 +110,15 @@ sub run {
 
     $log->trace("Beginning Alert Email Processing...");
 
-    my @unread  = $imap->get_unseen_mail;
+    print "Alert Email Processing....\n" if ($self->interactive eq "yes");
+
+    my @unread;
+    if ( $self->fetch_mode eq "unseen" ) { 
+        @unread = $imap->get_unseen_mail;
+    }
+    else {
+        @unread = $imap->get_mail_since;  
+    }
 
     if ( $self->interactive eq "yes" ) {
         $self->max_processes(0);
@@ -144,21 +159,31 @@ sub process_message {
     my $log     = $env->log;
     my $scot    = $self->scot;
 
+    if ( $self->interactive eq "yes" ) {
+        print "- PROCESSING -\n";
+        print "---- message_id ". $msghref->{message_id}."\n";
+        print "---- subject    ". $msghref->{subject}."\n";
+    }
+
     # is message from approved sender?
     unless ( $self->approved_sender($msghref) ) {
         $log->error("Unapproved Sender is sending message to SCOT");
         $log->error({ filter => \&Dumper, value => $msghref });
+        print "unapproved sender ".$msghref->{from}." rejected \n" if ($self->interactive eq "yes");
         return;
     }
 
     # is message a health check?
     if ( $self->is_health_check($msghref) ) {
         $log->trace("Health check received...");
+        print "health check...skipping.\n" if ($self->interactive eq "yes");
         return;
     }
 
     # we get this far, let's parse it and create alerts/alertgroup
     my $source = $self->get_source($msghref);
+
+    print "parsing with $source ";
 
     my $json_to_post = $self->$source($msghref);
     my $path         = "/scot/api/v2/alertgroup";
@@ -172,6 +197,7 @@ sub process_message {
     unless (defined $tx) {
         $log->error("ERROR! Undefined transaction object $path ",
                     {filter=>\&Dumper, value=>$json_to_post});
+        print "post to scot failed!\n" if ($self->interactive eq "yes");
         return;
     }
     
@@ -179,8 +205,10 @@ sub process_message {
         $log->error("Failed posting new alertgroup mgs_uid:", $msghref->{imap_uid});
         $log->debug("tx->res is ",{filter=>\&Dumper, value=>$tx->res});
         $env->imap->mark_uid_unseen($msghref->{imap_uid});
+        print "post to scot failed!\n" if ($self->interactive eq "yes");
         return;
     }
+    print "posted to scot.\n" if ($self->interactive eq "yes");
     $log->trace("Created alertgroup ". $tx->res->json->{id});
 }
 
@@ -206,8 +234,8 @@ sub approved_sender {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
-    my $domains = $env->approved_alert_domains;
-    my $senders = $env->approved_accounts;
+    my $domains = $self->approved_alert_domains;
+    my $senders = $self->approved_accounts;
     my $this_sender = $href->{from};
     my $log     = $env->log;
 
@@ -275,6 +303,11 @@ sub splunk {
 
     $log->trace("Parsing Splunk Message Body");
     $log->trace("Body is : ",{filter=>\&Dumper,value=>$body});
+
+    unless ( $body =~ /\<html\>/i ) {
+        $body   = "<html>".$body."</html>";
+        $log->warn("SPLUNK message was not in HTML.  Parsing will not work!");
+    }
 
     my  $tree   = HTML::TreeBuilder->new;
         $tree   ->implicit_tags(1);

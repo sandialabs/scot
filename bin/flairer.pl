@@ -14,6 +14,6 @@ my $env     = Scot::Env->new({
     authtype    => 'Remoteuser',
     servername  => 'as3001snllx',
 });
-my $loop    = Scot::App::Flair->new({ env => $env });
+my $loop    = Scot::App::Flair->new({ env => $env, interactive => 1 });
 $loop->run();
 
