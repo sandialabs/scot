@@ -622,7 +622,6 @@ sub get_req_array {
 
     if ( defined $json->{$type} ) {
         push @tags, @{$json->{$type}};
-        delete $json->{$type};
     }
     return @tags;
 }
@@ -633,7 +632,7 @@ sub get_config_item {
     my $attribute   = shift;
     my $mongo       = $self->mongo;
     my $col         = $mongo->collection('Config');
-    my $obj         = $col->find({ module => $module });
+    my $obj         = $col->find_one({ module => $module });
     my $item        = $obj->item;
     return $item->{$attribute};
 }
