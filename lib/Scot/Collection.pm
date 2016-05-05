@@ -173,6 +173,7 @@ sub get_subthing {
     my $log         = $env->log;
     my $mongo       = $env->mongo;
 
+    ## MOSTLY replaced with override's in the each collection module.
 
     my $thing_class = "Scot::Model::".ucfirst($thing);
 
