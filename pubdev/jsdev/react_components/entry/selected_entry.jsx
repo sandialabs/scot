@@ -1,21 +1,23 @@
-var React               = require('react');
-var ReactDOM            = require('react-dom');
-var ReactTime           = require('react-time');
-var SplitButton         = require('react-bootstrap/lib/SplitButton.js');
-var DropdownButton      = require('react-bootstrap/lib/DropdownButton.js');
-var MenuItem            = require('react-bootstrap/lib/MenuItem.js');
-var Button              = require('react-bootstrap/lib/Button.js');
-var AddEntryModal       = require('../modal/add_entry.jsx');
-var DeleteEntry         = require('../modal/delete.jsx').DeleteEntry;
-var Summary             = require('../components/summary.jsx');
-var Task                = require('../components/task.jsx');
-var SelectedPermission  = require('../components/permission.jsx');
-var Frame               = require('react-frame');
-var Store               = require('../activemq/store.jsx');
-var AppActions          = require('../flux/actions.jsx');
-var AddFlair            = require('../components/add_flair.jsx');
-var Flair               = require('../modal/flair_modal.jsx');
-var LinkWarning         = require('../modal/link_warning.jsx'); 
+var React                   = require('react');
+var ReactDOM                = require('react-dom');
+var ReactTime               = require('react-time');
+var SplitButton             = require('react-bootstrap/lib/SplitButton.js');
+var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
+var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
+var Button                  = require('react-bootstrap/lib/Button.js');
+var AddEntryModal           = require('../modal/add_entry.jsx');
+var DeleteEntry             = require('../modal/delete.jsx').DeleteEntry;
+var Summary                 = require('../components/summary.jsx');
+var Task                    = require('../components/task.jsx');
+var SelectedPermission      = require('../components/permission.jsx');
+var Frame                   = require('react-frame');
+var Store                   = require('../activemq/store.jsx');
+var AppActions              = require('../flux/actions.jsx');
+var AddFlair                = require('../components/add_flair.jsx');
+var Flair                   = require('../modal/flair_modal.jsx');
+var LinkWarning             = require('../modal/link_warning.jsx'); 
+var SelectedHeaderOptions   = require('./selected_header_options.jsx');
+
 var SelectedEntry = React.createClass({
     getInitialState: function() {
         return {
@@ -97,10 +99,12 @@ var SelectedEntry = React.createClass({
             divClass = 'row-fluid entry-wrapper entry-wrapper-main-70'
             data = this.state.entryData;
             showEntryData = this.state.showEntryData;
+        } else if (type =='alertgroup') {
+            divClass = 'row-fluid alert-wrapper';
         }
         return (
             <div className={divClass}> 
-                {showEntryData ? <EntryIterator data={data} type={type} id={id} /> : null} 
+                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected}/> : null} 
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
             </div>       
@@ -114,14 +118,172 @@ var EntryIterator = React.createClass({
         var data = this.props.data;
         var type = this.props.type;
         var id = this.props.id;  
-        data.forEach(function(data) {
-            rows.push(<EntryParent key={data.id} items={data} type={type} id={id} />);
-        });
+        if (type != 'alertgroup') {
+            data.forEach(function(data) {
+                rows.push(<EntryParent key={data.id} items={data} type={type} id={id} />);
+            });
+        } else {
+            rows.push(<AlertParent items={data} type={type} id={id} alertSelected={this.props.alertSelected} />);
+        }
         return (
             <div>
                 {rows}
             </div>
         )
+    }
+});
+
+var AlertParent = React.createClass({
+    getInitialState: function() {
+        return {
+            activeID: 0,
+        }
+    },
+    rowClicked: function(id) {
+        this.setState({activeID:id})
+    },
+    render: function() {
+        var items = this.props.items;
+        var body = [];
+        var header = [];
+        var col_names = items[0].columns.slice(0); //slices forces a copy of array
+        col_names.unshift('entries'); //Add entries to 3rd column
+        col_names.unshift('status'); //Add status to 2nd column
+        col_names.unshift('id'); //Add entries number to 1st column
+        for (var i=0; i < col_names.length; i++){
+            header.push(<AlertHeader colName={col_names[i]} />)
+        }
+        items.forEach(function(object){
+            var dataFlair = null;
+            if (object.data_with_flair != undefined) {
+                dataFlair = object.data_with_flair;
+            } else {
+                dataFlair = object.data;
+            }
+            
+            body.push(<AlertBody data={object} dataFlair={dataFlair} activeID={this.state.activeID} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected}/>)
+            body.push(<AlertRowBlank />);
+        }.bind(this))
+        var search = null;
+        if (items[0].data_with_flair != undefined) {
+            search = items[0].data_with_flair.search;
+        } else {
+            search = items[0].data.search;
+        }
+        return (
+            <div>
+                <div className="tablesorter alertTableHorizontal">
+                    <table width='100%'>
+                        <thead>
+                            <tr>
+                                {header}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {body}
+                        </tbody>
+                    </table>
+                </div>
+                {search != undefined ? <div className='alertTableHorizontal' dangerouslySetInnerHTML={{ __html: search}}/> : null}
+            </div>
+        )
+    }
+});
+
+var AlertHeader = React.createClass({
+    render: function() {
+        return (
+            <th>{this.props.colName}</th>
+        )
+    }
+});
+
+var AlertBody = React.createClass({
+    getInitialState: function() {
+        return {
+            selected: 'un-selected',
+            selectedStatus: false,
+            promotedNumber: null,
+        }
+    },
+    onClick: function() {
+        this.props.rowClicked(this.props.data.id);
+        this.props.alertSelected(this.props.data.id,'alert',this.props.data.status)
+    },
+    navigateTo: function() {
+        window.open('#/event/'+this.state.promotedNumber)
+    },
+    componentDidMount: function() {
+        if (this.props.data.status == 'promoted') {
+            $.ajax({
+                type: 'GET',
+                url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
+            }).success(function(response){
+                this.setState({promotedNumber:response.records[0].id});             
+            }.bind(this))
+        }
+    },
+    render: function() {
+        var data = this.props.data;
+        var dataFlair = this.props.dataFlair;
+        var selected = 'un-selected'
+        var rowReturn=[];
+        var buttonStyle = '';
+        var open = '';
+        var closed = '';
+        var promoted = '';
+        if (data.status == 'open') {
+            buttonStyle = 'red';
+        } else if (data.status == 'closed') {
+            buttonStyle = 'green';
+        } else if (data.status == 'promoted') {
+            buttonStyle = 'warning';
+        }
+        for (var i=0; i < data.columns.length; i++) {
+            var value = data.columns[i];
+            rowReturn.push(<AlertRow data={data} dataFlair={dataFlair} value={value} />)
+        }
+        if (this.props.activeID != data.id) {
+            selected = 'un-selected';
+        } else {
+            selected = 'selected';
+        } 
+        var id = 'alert_'+data.id+'_status';
+        return (
+            <tr id={data.id} className={selected} style={{cursor: 'pointer'}} onClick={this.onClick}>
+                <td valign='top' style={{marginRight:'4px'}}>{data.id}</td>
+                <td valign='top' style={{marginRight:'4px'}}>{data.status != 'promoted' ? <span style={{color:buttonStyle}}>{data.status}</span> : <Button bsSize='xsmall' bsStyle={buttonStyle} id={id} onClick={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{data.status}</Button>}</td>
+                <td valign='top' style={{marginRight:'4px'}}>{data.entries}</td>
+                {rowReturn}
+            </tr>
+        )
+    }
+});
+
+var AlertRow = React.createClass({
+    render: function() {
+        var data = this.props.data;
+        var dataFlair = this.props.dataFlair;
+        var value = this.props.value;
+        var rowReturn=[];
+        return (
+            <td valign='top' style={{marginRight:'4px'}}>
+                <div className='alert_data_cell' dangerouslySetInnerHTML={{ __html: dataFlair[value]}}/>
+            </td>
+        )
+    }
+});
+
+AlertRowBlank = React.createClass({
+    render: function() {
+    return (
+        <tr className='not_selectable'>
+            <td style={{padding:'0'}}>
+            </td>
+            <td colSpan="50" style={{padding:'1px'}}>
+            </td>
+        </tr>
+    )
     }
 });
 
