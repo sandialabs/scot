@@ -81,6 +81,13 @@ has ignore_size_errors   => (
     default     => 1,
 );
 
+has minutes_ago => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    default     => 60,
+);
+
 has client => (
     is          => 'ro',
     isa         => 'Mail::IMAPClient',
@@ -111,12 +118,11 @@ sub _connect_to_imap {
         Ignoresizeerrors    => $self->ignore_size_errors,
     );
 
-    $log->trace("Initializing IMAP client w/ options: ", {filter =>\&Dumper, value => \@options});
+    $log->trace("Initializing IMAP client w/ options: ", 
+                {filter =>\&Dumper, value => \@options});
     
-    my $client;
-
-    retry {
-        $client  = Mail::IMAPClient->new(@options);
+    my $client = retry {
+        Mail::IMAPClient->new(@options);
     }
     delay_exp {
         5, 1e6
@@ -124,9 +130,10 @@ sub _connect_to_imap {
     catch {
         $log->error("Failed to connect to IMAP server!");
         $log->error($_);
-        undef $client;
+        # undef $client;
     };
     $log->debug("Imap connected...");
+    $log->debug("client ",{filter=>\&Dumper, value=> $client});
     return $client;
 }
 
@@ -141,6 +148,32 @@ sub check_imap_connection {
         $self->clear_client_connection;
     }
     return;
+}
+
+sub get_mail_since {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    $self->check_imap_connection;
+    my $client  = $self->client;
+
+    my $age = $self->minutes_ago;
+    my $seconds_ago = $age * 60;
+    my $since_epoch = time() - $seconds_ago;
+
+    $log->trace("Getting mail from the past $age minutes");
+
+    $client->select($self->mailbox);
+    $client->Peek(1);   # do not mark messages as read
+
+    my @uids;
+
+    foreach my $message_id ($client->since($since_epoch)) {
+        if ( $message_id =~ $MSG_ID_FMT ) {
+            push @uids, $message_id;
+        }
+    }
+    return wantarray ? @uids : \@uids;
 }
 
 sub get_unseen_mail {
