@@ -19,6 +19,7 @@ use Log::Log4perl::Layout::PatternLayout;
 use Log::Log4perl::Level;
 use Log::Log4perl::Appender;
 use Net::IDN::Encode ':all';
+use Try::Tiny;
 
 use Moose;
 use namespace::autoclean;
@@ -400,7 +401,7 @@ sub process_words {
                 my $match   = substr($word, $-[0], $+[0] - $-[0]);
                 my $post    = substr($word, $+[0]);
                 
-                my $processed_match;
+                my $processed_match = $match;
 
 
                 if ( $type eq "ipaddr" ) {
@@ -502,12 +503,20 @@ sub domain_processing {
 
     my $reassembled = join('.', @parts);
 
-    $log->warn("checking public_suffix for $reassembled");
-    if ( public_suffix($reassembled) ) {
-        $log->warn('its valid');
+    $log->trace("checking public_suffix for $reassembled");
+    my $is_ipaddr;
+    $is_ipaddr = try {
+        public_suffix($reassembled);
+    }
+    catch {
+        $log->warn("problem with public suffix.  assuming domain");
+        $is_ipaddr = 1;
+    };
+    if ( $is_ipaddr ) {
+        $log->trace('its valid');
         return $reassembled;
     }
-    $log->error("public suffix doesn't recognize");
+    $log->debug("public suffix doesn't recognize");
     return undef;
 }
 

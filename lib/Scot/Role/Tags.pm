@@ -10,5 +10,11 @@ Tags are in their own collection with a targets array
 
 =cut
 
+has tags    => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    required    => 1,
+    default     => sub { [] },
+);
 
 1;
