@@ -13,6 +13,7 @@ use Data::Dumper;
 use Courriel;
 use Try::Tiny::Retry qw/:all/;
 use Mail::IMAPClient;
+use Scot::Util::Imap::Cursor;
 
 use Moose;
 
@@ -152,21 +153,25 @@ sub check_imap_connection {
 
 sub get_mail_since {
     my $self    = shift;
+    my $epoch   = shift;
     my $env     = $self->env;
     my $log     = $env->log;
     $self->check_imap_connection;
     my $client  = $self->client;
+    my $since_epoch = $epoch;
 
-    my $age = $self->minutes_ago;
-    my $seconds_ago = $age * 60;
-    my $since_epoch = time() - $seconds_ago;
-
-    $log->trace("Getting mail from the past $age minutes");
+    unless ($since_epoch) {
+        my $age = $self->minutes_ago;
+        $log->trace("Getting mail from the past $age minutes");
+        my $seconds_ago = $age * 60;
+        $since_epoch = time() - $seconds_ago;
+    }
 
     $client->select($self->mailbox);
     $client->Peek(1);   # do not mark messages as read
 
     my @uids;
+    $self->env->log->debug("Lookin for messages since $since_epoch");
 
     foreach my $message_id ($client->since($since_epoch)) {
         if ( $message_id =~ $MSG_ID_FMT ) {
@@ -200,6 +205,45 @@ sub get_unseen_mail {
     return wantarray ? @unseen_uids : \@unseen_uids;
 }
 
+sub get_unseen_cursor {
+    my $self    = shift;
+    my @uids    = $self->get_unseen_mail;
+    my $cursor  = Scot::Util::Imap::Cursor->new({uids => \@uids});
+    return $cursor;
+}
+
+sub get_since_cursor {
+    my $self    = shift;
+    my $href    = shift;
+    my $env     = $self->env;
+    my ($unit,$amount)  = each %$href;
+    my $seconds_ago;
+
+    $env->log->debug("unit $unit amount $amount");
+
+    if ( $unit eq "day" ) {
+        $seconds_ago = $amount * 24 * 60 * 60;
+    }
+    elsif ( $unit eq "hour" ) {
+        $seconds_ago = $amount * 60 * 60;
+    }
+    elsif ( $unit eq "minute" ) {
+        $seconds_ago = $amount * 60;
+    }
+    elsif ( $unit eq "second" ) {
+        $seconds_ago = $amount;
+    }
+    $env->log->debug("seconds ago is $seconds_ago");
+
+    my $since_epoch = $env->now - $seconds_ago;
+
+    $env->log->debug("Lookin for messages since $since_epoch");
+
+    my @uids    = $self->get_mail_since($since_epoch);
+    my $cursor  = Scot::Util::Imap::Cursor->new({uids => \@uids});
+    return $cursor;
+}
+
 sub mark_uid_unseen {
     my $self    = shift;
     my $uid     = shift;
@@ -223,6 +267,7 @@ sub mark_uid_unseen {
 sub get_message {
     my $self    = shift;
     my $uid     = shift;
+    my $peek    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
     $self->check_imap_connection;
@@ -240,6 +285,7 @@ sub get_message {
     };
 
     $log->trace("Envelope is ",{filter=>\&Dumper,value=>$envelope});
+    $self->client->Peek($peek);
 
     my %message = (
         imap_uid    => $uid,
@@ -251,7 +297,8 @@ sub get_message {
         message_id  => $self->get_message_id($uid),
     );
 
-    ($message{body_html}, $message{body_plain}) = $self->extract_body($uid);
+    ($message{body_html}, 
+     $message{body_plain}) = $self->extract_body($uid,$peek);
 
     return wantarray ? %message : \%message;
 }
@@ -259,10 +306,12 @@ sub get_message {
 sub extract_body {
     my $self    = shift;
     my $uid     = shift;
+
     my $env     = $self->env;
     my $log     = $env->log;
 
     $log->trace("Extracting body from uid = $uid");
+
 
     my $msgstring   = $self->client->message_string($uid);
     my $email       = Courriel->parse( text => $msgstring );
