@@ -2,6 +2,7 @@
 use lib '../lib';
 use lib '../../lib';
 
+use HTML::Entities;
 use Test::More;
 use Test::Mojo;
 use Data::Dumper;
@@ -132,8 +133,73 @@ my $eid3 = $t->tx->res->json->{records}->{'cnomy.com'}->{id};
 $t->get_ok("/scot/api/v2/entity/$eid1")
     ->status_is(200);
 
+my $agdata = [
+            { foo   => 'cnn.com',   bar => '2.2.2.2' },
+            { foo   => 'reddit.com',   bar => '4.4.4.4' },
+        ];
 
-#  print Dumper($t->tx->res->json);
+$t->post_ok(
+    '/scot/api/v2/alertgroup'   => json => {
+        message_id  => '112233445566778899aabbccddeeff',
+        subject     => 'test message 1',
+        data        => $agdata,
+        tags     => [qw(test testing)],
+        sources  => [qw(todd scot)],
+        columns  => [qw(foo bar) ],
+    }
+)->status_is(200);
+my $alertgroup_id   = $t->tx->res->json->{id};
+
+$t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert")
+    ->status_is(200);
+
+my $retagdata = $t->tx->res->json->{records};
+
+foreach my $ahref (@$retagdata) {
+    my $flair   = {};
+    TUPLE:
+    while ( my ( $key, $value ) = each %{$ahref->{data}} ) {
+
+        my $encoded = encode_entities($value);
+        $encoded = '<html>'.$encoded.'</html>';
+
+        if ( $key =~ /^message_id$/i ) {
+            $flair->{$key} = $value;
+            # might have do something like: (if process_html doesn't catch it) 
+            # $flair->{$key} = $extractor->do_span(undef, "message_id", $value)
+            # TODO create a test for this case
+            push @entities, { value => $value, type => "message_id" };
+            $flair->{$key} = qq|<span class="entity message_id" |.
+                             qq| data-entity-value="$value" |.
+                             qq| data-entity-type="message_id">$value</span>|;
+            next TUPLE;
+        }
+
+        # note self on monday.  this isn't working find out why.
+        my $eehref  = $ee->process_html($encoded);
+
+        $flair->{$key} = $eehref->{flair};
+
+        foreach my $entity_href (@{$eehref->{entities}}) {
+            my $value   = $entity_href->{value};
+            my $type    = $entity_href->{type};
+            unless (defined $seen{$value}) {
+                push @entities, $entity_href;
+                $seen{$value}++;
+            }
+        }
+    }
+    $t->put_ok("/scot/api/v2/alert/$ahref->{id}" => json => {
+        data_with_flair => $flair,
+        entities        => \@entities,
+        parsed          => 1,
+    })->status_is(200);
+}
+
+$t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/entity")
+->status_is(200);
+
+ print Dumper($t->tx->res->json);
  done_testing();
  exit 0;
 
