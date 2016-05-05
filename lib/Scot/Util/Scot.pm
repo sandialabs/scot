@@ -176,6 +176,10 @@ sub _build_useragent {
         return $ua;
     }
 
+    if ( $type eq "Testing" ) {
+        return Mojo::UserAgent->new();
+    }
+
     # by reaching here we are doing either LDAP or Local Authentication 
     # to access SCOT REST resources.  The only diff between ldap and local
     # is on the server back end and is of little consequense to this module
