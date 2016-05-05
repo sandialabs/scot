@@ -54,10 +54,12 @@ sub create_from_api {
     my $id  = $intel->id;
 
     if ( scalar(@sources) > 0 ) {
-        $self->upsert_links("Source", "intel", $id, @sources);
+        my $col = $env->mongo->collection('Source');
+        $col->add_source_to("intel", $intel->id, \@sources);
     }
     if ( scalar(@tags) > 0 ) {
-        $self->upsert_links("Tag", "intel", $id, @tags);
+        my $col = $env->mongo->collection('Tag');
+        $col->add_source_to("intel", $intel->id, \@tags);
     }
 
     return $intel;

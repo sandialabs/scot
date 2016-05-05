@@ -38,7 +38,8 @@ sub create_from_api {
 
     $log->trace("Create Alertgroup");
 
-    # alertgroup creation will receive the following in the json portion of the request
+    # alertgroup creation will receive the following in the 
+    # json portion of the request
     # request => {
     #    message_id  => '213123',
     #    subject     => 'subject',
@@ -53,10 +54,10 @@ sub create_from_api {
     delete $request->{data};
 
     my $tags    = $request->{tags};
-    delete $request->{tags};
+    # delete $request->{tags};  # store a copy here and there
 
     my $sources = $request->{sources};
-    delete $request->{sources};
+    # delete $request->{sources}; # store a copy in obj and in sources.pm
 
     my $alertgroup  = $self->create($request);
 
@@ -69,14 +70,16 @@ sub create_from_api {
     my $id          = $alertgroup->id;
 
     if ( defined $tags && scalar(@$tags) > 0 ) {
+        my $col = $mongo->collection('Tag');
         foreach my $tag (@$tags) {
-            my $t = $mongo->collection('Tag')->add_tag_to("alertgroup",$id, $tag);
+            my $t = $col->add_tag_to("alertgroup",$id, $tag);
         }
     }
 
     if ( defined $sources && scalar(@$sources) > 0 ) {
+        my $col = $mongo->collection('Source');
         foreach my $src (@$sources) {
-            my $s = $mongo->collection('Source')->add_source_to("alertgroup", $id, $src);
+            my $s = $col->add_source_to("alertgroup", $id, $src);
         }
     }
 
@@ -188,39 +191,6 @@ sub refresh_data {
         }
     });
 }
-
-override 'has_computed_attributes' => sub {
-    my $self    = shift;
-    return 1;
-};
-
-# return href of computed attributes 
-sub get_computed_attributes {
-    my $self    = shift;
-    my $obj     = shift;
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
-
-    # need sources and tags
-    my $src_cursor = $mongo->collection('Source')->get_linked_sources($obj);
-    my $tag_cursor = $mongo->collection('Tag')->get_linked_tags($obj);
-    my $entry_cursor = $mongo->collection('Entry')->get_entries_on_alertgroups_alerts($obj);
-
-    my $entry_count = 0;
-    if ($entry_cursor) {
-        $entry_count = $entry_cursor->count;
-    }
-
-    my @sources = map { $_->{value} } $src_cursor->all;
-    my @tags    = map { $_->{value} } $tag_cursor->all;
-
-    return {
-        sources => \@sources,
-        tags    => \@tags,
-        entry_count => $entry_count,
-    };
-}
-
 
 
 1;

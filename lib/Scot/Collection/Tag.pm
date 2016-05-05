@@ -67,57 +67,40 @@ sub add_tag_to {
     my $self    = shift;
     my $thing   = shift;
     my $id      = shift;
-    my $tag     = shift;
+    $id += 0;
+    my $tags    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
 
-    my $env = $self->env;
-    my $log = $env->log;
+    if ( ref($tags) ne "ARRAY" ) {
+        $tags   = [ $tags ];
+    }
 
-    $log->debug("Add_tag_to $thing:$id => $tag");
+    $log->debug("Add_tag_to $thing:$id => ".join(',',@$tags));
 
-    my $tag_obj         = $self->find_one({ value => $tag });
-    unless ( defined $tag_obj ) {
-        $log->debug("created new tag $tag");
-        $tag_obj    = $self->create({
-            value    => $tag,
+    $thing = lc($thing);
+
+    foreach my $tag (@$tags) {
+        my $tag_obj         = $self->find_one({ value => $tag });
+        unless ( defined $tag_obj ) {
+            $log->debug("created new tag $tag");
+            $tag_obj    = $self->create({
+                value    => $tag,
+            });
+        }
+
+        $env->mongo->collection("Appearance")->create({
+            type    => "tag",
+            value   => $tag,
+            apid    => $tag_obj->id,
+            when    => $env->now,
+            target   => {
+                type    => $thing,
+                id      => $id,
+            }
         });
     }
-
-    $env->mongo->collection("Link")->create_link({
-        type => $thing,
-        id   => $id + 0,
-    },{
-        type   => "tag",
-        id     => $tag_obj->id + 0,
-    });
-
-    return $tag_obj;
-}
-
-sub get_linked_tags {
-    my $self    = shift;
-    my $obj     = shift;
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
-    my $lnkcol  = $mongo->collection('Link');
-    my $target_type  = $obj->get_collection_name;
-    my $target_id    = $obj->id;
-    my $target_link_cursor  = $lnkcol->get_links(
-        $target_type,
-        $target_id,
-        "tag"
-    );
-    my @ids = ();
-    while ( my $link = $target_link_cursor->next ) {
-        my $pair = $link->pair;
-        if ( $pair->[0]->{type} eq $target_type ) {
-            push @ids, $pair->[1]->{id};
-        }
-        else {
-            push @ids, $pair->[0]->{id};
-        }
-    }
-    my $cursor  = $self->find({id => {'$in' => \@ids}});
-    return $cursor;
+    return 1;
 }
 
 
