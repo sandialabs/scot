@@ -577,6 +577,16 @@ sub xform_alertgroup {
     $href->{closed_count}   = $status{count} // 0;
     $href->{promoted_count} = $status{promoted} // 0;
 
+    if ( $status{promoted} > 0 ) {
+        $href->{status} = "promoted";
+    }
+    elsif ( $status{open} > 0 ) {
+        $href->{status} = "open";
+    }
+    else {
+        $href->{status} = "closed";
+    }
+
     $col->insert_one($href);
 
     push @links, $self->create_history(@history);
@@ -632,9 +642,24 @@ sub xform_entry {
     push @links, $self->create_history(@history);
     push @links, $self->create_entities($entities);
     $self->create_links(@links);
+    $self->update_target_entry_count($href->{target});
     return 1;
 }
 
+sub update_target_entry_count {
+    my $self    = shift;
+    my $t       = shift;
+    my $id      = $t->{id};
+    my $type    = $t->{type};
+    my $tcol    = $self->db->get_collection($type);
+    $tcol->update_one( { id  => $id },
+            {
+                '$inc'  => {
+                    entry_count => 1,
+                },
+            },
+    );
+}
 
 sub xform_handler {
     my $self    = shift;
