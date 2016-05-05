@@ -143,6 +143,10 @@ $t->get_ok("/scot/api/v2/incident/$incident1/event" => {},
     ->json_is('/records/0/id'           => $event1)
     ->json_is('/records/0/status'       => 'promoted');
 
+#XXX
+# print Dumper($t->tx->res->json), "\n";
+# done_testing();
+# exit 0;
 
 $t->get_ok("/scot/api/v2/event/$event1/incident" => {},
     "Get alerts promoted to Event $event1")
