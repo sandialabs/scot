@@ -298,6 +298,20 @@ sub get_subthing {
         });
         return $subcursor;
     }
+
+    if ( $thing eq "alertgroup" and $subthing eq "entity" ) {
+        my $acol    = $mongo->collection('Alert');
+        my $cursor  = $acol->find({alertgroup => $id});
+        my @aids    = map { $_->{id} } $cursor->all;
+        my $col     = $mongo->collection('Link');
+        my $match   = {
+            'target.id'     => { '$in' => \@aids },
+            'target.type'   => 'alert',
+        };
+        my $subcursor   = $col->find($match);
+        return $subcursor;
+    }
+
     # probably and alert/alertgroup thing 
     # and we need to look for an attribute in the kids that is named
     # after the parent that contains the id to link
