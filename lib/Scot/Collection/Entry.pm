@@ -212,4 +212,40 @@ sub get_entries_on_alertgroups_alerts {
     return $cursor;
 }
 
+override get_subthing => sub {
+    my $self        = shift;
+    my $thing       = shift;
+    my $id          = shift;
+    my $subthing    = shift;
+    my $env         = $self->env;
+    my $mongo       = $env->mongo;
+    my $log         = $env->log;
+
+    $id += 0;
+
+    if ( $subthing eq "history" ) {
+        my $col = $mongo->collection('History');
+        my $cur = $col->find({'target.id'   => $id,
+                              'target.type' => 'entry',});
+        return $cur;
+    }
+    elsif ( $subthing eq "entity" ) {
+        my $timer  = $env->get_timer("fetching links");
+        my $col    = $mongo->collection('Link');
+        my $cur    = $col->find({'target.id'   => $id,
+                              'target.type' => 'entry'});
+        my @lnk = map { $_->id } $cur->all;
+        &$timer;
+
+        $timer  = $env->get_timer("generating entity cursor");
+        $col    = $mongo->collection('Entity');
+        $cur    = $col->find({id => {'$in' => \@lnk }});
+        &$timer;
+        return $cur;
+    }
+    else {
+        $log->error("unsupported subthing $subthing!");
+    }
+};
+
 1;
