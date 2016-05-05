@@ -139,7 +139,14 @@ sub create {
         my $target_type = $object->target->{type};
         my $col         = $mongo->collection(ucfirst($target_type));
         my $obj         = $col->find_iid($target_id);
-        $obj->update_set(updated => $env->now);
+        $obj->update({
+            '$set'  => {
+                updated => $env->now
+            },
+            '$inc'  => {
+                entry_count => 1,
+            },
+        });
     }
 
     $self->audit("create_thing", {
@@ -604,10 +611,11 @@ sub get_subthing {
         return;
     }
 
-    $log->debug("Subthing cursor has ".$cursor->count." items");
+    $log->debug("Subthing $subthing cursor has ".$cursor->count." items");
 
     my @things;
     if ( $subthing eq "entry" ) {
+        $log->trace("rendering entry");
         @things = $self->thread_entries($cursor);
         $self->do_render({
             records => \@things,
@@ -615,39 +623,40 @@ sub get_subthing {
             totalRecordCount => scalar(@things),
         });
     }
-    elsif ( $subthing eq "alert" ) {
-        # add in subject from alertgroup
-        my $agcol   = $mongo->collection('Alertgroup');
-        my $entrycol = $mongo->collection('Entry');
-        while (my $alert = $cursor->next) {
-            my $agobj   = $agcol->find_one({id => $alert->alertgroup});
-            my $subject = $agobj->subject;
-            my $href    = $alert->as_hash;
-            $href->{subject} = $subject;
-
+#    elsif ( $subthing eq "alert" ) {
+#        # add in subject from alertgroup
+#        my $agcol   = $mongo->collection('Alertgroup');
+#        my $entrycol = $mongo->collection('Entry');
+#        while (my $alert = $cursor->next) {
+#            my $agobj   = $agcol->find_one({id => $alert->alertgroup});
+#            my $subject = $agobj->subject;
+#            my $href    = $alert->as_hash;
+#            $href->{subject} = $subject;
+#
             # look for entries
-            my $lcur    = $entrycol->get_entries(
-                target_type     => 'alert', 
-                target_id       => $alert->id,
-            );
-            my $entry_count = 0;
-
-            if ( $lcur ) {
-                $entry_count    = $lcur->count;
-            };
-
-            $href->{'entries'} = $entry_count;
-            
-
-            push @things, $href;
-        }
-        $self->do_render({
-            records => \@things,
-            queryRecordCount => scalar(@things),
-            totalRecordCount => scalar(@things),
-        });
-    }
+#            my $lcur    = $entrycol->get_entries(
+#                target_type     => 'alert', 
+#                target_id       => $alert->id,
+#            );
+#            my $entry_count = 0;
+#
+#            if ( $lcur ) {
+#                $entry_count    = $lcur->count;
+#            };
+#
+#            $href->{'entries'} = $entry_count;
+#            
+#
+#            push @things, $href;
+#        }
+#        $self->do_render({
+#            records => \@things,
+#            queryRecordCount => scalar(@things),
+#            totalRecordCount => scalar(@things),
+#        });
+#    }
     elsif ($subthing eq "entity")  {
+        $log->trace("rendering entity");
         # need to transform from an array of hashes to a a hash
         # for efficiency in UI code
         my %things  = ();
@@ -673,6 +682,7 @@ sub get_subthing {
     }
     else {
         @things = $cursor->all;
+        $log->trace("rendering default",{filter=>\&Dumper, value=>\@things});
         $self->do_render({
             records => \@things,
             queryRecordCount => scalar(@things),
@@ -807,6 +817,25 @@ sub update {
     if ( ref($object) eq "Scot::Model::Entry" ) {
         $self->do_task_checks($req_href);
         $log->debug("Request is now: ",{filter=>\&Dumper, value => $req_href});
+        if ( $req_href->{target} ) {
+            # changing the target of the entry is moving it...
+            my $current_target  = $object->target;
+            my $ct_col  = $mongo->collection(ucfirst($current_target->{type}));
+            my $ct_obj  = $ct_col->find_iid($current_target->{id});
+
+            my $new_target      = $req_href->{target};
+            my $nt_col  = $mongo->collection(ucfirst($new_target->{type}));
+            my $nt_obj  = $nt_col->find_iid($new_target->{id});
+
+            $ct_obj->update({
+                '$set'  => { updated        => $env->now },
+                '$inc'  => { entry_count    => -1 },
+            });
+            $nt_obj->update({
+                '$set'  => { updated        => $env->now },
+                '$inc'  => { entry_count    => 1 },
+            });
+        }
     }
 
     if ( $object->meta->does_role("Scot::Role::Entitiable") ) {
@@ -1322,6 +1351,15 @@ sub delete {
         }
     });
     if ( ref($object) eq "Scot::Model::Entry" ) {
+        my $targetobj   = $mongo->collection(ucfirst($object->target->{type}));
+        $targetobj->update({
+            '$set'  => {
+                updated => $env->now,
+            },
+            '$inc'  => {
+                entry_count => -1
+            },
+        });
         $env->mq->send("scot", {
             action  => 'updated',
             data    => {
