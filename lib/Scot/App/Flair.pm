@@ -232,6 +232,9 @@ sub process_alert  {
             # $flair->{$key} = $extractor->do_span(undef, "message_id", $value)
             # TODO create a test for this case
             push @entities, { value => $value, type => "message_id" };
+            $flair->{$key} = qq|<span class="entity message_id" |.
+                             qq| data-entity-value="$value" |.
+                             qq| data-entity-type="message_id">$value</span>|;
             next TUPLE;
         }
 
