@@ -130,5 +130,37 @@ sub update_entities {
     }
 }
 
+override get_subthing => sub {
+    my $self        = shift;
+    my $thing       = shift;
+    my $id          = shift;
+    my $subthing    = shift;
+    my $env         = $self->env;
+    my $mongo       = $env->mongo;
+    my $log         = $env->log;
+
+    $id += 0;
+
+    if ( $subthing  eq "alert" or
+         $subthing  eq "event" or
+         $subthing  eq "intel" or
+         $subthing  eq "incident" ) {
+        my $timer   = $env->get_timer("getting links");
+        my $col = $mongo->collection('Link');
+        my $cur = $col->find({entity_id     => $id,
+                              'target.type' => $subthing,});
+        my @ids         = map { $_->{target}->{id} } $cur->all;
+        my $subcursor   = $mongo->collection(ucfirst($subthing))->find({
+            id  => { '$in' => \@ids }
+        });
+        &$timer;
+        return $subcursor;
+    }
+    else {
+        $log->error("unsupported subthing $subthing!");
+    }
+};
+
+
 
 1;
