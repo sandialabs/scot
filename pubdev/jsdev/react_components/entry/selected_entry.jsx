@@ -34,6 +34,10 @@ var SelectedEntry = React.createClass({
             this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
                 var entryResult = result.records;
                 this.setState({showEntryData:true, entryData:entryResult})
+                for (i=0; i < result.records.length; i++) {
+                    Store.storeKey(result.records[i].id)
+                    Store.addChangeListener(this.updatedCB);
+                }
             }.bind(this));
             this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
                 var entityResult = result.records;
@@ -49,8 +53,6 @@ var SelectedEntry = React.createClass({
                 };
                 waitForEntry.waitEntry();
             }.bind(this));
-            Store.storeKey(this.props.id) //this will be the id of alert or entity
-            Store.addChangeListener(this.updatedCB);
         }
     }, 
     updatedCB: function() {
@@ -350,12 +352,14 @@ AlertRowBlank = React.createClass({
     render: function() {
         var id = this.props.id;
         var showEntry = this.props.showEntry;
+        var arr = [];
+        arr.push(<SelectedEntry type={this.props.type} id={this.props.id} />)
         return (
             <tr className='not_selectable'>
                 <td style={{padding:'0'}}>
                 </td>
                 <td colSpan="50" style={{padding:'1px'}}>
-                    {showEntry ? <SelectedEntry type={this.props.type} id={this.props.id} /> : null}
+                    {showEntry ? <div>{arr}</div> : null}
                 </td>
             </tr>
         )
