@@ -23,28 +23,21 @@ use JSON;
 use Try::Tiny;
 use Mojo::UserAgent;
 use Scot::Env;
+use Scot::App;
 use Scot::Util::Scot;
 use Scot::Util::EntityExtractor;
 use Scot::Util::ImgMunger;
 use AnyEvent::STOMP::Client;
 use AnyEvent::ForkManager;
 use HTML::Entities;
+use Module::Runtime qw(require_module);
 use strict;
 use warnings;
 use v5.18;
 
 use Moose;
 
-has env => (
-    is          => 'ro',
-    isa         => 'Scot::Env',
-    required    => 1,
-    builder     => '_get_env',
-);
-
-sub _get_env {
-    return Scot::Env->instance;
-}
+extends 'Scot::App';
 
 has extractor   => (
     is          => 'ro',
@@ -57,7 +50,7 @@ has extractor   => (
 sub _get_entity_extractor {
     my $self    = shift;
     return Scot::Util::EntityExtractor->new({
-        log => $self->env->log,
+        log => $self->log,
     });
 };
 
@@ -72,7 +65,7 @@ has imgmunger   => (
 sub _get_img_munger {
     my $self    = shift;
     return Scot::Util::ImgMunger->new({
-        log => $self->env->log,
+        log => $self->log,
     });
 };
 
@@ -93,22 +86,68 @@ has scot        => (
 
 sub _build_scot_scot {
     my $self    = shift;
-    return Scot::Util::Scot->new();
+    say Dumper($self->config);
+    return Scot::Util::Scot->new({
+        log         => $self->log,
+        servername  => $self->config->{scot}->{servername},
+        username    => $self->config->{scot}->{username},
+        password    => $self->config->{scot}->{password},
+        authtype    => $self->config->{scot}->{authtype},
+    });
 }
 
 has interactive => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
+    lazy        => 1,
     default     => 0,
 );
 
+has enrichers   => (
+    is              => 'ro',
+    isa             => 'ArrayRef',
+    required        => 1,
+    lazy            => 1,
+    builder         => '_get_enrichers',
+);
+
+sub _get_enrichers {
+    my $self    = shift;
+    my @enrichers   = ();
+    foreach my $href (@{$self->config->{entity_enrichers}}) {
+        my ($name, $data) = each %$href;
+        my $type    = $data->{type};
+        my $module  = $data->{module};
+        my $config  = $data->{config};
+        
+        if ( $type eq "native" ) {
+            require_module($module);
+            my $init    = {
+                log     => $self->log,
+            };
+
+            if (defined $config){
+                $init->{config} = $config;
+            }
+            push @enrichers, {
+                $name   => $module->new($init),
+            };
+        }
+        else {
+            # TODO: put support for webservice here
+            $self->log->warn("No support for webservice, YET!");
+        }
+    }
+    return \@enrichers;
+}
+
 sub run {
     my $self    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("Starting STOMP watcher");
+    $log->debug("Config is ",{filter=>\&Dumper,value=>$self->config});
 
     my $pm  = AnyEvent::ForkManager->new(max_workers => 10);
 
@@ -122,6 +161,10 @@ sub run {
         $log->debug("Ending worker $pid to handle $action on $type $id");
     });
 
+    $pm->on_error( sub {
+        $log->error("Error encountered", {filter=>\&Dumper, value=>\@_});
+    });
+
     my $stomp   = new AnyEvent::STOMP::Client();
 
     $stomp->connect();
@@ -130,6 +173,9 @@ sub run {
         sub {
             my $stomp    = shift;
             $stomp->subscribe('/topic/scot');
+            if ( $self->interactive ) {
+                say "==== Listening via STOMP to /topic/scot =====";
+            }
         }
     );
 
@@ -139,8 +185,9 @@ sub run {
         sub {
             my ($stomp, $header, $body) = @_;
             $log->debug("-"x50);
+            $log->debug("Received STOMP Message");
             $log->debug("header : ", { filter => \&Dumper, value => $header});
-            $log->debug("body   : ", { filter => \&Dumper, value => $body});
+            # $log->debug("body   : ", { filter => \&Dumper, value => $body});
 
             # read $body to determine alert or entry number
             my $json    = decode_json $body;
@@ -169,7 +216,14 @@ sub run {
                 cb  => sub {
                     my ($pm, $action, $type, $id) = @_;
 
+                    $log->debug("Getting $type $id from SCOT");
+
                     my $record = $scot->get($type,$id);
+
+                    if ( $self->interactive ) {
+                        say "+ got $type $id from scot: ".
+                            Dumper($record);
+                    }
 
                     # leaving until tested above line
                     #my $url     = $self->base_url . "/$type/$id";
@@ -182,7 +236,8 @@ sub run {
                     $log->debug("GET Response: ", 
                                 { filter => \&Dumper, value => $record });
 
-                    if ( $record->{parsed} != 0 ) {
+                    if ( defined($record->{parsed}) 
+                         and $record->{parsed} != 0 ) {
                         $log->debug("Already flaired!");
                         return;
                     }
@@ -202,18 +257,30 @@ sub run {
         }
     );
 
-    AnyEvent->condvar->recv;
+    my $cv  = AnyEvent->condvar;
+
+    #$pm->wait_all_children(
+    #    cb  => sub {
+    #        my ($pm) = @_;
+    #        $cv->send;
+    #    },
+    #);
+    $cv->recv;
 }
 
 sub process_alert  {
     my $self        = shift;
     my $record      = shift;
     my $extractor   = $self->extractor;
-    my $env         = $self->env;
-    my $log         = $env->log;
+    my $log         = $self->log;
     my $scot        = $self->scot;
 
     $log->trace("Processing Alert");
+
+    if ( $self->interactive ) {
+        $log->debug(" #### RECEIVED record ",{filter=>\&Dumper, value => $record});
+        say "+ Received Record ".Dumper($record);
+    }
 
     my $data    = $record->{data};
     my $flair;
@@ -240,6 +307,7 @@ sub process_alert  {
 
         # note self on monday.  this isn't working find out why.
         my $eehref  = $extractor->process_html($encoded);
+        $log->debug("HEY DUFUS: eehref = ",{filter=>\&Dumper, value=>$eehref});
 
         $flair->{$key} = $eehref->{flair};
 
@@ -253,15 +321,16 @@ sub process_alert  {
         }
     }
 
+    $log->debug(" #### record is ",{filter=>\&Dumper, value => $record});
 
     # save via REST PUT
-    my $url = $self->base_url."/alert/$record->{id}";
-    my $tx  = $scot->put($url,{
+    my $url = $self->base_url."/alert/".$record->{id};
+    my $tx  = $scot->put('alert', $record->{id}, {
         data_with_flair => $flair,
         entities        => \@entities,
         parsed          => 1,
     });
-    $self->enrich_entities(\@entities);
+    my $enriched = $self->enrich_entities(\@entities);
 }
 
 sub process_entry {
@@ -269,8 +338,7 @@ sub process_entry {
     my $record  = shift;
     my $extractor   = $self->extractor;
     my $imgmunger   = $self->imgmunger;
-    my $env         = $self->env;
-    my $log         = $env->log;
+    my $log         = $self->log;
     my $scot        = $self->scot;
 
     my $id  = $record->{id};
@@ -294,18 +362,17 @@ sub process_entry {
     $log->debug("Putting: ", { filter => \&Dumper, value => $json});
 
     my $tx  = $scot->put($url, $json);
-    $self->enrich_entities($eehref->{entities});
+    my $enriched = $self->enrich_entities($eehref->{entities});
     
 }
 
 sub enrich_entities {
     my $self    = shift;
     my $aref    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my %data    = ();   # hold all the enriching data
 
-    my $enrichers   = $env->entity_enrichers;
+    my $enrichers   = $self->enrichers;
 
 
     foreach my $entity (@$aref) {
@@ -314,11 +381,11 @@ sub enrich_entities {
 
         foreach my $ehref (@{$enrichers}) {
             $log->debug("enricher: ",{filter=>\&Dumper, value=>$ehref});
-            my ($name,$href) = each %$ehref;
-            if ( $href->{type} eq "native" ) {
-                my $module = $href->{module};
-                $data{$value}{$name} = $env->$module->get_data($type, $value);
+            my ($name,$instance) = each %$ehref;
+            unless (ref($instance)) {
+                $log->debug("instance is unblessed! ",{filter=>\&Dumper, value=>$ehref});
             }
+            $data{$value}{$name} = $instance->get_data($type, $value);
         }
     }
 
@@ -327,4 +394,9 @@ sub enrich_entities {
     
     return wantarray ? %data : \%data;
 }
+
+sub update_entities {
+
+}
+
 1;

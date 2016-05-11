@@ -9,6 +9,11 @@ use Mojo::UserAgent;
 use Data::Dumper;
 use Moose;
 use Try::Tiny::Retry ':all';
+use Try::Tiny;
+use Log::Log4perl;
+use Log::Log4perl::Level;
+use Log::Log4perl::Appender;
+use Log::Log4perl::Layout::PatternLayout;
 
 =head1 Name
 
@@ -20,18 +25,34 @@ this module simplifies talking rest to the SCOT API
 
 =cut
 
-has env => (
-    is      => 'ro',
-    isa     => 'Scot::Env',
-    required=> 1,
-    default => sub { Scot::Env->instance },
+has log => (
+    is          => 'ro',
+    isa         => 'Log::Log4perl::Logger',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_logger',
 );
 
-=item B<servername>
+sub _build_logger {
+    my $self    = shift;
+    my $logfile = $ENV{'scot_ua_logfile'} // '/var/log/scot/scot.ua.log';
 
-this is the SCOT server
-
-=cut
+    my $log     = Log::Log4perl->get_logger("ScotUA");
+    my $layout  = Log::Log4perl::Layout::PatternLayout->new(
+        '%d %7p [%P] %15F{1}: %4L %m%n'
+    );
+    my $appender    = Log::Log4perl::Appender->new(
+        "Log::Log4perl::Appender::File",
+        name        => "scot_log",
+        filename    => $logfile,
+        autoflush   => 1,
+    );
+    $appender->layout($layout);
+    $log->add_appender($appender);
+    $log->level($TRACE);
+    return $log;
+}
+    
 
 has servername  => (
     is          => 'ro',
@@ -43,89 +64,93 @@ has servername  => (
 
 sub _get_servername {
     my $self    = shift;
-    my $env     = $self->env;
-    my $name    = $env->servername // $ENV{SCOT_SERVERNAME};
-    return $name;
+    return  $ENV{'scot_ua_servername'} // 'localhost';
 }
 
-=item B<username>
-
-the username to access scot
-
-=cut
-
-has username => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_get_imap_username',
-);
-
-sub _get_imap_username {
-    my $self    = shift;
-    my $env     = $self->env;
-    return $env->imap->username // $ENV{SCOT_ALERT_USER};
-}
-
-has password => ( 
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_get_imap_user_pass',
-);
-
-sub _get_imap_user_pass {
-    my $self    = shift;
-    my $env     = $self->env;
-    return  $env->imap->password // $ENV{SCOT_ALERT_PASS};
-}
-
-=item B<uapid>
-
-for detection of forks
-
-=cut
-
-has uapid => (
+has serverport  => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
-    default     => sub { $$+0 },
-);
-
-has basic_remote_login_url => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
     lazy        => 1,
-    builder     => '_build_remote_login_url',
+    builder     => '_get_serverport',
 );
 
-sub _build_remote_login_url {
+sub _get_serverport {
     my $self    = shift;
-    # remote user uses basic auth
-    my $url     = sprintf "https://%s:%s@%s/",
-                    $self->username,
-                    $self->password,
-                    $self->servername;
-    $self->env->log->debug("url is $url");
-    return $url;
+    return $ENV{'scot_ua_serverport'} // 443;
 }
 
-has auth_post_url => (
+has username    => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
     lazy        => 1,
-    builder     => '_build_post_url',
+    builder     => '_get_username',
 );
 
-sub _build_post_url {
+sub _get_username {
     my $self    = shift;
-    return sprintf "https://%s/auth",
-                    $self->servername;
+    return $ENV{'scot_ua_username'} // 'scot-alerts';
+}
+
+has password    => ( 
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_get_password',
+);
+
+sub _get_password {
+    my $self    = shift;
+    return $ENV{'scot_ua_password'} // 'changeme';
+}
+
+has authtype   => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_get_authtype',
+);
+
+sub _get_authtype {
+    my $self    = shift;
+    return $ENV{'scot_ua_authtype'} // 'RemoteUser';
+}
+
+has api_version    => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'v2',
+);
+
+has uapid   => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    default     => sub { $$ + 0 },
+);
+
+has ua_base_url => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_get_base_url',
+);
+
+sub _get_base_url {
+    my $self        = shift;
+    my $servername  = $self->servername;
+    my $port        = $self->serverport;
+    my $ver         = $self->api_version;
+    
+    if ( $port != 443 ) {
+        return sprintf("https://%s:%s/scot/api/%s/", $servername, $port,$ver);
+    }
+    return sprintf("https://%s/scot/api/%s/", $servername, $ver);
 }
 
 has ua  => (
@@ -134,15 +159,18 @@ has ua  => (
     required    => 1,
     lazy        => 1,
     clearer     => 'clear_ua',
-    builder     => '_build_useragent',
+    builder     => '_get_useragent',
 );
 
-sub _build_useragent {
+sub _get_useragent {
     my $self    = shift;
-    my $env     = $self->env;
-    my $type    = $env->authtype;
-    my $log     = $env->log;
+    my $type    = $self->authtype;
     my $ua;
+    my $log     = $self->log;
+
+    $log->debug("Building UserAgent, authtype = $type");
+    $log->debug("                    username = ".$self->username);
+    $log->debug("                    password = ".$self->password);
 
     if ( $type eq "SSLcert" ) {
 
@@ -155,15 +183,22 @@ sub _build_useragent {
         # return $ua;
     }
 
-    if ( $type eq "Remoteuser" ) {
+    if ( $type eq "RemoteUser" ) {
 
         $log->trace("Building UA for Remoteuser based Authentication");
         my $user    = $self->username;
 
         $ua = Mojo::UserAgent->new();
-        my $url = $self->basic_remote_login_url;
+        my $url = sprintf "https://%s:%s@%s/scot/api/v2/whoami",
+                    $self->username,
+                    $self->password,
+                    $self->servername;
+
+        $log->trace("Getting $url");
+
         my $tx  = $ua->get($url);   # this simple get will send basic auth info
                                     # and cache digest in $ua for later use
+
         if ( my $res = $tx->success ) {
             $log->debug("$user Authenticated to SCOT");
         }
@@ -172,7 +207,6 @@ sub _build_useragent {
             # should be return undef?  should we retry?
             $log->error({filter=>\&Dumper, value=>$tx});
         }
-
         return $ua;
     }
 
@@ -188,7 +222,7 @@ sub _build_useragent {
     $log->trace("Building UserAgent for LDAP/Local authentication");
 
     $ua     = Mojo::UserAgent->new();
-    my $url = $self->auth_post_url;
+    my $url = sprintf "https://%s/auth", $self->servername;
     my $user= $self->username;
     my $tx  = $ua->post($url    => form => {
         user    => $user,
@@ -204,72 +238,63 @@ sub _build_useragent {
     return $ua;
 }
 
-has base_url    => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    default     => '/scot/api/v2',
-);
-
 sub check_if_forked {
     my $self    = shift;
-
-    # not sure this is needed, I mean, http is a stateless protocol
-    # once authenticated, ua shoudl have the password digest cached
-    # and the session cookie, but this arrow is my quiver if I prove 
-    # to be wrong (again)
-    
-    # this function will reset the pid and the au cache
-    
+    my $log     = $self->log;
     if ( $$ != $self->uapid ) {
-        $self->env->log->debug("Fork detected, restablishing...");
+        $log->warn("Fork detected, recreating UA");
         $self->uapid($$);
         $self->clear_ua;
     }
 }
 
-sub get {
+sub do_request {
     my $self    = shift;
-    my $col     = shift;
-    my $id      = shift;
-
-    my $url = $self->base_url . "/$col/$id";
-
-    my $tx  = $self->get_url($url);
-    my $json= $tx->res->json;
-    return $json;
-}
-
-sub get_url {
-    my $self    = shift;
-    my $path    = shift;
-    my $json    = shift;
-    my $log     = $self->env->log;
+    my $verb    = shift; # get, put, post, delete
+    my $suffix  = shift; # stuff after /scot/api/v2/
+    my $data    = shift; # json or params or both being sent with request
+    my $log     = $self->log;
     my $ua      = $self->ua;
-    my $url     = sprintf "https://%s%s", $self->servername, $path;
+    my $url     = $self->ua_base_url . $suffix;
 
-    $log->debug("GET $url ",{filter=>\&Dumper, value=>$json});
-    
-    my $tx  = $ua->get($url => json => $json);
+    $log->trace("SCOTUA performing $verb $url request");
+
+    my ($params, $json) = $self->extract_pj($data);
+
+    $log->debug("Params = $params") if ($params);
+    # $log->debug("Json   = ",{filter=>\&Dumper, value => $json}) if ($json);
+
+    if ( $params ) {
+        $url    = $url . "?" . $params;
+    }
+
+    my $tx;
+    if ( $json ) {
+        $tx     = $ua->$verb($url => json => $json);
+    }
+    else {
+        $tx  = $ua->$verb($url);
+    }
 
     if ( my $res = $tx->success ) {
-        $log->debug("GET $url SUCCESS!");
-        return $tx;
+        $log->debug("Successful $verb");
+        return $res->json;
     }
-    $log->error("GET $url FAILED!");
+    else {
+        my $err = $tx->error;
+        if ( $err->{code} ) {
+            $log->error("Error ".$err->{code}." response: ".$err->{message});
+        }
+        else {
+            $log->error("Error: ".$err->{message} );
+        }
+    }
     return undef;
 }
 
-sub do_request {
+sub extract_pj {
     my $self    = shift;
-    my $verb    = shift;
-    my $url     = shift;
     my $data    = shift;
-
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $ua      = $self->ua;
-
     my $params;
     my $json;
 
@@ -277,70 +302,67 @@ sub do_request {
         $params = $data->{params};
     }
     if ( $data->{json} ) {
-        $json   = $data->{json};
+        $json = $data->{json}
     }
-
-    if ( $params ) {
-        $url .= "?".$params;
-    }
-
-    $log->trace("[SCOTUA] $verb $url");
-
-    my $tx = retry {
-        $ua->$verb($url);
-    }
-    on_retry {
-        $log->trace("[SCOTUA] retrying $verb $url");
-    }
-    delay_exp {
-        3, 10000
-    }
-    catch {
-        $log->error("$verb failed!", 
-                    {filter =>  \&Dumper, value => $_->error});
-    };
-    return $tx;
+    return $params, $json;
 }
 
-sub post {
+sub get {
     my $self    = shift;
-    my $path    = shift;
-    my $json    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $url     = sprintf "https://%s%s", $self->servername, $path;
-    my $ua      = $self->ua;
+    my $type    = shift;
+    my $id      = shift;
+    my $json    = shift;    # {sorting, filtering}
+    my $log     = $self->log;
 
-    $log->debug("POST $url ",{filter=>\&Dumper, value=>$json});
+    $log->debug("getting $type $id");
 
-    my $tx  = $self->do_request("post", $url, { json => $json });
-    return $tx;
+    unless ($id) {
+        $log->debug("no id so doing a get many");
+        if ( $json ) {
+            $log->debug("with filtering/sorting");
+            return $self->do_request("get", $type, { json => $json });
+        }
+        $log->debug("straight get_many");
+        return $self->do_request("get", $type);
+    }
+    $log->debug("get_one");
+    return $self->do_request("get", "$type/$id");
 }
 
 sub put {
     my $self    = shift;
-    my $path    = shift;
-    my $json    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $url     = sprintf "https://%s%s", $self->servername, $path;
-    my $ua      = $self->ua;
+    my $type    = shift;
+    my $id      = shift;
+    my $data    = {
+        json    => shift
+    };
+    return $self->do_request("put", "$type/$id", $data);
+}
 
-    $log->debug("PUT $url ",{filter=>\&Dumper, value=>$json});
+sub post {
+    my $self    = shift;
+    my $type    = shift;
+    my $data    = {
+        json    => shift
+    };
+    return $self->do_request("post", "$type", $data);
+}
 
-    my $tx  = $ua->put($url => json => $json);
+sub delete {
+    my $self    = shift;
+    my $type    = shift;
+    my $id      = shift;
 
-    if ( my $res = $tx->success ) {
-        $log->debug("PUT $url success!");
-        return $tx;
-    }
-    
-    $log->error("PUT $url Failed");
-    return undef;
+    return $self->do_request("delete", "$type/$id");
+}
+
+sub get_alertgroup_by_msgid {
+    my $self    = shift;
+    my $id      = shift;
+    my $json    = { message_id => $id };
+
+    return $self->do_request("get", "alertgroup", {json => {match=>$json}});
 }
 
 
-# TODO: rest of the verbs
-
 1;
-

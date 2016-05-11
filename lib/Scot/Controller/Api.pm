@@ -294,14 +294,16 @@ sub get_many {
 
     $match_ref   = $req_href->{request}->{params}->{match} // 
                    $req_href->{request}->{json}->{match};
-  
+
     $match_ref  = $self->build_match_ref($match_ref);    
+
+    $log->debug("match_ref is ",{filter=>\&Dumper, value=>$match_ref});
 
     if ( $tasksearch == 1 ) {
         $match_ref->{'task.status'} = {'$exists' => 1};
     }
 
-    unless ( $match_ref ) {
+    unless ( %{$match_ref} ) {
         $log->debug("Empty match_ref! Easy, peasey");
         $match_ref  = {};
     }
@@ -1996,7 +1998,9 @@ sub build_match_ref {
     my @numfields       = qw(views); 
 
     while (my ($k, $v)  = each %{$filter_ref}) {
-        if($k =~ /id/) {
+        $log->debug("k = $k, v = $v");
+        if($k =~ /^id$/) {
+            $log->debug("id field");
             if(ref ($v) eq "ARRAY" ) {
                 @$v = map {$_} @$v;
                 if(grep(m/!/, @$v) || grep(m/Not/i, @$v)) {
@@ -2015,6 +2019,7 @@ sub build_match_ref {
             }
         }
         elsif ( grep {/$k/}  @numfields) {
+            $log->debug("numeric field");
             @$v = map {$_} @$v;
             if(grep(m/!/, @$v) || grep(m/Not/i, @$v)) {
                 for(@$v){
@@ -2031,9 +2036,11 @@ sub build_match_ref {
             }
         }
         elsif($k eq "tags") {
+            $log->debug("tag field");
             $match->{$k}  = {'$all' => $v };
         }	
         elsif ( grep { /$k/ } @datefields ) {
+            $log->debug("datefield!");
             if($v =~ m/!/ || $v =~ m/Not/i) {
                 $v  =~ s/\!//g;
                 $v  =~ s/\Not//gi;
@@ -2051,6 +2058,7 @@ sub build_match_ref {
             }
         }
         else {
+            $log->debug('default case!');
             if($v =~ m/!/ || $v =~ m/Not/i) {
                 $v  =~ s/\!//g;
                 $v  =~ s/\Not//gi;
@@ -2058,10 +2066,11 @@ sub build_match_ref {
                 $match->{$k} = {'$ne' => lc $v };
             }
             else {
-            $match->{$k} = qr/$v/i;
+                $match->{$k} = qr/$v/i;
             }
         }
     }
+    $log->debug("match is ", {filter=>\&Dumper, value => $match});
 	return $match;
 }
 
