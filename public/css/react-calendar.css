@@ -73,7 +73,9 @@
        -moz-user-select: none;
         -ms-user-select: none;
             user-select: none;
-    width: 275px; }
+    /*width: 275px; */ 
+    
+    }
   .DateRangePicker__MonthHeader {
     color: #000;
     font-size: 14px;
