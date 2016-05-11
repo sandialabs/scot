@@ -146,6 +146,9 @@ var AlertParent = React.createClass({
             lastIndex: null,
         }
     },
+    componentDidMount: function() {
+        $('#sortabletable').tablesorter();
+    },
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();
         var selected = true;
@@ -220,8 +223,8 @@ var AlertParent = React.createClass({
         }
         return (
             <div>
-                <div className="tablesorter alertTableHorizontal">
-                    <table width='100%'>
+                <div>
+                    <table className="tablesorter alertTableHorizontal" id={'sortabletable'} width='100%'>
                         <thead>
                             <tr>
                                 {header}
