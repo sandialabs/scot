@@ -96,7 +96,9 @@ var SelectedEntry = React.createClass({
         var showEntryData = this.props.showEntryData;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
         if (type =='alert' || type == 'entity') {
-            divClass = 'row-fluid entry-wrapper entry-wrapper-main-70'
+            //default size commented out for now
+            //divClass = 'row-fluid entry-wrapper entry-wrapper-main-70'
+            divClass= 'row-fluid entry-wrapper-main-nh';
             data = this.state.entryData;
             showEntryData = this.state.showEntryData;
         } else if (type =='alertgroup') {
@@ -104,7 +106,7 @@ var SelectedEntry = React.createClass({
         }
         return (
             <div className={divClass}> 
-                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected}/> : null} 
+                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected}/> : <span>Loading...</span>} 
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
             </div>       
@@ -135,14 +137,57 @@ var EntryIterator = React.createClass({
 
 var AlertParent = React.createClass({
     getInitialState: function() {
+        var arr = [];
         return {
-            activeID: 0,
+            activeIndex: arr,
+            lastIndex: null,
         }
     },
-    rowClicked: function(id) {
-        this.setState({activeID:id})
+    rowClicked: function(id,index,clickType,status) {
+        var array = this.state.activeIndex.slice();
+        var selected = true;
+        if (clickType == 'ctrl') {
+            for (var i=0; i < array.length; i++) {
+                if (array[i] === index) {
+                    array.splice(i,1)
+                    this.setState({activeIndex:array})
+                    selected = false;
+                }
+            }
+            if (selected == true) {
+                array.push(index);
+                this.setState({activeIndex:array})
+            }
+        } else if (clickType == 'shift') {
+            if (this.state.lastIndex != undefined) {
+                var min = Math.min(this.state.lastIndex,index);
+                var max = Math.max(this.state.lastIndex,index);
+                var min = max - min + 1;
+                var range = [];
+                while (min--) {
+                    range[min]=max--;
+                }
+                for (i=0; i < range.length; i++) {
+                    array.push(range[i]);
+                }
+                this.setState({activeIndex:array})
+            }
+        } else {
+            array = [];
+            array.push(index);
+            this.setState({activeIndex:array});
+        }
+        this.setState({lastIndex:index});
+        if (array.length == 1) {
+            this.props.alertSelected(array[0],id,'alert');
+        } else if (array.length == 0){   
+            this.props.alertSelected(null,null,'alert');
+        } else {
+            this.props.alertSelected('showall',id,'alert')
+        }
     },
     render: function() {
+        var z = 0;
         var items = this.props.items;
         var body = [];
         var header = [];
@@ -161,8 +206,8 @@ var AlertParent = React.createClass({
                 dataFlair = object.data;
             }
             
-            body.push(<AlertBody data={object} dataFlair={dataFlair} activeID={this.state.activeID} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected}/>)
-            body.push(<AlertRowBlank />);
+            body.push(<AlertBody index={z} data={object} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected}/>)
+            z++;
         }.bind(this))
         var search = null;
         if (items[0].data_with_flair != undefined) {
@@ -202,13 +247,25 @@ var AlertBody = React.createClass({
     getInitialState: function() {
         return {
             selected: 'un-selected',
-            selectedStatus: false,
             promotedNumber: null,
+            showEntry: false,
         }
     },
-    onClick: function() {
-        this.props.rowClicked(this.props.data.id);
-        this.props.alertSelected(this.props.data.id,'alert',this.props.data.status)
+    onClick: function(event) {
+        if (event.shiftKey == true) {
+            this.props.rowClicked(this.props.data.id,this.props.index,'shift',null);
+        } else if (event.ctrlKey == true || event.metaKey == true) {
+            this.props.rowClicked(this.props.data.id,this.props.index,'ctrl',this.props.data.status)
+        } else {
+            this.props.rowClicked(this.props.data.id,this.props.index,'',this.props.data.status);
+        }
+    },
+    toggleEntry: function() {
+        if (this.state.showEntry == false) {
+            this.setState({showEntry: true})
+        } else {
+            this.setState({showEntry: false})
+        }
     },
     navigateTo: function() {
         window.open('#/event/'+this.state.promotedNumber)
@@ -226,6 +283,7 @@ var AlertBody = React.createClass({
     render: function() {
         var data = this.props.data;
         var dataFlair = this.props.dataFlair;
+        var index = this.props.index;
         var selected = 'un-selected'
         var rowReturn=[];
         var buttonStyle = '';
@@ -243,19 +301,22 @@ var AlertBody = React.createClass({
             var value = data.columns[i];
             rowReturn.push(<AlertRow data={data} dataFlair={dataFlair} value={value} />)
         }
-        if (this.props.activeID != data.id) {
-            selected = 'un-selected';
-        } else {
-            selected = 'selected';
-        } 
+        for (var j=0; j < this.props.activeIndex.length; j++) {
+            if (this.props.activeIndex[j] === index) {
+                selected = 'selected';
+            } 
+        }
         var id = 'alert_'+data.id+'_status';
         return (
-            <tr id={data.id} className={selected} style={{cursor: 'pointer'}} onClick={this.onClick}>
-                <td valign='top' style={{marginRight:'4px'}}>{data.id}</td>
-                <td valign='top' style={{marginRight:'4px'}}>{data.status != 'promoted' ? <span style={{color:buttonStyle}}>{data.status}</span> : <Button bsSize='xsmall' bsStyle={buttonStyle} id={id} onClick={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{data.status}</Button>}</td>
-                <td valign='top' style={{marginRight:'4px'}}>{data.entries}</td>
-                {rowReturn}
-            </tr>
+            <div>
+                <tr index={index} id={data.id} className={selected} style={{cursor: 'pointer'}} onClick={this.onClick}>
+                    <td valign='top' style={{marginRight:'4px'}}>{data.id}</td>
+                    <td valign='top' style={{marginRight:'4px'}}>{data.status != 'promoted' ? <span style={{color:buttonStyle}}>{data.status}</span> : <Button bsSize='xsmall' bsStyle={buttonStyle} id={id} onClick={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{data.status}</Button>}</td>
+                    <td valign='top' style={{marginRight:'4px'}}><a href="javascript: void(0)" onClick={this.toggleEntry}>{data.entry_count}</a></td>
+                    {rowReturn}
+                </tr>
+                <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} />
+            </div>
         )
     }
 });
@@ -276,14 +337,17 @@ var AlertRow = React.createClass({
 
 AlertRowBlank = React.createClass({
     render: function() {
-    return (
-        <tr className='not_selectable'>
-            <td style={{padding:'0'}}>
-            </td>
-            <td colSpan="50" style={{padding:'1px'}}>
-            </td>
-        </tr>
-    )
+        var id = this.props.id;
+        var showEntry = this.props.showEntry;
+        return (
+            <tr className='not_selectable'>
+                <td style={{padding:'0'}}>
+                </td>
+                <td colSpan="50" style={{padding:'1px'}}>
+                    {showEntry ? <SelectedEntry type={this.props.type} id={this.props.id} /> : null}
+                </td>
+            </tr>
+        )
     }
 });
 
@@ -397,23 +461,23 @@ var EntryParent = React.createClass({
 
 var EntryData = React.createClass({ 
     getInitialState: function() {
-        if (this.props.type == 'alert' || this.props.type == 'entity') {
+        /*if (this.props.type == 'alert' || this.props.type == 'entity') {
             return {
                 height:'200px',
                 entityid:null,
                 resize:false,
             }
-        } else {
+        } else {*/
             return {
                 height:'1px',
                 entityid:null,
                 resize:false,
             }
-        }
+        //}
     }, 
     onLoad: function() {
         if (document.getElementById('iframe_'+this.props.id).contentDocument.readyState === 'complete') {
-        if (this.props.type != 'alert' && this.props.type !='entity') {
+        //if (this.props.type != 'alert' && this.props.type !='entity') {
             if (this.state.height == '1px') {
                 setTimeout(function() {
                     document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
@@ -437,7 +501,7 @@ var EntryData = React.createClass({
                     }.bind(this))
                 }.bind(this)); 
             }
-        }
+        //}
         } else {
             setTimeout(this.onLoad,0);
         }
@@ -458,8 +522,6 @@ var EntryData = React.createClass({
             rawMarkup = this.props.subitem.body;
         }
         var id = this.props.id;
-        //Lazy Loading Flair here as other components, namely Flair that need to access the parent component here "SelectedEntry" as it can not be accessed due to a cyclic dependency loop between Flair and SelectedEntry. Lazy loading solves this issue. This problem should go away upon upgrading everything to ES6 and using imports/exports. 
-        //var Flair = require('../modal/flair_modal.jsx');
         return (
             <div key={this.props.id} className={'row-fluid entry-body'}>
                 <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>

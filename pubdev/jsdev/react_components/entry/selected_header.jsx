@@ -60,9 +60,10 @@ var SelectedHeader = React.createClass({
             entryLoaded:false,
             entityLoaded:false,
             alertSelected:false,
-            aID:0,
+            aIndex:null,
             aType:null,
-            aStatus:null
+            aStatus:null,
+            aID:0,
         }
     },
     componentDidMount: function() {
@@ -177,9 +178,49 @@ var SelectedHeader = React.createClass({
         } else {
             this.setState({notificationType:null,notificationMessage:null,showFlash:false}); 
         }
-         
-        console.log('Ran update')  
-    }, 
+    },
+    /*granular updates -- to be implemented later 
+    updatedType: function() {
+        this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
+            var eventResult = result;
+            this.setState({showEventData:true, eventLoaded:true, headerData:eventResult})
+        }.bind(this)); 
+    },
+    updatedSource: function() {
+       this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
+            var sourceResult = result.records;
+            this.setState({showSource:true, sourceLoaded:true, sourceData:sourceResult})
+       }.bind(this)); 
+    },
+    updatedTag: function() {
+        this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
+            var tagResult = result.records;
+            this.setState({showTag:true, tagLoaded:true, tagData:tagResult});
+        }.bind(this));
+    },
+    updatedEntry: function() {
+        var entryType = 'entry';
+        if (this.props.type == 'alertgroup') {entryType = 'alert'};
+        this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, function(result) {
+            var entryResult = result.records;
+            this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult}) 
+        }.bind(this)); 
+        this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
+            var entityResult = result.records;
+            this.setState({showEntityData:true, entityLoaded:true, entityData:entityResult})
+            var waitForEntry = {
+                waitEntry: function() {
+                    if(this.state.entryLoaded == false && alertgroupforentity === false){
+                        setTimeout(waitForEntry.waitEntry,50);
+                    } else {
+                        alertgroupforentity = false;
+                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+                    }
+                }.bind(this)
+            };
+            waitForEntry.waitEntry();
+        }.bind(this));
+     },*/
     notification: function() {
         var notification = this.refs.notificationSystem
         if(activemqwho != "" && notification != undefined && activemqwho != 'api'){
@@ -268,8 +309,8 @@ var SelectedHeader = React.createClass({
             newstring
         )
     },
-    alertSelected: function(aID,aType,aStatus){
-        this.setState({alertSelected:true,aID:aID,aType:aType,aStatus:aStatus})
+    alertSelected: function(aIndex,aID,aType,aStatus){
+        this.setState({alertSelected:true,aIndex:aIndex,aID:aID,aType:aType,aStatus:aStatus})
     },
     sourceToggle: function() {
         $.ajax({
@@ -332,12 +373,12 @@ var SelectedHeader = React.createClass({
                 
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} /> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
-                {this.state.historyToolbar ? <div>{this.state.alertSelected == false ? <History historyToggle={this.historyToggle} id={id} type={type} /> : <History historyToggle={this.historyToggle} id={this.state.aID} type={this.state.aType} />}</div> : null}
+                {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null} 
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData} flairToolbarToggle={this.flairToolbarToggle} /> : null}
                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
                 {this.state.entryToolbar ? <div>{this.state.alertSelected == false ? <AddEntryModal title={'Add Entry'} type={type} targetid={id} id={id} addedentry={this.entryToggle} updated={this.updated}/> : <AddEntryModal title={'Add Entry'} type={this.state.aType} targetid={this.state.aID} addedentry={this.entryToggle} updated={this.updated}/> }</div> : null}
                 {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
-                {type != 'alertgroup' ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle} updated={this.updated} /> : <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aID={this.state.aID} aType={this.state.aType} aStatus={this.state.aStatus} guideToggle={this.guideToggle} sourceToggle={this.sourceToggle} />} 
+                {type != 'alertgroup' ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle} updated={this.updated} /> : <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} guideToggle={this.guideToggle} sourceToggle={this.sourceToggle} />} 
                 </div>
                 {this.state.showFlash == true ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} /> : null}
                 <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} /> 
