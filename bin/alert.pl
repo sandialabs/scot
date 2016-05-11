@@ -5,18 +5,15 @@ use warnings;
 use v5.18;
 
 use lib '../lib';
+use lib '../../Scot-Internal-Modules/lib';
 use Scot::App::Mail;
 use Scot::Env;
 use Data::Dumper;
 
-my $env         = Scot::Env->new({
-    logfile     => '/var/log/scot/alert.log',
-    authtype    => 'Remoteuser',
-    servername  => 'as3001snllx',
-});
+say "--- Starting Mail Ingester ---";
 
-$env->log->warn("Starting $0");
 my $processor   = Scot::App::Mail->new({
+    cfile       => "/home/tbruner/mail.app.conf",
     interactive => "yes",
 });
 $processor->run();
