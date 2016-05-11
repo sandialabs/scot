@@ -64,6 +64,7 @@ var SelectedHeader = React.createClass({
             aType:null,
             aStatus:null,
             aID:0,
+            guideID: null,
         }
     },
     componentDidMount: function() {
@@ -115,7 +116,13 @@ var SelectedHeader = React.createClass({
                 }.bind(this)
             };
             waitForEntry.waitEntry();
-        }.bind(this)); 
+        }.bind(this));
+        if (this.props.type == 'alertgroup') {
+            this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/guide', function(result) {
+                var guideID = result.records[0].id;
+                this.setState({guideID: guideID});
+            }.bind(this));     
+        }
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated); 
         Store.storeKey('entryNotification')
@@ -301,7 +308,7 @@ var SelectedHeader = React.createClass({
         }
     },
     guideToggle: function() {
-        window.open('#/guide/' + this.props.id); 
+        window.open('#/guide/' + this.state.guideID);
     },
     titleCase: function(string) {
         var newstring = string.charAt(0).toUpperCase() + string.slice(1)

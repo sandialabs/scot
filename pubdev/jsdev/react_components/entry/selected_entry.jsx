@@ -280,6 +280,16 @@ var AlertBody = React.createClass({
             }.bind(this))
         }
     },
+    componentWillReceiveProps: function() {
+        if (this.props.data.status == 'promoted') {
+            $.ajax({
+                type: 'GET',
+                url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
+            }).success(function(response){
+                this.setState({promotedNumber:response.records[0].id});             
+            }.bind(this))
+        }
+    },
     render: function() {
         var data = this.props.data;
         var dataFlair = this.props.dataFlair;
