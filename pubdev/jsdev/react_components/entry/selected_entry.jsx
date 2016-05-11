@@ -99,7 +99,7 @@ var SelectedEntry = React.createClass({
             showEntryData = this.state.showEntryData;
         }
         return (
-            <div className={divClass}> 
+            <div className={divClass} style={{height:this.props.windowHeight}}> 
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} /> : null} 
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}

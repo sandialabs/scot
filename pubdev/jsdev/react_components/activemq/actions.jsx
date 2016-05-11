@@ -30,7 +30,7 @@ function register_client(){
 var Actions = {
 
    getClient: function(){
-    register_client()
+        register_client()
     },
     updateView: function(){
         var now = new Date();
