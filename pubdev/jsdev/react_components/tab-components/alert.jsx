@@ -176,7 +176,6 @@ module.exports = React.createClass({
                         React.createElement(Search, null)),                        
                         React.createElement('btn-group', {style: {'padding-left': '0px'}}, 
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
-                        React.createElement('button', {className: 'btn btn-default', onClick: this.createevent, style: styles}, 'Create Event'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'eventwidth', style: {display:'flex'}},
             React.createElement('div', null,  

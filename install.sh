@@ -25,6 +25,7 @@ fi
 ##
 
 DEVDIR="$( cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PRIVATE_SCOT_MODULES="$DEVDIR/../Scot-Internal-Modules"
 FILESTORE="/opt/scotfiles";
 SCOTDIR="/opt/scot"
 SCOTROOT="/opt/scot"
@@ -593,6 +594,11 @@ fi
 
 usermod -a -G scot www-data
 cp -r $DEVDIR/* $SCOTDIR/
+
+if [ -d "$PRIVATE_SCOT_MODULES" ]; then
+    . $PRIVATE_SCOT_MODULES/install.sh
+fi
+
 chown -R scot.scot $SCOTDIR
 chmod -R 755 $SCOTDIR/bin
 
