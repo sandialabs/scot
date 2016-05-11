@@ -107,7 +107,7 @@ var App = React.createClass({
 	    else if(this.props.params.value.toLowerCase() == "intel") {
 	        state = 4
 	        if(this.props.params.id != null) {
-	            state = 5
+	            state = 4
 	            statetype = 'intel'	
 	            array = this.props.params.id.split('+')
 	        }
@@ -228,7 +228,7 @@ var App = React.createClass({
         :
         this.state.set == 4
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(Intel, null))
+        React.createElement(ExpandableNavPage, null, React.createElement(Intel, {ids: this.state.ids}))
         :
         this.state.set == 6
         ?	
