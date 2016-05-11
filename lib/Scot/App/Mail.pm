@@ -1,20 +1,6 @@
 package Scot::App::Mail;
 
 use lib '../../../lib';
-
-=head1 Name
-
-Scot::App::Mail
-
-=head1 Description
-
-This Controller, initiates a connection to a IMAP server
-gets unread mail
-parses it into Alergroups/Alerts
-profits
-
-=cut
-
 use Data::Dumper;
 use Try::Tiny;
 use Mojo::UserAgent;
@@ -42,7 +28,7 @@ has max_processes => (
     is          => 'rw',
     isa         => 'Int',
     required    => 1,
-    default     => 4,
+    default     => 0,
 );
 
 has interactive => (
@@ -95,44 +81,68 @@ sub _build_scot_scot {
     return Scot::Util::Scot->new();
 }
 
+has fetch_mode  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'unseen',
+);
+
+has since       => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    default     => sub { { hour => 2 } },
+);
+
 sub run {
     my $self    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
     my $imap    = $env->imap;
 
-    $log->trace("Beginning Alert Email Processing...");
+    $log->trace("Beginning Alert Email Processing");
 
-    my @unread  = $imap->get_unseen_mail;
+    print "Alert Email Processing...\n" if ( $self->interactive eq "yes" );
 
-    if ( $self->interactive eq "yes" ) {
-        $self->max_processes(0);
+    my $cursor;
+    if ( $self->fetch_mode eq "unseen" ) {
+        $log->debug("requesting unseen message uids");
+        $cursor = $imap->get_unseen_cursor;
     }
-    
+    else {
+        $log->debug("requesting message uids since ",
+                    {filter=>\&Dumper,value=>$self->since});
+        $cursor = $imap->get_since_cursor($self->since);
+    }
+
+    unless (scalar($cursor) > 0) {
+        $log->warn("No Messages UIDs returned from IMAP server");
+        exit 1;
+    }
+
     my $taskmgr = Parallel::ForkManager->new($self->max_processes);
 
     MESSAGE:
-    foreach my $uid (@unread) {
+    while ( my $uid = $cursor->next ) {
 
-        next unless $uid;
+        my $msg_href    = $imap->get_message($uid);
 
         my $pid = $taskmgr->start and next;
 
-        if ( $pid == 0 ) {
-            $log->trace("[UID $uid] Child process $pid begins working");
-            my $imap     = $env->imap;
-            my $msg_href = $imap->get_message($uid);
-            $self->process_message($msg_href);
-            $log->trace("[UID $uid] Child process $pid finishes working");
-            $taskmgr->finish;
-        }
+        $log->trace("[UID $uid] Child process $pid begins");
+        $self->process_message($msg_href);
+        $log->trace("[UID $uid] Child process $pid finishes");
+        $taskmgr->finish;
+
         if ( $self->interactive eq "yes" ) {
-            print "Press Enter to continue, or \"off\" to continue to finish: ";
+            print "Press ENTER to continue, or \"off\" to turn of interactive";
             my $resp = <STDIN>;
-            if ( $resp =~ /off/ ) {
+            if ( $resp =~ /off/i ) {
                 $self->interactive("no");
             }
         }
+
     }
     $taskmgr->wait_all_children;
 }
@@ -144,24 +154,39 @@ sub process_message {
     my $log     = $env->log;
     my $scot    = $self->scot;
 
+    if ( $self->interactive eq "yes" ) {
+        print "- PROCESSING -\n";
+        print "---- message_id ". $msghref->{message_id}."\n";
+        print "---- subject    ". $msghref->{subject}."\n";
+    }
+
     # is message from approved sender?
     unless ( $self->approved_sender($msghref) ) {
         $log->error("Unapproved Sender is sending message to SCOT");
         $log->error({ filter => \&Dumper, value => $msghref });
+        if ($self->interactive eq "yes") {
+            print "unapproved sender ".$msghref->{from}." rejected \n";
+        }
         return;
     }
 
     # is message a health check?
     if ( $self->is_health_check($msghref) ) {
         $log->trace("Health check received...");
+        print "health check...skipping.\n" if ($self->interactive eq "yes");
         return;
     }
 
     # we get this far, let's parse it and create alerts/alertgroup
     my $source = $self->get_source($msghref);
 
+    print "parsing with $source \n" if ($self->interactive eq "yes");
+
     my $json_to_post = $self->$source($msghref);
     my $path         = "/scot/api/v2/alertgroup";
+
+    $json_to_post->{message_id} = $msghref->{message_id};
+    $json_to_post->{subject}    = $msghref->{subject};
 
     $log->debug("Json to Post = ", {filter=>\&Dumper, value=>$json_to_post});
 
@@ -172,6 +197,7 @@ sub process_message {
     unless (defined $tx) {
         $log->error("ERROR! Undefined transaction object $path ",
                     {filter=>\&Dumper, value=>$json_to_post});
+        print "post to scot failed!\n" if ($self->interactive eq "yes");
         return;
     }
     
@@ -179,8 +205,10 @@ sub process_message {
         $log->error("Failed posting new alertgroup mgs_uid:", $msghref->{imap_uid});
         $log->debug("tx->res is ",{filter=>\&Dumper, value=>$tx->res});
         $env->imap->mark_uid_unseen($msghref->{imap_uid});
+        print "post to scot failed!\n" if ($self->interactive eq "yes");
         return;
     }
+    print "posted to scot.\n" if ($self->interactive eq "yes");
     $log->trace("Created alertgroup ". $tx->res->json->{id});
 }
 
@@ -206,8 +234,8 @@ sub approved_sender {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
-    my $domains = $env->approved_alert_domains;
-    my $senders = $env->approved_accounts;
+    my $domains = $self->approved_alert_domains;
+    my $senders = $self->approved_accounts;
     my $this_sender = $href->{from};
     my $log     = $env->log;
 
@@ -275,6 +303,11 @@ sub splunk {
 
     $log->trace("Parsing Splunk Message Body");
     $log->trace("Body is : ",{filter=>\&Dumper,value=>$body});
+
+    unless ( $body =~ /\<html\>/i ) {
+        $body   = "<html>".$body."</html>";
+        $log->warn("SPLUNK message was not in HTML.  Parsing will not work!");
+    }
 
     my  $tree   = HTML::TreeBuilder->new;
         $tree   ->implicit_tags(1);
@@ -351,8 +384,8 @@ sub splunk {
         }
         push @results, \%rowres;
     }
-    $json->{data}   = \@results;
-    $json->{columns} = \@columns;
+    $json->{data}       = \@results;
+    $json->{columns}    = \@columns;
     return $json;
 }
 

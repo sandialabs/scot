@@ -7,5 +7,18 @@ package Scot::Role::Entriable;
 
 use Moose::Role;
 
+has entry_count => (
+    is          => 'ro',
+    isa         => 'Num',
+    traits      => [ 'Counter' ],
+    required    => 1,
+    default     => 0,
+    handles     => {
+        inc_entry_count => 'inc',
+        dec_entry_count => 'dec',
+        reset_entry_count   => 'reset',
+    }
+);
+
 
 1;

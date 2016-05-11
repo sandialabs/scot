@@ -12,24 +12,8 @@ Scot::Model::Link
 
 The model of a Link Record
 
-Solves the problem of how to associate a group of things with
-another group of things without resorting to arrays (previous attempt)
-the $addToSet funtction is so slow.  
-
-Think of this as a multi to multi junction table from SQL  world
-
-or
-
- item <---> target   unidirectional graph component
-
-We are not restricting to single links, in other works
-
-entity 123 <---> entry  1010 @ 1453132180
-entity 123 <---> entry  1010 @ 1453132180
-entity 123 <---> alert  1011001 @ 1453102111
-
-which gives us the count (3) and a timeseries of when we first saw entity 123
-and the subsequent appearances.
+Adding {target,id} to an array in Entity.pm is a performance killer
+So Link records will link an Entity to a thing that contains it's entity
 
 =cut
 
@@ -37,6 +21,7 @@ extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
     Scot::Role::Hashable
+    Scot::Role::Target
 );
 
 =head1 Attributes
@@ -57,19 +42,36 @@ has when  => (
     default     => sub { time(); },
 );
 
-=item B<pair>
+=item B<entity_id>
 
-this is the pair of items that are linked
-[ { id: 1, type: "alert" }, {id:2, type:"alertgroup"} ]
+the id of the entity
 
 =cut
 
-has pair    => (
+has entity_id   => (
     is          => 'ro',
-    isa         => 'ArrayRef',
+    isa         => 'Int',
     required    => 1,
-    default     => sub { [] },
 );
+
+=item B<entity_value>
+
+a copy of the entity value, makes some queries easier
+
+=cut
+
+has value   => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+);
+
+=item B<target>
+
+from role Target.pm
+what the entity is linked to
+
+=cut
 
 
 __PACKAGE__->meta->make_immutable;
