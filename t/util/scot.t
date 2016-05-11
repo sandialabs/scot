@@ -6,47 +6,63 @@ use v5.18;
 use lib '../../lib';
 
 use Test::More;
-use Test::Mojo;
-use Scot::Env;
 use Scot::Util::Scot;
 use Data::Dumper;
+use IO::Prompt;
+my $user = $ENV{'scot_ua_username'};
+unless ($user ) {
+    prompt "Enter username > ";
+    $user    = $_;
+}
+my $pass = $ENV{'scot_ua_password'};
+unless ($pass ) { 
+    prompt ("Enter Password > ", -e => '*');
+    $pass    = $_;
+}
 
-$ENV{'scot_mode'}       = "testing";
-$ENV{'SCOT_AUTH_TYPE'}  = "Testing";
-
-my $env     = Scot::Env->new();
 my $scot    = Scot::Util::Scot->new({
-    env         => $env,
-    servername  => 'as3001snllx.sandia.gov:3000',
-    username    => 'scot-alerts',
-    password    => 'ukeSb=r9',
+    servername  => 'as3001snllx.sandia.gov',
+    username    => $user,
+    password    => $pass,
+    authtype    => 'RemoteUser',
 });
 
-my $json    = $scot->get('config','2');
+#my $json = $scot->get_alertgroup_by_msgid('<01802c60-6e4f-400a-9465-30ced472d208@EXCH03.srn.sandia.gov>');
+# my $json = $scot->get_alertgroup_by_msgid('<asdfasdf>');
+
+# say "alertgroup is ", Dumper($json);
+
+# exit 1;
+
+my $json    = $scot->do_request('get','config/2');
+
+is($json->{id}, 2, "Correct ID");
+is($json->{module}, "Scot::Util::Imap", "Correct Module");
+
+$json = $scot->do_request("get", "event");
 say Dumper($json);
 
-my $tx  = $scot->post({
-    message_id  => '112233445566778899aabbccddeeff',
-    subject     => 'test message 1',
-    data        => [
-        { foo   => 1,   bar => 2 },
-        { foo   => 3,   bar => 4 },
-    ],
-    tags     => [qw(test testing)],
-    sources  => [qw(todd scot)],
-    columns  => [qw(foo bar) ],
+
+$json    = $scot->do_request('post', "alertgroup", {
+    json    => {
+        message_id  => '112233445566778899aabbccddeeff',
+        subject     => 'test message 1',
+        data        => [
+            { foo   => 1,   bar => 2 },
+            { foo   => 3,   bar => 4 },
+        ],
+        tags     => [qw(test testing)],
+        sources  => [qw(todd scot)],
+        columns  => [qw(foo bar) ],
+    }
 });
 
-my $alertgroup_id   = $tx->res->json->{id};
+say Dumper($json);
 
-my $txget   = $scot->get_url(
-    "/scot/api/v2/alertgroup/$alertgroup_id"
-);
+my $aid = $json->{id};
 
-say Dumper($txget->res->json);
+$json = $scot->do_request('get', "alertgroup/$aid");
 
-my $atxget  = $scot->get_url(
-    "/scot/api/v2/alertgroup/$alertgroup_id/alert"
-);
+say "alertgroup is ", Dumper($json);
 
-say Dumper($atxget->res->json);
+
