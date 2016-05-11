@@ -176,6 +176,8 @@ sub migrate {
 
         my $min_migrated_id = $self->get_min_id($mtype, $id_range);
 
+        $log->debug("minimum id found: $min_migrated_id");
+
         my $colname     = $self->lookup_legacy_colname($mtype);
         my $legcol      = $self->legacydb->get_collection($colname);
         my $legcursor   = $legcol->find({
@@ -185,7 +187,12 @@ sub migrate {
             }
         });
         $legcursor->immortal(1);
-        $legcursor->sort({$idfield => -1});
+        if ( $idfield eq "guide_id" ) {
+            $legcursor->sort({$idfield => 1});
+        }
+        else {
+            $legcursor->sort({$idfield => -1});
+        }
         my $remaining_docs  = $legcursor->count();
         my $migrated_docs   = 0;
         my $total_docs      = $remaining_docs;
@@ -255,10 +262,29 @@ sub migrate {
                 print " $ratestr $etastr ".  $self->commify($remaining_docs). " remain\n";
             }
         }
-
+        $self->update_last_id($mtype);
         $forkmgr->finish;
     }
     $forkmgr->wait_all_children;
+}
+
+sub update_last_id {
+    my $self    = shift;
+    my $type    = shift;
+    my $ncol    = $self->db->get_collection('nextid');
+    my $col     = $self->db->get_collection($type);
+
+    my $cursor  = $col->find({});
+    $cursor->sort({id => -1});
+    my $object  = $cursor->next;
+
+    unless ($object) {
+        $self->env->log->error("Didn't find an object $type in update last id!");
+        return;
+    }
+
+    my $max = $object->id;
+    $ncol->update_one({for_collection => $type}, { '$set' => { last_id => $max }});
 }
 
 sub get_idranges {
@@ -266,6 +292,7 @@ sub get_idranges {
     my $opts    = shift;
     my $mtype   = shift;
     my $idfield = $self->lookup_idfield($mtype);
+    my $log     = $self->env->log;
 
     my @ids    = ();
 
@@ -286,6 +313,7 @@ sub get_idranges {
     my $total_docs      = $cursor->count;
 
     if ( $numprocs == 1 or $mtype eq "guide" or $mtype eq "handler" ) {
+        $log->debug("total docs = ".$total_docs);
         @ids    = (
             [ 1, $total_docs + 1 ],
         );
@@ -383,27 +411,24 @@ sub xform_event {
     $log->debug("[Event $id] transformation");
 
     my @links;
-    my @alinks = map {
-        { pair  => [ { type => "alert", id => $_ },
-                     { type => "event", id => $id }, ],
-          when  => $href->{created} // $href->{updated} }
-    } @{ delete $href->{alerts} // [] };
-    my @ilinks = map {
-        { pair  => [ { type => "incident", id => $_ },
-                     { type => "event", id => $id }, ],
-          when  => $href->{created} // $href->{updated} }
-    } @{ delete $href->{incidents} // [] };
-    push @links, @alinks, @ilinks;
+
+    $href->{promoted_from} = delete $href->{alerts} // [];
+    if ( defined $href->{incident}) {
+        $href->{promotion_id}  = pop @{delete $href->{incident}} // 0;
+    }
+    else {
+        $href->{promotion_id}   = 0;
+    }
 
     my @history = map {
         { event => $id, history => $_ }
     } @{ delete $href->{history} //[] };
     my @tags    = map {
-        { events => $id, tag => { value => $_ } }   
-    } @{ delete $href->{tags} //[] };
+        { event => $id, tag => { value => $_ } }   
+    } @{ $href->{tags} //[] };
     my @sources = map {
-        { events => $id, source => { value => $_, } }
-    } @{ delete $href->{sources} //[] };
+        { event => $id, source => { value => $_, } }
+    } @{ $href->{sources} //[] };
 
     $href->{views}  = delete $href->{view_count};
 
@@ -429,24 +454,24 @@ sub xform_incident {
 
     $log->debug("[Incident $id] transformation ");
 
-    my @links = map { 
-        { pair  => [ {type  => "event", id    => $_, }, 
-                     {type  => "incident", id => $id }, ],
-          when  => $href->{created}//$href->{updated} } 
-    } @{ delete $href->{events} // [] };
+    my @links;
+    $href->{promoted_from} = delete $href->{events} // [];
 
     unless ( defined $href->{owner} ) {
         $href->{owner} = "unknown";
     }
+
     my @history = map {
-        { event => $id, history => $_ }
+        { incident => $id, history => $_ }
     } @{ delete $href->{history} //[] };
+
     my @tags    = map {
-        { events => $id, tag => { value => $_ } }   
-    } @{ delete $href->{tags} //[] };
+        { incident => $id, tag => { value => $_ } }   
+    } @{ $href->{tags} //[] };
+
     my @sources = map {
-        { events => $id, source => { value => $_, } }
-    } @{ delete $href->{sources} //[] };
+        { incident => $id, source => { value => $_, } }
+    } @{ $href->{sources} //[] };
 
     $col->insert_one($href);
 
@@ -457,6 +482,122 @@ sub xform_incident {
 
     return 1;
 }
+
+sub xform_alertgroup {
+    my $self    = shift;
+    my $col     = shift;
+    my $href    = shift;
+    my $verbose = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $id      = $href->{id};
+
+    $log->debug("[Alertgroup $id] transformation ");
+
+    $href->{promotion_id}  = pop @{delete $href->{events}} // 0;
+    
+    my @links;
+
+    my @history = map {
+        { alertgroup => $id, history => $_ }
+    } @{ delete $href->{history} //[] };
+
+    my @tags    = map {
+        { alertgroup => $id, tag => { value => $_ } }   
+    } @{ delete $href->{tags} //[] };
+
+    my @sources = map {
+        { alertgroup => $id, source => { value => $_, } }
+    } @{ delete $href->{sources} //[] };
+
+    $href->{body}        = delete $href->{body_html};
+
+    my $newalertcol     = $self->db->get_collection('alert');
+    my $leg_alert_col   = $self->legacydb->get_collection('alerts');
+    my $leg_alert_cursor= $leg_alert_col->find({alertgroup => $id});
+    $leg_alert_cursor->immortal(1);
+    my $alert_count     = $leg_alert_cursor->count();
+    my $entities;
+    my @alert_promotions    = ();
+    my %status;
+    my @allentities = ();
+
+    ALERT:
+    while ( my $alert = $leg_alert_cursor->next ) {
+        my $alertid     = $alert->{alert_id};
+        $alert->{id}    = delete $alert->{alert_id};
+        die "No AlertID! ".Dumper($alert) unless (defined $alertid);
+
+        $status{$alert->{status}}++;
+        $log->trace("[alert $alertid] removing unneeded fields");
+        foreach my $attribute ( @{ $self->get_unneeded_fields('alert') }) {
+            delete $alert->{$attribute};
+        }
+        if ( $alert->{updated} ) {
+            $alert->{updated}    = int($alert->{updated});
+        }
+
+        if ( $alert->{readgroups} ) {
+            $alert->{groups} = {
+                read    => delete $alert->{readgroups} // $self->default_read,
+                modify  => delete $alert->{modifygroups} // $self->default_modify,
+            };
+        }
+        my @alerthistory = map {
+            { alert => $id, history => $_ }
+        } @{ delete $alert->{history} //[] };
+        push @history, @alerthistory;
+
+        ( $alert->{data_with_flair},
+          $entities ) = $self->flair_alert_data($alert);
+
+        if ( defined($entities) and ref($entities) eq "ARRAY" ) {
+            push @allentities, @$entities;
+        }
+
+        unless ( $alert->{data_with_flair} ) {
+            $alert->{data_with_flair} = $alert->{data};
+        }
+
+        my $event_aref  = delete $alert->{events};
+        
+        if ( defined $event_aref ) {
+            if ( scalar(@{$event_aref}) > 0 ) {
+                $alert->{promotion_id} = pop @$event_aref;
+            }
+            else {
+                $alert->{promotion_id} = 0;
+            }
+        }
+        $newalertcol->insert_one($alert);
+    }
+
+    $href->{alert_count}    = $alert_count;
+    $href->{open_count}     = $status{open} // 0;
+    $href->{closed_count}   = $status{count} // 0;
+    $href->{promoted_count} = $status{promoted} // 0;
+
+    if ( $status{promoted} > 0 ) {
+        $href->{status} = "promoted";
+    }
+    elsif ( $status{open} > 0 ) {
+        $href->{status} = "open";
+    }
+    else {
+        $href->{status} = "closed";
+    }
+
+    $col->insert_one($href);
+
+    push @links, $self->create_history(@history);
+    push @links, $self->create_sources(@sources);
+    push @links, $self->create_tags(@tags);
+    push @links, $self->create_entities(\@allentities);
+    $self->create_links(@links);
+
+    return 1;
+}
+
 sub xform_entry {
     my $self    = shift;
     my $col     = shift;
@@ -491,115 +632,33 @@ sub xform_entry {
         type        => delete $href->{target_type},
         id          => delete $href->{target_id},
     };
+
     my @history = map {
-        { event => $id, history => $_ }
+        { entry => $id, history => $_ }
     } @{ delete $href->{history} //[] };
+
     $col->insert_one($href);
-    my @links;
+    my   @links;
     push @links, $self->create_history(@history);
     push @links, $self->create_entities($entities);
     $self->create_links(@links);
+    $self->update_target_entry_count($href->{target});
     return 1;
 }
 
-sub xform_alertgroup {
+sub update_target_entry_count {
     my $self    = shift;
-    my $col     = shift;
-    my $href    = shift;
-    my $verbose = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $id      = $href->{id};
-
-    $log->debug("[Alertgroup $id] transformation ");
-
-    my @links = map { 
-        { pair  => [ {type  => "event", id    => $_, }, 
-                     {type  => "alertgroup", id => $id }, ],
-          when  => $href->{created}//$href->{updated} } 
-    } @{ delete $href->{events} // [] };
-
-    my @history = map {
-        { alertgroup => $id, history => $_ }
-    } @{ delete $href->{history} //[] };
-    my @tags    = map {
-        { alertgroup => $id, tag => { value => $_ } }   
-    } @{ delete $href->{tags} //[] };
-    my @sources = map {
-        { alertgroup => $id, source => { value => $_, } }
-    } @{ delete $href->{sources} //[] };
-
-    $href->{body}        = delete $href->{body_html};
-
-    my $newalertcol     = $self->db->get_collection('alert');
-    my $leg_alert_col   = $self->legacydb->get_collection('alerts');
-    my $leg_alert_cursor= $leg_alert_col->find({alertgroup => $id});
-    $leg_alert_cursor->immortal(1);
-    my $alert_count     = $leg_alert_cursor->count();
-    my $entities;
-    my @alert_promotions    = ();
-    my %status;
-    my @allentities = ();
-
-    ALERT:
-    while ( my $alert = $leg_alert_cursor->next ) {
-        my $alertid     = $alert->{alert_id};
-        $alert->{id}    = delete $alert->{alert_id};
-        die "No AlertID! ".Dumper($alert) unless (defined $alertid);
-        $status{$alert->{status}}++;
-        $log->trace("[alert $alertid] removing unneeded fields");
-        foreach my $attribute ( @{ $self->get_unneeded_fields('alert') }) {
-            delete $alert->{$attribute};
-        }
-        if ( $alert->{updated} ) {
-            $alert->{updated}    = int($alert->{updated});
-        }
-
-        if ( $alert->{readgroups} ) {
-            $alert->{groups} = {
-                read    => delete $alert->{readgroups} // $self->default_read,
-                modify  => delete $alert->{modifygroups} // $self->default_modify,
-            };
-        }
-        my @alerthistory = map {
-            { alert => $id, history => $_ }
-        } @{ delete $alert->{history} //[] };
-        push @history, @alerthistory;
-
-        ( $alert->{data_with_flair},
-          $entities ) = $self->flair_alert_data($alert);
-
-        if ( defined($entities) and ref($entities) eq "ARRAY" ) {
-            push @allentities, @$entities;
-        }
-
-        unless ( $alert->{data_with_flair} ) {
-            $alert->{data_with_flair} = $alert->{data};
-        }
-        @alert_promotions = map {
-            { pair  => [ {type => "event", id   => $_, },
-                         {type => "alert", id => $alertid }, ],
-              when => $alert->{created} // $alert->{updated} }
-        } @{ delete $alert->{events} // [] };
-
-        $newalertcol->insert_one($alert);
-    }
-    push @links, @alert_promotions;
-
-    $href->{alert_count}    = $alert_count;
-    $href->{open_count}     = $status{open} // 0;
-    $href->{closed_count}   = $status{count} // 0;
-    $href->{promoted_count} = $status{promoted} // 0;
-
-    $col->insert_one($href);
-
-    push @links, $self->create_history(@history);
-    push @links, $self->create_sources(@sources);
-    push @links, $self->create_tags(@tags);
-    push @links, $self->create_entities(\@allentities);
-    $self->create_links(@links);
-
-    return 1;
+    my $t       = shift;
+    my $id      = $t->{id};
+    my $type    = $t->{type};
+    my $tcol    = $self->db->get_collection($type);
+    $tcol->update_one( { id  => $id },
+            {
+                '$inc'  => {
+                    entry_count => 1,
+                },
+            },
+    );
 }
 
 sub xform_handler {
@@ -638,13 +697,13 @@ sub xform_file {
     my @links   = ();
 
     $href->{directory} = delete $href->{dir};
-    push @links, (
-        { type  => "entry", id => delete $href->{entry_id} },
-        { type  => delete $href->{target_type}, id => delete $href->{target_id}}
-    );
+    $href->{target}     = {
+        type    => delete $href->{target_type},
+        id      => delete $href->{target_id},
+    };
+    $href->{entry}  = delete $href->{entry_id};
 
     $col->insert_one($href);
-    $self->create_links(@links);
     return 1;
 }
 
@@ -681,31 +740,67 @@ sub xform_guide {
 }
 
 sub create_links {
-    my $self    = shift;
-    my @links   = @_;
-    my $linkcol = $self->db->get_collection('link');
-    my $env     = $self->env;
-    my $log     = $env->log;
+    my $self      = shift;
+    my @links     = @_;
+    my $linkcol   = $self->db->get_collection('link');
+    my $appearcol = $self->db->get_collection('appearance');
+    my $env       = $self->env;
+    my $log       = $env->log;
 
     return if (scalar(@links) < 1);
 
     my $timer   = $env->get_timer("[Links] Bulk created ");
-    my $bulk    = $linkcol->initialize_unordered_bulk_op;
+
+    my $bulklink    = $linkcol->initialize_unordered_bulk_op;
+    my $bulkappear  = $appearcol->initialize_unordered_bulk_op;
+
+    my @l_links = ();
+    my @a_links = ();
 
     foreach my $href (@links) {
-        $href->{id} = $self->get_next_id('link');
-        $bulk->insert_one($href);
+        my ($k,$data)   = each %$href;
+        if ( $k eq "link" ) {
+            push @l_links, $data;
+        }
+        elsif ( $k eq "appearance" ) {
+            push @a_links, $data;
+        }
+        else {
+            $log->error("ERROR: unknown link type!");
+        }
+    }
+
+    foreach my $d (@l_links) {
+        $d->{id} = $self->get_next_id('link');
+        $bulklink->insert_one($d);
     }
 
     my $result = try {
-        $bulk->execute;
+        $bulklink->execute;
     }
     catch {
         if ( $_->isa("MongoDB::WriteConcernError") ) {
             warn "Write concern failed";
         }
         else {
-            $log->error("Error: $_");
+            $log->error("Error: (link) $_");
+        }
+    };
+    
+    foreach my $d (@a_links) {
+        $d->{id}    = $self->get_next_id('appearance');
+        $bulkappear->insert_one($d);
+    }
+
+    $result = try {
+        $bulkappear->execute;
+    }
+    catch {
+        if ( $_->isa("MongoDB::WriteConcernError") ) {
+            warn "Write concern failed";
+        }
+        else {
+            $log->error("Error: (appearance) $_");
         }
     };
     &$timer;
@@ -747,16 +842,10 @@ sub create_history {
             }
         }
 
-        $data->{when} = int($data->{when});
-        $data->{id}   = $self->get_next_id('history');
+        $data->{id}     = $self->get_next_id('history');
+        $data->{when}   = int($data->{when});
+        $data->{target} = { type    => $type, id => $id };
         $bulk->insert_one($data);
-        push @links, {
-            pair    => [
-                { id    => $data->{id}, type => 'history' },
-                { id    => $id,         type => $type },
-            ],
-            when    => $data->{when},
-        };
     }
     my $result = try {
         $bulk->execute;
@@ -814,13 +903,16 @@ sub create_sources {
         }
 
         push @links, {
-            pair    => [
-                { id    => $docid, type => 'source' },
-                { id    => $id,      type   => $type },
-            ],
-            when    => 1,
+            appearance  => {
+                type    => 'source',
+                apid    => $docid,
+                value   => $data->{value},
+                when    => 1,
+                target  => { type => $type, id => $id },
+            },
         };
     }
+
     if ( $insertions > 0 ) {
         my $result = try {
             $bulk->execute;
@@ -830,7 +922,8 @@ sub create_sources {
                 warn "Write concern failed";
             }
             else {
-                $log->error("Error Inserting Bulk Sources: $_.  Data =", {filter=>\&Dumper,value=>\@sources});
+                $log->error("Error Inserting Bulk Sources: $_.  Data =", 
+                            {filter=>\&Dumper,value=>\@sources});
             }
         };
     }
@@ -878,11 +971,13 @@ sub create_tags {
             $docid  = $doc->{id};
         }
         push @links, {
-            pair    => [
-                { id    => $docid,   type => 'tag' },
-                { id    => $id,      type => $type },
-            ],
-            when    => 1,
+            appearance  => {
+                type    => 'tag',
+                apid    => $docid,
+                value   => $data->{value},
+                when    => 1,
+                target  => { type => $type, id => $id },
+            },
         };
     }
     if ( $insertions > 0) {
@@ -911,7 +1006,7 @@ sub create_entities {
     my @links       = ();
     my $insertions  = 0;
 
-    $log->debug("entities are ",{filter=>\&Dumper, value=>$entities});
+    # $log->debug("entities are ",{filter=>\&Dumper, value=>$entities});
 
     return () unless ( defined $entities );
     return () if ( scalar(@$entities) < 1 );
@@ -937,17 +1032,23 @@ sub create_entities {
         else {
             $id = $existing->{id};
         }
+
         my @targets = @{delete $entity->{targets} };
-        foreach my $aref ( @targets ) {
-            my $tid     = $aref->{id};
-            my $ttype   = $aref->{type};
+
+        foreach my $href ( @targets ) {
+            my $tid     = $href->{id};
+            my $ttype   = $href->{type};
 
             my $link    = {
-                pair    => [
-                    { id    => $id, type => 'entity' },
-                    { id    => $tid, type => $ttype   },
-                ],
-                when    => $entity->{when},
+                link    => {
+                    when    => $entity->{when},
+                    value   => $entity->{value},
+                    entity_id   => $id,
+                    target  => {
+                        type    => $ttype,
+                        id      => $tid,
+                    }
+                }
             };
             push @links, $link;
         }
@@ -1043,14 +1144,14 @@ sub flair_alert_data {
     die "unknown alert id! ".Dumper($alert) unless ($id);
 
     # $log->debug("flairing: ",{filter=>\&Dumper, value=>$alert});
-    $log->debug("flairing: ");
+    $log->debug("[Alert $id] Flairing: ");
 
     my $timer = $self->env->get_timer("[Alert $id] Flair");
 
     TUPLE:
     while ( my ($key, $value) = each %{$data} ) {
         unless ( $value ) {
-            $log->error("[Alert $id] ERROR Key $key with no Value!");
+            # $log->warn("[Alert $id] ERROR Key $key with no Value!");
             next TUPLE;
         }
         my $encoded = '<html>' . encode_entities($value) . '</html>';
@@ -1089,8 +1190,8 @@ sub flair_alert_data {
         $self->env->log->error("[Alert $id] ERROR flair command is too large");
         return;
     }
-    $log->debug("Found ".scalar(@entities). " entities", {filter=>\&Dumper, value=>\@entities});
-    $log->debug("Flair is ",{filter=>\&Dumper, value=>\%flair});
+    # $log->debug("Found ".scalar(@entities). " entities", {filter=>\&Dumper, value=>\@entities});
+    # $log->debug("Flair is ",{filter=>\&Dumper, value=>\%flair});
     return \%flair, \@entities;
 }
 

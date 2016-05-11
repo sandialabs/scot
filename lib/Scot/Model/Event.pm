@@ -18,6 +18,7 @@ extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
     Scot::Role::Entriable
+    Scot::Role::Entitiable
     Scot::Role::Hashable
     Scot::Role::Historable
     Scot::Role::Permission
@@ -53,6 +54,20 @@ Tracks promotion, see Scot::Role::Promotable
 
 =cut
 
+=item B<promoted_from>
+
+int id of the alert(group) that was promoted to this
+empty arrayref means was not created from a promotion
+
+=cut
+
+has promoted_from => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    traits      => ['Array'],
+    required    => 1,
+    default     => sub {[]},
+);
 
 __PACKAGE__->meta->make_immutable;
 1;

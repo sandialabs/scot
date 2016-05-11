@@ -164,7 +164,8 @@ sub get_users_groups {
     my $filter          = sprintf($searchconf->{filter}, $user);
 
     my $loglevel    = $log->level;
-    $log->level(Log::Log4perl::Level::to_priority('WARN')); # turn debug off unless needed
+    # turn debug off unless needed
+    $log->level(Log::Log4perl::Level::to_priority('DEBUG')); 
 
     $log->debug("ldap group filter is ", { filter=>\&Dumper, value=>$filter});
     $log->debug("ldap binddn is ", { filter=>\&Dumper, value=>$binddn});
