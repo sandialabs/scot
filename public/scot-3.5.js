@@ -1888,6 +1888,16 @@ var AlertBody = React.createClass({displayName: "AlertBody",
             }.bind(this))
         }
     },
+    componentWillReceiveProps: function() {
+        if (this.props.data.status == 'promoted') {
+            $.ajax({
+                type: 'GET',
+                url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
+            }).success(function(response){
+                this.setState({promotedNumber:response.records[0].id});             
+            }.bind(this))
+        }
+    },
     render: function() {
         var data = this.props.data;
         var dataFlair = this.props.dataFlair;
@@ -2217,6 +2227,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             aType:null,
             aStatus:null,
             aID:0,
+            guideID: null,
         }
     },
     componentDidMount: function() {
@@ -2268,7 +2279,13 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 }.bind(this)
             };
             waitForEntry.waitEntry();
-        }.bind(this)); 
+        }.bind(this));
+        if (this.props.type == 'alertgroup') {
+            this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/guide', function(result) {
+                var guideID = result.records[0].id;
+                this.setState({guideID: guideID});
+            }.bind(this));     
+        }
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated); 
         Store.storeKey('entryNotification')
@@ -2454,7 +2471,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         }
     },
     guideToggle: function() {
-        window.open('#/guide/' + this.props.id); 
+        window.open('#/guide/' + this.state.guideID);
     },
     titleCase: function(string) {
         var newstring = string.charAt(0).toUpperCase() + string.slice(1)
