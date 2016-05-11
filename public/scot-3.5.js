@@ -920,13 +920,17 @@ var SelectedPermission = React.createClass({displayName: "SelectedPermission",
         var data = this.permissionsfunc(permissionData);//pos 0 is read and pos 1 is write
         var id = this.props.id;
         var type = this.props.type;
-        for (var prop in data[0]) { 
-            var read_modify = 'read';
-            readRows.push(React.createElement(PermissionIterator, {data: data[0][prop], dataRead: data[0], dataModify: data[1], updateid: this.props.updateid, id: id, type: type, read_modify: read_modify, updated: this.props.updated}));
+        if (data[0] !== undefined) {
+            for (i=0; i < data[0].length; i++) {
+                var read_modify = 'read';
+                readRows.push(React.createElement(PermissionIterator, {data: data[0][i], dataRead: data[0], dataModify: data[1], updateid: this.props.updateid, id: id, type: type, read_modify: read_modify, updated: this.props.updated}));
+            }
         }
-        for (var prop in data[1]) {
-            var read_modify = 'modify'; 
-            modifyRows.push(React.createElement(PermissionIterator, {data: data[1][prop], dataRead: data[0], dataModify: data[1], updateid: this.props.updateid, id: id, type: type, read_modify: read_modify, updated: this.props.updated}));
+        if (data[1] !== undefined) {
+            for (i=0; i < data[1].length; i++) {
+                var read_modify = 'modify'; 
+                modifyRows.push(React.createElement(PermissionIterator, {data: data[1][i], dataRead: data[0], dataModify: data[1], updateid: this.props.updateid, id: id, type: type, read_modify: read_modify, updated: this.props.updated}));
+            }
         }
         if (type == 'entry') {
             return ( 
@@ -976,17 +980,17 @@ var PermissionIterator = React.createClass({displayName: "PermissionIterator",
         var dataModify = this.props.dataModify;
         var toggle = this.props.permissionsToggle;
         if (this.props.read_modify == 'read') {
-            for (var prop in dataRead) {
-                if (dataRead[prop] != data) {
-                    tempArr.push(dataRead[prop]);
+            for (i=0; i < dataRead.length; i++) {
+                if (dataRead[i] != data) {
+                    tempArr.push(dataRead[i]);
                 }
             }
             newPermission.read = tempArr;
             newPermission.modify = dataModify;
         } else if (this.props.read_modify == 'modify') {
-            for (var prop in dataModify) {
-                if (dataModify[prop] != data) {  
-                    tempArr.push(dataModify[prop]);
+            for (i=0; i < dataModify.length; i++) {
+                if (dataModify[i] != data) {  
+                    tempArr.push(dataModify[i]);
                 }
             }
             newPermission.read = dataRead;
@@ -1166,8 +1170,8 @@ var Source = React.createClass({displayName: "Source",
         var id = this.props.id;
         var type = this.props.type;
         var data = this.props.data;
-        for (var prop in data) {
-            rows.push(React.createElement(SourceDataIterator, {key: data[prop].id, data: data[prop], id: id, type: type, updated: this.props.updated}));
+        for (i=0; i < data.length; i++) {
+            rows.push(React.createElement(SourceDataIterator, {key: data[i].id, data: data[i], id: id, type: type, updated: this.props.updated}));
         }
         return (
             React.createElement("div", null, 
@@ -1219,8 +1223,8 @@ var NewSource = React.createClass({displayName: "NewSource",
     handleAddition: function(tag) {
         var newSourceArr = [];
         var data = this.props.data;
-        for (var prop in data) {
-            newSourceArr.push(data[prop].value);
+        for (i=0; i < data.length; i++) {
+            newSourceArr.push(data[i].value);
         }
         newSourceArr.push(tag);
         $.ajax({
@@ -1244,8 +1248,8 @@ var NewSource = React.createClass({displayName: "NewSource",
         var arr = [];
         this.serverRequest = $.get('/scot/api/v2/ac/source/' + input, function (result) {
             var result = result.records;
-            for (var prop in result) {
-                arr.push(result[prop].value)
+            for (i=0; i < result.length; i++) {
+                arr.push(result[i].value)
             }
             this.setState({suggestions:arr})
         }.bind(this));
@@ -1359,8 +1363,8 @@ var Tag = React.createClass({displayName: "Tag",
         var id = this.props.id;
         var type = this.props.type;
         var data = this.props.data;
-        for (var prop in data) {
-            rows.push(React.createElement(TagDataIterator, {key: data[prop].id, data: data[prop], id: id, type: type, updated: this.props.updated}));
+        for (i=0; i < data.length; i++) {
+            rows.push(React.createElement(TagDataIterator, {key: data[i].id, data: data[i], id: id, type: type, updated: this.props.updated}));
         }
         return (
             React.createElement("div", null, 
@@ -1413,8 +1417,8 @@ var NewTag = React.createClass({displayName: "NewTag",
     handleAddition: function(tag) {
         var newTagArr = [];
         var data = this.props.data;
-        for (var prop in data) {
-            newTagArr.push(data[prop].value);
+        for (i=0; i < data.length; i++) {
+            newTagArr.push(data[i].value);
         }
         newTagArr.push(tag);
         $.ajax({
@@ -1438,8 +1442,8 @@ var NewTag = React.createClass({displayName: "NewTag",
         var arr = [];
         this.serverRequest = $.get('/scot/api/v2/ac/tag/' + input, function (result) {
             var result = result.records;
-            for (var prop in result) {
-                arr.push(result[prop].value)
+            for (i=0; i < result.length; i++) {
+                arr.push(result[i].value)
             }
             this.setState({suggestions:arr})
         }.bind(this));
@@ -1602,24 +1606,26 @@ var SelectedContainer = React.createClass({displayName: "SelectedContainer",
 module.exports = SelectedContainer;
 
 },{"./selected_header.jsx":16,"react":1753}],15:[function(require,module,exports){
-var React               = require('react');
-var ReactDOM            = require('react-dom');
-var ReactTime           = require('react-time');
-var SplitButton         = require('react-bootstrap/lib/SplitButton.js');
-var DropdownButton      = require('react-bootstrap/lib/DropdownButton.js');
-var MenuItem            = require('react-bootstrap/lib/MenuItem.js');
-var Button              = require('react-bootstrap/lib/Button.js');
-var AddEntryModal       = require('../modal/add_entry.jsx');
-var DeleteEntry         = require('../modal/delete.jsx').DeleteEntry;
-var Summary             = require('../components/summary.jsx');
-var Task                = require('../components/task.jsx');
-var SelectedPermission  = require('../components/permission.jsx');
-var Frame               = require('react-frame');
-var Store               = require('../activemq/store.jsx');
-var AppActions          = require('../flux/actions.jsx');
-var AddFlair            = require('../components/add_flair.jsx');
-var Flair               = require('../modal/flair_modal.jsx');
-var LinkWarning         = require('../modal/link_warning.jsx'); 
+var React                   = require('react');
+var ReactDOM                = require('react-dom');
+var ReactTime               = require('react-time');
+var SplitButton             = require('react-bootstrap/lib/SplitButton.js');
+var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
+var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
+var Button                  = require('react-bootstrap/lib/Button.js');
+var AddEntryModal           = require('../modal/add_entry.jsx');
+var DeleteEntry             = require('../modal/delete.jsx').DeleteEntry;
+var Summary                 = require('../components/summary.jsx');
+var Task                    = require('../components/task.jsx');
+var SelectedPermission      = require('../components/permission.jsx');
+var Frame                   = require('react-frame');
+var Store                   = require('../activemq/store.jsx');
+var AppActions              = require('../flux/actions.jsx');
+var AddFlair                = require('../components/add_flair.jsx');
+var Flair                   = require('../modal/flair_modal.jsx');
+var LinkWarning             = require('../modal/link_warning.jsx'); 
+var SelectedHeaderOptions   = require('./selected_header_options.jsx');
+
 var SelectedEntry = React.createClass({displayName: "SelectedEntry",
     getInitialState: function() {
         return {
@@ -1698,13 +1704,17 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         var showEntryData = this.props.showEntryData;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
         if (type =='alert' || type == 'entity') {
-            divClass = 'row-fluid entry-wrapper entry-wrapper-main-70'
+            //default size commented out for now
+            //divClass = 'row-fluid entry-wrapper entry-wrapper-main-70'
+            divClass= 'row-fluid entry-wrapper-main-nh';
             data = this.state.entryData;
             showEntryData = this.state.showEntryData;
+        } else if (type =='alertgroup') {
+            divClass = 'row-fluid alert-wrapper';
         }
         return (
             React.createElement("div", {className: divClass}, 
-                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id}) : null, 
+                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected}) : React.createElement("span", null, "Loading..."), 
                 this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid}) : null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null
             )       
@@ -1718,12 +1728,232 @@ var EntryIterator = React.createClass({displayName: "EntryIterator",
         var data = this.props.data;
         var type = this.props.type;
         var id = this.props.id;  
-        data.forEach(function(data) {
-            rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id}));
-        });
+        if (type != 'alertgroup') {
+            data.forEach(function(data) {
+                rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id}));
+            });
+        } else {
+            rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, alertSelected: this.props.alertSelected}));
+        }
         return (
             React.createElement("div", null, 
                 rows
+            )
+        )
+    }
+});
+
+var AlertParent = React.createClass({displayName: "AlertParent",
+    getInitialState: function() {
+        var arr = [];
+        return {
+            activeIndex: arr,
+            lastIndex: null,
+        }
+    },
+    rowClicked: function(id,index,clickType,status) {
+        var array = this.state.activeIndex.slice();
+        var selected = true;
+        if (clickType == 'ctrl') {
+            for (var i=0; i < array.length; i++) {
+                if (array[i] === index) {
+                    array.splice(i,1)
+                    this.setState({activeIndex:array})
+                    selected = false;
+                }
+            }
+            if (selected == true) {
+                array.push(index);
+                this.setState({activeIndex:array})
+            }
+        } else if (clickType == 'shift') {
+            if (this.state.lastIndex != undefined) {
+                var min = Math.min(this.state.lastIndex,index);
+                var max = Math.max(this.state.lastIndex,index);
+                var min = max - min + 1;
+                var range = [];
+                while (min--) {
+                    range[min]=max--;
+                }
+                for (i=0; i < range.length; i++) {
+                    array.push(range[i]);
+                }
+                this.setState({activeIndex:array})
+            }
+        } else {
+            array = [];
+            array.push(index);
+            this.setState({activeIndex:array});
+        }
+        this.setState({lastIndex:index});
+        if (array.length == 1) {
+            this.props.alertSelected(array[0],id,'alert');
+        } else if (array.length == 0){   
+            this.props.alertSelected(null,null,'alert');
+        } else {
+            this.props.alertSelected('showall',id,'alert')
+        }
+    },
+    render: function() {
+        var z = 0;
+        var items = this.props.items;
+        var body = [];
+        var header = [];
+        var col_names = items[0].columns.slice(0); //slices forces a copy of array
+        col_names.unshift('entries'); //Add entries to 3rd column
+        col_names.unshift('status'); //Add status to 2nd column
+        col_names.unshift('id'); //Add entries number to 1st column
+        for (var i=0; i < col_names.length; i++){
+            header.push(React.createElement(AlertHeader, {colName: col_names[i]}))
+        }
+        items.forEach(function(object){
+            var dataFlair = null;
+            if (object.data_with_flair != undefined) {
+                dataFlair = object.data_with_flair;
+            } else {
+                dataFlair = object.data;
+            }
+            
+            body.push(React.createElement(AlertBody, {index: z, data: object, dataFlair: dataFlair, activeIndex: this.state.activeIndex, rowClicked: this.rowClicked, alertSelected: this.props.alertSelected}))
+            z++;
+        }.bind(this))
+        var search = null;
+        if (items[0].data_with_flair != undefined) {
+            search = items[0].data_with_flair.search;
+        } else {
+            search = items[0].data.search;
+        }
+        return (
+            React.createElement("div", null, 
+                React.createElement("div", {className: "tablesorter alertTableHorizontal"}, 
+                    React.createElement("table", {width: "100%"}, 
+                        React.createElement("thead", null, 
+                            React.createElement("tr", null, 
+                                header
+                            )
+                        ), 
+                        React.createElement("tbody", null, 
+                            body
+                        )
+                    )
+                ), 
+                search != undefined ? React.createElement("div", {className: "alertTableHorizontal", dangerouslySetInnerHTML: { __html: search}}) : null
+            )
+        )
+    }
+});
+
+var AlertHeader = React.createClass({displayName: "AlertHeader",
+    render: function() {
+        return (
+            React.createElement("th", null, this.props.colName)
+        )
+    }
+});
+
+var AlertBody = React.createClass({displayName: "AlertBody",
+    getInitialState: function() {
+        return {
+            selected: 'un-selected',
+            promotedNumber: null,
+            showEntry: false,
+        }
+    },
+    onClick: function(event) {
+        if (event.shiftKey == true) {
+            this.props.rowClicked(this.props.data.id,this.props.index,'shift',null);
+        } else if (event.ctrlKey == true || event.metaKey == true) {
+            this.props.rowClicked(this.props.data.id,this.props.index,'ctrl',this.props.data.status)
+        } else {
+            this.props.rowClicked(this.props.data.id,this.props.index,'',this.props.data.status);
+        }
+    },
+    toggleEntry: function() {
+        if (this.state.showEntry == false) {
+            this.setState({showEntry: true})
+        } else {
+            this.setState({showEntry: false})
+        }
+    },
+    navigateTo: function() {
+        window.open('#/event/'+this.state.promotedNumber)
+    },
+    componentDidMount: function() {
+        if (this.props.data.status == 'promoted') {
+            $.ajax({
+                type: 'GET',
+                url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
+            }).success(function(response){
+                this.setState({promotedNumber:response.records[0].id});             
+            }.bind(this))
+        }
+    },
+    render: function() {
+        var data = this.props.data;
+        var dataFlair = this.props.dataFlair;
+        var index = this.props.index;
+        var selected = 'un-selected'
+        var rowReturn=[];
+        var buttonStyle = '';
+        var open = '';
+        var closed = '';
+        var promoted = '';
+        if (data.status == 'open') {
+            buttonStyle = 'red';
+        } else if (data.status == 'closed') {
+            buttonStyle = 'green';
+        } else if (data.status == 'promoted') {
+            buttonStyle = 'warning';
+        }
+        for (var i=0; i < data.columns.length; i++) {
+            var value = data.columns[i];
+            rowReturn.push(React.createElement(AlertRow, {data: data, dataFlair: dataFlair, value: value}))
+        }
+        for (var j=0; j < this.props.activeIndex.length; j++) {
+            if (this.props.activeIndex[j] === index) {
+                selected = 'selected';
+            } 
+        }
+        var id = 'alert_'+data.id+'_status';
+        return (
+            React.createElement("div", null, 
+                React.createElement("tr", {index: index, id: data.id, className: selected, style: {cursor: 'pointer'}, onClick: this.onClick}, 
+                    React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.id), 
+                    React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.status != 'promoted' ? React.createElement("span", {style: {color:buttonStyle}}, data.status) : React.createElement(Button, {bsSize: "xsmall", bsStyle: buttonStyle, id: id, onClick: this.navigateTo, style: {lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}, data.status)), 
+                    React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, React.createElement("a", {href: "javascript: void(0)", onClick: this.toggleEntry}, data.entry_count)), 
+                    rowReturn
+                ), 
+                React.createElement(AlertRowBlank, {id: data.id, type: 'alert', showEntry: this.state.showEntry})
+            )
+        )
+    }
+});
+
+var AlertRow = React.createClass({displayName: "AlertRow",
+    render: function() {
+        var data = this.props.data;
+        var dataFlair = this.props.dataFlair;
+        var value = this.props.value;
+        var rowReturn=[];
+        return (
+            React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, 
+                React.createElement("div", {className: "alert_data_cell", dangerouslySetInnerHTML: { __html: dataFlair[value]}})
+            )
+        )
+    }
+});
+
+AlertRowBlank = React.createClass({displayName: "AlertRowBlank",
+    render: function() {
+        var id = this.props.id;
+        var showEntry = this.props.showEntry;
+        return (
+            React.createElement("tr", {className: "not_selectable"}, 
+                React.createElement("td", {style: {padding:'0'}}
+                ), 
+                React.createElement("td", {colSpan: "50", style: {padding:'1px'}}, 
+                    showEntry ? React.createElement(SelectedEntry, {type: this.props.type, id: this.props.id}) : null
+                )
             )
         )
     }
@@ -1839,23 +2069,23 @@ var EntryParent = React.createClass({displayName: "EntryParent",
 
 var EntryData = React.createClass({displayName: "EntryData", 
     getInitialState: function() {
-        if (this.props.type == 'alert' || this.props.type == 'entity') {
+        /*if (this.props.type == 'alert' || this.props.type == 'entity') {
             return {
                 height:'200px',
                 entityid:null,
                 resize:false,
             }
-        } else {
+        } else {*/
             return {
                 height:'1px',
                 entityid:null,
                 resize:false,
             }
-        }
+        //}
     }, 
     onLoad: function() {
         if (document.getElementById('iframe_'+this.props.id).contentDocument.readyState === 'complete') {
-        if (this.props.type != 'alert' && this.props.type !='entity') {
+        //if (this.props.type != 'alert' && this.props.type !='entity') {
             if (this.state.height == '1px') {
                 setTimeout(function() {
                     document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
@@ -1879,7 +2109,7 @@ var EntryData = React.createClass({displayName: "EntryData",
                     }.bind(this))
                 }.bind(this)); 
             }
-        }
+        //}
         } else {
             setTimeout(this.onLoad,0);
         }
@@ -1900,8 +2130,6 @@ var EntryData = React.createClass({displayName: "EntryData",
             rawMarkup = this.props.subitem.body;
         }
         var id = this.props.id;
-        //Lazy Loading Flair here as other components, namely Flair that need to access the parent component here "SelectedEntry" as it can not be accessed due to a cyclic dependency loop between Flair and SelectedEntry. Lazy loading solves this issue. This problem should go away upon upgrading everything to ES6 and using imports/exports. 
-        //var Flair = require('../modal/flair_modal.jsx');
         return (
             React.createElement("div", {key: this.props.id, className: 'row-fluid entry-body'}, 
                 React.createElement("div", {className: 'row-fluid entry-body-inner', style: {marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
@@ -1922,7 +2150,7 @@ var EntryData = React.createClass({displayName: "EntryData",
 
 module.exports = SelectedEntry
 
-},{"../activemq/store.jsx":5,"../components/add_flair.jsx":6,"../components/permission.jsx":8,"../components/summary.jsx":11,"../components/task.jsx":13,"../flux/actions.jsx":18,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/flair_modal.jsx":24,"../modal/link_warning.jsx":26,"react":1753,"react-bootstrap/lib/Button.js":632,"react-bootstrap/lib/DropdownButton.js":638,"react-bootstrap/lib/MenuItem.js":642,"react-bootstrap/lib/SplitButton.js":649,"react-dom":839,"react-frame":854,"react-time":1534}],16:[function(require,module,exports){
+},{"../activemq/store.jsx":5,"../components/add_flair.jsx":6,"../components/permission.jsx":8,"../components/summary.jsx":11,"../components/task.jsx":13,"../flux/actions.jsx":18,"../modal/add_entry.jsx":21,"../modal/delete.jsx":22,"../modal/flair_modal.jsx":24,"../modal/link_warning.jsx":26,"./selected_header_options.jsx":17,"react":1753,"react-bootstrap/lib/Button.js":632,"react-bootstrap/lib/DropdownButton.js":638,"react-bootstrap/lib/MenuItem.js":642,"react-bootstrap/lib/SplitButton.js":649,"react-dom":839,"react-frame":854,"react-time":1534}],16:[function(require,module,exports){
 var React                   = require('react');
 var ReactTime               = require('react-time');
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
@@ -1984,10 +2212,17 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             tagLoaded:false,
             entryLoaded:false,
             entityLoaded:false,
+            alertSelected:false,
+            aIndex:null,
+            aType:null,
+            aStatus:null,
+            aID:0,
         }
     },
     componentDidMount: function() {
         this.setState({loading:true});
+        var entryType = 'entry';
+        if (this.props.type == 'alertgroup') { entryType = 'alert' };
         this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
             var sourceResult = result.records;
             this.setState({showSource:true, sourceData:sourceResult})
@@ -2009,7 +2244,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 this.setState({loading:false});
             }        
         }.bind(this));
-        this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
+        this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, function(result) {
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
             if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
@@ -2041,6 +2276,8 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
     }, 
     updated: function(_type,_message) { 
         this.setState({refreshing:true, sourceLoaded:false,eventLoaded:false,tagLoaded:false,entryLoaded:false,entityLoaded:false});
+        var entryType = 'entry';
+        if (this.props.type == 'alertgroup') {entryType = 'alert'};
         setTimeout(function(){
             this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
                 var sourceResult = result.records;
@@ -2063,7 +2300,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                     this.setState({refreshing:false});
                 }            
             }.bind(this));
-            this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
+            this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, function(result) {
                 var entryResult = result.records;
                 this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult})
                 if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
@@ -2094,9 +2331,49 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         } else {
             this.setState({notificationType:null,notificationMessage:null,showFlash:false}); 
         }
-         
-        console.log('Ran update')  
-    }, 
+    },
+    /*granular updates -- to be implemented later 
+    updatedType: function() {
+        this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
+            var eventResult = result;
+            this.setState({showEventData:true, eventLoaded:true, headerData:eventResult})
+        }.bind(this)); 
+    },
+    updatedSource: function() {
+       this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
+            var sourceResult = result.records;
+            this.setState({showSource:true, sourceLoaded:true, sourceData:sourceResult})
+       }.bind(this)); 
+    },
+    updatedTag: function() {
+        this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
+            var tagResult = result.records;
+            this.setState({showTag:true, tagLoaded:true, tagData:tagResult});
+        }.bind(this));
+    },
+    updatedEntry: function() {
+        var entryType = 'entry';
+        if (this.props.type == 'alertgroup') {entryType = 'alert'};
+        this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, function(result) {
+            var entryResult = result.records;
+            this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult}) 
+        }.bind(this)); 
+        this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
+            var entityResult = result.records;
+            this.setState({showEntityData:true, entityLoaded:true, entityData:entityResult})
+            var waitForEntry = {
+                waitEntry: function() {
+                    if(this.state.entryLoaded == false && alertgroupforentity === false){
+                        setTimeout(waitForEntry.waitEntry,50);
+                    } else {
+                        alertgroupforentity = false;
+                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+                    }
+                }.bind(this)
+            };
+            waitForEntry.waitEntry();
+        }.bind(this));
+     },*/
     notification: function() {
         var notification = this.refs.notificationSystem
         if(activemqwho != "" && notification != undefined && activemqwho != 'api'){
@@ -2176,12 +2453,39 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             this.setState({promoteToolbar:false});
         }
     },
+    guideToggle: function() {
+        window.open('#/guide/' + this.props.id); 
+    },
     titleCase: function(string) {
         var newstring = string.charAt(0).toUpperCase() + string.slice(1)
         return (
             newstring
         )
     },
+    alertSelected: function(aIndex,aID,aType,aStatus){
+        this.setState({alertSelected:true,aIndex:aIndex,aID:aID,aType:aType,aStatus:aStatus})
+    },
+    sourceToggle: function() {
+        $.ajax({
+            type: 'GET',
+            url: '/scot/api/v2/alertgroup/'+this.props.id
+        }).success(function(response){
+            var win = window.open('viewSource.html') //, '_blank')
+            var html =  response.body;
+            var plain = response.body_plain;
+            win.onload = function() {   
+            if(html != undefined){
+                $(win.document).find('#html').text(html)
+            } else {
+                $(win.document).find('.html').remove() }
+            if(plain != undefined) {
+                $(win.document).find('#plain').text(plain)
+            }
+            else {
+                $(win.document).find('.plain').remove() }
+            }
+        })
+    }, 
     render: function() {
         var headerData = this.state.headerData;         
         var viewedby = this.viewedbyfunc(headerData);
@@ -2225,12 +2529,12 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 this.state.historyToolbar ? React.createElement(History, {historyToggle: this.historyToggle, id: id, type: type}) : null, 
                 this.state.entitiesToolbar ? React.createElement(Entities, {entitiesToggle: this.entitiesToggle, entityData: this.state.entityData, flairToolbarToggle: this.flairToolbarToggle}) : null, 
                 this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: id, type: type, permissionData: this.state.headerData, permissionsToggle: this.permissionsToggle, updated: this.updated}) : null, 
-                this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: type, targetid: id, id: id, addedentry: this.entryToggle, updated: this.updated}) : null, 
+                this.state.entryToolbar ? React.createElement("div", null, this.state.alertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: type, targetid: id, id: id, addedentry: this.entryToggle, updated: this.updated}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.state.aType, targetid: this.state.aID, addedentry: this.entryToggle, updated: this.updated})) : null, 
                 this.state.deleteToolbar ? React.createElement(DeleteEvent, {subjectType: subjectType, type: type, id: id, deleteToggle: this.deleteToggle, updated: this.updated}) :null, 
-                type != 'alertgroup' ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, historyToggle: this.historyToggle, deleteToggle: this.deleteToggle, updated: this.updated}) :null
+                type != 'alertgroup' ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, historyToggle: this.historyToggle, deleteToggle: this.deleteToggle, updated: this.updated}) : React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, historyToggle: this.historyToggle, deleteToggle: this.deleteToggle, updated: this.updated, alertSelected: this.state.alertSelected, aIndex: this.state.aIndex, aType: this.state.aType, aStatus: this.state.aStatus, guideToggle: this.guideToggle, sourceToggle: this.sourceToggle})
                 ), 
                 this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
-                type != 'alertgroup' ? React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData}) : null
+                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected})
             )
         )
     }
@@ -2366,6 +2670,7 @@ var Button          = require('react-bootstrap/lib/Button.js');
 var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
 var DropdownButton  = require('react-bootstrap/lib/DropdownButton.js');
 var Promote         = require('../components/promote.jsx');
+var Appactions      = require('../flux/actions.jsx');
 
 var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptions",
     toggleFlair: function() { 
@@ -2415,44 +2720,239 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 $(entity).removeClass('entity');
             });
         }
+    },
+    //All methods containing alert are only used by selected_entry when viewing an alertgroupand interacting with an alert.
+    alertOpenSelected: function() {
+        var array = []
+        var data = JSON.stringify({status:'open'})
+        $('tr.selected').each(function(index,tr) {
+            var id = $(tr).attr('id');
+            array.push(id);
+        }.bind(this));
+        for (i=0; i < array.length; i++) {
+            $.ajax({
+                type:'put',
+                url: '/scot/api/v2/alert/'+array[i],
+                data: data,
+                success: function(response){
+                    console.log('success');
+                }.bind(this),
+                error: function() {
+                    console.log('failure');
+                }.bind(this)
+            })
+        }
+    },
+    alertCloseSelected: function() {
+        var time = Math.round(new Date().getTime() / 1000)
+        var data = JSON.stringify({status:'closed', closed: time})
+        var array = [];
+        $('tr.selected').each(function(index,tr) {
+            var id = $(tr).attr('id');
+            array.push(id);
+        }.bind(this)); 
+        for (i=0; i < array.length; i++) {
+            $.ajax({
+                type:'put',
+                url: '/scot/api/v2/alert/'+array[i],
+                data: data,
+                success: function(response){
+                    console.log('success');
+                }.bind(this),
+                error: function() {
+                    console.log('failure');
+                }.bind(this)
+            })
+        }    
+    },
+    alertPromoteSelected: function() {
+        var data = JSON.stringify({promote:'new'})
+        var array = [];
+        $('tr.selected').each(function(index,tr) {
+            var id = $(tr).attr('id');
+            array.push(id);
+        }.bind(this));
+        for (i=0; i < array.length; i++) {
+            $.ajax({
+                type:'put',
+                url: '/scot/api/v2/alert/'+array[i],
+                data: data,
+                success: function(response){
+                    console.log('success');
+                }.bind(this),
+                error: function() {
+                    console.log('failure');
+                }.bind(this)
+            })
+        }
+    },
+    /*Future use?
+    alertUnpromoteSelected: function() {
+        var data = JSON.stringify({unpromote:this.props.aIndex})
+        var array = [];
+        $('tr.selected').each(function(index,tr) {
+            var id = $(tr).attr('id');
+            array.push(id);
+        }.bind(this));
+        for (i=0; i < array.length; i++) {
+            $.ajax({
+                type:'put',
+                url: '/scot/api/v2/alert/'+array[i],
+                data: data,
+                success: function(response){
+                    console.log('success');
+                }.bind(this),
+                error: function() {
+                    console.log('failure');
+                }.bind(this)
+            })
+        }
+    },*/
+    alertSelectExisting: function() {
+        var text = prompt("Please Enter Event ID to promote into")
+        var array = [];
+        $('tr.selected').each(function(index,tr) {
+            var id = $(tr).attr('id');
+            array.push(id);
+        }.bind(this));
+        for (i=0; i < array.length; i++) {
+            if ($.isNumeric(text)) {
+                var data = {
+                    promote:text
+                }
+                $.ajax({
+                    type: 'PUT',
+                    url: '/scot/api/v2/alert/' + array[i],
+                    data: JSON.stringify(data),
+                    success: function(response){
+                        if($.isNumeric(text)){
+                            window.location = '#/event/' + text
+                        }
+                    }.bind(this),
+                    error: function() {
+                        console.log('failure');
+                    }.bind(this)
+                })
+            } else {
+                prompt("Please use numbers only")
+                this.selectExisting();
+            }
+        }
+    },
+    alertExportCSV: function(){
+        var keys = []
+        $('.alertTableHorizontal').find('th').each(function(key,value){
+            var obj = $(value).text();
+            keys.push(obj);
+        });
+        var csv = ''
+        $('tr.selected').each(function(x,y) {
+            var storearray = []
+            $(y).find('td').each(function(x,y) {
+                var obj = $(y).text()
+                obj = obj.replace(/,/g,'|')
+                storearray.push(obj)
+            })
+            csv += storearray.join() + '\n'
+        });
+        var result = keys.join() + "\n"
+        csv = result + csv;
+        var data_uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
+        window.open(data_uri)
+    },
+    alertDeleteSelected: function(){
+        if(confirm("Are you sure you want to Delete? This action can not be undone.")){
+            var array = [];
+            $('tr.selected').each(function(index,tr) {
+                var id = $(tr).attr('id');
+                array.push(id);
+            }.bind(this));
+            for (i=0; i < array.length; i++) {
+                $.ajax({
+                    type:'delete',
+                    url: '/scot/api/v2/alert/'+array[i],
+                    success: function(response){
+                        console.log('success');
+                    }.bind(this),
+                    error: function() {
+                        console.log('failure');
+                    }.bind(this)
+                });
+            }        
+        }
     }, 
     render: function() { 
         var subjectType = this.props.subjectType;
         var type = this.props.type;
         var id = this.props.id;
         var status = this.props.status;
-        var newType = null;
-        var showPromote = true;
-        if (status != 'promoted') {
-            if (type == "alert") {
-                newType = "Event"
-            } else if (type == "event") {
-                newType = "Incident"
-            } else if (type == "incident" || type == "guide") {
+        if (type != 'alertgroup') {
+            var newType = null;
+            var showPromote = true;
+            if (status != 'promoted') {
+                if (type == "alert") {
+                    newType = "Event"
+                } else if (type == "event") {
+                    newType = "Incident"
+                } else if (type == "incident" || type == "guide") {
+                    showPromote = false;
+                } 
+            } else {
                 showPromote = false;
-            } 
-        } else {
-            showPromote = false;
-        }
-        return (
-            React.createElement("div", {className: "entry-header"}, 
-                React.createElement(ButtonGroup, {bsSize: "small"}, 
-                    React.createElement(Button, {bsStyle: "success", onClick: this.props.entryToggle}, "Add Entry"), 
-                    React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair}, "Toggle ", React.createElement("b", null, "Flair")), 
-                    React.createElement(Button, {eventKey: "2", onClick: this.props.historyToggle}, "View ", React.createElement("b", null, "History")), 
-                    React.createElement(Button, {eventKey: "3", onClick: this.props.permissionsToggle}, React.createElement("b", null, "Permissions")), 
-                    React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle}, "List ", React.createElement("b", null, "Entities")), 
-                    showPromote ? React.createElement(Button, {bsStyle: "warning", eventKey: "6"}, React.createElement(Promote, {type: type, id: id, updated: this.props.updated})) : null, 
-                    React.createElement(Button, {bsStyle: "danger", eventKey: "5", onClick: this.props.deleteToggle}, React.createElement("b", null, "Delete"), " ", subjectType)
+            }
+            return (
+                React.createElement("div", {className: "entry-header"}, 
+                    React.createElement(ButtonGroup, {bsSize: "small"}, 
+                        React.createElement(Button, {bsStyle: "success", onClick: this.props.entryToggle}, "Add Entry"), 
+                        React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair}, "Toggle ", React.createElement("b", null, "Flair")), 
+                        React.createElement(Button, {eventKey: "2", onClick: this.props.historyToggle}, "View ", React.createElement("b", null, "History")), 
+                        React.createElement(Button, {eventKey: "3", onClick: this.props.permissionsToggle}, React.createElement("b", null, "Permissions")), 
+                        React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle}, "List ", React.createElement("b", null, "Entities")), 
+                        showPromote ? React.createElement(Button, {bsStyle: "warning", eventKey: "6"}, React.createElement(Promote, {type: type, id: id, updated: this.props.updated})) : null, 
+                        React.createElement(Button, {bsStyle: "danger", eventKey: "5", onClick: this.props.deleteToggle}, React.createElement("b", null, "Delete"), " ", subjectType)
+                    )
                 )
             )
-        )
+        } else {
+            if (this.props.aIndex != undefined) {
+                return (
+                    React.createElement("div", {className: "entry-header"}, 
+                        React.createElement(ButtonGroup, {bsSize: "small", style: {display:'inline-flex'}}, 
+                            React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair}, "Toggle ", React.createElement("b", null, "Flair")), 
+                            React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle}, "Guide"), 
+                            React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle}, "View ", React.createElement("b", null, "Source")), 
+                            React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle}, "View ", React.createElement("b", null, "Entities")), 
+                            React.createElement(Button, {eventKey: "4", onClick: this.props.historyToggle}, "View ", React.createElement("b", null, "AlertGroup History")), 
+                            React.createElement(Button, {eventKey: "7", onClick: this.alertOpenSelected}, React.createElement("b", null, "Open"), " Selected"), 
+                            React.createElement(Button, {eventKey: "8", onClick: this.alertCloseSelected}, React.createElement("b", null, "Close"), " Selected"), 
+                            React.createElement(Button, {eventKey: "9", onClick: this.alertPromoteSelected}, React.createElement("b", null, "Promote"), " Selected"), 
+                            React.createElement(Button, {eventKey: "10", onClick: this.props.entryToggle}, "Add ", React.createElement("b", null, "Entry")), 
+                            React.createElement(Button, {eventKey: "11", onClick: this.alertSelectExisting}, React.createElement("b", null, "Add"), " Selected to ", React.createElement("b", null, "Existing Event")), 
+                            React.createElement(Button, {eventKey: "12", onClick: this.alertExportCSV}, "Export to ", React.createElement("b", null, "CSV")), 
+                            React.createElement(Button, {eventKey: "13", onClick: this.alertDeleteSelected}, React.createElement("b", null, "Delete"), " Selected")
+                        )
+                    )
+                )
+            } else { 
+                return (
+                    React.createElement("div", {className: "entry-header"}, 
+                        React.createElement(ButtonGroup, {bsSize: "small", style: {display:'inline-flex'}}, 
+                            React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair}, "Toggle ", React.createElement("b", null, "Flair")), 
+                            React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle}, "Guide"), 
+                            React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle}, "View ", React.createElement("b", null, "Source")), 
+                            React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle}, "View ", React.createElement("b", null, "Entities")), 
+                            React.createElement(Button, {eventKey: "4", onClick: this.props.historyToggle}, "View ", React.createElement("b", null, "AlertGroup History"))
+                        )
+                    )
+                )
+            }
+        }
     }
 });
 
 module.exports = SelectedHeaderOptions;
 
-},{"../components/promote.jsx":9,"react":1753,"react-bootstrap/lib/Button.js":632,"react-bootstrap/lib/ButtonGroup.js":633,"react-bootstrap/lib/DropdownButton.js":638,"react-bootstrap/lib/MenuItem.js":642}],18:[function(require,module,exports){
+},{"../components/promote.jsx":9,"../flux/actions.jsx":18,"react":1753,"react-bootstrap/lib/Button.js":632,"react-bootstrap/lib/ButtonGroup.js":633,"react-bootstrap/lib/DropdownButton.js":638,"react-bootstrap/lib/MenuItem.js":642}],18:[function(require,module,exports){
 var React       = require('react');
 var Dispatcher  = require('./dispatcher.jsx');
 var client;
@@ -2848,10 +3348,8 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
         })
     })
     
-    $('.z-selected').each(function(key,value){
-	    $(value).find('.z-cell').each(function(x,y){
-	        if($(y).attr('name') == 'id'){  
-	            data = JSON.stringify({body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number($(y).text()), target_type: 'alert',  parent: 0})
+     
+	            data = JSON.stringify({body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid), target_type: 'alert',  parent: 0})
 	            $.ajax({
 		        type: 'post', 
 		        url: '/scot/api/v2/entry',
@@ -2875,11 +3373,8 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                                 cache: false
                                 }).success(function(response){
                                 })
-			}
 		}
-		})
 		}
-		})
 		})
 		this.props.addedentry()
 		AppActions.updateItem(this.props.targetid,'headerUpdate');
@@ -2952,32 +3447,37 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
         })
     })
 
-    var data = {parent: Number(this.props.parent), body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
+    var data = {
+        parent: Number(this.props.parent), 
+        body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), 
+        target_id: Number(this.props.targetid) , 
+        target_type: this.props.type
+    }
 	$.ajax({
-	type: 'put',
-	url: '/scot/api/v2/entry/'+this.props.id,
-	data: data
-	}).success(function(response){
-        if(finalfiles.length > 0){
-			for(var i = 0; i<finalfiles.length; i++){	
-			    var file = {file : finalfiles[i].name}
-                data  = new FormData()
-                data.append('upload', finalfiles[i])
-                data.append('target_type',this.props.type)
-                data.append('target_id',Number(this.props.targetid))
-                data.append('entry_id',response.id)
+        type: 'put',
+        url: '/scot/api/v2/entry/'+this.props.id,
+        data: data
+        }).success(function(response){
+            if(finalfiles.length > 0){
+                for(var i = 0; i<finalfiles.length; i++){	
+                    var file = {file : finalfiles[i].name}
+                    data  = new FormData()
+                    data.append('upload', finalfiles[i])
+                    data.append('target_type',this.props.type)
+                    data.append('target_id',Number(this.props.targetid))
+                    data.append('entry_id',response.id)
                     $.ajax({
-                    type: 'POST',
-                    url: '/scot/api/v2/file',
-                    data: data,
-                    processData: false,
-                    contentType: false,
-                    dataType: 'json',
-                    cache: false
+                        type: 'POST',
+                        url: '/scot/api/v2/file',
+                        data: data,
+                        processData: false,
+                        contentType: false,
+                        dataType: 'json',
+                        cache: false
                     }).success(function(response){
-                    }.bind(this))
-			}
-		}
+                        }.bind(this))
+                }
+            }
 	}.bind(this))
 	this.props.addedentry()
 	AppActions.updateItem(this.props.targetid, 'headerUpdate')
@@ -4080,7 +4580,7 @@ var Subtable = React.createClass({displayName: "Subtable",
         onColumnOrderChange: this.handleColumnOrderChange, 
         pagination: true, 
 	    paginationToolbarProps: {pageSizes: [3,5,10]},  
-	    withColumnMenu: true, 
+	    withColumnMenu: false, 
 	    showCellBorders: true,
 	    sortable: false,
 	    reloadsupertable: this.state.setreload,

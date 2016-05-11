@@ -55,124 +55,18 @@ var SelectedHeaderOptions = React.createClass({
             });
         }
     },
+    //All methods containing alert are only used by selected_entry when viewing an alertgroupand interacting with an alert.
     alertOpenSelected: function() {
+        var array = []
         var data = JSON.stringify({status:'open'})
-        var id = this.props.aID;
-        $.ajax({
-            type:'put',
-            url: '/scot/api/v2/alert/'+id,
-            data: data,
-            success: function(response){
-                console.log('success');
-            }.bind(this),
-            error: function() {
-                console.log('failure');
-            }.bind(this)
-        })
-    },
-    alertCloseSelected: function() {
-        var time = Math.round(new Date().getTime() / 1000)
-        var data = JSON.stringify({status:'closed', closed: time})
-        var id = this.props.aID;
-        $.ajax({
-            type:'put',
-            url: '/scot/api/v2/alert/'+id,
-            data: data,
-            success: function(response){
-                console.log('success');
-            }.bind(this),
-            error: function() {
-                console.log('failure');
-            }.bind(this)
-        })
-    },
-    alertPromoteSelected: function() {
-        var data = JSON.stringify({promote:'new'})
-        var id= this.props.aID;
-        $.ajax({
-            type:'put',
-            url: '/scot/api/v2/alert/'+id,
-            data: data,
-            success: function(response){
-                console.log('success');
-            }.bind(this),
-            error: function() {
-                console.log('failure');
-            }.bind(this)
-        })
-    },
-    alertUnpromoteSelected: function() {
-        var data = JSON.stringify({unpromote:this.props.aID})
-        var id = this.props.aID;
-        $.ajax({
-            type:'put',
-            url: '/scot/api/v2/alert/'+id,
-            data: data,
-            success: function(response){
-                console.log('success');
-            }.bind(this),
-            error: function() {
-                console.log('failure');
-            }.bind(this)
-        })
-    },
-    alertSelectExisting: function() {
-        var text = prompt("Please Enter Event ID to promote into")
-        var id = this.props.aID;
-        if ($.isNumeric(text)) {
-            var data = {
-                promote:text
-            }
-            $.ajax({
-                type: 'PUT',
-                url: '/scot/api/v2/alert/' + id,
-                data: JSON.stringify(data),
-                success: function(response){
-                    if($.isNumeric(text)){
-                        window.location = '#/event/' + text
-                    }
-                }.bind(this),
-                error: function() {
-                    console.log('failure');
-                }.bind(this)
-            })
-        } else {
-            prompt("Please use numbers only")
-            this.selectExisting();
-        }
-    },
-    alertExportCSV: function(){
-        var keys = []
-        $.each(this.state.columns, function(key, value){
-            keys.push(value['name']);
-        });
-        var csv = ''
-        $('.subtable'+this.state.key).find('.z-selected').each(function(key, value){
-            var storearray = []
-            $(value).find('.z-content').each(function(x,y) {
-                var obj = $(y).text()
-                obj = obj.replace(/,/g,'|')
-                storearray.push(obj)
-            });
-            csv += storearray.join() + '\n'
-        });
-            var result = keys.join() + "\n"
-            csv = result + csv;
-            var data_uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
-        setTimeout(
-        function() {
-            this.reloadentry()
-        }.bind(this), 1000)
-            this.setState({setreload: false})
-            window.open(data_uri)
-    },
-    alertDeleteSelected: function(){
-        if(confirm("Are you sure you want to Delete? This action can not be undone.")){
-            var data = JSON.stringify({promote:'delete'})
-            var id = this.props.aID;
+        $('tr.selected').each(function(index,tr) {
+            var id = $(tr).attr('id');
+            array.push(id);
+        }.bind(this));
+        for (i=0; i < array.length; i++) {
             $.ajax({
                 type:'put',
-                url: '/scot/api/v2/alert/'+id,
+                url: '/scot/api/v2/alert/'+array[i],
                 data: data,
                 success: function(response){
                     console.log('success');
@@ -180,7 +74,145 @@ var SelectedHeaderOptions = React.createClass({
                 error: function() {
                     console.log('failure');
                 }.bind(this)
-            });
+            })
+        }
+    },
+    alertCloseSelected: function() {
+        var time = Math.round(new Date().getTime() / 1000)
+        var data = JSON.stringify({status:'closed', closed: time})
+        var array = [];
+        $('tr.selected').each(function(index,tr) {
+            var id = $(tr).attr('id');
+            array.push(id);
+        }.bind(this)); 
+        for (i=0; i < array.length; i++) {
+            $.ajax({
+                type:'put',
+                url: '/scot/api/v2/alert/'+array[i],
+                data: data,
+                success: function(response){
+                    console.log('success');
+                }.bind(this),
+                error: function() {
+                    console.log('failure');
+                }.bind(this)
+            })
+        }    
+    },
+    alertPromoteSelected: function() {
+        var data = JSON.stringify({promote:'new'})
+        var array = [];
+        $('tr.selected').each(function(index,tr) {
+            var id = $(tr).attr('id');
+            array.push(id);
+        }.bind(this));
+        for (i=0; i < array.length; i++) {
+            $.ajax({
+                type:'put',
+                url: '/scot/api/v2/alert/'+array[i],
+                data: data,
+                success: function(response){
+                    console.log('success');
+                }.bind(this),
+                error: function() {
+                    console.log('failure');
+                }.bind(this)
+            })
+        }
+    },
+    /*Future use?
+    alertUnpromoteSelected: function() {
+        var data = JSON.stringify({unpromote:this.props.aIndex})
+        var array = [];
+        $('tr.selected').each(function(index,tr) {
+            var id = $(tr).attr('id');
+            array.push(id);
+        }.bind(this));
+        for (i=0; i < array.length; i++) {
+            $.ajax({
+                type:'put',
+                url: '/scot/api/v2/alert/'+array[i],
+                data: data,
+                success: function(response){
+                    console.log('success');
+                }.bind(this),
+                error: function() {
+                    console.log('failure');
+                }.bind(this)
+            })
+        }
+    },*/
+    alertSelectExisting: function() {
+        var text = prompt("Please Enter Event ID to promote into")
+        var array = [];
+        $('tr.selected').each(function(index,tr) {
+            var id = $(tr).attr('id');
+            array.push(id);
+        }.bind(this));
+        for (i=0; i < array.length; i++) {
+            if ($.isNumeric(text)) {
+                var data = {
+                    promote:text
+                }
+                $.ajax({
+                    type: 'PUT',
+                    url: '/scot/api/v2/alert/' + array[i],
+                    data: JSON.stringify(data),
+                    success: function(response){
+                        if($.isNumeric(text)){
+                            window.location = '#/event/' + text
+                        }
+                    }.bind(this),
+                    error: function() {
+                        console.log('failure');
+                    }.bind(this)
+                })
+            } else {
+                prompt("Please use numbers only")
+                this.selectExisting();
+            }
+        }
+    },
+    alertExportCSV: function(){
+        var keys = []
+        $('.alertTableHorizontal').find('th').each(function(key,value){
+            var obj = $(value).text();
+            keys.push(obj);
+        });
+        var csv = ''
+        $('tr.selected').each(function(x,y) {
+            var storearray = []
+            $(y).find('td').each(function(x,y) {
+                var obj = $(y).text()
+                obj = obj.replace(/,/g,'|')
+                storearray.push(obj)
+            })
+            csv += storearray.join() + '\n'
+        });
+        var result = keys.join() + "\n"
+        csv = result + csv;
+        var data_uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
+        window.open(data_uri)
+    },
+    alertDeleteSelected: function(){
+        if(confirm("Are you sure you want to Delete? This action can not be undone.")){
+            var array = [];
+            $('tr.selected').each(function(index,tr) {
+                var id = $(tr).attr('id');
+                array.push(id);
+            }.bind(this));
+            for (i=0; i < array.length; i++) {
+                $.ajax({
+                    type:'delete',
+                    url: '/scot/api/v2/alert/'+array[i],
+                    success: function(response){
+                        console.log('success');
+                    }.bind(this),
+                    error: function() {
+                        console.log('failure');
+                    }.bind(this)
+                });
+            }        
         }
     }, 
     render: function() { 
@@ -216,25 +248,38 @@ var SelectedHeaderOptions = React.createClass({
                 </div>
             )
         } else {
-           return (
-                <div className="entry-header">
-                    <ButtonGroup bsSize='small' style={{display:'inline-flex'}}>
-                        <Button eventKey='1' onClick={this.toggleFlair}>Toggle <b>Flair</b></Button>
-                        <Button eventKey='2' onClick={this.props.guideToggle}>Guide</Button>
-                        <Button eventKey='3' onClick={this.props.sourceToggle}>View <b>Source</b></Button> 
-                        <Button eventKey='4' onClick={this.props.entitiesToggle}>View <b>Entities</b></Button>
-                        {this.props.alertSelected ? <Button eventKey='5' onClick={this.props.historyToggle}>View <b>Alert History</b></Button> : <Button eventKey='4' onClick={this.props.historyToggle}>View <b>AlertGroup History</b></Button> }
-                        {this.props.alertSelected ? <Button eventKey='6' onClick={this.props.entryToggle}>Add Entry</Button> : null}
-                        {this.props.aStatus == 'closed' ? <div>{this.props.alertSelected ? <Button eventKey='7' onClick={this.alertOpenSelected}><b>Open</b> Selected</Button> : null}</div> : null}
-                        {this.props.aStatus == 'open' ? <div>{this.props.alertSelected ? <Button eventKey='8' onClick={this.alertCloseSelected}><b>Close</b> Selected</Button> : null}</div> : null}
-                        {this.props.aStatus == 'open' ? <div>{this.props.alertSelected ? <Button eventKey='9' onClick={this.alertPromoteSelected}><b>Promote</b> Selected</Button> : null}</div> : null}
-                        {this.props.aStatus == 'promoted' ? <div>{this.props.alertSelected ? <Button eventKey='10' onClick={this.alertUnpromoteSelected}><b>Un-Promote</b> Selected</Button> : null}</div> : null}
-                        {this.props.alertSelected ? <Button eventKey='11' onClick={this.alertSelectExisting}><b>Add</b> Selected to <b>Existing Event</b></Button> : null}
-                        {this.props.alertSelected ? <Button eventKey='12' onClick={this.alertExportCSV}>Export to <b>CSV</b></Button> : null}
-                        {this.props.alertSelected ? <Button eventKey='13' onClick={this.alertDeleteSelected}><b>Delete</b> Selected</Button> : null}
-                    </ButtonGroup>
-                </div>
-           )
+            if (this.props.aIndex != undefined) {
+                return (
+                    <div className="entry-header">
+                        <ButtonGroup bsSize='small' style={{display:'inline-flex'}}>
+                            <Button eventKey='1' onClick={this.toggleFlair}>Toggle <b>Flair</b></Button>
+                            <Button eventKey='2' onClick={this.props.guideToggle}>Guide</Button>
+                            <Button eventKey='3' onClick={this.props.sourceToggle}>View <b>Source</b></Button> 
+                            <Button eventKey='4' onClick={this.props.entitiesToggle}>View <b>Entities</b></Button>
+                            <Button eventKey='4' onClick={this.props.historyToggle}>View <b>AlertGroup History</b></Button>
+                            <Button eventKey='7' onClick={this.alertOpenSelected}><b>Open</b> Selected</Button>
+                            <Button eventKey='8' onClick={this.alertCloseSelected}><b>Close</b> Selected</Button>
+                            <Button eventKey='9' onClick={this.alertPromoteSelected}><b>Promote</b> Selected</Button> 
+                            <Button eventKey='10' onClick={this.props.entryToggle}>Add <b>Entry</b></Button>
+                            <Button eventKey='11' onClick={this.alertSelectExisting}><b>Add</b> Selected to <b>Existing Event</b></Button> 
+                            <Button eventKey='12' onClick={this.alertExportCSV}>Export to <b>CSV</b></Button>
+                            <Button eventKey='13' onClick={this.alertDeleteSelected}><b>Delete</b> Selected</Button> 
+                        </ButtonGroup>
+                    </div>
+                )
+            } else { 
+                return (
+                    <div className="entry-header">
+                        <ButtonGroup bsSize='small' style={{display:'inline-flex'}}>
+                            <Button eventKey='1' onClick={this.toggleFlair}>Toggle <b>Flair</b></Button>
+                            <Button eventKey='2' onClick={this.props.guideToggle}>Guide</Button>
+                            <Button eventKey='3' onClick={this.props.sourceToggle}>View <b>Source</b></Button> 
+                            <Button eventKey='4' onClick={this.props.entitiesToggle}>View <b>Entities</b></Button>
+                            <Button eventKey='4' onClick={this.props.historyToggle}>View <b>AlertGroup History</b></Button> 
+                        </ButtonGroup>
+                    </div>
+                )
+            }
         }
     }
 });
