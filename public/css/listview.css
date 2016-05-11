@@ -1,0 +1,256 @@
+/*
+ * D
+ * to get a best fit.
+ */
+/*
+ t
+ * Basic styles, good for a large display. Everything fits in
+ * one row, no wrapping. All text based cells grow equally.
+ */
+.table-row {
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+  flex-wrap: no-wrap;
+  -webkit-flex-wrap: no-wrap;
+  width: 100%;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+.wrapper {
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: row;
+  -webkit-flex-direction: row;
+}
+.column {
+  flex-grow: 0;
+  -webkit-flex-grow: 0;
+  flex-shrink: 0;
+  -webkit-flex-shrink: 0;
+  vertical-align: top;
+}
+.index {
+  width: 50px;
+}
+.title {
+  width: 220px;
+  padding-left: 30px;
+}
+.module {
+  width: 110px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reporter {
+  width: 85px;
+}
+.status {
+  width: 95px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.owner {
+  width: 95px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.severity {
+  width: 80px;
+}
+.watch,
+.add-comment {
+  width: 18px;
+}
+.date {
+  width: 110px;
+}
+.index {
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.title {
+  /*color: #337AB5;*/
+  text-align: left;
+}
+.comment {
+  width: 120px;
+}
+.title,
+.comment {
+  flex-grow: 1;
+  -webkit-flex-grow: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-right: 4px;
+}
+.date {
+  width: 110px;
+  text-align: left;
+  padding-right: 4px;
+}
+/* growable wrappers */
+.title-comment,
+.title-comment-module-reporter,
+.attributes {
+  flex-grow: 1;
+  -webkit-flex-grow: 1;
+}
+/*
+ * Media queries: optimize for different screen widths.
+ */
+/*
+ * Media breaks.
+ */
+@media all and (width: 500px) {
+  .title-comment {
+    flex-direction: column;
+    -webkit-flex-direction: column;
+    width: 220px;
+  }
+  .title-comment div {
+    flex-grow: 0;
+    -webkit-flex-grow: 0;
+  }
+  .title-comment > div {
+    width: 100%;
+  }
+  .module-reporter,
+  .status-owner {
+    flex-direction: column;
+    -webkit-flex-direction: column;
+  }
+  .module-reporter div,
+  .status-owner div {
+    flex-grow: 0;
+    -webkit-flex-grow: 0;
+  }
+}
+
+@media all and (min-width: 650px){
+  .dates {
+    flex-direction: column;
+    -webkit-flex-direction: column;
+  }
+  .dates div {
+    flex-grow: 0;
+    -webkit-flex-grow: 0;
+  }
+   .status-owner {
+    flex-direction: column;
+    -webkit-flex-direction: column;
+  }
+  .status-owner div {
+    flex-grow: 0;
+    -webkit-flex-grow: 0;
+  }
+  .module-reporter {
+    flex-direction: column;
+    -webkit-flex-direction: column;
+  }
+  .module-reporter div {
+    flex-grow: 0;
+    -webkit-flex-grow: 0;
+  }
+
+}
+
+@media all and (width:300px) {
+  .module-reporter {
+    flex-direction: row;
+    -webkit-flex-direction: row;
+  }
+  .title-comment-module-reporter {
+    flex-direction: column;
+    -webkit-flex-direction: column;
+    width: 220px;
+  }
+  .title-comment-module-reporter div {
+    flex-grow: 0;
+    -webkit-flex-grow: 0;
+  }
+  .title-comment-module-reporter > div {
+    width: 100%;
+  }  
+}
+
+@media all and (max-width:500px) {
+  .table-row {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+  .attributes {
+    flex-direction: column;
+    -webkit-flex-direction: column;
+    width: 10px;
+  }
+  .attributes div {
+    flex-grow: 0;
+    -webkit-flex-grow: 0;
+  }
+  .attributes > div {
+    width: 100%;
+  }
+  .module-reporter,
+  .status-owner {
+    flex-direction: row;
+    -webkit-flex-direction: row;
+  }
+}
+/*
+ * General good-look styles
+ */
+.table-row {
+  border-bottom: 1px solid #e0e0e0;
+  border-collapse: collapse;
+  padding-top: 2px;
+}
+.table-row.header {
+  background-color: #ECECEC;
+  font-weight: bold;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.glyphicon {
+  color: #DDDDDD;
+}
+.header .glyphicon {
+  color: #333;
+}
+.glyphicon-eye-open.active {
+  color: blue;
+}
+.glyphicon-comment.active {
+  color: #3EBB0D;
+}
+
+.reporter {
+  color: #000000;
+}
+.comment {
+  font-style: italic;
+}
+.severity.high {
+  color: red;
+}
+.severity.medium {
+  color: blue;
+}
+.severity.low {
+  color: green;
+}
+
+
+
+
+

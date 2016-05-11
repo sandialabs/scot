@@ -272,10 +272,8 @@ var AddEntryModal = React.createClass({
         })
     })
     
-    $('.z-selected').each(function(key,value){
-	    $(value).find('.z-cell').each(function(x,y){
-	        if($(y).attr('name') == 'id'){  
-	            data = JSON.stringify({body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number($(y).text()), target_type: 'alert',  parent: 0})
+     
+	            data = JSON.stringify({body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid), target_type: 'alert',  parent: 0})
 	            $.ajax({
 		        type: 'post', 
 		        url: '/scot/api/v2/entry',
@@ -299,11 +297,8 @@ var AddEntryModal = React.createClass({
                                 cache: false
                                 }).success(function(response){
                                 })
-			}
 		}
-		})
 		}
-		})
 		})
 		this.props.addedentry()
 		AppActions.updateItem(this.props.targetid,'headerUpdate');
