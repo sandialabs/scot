@@ -13,6 +13,7 @@ var Link	        = require('../../../node_modules/react-router').Link
 var browserHistory  = require('../../../node_modules/react-router/').hashHistory
 var Listener        = require('../activemq/listener.jsx')
 var Store           = require('../flux/store.jsx')
+var Guide           = require('./guide.jsx')
 var ExpandableNavContainer = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavContainer.js')
 var ExpandableNavbar = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavbar.js')
 var ExpandableNavHeader = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavHeader.js')
@@ -27,6 +28,7 @@ var setevents = false
 var setincidents = false
 var setintel = false
 var settask = false
+var setguide = false
 var supertableid = [];
 var statetype = ''
 var eventtableid = []
@@ -50,16 +52,19 @@ var App = React.createClass({
                 setincidents = false
                 setevents = false
                 settask = false
+                setguide = false
             }
         else if(this.props.params.value.toLowerCase() == 'guide'){
-            setevents = true	
+            setguide = true
+            setevents = false	
             setintel = false
             sethome = false
             setalerts = false
             setincidents = false
             settask = false
+            state = 7
             if(this.props.params.id != null) {
-	            state = 5
+	            state = 7
 	            statetype = 'guide'	
 	            array = this.props.params.id.split('+')
 	        }
@@ -75,6 +80,7 @@ var App = React.createClass({
 	        setincidents = false
 	        setevents = false
 	        settask = false
+            setguide = false
 	    }
 	    else if(this.props.params.value.toLowerCase() == "event"){
 	        state = 2
@@ -89,7 +95,8 @@ var App = React.createClass({
 	        setalerts = false
 	        setincidents = false
 	        settask = false
-	    }
+	        setguide = false
+        }
 	    else if (this.props.params.value.toLowerCase() == "incident"){
 	        state = 3
 	        if(this.props.params.id != null) {
@@ -97,6 +104,7 @@ var App = React.createClass({
 	            statetype = 'incident'	
 	            array = this.props.params.id.split('+')
 	        }
+            setguide = false
             setincidents = true
             setintel = false
             sethome = false
@@ -111,6 +119,7 @@ var App = React.createClass({
 	            statetype = 'intel'	
 	            array = this.props.params.id.split('+')
 	        }
+            setguide = false
             setintel = true
             sethome = false
             setalerts = false
@@ -120,6 +129,7 @@ var App = React.createClass({
 	    }
 	    else if(this.props.params.value.toLowerCase() == "task")  {
             state = 6
+            setguide = false
             sethome = false
             setalerts = false
             setevents = false
@@ -135,6 +145,7 @@ var App = React.createClass({
             setincidents = false
             setintel = false
             settask = false
+            setguide = false
         }
     }
         else {
@@ -200,7 +211,7 @@ var App = React.createClass({
                 React.createElement(ExpandableNavMenuItem, {active: setevents,small: menuItemsSmall[3], full: menuItemsFull[3], tooltip: "Event", jquery: window.$,onClick: this.handleEvents}),
                 React.createElement(ExpandableNavMenuItem, {active: setincidents,small: menuItemsSmall[4], full: menuItemsFull[4], tooltip: "Incident", jquery: window.$, onClick: this.handleIncidents}),
                     React.createElement(ExpandableNavMenuItem, {active: settask, small: menuItemsSmall[5], full: menuItemsFull[5], tooltip: "Task", jquery: window.$, onClick: this.handleTasks}),
-            React.createElement(ExpandableNavMenuItem, {active: setintel, small: menuItemsSmall[6], full: menuItemsFull[6], tooltip: "Guide", jquery: window.$, onClick: this.handleChat}),
+            React.createElement(ExpandableNavMenuItem, {active: setguide, small: menuItemsSmall[6], full: menuItemsFull[6], tooltip: "Guide", jquery: window.$, onClick: this.handleGuide}),
                     React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Admin", jquery: window.$, onClick:this.handlePad}),
                     React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[8], full: menuItemsFull[8], tooltip: "Incident Handler:  " + this.state.handler, jquery: window.$, onClick: this.handleHandler}) 
                 )
@@ -234,10 +245,18 @@ var App = React.createClass({
         ?	
         React.createElement(ExpandableNavPage, null, React.createElement(Tasks, null))	
         :
+        this.state.set == 7
+        ?
+        React.createElement(ExpandableNavPage, null, React.createElement(Guide, {ids: this.state.ids}))
+        :
         null
         )	
         );
 
+    },
+    handleGuide: function(){
+        window.location.hash = '#/guide/'
+        window.location.href = window.location.hash
     },
     handleIntel: function(){
         window.location.hash = '#/intel/'
