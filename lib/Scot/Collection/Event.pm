@@ -63,10 +63,12 @@ sub create_from_api {
 
     my $id      = $event->id;
     if ( scalar(@sources) > 0 ) {
-        $self->upsert_links("Source", "event", $id, @sources);
+        my $col = $env->mongo->collection('Source');
+        $col->add_source_to("event", $event->id, \@sources);
     }
     if ( scalar(@tags) > 0 ) {
-        $self->upsert_links("Tag", "event", $id, @tags);
+        my $col = $env->mongo->collection('Tag');
+        $col->add_source_to("event", $event->id, \@tags);
     }
 
     return $event;
@@ -264,7 +266,82 @@ override 'has_computed_attributes' => sub {
     return undef;
 };
 
+override get_subthing => sub {
+    my $self        = shift;
+    my $thing       = shift;
+    my $id          = shift;
+    my $subthing    = shift;
+    my $env         = $self->env;
+    my $mongo       = $env->mongo;
+    my $log         = $env->log;
 
+    $id += 0;
+
+    if ( $subthing  eq "alert" ) {
+        my $event = $self->find_iid($id);
+        my $col = $mongo->collection('Alert');
+        my $cur = $col->find({ id => { '$in' => $event->promoted_from }});
+        return $cur;
+    }
+    elsif ( $subthing eq "incident" ) {
+        my $col = $mongo->collection('Incident');
+        my $cur = $col->find({promoted_from => $id});
+        return $cur;
+    }
+    elsif ( $subthing eq "entry" ) {
+        my $col = $mongo->collection('Entry');
+        my $cur = $col->find({'target.id'   => $id, 
+                              'target.type' => 'event'});
+        return $cur;
+    }
+    elsif ( $subthing eq "entity" ) {
+        my $timer  = $env->get_timer("fetching links");
+        my $col    = $mongo->collection('Link');
+        my $cur    = $col->find({'target.id'   => $id,
+                                 'target.type' => 'event'});
+        my @lnk = map { $_->id } $cur->all;
+        &$timer;
+
+        $timer  = $env->get_timer("generating entity cursor");
+        $col    = $mongo->collection('Entity');
+        $cur    = $col->find({id => {'$in' => \@lnk }});
+        &$timer;
+        return $cur;
+    }
+    elsif ( $subthing eq "tag" ) {
+        my $col = $mongo->collection('Appearance');
+        my $cur = $col->find({
+            type            => 'tag',
+            'target.type'   => 'event',
+            'target.id'     => $id,
+        });
+        my @ids = map { $_->{apid} } $cur->all;
+        $col    = $mongo->collection('Tag');
+        $cur    = $col->find({ id => {'$in' => \@ids }});
+        return $cur;
+    }
+    elsif ( $subthing eq "source" ) {
+        my $col = $mongo->collection('Appearance');
+        my $cur = $col->find({
+            type            => 'source',
+            'target.type'   => 'event',
+            'target.id'     => $id,
+        });
+        my @ids = map { $_->{apid} } $cur->all;
+        $col    = $mongo->collection('Source');
+        $cur    = $col->find({ id => {'$in' => \@ids }});
+        return $cur;
+    }
+    elsif ( $subthing eq "history" ) {
+        my $col = $mongo->collection('History');
+        my $cur = $col->find({'target.id'   => $id,
+                              'target.type' => 'event',});
+        return $cur;
+    }
+    else {
+        $log->error("unsupported subthing $subthing!");
+    }
+};
 
 
 

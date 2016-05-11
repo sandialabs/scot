@@ -270,7 +270,7 @@ EOF
 
         if [ "$REFRESHAPT" == "yes" ]; then
             echo "= updating apt repository"
-            apt-get update > /dev/null
+            apt-get update 2>&1 > /dev/null
         fi
 
         if [ $SKIPNODE == "no" ]; then

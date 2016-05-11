@@ -38,7 +38,8 @@ sub create_from_api {
 
     $log->trace("Create Alertgroup");
 
-    # alertgroup creation will receive the following in the json portion of the request
+    # alertgroup creation will receive the following in the 
+    # json portion of the request
     # request => {
     #    message_id  => '213123',
     #    subject     => 'subject',
@@ -53,10 +54,10 @@ sub create_from_api {
     delete $request->{data};
 
     my $tags    = $request->{tags};
-    delete $request->{tags};
+    # delete $request->{tags};  # store a copy here and there
 
     my $sources = $request->{sources};
-    delete $request->{sources};
+    # delete $request->{sources}; # store a copy in obj and in sources.pm
 
     my $alertgroup  = $self->create($request);
 
@@ -69,14 +70,16 @@ sub create_from_api {
     my $id          = $alertgroup->id;
 
     if ( defined $tags && scalar(@$tags) > 0 ) {
+        my $col = $mongo->collection('Tag');
         foreach my $tag (@$tags) {
-            my $t = $mongo->collection('Tag')->add_tag_to("alertgroup",$id, $tag);
+            my $t = $col->add_tag_to("alertgroup",$id, $tag);
         }
     }
 
     if ( defined $sources && scalar(@$sources) > 0 ) {
+        my $col = $mongo->collection('Source');
         foreach my $src (@$sources) {
-            my $s = $mongo->collection('Source')->add_source_to("alertgroup", $id, $src);
+            my $s = $col->add_source_to("alertgroup", $id, $src);
         }
     }
 
@@ -189,38 +192,82 @@ sub refresh_data {
     });
 }
 
-override 'has_computed_attributes' => sub {
-    my $self    = shift;
-    return 1;
-};
+override get_subthing => sub {
+    my $self        = shift;
+    my $thing       = shift;
+    my $id          = shift;
+    my $subthing    = shift;
+    my $env         = $self->env;
+    my $mongo       = $env->mongo;
+    my $log         = $env->log;
 
-# return href of computed attributes 
-sub get_computed_attributes {
-    my $self    = shift;
-    my $obj     = shift;
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
+    $id += 0;
 
-    # need sources and tags
-    my $src_cursor = $mongo->collection('Source')->get_linked_sources($obj);
-    my $tag_cursor = $mongo->collection('Tag')->get_linked_tags($obj);
-    my $entry_cursor = $mongo->collection('Entry')->get_entries_on_alertgroups_alerts($obj);
-
-    my $entry_count = 0;
-    if ($entry_cursor) {
-        $entry_count = $entry_cursor->count;
+    if ( $subthing  eq "alert" ) {
+        my $col = $mongo->collection('Alert');
+        my $cur = $col->find({alertgroup => $id});
+        return $cur;
     }
+    elsif ( $subthing eq "entry" ) {
+        my $col = $mongo->collection('Entry');
+        my $cur = $col->find({'target.id'   => $id, 
+                              'target.type' => 'alertgroup'});
+        return $cur;
+    }
+    elsif ( $subthing eq "entity" ) {
+        my $timer  = $env->get_timer("fetching links");
+        my $col    = $mongo->collection('Link');
+        my $cur    = $col->find({'target.id'   => $id,
+                              'target.type' => 'alertgroup'});
+        my @lnk = map { $_->id } $cur->all;
+        &$timer;
 
-    my @sources = map { $_->{value} } $src_cursor->all;
-    my @tags    = map { $_->{value} } $tag_cursor->all;
-
-    return {
-        sources => \@sources,
-        tags    => \@tags,
-        entry_count => $entry_count,
-    };
-}
-
+        $timer  = $env->get_timer("generating entity cursor");
+        $col    = $mongo->collection('Entity');
+        $cur    = $col->find({id => {'$in' => \@lnk }});
+        &$timer;
+        return $cur;
+    }
+    elsif ( $subthing eq "tag" ) {
+        my $col = $mongo->collection('Appearance');
+        my $cur = $col->find({
+            type            => 'tag',
+            'target.type'   => 'alertgroup',
+            'target.id'     => $id,
+        });
+        my @ids = map { $_->{apid} } $cur->all;
+        $col    = $mongo->collection('Tag');
+        $cur    = $col->find({ id => {'$in' => \@ids }});
+        return $cur;
+    }
+    elsif ( $subthing eq "source" ) {
+        my $col = $mongo->collection('Appearance');
+        my $cur = $col->find({
+            type            => 'source',
+            'target.type'   => 'alertgroup',
+            'target.id'     => $id,
+        });
+        my @ids = map { $_->{apid} } $cur->all;
+        $col    = $mongo->collection('Source');
+        $cur    = $col->find({ id => {'$in' => \@ids }});
+        return $cur;
+    }
+    elsif ( $subthing eq "guide" ) {
+        my $ag  = $self->find_iid($id);
+        my $col = $mongo->collection('Guide');
+        my $cur = $col->find({applies_to => $ag->subject});
+        return $cur;
+    }
+    elsif ( $subthing eq "history" ) {
+        my $col = $mongo->collection('History');
+        my $cur = $col->find({'target.id'   => $id,
+                              'target.type' => 'alertgroup',});
+        return $cur;
+    }
+    else {
+        $log->error("unsupported subthing $subthing!");
+    }
+};
 
 
 1;

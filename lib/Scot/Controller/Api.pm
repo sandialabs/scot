@@ -41,13 +41,14 @@ sub create {
 
     my $req_href    = $self->get_request_params;
     #   req_href = {
-    # collection  => "collection name",
-    # id          => $int_id,
-    # subthing    => $if_it_exists,
-    # user        => $username,
-    # request     => {
-    #     params  => $href_of_params_from_web_request,
-    #     json    => $href_of_json_submitted
+    #       collection  => "collection name",
+    #       id          => $int_id,
+    #       subthing    => $if_it_exists,
+    #       user        => $username,
+    #       request     => {
+    #           params  => $href_of_params_from_web_request,
+    #           json    => $href_of_json_submitted
+    #       }
     # }
     
 
@@ -138,7 +139,14 @@ sub create {
         my $target_type = $object->target->{type};
         my $col         = $mongo->collection(ucfirst($target_type));
         my $obj         = $col->find_iid($target_id);
-        $obj->update_set(updated => $env->now);
+        $obj->update({
+            '$set'  => {
+                updated => $env->now
+            },
+            '$inc'  => {
+                entry_count => 1,
+            },
+        });
     }
 
     $self->audit("create_thing", {
@@ -331,22 +339,9 @@ sub get_many {
         $cursor->skip($offset);
     }
 
-    my @things;
+    my @things = $cursor->all;
 
-    # alertgroups have tags, that need a secondary fetch through links to get
-    if ( $collection->has_computed_attributes ) {
-        while ( my $obj = $cursor->next ) {
-            my $comphref = $collection->get_computed_attributes($obj);
-            my $objhash = $obj->as_hash;
-            foreach my $k (keys %$comphref) {
-                $objhash->{$k} = $comphref->{$k};
-            }
-            push @things, $objhash;
-        }
-    }
-    else {
-        @things = $cursor->all;
-    }
+    $log->trace("submitting for render");
 
     $self->do_render({
         records             => \@things,
@@ -354,17 +349,10 @@ sub get_many {
         totalRecordCount    => $total
     });
 
-    delete $req_href->{request}; # hack to kil error when '$' appears in match ref
+    # hack to kil error when '$' appears in match ref
+    delete $req_href->{request}; 
 
     $self->audit("get_many", $req_href);
-#    $env->mq->send("scot", {
-#        action  => "viewed",
-#        data    => {
-#            who     => $user,
-#            type    => $col_name,
-#            id      => 'many',
-#        }
-#    });
 }
 
 
@@ -533,6 +521,7 @@ sub check_entity_enrichments {
     if ( $changes > 0 ) {
         $log->debug("updating cache of entity enrichments");
         $entity->update_set( data => $data );
+        $log->debug("updated cache of entity enrichments");
     }
 }
 
@@ -607,11 +596,12 @@ sub get_subthing {
     my $subthing    = $req_href->{subthing};
     my $collection  = $mongo->collection(ucfirst($thing));
     my $user        = $self->session('user');
-    my $cursor      = $collection->get_subthing($thing, $id, $subthing);
 
     $log->debug("-----");
     $log->debug("----- GET /$thing/$id/$subthing");
     $log->debug("-----");
+
+    my $cursor      = $collection->get_subthing($thing, $id, $subthing);
 
     unless ( defined $cursor ) {
         $log->error("No subthing data");
@@ -621,10 +611,11 @@ sub get_subthing {
         return;
     }
 
-    $log->debug("Subthing cursor has ".$cursor->count." items");
+    $log->debug("Subthing $subthing cursor has ".$cursor->count." items");
 
     my @things;
     if ( $subthing eq "entry" ) {
+        $log->trace("rendering entry");
         @things = $self->thread_entries($cursor);
         $self->do_render({
             records => \@things,
@@ -632,50 +623,57 @@ sub get_subthing {
             totalRecordCount => scalar(@things),
         });
     }
-    elsif ( $subthing eq "alert" ) {
-        # add in subject from alertgroup
-        my $agcol   = $mongo->collection('Alertgroup');
-        my $linkcol = $mongo->collection('Link');
-        while (my $alert = $cursor->next) {
-            my $agobj   = $agcol->find_one({id => $alert->alertgroup});
-            my $subject = $agobj->subject;
-            my $href    = $alert->as_hash;
-            $href->{subject} = $subject;
-
+#    elsif ( $subthing eq "alert" ) {
+#        # add in subject from alertgroup
+#        my $agcol   = $mongo->collection('Alertgroup');
+#        my $entrycol = $mongo->collection('Entry');
+#        while (my $alert = $cursor->next) {
+#            my $agobj   = $agcol->find_one({id => $alert->alertgroup});
+#            my $subject = $agobj->subject;
+#            my $href    = $alert->as_hash;
+#            $href->{subject} = $subject;
+#
             # look for entries
-            my $lcur    = $linkcol->get_links(
-                'alert', $alert->id, 'entry'
-            );
-            my $entry_count = 0;
-
-            if ( $lcur ) {
-                $entry_count    = $lcur->count;
-            };
-
-            $href->{'entries'} = $entry_count;
-            
-
-            push @things, $href;
-        }
-        $self->do_render({
-            records => \@things,
-            queryRecordCount => scalar(@things),
-            totalRecordCount => scalar(@things),
-        });
-    }
+#            my $lcur    = $entrycol->get_entries(
+#                target_type     => 'alert', 
+#                target_id       => $alert->id,
+#            );
+#            my $entry_count = 0;
+#
+#            if ( $lcur ) {
+#                $entry_count    = $lcur->count;
+#            };
+#
+#            $href->{'entries'} = $entry_count;
+#            
+#
+#            push @things, $href;
+#        }
+#        $self->do_render({
+#            records => \@things,
+#            queryRecordCount => scalar(@things),
+#            totalRecordCount => scalar(@things),
+#        });
+#    }
     elsif ($subthing eq "entity")  {
+        $log->trace("rendering entity");
         # need to transform from an array of hashes to a a hash
         # for efficiency in UI code
         my %things  = ();
-        while ( my $entity = $cursor->next ) {
+        my $entitycol   = $mongo->collection('Entity');
+        while ( my $link = $cursor->next ) {
+            my $entity  = $entitycol->find_one({ id => $link->entity_id});
+            $self->check_entity_enrichments($entity);
             $things{$entity->value} = {
                 id      => $entity->id,
                 count   => $self->get_entity_count($entity),
+                entry   => $self->get_entry_count($entity),
                 type    => $entity->type,
                 classes => $entity->classes,
                 data    => $entity->data,
             };
         }
+        $log->debug("rendering subthing");
         $self->do_render({
             records             => \%things,
             queryRecordCount    => scalar(keys %things),
@@ -684,6 +682,7 @@ sub get_subthing {
     }
     else {
         @things = $cursor->all;
+        $log->trace("rendering default",{filter=>\&Dumper, value=>\@things});
         $self->do_render({
             records => \@things,
             queryRecordCount => scalar(@things),
@@ -818,6 +817,25 @@ sub update {
     if ( ref($object) eq "Scot::Model::Entry" ) {
         $self->do_task_checks($req_href);
         $log->debug("Request is now: ",{filter=>\&Dumper, value => $req_href});
+        if ( $req_href->{target} ) {
+            # changing the target of the entry is moving it...
+            my $current_target  = $object->target;
+            my $ct_col  = $mongo->collection(ucfirst($current_target->{type}));
+            my $ct_obj  = $ct_col->find_iid($current_target->{id});
+
+            my $new_target      = $req_href->{target};
+            my $nt_col  = $mongo->collection(ucfirst($new_target->{type}));
+            my $nt_obj  = $nt_col->find_iid($new_target->{id});
+
+            $ct_obj->update({
+                '$set'  => { updated        => $env->now },
+                '$inc'  => { entry_count    => -1 },
+            });
+            $nt_obj->update({
+                '$set'  => { updated        => $env->now },
+                '$inc'  => { entry_count    => 1 },
+            });
+        }
     }
 
     if ( $object->meta->does_role("Scot::Role::Entitiable") ) {
@@ -891,7 +909,7 @@ sub update {
             who     => $user,
             what    => "updated via api",
             when    => $env->now,
-            targets => [ { id => $object->id, type => $col_name } ],
+            targets =>  { id => $object->id, type => $col_name } ,
         });
     }
 
@@ -1005,7 +1023,6 @@ sub handle_promotion {
     }
 
     my $object_type         = $object->get_collection_name;
-    my $linkcol             = $mongo->collection('Link');
     my ($proname, $procol)  = $self->get_promotion_collection($object_type);
     my $user                = $self->session('user');
 
@@ -1016,7 +1033,7 @@ sub handle_promotion {
         if ( $promote_to =~ /\d+/ ) {
 
             $log->trace("Promoting to an supposedly existing id");
-            $proobj  = $procol->find_iid($promote_to);
+            $proobj  = $procol->find_iid($promote_to+0);
             
             unless ( $proobj ) {
                 $log->error("Can not promote to non-existing thing");
@@ -1028,7 +1045,8 @@ sub handle_promotion {
             $proobj = $procol->create_promotion($object, $req);
             unless ( $proobj ) {
                 $log->error("Failed to create promotion target!");
-                $self->do_error(444, { error_msg => "failed to create promotion target"});
+                $self->do_error(444, { 
+                    error_msg => "failed to create promotion target"});
                 return 0;
             }
             $promote_to = $proobj->id;
@@ -1042,32 +1060,19 @@ sub handle_promotion {
             });
         }
 
-        my $lhref_a     = {
-            type   => $object_type,
-            id     => $object->id,
-        };
-        my $lhref_b     = {
-            type => $proname,
-            id   => $promote_to,
-        };
-
-        my $ret = $linkcol->create_link($lhref_a, $lhref_b);
-
-        unless ( $ret ) {
-            $log->error("Error creating Link: ",
-                {filter=>\&Dumper, value=> [$lhref_a,$lhref_b]});
-            $self->do_error(444, { error_msg => "failed to promote!" });
-            return 0;
-        }
+        $proobj->update_push(promoted_from => $object->id);
 
         if ( ref($object) eq "Scot::Model::Alert" ) {
-            $mongo->collection('Alertgroup')->refresh_data($object->alertgroup, $user);
+            $mongo->collection('Alertgroup')
+                  ->refresh_data($object->alertgroup, $user);
         }
+
         try {
             $object->update({
                 '$set'  => {
-                    status  => 'promoted',
-                    updated => $env->now(),
+                    status          => 'promoted',
+                    updated         => $env->now(),
+                    promotion_id    => $promote_to
                 }
             });
         }
@@ -1076,7 +1081,8 @@ sub handle_promotion {
         };
 
         $self->do_render({
-            id      => $proobj->id,
+            id      => $object->id,
+            pid     => $proobj->id,
             status  => "successfully promoted",
         });
 
@@ -1090,17 +1096,34 @@ sub handle_promotion {
         }
     }
     else {
-        $log->trace("Unpromoting object");
+        my $promotion_id   = $object->promotion_id;
+        $log->trace("Unpromoting object $promotion_id");
+        $object->update({
+            '$set'  => {
+                promotion_id    => 0,
+                status          => 'closed',
+            }
+        });
+        my $object_type         = $object->get_collection_name;
+        my ($proname, $procol)  = $self->get_promotion_collection($object_type);
+        my $promobj             = $procol->find_one({id => $promotion_id});
 
-       $linkcol->remove_links(
-            $object_type,
-            $object->id,
-            $proname,
-            $promote_to,
-        );
-        if ( ref($object) eq "Scot::Model::Alert" ) {
-            $mongo->collection('Alertgroup')->refresh_data($object->alertgroup, $user);
+        if ( $promobj ) {
+            $promobj->update_remove(promoted_from => $object->id);
         }
+        else {
+            $log->warn("couldn't find a promotion object for $proname $promotion_id");
+        }
+
+        if ( ref($object) eq "Scot::Model::Alert" ) {
+            $mongo->collection('Alertgroup')
+                  ->refresh_data($object->alertgroup, $user);
+        }
+        $self->do_render({
+            id      => $object->id,
+            pid     => $promobj->id,
+            status  => "successfully unpromoted",
+        });
     }
     return 1;
 }
@@ -1127,7 +1150,7 @@ sub write_promotion_history_notification {
             who     => $user,
             what    => $what,
             when    => $when,
-            targets => [ $targets ],
+            targets => $targets ,
         });
     }
     # $self->env->amq->send_amq_notification($type, $object, $user);
@@ -1328,6 +1351,15 @@ sub delete {
         }
     });
     if ( ref($object) eq "Scot::Model::Entry" ) {
+        my $targetobj   = $mongo->collection(ucfirst($object->target->{type}));
+        $targetobj->update({
+            '$set'  => {
+                updated => $env->now,
+            },
+            '$inc'  => {
+                entry_count => -1
+            },
+        });
         $env->mq->send("scot", {
             action  => 'updated',
             data    => {
@@ -1365,98 +1397,6 @@ sub delete {
 
 =cut
 
-sub breaklink {
-    my $self    = shift;
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
-    my $log     = $env->log;
-    my $user    = $self->session('user');
-
-    $log->trace("Handler is processing a DELETE LINK request by $user");
-
-    my $req_href    = $self->get_request_params;
-    my $id          = $req_href->{id} + 0;
-    my $col_name    = $req_href->{collection};
-    my $sub_col     = $req_href->{subthing};
-    my $sub_id      = $req_href->{subid} + 0;
-
-    unless ( $self->id_is_valid($id) ) {
-        $self->do_error(400, {
-            error_msg   => "Invalid integer id: $id"
-        });
-        return;
-    }
-    unless ( $self->id_is_valid($sub_id) ) {
-        $self->do_error(400, {
-            error_msg   => "Invalid integer id: $sub_id"
-        });
-        return;
-    }
-
-    my $object = $mongo->collection(ucfirst($col_name))->find_iid($id);
-
-    if ( $object->meta->does_role("Scot::Role::Permittable") ) {
-        my $users_groups    = $self->session('groups');
-        unless ( $object->is_modifiable($users_groups) ) {
-            $self->modify_not_permitted_error($object, $users_groups);
-            return;
-        }
-    }
-    
-    my $collection      = $mongo->collection('Link');
-    my $a   = {
-        type   => $col_name, 
-        id     => $id, 
-    };
-    my $b   = {
-        type   => $sub_col, 
-        id     => $sub_id, 
-    };
-
-    my $linkcursor      = $collection->get_link($a, $b);
-
-    unless ( defined $linkcursor ) {
-        $log->error("No matching Links for $col_name : $id -> $sub_col : $sub_id");
-        $self->do_error(404, {
-            error_msg   => "No matching Links $col_name: $id -> $sub_col : $sub_id"
-        });
-        return;
-    }
-
-    $log->debug("BREAKLINK found ".$linkcursor->count." links to break");
-
-    while ( my $link = $linkcursor->next ) {
-
-        $link->remove;
-        if ( $link->is_removed ) {
-            $log->debug("Link ".$link->id." has been deleted.");
-        }
-    }
-    
-    # $env->amq->send_amq_notification("modify", $object, $user);
-
-    $self->do_render({
-        action      => 'breaklink',
-        thing       => $col_name,
-        id          => $object->id,
-        subthing    => $sub_col,
-        subid       => $sub_id,
-        status      => 'ok',
-    });
-    
-    $self->audit("link broken", $req_href);
-    $env->mq->send("scot", {
-        action  => "unlinked",
-        data    => {
-            type        => $col_name,
-            id          => $object->id,
-            subthing    => $sub_col,
-            subid       => $sub_id,
-            who         => $user,
-        }
-    });
-
-}
 
 =item B<user_is_admin>
 
@@ -2232,12 +2172,24 @@ sub get_entity_count {
     my $value   = $entity->value;
     my $env     = $self->env;
     my $mongo   = $env->mongo;
-    my $col     = $mongo->collection('Link');
-    my $cursor  = $col->get_links(
-        'entity', $entity->id    
+    my $col     = $mongo->collection('Appearance');
+    return $col->get_total_appearances(
+        'entity', $entity->value    
+    );
+}
+
+sub get_entry_count {
+    my $self    = shift;
+    my $entity  = shift;
+    my $value   = $entity->value;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $col     = $mongo->collection('Entry');
+    my $cursor  = $col->get_entries(
+        target_id   => $entity->id,
+        target_type => "entity",
     );
     return $cursor->count;
 }
-
 
 1;
