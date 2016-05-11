@@ -105,7 +105,8 @@ var SelectedEntry = React.createClass({
             divClass = 'row-fluid alert-wrapper';
         }
         return (
-            <div className={divClass}> 
+                
+            <div className={divClass} style={{height:this.props.windowHeight}}> 
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected}/> : <span>Loading...</span>} 
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
