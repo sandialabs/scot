@@ -54,15 +54,82 @@ sub create_from_api {
     my $id  = $intel->id;
 
     if ( scalar(@sources) > 0 ) {
-        $self->upsert_links("Source", "intel", $id, @sources);
+        my $col = $env->mongo->collection('Source');
+        $col->add_source_to("intel", $intel->id, \@sources);
     }
     if ( scalar(@tags) > 0 ) {
-        $self->upsert_links("Tag", "intel", $id, @tags);
+        my $col = $env->mongo->collection('Tag');
+        $col->add_source_to("intel", $intel->id, \@tags);
     }
 
     return $intel;
 
 }
 
+override get_subthing => sub {
+    my $self        = shift;
+    my $thing       = shift;
+    my $id          = shift;
+    my $subthing    = shift;
+    my $env         = $self->env;
+    my $mongo       = $env->mongo;
+    my $log         = $env->log;
+
+    $id += 0;
+
+    if ( $subthing eq "entry" ) {
+        my $col = $mongo->collection('Entry');
+        my $cur = $col->find({'target.id'   => $id, 
+                              'target.type' => 'intel'});
+        return $cur;
+    }
+    elsif ( $subthing eq "entity" ) {
+        my $timer  = $env->get_timer("fetching links");
+        my $col    = $mongo->collection('Link');
+        my $cur    = $col->find({'target.id'   => $id,
+                              'target.type' => 'intel'});
+        my @lnk = map { $_->id } $cur->all;
+        &$timer;
+
+        $timer  = $env->get_timer("generating entity cursor");
+        $col    = $mongo->collection('Entity');
+        $cur    = $col->find({id => {'$in' => \@lnk }});
+        &$timer;
+        return $cur;
+    }
+    elsif ( $subthing eq "tag" ) {
+        my $col = $mongo->collection('Appearance');
+        my $cur = $col->find({
+            type            => 'tag',
+            'target.type'   => 'intel',
+            'target.id'     => $id,
+        });
+        my @ids = map { $_->{apid} } $cur->all;
+        $col    = $mongo->collection('Tag');
+        $cur    = $col->find({ id => {'$in' => \@ids }});
+        return $cur;
+    }
+    elsif ( $subthing eq "source" ) {
+        my $col = $mongo->collection('Appearance');
+        my $cur = $col->find({
+            type            => 'source',
+            'target.type'   => 'intel',
+            'target.id'     => $id,
+        });
+        my @ids = map { $_->{apid} } $cur->all;
+        $col    = $mongo->collection('Source');
+        $cur    = $col->find({ id => {'$in' => \@ids }});
+        return $cur;
+    }
+    elsif ( $subthing eq "history" ) {
+        my $col = $mongo->collection('History');
+        my $cur = $col->find({'target.id'   => $id,
+                              'target.type' => 'intel',});
+        return $cur;
+    }
+    else {
+        $log->error("unsupported subthing $subthing!");
+    }
+};
 
 1;

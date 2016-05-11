@@ -167,14 +167,18 @@ sub get_subthing {
     my $self        = shift;
     my $thing       = shift;
     my $id          = shift;
+    $id += 0;
     my $subthing    = shift;
     my $env         = $self->env;
     my $log         = $env->log;
     my $mongo       = $env->mongo;
 
+    ## MOSTLY replaced with override's in the each collection module.
 
     my $thing_class = "Scot::Model::".ucfirst($thing);
+
     $log->trace("Getting subthing $subthing for $thing_class");
+
     require_module($thing_class);
     my $thing_meta  = Moose::Meta::Class->initialize($thing_class);
 
@@ -197,33 +201,115 @@ sub get_subthing {
         return $subcursor;
     }
 
-    # see if it a Linkable
+    if ( $thing_meta->does_role('Scot::Role::Tags') and
+         $subthing eq "tag" ) {
 
-    my $linkcol = $mongo->collection('Link');
-    my $cursor  = $linkcol->get_links($thing, $id, $subthing);
+        my $col     = $mongo->collection('Appearance');
+        my $match   = {
+            type            => $subthing,
+            'target.id'     => $id + 0,
+            'target.type'   => $thing,
+        };
+        my $subcursor   = $col->find($match);
+        return $subcursor;
+    }
+    if ( $thing_meta->does_role('Scot::Role::Sources') and
+         $subthing eq "source" ) {
 
-    if ( defined $cursor and 
-         ref($cursor) eq "Meerkat::Cursor" and
-         $cursor->count > 0 ) {
+        my $col     = $mongo->collection('Appearance');
+        my $match   = {
+            type            => $subthing,
+            'target.id'     => $id + 0,
+            'target.type'   => $thing,
+        };
+        my $subcursor   = $col->find($match);
+        return $subcursor;
+    }
 
-        my @ids = ();
+    if ( $thing_meta->does_role('Scot::Role::Entitiable') and
+         $subthing eq "entity" ) {
 
-        while ( my $link = $cursor->next ) {
-            my $pair    = $link->pair;
-            my $item_id;
+        $log->trace("Getting Entities matching $thing:$id!");
 
-            if ( $pair->[0]->{id} == $id and
-                 $pair->[0]->{type} eq $thing ) {
+        my $col     = $mongo->collection('Link');
+        my $match   = {
+            'target.id'     => $id+0,
+            'target.type'   => $thing,
+        };
+        my $subcursor   = $col->find($match);
+        return $subcursor;
+    }
 
-                $item_id    = $pair->[1]->{id} + 0;
-            }
-            else {
-                $item_id    = $pair->[0]->{id} + 0;
-            }
-            push @ids, $item_id;
-        }
-        my $subcol      = $mongo->collection(ucfirst($subthing));
-        my $subcursor   = $subcol->find({ id => {'$in' => \@ids }});
+    if ( $thing eq "entity" and grep {/$subthing/} (qw(alert event intel)) ) {
+
+        $log->trace("Getting $subthing related to entity $id");
+
+        my $col     = $mongo->collection('Link');
+        my $match   = {
+            'target.type' => $subthing,
+            entity_id   => $id + 0,
+        };
+        $log->debug("match is ",{filter=>\&Dumper, value=>$match});
+        my $bcursor   = $col->find($match);
+        my @ids       = map { $_->{target}->{id} } $bcursor->all;
+        my $subcursor = $mongo->collection(ucfirst($subthing))->find({
+            id => { '$in' => \@ids }
+        });
+        return $subcursor;
+    }
+
+    if ( $thing eq "alert" and $subthing eq "event" ) {
+        my $ecol    = $mongo->collection('Event');
+        my $subcursor   = $ecol->find({
+            promoted_from => $id
+        });
+        return $subcursor;
+    }
+
+    if ( $thing eq "event" and $subthing eq "alert" ) {
+        my $ecol    = $mongo->collection('Event');
+        my $acol    = $mongo->collection('Alert');
+
+        my $event   = $ecol->find_iid($id);
+        my $pfids   = $event->promoted_from;
+
+        my $subcursor   = $acol->find({
+            id  => { '$in'  => $pfids }
+        });
+        return $subcursor;
+    }
+
+    if ( $thing eq "event" and $subthing eq "incident" ) {
+        my $icol    = $mongo->collection('Incident');
+        my $subcursor   = $icol->find({
+            promoted_from   => $id
+        });
+        return $subcursor;
+    }
+
+    if ( $thing eq "incident" and $subthing eq "event" ) {
+        my $icol    = $mongo->collection('Incident');
+        my $ecol    = $mongo->collection('Event');
+
+        my $incident   = $icol->find_iid($id);
+        my $pfids   = $incident->promoted_from;
+
+        my $subcursor   = $ecol->find({
+            id  => { '$in'  => $pfids }
+        });
+        return $subcursor;
+    }
+
+    if ( $thing eq "alertgroup" and $subthing eq "entity" ) {
+        my $acol    = $mongo->collection('Alert');
+        my $cursor  = $acol->find({alertgroup => $id});
+        my @aids    = map { $_->{id} } $cursor->all;
+        my $col     = $mongo->collection('Link');
+        my $match   = {
+            'target.id'     => { '$in' => \@aids },
+            'target.type'   => 'alert',
+        };
+        my $subcursor   = $col->find($match);
         return $subcursor;
     }
 
@@ -280,37 +366,6 @@ sub get_group_permissions {
         push @$aref, "modifygroups" => $env->default_groups->{modify};
     }
 
-}
-
-sub upsert_links {
-    my $self    = shift;
-    my $object  = shift;
-    my $type    = shift;
-    my $aref    = shift;    # the array of things of type $type to link to the object
-
-    my $mongo   = $self->env->mongo;
-    my $linkcol = $mongo->collection('Link');
-    my $thingcol    = $mongo->collection(ucfirst($type));
-    my $objcol      = $object->get_collection_name;
-    my $objid       = $object->id;
-
-    foreach my $lid (@$aref) {
-
-        my @match   = (
-            { type    => $objcol, id => $objid },
-            { type    => $type,   id => $lid, },
-        );
-
-        my $linkobj = $linkcol->get_link(@match);
-
-        unless ( $linkobj ) {
-            $linkobj    = $linkcol->create_link(
-                $match[0],
-                $match[1],
-                $object->when
-            );
-        }
-    }
 }
 
 sub get_value_from_request {

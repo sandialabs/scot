@@ -51,13 +51,17 @@ var SelectedPermission = React.createClass({
         var data = this.permissionsfunc(permissionData);//pos 0 is read and pos 1 is write
         var id = this.props.id;
         var type = this.props.type;
-        for (var prop in data[0]) { 
-            var read_modify = 'read';
-            readRows.push(<PermissionIterator data={data[0][prop]} dataRead={data[0]} dataModify={data[1]} updateid={this.props.updateid} id={id} type={type} read_modify={read_modify} updated={this.props.updated} />);
+        if (data[0] !== undefined) {
+            for (i=0; i < data[0].length; i++) {
+                var read_modify = 'read';
+                readRows.push(<PermissionIterator data={data[0][i]} dataRead={data[0]} dataModify={data[1]} updateid={this.props.updateid} id={id} type={type} read_modify={read_modify} updated={this.props.updated} />);
+            }
         }
-        for (var prop in data[1]) {
-            var read_modify = 'modify'; 
-            modifyRows.push(<PermissionIterator data={data[1][prop]} dataRead={data[0]} dataModify={data[1]} updateid={this.props.updateid} id={id} type={type} read_modify={read_modify} updated={this.props.updated} />);
+        if (data[1] !== undefined) {
+            for (i=0; i < data[1].length; i++) {
+                var read_modify = 'modify'; 
+                modifyRows.push(<PermissionIterator data={data[1][i]} dataRead={data[0]} dataModify={data[1]} updateid={this.props.updateid} id={id} type={type} read_modify={read_modify} updated={this.props.updated} />);
+            }
         }
         if (type == 'entry') {
             return ( 
@@ -107,17 +111,17 @@ var PermissionIterator = React.createClass({
         var dataModify = this.props.dataModify;
         var toggle = this.props.permissionsToggle;
         if (this.props.read_modify == 'read') {
-            for (var prop in dataRead) {
-                if (dataRead[prop] != data) {
-                    tempArr.push(dataRead[prop]);
+            for (i=0; i < dataRead.length; i++) {
+                if (dataRead[i] != data) {
+                    tempArr.push(dataRead[i]);
                 }
             }
             newPermission.read = tempArr;
             newPermission.modify = dataModify;
         } else if (this.props.read_modify == 'modify') {
-            for (var prop in dataModify) {
-                if (dataModify[prop] != data) {  
-                    tempArr.push(dataModify[prop]);
+            for (i=0; i < dataModify.length; i++) {
+                if (dataModify[i] != data) {  
+                    tempArr.push(dataModify[i]);
                 }
             }
             newPermission.read = dataRead;

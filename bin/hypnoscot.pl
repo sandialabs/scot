@@ -1,13 +1,18 @@
 #!/usr/bin/env perl
 use Mojo::Server::Hypnotoad;
+use Data::Dumper;
+my $port    = 5000;
 
-my $hypno = Mojo::Server::Hypnotoad->new(
+my %params = (
     workers => 10,
     proxy   => 1,
     pid_file => '/var/run/hypnoscot.pid',
-    listen  => [ 'http://localhost:5000' ],
+    listen  => [ "http://localhost:$port" ],
     clients => 1,
-    accepts => 2,
+    accepts => 1,
+    heartbeat_timeout   => 10,
 );
+
+my $hypno = Mojo::Server::Hypnotoad->new(%params);
 
 $hypno->run('/opt/scot/script/Scot');
