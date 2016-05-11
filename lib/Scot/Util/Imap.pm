@@ -17,11 +17,10 @@ use Scot::Util::Imap::Cursor;
 
 use Moose;
 
-has env     => (
+has log     => (
     is          => 'ro',
-    isa         => 'Scot::Env',
+    isa         => 'Log::Log4perl::Logger',
     required    => 1,
-    default     => sub { Scot::Env->instance },
 );
 
 has mailbox => (
@@ -106,8 +105,7 @@ has _client_pid => (
 
 sub _connect_to_imap {
     my $self    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     my @options = (
         Server              => $self->hostname,
@@ -140,8 +138,7 @@ sub _connect_to_imap {
 
 sub check_imap_connection {
     my $self    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     if ( $$ != $self->_client_pid ) {
         $log->trace("Fork detected.  attempting reconnect.");
@@ -154,8 +151,7 @@ sub check_imap_connection {
 sub get_mail_since {
     my $self    = shift;
     my $epoch   = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     $self->check_imap_connection;
     my $client  = $self->client;
     my $since_epoch = $epoch;
@@ -171,7 +167,7 @@ sub get_mail_since {
     $client->Peek(1);   # do not mark messages as read
 
     my @uids;
-    $self->env->log->debug("Lookin for messages since $since_epoch");
+    $self->self->log->debug("Lookin for messages since $since_epoch");
 
     foreach my $message_id ($client->since($since_epoch)) {
         if ( $message_id =~ $MSG_ID_FMT ) {
@@ -183,8 +179,7 @@ sub get_mail_since {
 
 sub get_unseen_mail {
     my $self    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     $self->check_imap_connection;
     my $client  = $self->client;
 
@@ -215,11 +210,10 @@ sub get_unseen_cursor {
 sub get_since_cursor {
     my $self    = shift;
     my $href    = shift;
-    my $env     = $self->env;
     my ($unit,$amount)  = each %$href;
     my $seconds_ago;
 
-    $env->log->debug("unit $unit amount $amount");
+    $self->log->debug("unit $unit amount $amount");
 
     if ( $unit eq "day" ) {
         $seconds_ago = $amount * 24 * 60 * 60;
@@ -233,11 +227,11 @@ sub get_since_cursor {
     elsif ( $unit eq "second" ) {
         $seconds_ago = $amount;
     }
-    $env->log->debug("seconds ago is $seconds_ago");
+    $self->log->debug("seconds ago is $seconds_ago");
 
-    my $since_epoch = $env->now - $seconds_ago;
+    my $since_epoch = time() - $seconds_ago;
 
-    $env->log->debug("Lookin for messages since $since_epoch");
+    $self->log->debug("Lookin for messages since $since_epoch");
 
     my @uids    = $self->get_mail_since($since_epoch);
     my $cursor  = Scot::Util::Imap::Cursor->new({uids => \@uids});
@@ -247,8 +241,7 @@ sub get_since_cursor {
 sub mark_uid_unseen {
     my $self    = shift;
     my $uid     = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     $self->check_imap_connection;
     my $client  = $self->client;
     my @usuid   = ( $uid );
@@ -268,8 +261,7 @@ sub get_message {
     my $self    = shift;
     my $uid     = shift;
     my $peek    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     $self->check_imap_connection;
     my $client  = $self->client;
 
@@ -307,8 +299,7 @@ sub extract_body {
     my $self    = shift;
     my $uid     = shift;
 
-    my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->trace("Extracting body from uid = $uid");
 
@@ -329,15 +320,27 @@ sub extract_body {
     return $html, $plain;
 }
 
+
 sub get_subject {
     my $self    = shift;
     my $uid     = shift;
-    my $env     = $self->env;
     $self->check_imap_connection;
     my $client  = $self->client;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
-    my $subject = $client->subject($uid);
+    my $subject = retry {
+        $client->subject($uid);
+    }
+    on_retry{
+        $self->clear_client_connection;
+    }
+    delay_exp {
+        5, 1e6
+    }
+    catch {
+        $log->error("Failed to get subject");
+        $log->error($_);
+    };
 
     return $subject;
 }
@@ -345,9 +348,8 @@ sub get_subject {
 sub get_from {
     my $self    = shift;
     my $envelope= shift;
-    my $env     = $self->env;
     # my $client  = $self->client;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     return $envelope->from_addresses;
 }
@@ -355,9 +357,7 @@ sub get_from {
 sub get_to {
     my $self    = shift;
     my $envelope= shift;
-    my $env     = $self->env;
-    my $client  = $self->client;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     return join(', ', $envelope->to_addresses);
 }
@@ -365,12 +365,23 @@ sub get_to {
 sub get_when {
     my $self    = shift;
     my $uid     = shift;
-    my $env     = $self->env;
     $self->check_imap_connection;
     my $client  = $self->client;
-    my $log     = $env->log;
+    my $log     = $self->log;
+    my $msgstring   = retry {
+        $client->message_string($uid);
+    }
+    on_retry {
+        $self->clear_client_connection;
+    }
+    delay_exp {
+        5, 1e6
+    }
+    catch {
+        $log->error("failed to get message string");
+    };
 
-    my $courriel    = Courriel->parse( text => $client->message_string($uid) );
+    my $courriel    = Courriel->parse( text => $msgstring );
     my $dt          = $courriel->datetime();
     my $epoch       = $dt->epoch;
 
@@ -380,12 +391,22 @@ sub get_when {
 sub get_message_id {
     my $self    = shift;
     my $uid     = shift;
-    my $env     = $self->env;
     $self->check_imap_connection;
     my $client  = $self->client;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
-    my $msg_id  = $client->get_header($uid, "Message-Id");
+    my $msg_id  = retry {
+        $client->get_header($uid, "Message-Id");
+    }
+    on_retry {
+        $self->clear_client_connection;
+    }
+    delay_exp {
+        5, 1e6
+    }
+    catch {
+        $log->error("failed to get Message-Id header");
+    };
 
     return $msg_id;
 }

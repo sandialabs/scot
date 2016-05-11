@@ -2,6 +2,7 @@ package Scot::Env;
 
 use v5.18;
 use lib '../../lib';
+use lib '../../../Scot-Internal-Modules/lib';
 use strict;
 use warnings;
 
@@ -406,6 +407,9 @@ sub BUILD {
         );
 
         my $conf    = $self->get_module_conf($fullname);
+        if ( $attribute_name eq "imap" ) {
+            $conf->{log}    = $log;
+        }
         my $module  = $fullname->new($conf);
 
         if ( defined ($module) ) {

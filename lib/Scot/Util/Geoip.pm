@@ -13,11 +13,10 @@ use Try::Tiny;
 
 use Moose;
 
-has env         => (
+has log => (
     is          => 'ro',
-    isa         => 'Scot::Env',
+    isa         => 'Log::Log4perl::Logger',
     required    => 1,
-    default     => sub { Scot::Env->instance; },
 );
 
 has citydb      => (
@@ -80,7 +79,7 @@ sub _get_isp_reader {
 sub get_city_data {
     my $self    = shift;
     my $ip      = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my $city;
     my $href    = {};
 
@@ -120,7 +119,7 @@ sub get_city_data {
 sub get_country_data {
     my $self    = shift;
     my $ip      = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my $href    = {};
 
     return $self->countrydb->country( ip => $ip );
@@ -129,7 +128,7 @@ sub get_country_data {
 sub get_isp_data {
     my $self    = shift;
     my $ip      = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my $href    = {};
     my $isp;
 
@@ -167,15 +166,14 @@ sub get_scot_geo_record {
     my $ip      = shift;
     my $city    = $self->get_city_data($ip);
     my $isp     = $self->get_isp_data($ip);
-    my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->debug("city is ",{filter=>\&Dumper, value=>$city});
     $log->debug("isp  is ",{filter=>\&Dumper, value=>$isp});
 
     my %data    = (%$city, %$isp);
 
-    $self->env->log->debug("scot geo is : ",{filter=>\&Dumper, value=>\%data});
+    $log->debug("scot geo is : ",{filter=>\&Dumper, value=>\%data});
 
     return wantarray ? %data : \%data;
 }
@@ -186,7 +184,7 @@ sub get_data {
     my $type    = shift;
     my $value   = shift;
 
-    $self->env->log->debug("getting data for $type $value");
+    $self->log->debug("getting data for $type $value");
 
     if ($type ne "ipaddr") {
         # nothing to do here...
