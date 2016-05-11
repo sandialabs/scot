@@ -53,7 +53,7 @@ module.exports = React.createClass({
     return {
             upstartepoch: '', upendepoch: '',white: 'white', blue: '#AEDAFF',
             idtext: '', totalcount: 0, activepage: 0,
-            statustext: '', idsarray: [],
+            entry: 0, type: '', statustext: '', idsarray: [],
             ownertext: '', typetext: '', entriestext: '', scrollheight: scrollHeight,
             scrollwidth: scrollWidth, reload: false,
             objectarray:[], csv:true};
@@ -126,9 +126,9 @@ module.exports = React.createClass({
         $('.container-fluid').css('width', width)
     },
 
-    launchEvent: function(array){
+    launchEvent: function(array,entryid,tasktype){
         stage = true
-        this.setState({idsarray:array})
+        this.setState({idsarray:array, type: tasktype, entry: entryid})
 
     },
     render: function(){
@@ -139,7 +139,7 @@ module.exports = React.createClass({
                     if($(y).text() == 'open'){
                         $(y).css('color', 'red')
                     }
-                    else if($(y).text() == 'closed'){
+                    else if($(y).text() == 'completed' || $(y).text() == 'closed'){
                         $(y).css('color', 'green')
                     }
         else if($(y).text()  == 'promoted'){
@@ -248,7 +248,7 @@ module.exports = React.createClass({
                         React.createElement('button', {className:'btn btn-default clear',  value: 'entries', onClick: this.filterclear}, 'Clear'),
                         React.createElement('button', {className:'btn btn-default filter', value: 'entries', onClick: this.handlefilter}, 'Filter')))
                         )},
-                        React.createElement("div", {className: "column owner"}, "Entries")))
+                        React.createElement("div", {className: "column owner"}, "Entry")))
                         )),
 
                         React.createElement("div", {className: "wrapper dates"},
@@ -281,29 +281,29 @@ module.exports = React.createClass({
                         React.createElement('div', null, value.updated)),                         
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Owner:  '),
                         React.createElement('div', null, value.owner)),
-                        React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Entries:  '),
-                        React.createElement('div', null, value.entries)), React.createElement('div', {style: {display:'flex'}},
-                        React.createElement('div', {style: {'font-weight': 'bold'}}, 'Type:  '), React.createElement('div', null, value.type))
+                        React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Entry:  '),
+                        React.createElement('div', null, value.id)), React.createElement('div', {style: {display:'flex'}},
+                        React.createElement('div', {style: {'font-weight': 'bold'}}, 'Type:  '), React.createElement('div', null, value.target.type))
                         ))},
                         React.createElement("div", {style: {background: this.state.idsarray[0] == value.id ? this.state.blue : this.state.white},onClick: this.clickable, className: "table-row", id: value.id},
                         React.createElement("div", {className: "wrapper attributes"},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                         React.createElement('div', {className: 'wrapper status-owner'},
-                            React.createElement("div", {className: 'column status'}, value.type),
-                            React.createElement("div", {className: "column index"}, value.id))),
+                            React.createElement("div", {className: 'column status type'}, value.target.type),
+                            React.createElement("div", {className: "column index"}, value.target.id))),
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                         React.createElement('div', {className: 'wrapper status-owner'}, 
-                            React.createElement("div", {className: 'column owner colorstatus'}, value.status))),
+                            React.createElement("div", {className: 'column owner colorstatus'}, value.task.status))),
                             React.createElement('div', {className: 'wrapper status-owner-severity'},
                             React.createElement('div', {className: 'wrapper status-owner'},
                             React.createElement("div", {className: "column status"}, value.owner))),
                             React.createElement('div', {className: 'wrapper status-owner-severity'},
                             React.createElement('div', {className: 'wrapper status-owner'}, 
-                            React.createElement("div", {className: "column severity"}, value.entries))),
+                            React.createElement("div", {className: "column severity"}, value.id))),
                         React.createElement("div", {className: "wrapper dates"},
                             React.createElement("div", {className: "column date"}, value.updated)))))))))),
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})) , stage ?
-                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'task'}) : null)
+                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: this.state.type, taskid: this.state.entry}) : null)
         ));
 },
 
@@ -350,11 +350,11 @@ module.exports = React.createClass({
          }
     },
     clickable: function(v){
-        $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
+        $('#'+$(v.currentTarget).find('.severity').text()).find('.table-row').each(function(x,y){
             var array = []
-            array.push($(y).attr('id'))
-            colorrow.push($(y).attr('id'))
-            this.launchEvent(array)
+            array.push($(y).find('.severity').text())
+            colorrow.push($(y).find('.severity').text())
+            this.launchEvent(array, $(y).find('.index').text(), $(y).find('.type').text())
         }.bind(this))
     },
 
