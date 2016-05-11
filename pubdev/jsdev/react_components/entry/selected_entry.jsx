@@ -522,6 +522,8 @@ var EntryData = React.createClass({
         } else if (nextState.resize == true){
             this.setState({resize:false})
             return (true)
+        } else if (document.getElementById('iframe_'+this.props.id).contentWindow.document.body.innerHTML == '') {
+            return(true)
         } else {
             return (false)
         }
