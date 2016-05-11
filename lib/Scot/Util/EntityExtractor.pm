@@ -24,16 +24,14 @@ use Try::Tiny;
 use Moose;
 use namespace::autoclean;
 
-        # 
+            # 
 my @ss = (); # global necessitated by the nature of processing regexes
-        # see Mastering Regular Expressions, 3rd Edition Chpt 7.
+            # see Mastering Regular Expressions, 3rd Edition Chpt 7.
 
-has env => (
+has log         => (
     is          => 'ro',
-    isa         => 'Scot::Env',
+    isa         => 'Log::Log4perl::Logger',
     required    => 1,
-    lazy        => 1,
-    default     => sub { Scot::Env->instance },
 );
 
 has 'regexmap'  => (
@@ -230,7 +228,7 @@ get an href of entities, and a new HTML with flair
 sub process_html {
     my $self    = shift;
     my $html    = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my %entities;
 
     my $previous_level = $log->level();
@@ -287,7 +285,7 @@ sub walk_tree {
     my $element = shift;
     my $dbhref  = shift;
     my $level   = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
     $level  += 4;
 
@@ -347,7 +345,7 @@ sub process_words {
     my $text    = shift;
     # tack on new stuff to existing element, we'll remove the orig later
     my $offset  = $index + 0; 
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
     my @words   = split(/\s+/, $text);
     my @spaces  = ( $text =~ m/(\s+)/g );
@@ -499,7 +497,7 @@ sub domain_processing {
     my $self    = shift;
     my $domain  = shift;
     my @parts   = split (/[\[\{\(]*\.[\]\}\)]*/, $domain);
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
     my $reassembled = join('.', @parts);
 
@@ -524,7 +522,7 @@ sub do_span {
     my $self    = shift;
     my $type    = shift;
     my $text    = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my $class   = "entity $type";
 
     my $element = HTML::Element->new(
@@ -541,7 +539,7 @@ sub dump_children {
     my $self    = shift;
     my $level   = shift;
     my @content = @_;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     $log->debug(" "x$level . "Children: ");
     $level      +=4;
     foreach my $child (@content) {
@@ -558,7 +556,7 @@ sub find_splunk_ipaddrs {
     my $self    = shift;
     my $element = shift;
     my $level   = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
     $log->debug(" "x$level."looking for crappy splunk ipaddresses");
     # splunk likes to the following crappy thing when displaying an IPAddr
