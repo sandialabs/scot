@@ -1810,6 +1810,10 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
                 var entryResult = result.records;
                 this.setState({showEntryData:true, entryData:entryResult})
+                for (i=0; i < result.records.length; i++) {
+                    Store.storeKey(result.records[i].id)
+                    Store.addChangeListener(this.updatedCB);
+                }
             }.bind(this));
             this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
                 var entityResult = result.records;
@@ -1825,8 +1829,6 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 };
                 waitForEntry.waitEntry();
             }.bind(this));
-            Store.storeKey(this.props.id) //this will be the id of alert or entity
-            Store.addChangeListener(this.updatedCB);
         }
     }, 
     updatedCB: function() {
@@ -2126,12 +2128,14 @@ AlertRowBlank = React.createClass({displayName: "AlertRowBlank",
     render: function() {
         var id = this.props.id;
         var showEntry = this.props.showEntry;
+        var arr = [];
+        arr.push(React.createElement(SelectedEntry, {type: this.props.type, id: this.props.id}))
         return (
             React.createElement("tr", {className: "not_selectable"}, 
                 React.createElement("td", {style: {padding:'0'}}
                 ), 
                 React.createElement("td", {colSpan: "50", style: {padding:'1px'}}, 
-                    showEntry ? React.createElement(SelectedEntry, {type: this.props.type, id: this.props.id}) : null
+                    showEntry ? React.createElement("div", null, arr) : null
                 )
             )
         )
@@ -2299,6 +2303,8 @@ var EntryData = React.createClass({displayName: "EntryData",
         } else if (nextState.resize == true){
             this.setState({resize:false})
             return (true)
+        } else if (document.getElementById('iframe_'+this.props.id).contentWindow.document.body.innerHTML == '') {
+            return(true)
         } else {
             return (false)
         }
