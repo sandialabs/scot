@@ -19,8 +19,8 @@ var Tag = React.createClass({
         var id = this.props.id;
         var type = this.props.type;
         var data = this.props.data;
-        for (var prop in data) {
-            rows.push(<TagDataIterator key={data[prop].id} data={data[prop]} id={id} type={type} updated={this.props.updated} />);
+        for (i=0; i < data.length; i++) {
+            rows.push(<TagDataIterator key={data[i].id} data={data[i]} id={id} type={type} updated={this.props.updated} />);
         }
         return (
             <div>
@@ -73,8 +73,8 @@ var NewTag = React.createClass({
     handleAddition: function(tag) {
         var newTagArr = [];
         var data = this.props.data;
-        for (var prop in data) {
-            newTagArr.push(data[prop].value);
+        for (i=0; i < data.length; i++) {
+            newTagArr.push(data[i].value);
         }
         newTagArr.push(tag);
         $.ajax({
@@ -98,8 +98,8 @@ var NewTag = React.createClass({
         var arr = [];
         this.serverRequest = $.get('/scot/api/v2/ac/tag/' + input, function (result) {
             var result = result.records;
-            for (var prop in result) {
-                arr.push(result[prop].value)
+            for (i=0; i < result.length; i++) {
+                arr.push(result[i].value)
             }
             this.setState({suggestions:arr})
         }.bind(this));

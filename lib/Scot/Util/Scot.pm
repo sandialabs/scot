@@ -8,6 +8,7 @@ use v5.18;
 use Mojo::UserAgent;
 use Data::Dumper;
 use Moose;
+use Try::Tiny::Retry ':all';
 
 =head1 Name
 
@@ -43,7 +44,7 @@ has servername  => (
 sub _get_servername {
     my $self    = shift;
     my $env     = $self->env;
-    my $name    = $env->servername // '127.0.0.1';
+    my $name    = $env->servername // $ENV{SCOT_SERVERNAME};
     return $name;
 }
 
@@ -64,7 +65,7 @@ has username => (
 sub _get_imap_username {
     my $self    = shift;
     my $env     = $self->env;
-    return $env->imap->username // 'scot';
+    return $env->imap->username // $ENV{SCOT_ALERT_USER};
 }
 
 has password => ( 
@@ -78,7 +79,7 @@ has password => (
 sub _get_imap_user_pass {
     my $self    = shift;
     my $env     = $self->env;
-    return  $env->imap->password // 'needtosetimapspass';
+    return  $env->imap->password // $ENV{SCOT_ALERT_PASS};
 }
 
 =item B<uapid>
@@ -175,6 +176,10 @@ sub _build_useragent {
         return $ua;
     }
 
+    if ( $type eq "Testing" ) {
+        return Mojo::UserAgent->new();
+    }
+
     # by reaching here we are doing either LDAP or Local Authentication 
     # to access SCOT REST resources.  The only diff between ldap and local
     # is on the server back end and is of little consequense to this module
@@ -255,6 +260,48 @@ sub get_url {
     return undef;
 }
 
+sub do_request {
+    my $self    = shift;
+    my $verb    = shift;
+    my $url     = shift;
+    my $data    = shift;
+
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $ua      = $self->ua;
+
+    my $params;
+    my $json;
+
+    if ( $data->{params} ) {
+        $params = $data->{params};
+    }
+    if ( $data->{json} ) {
+        $json   = $data->{json};
+    }
+
+    if ( $params ) {
+        $url .= "?".$params;
+    }
+
+    $log->trace("[SCOTUA] $verb $url");
+
+    my $tx = retry {
+        $ua->$verb($url);
+    }
+    on_retry {
+        $log->trace("[SCOTUA] retrying $verb $url");
+    }
+    delay_exp {
+        3, 10000
+    }
+    catch {
+        $log->error("$verb failed!", 
+                    {filter =>  \&Dumper, value => $_->error});
+    };
+    return $tx;
+}
+
 sub post {
     my $self    = shift;
     my $path    = shift;
@@ -266,15 +313,8 @@ sub post {
 
     $log->debug("POST $url ",{filter=>\&Dumper, value=>$json});
 
-    my $tx  = $ua->post($url => json => $json);
-
-    if ( my $res = $tx->success ) {
-        $log->debug("POST $url success!");
-        return $tx;
-    }
-    
-    $log->error("POST $url Failed");
-    return undef;
+    my $tx  = $self->do_request("post", $url, { json => $json });
+    return $tx;
 }
 
 sub put {

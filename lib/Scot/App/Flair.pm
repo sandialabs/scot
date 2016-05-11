@@ -31,6 +31,7 @@ use AnyEvent::ForkManager;
 use HTML::Entities;
 use strict;
 use warnings;
+use v5.18;
 
 use Moose;
 
@@ -95,6 +96,13 @@ sub _build_scot_scot {
     return Scot::Util::Scot->new();
 }
 
+has interactive => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    default     => 0,
+);
+
 sub run {
     my $self    = shift;
     my $env     = $self->env;
@@ -141,6 +149,13 @@ sub run {
             my $id      = $json->{data}->{id};
             my $action  = $json->{action};
 
+            if ( $self->interactive ) {
+                say "---";
+                say "--- $action message received";
+                say "--- $type $id";
+                say "---";
+            }
+
             if ( $action ne "created" and $action ne "updated" ) {
                 $log->trace("not a created or updated action");
                 return;
@@ -150,14 +165,13 @@ sub run {
                 return;
             }
 
-
             $pm->start(
                 cb  => sub {
                     my ($pm, $action, $type, $id) = @_;
 
                     my $record = $scot->get($type,$id);
 
-# leaving until tested above line
+                    # leaving until tested above line
                     #my $url     = $self->base_url . "/$type/$id";
                     #$log->debug("Getting $url");
                     # do a REST GET of that thing
@@ -178,6 +192,9 @@ sub run {
                         return;
                     }
                     $self->process_entry($record);
+                    if ( $self->interactive ) {
+                        say "   --- processed $type $id";
+                    }
                 },
                 args    => [ $action, $type, $id ],
             );
@@ -215,6 +232,9 @@ sub process_alert  {
             # $flair->{$key} = $extractor->do_span(undef, "message_id", $value)
             # TODO create a test for this case
             push @entities, { value => $value, type => "message_id" };
+            $flair->{$key} = qq|<span class="entity message_id" |.
+                             qq| data-entity-value="$value" |.
+                             qq| data-entity-type="message_id">$value</span>|;
             next TUPLE;
         }
 
@@ -282,6 +302,7 @@ sub enrich_entities {
     my $self    = shift;
     my $aref    = shift;
     my $env     = $self->env;
+    my $log     = $env->log;
     my %data    = ();   # hold all the enriching data
 
     my $enrichers   = $env->entity_enrichers;
@@ -292,6 +313,7 @@ sub enrich_entities {
         my $type    = $entity->{type};
 
         foreach my $ehref (@{$enrichers}) {
+            $log->debug("enricher: ",{filter=>\&Dumper, value=>$ehref});
             my ($name,$href) = each %$ehref;
             if ( $href->{type} eq "native" ) {
                 my $module = $href->{module};

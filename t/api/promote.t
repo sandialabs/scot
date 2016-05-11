@@ -9,7 +9,7 @@ use Scot::Collection;
 use Scot::Collection::Alertgroup;
 
 $ENV{'scot_mode'}   = "testing";
-$ENV{'SCOT_AUTH_MODE'}   = "Testing";
+$ENV{'SCOT_AUTH_TYPE'}   = "Testing";
 print "Resetting test db...\n";
 system("mongo scot-testing <../../etc/database/reset.js 2>&1 > /dev/null");
 
@@ -67,9 +67,6 @@ $t->put_ok("/scot/api/v2/alert/$alert_1_id" => json =>
 
 my $event1  = $t->tx->res->json->{id};
 
-#print Dumper($t->tx->res->json), "\n";
-#done_testing();
-#exit 0;
 
 $t->get_ok("/scot/api/v2/event/$event1/alert" => {},
     "Get alerts promoted to Event $event1")
@@ -77,6 +74,10 @@ $t->get_ok("/scot/api/v2/event/$event1/alert" => {},
     ->json_is('/records/0/id'           => 1)
     ->json_is('/records/0/status'       => 'promoted')
     ->json_is('/records/0/alertgroup'   => 1);
+
+#print Dumper($t->tx->res->json), "\n";
+#done_testing();
+#exit 0;
 
 $t->get_ok("/scot/api/v2/alert/$alert_1_id/event" => {},
     "Get Event(s) that this alert was promoted to")
@@ -96,7 +97,8 @@ $t->put_ok("/scot/api/v2/alert/$alert_2_id" => json =>
         promote => $event1,
     } 
 )->status_is(200)
- ->json_is('/id'        => $event1)                     
+ ->json_is('/id'        => $alert_2_id)                     
+ ->json_is('/pid'        => $event1)                     
  ->json_is('/status'    => "successfully promoted");    # expect the id of the promoted object
 
 # print Dumper($t->tx->res->json), "\n";
@@ -141,15 +143,17 @@ $t->get_ok("/scot/api/v2/incident/$incident1/event" => {},
     ->json_is('/records/0/id'           => $event1)
     ->json_is('/records/0/status'       => 'promoted');
 
+#XXX
+# print Dumper($t->tx->res->json), "\n";
+# done_testing();
+# exit 0;
+
 $t->get_ok("/scot/api/v2/event/$event1/incident" => {},
     "Get alerts promoted to Event $event1")
     ->status_is(200)
     ->json_is('/queryRecordCount'       => 1)
     ->json_is('/records/0/id'           => $incident1);
 
-# print Dumper($t->tx->res->json), "\n";
-done_testing();
-exit 0;
 
 $t  ->post_ok  ('/scot/api/v2/event'  => json => {
         subject => "Test Event 2",
@@ -170,14 +174,15 @@ $t->put_ok("/scot/api/v2/event/$event2" => json =>
     ->json_is('/status' =>  "successfully promoted")
     ->json_is('/pid'    => $incident1);
 
+
 $t->get_ok("/scot/api/v2/incident/$incident1/event" => {},
     "Get events promoted to Incident $incident1")
     ->status_is(200)
     ->json_is('/queryRecordCount'       => 2)
     ->json_is('/records/0/id'           => $event1)
     ->json_is('/records/0/status'       => 'promoted')
-    ->json_is('/records/0/id'           => $event2)
-    ->json_is('/records/0/status'       => 'promoted');
+    ->json_is('/records/1/id'           => $event2)
+    ->json_is('/records/1/status'       => 'promoted');
 
 
 $t->put_ok("/scot/api/v2/event/$event2" => json => 
@@ -185,13 +190,17 @@ $t->put_ok("/scot/api/v2/event/$event2" => json =>
 )   ->status_is(200)
     ->json_is('/id'     => $event2)
     ->json_is('/status' => "successfully unpromoted");
+
+# print Dumper($t->tx->res->json), "\n";
+# done_testing();
+# exit 0;
     
 $t->get_ok("/scot/api/v2/event/$event2/incident" => {},
             "Checking event $event2")
     ->status_is(200)
     ->json_is('/queryRecordCount'    => 0);
 
-$t->get_ok("/scot/api/v2/incident/$incident/event" => {},
+$t->get_ok("/scot/api/v2/incident/$incident1/event" => {},
             "Checking event $event2")
     ->status_is(200)
     ->json_is('/queryRecordCount'       => 1)
