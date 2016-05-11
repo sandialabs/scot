@@ -5,38 +5,154 @@ use Data::Dumper;
 use Try::Tiny;
 use Mojo::UserAgent;
 use Scot::Env;
+use Scot::Util::Imap;
 use Scot::Util::Scot;
 use HTML::TreeBuilder;
 use Parallel::ForkManager;
 use strict;
 use warnings;
+use Module::Runtime qw(require_module compose_module_name);
+use Log::Log4perl::Level;
+use Safe;
 
 use Moose;
 
-has env => (
-    is          => 'rw',
-    isa         => 'Scot::Env',
+has config  => (
+    is          => 'ro',
+    isa         => 'HashRef',
     required    => 1,
-    builder     => '_get_env',
+    lazy        => 1,
+    builder     => '_build_config',
 );
 
-sub _get_env {
-    return Scot::Env->instance;
+sub _build_config {
+    my $self    = shift;
+    my $file    = $self->cfile;
+    print "config file is $file\n";
+    if ( -e $file ) {
+        print "and it exists\n";
+        my $cpmt    = new Safe 'CONFIG';
+        my $rc      = $cpmt->rdo($file);
+        print Dumper(\%CONFIG::mailcfg);
+        return \%CONFIG::mailcfg;
+    }
+    return {
+        interactive             => 'yes',
+        max_processes           => 0,
+        fetch_mode              => 'unseen',
+        since                   => { hour => 2 },
+        logfile                 => '/var/log/scot/scot.mail.log',
+        approved_alert_domains  => [ 'sandia\.gov' ],
+        approved_accounts       => [ 'scot@yourdomain\.com' ],
+        imap                    => {
+            mailbox     => 'INBOX',
+            hostname    => 'localhost',
+            port        => 993,
+            username    => 'scot-alerts',
+            password    => 'changmenow',
+            ssl         => [ 'SSL_verify_mode', 0 ],
+            uid         => 1,
+            ignore_size_errors  => 1,
+        }
+    };
+}
+
+has cfile  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+);
+
+has logfile => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_logfile',
+);
+
+sub _build_logfile {
+    my $self    = shift;
+    return $self->config->{logfile};
+}
+
+has log => (
+    is          => 'ro',
+    isa         => 'Log::Log4perl::Logger',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_logger',
+);
+
+sub _build_logger {
+    my $self    = shift;
+    my $file    = $self->logfile;
+    require_module('Log::Log4perl');
+    require_module('Log::Log4perl::Layout::PatternLayout');
+    require_module('Log::Log4perl::Appender');
+
+    my $log     = Log::Log4perl->get_logger("ScotAlertMail");
+    my $layout  = Log::Log4perl::Layout::PatternLayout->new(
+        '%d %7p [%P] %15F{1}: %4L %m%n'
+    );
+    my $appender    = Log::Log4perl::Appender->new(
+        "Log::Log4perl::Appender::File",
+        name        => "scot_mail_log",
+        filename    => $file,
+        autoflush   => 1,
+    );
+    $appender->layout($layout);
+    $log->add_appender($appender);
+    $log->level($TRACE);
+    return $log;
+}
+
+has imap    => (
+    is          => 'ro',
+    isa         => 'Scot::Util::Imap',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_imap',
+);
+
+sub _build_imap {
+    my $self    = shift;
+    my $imapcfg = $self->config->{imap};
+    $imapcfg->{log} = $self->log;
+    return Scot::Util::Imap->new($imapcfg);
 }
 
 has max_processes => (
     is          => 'rw',
     isa         => 'Int',
     required    => 1,
-    default     => 0,
+    lazy        => 1,
+    builder     => '_build_max_processes',
 );
 
+sub _build_max_processes {
+    my $self    = shift;
+    if ( $self->config->{max_processes} ) {
+        return $self->config->{max_processes};
+    }
+    return 0;
+}
+
 has interactive => (
-    is      => 'rw',
-    isa     => 'Str',
+    is          => 'rw',
+    isa         => 'Str',
     required    => 1,
-    default => 'no',
+    lazy        => 1,
+    builder     => '_build_interactive',
 );
+
+sub _build_interactive {
+    my $self    = shift;
+    if ( $self->config->{interactive} ) {
+        return $self->config->{interactive};
+    }
+    return 'no';
+}
 
 has approved_accounts   => (
     is      => 'rw',
@@ -48,8 +164,7 @@ has approved_accounts   => (
 
 sub _get_approved_accounts {
     my $self    = shift;
-    my $env     = $self->env;
-    my $value   = $env->get_config_item(__PACKAGE__, "approved_accounts");
+    my $value   = $self->config->{approved_accounts};
     return $value;
 }
 
@@ -63,8 +178,7 @@ has approved_alert_domains  => (
 
 sub _get_approved_alert_domains {
     my $self    = shift;
-    my $env     = $self->env;
-    my $value   = $env->get_config_item(__PACKAGE__, "approved_alert_domains");
+    my $value   = $self->config->{approved_alert_domains};
     return $value;
 }
 
@@ -78,28 +192,86 @@ has scot => (
 
 sub _build_scot_scot {
     my $self    = shift;
-    return Scot::Util::Scot->new();
+    return Scot::Util::Scot->new({
+        log         => $self->log,
+        servername  => $self->config->{scot}->{servername},
+        username    => $self->config->{scot}->{username},
+        password    => $self->config->{scot}->{password},
+        authtype    => $self->config->{scot}->{authtype},
+    });
 }
 
 has fetch_mode  => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default     => 'unseen',
+    lazy        => 1,
+    builder     => '_build_fetch_mode',
 );
+
+sub _build_fetch_mode {
+    my $self    = shift;
+    if ( $self->config->{fetch_mode} ) {
+        return $self->config->{fetch_mode};
+    }
+    return 'unseen';
+}
 
 has since       => (
     is          => 'ro',
     isa         => 'HashRef',
     required    => 1,
-    default     => sub { { hour => 2 } },
+    lazy        => 1,
+    builder     => '_build_since',
 );
+
+sub _build_since {
+    my $self    = shift;
+    if ( $self->config->{since} ) {
+        return $self->config->{since};
+    }
+    return { hour => 2 };
+}
+
+has parsermap   => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => 'load_parsers',
+);
+
+sub load_parsers  {
+    my $self    = shift;
+    my $log     = $self->log;
+
+    my $parser_dir  = $self->config->{parser_dir} //
+                      "/opt/scot/lib/Scot/Parser";
+    try {
+        opendir(DIR, $parser_dir);
+    }
+    catch {
+        $log->warn("No Parsers in $parser_dir!");
+        return undef;
+    };
+    my %pmap    = ();
+    while ( my $filename = readdir(DIR) ) {
+        $log->debug("filename is $filename");
+        next if ( $filename =~ /^\.+$/ );
+        $filename =~ m/^([A-Za-z0-9]+)\.pm$/;
+        my $rootname = $1;
+        my $attrname = lc($rootname);
+        my $class    = "Scot::Parser::$rootname";
+        require_module($class);
+        $pmap{$attrname} = $class->new({ log => $self->log });
+    }
+    return wantarray ? %pmap : \%pmap;
+}
 
 sub run {
     my $self    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $imap    = $env->imap;
+    my $log     = $self->log;
+    my $imap    = $self->imap;
 
     $log->trace("Beginning Alert Email Processing");
 
@@ -150,13 +322,14 @@ sub run {
 sub process_message {
     my $self    = shift;
     my $msghref = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $scot    = $self->scot;
+
+    my $message_id  = $msghref->{message_id};
 
     if ( $self->interactive eq "yes" ) {
         print "- PROCESSING -\n";
-        print "---- message_id ". $msghref->{message_id}."\n";
+        print "---- message_id ". $message_id."\n";
         print "---- subject    ". $msghref->{subject}."\n";
     }
 
@@ -177,67 +350,84 @@ sub process_message {
         return;
     }
 
-    # we get this far, let's parse it and create alerts/alertgroup
-    my $source = $self->get_source($msghref);
+    if ( $self->already_processed($message_id) ) {
+        $log->warn("Message_id: $message_id already processed");
+        if ( $self->interactive eq "yes" ) {
+            print "--- $message_id already in database\n";
+        }
+        return;
+    }
 
-    print "parsing with $source \n" if ($self->interactive eq "yes");
+    my $parser;
 
-    my $json_to_post = $self->$source($msghref);
-    my $path         = "/scot/api/v2/alertgroup";
+    PCLASS:
+    foreach my $pname (keys %{ $self->parsermap } ) {
+        next if ( $pname eq "generic" ); # always do this as last resort
+        my $pclass = $self->parsermap->{$pname};
+        if ( $pclass->will_parse($msghref) ) {
+            $parser = $pclass;
+            last PCLASS;
+        }
+    }
+    unless ($parser) {
+        $parser = $self->parsermap->{generic};
+    }
+
+    print "parsing with ".ref($parser)."\n" if ($self->interactive eq "yes");
+
+    my $json_to_post = $parser->parse_message($msghref);
+    my $path         = "alertgroup";
 
     $json_to_post->{message_id} = $msghref->{message_id};
     $json_to_post->{subject}    = $msghref->{subject};
+    $json_to_post->{sources}    = [ $parser->get_sourcename ];
 
     $log->debug("Json to Post = ", {filter=>\&Dumper, value=>$json_to_post});
 
     $log->debug("posting to $path");
 
-    my $tx = $scot->post( $path, $json_to_post );
+    my $json_returned = $scot->post( $path, $json_to_post );
 
-    unless (defined $tx) {
+    unless (defined $json_returned) {
         $log->error("ERROR! Undefined transaction object $path ",
                     {filter=>\&Dumper, value=>$json_to_post});
         print "post to scot failed!\n" if ($self->interactive eq "yes");
         return;
     }
     
-    if ( $tx->res->json->{status} ne "ok" ) {
+    if ( $json_returned->{status} ne "ok" ) {
         $log->error("Failed posting new alertgroup mgs_uid:", $msghref->{imap_uid});
-        $log->debug("tx->res is ",{filter=>\&Dumper, value=>$tx->res});
-        $env->imap->mark_uid_unseen($msghref->{imap_uid});
+        $log->debug("tx->res is ",{filter=>\&Dumper, value=>$json_returned});
+        $self->imap->mark_uid_unseen($msghref->{imap_uid});
         print "post to scot failed!\n" if ($self->interactive eq "yes");
         return;
     }
     print "posted to scot.\n" if ($self->interactive eq "yes");
-    $log->trace("Created alertgroup ". $tx->res->json->{id});
+    $log->trace("Created alertgroup ". $json_returned->{id});
 }
 
-sub get_source {
-    my $self    = shift;
-    my $href    = shift;
-    my $from    = $href->{from};
-    my $subject = $href->{subject};
+sub already_processed {
+    my $self        = shift;
+    my $message_id  = shift;
+    my $scot        = $self->scot;
+    my $return      = $scot->get_alertgroup_by_msgid($message_id);
+    my $log         = $self->log;
 
-    return "splunk"     if ( $subject =~ /splunk alert/i );
-    return "fireeye"    if ( $from =~ /fireeye/i );
-    return "ascan"      if ( $subject =~ /ascan daily report/i );
-    return "sep"        if ( $from =~ /workflow/i );
-    return "sep2"       if ( $from =~ /symantec/i );
-    return "mds"        if ( $subject =~ /mds alert/i);
-    return "mds2farm"   if ( $subject =~ /mds to farm/i);
-    return "sourcefire" if ( $subject =~ /auto generated email/i );
-    return "forefront"  if ( $subject =~ /microsoft forefront/i );
-    return "generic";
+    $log->debug("Got ag processed ", {filter=>\&Dumper,value=>$return});
+
+    if ($return->{queryRecordCount} > 0) {
+        return 1;
+    }
+    return undef;
 }
 
 sub approved_sender {
     my $self    = shift;
     my $href    = shift;
-    my $env     = $self->env;
     my $domains = $self->approved_alert_domains;
     my $senders = $self->approved_accounts;
     my $this_sender = $href->{from};
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $this_sender =~ s/<(.*)>/$1/;
     $log->trace("Checking if Sender $this_sender is approved");
@@ -266,8 +456,7 @@ sub approved_sender {
 sub is_health_check {
     my $self    = shift;
     my $href    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
 
     $log->trace("Checking if this is a health check message");
 
@@ -282,467 +471,6 @@ sub is_health_check {
         return 1;
     }
     return undef;
-}
-
-sub splunk {
-    my $self    = shift;
-    my $href    = shift;
-    my $log     = $self->env->log;
-
-    $log->trace("parsing Splunk alert of ",{filter=>\&Dumper, value=>$href});
-
-    my $json    = {
-        subject     => $href->{subject},
-        message_id  => $href->{message_id},
-        body_plain  => $href->{body_plain},
-        body        => $href->{body_html},
-        data        => [],
-        source      => [ qw(email mds) ],
-    };
-    my $body    = $href->{body_html} // $href->{body_plain};
-
-    $log->trace("Parsing Splunk Message Body");
-    $log->trace("Body is : ",{filter=>\&Dumper,value=>$body});
-
-    unless ( $body =~ /\<html\>/i ) {
-        $body   = "<html>".$body."</html>";
-        $log->warn("SPLUNK message was not in HTML.  Parsing will not work!");
-    }
-
-    my  $tree   = HTML::TreeBuilder->new;
-        $tree   ->implicit_tags(1);
-        $tree   ->implicit_body_p_tag(1);
-        $tree   ->parse_content($body);
-
-    unless ( $tree ) {
-        $log->error("Parsing error!");
-        die "Parsing error!";
-    }
-
-    # splunk 6 now puts the search name in a table!
-    # and omits search terms
-
-    my $text        = $tree->as_text( skip_dels => 1 );
-    $text           =~ m/ Name: '(.*?)'[ ]+Query/;
-    # my $alertname   = $1;
-    #$text           =~ m/Query Terms: '(.*?)'[ ]+Link/;
-    #(my $search = $1 )     =~ s/\\"/"/g; 
-    #$search      = encode_entities($search);
-
-    my $top_table = ( $tree->look_down('_tag', 'table') )[0];
-    my @top_table_tds = $top_table->look_down('_tag', 'td');
-    my $alertname   = $top_table_tds[0]->as_text;
-    my $search      = "splunk is not sending the search terms";
-    if ( scalar(@top_table_tds) > 1 ) {
-        $search      = $top_table_tds[1]->as_text;
-    }
-
-    my $table   = ( $tree->look_down('_tag', 'table') )[1];
-
-    unless ($table) {
-        $log->error("No Tables in Splunk Email!");
-        return [],[];
-    }
-
-    my @rows    = $table->look_down('_tag', 'tr');
-    my $header  = shift @rows;
-    my @columns = map { $_->as_text; } $header->look_down('_tag', 'th');
-
-    if (scalar(@columns) == 0) {
-        # it seems that micro$oft outlook clients will rewrite valid
-        # splunk HTML into Fugly broken HTML when forwarding.
-        # this case deals with a splunk email sent to a user who then
-        # forwards it to scot using a outlook client.
-        @columns = map { $_->as_text; } $header->look_down('_tag', 'td');
-    }
-
-    my @results = ();
-    my @msg_id_entities;
-
-    my $empty_col_replace   = 1;
-
-    foreach my $row (@rows) {
-        my @values  = $row->look_down('_tag','td');
-        my %rowres  = (
-            alert_name  => $alertname,
-            search      => $search,
-            columns     => \@columns,
-        );
-        for ( my $i = 0; $i < scalar(@values); $i++ ) {
-            my $colname         = $columns[$i];
-            unless ($colname) {
-                $colname    = "c" . $empty_col_replace++;
-                $log->error("EMPTY colname detected! replacing with $colname");
-                $log->debug("table is: ".Dumper($table->as_HTML));
-            }
-            my $value           = $values[$i]->as_text;
-            if ( $colname eq "MESSAGE_ID" ) {
-                push @msg_id_entities, $value;
-                $value = qq|<span class="entity message_id" data-entity-value="$value" data-entity-type="message_id">$value</span>|;
-            }
-            $rowres{$colname}   = $value;
-        }
-        push @results, \%rowres;
-    }
-    $json->{data}       = \@results;
-    $json->{columns}    = \@columns;
-    return $json;
-}
-
-sub fireeye {
-    my $self    = shift;
-    my $href    = shift;
-    my $log     = $self->env->log;
-    my $json    = {
-        subject     => $href->{subject},
-        message_id  => $href->{message_id},
-        body_plain  => $href->{body_plain},
-        body        => $href->{body_html},
-        data        => [],
-        source      => [ qw(email mds) ],
-    };
-    my $body    = $href->{body_plain};
-
-    $log->trace("Parsing Fireeye Message Body");
-
-    my $thisjson    = JSON->new->relaxed(1);
-    $body       =~ s/\012\015?|\015\012?//g;
-    my $decoded;
-    eval {
-       $decoded = $thisjson->decode($body);
-    };
-    my $html    = Dumper($decoded);
-
-    my $data    = {
-        fireeye_alert => $html,
-    };
-
-    $json->{data}   = [ $data ];
-    $json->{columns}= keys %$data;
-    return $json;
-}
-
-sub ascan {
-    my $self    = shift;
-    my $href    = shift;
-    my $log     = $self->env->log;
-    my $json    = {
-        subject     => $href->{subject},
-        message_id  => $href->{message_id},
-        body_plain  => $href->{body_plain},
-        body        => $href->{body_html},
-        data        => [],
-        source      => [ qw(email mds) ],
-    };
-    my $body    = $href->{body_html} // $href->{body_plain};
-
-    $log->trace("Parsing Ascan Message Body");
-
-    my $thisjson    = JSON->new()->relaxed(1);
-    my $data        = $thisjson->decode($body);
-
-    my @cols    = keys %{ $data->{mds_alerts}->[0] };
-
-    $json->{data}   = [ $data ];
-    $json->{columns} = \@cols;
-    return $json;
-}
-
-sub sep {
-    my $self    = shift;
-    my $href    = shift;
-    my $log     = $self->env->log;
-    my $json    = {
-        subject     => $href->{subject},
-        message_id  => $href->{message_id},
-        body_plain  => $href->{body_plain},
-        body        => $href->{body_html},
-        data        => [],
-        source      => [ qw(email mds) ],
-    };
-    my $body    = $href->{body_html} // $href->{body_plain};
-
-    $log->trace("Parsing SEP Message Body");
-
-    my  $tree   = HTML::TreeBuilder->new;
-        $tree   ->implicit_tags(1);
-        $tree   ->implicit_body_p_tag(1);
-        $tree   ->parse_content($body);
-
-    my @tables  = $tree->look_down('_tag', 'table');
-    my @results = ();
-
-    my $dblookup = {
-        0   => "SEM5 : SRN SEP 11 clients",
-        1   => "SEM12 : SRN SEP 12 clients",
-        2   => "SEM11 : Dev",
-        3   => "SEM12 : Dev",
-    };
-    my $dbindex = 0;
-    my @columns;
-
-    foreach my $table (@tables) {
-
-        my @rows    = $table->look_down('_tag', 'tr');
-        
-        my $header  = shift @rows;
-        @columns    = map { $_->as_text; } $header->look_down('_tag','th');
-
-        foreach my $row (@rows) {
-            
-            my @values  = $row->look_down('_tag','td');
-            my %rowres  = (
-                alert_name  => "Symantec Cyber Application Scan",
-                search      => $dblookup->{$dbindex},
-                columns     => \@columns,
-            );
-            for ( my $i = 0; $i < scalar(@values); $i++ ) {
-                $rowres{$columns[$i]} = $values[$i]->as_text;
-            }
-            push @results, \%rowres;
-        }
-        $dbindex++;
-    }
-    $json->{data}       = \@results;
-    $json->{columns}    = \@columns;
-    return $json;
-}
-
-sub sep2 {
-    my $self    = shift;
-    my $href    = shift;
-    my $log     = $self->env->log;
-    my $json    = {
-        subject     => $href->{subject},
-        message_id  => $href->{message_id},
-        body_plain  => $href->{body_plain},
-        body        => $href->{body_html},
-        data        => [],
-        source      => [ qw(email mds) ],
-    };
-    my $body    = $href->{body_html} // $href->{body_plain};
-
-    $log->trace("Parsing SEP2 Message Body");
-
-    my @lines   = split /\012\015?|\015\012?/, $body;
-    my @columns = ();
-    my $data;   
-    
-    foreach my $line (@lines) {
-        my ($key, $value) = split(/: /, $line, 2);
-        next unless (defined $key);
-        $key =~ s/ /_/g;
-        $key =~ s/\./,/g;
-        push @columns, $key;
-        $data->{$key} = $value;
-    }
-
-    $json->{data}   = [ $data ];
-    $json->{columns}    = \@columns;
-    return $json;
-}
-
-sub mds {
-    my $self    = shift;
-    my $href    = shift;
-    my $log     = $self->env->log;
-    my $json    = {
-        subject     => $href->{subject},
-        message_id  => $href->{message_id},
-        body_plain  => $href->{body_plain},
-        body        => $href->{body_html},
-        data        => [],
-        source      => [ qw(email mds) ],
-    };
-    my $body    = $href->{body_html} // $href->{body_plain};
-
-    $log->trace("Parsing Ascan Message Body");
-
-    $body =~ s/<br>/<br>:::/g;
-
-    my $tree    = HTML::TreeBuilder->new;
-       $tree    ->implicit_tags(1);
-       $tree    ->implicit_body_p_tag(1);
-       $tree    ->parse_content($body);
-
-    my $text    = $tree->as_text( skip_dels => 1 );
-
-    my @columns     = ();
-    my %results     = ();
-    my @freetext    = ();
-
-    foreach my $line ( split(/:::/, $text) ) {
-        my ( $key, $value ) = split(/ = /,$line);
-        if ( $key =~ /\./ ) {
-            # periods in a key are a no-no
-            $key =~ s/\./&#46;/g;
-        }
-        if ( defined $key and defined $value ) {
-            $results{$key}  = $value;
-            push @columns, $key;
-        }
-        else {
-            push @freetext, $line;
-        }
-    }
-    $results{freetext} = join('\n', @freetext);
-    push @columns, "freetext";
-    $json->{data}       = [ \%results ];
-    $json->{columns}    = \@columns;
-    return $json;
-}
-
-sub mds2farm {
-    my $self    = shift;
-    my $href    = shift;
-    my $log     = $self->env->log;
-    my $json    = {
-        subject     => $href->{subject},
-        message_id  => $href->{message_id},
-        body_plain  => $href->{body_plain},
-        body        => $href->{body_html},
-        data        => [],
-        source      => [ qw(email mds2farm) ],
-    };
-    my $body    = $href->{body_html};
-
-    my  $tree   = HTML::TreeBuilder->new;
-        $tree   ->implicit_tags(1);
-        $tree   ->implicit_body_p_tag(1);
-        $tree   ->parse_content($body);
-
-    my $table   = ( $tree->look_down('_tag', 'table') )[0];
-    unless ($table) {
-        return $json;
-    }
-    my @rows    = $table->look_down('_tag', 'tr');
-    my $header  = shift @rows;
-    my @columns = map { $_->as_text; } $header->look_down('_tag', 'th');
-
-    if ( scalar(@columns) == 0 ) {
-        # Outlook breaks TH sometimes
-        @columns = map { $_->as_text; } $header->look_down('_tag', 'td');
-    }
-    my @results = ();
-    my @msg_id_entities;
-
-    my $empty_col_replace   = 1;
-
-    foreach my $row (@rows) {
-        my @values  = $row->look_down('_tag','td');
-        my %rowres  = (
-            alert_name  => "MDS to Farm Daily Domain Listing",
-            columns     => \@columns,
-        );
-        for ( my $i = 0; $i < scalar(@values); $i++ ) {
-            my $colname         = $columns[$i];
-            unless ($colname) {
-                $colname    = "c" . $empty_col_replace++;
-                $log->error("EMPTY colname detected! replacing with $colname");
-                $log->debug("table is: ".Dumper($table->as_HTML));
-            }
-            my $value           = $values[$i]->as_text;
-            $rowres{$colname}   = $value;
-        }
-        push @results, \%rowres;
-    }
-    $json->{data}       = \@results;
-    $json->{columns}    = \@columns;
-    return $json;
-}
-
-sub sourcefire {
-    my $self    = shift;
-    my $href    = shift;
-    my $json    = {
-        subject     => $href->{subject},
-        message_id  => $href->{message_id},
-        body_plain  => $href->{body_plain},
-        body        => $href->{body_html},
-        data        => [],
-        source      => [ qw(email sourcefire) ],
-    };
-    my $regex   = qr{ \[(?<sid>.*?)\] "(?<rule>.*?)" \[Impact: (?<impact>.*?)\] +From "(?<from>.*?)" at (?<when>.*?) +\[Classification: (?<class>.*?)\] \[Priority: (?<pri>.*?)\] {(?<proto>.*)} (?<rest>.*) *};
-
-    my $body    = $href->{body_html} // $href->{body_plain};
-       $body    =~ s/[\n\r]/ /g;
-       $body    =~ m/$regex/g;
-
-    my $rest    = $+{rest};
-    my ($fullsrc, $fulldst)     = split(/->/, $rest);
-    my ($srcip, $srcport)       = split(/:/, $fullsrc);
-    my ($dstip, $dstport)       = split(/:/, $fulldst);
-    
-    $json->{data}    = {
-        sid             => $+{sid},
-        rule            => $+{rule},
-        impact          => $+{imapct},
-        from            => $+{from},
-        when            => $+{when},
-        class           => $+{class},
-        priority        => $+{pri},
-        proto           => $+{proto},
-        srcip           => $srcip,
-        srcport         => $srcport,
-        dstip           => $dstip,
-        dstport         => $dstport,
-    };
-    $json->{columns}    = [
-        qw(sid rule impact from when class priority proto scrip srcport dstip dstport)
-    ];
-    return $json;
-}
-
-sub forefront {
-    my $self    = shift;
-    my $href    = shift;
-    my $json    = {
-        subject     => $href->{subject},
-        message_id  => $href->{message_id},
-        body_plain  => $href->{body_plain},
-        body        => $href->{body_html},
-        data        => [],
-        source      => [ qw(email forefront) ],
-    };
-    my $data    = {};
-    my @columns = ();
-
-    my $body    = $href->{body_html} // $href->{body_plain};
-    my %upper   = $body =~ m/[ ]{4}(.*?):[ ]+\"(.*?)\"/gms;
-    my %lower   = $body =~ m/[ ]{6}(.*?):[ ]*(.*?)$/gms;
-
-    foreach my $href (\%upper, \%lower) {
-        while ( my ($k, $v) = each %$href ) {
-            $k  =~ s/^[ \n\r]+//gms;
-            $k  =~ s/ /_/g;
-            $k  =~ s/\./_/g;
-            push @columns, $k;
-            $data->{$k} = $v;
-        }
-    }
-        
-    $json->{data} = [ $data ];
-    $json->{columns} = \@columns;
-
-    return $json;
-}
-
-sub generic {
-    my $self    = shift;
-    my $href    = shift;
-    my $json    = {
-        subject     => $href->{subject},
-        message_id  => $href->{message_id},
-        body_plain  => $href->{body_plain},
-        body        => $href->{body_html},
-        data        => [{
-            alert   => $href->{body_plain},
-            columns => [qw(alert)],
-        }],
-        source      => [ qw(email generic) ],
-        columns     => [ qw(alert) ],
-    };
-    return $json;
 }
 
 1;
