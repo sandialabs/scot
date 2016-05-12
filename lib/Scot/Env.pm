@@ -152,7 +152,7 @@ sub _get_entity_enrichers {
     });
     my @enrichers   = ();
     if ( $item ) {
-        foreach my $href (@{$item}) {
+        foreach my $href (@{$item->item->{list}}) {
             my ($name, $data)   = each %$href;
             my $type            = $data->{type};
             my $module          = $data->{module};
