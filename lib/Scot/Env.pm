@@ -150,12 +150,30 @@ sub _get_entity_enrichers {
     my $item    = $mongo->collection('Config')->find_one({
         module  => 'entity_enrichers',
     });
+    my @enrichers   = ();
     if ( $item ) {
-        return $item->item->{list};
+        foreach my $href (@{$item}) {
+            my ($name, $data)   = each %$href;
+            my $type            = $data->{type};
+            my $module          = $data->{module};
+            my $config          = $data->{config};
+
+            if ( $type eq "native" ) {
+                require_module($module);
+                my $init    = {
+                    log     => $self->log,
+                };
+                if ( defined $config ) {
+                    $init->{config} = $config;
+                }
+                push @enrichers, { $name => $module->new($init) };
+            }
+            else {
+                $self->log->warn("no support for webservice yet");
+            }
+        }
     }
-    else {
-        return [];
-    }
+    return \@enrichers;
 }
 
 has admin_group => (
