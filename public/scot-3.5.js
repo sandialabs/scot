@@ -89,11 +89,14 @@ module.exports = Dispatcher
 },{"../../../node_modules/flux-activemq/flux":141,"object-assign":226}],3:[function(require,module,exports){
 var set;
 function update(state, callback, payload){
+    activemqstate = 'update'
     if (state == 'event') {
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " updated " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
+        activemqsetentry = activemqid
+        activemqsetentrytype = 'event'
         callback.emitChange('guidegroup')
         callback.emitChange('intelgroup')
         callback.emitChange('entryNotification');
@@ -125,6 +128,8 @@ function update(state, callback, payload){
         activemqmessage = " updated " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
+        activemqsetentry = activemqid
+        activemqsetentrytype = 'intel'
         callback.emitChange('guidegroup')
         callback.emitChange('intelgroup')
         callback.emitChange('taskgroup')
@@ -134,7 +139,7 @@ function update(state, callback, payload){
         callback.emitChange('incidentgroup')
         callback.emitChange("activealertgroup")
         callback.emitChange('eventgroup')
-    callback.emitChange(payload.action.activemq.data.id)
+        callback.emitChange(payload.action.activemq.data.id)
     }
    else if(state == 'task'){
         activemqwho = payload.action.activemq.data.who
@@ -186,6 +191,8 @@ function update(state, callback, payload){
         callback.emitChange(payload.action.activemq.data.id)
     }
    else if(state == 'incident'){
+        activemqsetentry = activemqid
+        activemqsetentrytype = 'incident'
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " updated " + state + " : " 
         activemqid = payload.action.activemq.data.id
@@ -215,8 +222,10 @@ function update(state, callback, payload){
     }) */
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " updated " + state + " : " 
-        activemqid = payload.action.activemq.data.id
         activemqtype = state 
+        activemqid = payload.action.activemq.data.id
+        activemqsetentry = activemqid
+        activemqsetentrytype = 'alertgroup'
         callback.emitChange('guidegroup')
         callback.emitChange('intelgroup')
         callback.emitChange('viewentrykey')
@@ -236,7 +245,9 @@ function update(state, callback, payload){
                 $(y).find('.z-cell').each(function(r,s){
                     if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
                         $(y).find('.z-cell').each(function(p,o){
-                            if($(o).attr('name') == 'alertgroup'){
+                            if($(o).attr('name') == 'alertgroup'){        
+                                activemqsetentry = $(o).text()
+                                activemqsetentrytype = 'alertgroup'
                                 callback.emitChange($(o).text())
                         }
                     })
@@ -244,10 +255,11 @@ function update(state, callback, payload){
             })
         })
         })
+
         activemqwho = payload.action.activemq.data.who
-        activemqmessage = " updated " + state + " id: " 
+        activemqmessage = " updated " + 'alert' + " id: " 
         activemqid = payload.action.activemq.data.id
-        activemqtype = state
+        activemqtype = 'alert'
         callback.emitChange('guidegroup')
         callback.emitChange('intelgroup')
        // callback.emitChange(payload.action.activemq.data.id)
@@ -260,6 +272,7 @@ function update(state, callback, payload){
     }
 }
 function creation(state, callback, payload){
+    activemqstate = 'create'
     if(state == 'alert'){    	
     }
     else if (state == 'entry'){
@@ -416,7 +429,8 @@ function creation(state, callback, payload){
    }
 }
 
-function deletion(state, callback, payload){
+function deletion(state, callback, payload){ 
+   activemqstate = 'delete'
     if(state == 'alert'){
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " deleted " + state + " : " 
@@ -2565,7 +2579,6 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated); 
         Store.storeKey('entryNotification')
-        Store.addChangeListener(this.notification);
     }, 
     updated: function(_type,_message) { 
         this.setState({refreshing:true, sourceLoaded:false,eventLoaded:false,tagLoaded:false,entryLoaded:false,entityLoaded:false});
@@ -2667,22 +2680,6 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             waitForEntry.waitEntry();
         }.bind(this));
      },*/
-    notification: function() {
-        var notification = this.refs.notificationSystem
-        if(activemqwho != "" && notification != undefined && activemqwho != 'api'){
-            notification.addNotification({
-                message: activemqwho + activemqmessage + activemqid,
-                level: 'info',
-                autoDismiss: 5,
-                action: {
-                    label: 'View',
-                    callback: function(){
-                        window.open('#/' + activemqtype + '/' + activemqid)
-                    }
-                }
-            })
-        }
-    },
     flairToolbarToggle: function(id){
         if (this.state.flairToolbar == false) {
             this.setState({flairToolbar:true,entityid:id})
@@ -2869,7 +2866,6 @@ var EntryDataStatus = React.createClass({displayName: "EntryDataStatus",
             data: json,
             success: function(data) {
                 console.log('success status change to: ' + data);
-                AppActions.updateItem(this.state.key,'headerUpdate');    
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to change status');
@@ -4511,13 +4507,17 @@ module.exports = React.createClass({displayName: "exports",
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
-                autoDismiss: 5,
-                action: {
+                autoDismiss: 15,
+                action: activemqstate != 'delete' ? {
                     label: 'View',
                     callback: function(){
+                        if(activemqtype == 'entry' || activemqtype == 'alert'){
+                            activemqid = activemqsetentry
+                            activemqtype = activemqsetentrytype
+                        } 
                         window.open('#/' + activemqtype + '/' + activemqid)
                     }
-                }
+                } : null
             })
             savedid = activemqid
         }  
@@ -5203,13 +5203,17 @@ module.exports = React.createClass({displayName: "exports",
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
-                autoDismiss: 5,
-                action: {
+                autoDismiss: 15,
+                action:  activemqstate != 'delete' ? {
                     label: 'View',
                     callback: function(){
+                        if(activemqtype == 'entry' || activemqtype == 'alert' ){
+                            activemqid = activemqsetentry
+                            activemqtype = activemqsetentrytype
+                        }
                         window.open('#/' + activemqtype + '/' + activemqid)
                     }
-                }
+                }  : null
             })
             savedid = activemqid
         }  
@@ -6015,23 +6019,28 @@ module.exports = React.createClass({displayName: "exports",
         }.bind(this))
     },
 
-    reloadactive: function(){    
+    reloadactive: function(){     
         var notification = this.refs.notificationSystem
         if(notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
-                autoDismiss: 5,
-                action: {
+                autoDismiss: 15,
+                action:  activemqstate != 'delete' ? {
                     label: 'View',
                     callback: function(){
+                        if(activemqtype == 'entry' || activemqtype == 'alert'){
+                            activemqid = activemqsetentry
+                            activemqtype = activemqsetentrytype
+                        }
                         window.open('#/' + activemqtype + '/' + activemqid)
                     }
-                }
+                }  : null
             })
             savedid = activemqid
-        }  
-        this.getNewData({page: defaultpage, limit: pageSize}) 
+        }
+        this.getNewData({page:defaultpage , limit: pageSize}) 
+    
     },
     reloadItem: function(){
         height = $(window).height() - 170
@@ -6410,17 +6419,21 @@ module.exports = React.createClass({displayName: "exports",
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
-                autoDismiss: 5,
-                action: {
+                autoDismiss: 15,
+                action:  activemqstate != 'delete' ? {
                     label: 'View',
                     callback: function(){
+                        if(activemqtype == 'entry' || activemqtype == 'alert'){
+                            activemqid = activemqsetentry
+                            activemqtype = activemqsetentrytype
+                        }
                         window.open('#/' + activemqtype + '/' + activemqid)
                     }
-                }
+                }  : null
             })
             savedid = activemqid
-        }  
-        this.getNewData({page: defaultpage, limit: pageSize}) 
+        }
+        this.getNewData({page:defaultpage , limit: pageSize})  
     },
     reloadItem: function(){
         height = $(window).height() - 170
@@ -7319,23 +7332,27 @@ module.exports = React.createClass({displayName: "exports",
         }.bind(this))
     },
 
-    reloadactive: function(){    
+    reloadactive: function(){
         var notification = this.refs.notificationSystem
         if(notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
-                autoDismiss: 5,
-                action: {
+                autoDismiss: 15,
+                action:  activemqstate != 'delete' ? {
                     label: 'View',
                     callback: function(){
+                        if(activemqtype == 'entry' || activemqtype == 'alert'){
+                            activemqid = activemqsetentry
+                            activemqtype = activemqsetentrytype
+                        }
                         window.open('#/' + activemqtype + '/' + activemqid)
                     }
-                }
+                }  : null
             })
             savedid = activemqid
-        }  
-        this.getNewData({page: defaultpage, limit: pageSize}) 
+        }
+        this.getNewData({page:defaultpage , limit: pageSize}) 
     },
     reloadItem: function(){
         height = $(window).height() - 170
@@ -8149,17 +8166,21 @@ module.exports = React.createClass({displayName: "exports",
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
-                autoDismiss: 5,
-                action: {
+                autoDismiss: 15,
+                action:  activemqstate != 'delete' ? {
                     label: 'View',
                     callback: function(){
+                        if(activemqtype == 'entry'|| activemqtype == 'alert'){
+                            activemqid = activemqsetentry
+                            activemqtype = activemqsetentrytype
+                        }
                         window.open('#/' + activemqtype + '/' + activemqid)
                     }
-                }
+                }  : null
             })
             savedid = activemqid
         }
-        this.getNewData({page: defaultpage, limit: pageSize})
+        this.getNewData({page:defaultpage , limit: pageSize})
     },
     reloadItem: function(){
         height = $(window).height() - 170
