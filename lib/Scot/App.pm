@@ -90,6 +90,7 @@ has logfile => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
+    lazy        => 1,
     builder     => '_get_logfile',
 );
 
