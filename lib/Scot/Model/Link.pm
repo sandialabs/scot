@@ -54,7 +54,7 @@ has entity_id   => (
     required    => 1,
 );
 
-=item B<entity_value>
+=item B<value>
 
 a copy of the entity value, makes some queries easier
 
