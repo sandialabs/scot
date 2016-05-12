@@ -1,5 +1,5 @@
 var AddFlair = {
-    entityUpdate: function(entityData,flairToolbarToggle,type,linkWarningToggle,id) {
+    entityUpdate: function(entityData,flairToolbarToggle,type,linkWarningToggle,id,scrollTo) {
         setTimeout(function() {
             var entityResult = entityData;
             if (type != 'alertgroup') {
@@ -35,9 +35,9 @@ var AddFlair = {
                                             $(entity).append(circle);
                                             $(entity).attr('data-entity-id',entityid)
                                             $(entity).unbind('click');
-                                            if (entitydata !== undefined) {
-                                                if (entitydata.geoip !== undefined) {
-                                                    if (entitydata.geoip.isocode !== undefined) {
+                                            if (entitydata != undefined) {
+                                                if (entitydata.geoip != undefined) {
+                                                    if (entitydata.geoip.isocode != undefined) {
                                                         var country_code;
                                                         if (entitydata.geoip.isp == 'Sandia National Laboratories') {
                                                             country_code = 'sandia';    
@@ -99,6 +99,9 @@ var AddFlair = {
                         }
                     }.bind(this));
                 }
+            }
+            if (scrollTo != undefined) {
+                scrollTo();
             }
         }.bind(this),1000);
     },
