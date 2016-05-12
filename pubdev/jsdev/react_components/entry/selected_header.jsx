@@ -108,7 +108,7 @@ var SelectedHeader = React.createClass({
                         setTimeout(waitForEntry.waitEntry,50);
                     } else {
                         alertgroupforentity = false;
-                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,this.scrollTo)}.bind(this));
                         if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false});        
                         }
@@ -339,7 +339,15 @@ var SelectedHeader = React.createClass({
                 $(win.document).find('.plain').remove() }
             }
         })
-    }, 
+    },
+    summaryUpdate: function() {
+        this.forceUpdate();
+    },
+    scrollTo: function() {
+        $document.body.find('.entry-wrapper').animate({
+            'scrollTop':$('#iframe_'+this.props.taskid).offset().top
+        }.bind(this),2000)
+    },
     render: function() {
         var headerData = this.state.headerData;         
         var viewedby = this.viewedbyfunc(headerData);
@@ -377,7 +385,6 @@ var SelectedHeader = React.createClass({
                     </div>
                 </div>
                 <Notification ref="notificationSystem" /> 
-                
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} /> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null} 
@@ -389,7 +396,7 @@ var SelectedHeader = React.createClass({
                 </div>
                 {this.state.showFlash == true ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} /> : null}
 
-                <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} windowHeight={this.props.windowHeight}/> 
+                <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} windowHeight={this.props.windowHeight} summaryUpdate={this.summaryUpdate}/> 
             </div>
         )
     }
