@@ -506,17 +506,21 @@ sub check_entity_enrichments {
     $log->debug("enrichers are: ",{filter=>\&Dumper,value=>$enrichers});
 
     foreach my $enricher (@$enrichers) {
-        my ($name, $href) = each %$enricher;
+        my ($name, $instance) = each %$enricher;
         if (defined $entity->data->{$name} and %{$entity->data->{$name}} ) {
             $log->debug("Enrichment $name is cached...");
             $data->{$name} = $entity->data->{$name};
         }
         else {
-            $log->debug("Missing enrichment $name, fetching...");
-            my $edata   = $self->enrich_entity($href, $entity);
-            if ($edata) {
+            unless ( ref($instance) ) {
+                $log->error("$name enricher is unblessed!");
+            }
+            else {
+                $log->debug("Missing enrichment $name, fetching...");
+                my $type    = $entity->type;
+                my $value   = $entity->value;
+                $data->{$name} = $instance->get_data($type, $value);
                 $changes++;
-                $data->{$name} = $edata;
             }
         }
     }
