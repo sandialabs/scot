@@ -662,9 +662,7 @@ sub get_subthing {
         # need to transform from an array of hashes to a a hash
         # for efficiency in UI code
         my %things  = ();
-        my $entitycol   = $mongo->collection('Entity');
-        while ( my $link = $cursor->next ) {
-            my $entity  = $entitycol->find_one({ id => $link->entity_id});
+        while ( my $entity = $cursor->next ) {
             $self->check_entity_enrichments($entity);
             $things{$entity->value} = {
                 id      => $entity->id,
