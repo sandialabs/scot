@@ -93,6 +93,10 @@ sub upload {
         $filehref->{directory}  = $dir;
         $filehref->{groups}     = $group_href;
         $filehref->{target}     = {
+            type    => 'entry',
+            id      => $entry_id,
+        };
+        $filehref->{entry_target}   = {
             type    => $target_type,
             id      => $target_id,
         };
@@ -173,14 +177,9 @@ EOF
     };
 
     my $col     = $mongo->collection('Entry');
-    my $lcol    = $mongo->collection('Link');
     my $entry   = $col->create($entry_href);
 
-    $lcol->link_objects($fileobj, $entry);
-    $lcol->create_link(
-        { type => "entry", id => $entry->id },
-        { type => $target_type, id => $target_id },
-    );
+    
 }
 
 sub link_file {
