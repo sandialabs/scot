@@ -147,7 +147,7 @@ module.exports = React.createClass({
                     else if($(y).text() == 'completed' || $(y).text() == 'closed'){
                         $(y).css('color', 'green')
                     }
-        else if($(y).text()  == 'promoted'){
+        else if($(y).text()  == 'promoted' || $(y).text() == 'assigned'){
             $(y).css('color', 'orange')
         }
         })
@@ -281,7 +281,7 @@ module.exports = React.createClass({
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'ID:'),
                         React.createElement('div', null, value.target.id)),
                         React.createElement('div', {style: {display: 'flex'}},
-                        React.createElement('div', {style: {'font-weight': 'bold'}}, 'Status:  '), React.createElement('div', null, value.status)),
+                        React.createElement('div', {style: {'font-weight': 'bold'}}, 'Status:  '), React.createElement('div', null, value.task.status)),
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Updated:  '),
                         React.createElement('div', null, value.updated)),                         
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Owner:  '),
