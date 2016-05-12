@@ -41,10 +41,10 @@ var Flair = React.createClass({
                     style={customStyles}>
                     <div className="modal-header">
                         <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.flairToolbarToggle} />
-                        <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> :null }</h3>
+                        <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
                     </div>
                     <div className="modal-body" style={{height: '80vh', overflowY:'auto',width:'800px'}}>
-                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.props.entityid} entryToggle={this.entryToggle}/> :null} 
+                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.props.entityid} entryToggle={this.entryToggle}/> : <div>Loading...</div>} 
                     </div>
                     <div className="modal-footer">
                         <Button onClick={this.props.flairToolbarToggle}>Done</Button>
@@ -84,8 +84,10 @@ var EntityBody = React.createClass({
         if (this.props.data != undefined) {
             var entityData = this.props.data['data'];
             for (var prop in entityData) {
-                entityEnrichmentArr.push(<Tab eventKey={enrichmentEventKey} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} /></Tab>);
-                enrichmentEventKey++;
+                if (entityData[prop] != undefined) {
+                    entityEnrichmentArr.push(<Tab eventKey={enrichmentEventKey} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} /></Tab>);
+                    enrichmentEventKey++;
+                }
             }
         }
         //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
@@ -123,7 +125,10 @@ var EntityEventReferences = React.createClass({
             entityDataIncidentLoading:true,
             navigateType: '',
             navigateId: null,
-            selected:{}
+            alertText:'Loading...',
+            eventText:'Loading...',
+            incidentText:'Loading...',
+            selected:{},
         }
     },
     componentDidMount: function() {
@@ -132,6 +137,8 @@ var EntityEventReferences = React.createClass({
             this.setState({entityDataAlertGroup:result,entityDataAlertGroupLoading:false})
             if (result[0] != undefined) {
                 this.setState({defaultAlertGroupHeight:175})
+            } else {
+                this.setState({alertText:'No Records'})
             }
         }.bind(this));
         this.sourceRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/event', function(result) {
@@ -139,6 +146,8 @@ var EntityEventReferences = React.createClass({
             this.setState({entityDataEvent:result,entityDataEventLoading:false})
             if (result[0] != undefined) {
                 this.setState({defaultEventHeight:175})
+            } else {
+                this.setState({eventText:'No Records'})
             }
         }.bind(this));
         this.sourceRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/incident', function(result) {
@@ -146,6 +155,8 @@ var EntityEventReferences = React.createClass({
             this.setState({entityDataIncident:result,entityDataIncidentLoading:false})
             if (result[0] != undefined) {
                 this.setState({defaultIncidentHeight:175})
+            } else {
+                this.setState({incidentText:'No Records'})
             }
         }.bind(this));
     },
@@ -176,14 +187,14 @@ var EntityEventReferences = React.createClass({
         return (
             <div>
                 <h4>AlertGroups</h4>
-                <DataGrid idProperty='id' data={this.state.entityDataAlertGroup} columns={alertColumns} style={{height:this.state.defaultAlertGroupHeight}} onSelectionChange={this.onAlertGroupSelectionChange} selected={this.state.selected} emptyText={'No records'} loading={this.state.entityDataAlertGroupLoading} rowFactory={rowFact} loadMaskOverHeader={false}/>
+                <DataGrid idProperty='id' data={this.state.entityDataAlertGroup} columns={alertColumns} style={{height:this.state.defaultAlertGroupHeight}} onSelectionChange={this.onAlertGroupSelectionChange} selected={this.state.selected} emptyText={this.state.alertText} rowFactory={rowFact} loadMaskOverHeader={false}/>
                 <div style={{marginTop:'90px'}}>
                     <h4>Events</h4>
-                    <DataGrid idProperty='id' data={this.state.entityDataEvent} columns={columns} style={{height:this.state.defaultEventHeight}} onSelectionChange={this.onEventSelectionChange} selected={this.state.selected} emptyText={'No records'} loading={this.state.entityDataEventLoading} rowFactory={rowFact} loadMaskOverHeader={false}/>
+                    <DataGrid idProperty='id' data={this.state.entityDataEvent} columns={columns} style={{height:this.state.defaultEventHeight}} onSelectionChange={this.onEventSelectionChange} selected={this.state.selected} emptyText={this.state.eventText} rowFactory={rowFact} loadMaskOverHeader={false}/>
                 </div>
                 <div style={{marginTop:'90px'}}>
                     <h4>Incidents</h4>
-                    <DataGrid idProperty='id' data={this.state.entityDataIncident} columns={columns} style={{height:this.state.defaultIncidentHeight}} onSelectionChange={this.onIncidentSelectionChange} selected={this.state.selected} emptyText={'No records'} loading={this.state.entityDataIncidentLoading} rowFactory={rowFact} loadMaskOverHeader={false}/>
+                    <DataGrid idProperty='id' data={this.state.entityDataIncident} columns={columns} style={{height:this.state.defaultIncidentHeight}} onSelectionChange={this.onIncidentSelectionChange} selected={this.state.selected} emptyText={this.state.incidentText} rowFactory={rowFact} loadMaskOverHeader={false}/>
                 </div>
             </div>
         )
