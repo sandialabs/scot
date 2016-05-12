@@ -4438,6 +4438,7 @@ var setfilter = false
 var savedid;
 var height;
 var width;
+var defaultpage = 1;
 var pageSize = 50;
 var readonly = []
 var colorrow = [];
@@ -4520,7 +4521,7 @@ module.exports = React.createClass({displayName: "exports",
             })
             savedid = activemqid
         }  
-        this.getNewData(this.state.activepage) 
+        this.getNewData({page: defaultpage, limit: pageSize}) 
     },
     reloadItem: function(){
         height = $(window).height() - 170
@@ -4916,6 +4917,7 @@ module.exports = React.createClass({displayName: "exports",
     },
     getNewData: function(page){
         pageSize = page.limit
+        defaultpage = page.page
         var newPage;
         if(page.page != 0){
             newPage = (page.page - 1) * page.limit
@@ -5128,6 +5130,7 @@ var setfilter = false
 var savedid;
 var height;
 var width;
+var defaultpage = 1;
 var pageSize = 50;
 var readonly = []
 var colorrow = [];
@@ -5210,7 +5213,7 @@ module.exports = React.createClass({displayName: "exports",
             })
             savedid = activemqid
         }  
-        this.getNewData(this.state.activepage) 
+        this.getNewData({page:defaultpage , limit: pageSize}) 
     },
     reloadItem: function(){
         height = $(window).height() - 170
@@ -5678,12 +5681,9 @@ module.exports = React.createClass({displayName: "exports",
             this.launchEvent(array)
         }.bind(this))
     },
-
-    handlePageChange: function(pageNumber){
-        this.getNewData(pageNumber)
-    },
     getNewData: function(page){
         pageSize = page.limit
+        defaultpage = page.page
         var newPage;
         if(page.page != 0){
             newPage = (page.page - 1) * page.limit
@@ -5939,6 +5939,7 @@ var end;
 var valuesort = -1
 var SELECTED_ID = {}
 var filter = {}
+var defaultpage = 1
 var sortarray = {}
 var names = 'none'
 var getColumn;
@@ -6030,7 +6031,7 @@ module.exports = React.createClass({displayName: "exports",
             })
             savedid = activemqid
         }  
-        this.getNewData(this.state.activepage) 
+        this.getNewData({page: defaultpage, limit: pageSize}) 
     },
     reloadItem: function(){
         height = $(window).height() - 170
@@ -6197,6 +6198,7 @@ module.exports = React.createClass({displayName: "exports",
     },
     getNewData: function(page){
         pageSize = page.limit
+        defaultpage = page.page
         var newPage;
         if(page.page != 0){
             newPage = (page.page - 1) * page.limit
@@ -6319,6 +6321,7 @@ var colsort = "id"
 var start;
 var end;
 var valuesort = -1
+var defaultpage = 1
 var SELECTED_ID = {}
 var filter = {}
 var sortarray = {}
@@ -6417,7 +6420,7 @@ module.exports = React.createClass({displayName: "exports",
             })
             savedid = activemqid
         }  
-        this.getNewData(this.state.activepage) 
+        this.getNewData({page: defaultpage, limit: pageSize}) 
     },
     reloadItem: function(){
         height = $(window).height() - 170
@@ -6732,6 +6735,7 @@ module.exports = React.createClass({displayName: "exports",
     },
     getNewData: function(page){
         pageSize = page.limit
+        defaultpage = page.page
         var newPage;
         if(page.page != 0){
             newPage = (page.page - 1) * page.limit
@@ -7230,6 +7234,7 @@ var Source                  = require('react-tag-input-tags/react-tag-input').Wi
 var Tags                    = require('react-tag-input').WithContext
 var SORT_INFO;
 var colsort = "id"
+var defaultpage = 1
 var start;
 var end;
 var valuesort = -1
@@ -7330,7 +7335,7 @@ module.exports = React.createClass({displayName: "exports",
             })
             savedid = activemqid
         }  
-        this.getNewData(this.state.activepage) 
+        this.getNewData({page: defaultpage, limit: pageSize}) 
     },
     reloadItem: function(){
         height = $(window).height() - 170
@@ -7799,11 +7804,9 @@ module.exports = React.createClass({displayName: "exports",
         }.bind(this))
     },
 
-    handlePageChange: function(pageNumber){
-        this.getNewData(pageNumber)
-    },
     getNewData: function(page){
         pageSize = page.limit
+        defaultpage = page.page
         var newPage;
         if(page.page != 0){
             newPage = (page.page - 1) * page.limit
@@ -8054,6 +8057,7 @@ var Source                  = require('react-tag-input-tags/react-tag-input').Wi
 var Tags                    = require('react-tag-input').WithContext
 var SORT_INFO;
 var colsort = "id"
+var defaultpage = 1
 var start;
 var end;
 var valuesort = -1
@@ -8155,7 +8159,7 @@ module.exports = React.createClass({displayName: "exports",
             })
             savedid = activemqid
         }
-        this.getNewData(this.state.activepage)
+        this.getNewData({page: defaultpage, limit: pageSize})
     },
     reloadItem: function(){
         height = $(window).height() - 170
@@ -8314,7 +8318,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null,
                         React.createElement('div', null,
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'ID:'),
-                        React.createElement('div', null, value.id)),
+                        React.createElement('div', null, value.target.id)),
                         React.createElement('div', {style: {display: 'flex'}},
                         React.createElement('div', {style: {'font-weight': 'bold'}}, 'Status:  '), React.createElement('div', null, value.status)),
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Updated:  '),
@@ -8325,7 +8329,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('div', null, value.id)), React.createElement('div', {style: {display:'flex'}},
                         React.createElement('div', {style: {'font-weight': 'bold'}}, 'Type:  '), React.createElement('div', null, value.target.type))
                         ))},
-                        React.createElement("div", {style: {background: this.state.idsarray[0] == value.target.id ? this.state.blue : this.state.white},onClick: this.clickable, className: "table-row", id: value.targetid},
+                        React.createElement("div", {style: {background: colorrow[0] == value.id ? this.state.blue : this.state.white},onClick: this.clickable, className: "table-row", id: value.targetid},
                         React.createElement("div", {className: "wrapper attributes"},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                         React.createElement('div', {className: 'wrapper status-owner'},
@@ -8392,14 +8396,16 @@ module.exports = React.createClass({displayName: "exports",
     clickable: function(v){
         $('#'+$(v.currentTarget).find('.severity').text()).find('.table-row').each(function(x,y){
             var array = []
+            colorrow = []
             array.push($(y).find('.index').text())
-            colorrow.push($(y).find('.index').text())
+            colorrow.push($(y).find('.severity').text())
             this.launchEvent(array, $(y).find('.severity').text(), $(y).find('.type').text())
         }.bind(this))
     },
 
     getNewData: function(page){
         pageSize = page.limit
+        defaultpage = page.page
         var newPage;
         if(page.page != 0){
             newPage = (page.page - 1) * page.limit
