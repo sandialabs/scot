@@ -269,5 +269,4 @@ override get_subthing => sub {
     }
 };
 
-
 1;
