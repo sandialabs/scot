@@ -14,6 +14,7 @@ var Source                  = require('react-tag-input-tags/react-tag-input').Wi
 var Tags                    = require('react-tag-input').WithContext
 var SORT_INFO;
 var colsort = "id"
+var defaultpage = 1
 var start;
 var end;
 var valuesort = -1
@@ -114,7 +115,7 @@ module.exports = React.createClass({
             })
             savedid = activemqid
         }  
-        this.getNewData(this.state.activepage) 
+        this.getNewData({page: defaultpage, limit: pageSize}) 
     },
     reloadItem: function(){
         height = $(window).height() - 170
@@ -583,11 +584,9 @@ module.exports = React.createClass({
         }.bind(this))
     },
 
-    handlePageChange: function(pageNumber){
-        this.getNewData(pageNumber)
-    },
     getNewData: function(page){
         pageSize = page.limit
+        defaultpage = page.page
         var newPage;
         if(page.page != 0){
             newPage = (page.page - 1) * page.limit
