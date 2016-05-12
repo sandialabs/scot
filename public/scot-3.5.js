@@ -8325,7 +8325,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('div', null, value.id)), React.createElement('div', {style: {display:'flex'}},
                         React.createElement('div', {style: {'font-weight': 'bold'}}, 'Type:  '), React.createElement('div', null, value.target.type))
                         ))},
-                        React.createElement("div", {style: {background: this.state.idsarray[0] == value.id ? this.state.blue : this.state.white},onClick: this.clickable, className: "table-row", id: value.id},
+                        React.createElement("div", {style: {background: this.state.idsarray[0] == value.target.id ? this.state.blue : this.state.white},onClick: this.clickable, className: "table-row", id: value.targetid},
                         React.createElement("div", {className: "wrapper attributes"},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                         React.createElement('div', {className: 'wrapper status-owner'},
@@ -8392,9 +8392,9 @@ module.exports = React.createClass({displayName: "exports",
     clickable: function(v){
         $('#'+$(v.currentTarget).find('.severity').text()).find('.table-row').each(function(x,y){
             var array = []
-            array.push($(y).find('.severity').text())
-            colorrow.push($(y).find('.severity').text())
-            this.launchEvent(array, $(y).find('.index').text(), $(y).find('.type').text())
+            array.push($(y).find('.index').text())
+            colorrow.push($(y).find('.index').text())
+            this.launchEvent(array, $(y).find('.severity').text(), $(y).find('.type').text())
         }.bind(this))
     },
 
