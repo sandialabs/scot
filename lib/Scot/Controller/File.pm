@@ -92,6 +92,14 @@ sub upload {
         $filehref->{size}       = $size;
         $filehref->{directory}  = $dir;
         $filehref->{groups}     = $group_href;
+        $filehref->{target}     = {
+            type    => 'entry',
+            id      => $entry_id,
+        };
+        $filehref->{entry_target}   = {
+            type    => $target_type,
+            id      => $target_id,
+        };
 
         my $fileobj = $mongo->collection('File')->create($filehref);
 
@@ -169,14 +177,9 @@ EOF
     };
 
     my $col     = $mongo->collection('Entry');
-    my $lcol    = $mongo->collection('Link');
     my $entry   = $col->create($entry_href);
 
-    $lcol->link_objects($fileobj, $entry);
-    $lcol->create_link(
-        { type => "entry", id => $entry->id },
-        { type => $target_type, id => $target_id },
-    );
+    
 }
 
 sub link_file {
@@ -280,14 +283,23 @@ sub get_targets {
         }
     }
     else {
-        # we could trust/require the client to provide both entry_id
-        # and target_type/id but a bug in the client would produce weird 
-        # links.  
         my $msg;
-        ($target_type, $target_id) = 
-            $mongo->collection('Link')->get_entry_target($entry_id);
-        unless ($target_type) {
-            $msg    = "Error get entry $entry_id target";
+        $target_type    = $self->param('target_type');
+        $target_id      = $self->param('target_id') + 0;
+        unless ( $target_type ) {
+            $msg = "You must provide target_type and target_id, or entry_id";
+            $log->error($msg);
+            $self->render({
+                status  => 400,
+                json    => { error_msg => $msg },
+            });
+            return undef, undef, undef;
+        }
+
+        my $collection = $mongo->collection(ucfirst($target_type));
+
+        unless ($collection) {
+            $msg    = "invalid collection $target_type as target";
             $log->error($msg);
             $self->render({
                 status  => 400,

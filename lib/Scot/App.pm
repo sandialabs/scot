@@ -13,6 +13,34 @@ use Safe;
 use Moose;
 use namespace::autoclean;
 
+has configuration_file  => (
+    is              => 'ro',
+    isa             => 'Str',
+    required        => 1,
+);
+
+has config  => (
+    is              => 'ro',
+    isa             => 'HashRef',
+    required        => 1,
+    lazy            => 1,
+    builder         => '_build_config',
+);
+
+sub _build_config { 
+    my $self    = shift;
+    my $file    = $self->configuration_file;
+    unless ( $file ) {
+        die "Error: configuration file attribute not set!";
+    }
+    unless ( -e $file ) {
+        die "Error: Unable to find configuration file $file";
+    }
+    my $c   = new Safe 'CONFIG';
+    my $r   = $c->rdo($file);
+    return \%CONFIG::config;
+}
+
 has logname => (
     is          => 'ro',
     isa         => 'Str',
@@ -62,6 +90,7 @@ has logfile => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
+    lazy        => 1,
     builder     => '_get_logfile',
 );
 
@@ -71,34 +100,6 @@ sub _get_logfile {
         return $self->config->{logfile};
     }
     return '/var/log/scot/scot.log';
-}
-
-has configuration_file  => (
-    is              => 'ro',
-    isa             => 'Str',
-    required        => 1,
-);
-
-has config  => (
-    is              => 'ro',
-    isa             => 'HashRef',
-    required        => 1,
-    lazy            => 1,
-    builder         => '_build_config',
-);
-
-sub _build_config { 
-    my $self    = shift;
-    my $file    = $self->configuration_file;
-    unless ( $file ) {
-        die "Error: configuration file attribute not set!";
-    }
-    unless ( -e $file ) {
-        die "Error: Unable to find configuration file $file";
-    }
-    my $c   = new Safe 'CONFIG';
-    my $r   = $c->rdo($file);
-    return \%CONFIG::config;
 }
 
 1;
