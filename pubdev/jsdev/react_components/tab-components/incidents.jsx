@@ -17,6 +17,7 @@ var colsort = "id"
 var start;
 var end;
 var valuesort = -1
+var defaultpage = 1
 var SELECTED_ID = {}
 var filter = {}
 var sortarray = {}
@@ -105,17 +106,21 @@ module.exports = React.createClass({
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
-                autoDismiss: 5,
-                action: {
+                autoDismiss: 15,
+                action:  activemqstate != 'delete' ? {
                     label: 'View',
                     callback: function(){
+                        if(activemqtype == 'entry' || activemqtype == 'alert'){
+                            activemqid = activemqsetentry
+                            activemqtype = activemqsetentrytype
+                        }
                         window.open('#/' + activemqtype + '/' + activemqid)
                     }
-                }
+                }  : null
             })
             savedid = activemqid
-        }  
-        this.getNewData(this.state.activepage) 
+        }
+        this.getNewData({page:defaultpage , limit: pageSize})  
     },
     reloadItem: function(){
         height = $(window).height() - 170
@@ -430,6 +435,7 @@ module.exports = React.createClass({
     },
     getNewData: function(page){
         pageSize = page.limit
+        defaultpage = page.page
         var newPage;
         if(page.page != 0){
             newPage = (page.page - 1) * page.limit
