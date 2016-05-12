@@ -4,6 +4,8 @@ var activemqid = ''
 var activemqmessage = ''
 var activemqtype = ''
 var alertgroupforentity = false
+var activemqstate = ''
+var activemqsetentry = 0
 $.ajax({
     type: 'get',
     url:'scot/api/v2/whoami',
