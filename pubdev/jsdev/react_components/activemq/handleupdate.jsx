@@ -1,10 +1,13 @@
 var set;
 function update(state, callback, payload){
+    activemqstate = 'update'
     if (state == 'event') {
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " updated " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
+        activemqsetentry = activemqid
+        activemqsetentrytype = 'event'
         callback.emitChange('guidegroup')
         callback.emitChange('intelgroup')
         callback.emitChange('entryNotification');
@@ -36,6 +39,8 @@ function update(state, callback, payload){
         activemqmessage = " updated " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
+        activemqsetentry = activemqid
+        activemqsetentrytype = 'intel'
         callback.emitChange('guidegroup')
         callback.emitChange('intelgroup')
         callback.emitChange('taskgroup')
@@ -45,7 +50,7 @@ function update(state, callback, payload){
         callback.emitChange('incidentgroup')
         callback.emitChange("activealertgroup")
         callback.emitChange('eventgroup')
-    callback.emitChange(payload.action.activemq.data.id)
+        callback.emitChange(payload.action.activemq.data.id)
     }
    else if(state == 'task'){
         activemqwho = payload.action.activemq.data.who
@@ -97,6 +102,8 @@ function update(state, callback, payload){
         callback.emitChange(payload.action.activemq.data.id)
     }
    else if(state == 'incident'){
+        activemqsetentry = activemqid
+        activemqsetentrytype = 'incident'
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " updated " + state + " : " 
         activemqid = payload.action.activemq.data.id
@@ -126,8 +133,10 @@ function update(state, callback, payload){
     }) */
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " updated " + state + " : " 
-        activemqid = payload.action.activemq.data.id
         activemqtype = state 
+        activemqid = payload.action.activemq.data.id
+        activemqsetentry = activemqid
+        activemqsetentrytype = 'alertgroup'
         callback.emitChange('guidegroup')
         callback.emitChange('intelgroup')
         callback.emitChange('viewentrykey')
@@ -147,7 +156,9 @@ function update(state, callback, payload){
                 $(y).find('.z-cell').each(function(r,s){
                     if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
                         $(y).find('.z-cell').each(function(p,o){
-                            if($(o).attr('name') == 'alertgroup'){
+                            if($(o).attr('name') == 'alertgroup'){        
+                                activemqsetentry = $(o).text()
+                                activemqsetentrytype = 'alertgroup'
                                 callback.emitChange($(o).text())
                         }
                     })
@@ -155,10 +166,11 @@ function update(state, callback, payload){
             })
         })
         })
+
         activemqwho = payload.action.activemq.data.who
-        activemqmessage = " updated " + state + " id: " 
+        activemqmessage = " updated " + 'alert' + " id: " 
         activemqid = payload.action.activemq.data.id
-        activemqtype = state
+        activemqtype = 'alert'
         callback.emitChange('guidegroup')
         callback.emitChange('intelgroup')
        // callback.emitChange(payload.action.activemq.data.id)
@@ -171,6 +183,7 @@ function update(state, callback, payload){
     }
 }
 function creation(state, callback, payload){
+    activemqstate = 'create'
     if(state == 'alert'){    	
     }
     else if (state == 'entry'){
@@ -327,7 +340,8 @@ function creation(state, callback, payload){
    }
 }
 
-function deletion(state, callback, payload){
+function deletion(state, callback, payload){ 
+   activemqstate = 'delete'
     if(state == 'alert'){
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " deleted " + state + " : " 

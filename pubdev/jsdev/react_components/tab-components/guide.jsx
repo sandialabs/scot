@@ -95,23 +95,28 @@ module.exports = React.createClass({
         }.bind(this))
     },
 
-    reloadactive: function(){    
+    reloadactive: function(){     
         var notification = this.refs.notificationSystem
         if(notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
-                autoDismiss: 5,
-                action: {
+                autoDismiss: 15,
+                action:  activemqstate != 'delete' ? {
                     label: 'View',
                     callback: function(){
+                        if(activemqtype == 'entry' || activemqtype == 'alert'){
+                            activemqid = activemqsetentry
+                            activemqtype = activemqsetentrytype
+                        }
                         window.open('#/' + activemqtype + '/' + activemqid)
                     }
-                }
+                }  : null
             })
             savedid = activemqid
-        }  
-        this.getNewData({page: defaultpage, limit: pageSize}) 
+        }
+        this.getNewData({page:defaultpage , limit: pageSize}) 
+    
     },
     reloadItem: function(){
         height = $(window).height() - 170
