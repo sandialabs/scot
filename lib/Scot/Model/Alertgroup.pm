@@ -147,6 +147,18 @@ has alert_count  => (
     default     => 0,
 );
 
+=item B<columns>
+
+used by ui to display alerts
+
+=cut
+
+has columns => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    required    => 1,
+    default     => [],
+);
 
 
 
