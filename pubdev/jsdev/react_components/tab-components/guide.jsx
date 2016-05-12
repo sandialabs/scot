@@ -19,6 +19,7 @@ var end;
 var valuesort = -1
 var SELECTED_ID = {}
 var filter = {}
+var defaultpage = 1
 var sortarray = {}
 var names = 'none'
 var getColumn;
@@ -110,7 +111,7 @@ module.exports = React.createClass({
             })
             savedid = activemqid
         }  
-        this.getNewData(this.state.activepage) 
+        this.getNewData({page: defaultpage, limit: pageSize}) 
     },
     reloadItem: function(){
         height = $(window).height() - 170
@@ -277,6 +278,7 @@ module.exports = React.createClass({
     },
     getNewData: function(page){
         pageSize = page.limit
+        defaultpage = page.page
         var newPage;
         if(page.page != 0){
             newPage = (page.page - 1) * page.limit

@@ -33,6 +33,7 @@ var setfilter = false
 var savedid;
 var height;
 var width;
+var defaultpage = 1;
 var pageSize = 50;
 var readonly = []
 var colorrow = [];
@@ -115,7 +116,7 @@ module.exports = React.createClass({
             })
             savedid = activemqid
         }  
-        this.getNewData(this.state.activepage) 
+        this.getNewData({page: defaultpage, limit: pageSize}) 
     },
     reloadItem: function(){
         height = $(window).height() - 170
@@ -511,6 +512,7 @@ module.exports = React.createClass({
     },
     getNewData: function(page){
         pageSize = page.limit
+        defaultpage = page.page
         var newPage;
         if(page.page != 0){
             newPage = (page.page - 1) * page.limit
