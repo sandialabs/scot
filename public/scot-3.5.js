@@ -2020,6 +2020,9 @@ var AlertParent = React.createClass({displayName: "AlertParent",
             lastIndex: null,
         }
     },
+    componentDidMount: function() {
+        $('#sortabletable').tablesorter();
+    },
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();
         var selected = true;
@@ -2094,8 +2097,8 @@ var AlertParent = React.createClass({displayName: "AlertParent",
         }
         return (
             React.createElement("div", null, 
-                React.createElement("div", {className: "tablesorter alertTableHorizontal"}, 
-                    React.createElement("table", {width: "100%"}, 
+                React.createElement("div", null, 
+                    React.createElement("table", {className: "tablesorter alertTableHorizontal", id: 'sortabletable', width: "100%"}, 
                         React.createElement("thead", null, 
                             React.createElement("tr", null, 
                                 header
