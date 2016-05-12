@@ -157,7 +157,7 @@ has columns => (
     is          => 'ro',
     isa         => 'ArrayRef',
     required    => 1,
-    default     => [],
+    default     => sub {[]},
 );
 
 
