@@ -42,6 +42,11 @@ $t->post_ok(
 my $alertgroup_id   = $t->tx->res->json->{id};
 my $updated         = $t->tx->res->json->{updated};
 
+#print Dumper($t->tx->res->json), "\n";
+#done_testing();
+#exit 0;
+
+
 $t->get_ok("/scot/api/v2/alertgroup" => {},
     "Get alertgroup list")
     ->status_is(200)
@@ -56,9 +61,6 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
   ->json_is('/subject'      => 'test message 1')
   ->json_is('/views'        => 1)
   ->json_is('/alert_count'  => 2);
-# print Dumper($t->tx->res->json), "\n";
-#done_testing();
-#exit 0;
 
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
            "seeing if views increases")
