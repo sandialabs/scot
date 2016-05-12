@@ -178,6 +178,8 @@ function update(state, callback, payload){
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " updated " + state + " : " 
         activemqid = payload.action.activemq.data.id
+        activemqsetentry = activemqid
+        activemqsetentrytype = 'guide'
         activemqtype = state
         callback.emitChange('guidegroup')
         callback.emitChange('intelgroup')
