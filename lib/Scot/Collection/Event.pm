@@ -299,7 +299,7 @@ override get_subthing => sub {
         my $col    = $mongo->collection('Link');
         my $cur    = $col->find({'target.id'   => $id,
                                  'target.type' => 'event'});
-        my @lnk = map { $_->id } $cur->all;
+        my @lnk = map { $_->{entity_id} } $cur->all;
         &$timer;
 
         $timer  = $env->get_timer("generating entity cursor");
