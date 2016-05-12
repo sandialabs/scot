@@ -55,7 +55,7 @@ sub parse_message {
     my $report  = ( $tree->look_down('_tag','table') )[1];
     unless ($report) {
         $log->warn("No tables in Splunk Email!");
-        return [],[];
+        return wantarray ? %json : \%json;
     }
 
     my @rows    = $report->look_down('_tag','tr');
