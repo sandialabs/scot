@@ -26,6 +26,21 @@ with    qw(
 
 =over 4
 
+=item B<entry_target>
+
+cache of the target of the entry
+that the file is associated with
+to prevent an expensive secondary db lookup
+
+=cut
+
+has entry_target => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    default     => {},
+);
+
 =item B<filename>
 
 guess
