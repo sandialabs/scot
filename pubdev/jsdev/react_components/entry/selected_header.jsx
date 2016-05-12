@@ -126,7 +126,6 @@ var SelectedHeader = React.createClass({
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated); 
         Store.storeKey('entryNotification')
-        Store.addChangeListener(this.notification);
     }, 
     updated: function(_type,_message) { 
         this.setState({refreshing:true, sourceLoaded:false,eventLoaded:false,tagLoaded:false,entryLoaded:false,entityLoaded:false});
@@ -228,22 +227,6 @@ var SelectedHeader = React.createClass({
             waitForEntry.waitEntry();
         }.bind(this));
      },*/
-    notification: function() {
-        var notification = this.refs.notificationSystem
-        if(activemqwho != "" && notification != undefined && activemqwho != 'api'){
-            notification.addNotification({
-                message: activemqwho + activemqmessage + activemqid,
-                level: 'info',
-                autoDismiss: 5,
-                action: {
-                    label: 'View',
-                    callback: function(){
-                        window.open('#/' + activemqtype + '/' + activemqid)
-                    }
-                }
-            })
-        }
-    },
     flairToolbarToggle: function(id){
         if (this.state.flairToolbar == false) {
             this.setState({flairToolbar:true,entityid:id})
@@ -430,7 +413,6 @@ var EntryDataStatus = React.createClass({
             data: json,
             success: function(data) {
                 console.log('success status change to: ' + data);
-                AppActions.updateItem(this.state.key,'headerUpdate');    
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to change status');
