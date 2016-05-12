@@ -258,7 +258,8 @@ sub get_many {
         $collection  = $mongo->collection(ucfirst($col_name));
     }
     catch {
-        $log->error("Failed to get collection $col_name");
+        $log->error("Failed to get collection ". ucfirst($col_name).".");
+        $log->error("collection = ",{filter=>\&Dumper,value=>$collection});
         $self->do_error(400, { error_msg => "missing or invalid collection"});
         return;
     };
