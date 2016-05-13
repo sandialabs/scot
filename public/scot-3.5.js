@@ -2206,8 +2206,8 @@ var AlertBody = React.createClass({displayName: "AlertBody",
         } else if (data.status == 'promoted') {
             buttonStyle = 'warning';
         }
-        for (var i=0; i < data.columns.length; i++) {
-            var value = data.columns[i];
+        for (var i=0; i < data.data.columns.length; i++) {
+            var value = data.data.columns[i];
             rowReturn.push(React.createElement(AlertRow, {data: data, dataFlair: dataFlair, value: value}))
         }
         for (var j=0; j < this.props.activeIndex.length; j++) {
