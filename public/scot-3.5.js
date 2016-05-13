@@ -789,7 +789,7 @@ module.exports = Storeaq
 
 },{"../../../node_modules/events-activemq/events":95,"./dispatcher.jsx":2,"./handleupdate.jsx":3,"object-assign":226}],6:[function(require,module,exports){
 var AddFlair = {
-    entityUpdate: function(entityData,flairToolbarToggle,type,linkWarningToggle,id) {
+    entityUpdate: function(entityData,flairToolbarToggle,type,linkWarningToggle,id,scrollTo) {
         setTimeout(function() {
             var entityResult = entityData;
             if (type != 'alertgroup') {
@@ -825,9 +825,9 @@ var AddFlair = {
                                             $(entity).append(circle);
                                             $(entity).attr('data-entity-id',entityid)
                                             $(entity).unbind('click');
-                                            if (entitydata !== undefined) {
-                                                if (entitydata.geoip !== undefined) {
-                                                    if (entitydata.geoip.isocode !== undefined) {
+                                            if (entitydata != undefined) {
+                                                if (entitydata.geoip != undefined) {
+                                                    if (entitydata.geoip.isocode != undefined) {
                                                         var country_code;
                                                         if (entitydata.geoip.isp == 'Sandia National Laboratories') {
                                                             country_code = 'sandia';    
@@ -889,6 +889,9 @@ var AddFlair = {
                         }
                     }.bind(this));
                 }
+            }
+            if (scrollTo != undefined) {
+                scrollTo();
             }
         }.bind(this),1000);
     },
@@ -1859,7 +1862,6 @@ var React = require('react');
 var SelectedHeader = require('./selected_header.jsx');
 
 var SelectedContainer = React.createClass({displayName: "SelectedContainer",
-
     reloadItem: function(){
         var scrollHeight = $(window).height() - 170
         var scrollWidth  = $(window).width()  - $('.eventwidth').width()
@@ -1875,7 +1877,7 @@ var SelectedContainer = React.createClass({displayName: "SelectedContainer",
         }.bind(this))
         var datarows = [];
         for (i=0; i < this.props.ids.length; i++) { 
-            datarows.push(React.createElement(SelectedHeader, {windowHeight: this.props.height, key: this.props.ids[i], id: this.props.ids[i], type: this.props.type, toggleEventDisplay: this.props.viewEvent})); 
+            datarows.push(React.createElement(SelectedHeader, {windowHeight: this.props.height, key: this.props.ids[i], id: this.props.ids[i], type: this.props.type, toggleEventDisplay: this.props.viewEvent, taskid: this.props.taskid})); 
         }
         return (
             React.createElement("div", {className: "entry-container", style: {width: '100%',position: 'relative'}}, 
@@ -1997,7 +1999,6 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             divClass = 'row-fluid alert-wrapper';
         }
         return (
-                
             React.createElement("div", {className: divClass, style: {height:this.props.windowHeight}}, 
                 showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected}) : React.createElement("span", null, "Loading..."), 
                 this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid}) : null, 
@@ -2016,7 +2017,7 @@ var EntryIterator = React.createClass({displayName: "EntryIterator",
         if (type != 'alertgroup') {
             data.forEach(function(data) {
                 rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id}));
-            });
+            }.bind(this));
         } else {
             rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, alertSelected: this.props.alertSelected}));
         }
@@ -2087,7 +2088,7 @@ var AlertParent = React.createClass({displayName: "AlertParent",
         var items = this.props.items;
         var body = [];
         var header = [];
-        var col_names = items[0].columns.slice(0); //slices forces a copy of array
+        var col_names = items[0].data.columns.slice(0); //slices forces a copy of array
         col_names.unshift('entries'); //Add entries to 3rd column
         col_names.unshift('status'); //Add status to 2nd column
         col_names.unshift('id'); //Add entries number to 1st column
@@ -2420,8 +2421,6 @@ var EntryData = React.createClass({displayName: "EntryData",
         } else if (nextState.resize == true){
             this.setState({resize:false})
             return (true)
-        } else if (document.getElementById('iframe_'+this.props.id).contentWindow.document.body.innerHTML == '') {
-            return(true)
         } else {
             return (false)
         }
@@ -2563,7 +2562,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                         setTimeout(waitForEntry.waitEntry,50);
                     } else {
                         alertgroupforentity = false;
-                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,this.scrollTo)}.bind(this));
                         if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false});        
                         }
@@ -2777,7 +2776,18 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 $(win.document).find('.plain').remove() }
             }
         })
-    }, 
+    },
+    summaryUpdate: function() {
+        this.forceUpdate();
+    },
+    scrollTo: function() {
+        if (this.props.taskid != undefined) {
+            /*$(document.body).find('.entry-wrapper').animate({
+                'scrollTop':$('#iframe_'+this.props.taskid).offset().top - 130
+            },2000)*/
+            $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#iframe_'+this.props.taskid).position().top -30)
+        }
+    },
     render: function() {
         var headerData = this.state.headerData;         
         var viewedby = this.viewedbyfunc(headerData);
@@ -2815,7 +2825,6 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                     )
                 ), 
                 React.createElement(Notification, {ref: "notificationSystem"}), 
-                
                 this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid}) : null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null, 
                 this.state.historyToolbar ? React.createElement(History, {historyToggle: this.historyToggle, id: id, type: type}) : null, 
@@ -2827,7 +2836,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 ), 
                 this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
 
-                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, windowHeight: this.props.windowHeight})
+                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, windowHeight: this.props.windowHeight, summaryUpdate: this.summaryUpdate})
             )
         )
     }
@@ -4041,10 +4050,10 @@ var Flair = React.createClass({displayName: "Flair",
                     style: customStyles}, 
                     React.createElement("div", {className: "modal-header"}, 
                         React.createElement("img", {src: "/images/close_toolbar.png", className: "close_toolbar", onClick: this.props.flairToolbarToggle}), 
-                        React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) :null)
+                        React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
                     ), 
                     React.createElement("div", {className: "modal-body", style: {height: '80vh', overflowY:'auto',width:'800px'}}, 
-                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.props.entityid, entryToggle: this.entryToggle}) :null
+                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.props.entityid, entryToggle: this.entryToggle}) : React.createElement("div", null, "Loading...")
                     ), 
                     React.createElement("div", {className: "modal-footer"}, 
                         React.createElement(Button, {onClick: this.props.flairToolbarToggle}, "Done")
@@ -4084,8 +4093,10 @@ var EntityBody = React.createClass({displayName: "EntityBody",
         if (this.props.data != undefined) {
             var entityData = this.props.data['data'];
             for (var prop in entityData) {
-                entityEnrichmentArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, title: prop}, React.createElement(EntityEnrichmentButtons, {dataSource: entityData[prop]})));
-                enrichmentEventKey++;
+                if (entityData[prop] != undefined) {
+                    entityEnrichmentArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, title: prop}, React.createElement(EntityEnrichmentButtons, {dataSource: entityData[prop]})));
+                    enrichmentEventKey++;
+                }
             }
         }
         //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
@@ -4123,7 +4134,10 @@ var EntityEventReferences = React.createClass({displayName: "EntityEventReferenc
             entityDataIncidentLoading:true,
             navigateType: '',
             navigateId: null,
-            selected:{}
+            alertText:'Loading...',
+            eventText:'Loading...',
+            incidentText:'Loading...',
+            selected:{},
         }
     },
     componentDidMount: function() {
@@ -4132,6 +4146,8 @@ var EntityEventReferences = React.createClass({displayName: "EntityEventReferenc
             this.setState({entityDataAlertGroup:result,entityDataAlertGroupLoading:false})
             if (result[0] != undefined) {
                 this.setState({defaultAlertGroupHeight:175})
+            } else {
+                this.setState({alertText:'No Records'})
             }
         }.bind(this));
         this.sourceRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/event', function(result) {
@@ -4139,6 +4155,8 @@ var EntityEventReferences = React.createClass({displayName: "EntityEventReferenc
             this.setState({entityDataEvent:result,entityDataEventLoading:false})
             if (result[0] != undefined) {
                 this.setState({defaultEventHeight:175})
+            } else {
+                this.setState({eventText:'No Records'})
             }
         }.bind(this));
         this.sourceRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/incident', function(result) {
@@ -4146,6 +4164,8 @@ var EntityEventReferences = React.createClass({displayName: "EntityEventReferenc
             this.setState({entityDataIncident:result,entityDataIncidentLoading:false})
             if (result[0] != undefined) {
                 this.setState({defaultIncidentHeight:175})
+            } else {
+                this.setState({incidentText:'No Records'})
             }
         }.bind(this));
     },
@@ -4176,14 +4196,14 @@ var EntityEventReferences = React.createClass({displayName: "EntityEventReferenc
         return (
             React.createElement("div", null, 
                 React.createElement("h4", null, "AlertGroups"), 
-                React.createElement(DataGrid, {idProperty: "id", data: this.state.entityDataAlertGroup, columns: alertColumns, style: {height:this.state.defaultAlertGroupHeight}, onSelectionChange: this.onAlertGroupSelectionChange, selected: this.state.selected, emptyText: 'No records', loading: this.state.entityDataAlertGroupLoading, rowFactory: rowFact, loadMaskOverHeader: false}), 
+                React.createElement(DataGrid, {idProperty: "id", data: this.state.entityDataAlertGroup, columns: alertColumns, style: {height:this.state.defaultAlertGroupHeight}, onSelectionChange: this.onAlertGroupSelectionChange, selected: this.state.selected, emptyText: this.state.alertText, rowFactory: rowFact, loadMaskOverHeader: false}), 
                 React.createElement("div", {style: {marginTop:'90px'}}, 
                     React.createElement("h4", null, "Events"), 
-                    React.createElement(DataGrid, {idProperty: "id", data: this.state.entityDataEvent, columns: columns, style: {height:this.state.defaultEventHeight}, onSelectionChange: this.onEventSelectionChange, selected: this.state.selected, emptyText: 'No records', loading: this.state.entityDataEventLoading, rowFactory: rowFact, loadMaskOverHeader: false})
+                    React.createElement(DataGrid, {idProperty: "id", data: this.state.entityDataEvent, columns: columns, style: {height:this.state.defaultEventHeight}, onSelectionChange: this.onEventSelectionChange, selected: this.state.selected, emptyText: this.state.eventText, rowFactory: rowFact, loadMaskOverHeader: false})
                 ), 
                 React.createElement("div", {style: {marginTop:'90px'}}, 
                     React.createElement("h4", null, "Incidents"), 
-                    React.createElement(DataGrid, {idProperty: "id", data: this.state.entityDataIncident, columns: columns, style: {height:this.state.defaultIncidentHeight}, onSelectionChange: this.onIncidentSelectionChange, selected: this.state.selected, emptyText: 'No records', loading: this.state.entityDataIncidentLoading, rowFactory: rowFact, loadMaskOverHeader: false})
+                    React.createElement(DataGrid, {idProperty: "id", data: this.state.entityDataIncident, columns: columns, style: {height:this.state.defaultIncidentHeight}, onSelectionChange: this.onIncidentSelectionChange, selected: this.state.selected, emptyText: this.state.incidentText, rowFactory: rowFact, loadMaskOverHeader: false})
                 )
             )
         )
