@@ -76,13 +76,30 @@ sub get_links_by_target {
     # note: if you feel froggy and change this query to 
     # {'target.id' => id, 'target.type' => type }
     # it will really sloooooooooow down.
-    my $cursor  = $self->find({
-        target  => {
-            id     => $target->{id},
-            type   => $target->{type},
-        }
+    my $id      = $target->{id};
+    my $type    = $target->{type};
+
+    $self->env->log->debug("Finding Links to $type $id");
+    my $cursor = $self->find({
+        'target.id' => $id,
+        'target.type'   => $type,
     });
+    # weird unpredictable results
+    #my $cursor  = $self->find({
+    #    target  => {
+    #        id     => $id,
+    #        type   => $type,
+    #    }
+    #});
+    $self->env->log->debug("found ".$cursor->count." links");
     return $cursor;
+}
+
+sub get_total_appearances {
+    my $self    = shift;
+    my $entity  = shift;
+    my $cursor  = $self->find({ entity_id => $entity->id });
+    return $cursor->count;
 }
 
 1;
