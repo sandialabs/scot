@@ -2088,29 +2088,31 @@ var AlertParent = React.createClass({displayName: "AlertParent",
         var items = this.props.items;
         var body = [];
         var header = [];
-        var col_names = items[0].data.columns.slice(0); //slices forces a copy of array
-        col_names.unshift('entries'); //Add entries to 3rd column
-        col_names.unshift('status'); //Add status to 2nd column
-        col_names.unshift('id'); //Add entries number to 1st column
-        for (var i=0; i < col_names.length; i++){
-            header.push(React.createElement(AlertHeader, {colName: col_names[i]}))
-        }
-        items.forEach(function(object){
-            var dataFlair = null;
-            if (object.data_with_flair != undefined) {
-                dataFlair = object.data_with_flair;
-            } else {
-                dataFlair = object.data;
+        if (items[0] != undefined){
+            var col_names = items[0].data.columns.slice(0); //slices forces a copy of array
+            col_names.unshift('entries'); //Add entries to 3rd column
+            col_names.unshift('status'); //Add status to 2nd column
+            col_names.unshift('id'); //Add entries number to 1st column
+            for (var i=0; i < col_names.length; i++){
+                header.push(React.createElement(AlertHeader, {colName: col_names[i]}))
             }
-            
-            body.push(React.createElement(AlertBody, {index: z, data: object, dataFlair: dataFlair, activeIndex: this.state.activeIndex, rowClicked: this.rowClicked, alertSelected: this.props.alertSelected}))
-            z++;
-        }.bind(this))
-        var search = null;
-        if (items[0].data_with_flair != undefined) {
-            search = items[0].data_with_flair.search;
-        } else {
-            search = items[0].data.search;
+            items.forEach(function(object){
+                var dataFlair = null;
+                if (object.data_with_flair != undefined) {
+                    dataFlair = object.data_with_flair;
+                } else {
+                    dataFlair = object.data;
+                }
+                
+                body.push(React.createElement(AlertBody, {index: z, data: object, dataFlair: dataFlair, activeIndex: this.state.activeIndex, rowClicked: this.rowClicked, alertSelected: this.props.alertSelected}))
+                z++;
+            }.bind(this))
+            var search = null;
+            if (items[0].data_with_flair != undefined) {
+                search = items[0].data_with_flair.search;
+            } else {
+                search = items[0].data.search;
+            }
         }
         return (
             React.createElement("div", null, 
@@ -2573,8 +2575,10 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         }.bind(this));
         if (this.props.type == 'alertgroup') {
             this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/guide', function(result) {
-                var guideID = result.records[0].id;
-                this.setState({guideID: guideID});
+                if (result.records[0] != undefined) {
+                    var guideID = result.records[0].id;
+                    this.setState({guideID: guideID});
+                }
             }.bind(this));     
         }
         Store.storeKey(this.state.key);
