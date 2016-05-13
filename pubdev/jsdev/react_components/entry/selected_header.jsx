@@ -119,8 +119,10 @@ var SelectedHeader = React.createClass({
         }.bind(this));
         if (this.props.type == 'alertgroup') {
             this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/guide', function(result) {
-                var guideID = result.records[0].id;
-                this.setState({guideID: guideID});
+                if (result.records[0] != undefined) {
+                    var guideID = result.records[0].id;
+                    this.setState({guideID: guideID});
+                }
             }.bind(this));     
         }
         Store.storeKey(this.state.key);
@@ -327,9 +329,12 @@ var SelectedHeader = React.createClass({
         this.forceUpdate();
     },
     scrollTo: function() {
-        $document.body.find('.entry-wrapper').animate({
-            'scrollTop':$('#iframe_'+this.props.taskid).offset().top
-        }.bind(this),2000)
+        if (this.props.taskid != undefined) {
+            /*$(document.body).find('.entry-wrapper').animate({
+                'scrollTop':$('#iframe_'+this.props.taskid).offset().top - 130
+            },2000)*/
+            $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#iframe_'+this.props.taskid).position().top -30)
+        }
     },
     render: function() {
         var headerData = this.state.headerData;         
