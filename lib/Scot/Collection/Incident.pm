@@ -113,7 +113,7 @@ override get_subthing => sub {
         my $col    = $mongo->collection('Link');
         my $ft  = $env->get_timer('find actual timer');
         my $cur    = $col->get_links_by_target({ 
-            id => $id, type => 'alertgroup' 
+            id => $id, type => 'incident' 
         });
         &$ft;
         my @lnk = map { $_->id } $cur->all;
