@@ -503,11 +503,23 @@ sub check_entity_enrichments {
     my $data    = {};
     my $changes = 0;
     my $enrichers   = $env->entity_enrichers;
+    my $timer   = $env->get_timer("checking entity enrichments");
 
     $log->debug("enrichers are: ",{filter=>\&Dumper,value=>$enrichers});
 
+    ENRICHER:
     foreach my $enricher (@$enrichers) {
         my ($name, $instance) = each %$enricher;
+
+        if ( $entity->type ne "domain" and $entity->type ne "ipaddr" and
+             $name eq "sidd" ) {
+            next ENRICHER;
+        }
+
+        if ( $entity->type ne "ipaddr" and $name eq "geoip" ) {
+            next ENRICHER;
+        }
+
         if (defined $entity->data->{$name} and %{$entity->data->{$name}} ) {
             $log->debug("Enrichment $name is cached...");
             $data->{$name} = $entity->data->{$name};
@@ -530,6 +542,7 @@ sub check_entity_enrichments {
         $entity->update_set( data => $data );
         $log->debug("updated cache of entity enrichments");
     }
+    &$timer;
 }
 
 sub tablify {
@@ -667,6 +680,7 @@ sub get_subthing {
         # need to transform from an array of hashes to a a hash
         # for efficiency in UI code
         my %things  = ();
+        my $entity_xform_timer = $env->get_timer("entity xform timer");
         while ( my $entity = $cursor->next ) {
             $self->check_entity_enrichments($entity);
             $things{$entity->value} = {
@@ -678,6 +692,7 @@ sub get_subthing {
                 data    => $entity->data,
             };
         }
+        &$entity_xform_timer;
         $log->debug("rendering subthing");
         $self->do_render({
             records             => \%things,
