@@ -305,6 +305,13 @@ sub process_alert  {
             next TUPLE;
         }
 
+        if ( $key =~ /^columns$/i ) {
+            # columns do not need to be flaired, they are provided 
+            # to the ui so that the ui can build a table
+            $flair->{$key}  = $value;
+            next TUPLE;
+        }
+
         # note self on monday.  this isn't working find out why.
         my $eehref  = $extractor->process_html($encoded);
         $log->debug("HEY DUFUS: eehref = ",{filter=>\&Dumper, value=>$eehref});
