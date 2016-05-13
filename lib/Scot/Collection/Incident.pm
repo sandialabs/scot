@@ -98,7 +98,7 @@ override get_subthing => sub {
         my $col = $mongo->collection('Entry');
         my $cur = $col->get_entries_by_target({
             id      => $id,
-            type    => 'alert'
+            type    => 'incident'
         });
         return $cur;
     }
