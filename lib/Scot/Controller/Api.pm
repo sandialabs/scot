@@ -534,7 +534,13 @@ sub check_entity_enrichments {
                 $log->debug("Missing enrichment $name, fetching...");
                 my $type    = $entity->type;
                 my $value   = $entity->value;
-                $data->{$name} = $instance->get_data($type, $value);
+                my $edata   = $instance->get_data($type, $value);
+                if ( $edata ) {
+                    $data->{$name} = $edata;
+                }
+                else {
+                    $data->{$name} = { error => 'no data' };
+                }
                 $changes++;
             }
         }
@@ -685,10 +691,11 @@ sub get_subthing {
         my $count   = $cursor->count();
         my $entity_xform_timer = $env->get_timer("entity xform timer");
         while ( my $entity = $cursor->next ) {
+            $log->debug("Entity : ".$entity->value);
             $self->check_entity_enrichments($entity);
             $things{$entity->value} = {
                 id      => $entity->id,
-                count   => $count,
+                count   => $self->get_entity_count($entity),
                 entry   => $self->get_entry_count($entity),
                 type    => $entity->type,
                 classes => $entity->classes,
@@ -2203,9 +2210,7 @@ sub get_entity_count {
     my $env     = $self->env;
     my $mongo   = $env->mongo;
     my $col     = $mongo->collection('Link');
-    return $col->get_total_appearances(
-        'entity', $entity->value    
-    );
+    return $col->get_total_appearances($entity);
 }
 
 sub get_entry_count {
