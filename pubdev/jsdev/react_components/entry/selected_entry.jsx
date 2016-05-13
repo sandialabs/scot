@@ -107,7 +107,6 @@ var SelectedEntry = React.createClass({
             divClass = 'row-fluid alert-wrapper';
         }
         return (
-                
             <div className={divClass} style={{height:this.props.windowHeight}}> 
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected}/> : <span>Loading...</span>} 
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid}/> : null}
@@ -126,7 +125,7 @@ var EntryIterator = React.createClass({
         if (type != 'alertgroup') {
             data.forEach(function(data) {
                 rows.push(<EntryParent key={data.id} items={data} type={type} id={id} />);
-            });
+            }.bind(this));
         } else {
             rows.push(<AlertParent items={data} type={type} id={id} alertSelected={this.props.alertSelected} />);
         }
@@ -197,7 +196,7 @@ var AlertParent = React.createClass({
         var items = this.props.items;
         var body = [];
         var header = [];
-        var col_names = items[0].columns.slice(0); //slices forces a copy of array
+        var col_names = items[0].data.columns.slice(0); //slices forces a copy of array
         col_names.unshift('entries'); //Add entries to 3rd column
         col_names.unshift('status'); //Add status to 2nd column
         col_names.unshift('id'); //Add entries number to 1st column
@@ -437,7 +436,7 @@ var EntryParent = React.createClass({
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(<EntryParent items = {childobj} id={id} type={type} />));  
+                        subitemarr.push(new Array(<EntryParent  items = {childobj} id={id} type={type} />));  
                     });
                 }
             }
@@ -530,8 +529,6 @@ var EntryData = React.createClass({
         } else if (nextState.resize == true){
             this.setState({resize:false})
             return (true)
-        } else if (document.getElementById('iframe_'+this.props.id).contentWindow.document.body.innerHTML == '') {
-            return(true)
         } else {
             return (false)
         }
