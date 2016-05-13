@@ -73,9 +73,14 @@ sub get_links_by_entity_id {
 sub get_links_by_target {
     my $self    = shift;
     my $target  = shift;
+    # note: if you feel froggy and change this query to 
+    # {'target.id' => id, 'target.type' => type }
+    # it will really sloooooooooow down.
     my $cursor  = $self->find({
-        'target.id'     => $target->{id},
-        'target.type'   => $target->{type},
+        target  => {
+            id     => $target->{id},
+            type   => $target->{type},
+        }
     });
     return $cursor;
 }

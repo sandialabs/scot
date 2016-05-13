@@ -210,15 +210,20 @@ override get_subthing => sub {
     }
     elsif ( $subthing eq "entry" ) {
         my $col = $mongo->collection('Entry');
-        my $cur = $col->find({'target.id'   => $id, 
-                              'target.type' => 'alertgroup'});
+        my $cur = $col->get_entries_by_target({
+            id      => $id,
+            type    => 'alert'
+        });
         return $cur;
     }
     elsif ( $subthing eq "entity" ) {
         my $timer  = $env->get_timer("fetching links");
         my $col    = $mongo->collection('Link');
-        my $cur    = $col->find({'target.id'   => $id,
-                              'target.type' => 'alertgroup'});
+        my $ft  = $env->get_timer('find actual timer');
+        my $cur    = $col->get_links_by_target({ 
+            id => $id, type => 'alertgroup' 
+        });
+        &$ft;
         my @lnk = map { $_->{id} } $cur->all;
         &$timer;
 
