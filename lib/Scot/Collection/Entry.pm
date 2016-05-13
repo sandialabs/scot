@@ -232,8 +232,11 @@ override get_subthing => sub {
     elsif ( $subthing eq "entity" ) {
         my $timer  = $env->get_timer("fetching links");
         my $col    = $mongo->collection('Link');
-        my $cur    = $col->find({'target.id'   => $id,
-                              'target.type' => 'entry'});
+        my $ft  = $env->get_timer('find actual timer');
+        my $cur    = $col->get_links_by_target({ 
+            id => $id, type => 'alertgroup' 
+        });
+        &$ft;
         my @lnk = map { $_->id } $cur->all;
         &$timer;
 
@@ -247,5 +250,20 @@ override get_subthing => sub {
         $log->error("unsupported subthing $subthing!");
     }
 };
+
+sub get_entries_by_target {
+    my $self    = shift;
+    my $target  = shift; # { id => , type =>  }
+    my $cursor  = $self->find({
+        target  => {
+            id      => $target->{id},
+            type    => $target->{type},
+        }
+    });
+    return $cursor;
+}
+
+
+
 
 1;
