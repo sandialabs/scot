@@ -505,18 +505,20 @@ sub check_entity_enrichments {
     my $enrichers   = $env->entity_enrichers;
     my $timer   = $env->get_timer("checking entity enrichments");
 
-    $log->debug("enrichers are: ",{filter=>\&Dumper,value=>$enrichers});
-
     ENRICHER:
     foreach my $enricher (@$enrichers) {
         my ($name, $instance) = each %$enricher;
 
+        $log->debug("Checking Enricher $name");
+
         if ( $entity->type ne "domain" and $entity->type ne "ipaddr" and
              $name eq "sidd" ) {
+            $log->debug("no applicable");
             next ENRICHER;
         }
 
         if ( $entity->type ne "ipaddr" and $name eq "geoip" ) {
+            $log->debug("no applicable");
             next ENRICHER;
         }
 
@@ -680,12 +682,13 @@ sub get_subthing {
         # need to transform from an array of hashes to a a hash
         # for efficiency in UI code
         my %things  = ();
+        my $count   = $cursor->count();
         my $entity_xform_timer = $env->get_timer("entity xform timer");
         while ( my $entity = $cursor->next ) {
             $self->check_entity_enrichments($entity);
             $things{$entity->value} = {
                 id      => $entity->id,
-                count   => $self->get_entity_count($entity),
+                count   => $count,
                 entry   => $self->get_entry_count($entity),
                 type    => $entity->type,
                 classes => $entity->classes,
@@ -2199,7 +2202,7 @@ sub get_entity_count {
     my $value   = $entity->value;
     my $env     = $self->env;
     my $mongo   = $env->mongo;
-    my $col     = $mongo->collection('Appearance');
+    my $col     = $mongo->collection('Link');
     return $col->get_total_appearances(
         'entity', $entity->value    
     );
