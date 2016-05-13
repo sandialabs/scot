@@ -127,6 +127,12 @@ sub update_entities {
                 $entity, { type => $target_type, id => $target_id, }
             );
         }
+
+        if ( $type eq "alert" ) {
+            my $addlink = $linkcol->create_link(
+                $entity, { type => "alertgroup", id => $target->{alertgroup} }
+            );
+        }
     }
 }
 
