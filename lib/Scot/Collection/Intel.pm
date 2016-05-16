@@ -93,7 +93,7 @@ override get_subthing => sub {
             id => $id, type => 'intel' 
         });
         &$ft;
-        my @lnk = map { $_->id } $cur->all;
+        my @lnk = map { $_->{entity_id} } $cur->all;
         &$timer;
 
         $timer  = $env->get_timer("generating entity cursor");
