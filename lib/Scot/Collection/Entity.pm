@@ -162,6 +162,23 @@ override get_subthing => sub {
         &$timer;
         return $subcursor;
     }
+    elsif ( $subthing eq "entity" ) {
+        my $lc  = $mongo->collection('Link');
+        my $cc  = $lc->get_links_by_target({
+            id  => $id, type => 'entity'
+        });
+        my @lnk = map { $_->{id} } $cc->all;
+        my $cur = $self->find({id => {'$in' => \@lnk}});
+        return $cur;
+    }
+    elsif ( $subthing eq "entry" ) {
+        my $col = $mongo->collection('Entry');
+        my $cur = $col->get_entries_by_target({
+            id  => $id,
+            type    => 'entity',
+        });
+        return $cur;
+    }
     else {
         $log->error("unsupported subthing $subthing!");
     }
