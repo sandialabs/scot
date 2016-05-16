@@ -798,6 +798,9 @@ var AddFlair = {
                     ifr.contentWindow.requestAnimationFrame( function() {
                         if(ifr.contentDocument != null) {
                             var ifrContents = $(ifr).contents();
+                            if (entityResult == undefined) {
+                                pentry(ifr,flairToolbarToggle,type,linkWarningToggle,id);
+                            }
                             if($(ifr.contentDocument.body).find('.extras')[0] == null) {
                                 //This makes all href point to blank so they don't reload the iframe
                                 $(ifr.contentDocument.body).find('a').attr('target','_blank');
@@ -812,8 +815,8 @@ var AddFlair = {
                                 $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
                                 ifrContents.find('.entity').each(function(index,entity){
                                     var currentEntityValue = $(entity).attr('data-entity-value');
-                                    if (currentEntityValue !== undefined) {
-                                        if (entityResult[currentEntityValue.toLowerCase()] !== undefined ) {
+                                    if (currentEntityValue != undefined && entityResult != undefined) {
+                                        if (entityResult[currentEntityValue.toLowerCase()] != undefined ) {
                                             var entityType = entityResult[currentEntityValue.toLowerCase()].type;
                                             var entityid = entityResult[currentEntityValue.toLowerCase()].id;
                                             var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
@@ -849,15 +852,18 @@ var AddFlair = {
                     }.bind(this));
                 }.bind(this));
             } else if (type == 'alertgroup') {
-                var subtable = $(document.body).find('.subtable' + id);
+                var subtable = $(document.body).find('.alertTableHorizontal');
+                if (entityResult == undefined) {
+                    pentry(null,flairToolbarToggle,type,linkWarningToggle,id);
+                }
                 if(subtable.find('.extras')[0] == null) {
                     subtable.find('a').attr('target','_blank');
                     subtable.append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
                     subtable.find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
                     subtable.find('.entity').each(function(index,entity){
                         var currentEntityValue = $(entity).attr('data-entity-value');
-                        if (currentEntityValue !== undefined) {
-                            if (entityResult[currentEntityValue.toLowerCase()] !== undefined ) {
+                        if (currentEntityValue != undefined && entityResult != undefined) {
+                            if (entityResult[currentEntityValue.toLowerCase()] != undefined ) {
                                 var entityType = entityResult[currentEntityValue.toLowerCase()].type;
                                 var entityid = entityResult[currentEntityValue.toLowerCase()].id;
                                 var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
@@ -884,9 +890,9 @@ var AddFlair = {
                                         }
                                     }
                                 }
-                                pentry(null,flairToolbarToggle,type,linkWarningToggle,id);
                             }
                         }
+                        pentry(null,flairToolbarToggle,type,linkWarningToggle,id);
                     }.bind(this));
                 }
             }
@@ -922,7 +928,8 @@ function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle,id) {
                 } else if ($(entity).data('state') == 'down') {
                     $(entity).data('state', 'up');
                     var entityid = $(entity).attr('data-entity-id');
-                    infopop(iframe,entityid,flairToolbarToggle);
+                    var entityvalue = $(entity).attr('data-entity-value');
+                    infopop(entityid, entityvalue, flairToolbarToggle);
                 }
             }.bind(this));
         }
@@ -933,19 +940,20 @@ function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle,id) {
                 } else if ($(a).data('state') == 'down') {
                     $(a).data('state','up');
                     var url = $(a).attr('url');
-                    linkWarningPopup(iframe,url,linkWarningToggle);
+                    linkWarningPopup(url,linkWarningToggle);
                 }
             }.bind(this));
         }
     } else if (type == 'alertgroup') {
-        var subtable = $(document.body).find('.subtable' + id);
+        var subtable = $(document.body).find('.alertTableHorizontal');
         subtable.find('.entity').each(function(index, entity) {
             if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
                 $(entity).data('state', 'down');
             } else if ($(entity).data('state') == 'down') {
                 $(entity).data('state', 'up');
                 var entityid = $(entity).attr('data-entity-id');
-                infopop(null,entityid,flairToolbarToggle);
+                var entityvalue = $(entity).attr('data-entity-value');
+                infopop(entityid, entityvalue, flairToolbarToggle);
             }
         }.bind(this));
         subtable.find('a').each(function(index,a) {
@@ -954,16 +962,16 @@ function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle,id) {
             } else if ($(a).data('state') == 'down') {
                 $(a).data('state','up');
                 var url = $(a).attr('url');
-                linkWarningPopup(iframe,url,linkWarningToggle);
+                linkWarningPopup(url,linkWarningToggle);
             }
         }.bind(this));
     }
 }
         
-function infopop(ifr,entityid,flairToolbarToggle) {
-    flairToolbarToggle(entityid);
+function infopop(entityid, entityvalue, flairToolbarToggle) {
+    flairToolbarToggle(entityid,entityvalue);
 }
-function linkWarningPopup(ifr,url,linkWarningToggle) {
+function linkWarningPopup(url,linkWarningToggle) {
     linkWarningToggle(url);
 }
 
@@ -1945,7 +1953,10 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 };
                 waitForEntry.waitEntry();
             }.bind(this));
-        }
+            if (this.state.showEntryData == false) {
+                 AddFlair.entityUpdate(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
+            }
+        } 
     }, 
     updatedCB: function() {
        if (this.props.type == 'alert' || this.props.type == 'entity') {
@@ -1969,9 +1980,9 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             }.bind(this)); 
         }
     },
-    flairToolbarToggle: function(id) {
+    flairToolbarToggle: function(id,value) {
         if (this.state.flairToolbar == false) {
-            this.setState({flairToolbar:true,entityid:id})
+            this.setState({flairToolbar:true,entityid:id,entityvalue:value})
         } else {
             this.setState({flairToolbar:false})
         }
@@ -2001,7 +2012,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         return (
             React.createElement("div", {className: divClass, style: {height:this.props.windowHeight}}, 
                 showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected}) : React.createElement("span", null, "Loading..."), 
-                this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid}) : null, 
+                this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue}) : null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null
             )       
         );
@@ -2551,6 +2562,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, function(result) {
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
+            AddFlair.entityUpdate(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
             if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                 this.setState({loading:false});
             }        
@@ -2685,9 +2697,9 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             waitForEntry.waitEntry();
         }.bind(this));
      },*/
-    flairToolbarToggle: function(id){
+    flairToolbarToggle: function(id,value){
         if (this.state.flairToolbar == false) {
-            this.setState({flairToolbar:true,entityid:id})
+            this.setState({flairToolbar:true,entityid:id,entityvalue:value})
         } else {
             this.setState({flairToolbar:false})
         }
@@ -2829,7 +2841,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                     )
                 ), 
                 React.createElement(Notification, {ref: "notificationSystem"}), 
-                this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid}) : null, 
+                this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue}) : null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null, 
                 this.state.historyToolbar ? React.createElement(History, {historyToggle: this.historyToggle, id: id, type: type}) : null, 
                 this.state.entitiesToolbar ? React.createElement(Entities, {entitiesToggle: this.entitiesToggle, entityData: this.state.entityData, flairToolbarToggle: this.flairToolbarToggle}) : null, 
@@ -2840,7 +2852,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 ), 
                 this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
 
-                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, windowHeight: this.props.windowHeight, summaryUpdate: this.summaryUpdate})
+                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, windowHeight: this.props.windowHeight, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, linkWarningToggle: this.linkWarningToggle})
             )
         )
     }
@@ -4035,13 +4047,18 @@ const customStyles = {
 
 var Flair = React.createClass({displayName: "Flair",
     getInitialState: function() {
+        var value = this.props.entityid;
+        if (this.props.entityid == undefined) {
+            value = this.props.entityvalue;
+        }
         return {
             entityData:null,
             entryToolbar:false,    
+            entityid:value,
         }
     },
     componentDidMount: function () {
-        this.sourceRequest = $.get('scot/api/v2/entity/' + this.props.entityid, function(result) {
+        this.sourceRequest = $.get('scot/api/v2/entity/' + this.state.entityid, function(result) {
             this.setState({entityData:result})
         }.bind(this));
     },
@@ -4057,13 +4074,13 @@ var Flair = React.createClass({displayName: "Flair",
                         React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
                     ), 
                     React.createElement("div", {className: "modal-body", style: {height: '80vh', overflowY:'auto',width:'800px'}}, 
-                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.props.entityid, entryToggle: this.entryToggle}) : React.createElement("div", null, "Loading...")
+                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, entryToggle: this.entryToggle}) : React.createElement("div", null, "Loading...")
                     ), 
                     React.createElement("div", {className: "modal-footer"}, 
                         React.createElement(Button, {onClick: this.props.flairToolbarToggle}, "Done")
                     )
                 ), 
-                this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "entity", targetid: this.props.entityid, id: this.props.entityid, addedentry: this.entryToggle}) : null
+                this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "entity", targetid: this.state.entityid, id: this.state.entityid, addedentry: this.entryToggle}) : null
             )
         )
     },
