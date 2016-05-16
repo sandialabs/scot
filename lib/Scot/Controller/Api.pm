@@ -1431,9 +1431,46 @@ sub breaklink {
     my $self    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
+    my $mongo   = $env->mongo;
     my $user    = $self->session('user');
 
     $log->trace("Handler is processing a BreakLink request");
+
+    my $thing       = $self->stash('thing');
+    my $id          = $self->stash('id');
+    my $subthing    = $self->stash('subthing');
+    my $subid       = $self->stash('subid');
+
+    if ( $subthing ne "tag" and $subthing ne "source" ) {
+        $log->error("only tags and sources can breaklink");
+        # XXX
+        $self->do_error(403, {
+            error_msg   => "Breaklink Not Permitted"
+        });
+        return;
+    }
+
+    my $col = $mongo->collection('Appearance');
+    my $cur = $col->find({
+        'id'            => $subid,
+        'type'          => $subthing,
+        'target.id'     => $id,
+        'target.type'   => $thing,
+    });
+
+    while ( my $obj = $cur->next ) {
+        $log->debug("Removing Appearance Obj $subid");
+        $self->audit("delete appearance", {
+            thing   => $thing,
+            id      => $id,
+            subthing    => $subthing,
+            subid   => $subid,
+            apid    => $obj->id,
+            when    => $obj->when,
+            value   => $obj->value,
+        });
+        $obj->remove;
+    }
 
 }
 
