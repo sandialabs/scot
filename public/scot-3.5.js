@@ -875,9 +875,9 @@ var AddFlair = {
                                 $(entity).append(circle);
                                 $(entity).attr('data-entity-id',entityid)
                                 $(entity).unbind('click');
-                                if (entitydata !== undefined) {
-                                    if (entitydata.geoip !== undefined) {
-                                        if (entitydata.geoip.isocode !== undefined) {
+                                if (entitydata != undefined) {
+                                    if (entitydata.geoip != undefined) {
+                                        if (entitydata.geoip.isocode != undefined) {
                                             var country_code;
                                             if (entitydata.geoip.isp == 'Sandia National Laboratories') {
                                                 country_code = 'sandia';    
@@ -2007,7 +2007,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             data = this.state.entryData;
             showEntryData = this.state.showEntryData;
         } else if (type =='alertgroup') {
-            divClass = 'row-fluid alert-wrapper';
+            divClass = 'row-fluid alert-wrapper entry-wrapper-main';
         }
         return (
             React.createElement("div", {className: divClass, style: {height:this.props.windowHeight}}, 
@@ -2109,7 +2109,7 @@ var AlertParent = React.createClass({displayName: "AlertParent",
             }
             items.forEach(function(object){
                 var dataFlair = null;
-                if (object.data_with_flair != undefined) {
+                if (Object.getOwnPropertyNames(object.data_with_flair).length != 0) {
                     dataFlair = object.data_with_flair;
                 } else {
                     dataFlair = object.data;
@@ -4047,20 +4047,26 @@ const customStyles = {
 
 var Flair = React.createClass({displayName: "Flair",
     getInitialState: function() {
-        var value = this.props.entityid;
-        if (this.props.entityid == undefined) {
-            value = this.props.entityvalue;
-        }
         return {
             entityData:null,
             entryToolbar:false,    
-            entityid:value,
+            entityid: this.props.entityid,
         }
     },
     componentDidMount: function () {
-        this.sourceRequest = $.get('scot/api/v2/entity/' + this.state.entityid, function(result) {
-            this.setState({entityData:result})
-        }.bind(this));
+        if (this.props.entityid == undefined) {
+            $.get('scot/api/v2/entity/'+this.props.entityvalue.toLowerCase(), function(result) {
+                var entityid = result.id;
+                this.setState({entityid:entityid});
+                this.Request = $.get('scot/api/v2/entity/' + entityid, function(result) {
+                    this.setState({entityData:result})
+                }.bind(this));
+            }.bind(this))} 
+            else {
+                this.Request = $.get('scot/api/v2/entity/' + this.state.entityid, function(result) {
+                    this.setState({entityData:result})
+            }.bind(this));
+        }
     },
     render: function() {
         return (
@@ -8431,12 +8437,12 @@ module.exports = React.createClass({displayName: "exports",
                 this.setState({idtext: $('.idinput').val()})
             }
             else if($($(v.currentTarget).find('.statusinput').context).attr('id') == 'status'){
-                filter['status'] = $('.statusinput').val()
+                filter['task.status'] = $('.statusinput').val()
                 this.refs.myPopOverstatus.hide()
                 this.setState({statustext: $('.statusinput').val()})
             }
             else if($($(v.currentTarget).find('.typeinput').context).attr('id') == 'type'){
-                filter['type'] = $('.typeinput').val()
+                filter['target.type'] = $('.typeinput').val()
                 this.refs.myPopOvertype.hide()
                 this.setState({typetext: $('.typeinput').val()})
             }
@@ -8535,11 +8541,11 @@ module.exports = React.createClass({displayName: "exports",
             this.refs.myPopOverid.hide()
         }
         else if($($(v.currentTarget).find('.sort').context).attr('value') == 'status'){
-            sortarray['status'] = Number($($(v.currentTarget).find('.sort').context).attr('id'))
+            sortarray['task.status'] = Number($($(v.currentTarget).find('.sort').context).attr('id'))
             this.refs.myPopOverstatus.hide()
         }
         else if($($(v.currentTarget).find('.sort').context).attr('value') == 'type'){
-            sortarray['type'] = Number($($(v.currentTarget).find('.sort').context).attr('id'))
+            sortarray['target.type'] = Number($($(v.currentTarget).find('.sort').context).attr('id'))
             this.refs.myPopOvertype.hide()
         }
         else if($($(v.currentTarget).find('.sort').context).attr('value') == 'owner'){
@@ -8591,17 +8597,17 @@ module.exports = React.createClass({displayName: "exports",
     },
     handlefilter: function(v){
         if($($(v.currentTarget).find('.filter').context).attr('value') == 'id'){
-            filter['id'] = [$('.idinput').val()]
+            filter['task.id'] = [$('.idinput').val()]
             this.refs.myPopOverid.hide()
             this.setState({idtext: $('.idinput').val()})
         }
         else if($($(v.currentTarget).find('.filter').context).attr('value') == 'status'){
-            filter['status'] = $('.statusinput').val()
+            filter['task.status'] = $('.statusinput').val()
             this.refs.myPopOverstatus.hide()
             this.setState({statustext: $('.statusinput').val()})
         }
         else if($($(v.currentTarget).find('.filter').context).attr('value') == 'type'){
-            filter['type'] = $('.typeinput').val()
+            filter['target.type'] = $('.typeinput').val()
             this.refs.myPopOvertype.hide()
             this.setState({typetext: $('.typeinput').val()})
         }
