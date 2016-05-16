@@ -184,6 +184,12 @@ override get_subthing => sub {
     }
 };
 
+sub get_by_value {
+    my $self    = shift;
+    my $value   = shift;
+    my $object  = $self->find_one({ value => $value });
+    return $object;
+}
 
 
 1;
