@@ -255,10 +255,8 @@ sub get_entries_by_target {
     my $self    = shift;
     my $target  = shift; # { id => , type =>  }
     my $cursor  = $self->find({
-        target  => {
-            id      => $target->{id},
-            type    => $target->{type},
-        }
+        'target.id' => $target->{id},
+        'target.type'   => $target->{type},
     });
     return $cursor;
 }

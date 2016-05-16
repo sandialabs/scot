@@ -154,6 +154,10 @@ $t  ->get_ok("/scot/api/v2/event/$event_id/entry")
     ->json_is('/records/0/id'   => $entry1)
     ->json_is('/records/1/id'   => $entry2);
 
+# print Dumper($t->tx->res->json);
+# done_testing();
+# exit 0;
+
 
 my $tx  = $t->ua->build_tx(
     PUT =>"/scot/api/v2/event/$event_id" => json =>{
