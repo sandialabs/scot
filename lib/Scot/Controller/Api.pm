@@ -186,7 +186,7 @@ sub apply_sources {
 =item B<GET /scot/api/v2/:thing>
 
 =pod
-
+entity
 @api {post} /scot/api/v2/:thing
 @apiName Get Lis of :thing
 @apiGroup CRUD
@@ -291,23 +291,6 @@ sub get_many {
         }
         $self->audit("get_current_handler", $req_href);
         return;
-    }
-
-    if ( $col_name eq "handler" ) {
-        my $value   = $req_href->{request}->{params}->{value};
-        if ( $value ) {
-            # this is actually a request for a single entity!
-            my $entity = $collection->get_by_value($value);
-            if ( $entity ) {
-                my $hash    = $entity->as_hash;
-                $self->do_render($hash);
-            }
-            else {
-                $self->do_error(404, {
-                    error_msg   => "No entity matching $value"
-                });
-            }
-        }
     }
 
     $match_ref   = $req_href->{request}->{params}->{match} // 
@@ -444,7 +427,19 @@ sub get_one {
         return;
     }
 
-    my $object  = $collection->find_iid($id);
+    my $object;
+
+    if ( $collection eq "entity" ) {
+        if ( $id =~ /^\d+$/ ) {
+            $object  = $collection->find_iid($id);
+        }
+        else {
+            $object = $collection->find_one({value => $id});
+        }
+    }
+    else {
+        $object = $collection->find_iid($id);
+    }
 
     unless ( defined $object ) {
         $log->error("No matching Object for $col_name : $id");
@@ -678,46 +673,17 @@ sub get_subthing {
             totalRecordCount => scalar(@things),
         });
     }
-#    elsif ( $subthing eq "alert" ) {
-#        # add in subject from alertgroup
-#        my $agcol   = $mongo->collection('Alertgroup');
-#        my $entrycol = $mongo->collection('Entry');
-#        while (my $alert = $cursor->next) {
-#            my $agobj   = $agcol->find_one({id => $alert->alertgroup});
-#            my $subject = $agobj->subject;
-#            my $href    = $alert->as_hash;
-#            $href->{subject} = $subject;
-#
-            # look for entries
-#            my $lcur    = $entrycol->get_entries(
-#                target_type     => 'alert', 
-#                target_id       => $alert->id,
-#            );
-#            my $entry_count = 0;
-#
-#            if ( $lcur ) {
-#                $entry_count    = $lcur->count;
-#            };
-#
-#            $href->{'entries'} = $entry_count;
-#            
-#
-#            push @things, $href;
-#        }
-#        $self->do_render({
-#            records => \@things,
-#            queryRecordCount => scalar(@things),
-#            totalRecordCount => scalar(@things),
-#        });
-#    }
     elsif ($subthing eq "entity")  {
         $log->trace("rendering entity");
         # need to transform from an array of hashes to a a hash
         # for efficiency in UI code
+
         my %things  = ();
         my $count   = $cursor->count();
         my $entity_xform_timer = $env->get_timer("entity xform timer");
+
         while ( my $entity = $cursor->next ) {
+
             $log->debug("Entity : ".$entity->value);
             $self->check_entity_enrichments($entity);
             $things{$entity->value} = {

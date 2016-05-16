@@ -237,7 +237,7 @@ override get_subthing => sub {
             id => $id, type => 'entry' 
         });
         &$ft;
-        my @lnk = map { $_->id } $cur->all;
+        my @lnk = map { $_->{entity_id} } $cur->all;
         &$timer;
 
         $timer  = $env->get_timer("generating entity cursor");
