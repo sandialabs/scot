@@ -53,7 +53,10 @@ var SelectedEntry = React.createClass({
                 };
                 waitForEntry.waitEntry();
             }.bind(this));
-        }
+            if (this.state.showEntryData == false) {
+                 AddFlair.entityUpdate(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
+            }
+        } 
     }, 
     updatedCB: function() {
        if (this.props.type == 'alert' || this.props.type == 'entity') {
@@ -77,9 +80,9 @@ var SelectedEntry = React.createClass({
             }.bind(this)); 
         }
     },
-    flairToolbarToggle: function(id) {
+    flairToolbarToggle: function(id,value) {
         if (this.state.flairToolbar == false) {
-            this.setState({flairToolbar:true,entityid:id})
+            this.setState({flairToolbar:true,entityid:id,entityvalue:value})
         } else {
             this.setState({flairToolbar:false})
         }
@@ -104,12 +107,12 @@ var SelectedEntry = React.createClass({
             data = this.state.entryData;
             showEntryData = this.state.showEntryData;
         } else if (type =='alertgroup') {
-            divClass = 'row-fluid alert-wrapper';
+            divClass = 'row-fluid alert-wrapper entry-wrapper-main';
         }
         return (
             <div className={divClass} style={{height:this.props.windowHeight}}> 
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected}/> : <span>Loading...</span>} 
-                {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid}/> : null}
+                {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
             </div>       
         );
@@ -206,7 +209,7 @@ var AlertParent = React.createClass({
             }
             items.forEach(function(object){
                 var dataFlair = null;
-                if (object.data_with_flair != undefined) {
+                if (Object.getOwnPropertyNames(object.data_with_flair).length != 0) {
                     dataFlair = object.data_with_flair;
                 } else {
                     dataFlair = object.data;
