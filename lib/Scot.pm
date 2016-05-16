@@ -158,7 +158,7 @@ get JSON that was submitted with the web request
             ->to    ('controller-api#autocomplete')
             ->name  ('autocomplete');
 
-    $scot   ->route ('/api/v2/:thing/:id')
+    $scot   ->route ('/api/v2/:thing/#id')
             ->via   ('get')
             ->to    ('controller-api#get_one')
             ->name  ('get_one');
