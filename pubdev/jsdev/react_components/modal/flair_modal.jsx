@@ -25,12 +25,23 @@ var Flair = React.createClass({
         return {
             entityData:null,
             entryToolbar:false,    
+            entityid: this.props.entityid,
         }
     },
     componentDidMount: function () {
-        this.sourceRequest = $.get('scot/api/v2/entity/' + this.props.entityid, function(result) {
-            this.setState({entityData:result})
-        }.bind(this));
+        if (this.props.entityid == undefined) {
+            $.get('scot/api/v2/entity/'+this.props.entityvalue.toLowerCase(), function(result) {
+                var entityid = result.id;
+                this.setState({entityid:entityid});
+                this.Request = $.get('scot/api/v2/entity/' + entityid, function(result) {
+                    this.setState({entityData:result})
+                }.bind(this));
+            }.bind(this))} 
+            else {
+                this.Request = $.get('scot/api/v2/entity/' + this.state.entityid, function(result) {
+                    this.setState({entityData:result})
+            }.bind(this));
+        }
     },
     render: function() {
         return (
@@ -44,13 +55,13 @@ var Flair = React.createClass({
                         <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
                     </div>
                     <div className="modal-body" style={{height: '80vh', overflowY:'auto',width:'800px'}}>
-                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.props.entityid} entryToggle={this.entryToggle}/> : <div>Loading...</div>} 
+                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} entryToggle={this.entryToggle}/> : <div>Loading...</div>} 
                     </div>
                     <div className="modal-footer">
                         <Button onClick={this.props.flairToolbarToggle}>Done</Button>
                     </div>
                 </Modal>
-                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type='entity' targetid={this.props.entityid} id={this.props.entityid} addedentry={this.entryToggle} /> : null}
+                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type='entity' targetid={this.state.entityid} id={this.state.entityid} addedentry={this.entryToggle} /> : null}
             </div>
         )
     },
