@@ -328,12 +328,12 @@ module.exports = React.createClass({
                 this.setState({idtext: $('.idinput').val()})
             }
             else if($($(v.currentTarget).find('.statusinput').context).attr('id') == 'status'){
-                filter['status'] = $('.statusinput').val()
+                filter['task.status'] = $('.statusinput').val()
                 this.refs.myPopOverstatus.hide()
                 this.setState({statustext: $('.statusinput').val()})
             }
             else if($($(v.currentTarget).find('.typeinput').context).attr('id') == 'type'){
-                filter['type'] = $('.typeinput').val()
+                filter['target.type'] = $('.typeinput').val()
                 this.refs.myPopOvertype.hide()
                 this.setState({typetext: $('.typeinput').val()})
             }
@@ -432,11 +432,11 @@ module.exports = React.createClass({
             this.refs.myPopOverid.hide()
         }
         else if($($(v.currentTarget).find('.sort').context).attr('value') == 'status'){
-            sortarray['status'] = Number($($(v.currentTarget).find('.sort').context).attr('id'))
+            sortarray['task.status'] = Number($($(v.currentTarget).find('.sort').context).attr('id'))
             this.refs.myPopOverstatus.hide()
         }
         else if($($(v.currentTarget).find('.sort').context).attr('value') == 'type'){
-            sortarray['type'] = Number($($(v.currentTarget).find('.sort').context).attr('id'))
+            sortarray['target.type'] = Number($($(v.currentTarget).find('.sort').context).attr('id'))
             this.refs.myPopOvertype.hide()
         }
         else if($($(v.currentTarget).find('.sort').context).attr('value') == 'owner'){
@@ -488,17 +488,17 @@ module.exports = React.createClass({
     },
     handlefilter: function(v){
         if($($(v.currentTarget).find('.filter').context).attr('value') == 'id'){
-            filter['id'] = [$('.idinput').val()]
+            filter['task.id'] = [$('.idinput').val()]
             this.refs.myPopOverid.hide()
             this.setState({idtext: $('.idinput').val()})
         }
         else if($($(v.currentTarget).find('.filter').context).attr('value') == 'status'){
-            filter['status'] = $('.statusinput').val()
+            filter['task.status'] = $('.statusinput').val()
             this.refs.myPopOverstatus.hide()
             this.setState({statustext: $('.statusinput').val()})
         }
         else if($($(v.currentTarget).find('.filter').context).attr('value') == 'type'){
-            filter['type'] = $('.typeinput').val()
+            filter['target.type'] = $('.typeinput').val()
             this.refs.myPopOvertype.hide()
             this.setState({typetext: $('.typeinput').val()})
         }
