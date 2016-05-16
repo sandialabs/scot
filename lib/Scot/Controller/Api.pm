@@ -473,6 +473,7 @@ sub get_one {
         $self->check_entity_enrichments($object);
     }
 
+
     my $data_href   = {};
     if ( $req_href->{fields} and 
          $object->meta->does_role("Scot::Role::Hashable")) {
@@ -480,6 +481,15 @@ sub get_one {
     }
     else {
         $data_href  = $object->as_hash;
+    }
+
+    if ( ref($object) eq "Scot::Model::Alert" ) {
+        $log->debug("getting alert subject from alertgroup");
+        my $c   = $mongo->collection('Alertgroup');
+        my $o   = $c->find_one({id => $object->alertgroup});
+        if ( $o ) {
+            $data_href->{subject} = $o->subject;
+        }
     }
 
     $self->do_render($data_href);
@@ -1430,7 +1440,7 @@ sub delete {
 sub breaklink {
     my $self    = shift;
     my $env     = $self->env;
-    my $mongo   = $env->log;
+    my $log     = $env->log;
     my $user    = $self->session('user');
 
     $log->trace("Handler is processing a BreakLink request");
