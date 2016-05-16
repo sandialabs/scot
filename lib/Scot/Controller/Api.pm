@@ -1427,6 +1427,15 @@ sub delete {
 
 =cut
 
+sub breaklink {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->log;
+    my $user    = $self->session('user');
+
+    $log->trace("Handler is processing a BreakLink request");
+
+}
 
 =item B<user_is_admin>
 
@@ -2226,5 +2235,6 @@ sub get_entry_count {
     );
     return $cursor->count;
 }
+
 
 1;
