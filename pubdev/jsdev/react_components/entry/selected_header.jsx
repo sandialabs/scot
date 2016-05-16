@@ -95,6 +95,7 @@ var SelectedHeader = React.createClass({
         this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, function(result) {
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
+            AddFlair.entityUpdate(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
             if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                 this.setState({loading:false});
             }        
@@ -229,9 +230,9 @@ var SelectedHeader = React.createClass({
             waitForEntry.waitEntry();
         }.bind(this));
      },*/
-    flairToolbarToggle: function(id){
+    flairToolbarToggle: function(id,value){
         if (this.state.flairToolbar == false) {
-            this.setState({flairToolbar:true,entityid:id})
+            this.setState({flairToolbar:true,entityid:id,entityvalue:value})
         } else {
             this.setState({flairToolbar:false})
         }
@@ -373,7 +374,7 @@ var SelectedHeader = React.createClass({
                     </div>
                 </div>
                 <Notification ref="notificationSystem" /> 
-                {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} /> : null}
+                {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null} 
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData} flairToolbarToggle={this.flairToolbarToggle} /> : null}
@@ -384,7 +385,7 @@ var SelectedHeader = React.createClass({
                 </div>
                 {this.state.showFlash == true ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} /> : null}
 
-                <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} windowHeight={this.props.windowHeight} summaryUpdate={this.summaryUpdate}/> 
+                <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} windowHeight={this.props.windowHeight} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} linkWarningToggle={this.linkWarningToggle}/> 
             </div>
         )
     }
