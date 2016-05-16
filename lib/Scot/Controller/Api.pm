@@ -399,14 +399,16 @@ sub get_one {
     $log->trace("Handler is processing a GET ONE request");
 
     my $req_href    = $self->get_request_params;
-    my $id          = $req_href->{id} + 0;
+    my $id          = $req_href->{id};
     my $col_name    = $req_href->{collection};
 
-    unless ( $self->id_is_valid($id) ) {
-        $self->do_error(400, {
-            error_msg   => "Invalid integer id: $id"
-        });
-        return;
+    if ( $col_name ne "entity") {
+        unless ( $self->id_is_valid($id) ) {
+            $self->do_error(400, {
+                error_msg   => "Invalid integer id: $id"
+            });
+            return;
+        }
     }
 
     my $collection;
@@ -429,15 +431,20 @@ sub get_one {
 
     my $object;
 
-    if ( $collection eq "entity" ) {
-        if ( $id =~ /^\d+$/ ) {
+    if ( $col_name eq "entity" ) {
+        $log->debug("Entity Request, check for non numeric id of $id");
+        if ( $id =~ /^[0-9]+$/ ) {
+            $id += 0;
+            $log->debug("id is numeric");
             $object  = $collection->find_iid($id);
         }
         else {
+            $log->debug("id is no numeric and = $id");
             $object = $collection->find_one({value => $id});
         }
     }
     else {
+        $id += 0;
         $object = $collection->find_iid($id);
     }
 
@@ -1715,6 +1722,7 @@ sub get_request_params  {
         }
     }
 
+    $log->trace("building request href");
     my %request = (
         collection  => $self->stash('thing'),
         id          => $self->stash('id'),
