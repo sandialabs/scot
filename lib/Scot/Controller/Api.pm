@@ -293,6 +293,23 @@ sub get_many {
         return;
     }
 
+    if ( $col_name eq "handler" ) {
+        my $value   = $req_href->{request}->{params}->{value};
+        if ( $value ) {
+            # this is actually a request for a single entity!
+            my $entity = $collection->get_by_value($value);
+            if ( $entity ) {
+                my $hash    = $entity->as_hash;
+                $self->do_render($hash);
+            }
+            else {
+                $self->do_error(404, {
+                    error_msg   => "No entity matching $value"
+                });
+            }
+        }
+    }
+
     $match_ref   = $req_href->{request}->{params}->{match} // 
                    $req_href->{request}->{json}->{match};
 
