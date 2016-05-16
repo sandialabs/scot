@@ -25,6 +25,7 @@ db.entry.ensureIndex(       { "is_task":    1}  );
 db.entry.ensureIndex(       { "when":       1}  );
 db.entry.ensureIndex(       { "owner":      1}  );
 db.entry.ensureIndex(       { "target":     1}  );
+db.entry.ensureIndex(       { "target.id":     1, "target.type": 1}  );
 
 db.file.ensureIndex(        { "id":         1}, {unique: true, dropDups:true}  );
 db.file.ensureIndex(        { "filename":   1}  );
