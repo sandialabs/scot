@@ -1452,7 +1452,7 @@ sub breaklink {
 
     my $col = $mongo->collection('Appearance');
     my $cur = $col->find({
-        'id'            => $subid,
+        'apid'          => $subid,
         'type'          => $subthing,
         'target.id'     => $id,
         'target.type'   => $thing,
