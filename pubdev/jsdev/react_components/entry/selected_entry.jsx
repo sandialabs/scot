@@ -56,6 +56,8 @@ var SelectedEntry = React.createClass({
             if (this.state.showEntryData == false) {
                  AddFlair.entityUpdate(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
             }
+        Store.storeKey(this.props.id);
+        Store.addChangeListener(this.updatedCB);
         } 
     }, 
     updatedCB: function() {
@@ -200,7 +202,15 @@ var AlertParent = React.createClass({
         var body = [];
         var header = [];
         if (items[0] != undefined){
-            var col_names = items[0].data.columns.slice(0); //slices forces a copy of array
+            var col_names;
+            //checking two locations for columns. Will make this a single location in future revision
+            if (items[0].columns.length != 0) { 
+                col_names = items[0].columns.slice(0) //slices forces a copy of array
+            } else if (items[0].data.columns.length != 0) {
+                col_names = items[0].data.columns.slice(0)
+            } else {
+                console.log('Error finding columns in JSON');
+            }
             col_names.unshift('entries'); //Add entries to 3rd column
             col_names.unshift('status'); //Add status to 2nd column
             col_names.unshift('id'); //Add entries number to 1st column
@@ -317,8 +327,16 @@ var AlertBody = React.createClass({
         } else if (data.status == 'promoted') {
             buttonStyle = 'warning';
         }
-        for (var i=0; i < data.data.columns.length; i++) {
-            var value = data.data.columns[i];
+        var columns;
+        if (data.columns.length != 0) {
+            columns = data.columns
+        } else if (data.data.columns.length != 0) {
+            columns = data.data.columns
+        } else {
+            console.log('Error finding columns in JSON');
+        }
+        for (var i=0; i < columns.length; i++) {
+            var value = columns[i];
             rowReturn.push(<AlertRow data={data} dataFlair={dataFlair} value={value} />)
         }
         for (var j=0; j < this.props.activeIndex.length; j++) {
