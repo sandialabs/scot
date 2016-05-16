@@ -1870,25 +1870,33 @@ var React = require('react');
 var SelectedHeader = require('./selected_header.jsx');
 
 var SelectedContainer = React.createClass({displayName: "SelectedContainer",
-    reloadItem: function(){
-        var scrollHeight = $(window).height() - 170
-        var scrollWidth  = $(window).width()  - $('.eventwidth').width()
-        $('.entry-wrapper-main').each(function(key,value){
-            $(value).css('height', scrollHeight)
-            $(value).css('width',  '100%')
-        })
+    getInitialState: function() {
+        var scrollHeight = '100%';
+        var scrollWidth = '100%';
+        return {
+            width: scrollWidth,
+            height: scrollHeight,
+        }
+    },
+    handleResize: function(){
+        var scrollHeight = $(window).height() - 220
+        var scrollWidth  = $(window).width()  - ($('#list-view').width() + 60)
+        this.setState({width:scrollWidth,height:scrollHeight})
+    },
+    componentDidMount: function() {
+        this.handleResize();
+        window.addEventListener('resize',this.handleResize);
+    },
+    componentWillUnmount: function() {
+        window.removeEventListener('resize', this.handleResize);
     },
     render: function() {
-        setTimeout(function(){this.reloadItem()}.bind(this),100)
-        $(window).resize(function(){
-            this.reloadItem()
-        }.bind(this))
         var datarows = [];
         for (i=0; i < this.props.ids.length; i++) { 
-            datarows.push(React.createElement(SelectedHeader, {windowHeight: this.props.height, key: this.props.ids[i], id: this.props.ids[i], type: this.props.type, toggleEventDisplay: this.props.viewEvent, taskid: this.props.taskid})); 
+            datarows.push(React.createElement(SelectedHeader, {windowHeight: this.state.height, key: this.props.ids[i], id: this.props.ids[i], type: this.props.type, toggleEventDisplay: this.props.viewEvent, taskid: this.props.taskid})); 
         }
         return (
-            React.createElement("div", {className: "entry-container", style: {width: '100%',position: 'relative'}}, 
+            React.createElement("div", {className: "entry-container", style: {width: this.state.width,position: 'relative'}}, 
                 datarows
             )
         );
@@ -1956,6 +1964,8 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             if (this.state.showEntryData == false) {
                  AddFlair.entityUpdate(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
             }
+        Store.storeKey(this.props.id);
+        Store.addChangeListener(this.updatedCB);
         } 
     }, 
     updatedCB: function() {
@@ -2100,7 +2110,15 @@ var AlertParent = React.createClass({displayName: "AlertParent",
         var body = [];
         var header = [];
         if (items[0] != undefined){
-            var col_names = items[0].data.columns.slice(0); //slices forces a copy of array
+            var col_names;
+            //checking two locations for columns. Will make this a single location in future revision
+            if (items[0].columns.length != 0) { 
+                col_names = items[0].columns.slice(0) //slices forces a copy of array
+            } else if (items[0].data.columns.length != 0) {
+                col_names = items[0].data.columns.slice(0)
+            } else {
+                console.log('Error finding columns in JSON');
+            }
             col_names.unshift('entries'); //Add entries to 3rd column
             col_names.unshift('status'); //Add status to 2nd column
             col_names.unshift('id'); //Add entries number to 1st column
@@ -2217,8 +2235,16 @@ var AlertBody = React.createClass({displayName: "AlertBody",
         } else if (data.status == 'promoted') {
             buttonStyle = 'warning';
         }
-        for (var i=0; i < data.data.columns.length; i++) {
-            var value = data.data.columns[i];
+        var columns;
+        if (data.columns.length != 0) {
+            columns = data.columns
+        } else if (data.data.columns.length != 0) {
+            columns = data.data.columns
+        } else {
+            console.log('Error finding columns in JSON');
+        }
+        for (var i=0; i < columns.length; i++) {
+            var value = columns[i];
             rowReturn.push(React.createElement(AlertRow, {data: data, dataFlair: dataFlair, value: value}))
         }
         for (var j=0; j < this.props.activeIndex.length; j++) {
@@ -4633,7 +4659,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'eventwidth', style: {display:'flex'}},
-            React.createElement('div', null,  
+            React.createElement('div', {id:'list-view'},  
             React.createElement('div', {style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
@@ -4808,7 +4834,7 @@ module.exports = React.createClass({displayName: "exports",
                     )
                     )))), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})) , stage ? 
-                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'alertgroup'}) : null) 
+                        React.createElement(SelectedContainer, {height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null) 
 
         ));
     },
@@ -5330,7 +5356,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('button', {className: 'btn btn-default', onClick: this.createevent, style: styles}, 'Create Event'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'eventwidth', style: {display:'flex'}},
-            React.createElement('div', null,  
+            React.createElement('div', {id:'list-view'},  
             React.createElement('div', {style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
@@ -6152,7 +6178,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'guidewidth', style: {display:'flex'}},
-            React.createElement('div', null,  
+            React.createElement('div', {id:'list-view'},  
             React.createElement('div', {style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
@@ -6539,7 +6565,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'incidentwidth', style: {display:'flex'}},
-            React.createElement('div', null,  
+            React.createElement('div', {id:'list-view'},  
             React.createElement('div', {style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
@@ -7465,7 +7491,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('button', {className: 'btn btn-default', onClick: this.createevent, style: styles}, 'Create Intel'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'eventwidth', style: {display:'flex'}},
-            React.createElement('div', null,  
+            React.createElement('div', {id:'list-view'},  
             React.createElement('div', {style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
@@ -8281,7 +8307,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'incidentwidth', style: {display:'flex'}},
-            React.createElement('div', null,
+            React.createElement('div', {id:'list-view'},
             React.createElement('div', {style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}},
                     React.createElement("div", {className: "table-row header"},
