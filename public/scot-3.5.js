@@ -798,6 +798,9 @@ var AddFlair = {
                     ifr.contentWindow.requestAnimationFrame( function() {
                         if(ifr.contentDocument != null) {
                             var ifrContents = $(ifr).contents();
+                            if (entityResult == undefined) {
+                                pentry(ifr,flairToolbarToggle,type,linkWarningToggle,id);
+                            }
                             if($(ifr.contentDocument.body).find('.extras')[0] == null) {
                                 //This makes all href point to blank so they don't reload the iframe
                                 $(ifr.contentDocument.body).find('a').attr('target','_blank');
@@ -812,8 +815,8 @@ var AddFlair = {
                                 $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
                                 ifrContents.find('.entity').each(function(index,entity){
                                     var currentEntityValue = $(entity).attr('data-entity-value');
-                                    if (currentEntityValue !== undefined) {
-                                        if (entityResult[currentEntityValue.toLowerCase()] !== undefined ) {
+                                    if (currentEntityValue != undefined && entityResult != undefined) {
+                                        if (entityResult[currentEntityValue.toLowerCase()] != undefined ) {
                                             var entityType = entityResult[currentEntityValue.toLowerCase()].type;
                                             var entityid = entityResult[currentEntityValue.toLowerCase()].id;
                                             var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
@@ -849,15 +852,18 @@ var AddFlair = {
                     }.bind(this));
                 }.bind(this));
             } else if (type == 'alertgroup') {
-                var subtable = $(document.body).find('.subtable' + id);
+                var subtable = $(document.body).find('.alertTableHorizontal');
+                if (entityResult == undefined) {
+                    pentry(null,flairToolbarToggle,type,linkWarningToggle,id);
+                }
                 if(subtable.find('.extras')[0] == null) {
                     subtable.find('a').attr('target','_blank');
                     subtable.append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
                     subtable.find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
                     subtable.find('.entity').each(function(index,entity){
                         var currentEntityValue = $(entity).attr('data-entity-value');
-                        if (currentEntityValue !== undefined) {
-                            if (entityResult[currentEntityValue.toLowerCase()] !== undefined ) {
+                        if (currentEntityValue != undefined && entityResult != undefined) {
+                            if (entityResult[currentEntityValue.toLowerCase()] != undefined ) {
                                 var entityType = entityResult[currentEntityValue.toLowerCase()].type;
                                 var entityid = entityResult[currentEntityValue.toLowerCase()].id;
                                 var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
@@ -869,9 +875,9 @@ var AddFlair = {
                                 $(entity).append(circle);
                                 $(entity).attr('data-entity-id',entityid)
                                 $(entity).unbind('click');
-                                if (entitydata !== undefined) {
-                                    if (entitydata.geoip !== undefined) {
-                                        if (entitydata.geoip.isocode !== undefined) {
+                                if (entitydata != undefined) {
+                                    if (entitydata.geoip != undefined) {
+                                        if (entitydata.geoip.isocode != undefined) {
                                             var country_code;
                                             if (entitydata.geoip.isp == 'Sandia National Laboratories') {
                                                 country_code = 'sandia';    
@@ -884,9 +890,9 @@ var AddFlair = {
                                         }
                                     }
                                 }
-                                pentry(null,flairToolbarToggle,type,linkWarningToggle,id);
                             }
                         }
+                        pentry(null,flairToolbarToggle,type,linkWarningToggle,id);
                     }.bind(this));
                 }
             }
@@ -922,7 +928,8 @@ function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle,id) {
                 } else if ($(entity).data('state') == 'down') {
                     $(entity).data('state', 'up');
                     var entityid = $(entity).attr('data-entity-id');
-                    infopop(iframe,entityid,flairToolbarToggle);
+                    var entityvalue = $(entity).attr('data-entity-value');
+                    infopop(entityid, entityvalue, flairToolbarToggle);
                 }
             }.bind(this));
         }
@@ -933,19 +940,20 @@ function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle,id) {
                 } else if ($(a).data('state') == 'down') {
                     $(a).data('state','up');
                     var url = $(a).attr('url');
-                    linkWarningPopup(iframe,url,linkWarningToggle);
+                    linkWarningPopup(url,linkWarningToggle);
                 }
             }.bind(this));
         }
     } else if (type == 'alertgroup') {
-        var subtable = $(document.body).find('.subtable' + id);
+        var subtable = $(document.body).find('.alertTableHorizontal');
         subtable.find('.entity').each(function(index, entity) {
             if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
                 $(entity).data('state', 'down');
             } else if ($(entity).data('state') == 'down') {
                 $(entity).data('state', 'up');
                 var entityid = $(entity).attr('data-entity-id');
-                infopop(null,entityid,flairToolbarToggle);
+                var entityvalue = $(entity).attr('data-entity-value');
+                infopop(entityid, entityvalue, flairToolbarToggle);
             }
         }.bind(this));
         subtable.find('a').each(function(index,a) {
@@ -954,16 +962,16 @@ function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle,id) {
             } else if ($(a).data('state') == 'down') {
                 $(a).data('state','up');
                 var url = $(a).attr('url');
-                linkWarningPopup(iframe,url,linkWarningToggle);
+                linkWarningPopup(url,linkWarningToggle);
             }
         }.bind(this));
     }
 }
         
-function infopop(ifr,entityid,flairToolbarToggle) {
-    flairToolbarToggle(entityid);
+function infopop(entityid, entityvalue, flairToolbarToggle) {
+    flairToolbarToggle(entityid,entityvalue);
 }
-function linkWarningPopup(ifr,url,linkWarningToggle) {
+function linkWarningPopup(url,linkWarningToggle) {
     linkWarningToggle(url);
 }
 
@@ -4041,12 +4049,23 @@ var Flair = React.createClass({displayName: "Flair",
         return {
             entityData:null,
             entryToolbar:false,    
+            entityid: this.props.entityid,
         }
     },
     componentDidMount: function () {
-        this.sourceRequest = $.get('scot/api/v2/entity/' + this.props.entityid, function(result) {
-            this.setState({entityData:result})
-        }.bind(this));
+        if (this.props.entityid == undefined) {
+            $.get('scot/api/v2/entity/'+this.props.entityvalue.toLowerCase(), function(result) {
+                var entityid = result.id;
+                this.setState({entityid:entityid});
+                this.Request = $.get('scot/api/v2/entity/' + entityid, function(result) {
+                    this.setState({entityData:result})
+                }.bind(this));
+            }.bind(this))} 
+            else {
+                this.Request = $.get('scot/api/v2/entity/' + this.state.entityid, function(result) {
+                    this.setState({entityData:result})
+            }.bind(this));
+        }
     },
     render: function() {
         return (
@@ -4060,13 +4079,13 @@ var Flair = React.createClass({displayName: "Flair",
                         React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
                     ), 
                     React.createElement("div", {className: "modal-body", style: {height: '80vh', overflowY:'auto',width:'800px'}}, 
-                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.props.entityid, entryToggle: this.entryToggle}) : React.createElement("div", null, "Loading...")
+                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, entryToggle: this.entryToggle}) : React.createElement("div", null, "Loading...")
                     ), 
                     React.createElement("div", {className: "modal-footer"}, 
                         React.createElement(Button, {onClick: this.props.flairToolbarToggle}, "Done")
                     )
                 ), 
-                this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "entity", targetid: this.props.entityid, id: this.props.entityid, addedentry: this.entryToggle}) : null
+                this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "entity", targetid: this.state.entityid, id: this.state.entityid, addedentry: this.entryToggle}) : null
             )
         )
     },
