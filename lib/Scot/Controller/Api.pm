@@ -1443,20 +1443,24 @@ sub breaklink {
 
     if ( $subthing ne "tag" and $subthing ne "source" ) {
         $log->error("only tags and sources can breaklink");
-        # XXX
         $self->do_error(403, {
             error_msg   => "Breaklink Not Permitted"
         });
         return;
     }
 
+    $log->trace("thing    is $thing    : $id");
+    $log->trace("subthing is $subthing : $subid");
+
     my $col = $mongo->collection('Appearance');
     my $cur = $col->find({
-        'apid'          => $subid,
+        'apid'          => $subid + 0,
         'type'          => $subthing,
-        'target.id'     => $id,
+        'target.id'     => $id + 0,
         'target.type'   => $thing,
     });
+
+    $log->trace("Found ".$cur->count." appearances");
 
     while ( my $obj = $cur->next ) {
         $log->debug("Removing Appearance Obj $subid");
@@ -1471,6 +1475,47 @@ sub breaklink {
         });
         $obj->remove;
     }
+
+    my $subobj = $mongo->collection(ucfirst($subthing))->find_iid($subid);
+    if ( $subobj ) {
+        my $thingobj = $mongo->collection(ucfirst($thing))->find_iid($id);
+        if ( $thingobj ) {
+            my @values;
+            push @values, $subobj->value;
+            $log->debug("attempting to remove ".$subobj->value.
+                        " from $thing $id");
+            try {
+                if ( $thingobj->meta->does_role('Scot::Role::Tags') ) {
+                    $log->debug("does tags");
+                }
+                # TODO ERROR
+                # this isn't removeing this from events for some reason!
+                $thingobj->update_remove( $subthing => \@values );
+            }
+            catch {
+                $log->error("Error: $_");
+            };
+        }
+    }
+    $log->debug("get ready to render!");
+
+    $self->do_render({
+        action  => 'break link',
+        status  => 'ok',
+        thing   => $thing,
+        id      => $id,
+        subthing    => $subthing,
+        subid   => $subid,
+    });
+    
+    $env->mq->send("scot", {
+        action  => "deleted",
+        data    => {
+            type    => $subthing,
+            id      => $subid,
+            who     => $user,
+        }
+    });
 
 }
 

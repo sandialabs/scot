@@ -9,7 +9,7 @@ signals the api.pm that this model might have sources
 
 =cut
 
-has sources => (
+has source => (
     is          => 'ro',
     isa         => 'ArrayRef',
     required    => 1,
