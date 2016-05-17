@@ -4956,6 +4956,7 @@ module.exports = React.createClass({displayName: "exports",
             var array = []
             array.push($(y).attr('id'))
             colorrow.push($(y).attr('id'))
+            window.history.pushState('Page', 'SCOT', '/#/alertgroup/'+$(y).attr('id'))  
             this.launchEvent(array)
         }.bind(this))
     },
@@ -5730,6 +5731,7 @@ module.exports = React.createClass({displayName: "exports",
             var array = []
             array.push($(y).attr('id'))
             colorrow.push($(y).attr('id'))
+            window.history.pushState('Page', 'SCOT', '/#/event/'+$(y).attr('id'))
             this.launchEvent(array)
         }.bind(this))
     },
@@ -6246,6 +6248,7 @@ module.exports = React.createClass({displayName: "exports",
             var array = []
             array.push($(y).attr('id'))
             colorrow.push($(y).attr('id'))
+            window.history.pushState('Page', 'SCOT', '/#/guide/'+$(y).attr('id')) 
             this.launchEvent(array)
         }.bind(this))
     },
@@ -6787,6 +6790,7 @@ module.exports = React.createClass({displayName: "exports",
             var array = []
             array.push($(y).attr('id'))
             colorrow.push($(y).attr('id'))
+            window.history.pushState('Page', 'SCOT', '/#/incident/'+$(y).attr('id'))  
             this.launchEvent(array)
         }.bind(this))
     },
@@ -7865,6 +7869,7 @@ module.exports = React.createClass({displayName: "exports",
             var array = []
             array.push($(y).attr('id'))
             colorrow.push($(y).attr('id'))
+            window.history.pushState('Page', 'SCOT', '/#/intel/'+$(y).attr('id')) 
             this.launchEvent(array)
         }.bind(this))
     },
@@ -8468,6 +8473,7 @@ module.exports = React.createClass({displayName: "exports",
             colorrow = []
             array.push($(y).find('.index').text())
             colorrow.push($(y).find('.severity').text())
+            window.history.pushState('Page', 'SCOT', '/#/'+$(y).find('.type').text() + '/' + array[0]) 
             this.launchEvent(array, $(y).find('.severity').text(), $(y).find('.type').text())
         }.bind(this))
     },
