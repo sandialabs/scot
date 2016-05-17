@@ -165,10 +165,7 @@ module.exports = React.createClass({
         })
 
         }.bind(this),100)
-                
-        $(window).resize(function(){
-            this.reloadItem()
-        }.bind(this))
+        window.addEventListener('resize',this.reloadItem);
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
