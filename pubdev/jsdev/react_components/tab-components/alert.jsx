@@ -507,6 +507,7 @@ module.exports = React.createClass({
             var array = []
             array.push($(y).attr('id'))
             colorrow.push($(y).attr('id'))
+            window.history.pushState('Page', 'SCOT', '/#/alertgroup/'+$(y).attr('id'))  
             this.launchEvent(array)
         }.bind(this))
     },
