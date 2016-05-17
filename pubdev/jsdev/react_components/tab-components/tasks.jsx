@@ -360,6 +360,7 @@ module.exports = React.createClass({
             colorrow = []
             array.push($(y).find('.index').text())
             colorrow.push($(y).find('.severity').text())
+            window.history.pushState('Page', 'SCOT', '/#/'+$(y).find('.type').text() + '/' + array[0]) 
             this.launchEvent(array, $(y).find('.severity').text(), $(y).find('.type').text())
         }.bind(this))
     },
