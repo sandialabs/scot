@@ -22,7 +22,8 @@ var Crouton                 = require('react-crouton');
 var Store                   = require('../activemq/store.jsx');
 var AppActions              = require('../flux/actions.jsx');
 var Notification            = require('react-notification-system');
-var AddFlair                = require('../components/add_flair.jsx');
+var AddFlair                = require('../components/add_flair.jsx').AddFlair;
+var Watcher                 = require('../components/add_flair.jsx').Watcher;
 var Flair                   = require('../modal/flair_modal.jsx');
 var ESearch                 = require('../components/esearch.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx');
@@ -95,7 +96,7 @@ var SelectedHeader = React.createClass({
         this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, function(result) {
             var entryResult = result.records;
             this.setState({showEntryData:true, entryData:entryResult})
-            AddFlair.entityUpdate(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
+            Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
             if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                 this.setState({loading:false});
             }        
@@ -159,6 +160,7 @@ var SelectedHeader = React.createClass({
             this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, function(result) {
                 var entryResult = result.records;
                 this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult})
+                Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
                 if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 }
