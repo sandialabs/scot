@@ -9,7 +9,7 @@ var AddFlair = {
                         if(ifr.contentDocument != null) {
                             var ifrContents = $(ifr).contents();
                             if (entityResult == undefined) {
-                                pentry(ifr,flairToolbarToggle,type,linkWarningToggle,id);
+                                //pentry(ifr,flairToolbarToggle,type,linkWarningToggle,id);
                             }
                             if($(ifr.contentDocument.body).find('.extras')[0] == null) {
                                 //This makes all href point to blank so they don't reload the iframe
@@ -57,14 +57,14 @@ var AddFlair = {
                                     }
                                 }.bind(this));
                             }
-                        pentry(ifr,flairToolbarToggle,type,linkWarningToggle,id);
+                        //pentry(ifr,flairToolbarToggle,type,linkWarningToggle,id);
                         }
                     }.bind(this));
                 }.bind(this));
             } else if (type == 'alertgroup') {
                 var subtable = $(document.body).find('.alertTableHorizontal');
                 if (entityResult == undefined) {
-                    pentry(null,flairToolbarToggle,type,linkWarningToggle,id);
+                    //pentry(null,flairToolbarToggle,type,linkWarningToggle,id);
                 }
                 if(subtable.find('.extras')[0] == null) {
                     subtable.find('a').attr('target','_blank');
@@ -102,7 +102,7 @@ var AddFlair = {
                                 }
                             }
                         }
-                        pentry(null,flairToolbarToggle,type,linkWarningToggle,id);
+                        //pentry(null,flairToolbarToggle,type,linkWarningToggle,id);
                     }.bind(this));
                 }
             }
@@ -112,23 +112,41 @@ var AddFlair = {
         }.bind(this),1000);
     },
 }
-
-function pentry(ifr,flairToolbarToggle,type,linkWarningToggle,id) {
-            if(type != 'alertgroup') { 
-                $(ifr).mouseenter(function() {
-                    var intervalID = setInterval(checkFlairHover, 100, ifr, flairToolbarToggle,type,linkWarningToggle);
-                    $(ifr).data('intervalID', intervalID);
-                    console.log('Now watching iframe ' + intervalID);
-                }.bind(this));
-                $(ifr).mouseleave(function() {
-                    var intervalID = $(this).data('intervalID');
+var Watcher = {  
+    pentry: function(ifr,flairToolbarToggle,type,linkWarningToggle,id) {
+        if(type != 'alertgroup') {  
+            $('iframe').each(function(index,ifr) {
+                //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
+                ifr.contentWindow.requestAnimationFrame( function() {
+                    if(ifr.contentDocument != null) {
+                        $(ifr).hover( function() {
+                            var intervalID = setInterval(checkFlairHover, 100, ifr, flairToolbarToggle,type,linkWarningToggle);
+                            $(ifr).data('intervalID', intervalID);
+                            console.log('Now watching iframe ' + intervalID);
+                        }, function() {
+                            var intervalID = $(ifr).data('intervalID');
+                            window.clearInterval(intervalID);
+                            console.log('No longer watching iframe ' + intervalID);
+                        }).bind(this);
+                    }
+                }.bind(this))
+            }.bind(this))
+        } else {
+            $('.alert-wrapper').each(function(index,div) {
+                $(div).hover( function() {
+                    var intervalID = setInterval(checkFlairHover, 100, null, flairToolbarToggle,type,linkWarningToggle,id);
+                    $(div).data('intervalID', intervalID);
+                    console.log('Now watching div ' + intervalID);
+                }, function() {
+                    var intervalID = $(div).data('intervalID');
                     window.clearInterval(intervalID);
-                    console.log('No longer watching iframe ' + intervalID);
-                }.bind(this));
-            } else {
-                setInterval(checkFlairHover, 100, null, flairToolbarToggle,type,linkWarningToggle,id);
-            }
+                    console.log('No longer watching div ' + intervalID);
+                }).bind(this);
+            }).bind(this)
         }
+    }
+}
+
 function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle,id) {
     if(type != 'alertgroup') {
         if(iframe.contentDocument != null) {
@@ -185,4 +203,4 @@ function linkWarningPopup(url,linkWarningToggle) {
     linkWarningToggle(url);
 }
 
-module.exports = AddFlair
+module.exports = {AddFlair, Watcher}
