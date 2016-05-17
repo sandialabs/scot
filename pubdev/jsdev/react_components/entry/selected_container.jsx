@@ -18,6 +18,7 @@ var SelectedContainer = React.createClass({
     componentDidMount: function() {
         this.handleResize();
         window.addEventListener('resize',this.handleResize);
+        $("#list-view").resize(this.handleResize);
     },
     componentWillUnmount: function() {
         window.removeEventListener('resize', this.handleResize);
