@@ -13,7 +13,8 @@ var SelectedPermission      = require('../components/permission.jsx');
 var Frame                   = require('react-frame');
 var Store                   = require('../activemq/store.jsx');
 var AppActions              = require('../flux/actions.jsx');
-var AddFlair                = require('../components/add_flair.jsx');
+var AddFlair                = require('../components/add_flair.jsx').AddFlair;
+var Watcher                 = require('../components/add_flair.jsx').Watcher;
 var Flair                   = require('../modal/flair_modal.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx'); 
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
@@ -38,6 +39,7 @@ var SelectedEntry = React.createClass({
                     Store.storeKey(result.records[i].id)
                     Store.addChangeListener(this.updatedCB);
                 }
+                Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
             }.bind(this));
             this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
                 var entityResult = result.records;
@@ -52,10 +54,7 @@ var SelectedEntry = React.createClass({
                     }.bind(this)
                 };
                 waitForEntry.waitEntry();
-            }.bind(this));
-            if (this.state.showEntryData == false) {
-                 AddFlair.entityUpdate(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
-            }
+            }.bind(this)); 
         Store.storeKey(this.props.id);
         Store.addChangeListener(this.updatedCB);
         } 
@@ -65,6 +64,11 @@ var SelectedEntry = React.createClass({
             this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
                 var entryResult = result.records;
                 this.setState({showEntryData:true, entryData:entryResult})
+                for (i=0; i < result.records.length; i++) {
+                    Store.storeKey(result.records[i].id)
+                    Store.addChangeListener(this.updatedCB);
+                }
+                Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
             }.bind(this));
             this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
                 var entityResult = result.records;
