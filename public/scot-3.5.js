@@ -1886,6 +1886,7 @@ var SelectedContainer = React.createClass({displayName: "SelectedContainer",
     componentDidMount: function() {
         this.handleResize();
         window.addEventListener('resize',this.handleResize);
+        $("#list-view").resize(this.handleResize);
     },
     componentWillUnmount: function() {
         window.removeEventListener('resize', this.handleResize);
@@ -4641,10 +4642,7 @@ module.exports = React.createClass({displayName: "exports",
         })
 
         }.bind(this),100)
-                
-        $(window).resize(function(){
-            this.reloadItem()
-        }.bind(this))
+        window.addEventListener('resize',this.reloadItem);
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
@@ -5338,10 +5336,7 @@ module.exports = React.createClass({displayName: "exports",
         })
 
         }.bind(this),100)
-                
-        $(window).resize(function(){
-            this.reloadItem()
-        }.bind(this))
+        window.addEventListener('resize',this.reloadItem);
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
@@ -6162,10 +6157,7 @@ module.exports = React.createClass({displayName: "exports",
         })
 
         }.bind(this),100)
-                
-        $(window).resize(function(){
-            this.reloadItem()
-        }.bind(this))
+        window.addEventListener('resize',this.reloadItem); 
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
@@ -6551,10 +6543,7 @@ module.exports = React.createClass({displayName: "exports",
         })
 
         }.bind(this),100)
-                
-        $(window).resize(function(){
-            this.reloadItem()
-        }.bind(this))
+        window.addEventListener('resize',this.reloadItem);        
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
@@ -7476,10 +7465,7 @@ module.exports = React.createClass({displayName: "exports",
         })
 
         }.bind(this),100)
-                
-        $(window).resize(function(){
-            this.reloadItem()
-        }.bind(this))
+        window.addEventListener('resize',this.reloadItem);        
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
@@ -8294,11 +8280,7 @@ module.exports = React.createClass({displayName: "exports",
         })
 
         }.bind(this),100)
-
-        $(window).resize(function(){
-            this.reloadItem()
-        }.bind(this))
-
+        window.addEventListener('resize',this.reloadItem);
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}},
                 React.createElement('div', null,
