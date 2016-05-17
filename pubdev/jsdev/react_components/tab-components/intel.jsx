@@ -183,7 +183,7 @@ module.exports = React.createClass({
                         React.createElement('button', {className: 'btn btn-default', onClick: this.createevent, style: styles}, 'Create Intel'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'eventwidth', style: {display:'flex'}},
-            React.createElement('div', null,  
+            React.createElement('div', {id:'list-view'},  
             React.createElement('div', {style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
