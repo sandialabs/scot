@@ -7,7 +7,7 @@ my $env = Scot::Env->new();
 
 my $mongo = $env->mongo;
 
-foreach my $colname (qw(alertgroup alert checklist config entity entry event file guide history incident intel source tag user link audit)) {
+foreach my $colname (qw(appearance alertgroup alert checklist config entity entry event guide history incident intel source tag user audit)) {
 
     print "Getting Max Id of $colname\n";
     my $collection  = $mongo->collection(ucfirst($colname));
