@@ -505,60 +505,41 @@ var EntryParent = React.createClass({
 
 var EntryData = React.createClass({ 
     getInitialState: function() {
-        /*if (this.props.type == 'alert' || this.props.type == 'entity') {
+        if (this.props.type == 'entity') {
             return {
-                height:'200px',
-                entityid:null,
-                resize:false,
+                height: '250px',
             }
-        } else {*/
-            return {
-                height:'1px',
-                entityid:null,
-                resize:false,
-            }
-        //}
+        }
+        return {
+            height:'1px',
+        }
     }, 
     onLoad: function() {
         if (document.getElementById('iframe_'+this.props.id).contentDocument.readyState === 'complete') {
-        //if (this.props.type != 'alert' && this.props.type !='entity') {
-            if (this.state.height == '1px') {
-                setTimeout(function() {
-                    document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
-                        var newheight; 
-                        newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-                        newheight = newheight + 2; //adding 2 px for Firefox so it doesn't make a scroll bar
-                        newheight = newheight + 'px';
-                        this.setState({height:newheight});
-                        this.setState({resize:true})
-                    }.bind(this))
-                }.bind(this)); 
-            } else if (this.state.resize == false) {
+            if (this.props.type != 'entity') {
                 setTimeout(function() {
                     document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
                         var newheight; 
                         newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
                         newheight = newheight + 'px';
-                        this.setState({height:newheight});
-                        this.setState({resize:true})
-                        console.log('resized');
+                        if (this.state.height != newheight) {
+                            this.setState({height:newheight});
+                        }
                     }.bind(this))
                 }.bind(this)); 
             }
-        //}
+            var ifr = $('#iframe_'+this.props.id);
+            var ifrContents = $(ifr).contents();
+            var ifrContentsHead = $(ifrContents).find('head');
+            if (ifrContentsHead) {
+                ifrContentsHead.append($("<link/>", {rel: "stylesheet", href: 'css/sandbox.css', type: "text/css"}))
+            }
         } else {
             setTimeout(this.onLoad,0);
         }
     },
-    shouldComponentUpdate: function(nextProps,nextState) {
-        if (this.props.subitem.body !== nextProps.subitem.body) {
-            return (true)
-        } else if (nextState.resize == true){
-            this.setState({resize:false})
-            return (true)
-        } else {
-            return (false)
-        }
+    componentWillReceiveProps: function() {
+        this.onLoad();
     },
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
@@ -569,7 +550,7 @@ var EntryData = React.createClass({
         return (
             <div key={this.props.id} className={'row-fluid entry-body'}>
                 <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
-                    <Frame frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
+                    <Frame onLoad={function(){alert('onloaded');}} frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
                     <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
                     </Frame>
                 </div>
@@ -579,9 +560,6 @@ var EntryData = React.createClass({
     componentDidMount: function() {
         this.onLoad();
     },
-    componentDidUpdate: function() {
-        this.onLoad();
-    }
 });
 
 module.exports = SelectedEntry
