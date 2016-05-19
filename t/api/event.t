@@ -63,7 +63,7 @@ $t  ->get_ok("/scot/api/v2/event/$event_id")
 
 $t  ->post_ok  ('/scot/api/v2/event'  => json =>{
         subject => "Test Event 2",
-        source  => "foobar",
+        source  => ["foobar"],
         readgroups  => $defgroups,
         modifygroups=> $defgroups,
         alert_id    => 2,
