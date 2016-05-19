@@ -102,7 +102,7 @@ module.exports = React.createClass({
 
     reloadactive: function(){
         var notification = this.refs.notificationSystem
-        if(notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
+        if(activemqwho != whoami && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
@@ -154,11 +154,7 @@ module.exports = React.createClass({
         })
 
         }.bind(this),100)
-
-        $(window).resize(function(){
-            this.reloadItem()
-        }.bind(this))
-
+        window.addEventListener('resize',this.reloadItem);
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}},
                 React.createElement('div', null,
@@ -172,7 +168,7 @@ module.exports = React.createClass({
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'incidentwidth', style: {display:'flex'}},
-            React.createElement('div', null,
+            React.createElement('div', {id:'list-view'},
             React.createElement('div', {style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}},
                     React.createElement("div", {className: "table-row header"},
@@ -360,6 +356,7 @@ module.exports = React.createClass({
             colorrow = []
             array.push($(y).find('.index').text())
             colorrow.push($(y).find('.severity').text())
+            window.history.pushState('Page', 'SCOT', '/#/'+$(y).find('.type').text() + '/' + array[0]) 
             this.launchEvent(array, $(y).find('.severity').text(), $(y).find('.type').text())
         }.bind(this))
     },
