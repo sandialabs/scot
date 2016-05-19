@@ -1507,14 +1507,26 @@ sub breaklink {
         subthing    => $subthing,
         subid   => $subid,
     });
-    
-    $env->mq->send("scot", {
-        action  => "deleted",
-        data    => {
+
+    my $msg = {
             type    => $subthing,
             id      => $subid,
             who     => $user,
-        }
+    };
+    $log->debug("Sending MQ message of ",{filter=>\&Dumper, value=>$msg});
+    
+    $env->mq->send("scot", {
+        action  => "deleted",
+        data    => $msg,
+    });
+
+    $env->mq->send("scot", {
+        action  => 'updated',
+        data    => {
+            type    => $thing,
+            id      => $id,
+            who     => $user,
+        },
     });
 
 }
