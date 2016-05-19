@@ -143,8 +143,8 @@ $t->post_ok(
         message_id  => '112233445566778899aabbccddeeff',
         subject     => 'test message 1',
         data        => $agdata,
-        tags     => [qw(test testing)],
-        sources  => [qw(todd scot)],
+        tag     => [qw(test testing)],
+        source  => [qw(todd scot)],
         columns  => [qw(foo bar) ],
     }
 )->status_is(200);

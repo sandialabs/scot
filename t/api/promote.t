@@ -33,8 +33,8 @@ $t->post_ok(
             { foo   => 1,   bar => 2 },
             { foo   => 3,   bar => 4 },
         ],
-        tags     => [qw(test testing)],
-        sources  => [qw(todd scot)],
+        tag     => [qw(test testing)],
+        source  => [qw(todd scot)],
         columns  => [qw(foo bar) ],
     }
 )->status_is(200)
@@ -157,7 +157,7 @@ $t->get_ok("/scot/api/v2/event/$event1/incident" => {},
 
 $t  ->post_ok  ('/scot/api/v2/event'  => json => {
         subject => "Test Event 2",
-        source  => "footest",
+        source  => ["footest"],
         status  => 'open',
     })
     ->status_is(200)
