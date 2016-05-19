@@ -13,7 +13,8 @@ var SelectedPermission      = require('../components/permission.jsx');
 var Frame                   = require('react-frame');
 var Store                   = require('../activemq/store.jsx');
 var AppActions              = require('../flux/actions.jsx');
-var AddFlair                = require('../components/add_flair.jsx');
+var AddFlair                = require('../components/add_flair.jsx').AddFlair;
+var Watcher                 = require('../components/add_flair.jsx').Watcher;
 var Flair                   = require('../modal/flair_modal.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx'); 
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
@@ -38,6 +39,7 @@ var SelectedEntry = React.createClass({
                     Store.storeKey(result.records[i].id)
                     Store.addChangeListener(this.updatedCB);
                 }
+                Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
             }.bind(this));
             this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
                 var entityResult = result.records;
@@ -52,10 +54,9 @@ var SelectedEntry = React.createClass({
                     }.bind(this)
                 };
                 waitForEntry.waitEntry();
-            }.bind(this));
-            if (this.state.showEntryData == false) {
-                 AddFlair.entityUpdate(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
-            }
+            }.bind(this)); 
+        Store.storeKey(this.props.id);
+        Store.addChangeListener(this.updatedCB);
         } 
     }, 
     updatedCB: function() {
@@ -63,6 +64,11 @@ var SelectedEntry = React.createClass({
             this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
                 var entryResult = result.records;
                 this.setState({showEntryData:true, entryData:entryResult})
+                for (i=0; i < result.records.length; i++) {
+                    Store.storeKey(result.records[i].id)
+                    Store.addChangeListener(this.updatedCB);
+                }
+                Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
             }.bind(this));
             this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
                 var entityResult = result.records;
@@ -200,7 +206,15 @@ var AlertParent = React.createClass({
         var body = [];
         var header = [];
         if (items[0] != undefined){
-            var col_names = items[0].data.columns.slice(0); //slices forces a copy of array
+            var col_names;
+            //checking two locations for columns. Will make this a single location in future revision
+            if (items[0].columns.length != 0) { 
+                col_names = items[0].columns.slice(0) //slices forces a copy of array
+            } else if (items[0].data.columns.length != 0) {
+                col_names = items[0].data.columns.slice(0)
+            } else {
+                console.log('Error finding columns in JSON');
+            }
             col_names.unshift('entries'); //Add entries to 3rd column
             col_names.unshift('status'); //Add status to 2nd column
             col_names.unshift('id'); //Add entries number to 1st column
@@ -317,8 +331,16 @@ var AlertBody = React.createClass({
         } else if (data.status == 'promoted') {
             buttonStyle = 'warning';
         }
-        for (var i=0; i < data.data.columns.length; i++) {
-            var value = data.data.columns[i];
+        var columns;
+        if (data.columns.length != 0) {
+            columns = data.columns
+        } else if (data.data.columns.length != 0) {
+            columns = data.data.columns
+        } else {
+            console.log('Error finding columns in JSON');
+        }
+        for (var i=0; i < columns.length; i++) {
+            var value = columns[i];
             rowReturn.push(<AlertRow data={data} dataFlair={dataFlair} value={value} />)
         }
         for (var j=0; j < this.props.activeIndex.length; j++) {
@@ -483,60 +505,41 @@ var EntryParent = React.createClass({
 
 var EntryData = React.createClass({ 
     getInitialState: function() {
-        /*if (this.props.type == 'alert' || this.props.type == 'entity') {
+        if (this.props.type == 'entity') {
             return {
-                height:'200px',
-                entityid:null,
-                resize:false,
+                height: '250px',
             }
-        } else {*/
-            return {
-                height:'1px',
-                entityid:null,
-                resize:false,
-            }
-        //}
+        }
+        return {
+            height:'1px',
+        }
     }, 
     onLoad: function() {
         if (document.getElementById('iframe_'+this.props.id).contentDocument.readyState === 'complete') {
-        //if (this.props.type != 'alert' && this.props.type !='entity') {
-            if (this.state.height == '1px') {
-                setTimeout(function() {
-                    document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
-                        var newheight; 
-                        newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-                        newheight = newheight + 2; //adding 2 px for Firefox so it doesn't make a scroll bar
-                        newheight = newheight + 'px';
-                        this.setState({height:newheight});
-                        this.setState({resize:true})
-                    }.bind(this))
-                }.bind(this)); 
-            } else if (this.state.resize == false) {
+            if (this.props.type != 'entity') {
                 setTimeout(function() {
                     document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
                         var newheight; 
                         newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
                         newheight = newheight + 'px';
-                        this.setState({height:newheight});
-                        this.setState({resize:true})
-                        console.log('resized');
+                        if (this.state.height != newheight) {
+                            this.setState({height:newheight});
+                        }
                     }.bind(this))
                 }.bind(this)); 
             }
-        //}
+            var ifr = $('#iframe_'+this.props.id);
+            var ifrContents = $(ifr).contents();
+            var ifrContentsHead = $(ifrContents).find('head');
+            if (ifrContentsHead) {
+                ifrContentsHead.append($("<link/>", {rel: "stylesheet", href: 'css/sandbox.css', type: "text/css"}))
+            }
         } else {
             setTimeout(this.onLoad,0);
         }
     },
-    shouldComponentUpdate: function(nextProps,nextState) {
-        if (this.props.subitem.body !== nextProps.subitem.body) {
-            return (true)
-        } else if (nextState.resize == true){
-            this.setState({resize:false})
-            return (true)
-        } else {
-            return (false)
-        }
+    componentWillReceiveProps: function() {
+        this.onLoad();
     },
     render: function() {
         var rawMarkup = this.props.subitem.body_flair;
@@ -547,7 +550,7 @@ var EntryData = React.createClass({
         return (
             <div key={this.props.id} className={'row-fluid entry-body'}>
                 <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
-                    <Frame frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-same-origin '} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
+                    <Frame frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
                     <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
                     </Frame>
                 </div>
@@ -557,9 +560,6 @@ var EntryData = React.createClass({
     componentDidMount: function() {
         this.onLoad();
     },
-    componentDidUpdate: function() {
-        this.onLoad();
-    }
 });
 
 module.exports = SelectedEntry
