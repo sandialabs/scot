@@ -2538,7 +2538,7 @@ var EntryData = React.createClass({displayName: "EntryData",
         return (
             React.createElement("div", {key: this.props.id, className: 'row-fluid entry-body'}, 
                 React.createElement("div", {className: 'row-fluid entry-body-inner', style: {marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
-                    React.createElement(Frame, {onLoad: function(){alert('onloaded');}, frameBorder: '0', id: 'iframe_' + id, sandbox: 'allow-same-origin', styleSheets: ['/css/sandbox.css'], style: {width:'100%',height:this.state.height}}, 
+                    React.createElement(Frame, {frameBorder: '0', id: 'iframe_' + id, sandbox: 'allow-same-origin', styleSheets: ['/css/sandbox.css'], style: {width:'100%',height:this.state.height}}, 
                     React.createElement("div", {dangerouslySetInnerHTML: { __html: rawMarkup}})
                     )
                 )
