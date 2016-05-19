@@ -390,6 +390,39 @@ function deletion(state, callback, payload){
         callback.emitChange('alertgroupnotification')
         callback.emitChange(payload.action.activemq.data.id)
     }
+    else if (state == 'tag') {
+        activemqwho = payload.action.activemq.data.who
+        activemqmessage = " deleted " + state + " : " 
+        activemqid = payload.action.activemq.data.id
+        activemqtype = state
+        callback.emitChange('intelgroup')
+        callback.emitChange('taskgroup')
+        callback.emitChange('guidegroup')
+        callback.emitChange('selectedHeaderEntry');
+        callback.emitChange('entryNotification');
+        callback.emitChange('activealertgroup') 
+        callback.emitChange('incidentgroup') 
+        callback.emitChange('eventgroup') 
+        callback.emitChange('alertgroupnotification')
+        callback.emitChange(payload.action.activemq.data.id)
+    }
+    else if (state == 'source') {
+        activemqwho = payload.action.activemq.data.who
+        activemqmessage = " deleted " + state + " : " 
+        activemqid = payload.action.activemq.data.id
+        activemqtype = state
+        callback.emitChange('intelgroup')
+        callback.emitChange('taskgroup')
+        callback.emitChange('guidegroup')
+        callback.emitChange('selectedHeaderEntry');
+        callback.emitChange('entryNotification');
+        callback.emitChange('activealertgroup') 
+        callback.emitChange('incidentgroup') 
+        callback.emitChange('eventgroup') 
+        callback.emitChange('alertgroupnotification')
+        callback.emitChange(payload.action.activemq.data.id)
+    }
+
     else if (state == 'event') {
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " deleted " + state + " : " 
@@ -513,6 +546,34 @@ function views(state, callback, payload){
 var ActiveMQ = {
     handle_update: function(callback, payload){
     switch (payload.action.activemq.data.type) {
+
+            case 'tag': 
+                switch (payload.action.activemq.action) {
+                    case 'updated':
+                        update('tag', callback, payload);
+                        break;
+                    case 'created':
+                         creation('tag', callback, payload)
+                        break;
+                    case 'deleted':
+                        deletion('tag', callback, payload)
+                        break;
+                }
+                break;
+            case 'source': 
+                switch (payload.action.activemq.action) {
+                    case 'updated':
+                        update('source', callback, payload);
+                        break;
+                    case 'created':
+                         creation('source', callback, payload)
+                        break;
+                    case 'deleted':
+                        deletion('source', callback, payload)
+                        break;
+                }
+                break;
+
             case 'entity': 
                 switch (payload.action.activemq.action) {
                     case 'updated':
