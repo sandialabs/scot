@@ -38,7 +38,7 @@ has entry_target => (
     is          => 'ro',
     isa         => 'HashRef',
     required    => 1,
-    default     => {},
+    default     => sub { {} },
 );
 
 =item B<filename>

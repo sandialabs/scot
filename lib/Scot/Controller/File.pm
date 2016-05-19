@@ -122,8 +122,6 @@ sub upload {
         }
         $newid = $newentry->id;
 
-
-        $self->link_file($fileobj, $newid, $target_type, $target_id);
         push @statuses, $status;
     }
     # TODO: think about harmonizing this with the returns that are expected
@@ -180,30 +178,6 @@ EOF
     my $entry   = $col->create($entry_href);
 
     
-}
-
-sub link_file {
-    my $self        = shift;
-    my $fileobj     = shift;
-    my $entry_id    = shift;
-    my $target_type = shift;
-    my $target_id   = shift;
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $log         = $env->log;
-
-    my $file_href   = { type => "file", id => $fileobj->id };
-    my $target_href = { type => $target_type, id => $target_id };
-    my $entry_href  = { type => "entry", id => $entry_id };
-
-    my $linkcol = $mongo->collection('Link');
-
-    unless ( $linkcol->create_link($file_href, $target_href) ) {
-        $log->error("Error: failed to link file to target");
-    }
-    unless ( $linkcol->create_link($file_href, $entry_href) ) {
-        $log->error("Error: failed to link file to entry");
-    }
 }
 
 sub get_groups_and_year {

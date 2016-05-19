@@ -19,7 +19,7 @@ my $t   = Test::Mojo->new('Scot');
 
 $t  ->post_ok  ('/scot/api/v2/event'  => json => {
         subject => "Test Event 1",
-        source  => "firetest",
+        source  => ["firetest"],
         status  => 'open',
     })
     ->status_is(200)

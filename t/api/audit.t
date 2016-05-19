@@ -27,8 +27,8 @@ $t->post_ok(
             { foo   => 1,   bar => 2 },
             { foo   => 3,   bar => 4 },
         ],
-        tags     => [qw(test testing)],
-        sources  => [qw(todd scot)],
+        tag     => [qw(test testing)],
+        source  => [qw(todd scot)],
         columns  => [qw(foo bar) ],
     }
 )->status_is(200);

@@ -33,8 +33,8 @@ $t->post_ok(
             { foo   => 1,   bar => 2 },
             { foo   => 3,   bar => 4 },
         ],
-        tags     => [qw(test testing)],
-        sources  => [qw(todd scot)],
+        tag     => [qw(test testing)],
+        source  => [qw(todd scot)],
         columns  => [qw(foo bar) ],
     }
 )->status_is(200);
@@ -42,18 +42,18 @@ $t->post_ok(
 my $alertgroup_id   = $t->tx->res->json->{id};
 my $updated         = $t->tx->res->json->{updated};
 
-#print Dumper($t->tx->res->json), "\n";
-#done_testing();
-#exit 0;
-
 
 $t->get_ok("/scot/api/v2/alertgroup" => {},
     "Get alertgroup list")
     ->status_is(200)
-    ->json_is('/records/0/tags/0'   => 'test')
-    ->json_is('/records/0/tags/1'   => 'testing')
-    ->json_is('/records/0/sources/0'    => 'todd')
-    ->json_is('/records/0/sources/1'    => 'scot');
+    ->json_is('/records/0/tag/0'   => 'test')
+    ->json_is('/records/0/tag/1'   => 'testing')
+    ->json_is('/records/0/source/0'    => 'todd')
+    ->json_is('/records/0/source/1'    => 'scot');
+
+#print Dumper($t->tx->res->json), "\n";
+#done_testing();
+#exit 0;
 
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
            "Get alertgroup $alertgroup_id" )

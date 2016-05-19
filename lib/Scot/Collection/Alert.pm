@@ -139,6 +139,14 @@ override get_subthing => sub {
         my $cur = $col->find({ promoted_from => $id });
         return $cur;
     }
+    elsif ( $subthing eq "file" ) {
+        my $col = $mongo->collection('File');
+        my $cur = $col->find({
+            'entry_target.type' => 'alert',
+            'entry_target.id'   => $id,
+        });
+        return $cur;
+    }
     else {
         $log->error("unsupported subthing $subthing!");
     }
