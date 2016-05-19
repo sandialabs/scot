@@ -179,6 +179,14 @@ override get_subthing => sub {
         });
         return $cur;
     }
+    elsif ( $subthing eq "file" ) {
+        my $col = $mongo->collection('File');
+        my $cur = $col->find({
+            'entry_target.type' => 'entity',
+            'entry_target.id'   => $id,
+        });
+        return $cur;
+    }
     else {
         $log->error("unsupported subthing $subthing!");
     }
