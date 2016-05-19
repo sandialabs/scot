@@ -343,6 +343,14 @@ override get_subthing => sub {
                               'target.type' => 'event',});
         return $cur;
     }
+    elsif ( $subthing eq "file" ) {
+        my $col = $mongo->collection('File');
+        my $cur = $col->find({
+            'entry_target.id'     => $id,
+            'entry_target.type'   => 'event',
+        });
+        return $cur;
+    }
     else {
         $log->error("unsupported subthing $subthing!");
     }
