@@ -35,7 +35,7 @@ sub parse_message {
     my $regex   = qr{\[(?<sid>.*?)\] "(?<rule>.*?)" \[Impact: (?<impact>.*?)\] +From "(?<from>.*?)" at (?<when>.*?) +\[Classification: (?<class>.*?)\] \[Priority: (?<pri>.*?)\] {(?<proto>.*)} (?<rest>.*) *};
 
     my $body    = $href->{body_html} // $href->{body_plain};
-       $body    =~ s/[\n\r]/ /g;
+       $body    =~ s/[\n\r]/ /g;
        $body    =~ m/$regex/g;
 
     $json{data}     = {
