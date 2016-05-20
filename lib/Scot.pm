@@ -51,7 +51,7 @@ sub startup {
     $self->config(
         hypnotoad   => {
             listen  => ['http://localhost:3000?reuse=1'],
-            workers => 10,
+            workers => 75,
             clients => 1,
             proxy   => 1,
             pidfile => '/var/run/hypno.pid',
