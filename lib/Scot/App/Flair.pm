@@ -31,6 +31,7 @@ use AnyEvent::STOMP::Client;
 use AnyEvent::ForkManager;
 use HTML::Entities;
 use Module::Runtime qw(require_module);
+use Sys::Hostname;
 use strict;
 use warnings;
 use v5.18;
@@ -38,6 +39,13 @@ use v5.18;
 use Moose;
 
 extends 'Scot::App';
+
+has hostname    =>  (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => sub { hostname; },
+);
 
 has extractor   => (
     is          => 'ro',
@@ -131,7 +139,9 @@ sub _get_enrichers {
                 $init->{config} = $config;
             }
             push @enrichers, {
-                $name   => $module->new($init),
+                name    => $name,
+                object  => $module->new($init),
+
             };
         }
         else {
@@ -141,6 +151,36 @@ sub _get_enrichers {
     }
     return \@enrichers;
 }
+
+sub reprocess {
+    my $self    = shift;
+    my $time    = shift // 0;
+    my $reparse = shift;
+    $time += 0; # ensure number treatment not string
+    my $log     = $self->log;
+    my $scot    = $self->scot;
+    my $req     = {
+        match   => {
+            created    => { begin => $time, end => time() },
+        }
+    };
+    unless ( $reparse ) {
+        $req->{match}->{parsed} = 0;
+    }
+
+    $log->debug("match request is ",{filter=>\&Dumper, value=>$req});
+
+    my $json    = $scot->get( 'alert', undef, $req);
+
+    foreach my $record (@{$json->{records}}) {
+        $self->process_alert($record);
+        if ( $self->interactive ) {
+            say "Processed Alert ".$record->{id};
+        }
+    }
+
+}
+
 
 sub run {
     my $self    = shift;
@@ -166,6 +206,15 @@ sub run {
     });
 
     my $stomp   = new AnyEvent::STOMP::Client();
+
+    my $subscribe_headers   = {
+        id                          => $self->hostname,
+        'activemq.subscriptionName' => 'scot-queue',
+    };
+
+    my $connect_headers = {
+        'client-id' => 'scot-queue',
+    };
 
     $stomp->connect();
 
@@ -381,16 +430,19 @@ sub enrich_entities {
 
     my $enrichers   = $self->enrichers;
 
-
     foreach my $entity (@$aref) {
         my $value   = $entity->{value};
         my $type    = $entity->{type};
 
         foreach my $ehref (@{$enrichers}) {
-            $log->debug("enricher: ",{filter=>\&Dumper, value=>$ehref});
-            my ($name,$instance) = each %$ehref;
+            my $name        = $ehref->{name};
+            my $instance    = $ehref->{object};
+
+            $log->debug("Enricher $name");
+
             unless (ref($instance)) {
-                $log->debug("instance is unblessed! ",{filter=>\&Dumper, value=>$ehref});
+                $log->debug("instance is unblessed! ",
+                    {filter=>\&Dumper, value=>$ehref});
             }
             $data{$value}{$name} = $instance->get_data($type, $value);
         }

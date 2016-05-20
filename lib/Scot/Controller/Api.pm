@@ -1382,14 +1382,18 @@ sub delete {
     });
     if ( ref($object) eq "Scot::Model::Entry" ) {
         my $targetobj   = $mongo->collection(ucfirst($object->target->{type}));
-        $targetobj->update({
-            '$set'  => {
-                updated => $env->now,
-            },
-            '$inc'  => {
-                entry_count => -1
-            },
-        });
+        # this is preferable but, getting error so...
+        #$targetobj->update({
+        #    '$set'  => {
+        #        updated => $env->now,
+        #    },
+        #    '$inc'  => {
+        #        entry_count => -1
+        #    },
+        #});
+        my $now = $env->now // time();
+        $targetobj->update_set( updated => $now );
+        $targetobj->update_inc( entry_count => -1 );
         $env->mq->send("scot", {
             action  => 'updated',
             data    => {
@@ -2149,6 +2153,9 @@ sub build_match_ref {
                     $match->{$k} = {'$in' => $v};
                 }
             }
+        }
+        elsif ( $k eq "parsed" ) {
+            $match->{$k} = $v + 0;
         }
         elsif ( grep {/$k/}  @numfields) {
             $log->debug("numeric field");
