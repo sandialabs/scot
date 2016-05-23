@@ -502,10 +502,14 @@ var EntryDataSubject = React.createClass({
         }
     },
     render: function() {
-        var subjectLength = this.state.value.length;
-        var subjectWidth = subjectLength * 18;
-        if (subjectWidth <= 200) {
-            subjectWidth = 200;
+        if (this.state.value != undefined) {
+            var subjectLength = this.state.value.length;
+            var subjectWidth = subjectLength * 18;
+            if (subjectWidth <= 200) {
+                subjectWidth = 200;
+            }
+        } else {
+            var subjectWidth = 1000;
         }
         return (
             <div>{this.props.subjectType} {this.props.id}: <DebounceInput debounceTimeout={1000} forceNotifyOnBlur={true} type='text' value={this.state.value} onChange={this.handleChange} style={{width:subjectWidth+'px'}} /></div>

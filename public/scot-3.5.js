@@ -3057,10 +3057,14 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
         }
     },
     render: function() {
-        var subjectLength = this.state.value.length;
-        var subjectWidth = subjectLength * 18;
-        if (subjectWidth <= 200) {
-            subjectWidth = 200;
+        if (this.state.value != undefined) {
+            var subjectLength = this.state.value.length;
+            var subjectWidth = subjectLength * 18;
+            if (subjectWidth <= 200) {
+                subjectWidth = 200;
+            }
+        } else {
+            var subjectWidth = 1000;
         }
         return (
             React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement(DebounceInput, {debounceTimeout: 1000, forceNotifyOnBlur: true, type: "text", value: this.state.value, onChange: this.handleChange, style: {width:subjectWidth+'px'}}))
