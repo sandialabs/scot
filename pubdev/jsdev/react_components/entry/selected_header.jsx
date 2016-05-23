@@ -332,10 +332,7 @@ var SelectedHeader = React.createClass({
         this.forceUpdate();
     },
     scrollTo: function() {
-        if (this.props.taskid != undefined) {
-            /*$(document.body).find('.entry-wrapper').animate({
-                'scrollTop':$('#iframe_'+this.props.taskid).offset().top - 130
-            },2000)*/
+        if (this.props.taskid != undefined) { 
             $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#iframe_'+this.props.taskid).position().top -30)
         }
     },
@@ -408,6 +405,17 @@ var EntryDataStatus = React.createClass({
             buttonStatus:this.props.data.status,
             key: this.props.id
         }
+    },
+    componentDidMount: function() {
+        //Adds open/close hot keys for events/incidents/intel
+        /*$(document.body).keydown(function(event){
+            //check for character "o" for 79 or "c" for 67
+            if (event.keyCode == 79) {
+                this.statusAjax('open');
+            } else if (event.keyCode == 67) {
+                this.statusAjax('closed');
+            }
+        }.bind(this))*/
     },
     componentWillReceiveProps: function() {
         this.setState({buttonStatus:this.props.data.status});
