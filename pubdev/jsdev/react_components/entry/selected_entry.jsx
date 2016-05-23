@@ -152,14 +152,25 @@ var AlertParent = React.createClass({
         return {
             activeIndex: arr,
             lastIndex: null,
+            allSelected:false,
         }
     },
     componentDidMount: function() {
         $('#sortabletable').tablesorter();
+        
+        //Ctrl + A to select all alerts
+        $(document.body).keydown(function(event){
+            //check for ctrl + a with keyCode 
+            if (event.keyCode == 65 && (event.ctrlKey == true || event.metaKey == true)) {
+                this.rowClicked(null,null,'all',null);
+                event.preventDefault()
+            }
+        }.bind(this)) 
     },
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();
         var selected = true;
+        this.setState({allSelected:false});
         if (clickType == 'ctrl') {
             for (var i=0; i < array.length; i++) {
                 if (array[i] === index) {
@@ -186,8 +197,14 @@ var AlertParent = React.createClass({
                 }
                 this.setState({activeIndex:array})
             }
+        } else if (clickType == 'all') {
+            var array = [];
+            for (var i=0; i < this.props.items.length; i++) {
+                array.push(this.props.items[i].id)
+            }
+            this.setState({activeIndex:array,allSelected:true});
         } else {
-            array = [];
+            var array = [];
             array.push(index);
             this.setState({activeIndex:array});
         }
@@ -197,11 +214,11 @@ var AlertParent = React.createClass({
         } else if (array.length == 0){   
             this.props.alertSelected(null,null,'alert');
         } else {
-            this.props.alertSelected('showall',id,'alert')
+            this.props.alertSelected('showall',null,'alert')
         }
     },
     render: function() {
-        var z = 0;
+        //var z = 0;
         var items = this.props.items;
         var body = [];
         var header = [];
@@ -221,17 +238,19 @@ var AlertParent = React.createClass({
             for (var i=0; i < col_names.length; i++){
                 header.push(<AlertHeader colName={col_names[i]} />)
             }
-            items.forEach(function(object){
+            for (var z=0; z < items.length; z++) {
+            //items.forEach(function(object){
                 var dataFlair = null;
-                if (Object.getOwnPropertyNames(object.data_with_flair).length != 0) {
-                    dataFlair = object.data_with_flair;
+                if (Object.getOwnPropertyNames(items[z].data_with_flair).length != 0) {
+                    dataFlair = items[z].data_with_flair;
                 } else {
-                    dataFlair = object.data;
+                    dataFlair = items[z].data;
                 }
                 
-                body.push(<AlertBody index={z} data={object} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected}/>)
-                z++;
-            }.bind(this))
+                body.push(<AlertBody index={z} data={items[z]} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected}/>)
+                //z++;
+            //}.bind(this))
+            }
             var search = null;
             if (items[0].data_with_flair != undefined) {
                 search = items[0].data_with_flair.search;
@@ -313,6 +332,7 @@ var AlertBody = React.createClass({
                 this.setState({promotedNumber:response.records[0].id});             
             }.bind(this))
         }
+        
     },
     componentWillReceiveProps: function() {
         if (this.props.data.status == 'promoted') {
@@ -353,10 +373,14 @@ var AlertBody = React.createClass({
             var value = columns[i];
             rowReturn.push(<AlertRow data={data} dataFlair={dataFlair} value={value} />)
         }
-        for (var j=0; j < this.props.activeIndex.length; j++) {
-            if (this.props.activeIndex[j] === index) {
-                selected = 'selected';
-            } 
+        if (this.props.allSelected == false) {
+            for (var j=0; j < this.props.activeIndex.length; j++) {
+                if (this.props.activeIndex[j] === index) {
+                    selected = 'selected';
+                } 
+            }
+        } else {
+            selected = 'selected'
         }
         var id = 'alert_'+data.id+'_status';
         return (
