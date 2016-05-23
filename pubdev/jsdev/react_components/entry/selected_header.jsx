@@ -504,7 +504,7 @@ var EntryDataSubject = React.createClass({
     render: function() {
         if (this.state.value != undefined) {
             var subjectLength = this.state.value.length;
-            var subjectWidth = subjectLength * 18;
+            var subjectWidth = subjectLength * 14;
             if (subjectWidth <= 200) {
                 subjectWidth = 200;
             }
