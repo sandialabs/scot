@@ -117,7 +117,7 @@ var SelectedEntry = React.createClass({
         }
         return (
             <div className={divClass} style={{height:this.props.windowHeight}}> 
-                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected}/> : <span>Loading...</span>} 
+                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData}/> : <span>Loading...</span>} 
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
             </div>       
@@ -136,7 +136,7 @@ var EntryIterator = React.createClass({
                 rows.push(<EntryParent key={data.id} items={data} type={type} id={id} />);
             }.bind(this));
         } else {
-            rows.push(<AlertParent items={data} type={type} id={id} alertSelected={this.props.alertSelected} />);
+            rows.push(<AlertParent items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} />);
         }
         return (
             <div>
@@ -238,6 +238,16 @@ var AlertParent = React.createClass({
             } else {
                 search = items[0].data.search;
             }
+        } else if (this.props.headerData != undefined){
+            if (this.props.headerData.body != undefined) {
+                return (
+                    <div>
+                        <div style={{color:'red'}}>If you see this message, please notify your SCOT admin. Parsing failed on the message below. The raw alert is displayed.</div>
+                        <div className='alertTableHorizontal' dangerouslySetInnerHTML={{ __html: this.props.headerData.body}}/>
+                    </div>
+                )
+            }
+
         }
         return (
             <div>
