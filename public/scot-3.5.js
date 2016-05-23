@@ -2105,7 +2105,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         }
         return (
             React.createElement("div", {className: divClass, style: {height:this.props.windowHeight}}, 
-                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected}) : React.createElement("span", null, "Loading..."), 
+                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData}) : React.createElement("span", null, "Loading..."), 
                 this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue}) : null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null
             )       
@@ -2124,7 +2124,7 @@ var EntryIterator = React.createClass({displayName: "EntryIterator",
                 rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id}));
             }.bind(this));
         } else {
-            rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, alertSelected: this.props.alertSelected}));
+            rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected}));
         }
         return (
             React.createElement("div", null, 
@@ -2226,6 +2226,16 @@ var AlertParent = React.createClass({displayName: "AlertParent",
             } else {
                 search = items[0].data.search;
             }
+        } else if (this.props.headerData != undefined){
+            if (this.props.headerData.body != undefined) {
+                return (
+                    React.createElement("div", null, 
+                        React.createElement("div", {style: {color:'red'}}, "If you see this message, please notify your SCOT admin. Parsing failed on the message below. The raw alert is displayed."), 
+                        React.createElement("div", {className: "alertTableHorizontal", dangerouslySetInnerHTML: { __html: this.props.headerData.body}})
+                    )
+                )
+            }
+
         }
         return (
             React.createElement("div", null, 
@@ -2942,7 +2952,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 ), 
                 this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
 
-                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, windowHeight: this.props.windowHeight, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, linkWarningToggle: this.linkWarningToggle})
+                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, headerData: this.state.headerData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, windowHeight: this.props.windowHeight, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, linkWarningToggle: this.linkWarningToggle})
             )
         )
     }
