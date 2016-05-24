@@ -117,6 +117,7 @@ var SelectedEntry = React.createClass({
         }
         return (
             <div className={divClass} style={{height:this.props.windowHeight}}> 
+                {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : <AddEntryModal title={'Add Entry'} type={this.props.aType} targetid={this.props.aID} addedentry={this.props.entryToggle} updated={this.updatedCB}/> }</div> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData}/> : <span>Loading...</span>} 
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
@@ -532,10 +533,10 @@ var EntryParent = React.createClass({
                             </span>
                         </div>
                     </div>
-                {itemarr}
-                </div> 
                 {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} parent={items.parent} targetid={id} type={type} stage = {'Edit'} id={items.id} addedentry={this.editEntryToggle} /> : null}
+                {itemarr}
                 {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid={id} id={items.id} addedentry={this.replyEntryToggle} /> : null}
+                </div> 
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} /> : null}     
             </div>
         );
