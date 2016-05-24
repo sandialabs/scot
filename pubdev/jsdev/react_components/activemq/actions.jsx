@@ -58,6 +58,7 @@ var Actions = {
                             Dispatcher.handleActivemq({
                             activemq: json
                         })
+                    }
                 }
             });       
         }).fail(function(){

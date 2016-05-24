@@ -55,9 +55,11 @@ var Actions = {
                 if(message != ""){
                     var json = JSON.parse(message);
                         console.log(json)
-                        Dispatcher.handleActivemq({
-                        activemq: json
-                    })
+                        if(json.data.who != 'scot-admin' || json.data.who != 'scot-alerts'){
+                            Dispatcher.handleActivemq({
+                            activemq: json
+                        })
+                    }
                 }
             });       
         }).fail(function(){
