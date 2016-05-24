@@ -2290,6 +2290,7 @@ var AlertBody = React.createClass({displayName: "AlertBody",
             selected: 'un-selected',
             promotedNumber: null,
             showEntry: false,
+            promoteFetch:false,
         }
     },
     onClick: function(event) {
@@ -2319,17 +2320,21 @@ var AlertBody = React.createClass({displayName: "AlertBody",
             }).success(function(response){
                 this.setState({promotedNumber:response.records[0].id});             
             }.bind(this))
+            this.setState({promoteFetch:true})
         }
         
     },
     componentWillReceiveProps: function() {
-        if (this.props.data.status == 'promoted') {
-            $.ajax({
-                type: 'GET',
-                url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
-            }).success(function(response){
-                this.setState({promotedNumber:response.records[0].id});             
-            }.bind(this))
+        if (this.state.promoteFetch == false) {
+            if (this.props.data.status == 'promoted') {
+                $.ajax({
+                    type: 'GET',
+                    url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
+                }).success(function(response){
+                    this.setState({promotedNumber:response.records[0].id});             
+                }.bind(this))
+                this.setState({promoteFetch:true});
+            }
         }
     },
     render: function() {
@@ -2376,7 +2381,7 @@ var AlertBody = React.createClass({displayName: "AlertBody",
                 React.createElement("tr", {index: index, id: data.id, className: selected, style: {cursor: 'pointer'}, onClick: this.onClick}, 
                     React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.id), 
                     React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.status != 'promoted' ? React.createElement("span", {style: {color:buttonStyle}}, data.status) : React.createElement(Button, {bsSize: "xsmall", bsStyle: buttonStyle, id: id, onClick: this.navigateTo, style: {lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}, data.status)), 
-                    React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, React.createElement("a", {href: "javascript: void(0)", onClick: this.toggleEntry}, data.entry_count)), 
+                    data.entry_count == 0 ? React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.entry_count) : React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, React.createElement("a", {href: "javascript: void(0)", onClick: this.toggleEntry}, data.entry_count)), 
                     rowReturn
                 ), 
                 React.createElement(AlertRowBlank, {id: data.id, type: 'alert', showEntry: this.state.showEntry})
@@ -3333,7 +3338,23 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 });
             }        
         }
-    }, 
+    },
+    componentDidMount: function() {
+        //open, close, and promote alerts
+        $(document.body).keydown(function(event){
+            switch (event.keyCode) {
+                case 79:
+                    this.alertOpenSelected();
+                    break;
+                case 67:
+                    this.alertCloseSelected();
+                    break;
+                case 80:
+                    this.alertPromoteSelected();
+                    break;
+            }
+        }.bind(this))
+    },
     render: function() { 
         var subjectType = this.props.subjectType;
         var type = this.props.type;
