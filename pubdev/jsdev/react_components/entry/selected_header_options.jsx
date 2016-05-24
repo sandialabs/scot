@@ -214,7 +214,23 @@ var SelectedHeaderOptions = React.createClass({
                 });
             }        
         }
-    }, 
+    },
+    componentDidMount: function() {
+        //open, close, and promote alerts
+        $(document.body).keydown(function(event){
+            switch (event.keyCode) {
+                case 79:
+                    this.alertOpenSelected();
+                    break;
+                case 67:
+                    this.alertCloseSelected();
+                    break;
+                case 80:
+                    this.alertPromoteSelected();
+                    break;
+            }
+        }.bind(this))
+    },
     render: function() { 
         var subjectType = this.props.subjectType;
         var type = this.props.type;
