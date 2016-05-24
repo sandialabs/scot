@@ -332,10 +332,7 @@ var SelectedHeader = React.createClass({
         this.forceUpdate();
     },
     scrollTo: function() {
-        if (this.props.taskid != undefined) {
-            /*$(document.body).find('.entry-wrapper').animate({
-                'scrollTop':$('#iframe_'+this.props.taskid).offset().top - 130
-            },2000)*/
+        if (this.props.taskid != undefined) { 
             $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#iframe_'+this.props.taskid).position().top -30)
         }
     },
@@ -387,7 +384,7 @@ var SelectedHeader = React.createClass({
                 </div>
                 {this.state.showFlash == true ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} /> : null}
 
-                <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} windowHeight={this.props.windowHeight} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} linkWarningToggle={this.linkWarningToggle}/> 
+                <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} windowHeight={this.props.windowHeight} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} linkWarningToggle={this.linkWarningToggle}/> 
             </div>
         )
     }
@@ -408,6 +405,17 @@ var EntryDataStatus = React.createClass({
             buttonStatus:this.props.data.status,
             key: this.props.id
         }
+    },
+    componentDidMount: function() {
+        //Adds open/close hot keys for events/incidents/intel
+        /*$(document.body).keydown(function(event){
+            //check for character "o" for 79 or "c" for 67
+            if (event.keyCode == 79) {
+                this.statusAjax('open');
+            } else if (event.keyCode == 67) {
+                this.statusAjax('closed');
+            }
+        }.bind(this))*/
     },
     componentWillReceiveProps: function() {
         this.setState({buttonStatus:this.props.data.status});
@@ -502,10 +510,14 @@ var EntryDataSubject = React.createClass({
         }
     },
     render: function() {
-        var subjectLength = this.state.value.length;
-        var subjectWidth = subjectLength * 18;
-        if (subjectWidth <= 200) {
-            subjectWidth = 200;
+        if (this.state.value != undefined) {
+            var subjectLength = this.state.value.length;
+            var subjectWidth = subjectLength * 14;
+            if (subjectWidth <= 200) {
+                subjectWidth = 200;
+            }
+        } else {
+            var subjectWidth = 1000;
         }
         return (
             <div>{this.props.subjectType} {this.props.id}: <DebounceInput debounceTimeout={1000} forceNotifyOnBlur={true} type='text' value={this.state.value} onChange={this.handleChange} style={{width:subjectWidth+'px'}} /></div>
