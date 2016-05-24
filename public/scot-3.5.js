@@ -4579,7 +4579,8 @@ var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
 var columns = ['ID', 'Status', 'Subject', 'Created', 'Source', 'Tags', 'Views']
-
+var toggle
+var scrolled = 48
 module.exports = React.createClass({displayName: "exports",
 
     getInitialState: function(){
@@ -4588,7 +4589,7 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
 
     return {
-            unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
+            mute: false,unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
             statustext: '', subjecttext:'', idsarray: [], 
             viewstext: '', entriestext: '', scrollheight: scrollHeight, 
@@ -4599,13 +4600,42 @@ module.exports = React.createClass({displayName: "exports",
         firstCol.width = firstSize
         this.setState({})
     },
-    componentWillMount: function(){
+    componentDidMount: function(){
+        toggle  = $('#list-view')
+        $('.container-fluid2').scrollTop(0)
+        $(document.body).keydown(function(e){
+            var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
+            var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
+            e.preventDefault()
+            if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
+                scrolled = scrolled + 48
+                var set;
+                set  = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents').click()
+                var array = []
+                array.push($(set).attr('id'))
+                window.history.pushState('Page', 'SCOT', '/#/alertgroup/'+$(set).attr('id'))
+                $('.container-fluid2').scrollTop(scrolled)
+                this.setState({idsarray: array})
+            }
+            else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
+                scrolled = scrolled - 48
+                var set;
+                set  = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents').click()
+                var array = []
+                array.push($(set).attr('id'))
+                window.history.pushState('Page', 'SCOT', '/#/alertgroup/'+$(set).attr('id'))
+                $('.container-fluid2').scrollTop(scrolled)
+                this.setState({idsarray: array})
+            }
+        }.bind(this)) 
+
         var array = []
         if(this.props.supertable !== undefined){
             if(this.props.supertable.length > 0){
                 array = this.props.supertable
                 stage = true
-                }
+                scrolled = $('.container-fluid2').scrollTop()    
+            }
           }
         var finalarray = [];
 	    var sortarray = {}
@@ -4665,10 +4695,10 @@ module.exports = React.createClass({displayName: "exports",
     reloadItem: function(){
         height = $(window).height() - 170
         width = width + 40
-        $('.container-fluid').css('height', height) 
-        $('.container-fluid').css('max-height', height)
-        $('.container-fluid').css('max-width', '915px')
-        $('.container-fluid').css('width', width)
+        $('.container-fluid2').css('height', height) 
+        $('.container-fluid2').css('max-height', height)
+        $('.container-fluid2').css('max-width', '915px')
+        $('.container-fluid2').css('width', width)
     },
     launchEvent: function(array){
         stage = true
@@ -4709,7 +4739,7 @@ module.exports = React.createClass({displayName: "exports",
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
-                    React.createElement(Notificationactivemq, {ref: 'notificationSystem'})), 
+                    !this.state.mute ? React.createElement(Notificationactivemq, {ref: 'notificationSystem'}) :null ), 
                         React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, 
                         React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, 
                         React.createElement('h2', {style: {'font-size': '30px'}}, 'Alertgroup')), 
@@ -4717,12 +4747,14 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), 
                         React.createElement(Search, null)),                        
                         React.createElement('btn-group', {style: {'padding-left': '0px'}}, 
+                        !this.state.mute ?
+                        React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Mute Notifications'): React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Turn On Notifications'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'eventwidth', style: {display:'flex'}},
             React.createElement('div', {id:'list-view'},  
             React.createElement('div', {style:{display: 'flex'}},
-                React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
+                React.createElement("div", {className: "container-fluid2", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
                         React.createElement("div", {className: "wrapper attributes"}, 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -4845,7 +4877,7 @@ module.exports = React.createClass({displayName: "exports",
                     ), 
 
                     this.state.objectarray.map((value) => React.createElement('div', {className:'allevents', id: value.id}, 
-                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null, 
+                       /* React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null, 
                         React.createElement('div', null,
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'ID:'),
                         React.createElement('div', null, value.id)),
@@ -4861,7 +4893,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('div', {style: {'font-weight':'bold'}}, 'Tags:  '), React.createElement('div', null, value.tags)),
                         React.createElement('div', {style: {display:'flex'}},
                         React.createElement('div', {style: {'font-weight': 'bold'}}, 'Views:  '), React.createElement('div', null, value.views))
-                        ))}, 
+                        ))},*/ 
                         React.createElement("div", {style: {background: this.state.idsarray[0] == value.id ? this.state.blue : this.state.white},onClick: this.clickable, className: "table-row", id: value.id}, 
                         React.createElement("div", {className: "wrapper attributes"},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -4891,8 +4923,8 @@ module.exports = React.createClass({displayName: "exports",
                         )
                         )
                     )
-                    )
-                    )
+                    //)
+                    //)
                     )))), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})) , stage ? 
                         React.createElement(SelectedContainer, {height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null) 
@@ -5039,6 +5071,14 @@ module.exports = React.createClass({displayName: "exports",
             this.getNewData({page: 0, limit: pageSize})
         }
     },
+    clearNote: function(){
+        if(this.state.mute){
+            this.setState({mute: false})
+        }
+        else {
+            this.setState({mute: true})
+        }
+    },
     clickable: function(v){
         $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
             var array = []
@@ -5047,6 +5087,7 @@ module.exports = React.createClass({displayName: "exports",
             window.history.pushState('Page', 'SCOT', '/#/alertgroup/'+$(y).attr('id'))  
             this.launchEvent(array)
         }.bind(this))
+        scrolled = $('.container-fluid2').scrollTop() 
     },
 
     handlePageChange: function(pageNumber){
@@ -5273,6 +5314,11 @@ var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
 var columns = ['ID', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
+var toggle;
+var scrolled = 83
+function Remove(note){
+    console.log(note)
+}
 
 module.exports = React.createClass({displayName: "exports",
 
@@ -5282,8 +5328,9 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
 
     return {
-            unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
-            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
+            mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
+            sourcetags: [], tags: [], 
+            startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
             upstartepoch: '', upendepoch: '', statustext: '', subjecttext:'', idsarray: [], 
             ownertext: '',viewstext: '', entriestext: '', scrollheight: scrollHeight, 
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
@@ -5293,12 +5340,41 @@ module.exports = React.createClass({displayName: "exports",
         firstCol.width = firstSize
         this.setState({})
     },
-    componentWillMount: function(){
+    componentDidMount: function(){
+        toggle  = $('#list-view') 
+        $('.container-fluid2').scrollTop(0)
+        $(document.body).keydown(function(e){
+            var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
+            var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
+            e.preventDefault()
+            if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
+                scrolled = scrolled + 83
+                var set;
+                set  = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents').click()
+                var array = []
+                array.push($(set).attr('id'))
+                window.history.pushState('Page', 'SCOT', '/#/event/'+$(set).attr('id'))
+                $('.container-fluid2').scrollTop(scrolled)
+                this.setState({idsarray: array})
+            }
+            else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
+                scrolled = scrolled - 83
+                var set;
+                set  = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents').click()
+                var array = []
+                array.push($(set).attr('id'))
+                window.history.pushState('Page', 'SCOT', '/#/event/'+$(set).attr('id'))
+                $('.container-fluid2').scrollTop(scrolled)
+                this.setState({idsarray: array})
+            }
+        }.bind(this))
+        
         var array = []
         if(this.props.ids !== undefined){
             if(this.props.ids.length > 0){
                 array = this.props.ids
                 stage = true
+                scrolled = $('.container-fluid2').scrollTop()
                 }
           }
         var finalarray = [];
@@ -5359,10 +5435,10 @@ module.exports = React.createClass({displayName: "exports",
     reloadItem: function(){
         height = $(window).height() - 170
         width = width + 40
-        $('.container-fluid').css('height', height) 
-        $('.container-fluid').css('max-height', height)
-        $('.container-fluid').css('max-width', '915px')
-        $('.container-fluid').css('width', width)
+        $('.container-fluid2').css('height', height) 
+        $('.container-fluid2').css('max-height', height)
+        $('.container-fluid2').css('max-width', '915px')
+        $('.container-fluid2').css('width', width)
     },
     launchEvent: function(array){
         stage = true
@@ -5392,32 +5468,34 @@ module.exports = React.createClass({displayName: "exports",
                     else if($(y).text() == 'closed'){
                         $(y).css('color', 'green')
                     }
-        else if($(y).text()  == 'promoted'){
-            $(y).css('color', 'orange')
+            else if($(y).text()  == 'promoted'){
+                $(y).css('color', 'orange')
         }
         })
         })
-
         }.bind(this),100)
         window.addEventListener('resize',this.reloadItem);
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
-                    React.createElement(Notificationactivemq, {ref: 'notificationSystem'})), 
+                    !this.state.mute ? React.createElement(Notificationactivemq, {ref: 'notificationSystem'}) : null), 
                         React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, 
                         React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, 
+                        
                         React.createElement('h2', {style: {'font-size': '30px'}}, 'Event')), 
                         React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, 
                         React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), 
                         React.createElement(Search, null)),                        
-                        React.createElement('btn-group', {style: {'padding-left': '0px'}}, 
+                        React.createElement('btn-group', {style: {'padding-left': '0px'}},
+                        !this.state.mute ?
+                        React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Mute Notifications'): React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Turn On Notifications'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.createevent, style: styles}, 'Create Event'),
-                        React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
+                        React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */),
             React.createElement('div', {className: 'eventwidth', style: {display:'flex'}},
             React.createElement('div', {id:'list-view'},  
-            React.createElement('div', {style:{display: 'flex'}},
-                React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
+            React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
+                React.createElement("div", {className: "container-fluid2", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
                         React.createElement("div", {className: "wrapper attributes"}, 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -5581,9 +5659,9 @@ module.exports = React.createClass({displayName: "exports",
                     ))
                     )
                     ), 
-
+                    React.createElement('div', {id: 'listpane'},
                     this.state.objectarray.map((value) => React.createElement('div', {className:'allevents', id: value.id}, 
-                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null, 
+                      /*  React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null, 
                         React.createElement('div', null,
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'ID:'),
                         React.createElement('div', null, value.id)),
@@ -5603,7 +5681,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Entries:  '),
                         React.createElement('div', null, value.entries)), React.createElement('div', {style: {display:'flex'}},
                         React.createElement('div', {style: {'font-weight': 'bold'}}, 'Views:  '), React.createElement('div', null, value.views))
-                        ))}, 
+                        ))},*/
                         React.createElement("div", {style: {background: this.state.idsarray[0] == value.id ? this.state.blue : this.state.white},onClick: this.clickable, className: "table-row", id: value.id}, 
                         React.createElement("div", {className: "wrapper attributes"},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -5630,13 +5708,30 @@ module.exports = React.createClass({displayName: "exports",
                         )
                         )
                     )
-                    )
-                    )
-                    )))), 
+                   // )
+                   // )
+                    ))))), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})) , stage ? 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'event', viewEvent:this.viewEvent}) : null) 
 
         ));
+    },
+    setItem: function(v){
+        console.log(v)
+    },
+    dismissNote: function(){
+        var note = this.refs.notificationSystem
+            note.removeNotification({
+                onRemove: Remove(notification)
+            })
+    },
+    clearNote: function(){
+        if(this.state.mute){
+            this.setState({mute: false})
+        }
+        else {
+            this.setState({mute: true})
+        }
     },
     clearAll: function(){
         sortarray['id'] = -1
@@ -5646,6 +5741,7 @@ module.exports = React.createClass({displayName: "exports",
             viewstext: ''})
             this.getNewData({page: 0, limit: pageSize})
     },
+
     getTags:  function(getColumn){
         var array = []
         var values;
@@ -5819,6 +5915,8 @@ module.exports = React.createClass({displayName: "exports",
             window.history.pushState('Page', 'SCOT', '/#/event/'+$(y).attr('id'))
             this.launchEvent(array)
         }.bind(this))
+        scrolled = $('.container-fluid2').scrollTop()
+    
     },
     getNewData: function(page){
         pageSize = page.limit
@@ -6074,6 +6172,8 @@ var Tags                    = require('react-tag-input').WithContext
 var SORT_INFO;
 var colsort = "id"
 var start;
+var toggle 
+var scrolled = 23
 var end;
 var valuesort = -1
 var SELECTED_ID = {}
@@ -6106,19 +6206,48 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
 
     return {
-            unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
+            mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             idtext: '', totalcount: 0, activepage: 0,
             subjecttext:'', idsarray: [], scrollheight: scrollHeight, 
             scrollwidth: scrollWidth, reload: false, 
             viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: ''};
     },
 
-    componentWillMount: function(){
+    componentDidMount: function(){
+        toggle  = $('#list-view')
+        $('.container-fluid2').scrollTop(0)
+        $(document.body).keydown(function(e){
+            var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
+            var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
+            e.preventDefault()
+            if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
+                scrolled = scrolled + 23
+                var set;
+                set  = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents').click()
+                var array = []
+                array.push($(set).attr('id'))
+                window.history.pushState('Page', 'SCOT', '/#/guide/'+$(set).attr('id'))
+                $('.container-fluid2').scrollTop(scrolled)
+                this.setState({idsarray: array})
+            }
+            else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
+                scrolled = scrolled - 23
+                var set;
+                set  = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents').click()
+                var array = []
+                array.push($(set).attr('id'))
+                window.history.pushState('Page', 'SCOT', '/#/guide/'+$(set).attr('id'))
+                $('.container-fluid2').scrollTop(scrolled)
+                this.setState({idsarray: array})
+            }
+        }.bind(this))
+       
         var array = []
         if(this.props.ids !== undefined){
             if(this.props.ids.length > 0){
                 array = this.props.ids
                 stage = true
+                scrolled = $('.container-fluid2').scrollTop() 
                 }
           }
         var finalarray = [];
@@ -6180,10 +6309,10 @@ module.exports = React.createClass({displayName: "exports",
     reloadItem: function(){
         height = $(window).height() - 170
         width = width + 40
-        $('.container-fluid').css('height', height) 
-        $('.container-fluid').css('max-height', height)
-        $('.container-fluid').css('max-width', '915px')
-        $('.container-fluid').css('width', width)
+        $('.container-fluid2').css('height', height) 
+        $('.container-fluid2').css('max-height', height)
+        $('.container-fluid2').css('max-width', '915px')
+        $('.container-fluid2').css('width', width)
     },
     launchEvent: function(array){
         stage = true
@@ -6224,20 +6353,22 @@ module.exports = React.createClass({displayName: "exports",
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
-                    React.createElement(Notificationactivemq, {ref: 'notificationSystem'})), 
+                    !this.state.mute ? React.createElement(Notificationactivemq, {ref: 'notificationSystem'}):null), 
                         React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, 
                         React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, 
                         React.createElement('h2', {style: {'font-size': '30px'}}, 'Guide')), 
                         React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, 
                         React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), 
                         React.createElement(Search, null)),                        
-                        React.createElement('btn-group', {style: {'padding-left': '0px'}}, 
+                        React.createElement('btn-group', {style: {'padding-left': '0px'}},
+                        !this.state.mute ?
+                        React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Mute Notifications'): React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Turn On Notifications'), 
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'guidewidth', style: {display:'flex'}},
             React.createElement('div', {id:'list-view'},  
             React.createElement('div', {style:{display: 'flex'}},
-                React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
+                React.createElement("div", {className: "container-fluid2", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
                         React.createElement("div", {className: "wrapper attributes"}, 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -6277,13 +6408,13 @@ module.exports = React.createClass({displayName: "exports",
                     ), 
 
                     this.state.objectarray.map((value) => React.createElement('div', {className:'allevents', id: value.id}, 
-                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null, 
+                        /*React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null, 
                         React.createElement('div', null,
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'ID:'),
                         React.createElement('div', null, value.id)),
                          React.createElement('div', {style: {display:'flex'}},
                         React.createElement('div', {style: {'font-weight': 'bold'}}, 'Subject:  '), React.createElement('div', null, value.subject))
-                        ))}, 
+                        ))},*/ 
                         React.createElement("div", {style: {background: this.state.idsarray[0] == value.id ? this.state.blue : this.state.white},onClick: this.clickable, className: "table-row", id: value.id}, 
                         React.createElement("div", {className: "wrapper attributes"},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -6296,8 +6427,8 @@ module.exports = React.createClass({displayName: "exports",
                         )
                         )
                     )
-                    )
-                    )
+                   // )
+                   // )
                     )))), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})) , stage ? 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'guide'}) : null) 
@@ -6333,10 +6464,20 @@ module.exports = React.createClass({displayName: "exports",
             window.history.pushState('Page', 'SCOT', '/#/guide/'+$(y).attr('id')) 
             this.launchEvent(array)
         }.bind(this))
+        scrolled = $('.container-fluid2').scrollTop()
     },
 
     handlePageChange: function(pageNumber){
         this.getNewData(pageNumber)
+    },
+
+    clearNote: function(){
+        if(this.state.mute){
+            this.setState({mute: false})
+        }
+        else {
+            this.setState({mute: true})
+        }
     },
     getNewData: function(page){
         pageSize = page.limit
@@ -6458,6 +6599,8 @@ var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar')
 var DateRangePicker         = require('../../../node_modules/react-daterange-picker')
 var Source                  = require('react-tag-input-tags/react-tag-input').WithContext
 var Tags                    = require('react-tag-input').WithContext
+var toggle
+var scrolled = 73
 var SORT_INFO;
 var colsort = "id"
 var start;
@@ -6494,7 +6637,7 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
 
     return {
-            startepoch: '', endepoch: '',white: 'white', blue: '#AEDAFF',
+            mute: false, startepoch: '', endepoch: '',white: 'white', blue: '#AEDAFF',
             idtext: '', totalcount: 0, activepage: 0,
             statustext: '', subjecttext:'', idsarray: [], 
             ownertext: '', doetext: '', typetext: '', scrollheight: scrollHeight, 
@@ -6505,12 +6648,43 @@ module.exports = React.createClass({displayName: "exports",
         firstCol.width = firstSize
         this.setState({})
     },
-    componentWillMount: function(){
+    componentDidMount: function(){
+        toggle  = $('#list-view')
+        $('.container-fluid2').scrollTop(0)
+        $(document.body).keydown(function(e){
+            var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
+            var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
+            e.preventDefault()
+            if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
+                scrolled = scrolled + 73
+                var set;
+                set  = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents').click()
+                var array = []
+                array.push($(set).attr('id'))
+                window.history.pushState('Page', 'SCOT', '/#/incident/'+$(set).attr('id'))
+                $('.container-fluid2').scrollTop(scrolled)
+                this.setState({idsarray: array})
+            }
+            else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
+                scrolled = scrolled - 73
+                var set;
+                set  = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents').click()
+                var array = []
+                array.push($(set).attr('id'))
+                window.history.pushState('Page', 'SCOT', '/#/incident/'+$(set).attr('id'))
+                $('.container-fluid2').scrollTop(scrolled)
+                this.setState({idsarray: array})
+            }
+        }.bind(this)) 
+        
+        
+        
         var array = []
         if(this.props.ids !== undefined){
             if(this.props.ids.length > 0){
                 array = this.props.ids
                 stage = true
+                scrolled = $('.container-fluid2').scrollTop()
                 }
           }
         var finalarray = [];
@@ -6571,10 +6745,10 @@ module.exports = React.createClass({displayName: "exports",
     reloadItem: function(){
         height = $(window).height() - 170
         width = width + 40
-        $('.container-fluid').css('height', height) 
-        $('.container-fluid').css('max-height', height)
-        $('.container-fluid').css('max-width', '915px')
-        $('.container-fluid').css('width', width)
+        $('.container-fluid2').css('height', height) 
+        $('.container-fluid2').css('max-height', height)
+        $('.container-fluid2').css('max-width', '915px')
+        $('.container-fluid2').css('width', width)
     },
     launchEvent: function(array){
         stage = true
@@ -6610,19 +6784,21 @@ module.exports = React.createClass({displayName: "exports",
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
-                    React.createElement(Notificationactivemq, {ref: 'notificationSystem'})), 
+                    !this.state.mute ? React.createElement(Notificationactivemq, {ref: 'notificationSystem'}):null), 
                         React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, 
                         React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, 
                         React.createElement('h2', {style: {'font-size': '30px'}}, 'Incident')), 
                         React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, 
                         React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), 
-                        React.createElement(Search, null)), React.createElement('btn-group', {style: {'padding-left': '0px'}}, 
+                        React.createElement(Search, null)), React.createElement('btn-group', {style: {'padding-left': '0px'}},
+                        !this.state.mute ?
+                        React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Mute Notifications'): React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Turn On Notifications'), 
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'incidentwidth', style: {display:'flex'}},
             React.createElement('div', {id:'list-view'},  
             React.createElement('div', {style:{display: 'flex'}},
-                React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
+                React.createElement("div", {className: "container-fluid2", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
                         React.createElement("div", {className: "wrapper attributes"}, 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -6736,7 +6912,7 @@ module.exports = React.createClass({displayName: "exports",
                     ), 
 
                     this.state.objectarray.map((value) => React.createElement('div', {className:'allevents', id: value.id}, 
-                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null, 
+                      /*  React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null, 
                         React.createElement('div', null,
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'ID:'),
                         React.createElement('div', null, value.id)),
@@ -6767,7 +6943,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('div', {style: {display:'flex'}},
                         React.createElement('div', {style: {'font-weight': 'bold'}}, 'Deadline:  '), React.createElement('div', null, value.deadline))
 
-                        ))}, 
+                        ))},*/ 
                         React.createElement("div", {style: {background: this.state.idsarray[0] == value.id ? this.state.blue : this.state.white},onClick: this.clickable, className: "table-row", id: value.id}, 
                         React.createElement("div", {className: "wrapper attributes"},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -6790,8 +6966,8 @@ module.exports = React.createClass({displayName: "exports",
                         )
                         )
                     )
-                    )
-                    )
+                   // )
+                   // )
                     )))), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})) , stage ? 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'incident'}) : null) 
@@ -6824,6 +7000,14 @@ module.exports = React.createClass({displayName: "exports",
             statustext: '', subjecttext: '', doetext: '', ownertext: '',
             typetext: ''})
             this.getNewData({page: 0, limit: pageSize})
+    },
+    clearNote: function(){
+        if(this.state.mute){
+            this.setState({mute: false})
+        }
+        else {
+            this.setState({mute: true})
+        }
     },
     filterUp: function(v){
         if(v.keyCode == 13){
@@ -6872,6 +7056,7 @@ module.exports = React.createClass({displayName: "exports",
             window.history.pushState('Page', 'SCOT', '/#/incident/'+$(y).attr('id'))  
             this.launchEvent(array)
         }.bind(this))
+        scrolled = $('.container-fluid').scrollTop()
     },
 
     handlePageChange: function(pageNumber){
@@ -7230,7 +7415,7 @@ var App = React.createClass({displayName: "App",
         var headerSmall = ""
         var menuItemsSmall = [
         React.createElement("span", {className: "glyphicon glyphicon-home"}),
-        React.createElement("span", {className: "glyphicon glyphicon-th"}),
+        React.createElement("span", {className: "glyphicon glyphicon-eye-open"}),
         React.createElement("span", {className: "glyphicon glyphicon-warning-sign"}),
         React.createElement("span", {className: "glyphicon glyphicon-list-alt"}),
         React.createElement("span", {className: "glyphicon glyphicon-screenshot"}),
@@ -7377,6 +7562,8 @@ var DateRangePicker         = require('../../../node_modules/react-daterange-pic
 var Source                  = require('react-tag-input-tags/react-tag-input').WithContext
 var Tags                    = require('react-tag-input').WithContext
 var SORT_INFO;
+var toggle
+var scrolled = 80
 var colsort = "id"
 var defaultpage = 1
 var start;
@@ -7411,18 +7598,53 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
 
     return {
-            unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
+            mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
             upstartepoch: '', upendepoch: '', statustext: '', subjecttext:'', idsarray: [], 
             ownertext: '',viewstext: '', entriestext: '', scrollheight: scrollHeight, 
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
             viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: ''};
     },
+    clearNote: function(){
+        if(this.state.mute){
+            this.setState({mute: false})
+        }
+        else {
+            this.setState({mute: true})
+        }
+    },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
         this.setState({})
     },
-    componentWillMount: function(){
+    componentDidMount: function(){
+        toggle  = $('#list-view')
+        $('.container-fluid2').scrollTop(0)
+        $(document.body).keydown(function(e){
+            var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
+            var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
+            e.preventDefault()
+            if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
+                scrolled = scrolled + 83
+                var set;
+                set  = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents').click()
+                var array = []
+                array.push($(set).attr('id'))
+                window.history.pushState('Page', 'SCOT', '/#/intel/'+$(set).attr('id'))
+                $('.container-fluid2').scrollTop(scrolled)
+                this.setState({idsarray: array})
+            }
+            else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
+                scrolled = scrolled - 83
+                var set;
+                set  = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents').click()
+                var array = []
+                array.push($(set).attr('id'))
+                window.history.pushState('Page', 'SCOT', '/#/intel/'+$(set).attr('id'))
+                $('.container-fluid2').scrollTop(scrolled)
+                this.setState({idsarray: array})
+            }
+        }.bind(this))
         var array = []
         if(this.props.ids !== undefined){
             if(this.props.ids.length > 0){
@@ -7488,10 +7710,10 @@ module.exports = React.createClass({displayName: "exports",
     reloadItem: function(){
         height = $(window).height() - 170
         width = width + 40
-        $('.container-fluid').css('height', height) 
-        $('.container-fluid').css('max-height', height)
-        $('.container-fluid').css('max-width', '915px')
-        $('.container-fluid').css('width', width)
+        $('.container-fluid2').css('height', height) 
+        $('.container-fluid2').css('max-height', height)
+        $('.container-fluid2').css('max-width', '915px')
+        $('.container-fluid2').css('width', width)
     },
     launchEvent: function(array){
         stage = true
@@ -7532,21 +7754,23 @@ module.exports = React.createClass({displayName: "exports",
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
-                    React.createElement(Notificationactivemq, {ref: 'notificationSystem'})), 
+                    !this.state.mute ? React.createElement(Notificationactivemq, {ref: 'notificationSystem'}):null), 
                         React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, 
                         React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, 
                         React.createElement('h2', {style: {'font-size': '30px'}}, 'Intel')), 
                         React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, 
                         React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), 
                         React.createElement(Search, null)),                        
-                        React.createElement('btn-group', {style: {'padding-left': '0px'}}, 
+                        React.createElement('btn-group', {style: {'padding-left': '0px'}},
+                        !this.state.mute ?
+                        React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Mute Notifications'): React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Turn On Notifications'), 
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.createevent, style: styles}, 'Create Intel'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'eventwidth', style: {display:'flex'}},
             React.createElement('div', {id:'list-view'},  
             React.createElement('div', {style:{display: 'flex'}},
-                React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
+                React.createElement("div", {className: "container-fluid2", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
                         React.createElement("div", {className: "wrapper attributes"}, 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -7712,7 +7936,7 @@ module.exports = React.createClass({displayName: "exports",
                     ), 
 
                     this.state.objectarray.map((value) => React.createElement('div', {className:'allevents', id: value.id}, 
-                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null, 
+                        /*React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null, 
                         React.createElement('div', null,
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'ID:'),
                         React.createElement('div', null, value.id)),
@@ -7732,7 +7956,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Entries:  '),
                         React.createElement('div', null, value.entries)), React.createElement('div', {style: {display:'flex'}},
                         React.createElement('div', {style: {'font-weight': 'bold'}}, 'Views:  '), React.createElement('div', null, value.views))
-                        ))}, 
+                        ))},  */
                         React.createElement("div", {style: {background: this.state.idsarray[0] == value.id ? this.state.blue : this.state.white},onClick: this.clickable, className: "table-row", id: value.id}, 
                         React.createElement("div", {className: "wrapper attributes"},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -7759,8 +7983,8 @@ module.exports = React.createClass({displayName: "exports",
                         )
                         )
                     )
-                    )
-                    )
+                  //  )
+                //    )
                     )))), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})) , stage ? 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'intel'}) : null) 
@@ -7948,6 +8172,7 @@ module.exports = React.createClass({displayName: "exports",
             window.history.pushState('Page', 'SCOT', '/#/intel/'+$(y).attr('id')) 
             this.launchEvent(array)
         }.bind(this))
+        scrolled = $('.container-fluid2').scrollTop()
     },
 
     getNewData: function(page){
@@ -8201,6 +8426,8 @@ var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar')
 var DateRangePicker         = require('../../../node_modules/react-daterange-picker')
 var Source                  = require('react-tag-input-tags/react-tag-input').WithContext
 var Tags                    = require('react-tag-input').WithContext
+var toggle
+var scrolled = 43
 var SORT_INFO;
 var colsort = "id"
 var defaultpage = 1
@@ -8228,11 +8455,6 @@ var colorrow = [];
 sortarray[colsort] = -1
 var columns = ['Type', 'ID', 'Status', 'Owner', 'Entry', 'Updated']
 
-
-
-
-
-
 module.exports = React.createClass({displayName: "exports",
 
     getInitialState: function(){
@@ -8241,14 +8463,47 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
 
     return {
-            upstartepoch: '', upendepoch: '',white: 'white', blue: '#AEDAFF',
+            mute: false, upstartepoch: '', upendepoch: '',white: 'white', blue: '#AEDAFF',
             idtext: '', totalcount: 0, activepage: 0,
             entry: 0, type: '', statustext: '', idsarray: [],
             ownertext: '', typetext: '', entriestext: '', scrollheight: scrollHeight,
             scrollwidth: scrollWidth, reload: false,
             objectarray:[], csv:true};
     },
-    componentWillMount: function(){
+    componentDidMount: function(){
+        toggle  = $('#list-view')
+        $('.container-fluid2').scrollTop(0)
+        $(document.body).keydown(function(e){
+            var obj = $(toggle[0]).find('#'+colorrow[0]).prev('.allevents')
+            var obj2 = $(toggle[0]).find('#'+colorrow[0]).next('.allevents')
+            e.preventDefault()
+            if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
+                scrolled = scrolled + 43
+                var set;
+                set  = $(toggle[0]).find('#'+colorrow[0]).next('.allevents').click()
+                var array = []
+                colorrow = []
+                colorrow.push($(set).attr('id'))
+                array.push($(set).find('.index').text())
+                $('.container-fluid2').scrollTop(scrolled)
+                window.history.pushState('Page', 'SCOT', '/#/'+$(set).find('.type').text() + '/' + colorrow[0]) 
+                this.setState({idsarray: array, type: $(set).find('.type').text(), entry: colorrow[0]})
+            }
+            else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
+                scrolled = scrolled - 43
+                var set;
+                set  = $(toggle[0]).find('#'+colorrow[0]).prev('.allevents').click()
+                var array = []
+                colorrow = []
+                colorrow.push($(set).attr('id'))
+                array.push($(set).find('.index').text())
+                $('.container-fluid2').scrollTop(scrolled)
+                window.history.pushState('Page', 'SCOT', '/#/'+$(set).find('.type').text() + '/' + colorrow[0]) 
+                this.setState({idsarray: array, type: $(set).find('.type').text(), entry: colorrow[0]})
+            }
+        }.bind(this)) 
+        
+        
         var array = []
         if(this.props.ids !== undefined){
             if(this.props.ids.length > 0){
@@ -8314,16 +8569,24 @@ module.exports = React.createClass({displayName: "exports",
     reloadItem: function(){
         height = $(window).height() - 170
         width = width + 40
-        $('.container-fluid').css('height', height)
-        $('.container-fluid').css('max-height', height)
-        $('.container-fluid').css('max-width', '915px')
-        $('.container-fluid').css('width', width)
+        $('.container-fluid2').css('height', height)
+        $('.container-fluid2').css('max-height', height)
+        $('.container-fluid2').css('max-width', '915px')
+        $('.container-fluid2').css('width', width)
     },
 
     launchEvent: function(array,entryid,tasktype){
         stage = true
         this.setState({idsarray:array, type: tasktype, entry: entryid})
 
+    },
+    clearNote: function(){
+        if(this.state.mute){
+            this.setState({mute: false})
+        }
+        else {
+            this.setState({mute: true})
+        }
     },
     render: function(){
         var styles;
@@ -8347,19 +8610,21 @@ module.exports = React.createClass({displayName: "exports",
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}},
                 React.createElement('div', null,
-                    React.createElement(Notificationactivemq, {ref: 'notificationSystem'})),
+                    !this.state.mute ? React.createElement(Notificationactivemq, {ref: 'notificationSystem'}):null),
                         React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}},
                         React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}},
                         React.createElement('h2', {style: {'font-size': '30px'}}, 'Task')),
                         React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}},
                         React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')),
                         React.createElement(Search, null)), React.createElement('btn-group', {style: {'padding-left': '0px'}},
+                        !this.state.mute ?
+                        React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Mute Notifications'): React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Turn On Notifications'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'incidentwidth', style: {display:'flex'}},
             React.createElement('div', {id:'list-view'},
             React.createElement('div', {style:{display: 'flex'}},
-                React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}},
+                React.createElement("div", {className: "container-fluid2", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}},
                     React.createElement("div", {className: "table-row header"},
                         React.createElement("div", {className: "wrapper attributes"},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -8461,7 +8726,7 @@ module.exports = React.createClass({displayName: "exports",
                         ))), 
 
                     this.state.objectarray.map((value) => React.createElement('div', {className:'allevents', id: value.id},
-                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null,
+                        /*React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null,
                         React.createElement('div', null,
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'ID:'),
                         React.createElement('div', null, value.target.id)),
@@ -8474,7 +8739,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Entry:  '),
                         React.createElement('div', null, value.id)), React.createElement('div', {style: {display:'flex'}},
                         React.createElement('div', {style: {'font-weight': 'bold'}}, 'Type:  '), React.createElement('div', null, value.target.type))
-                        ))},
+                        ))},*/
                         React.createElement("div", {style: {background: colorrow[0] == value.id ? this.state.blue : this.state.white},onClick: this.clickable, className: "table-row", id: value.targetid},
                         React.createElement("div", {className: "wrapper attributes"},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -8491,7 +8756,7 @@ module.exports = React.createClass({displayName: "exports",
                             React.createElement('div', {className: 'wrapper status-owner'}, 
                             React.createElement("div", {className: "column severity"}, value.id))),
                         React.createElement("div", {className: "wrapper dates"},
-                            React.createElement("div", {className: "column date"}, value.updated)))))))))),
+                            React.createElement("div", {className: "column date"}, value.updated)))))) /*))*/ )),
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})) , stage ?
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: this.state.type, taskid: this.state.entry}) : null)
         ));
@@ -8548,6 +8813,7 @@ module.exports = React.createClass({displayName: "exports",
             window.history.pushState('Page', 'SCOT', '/#/'+$(y).find('.type').text() + '/' + array[0]) 
             this.launchEvent(array, $(y).find('.severity').text(), $(y).find('.type').text())
         }.bind(this))
+        scrolled = $('.container-fluid2').scrollTop()
     },
 
     getNewData: function(page){
