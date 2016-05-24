@@ -8,6 +8,7 @@ var Dropzone    = require('../../../node_modules/react-dropzone')
 var ReactTime   = require('react-time')
 var AppActions  = require('../flux/actions.jsx');
 var Activekey   = require('../activemq/handleupdate.jsx')
+var Button      = require('react-bootstrap/lib/Button.js');
 var marksave = false
 var addentrydata = true
 var finalfiles = []
@@ -106,24 +107,22 @@ var AddEntryModal = React.createClass({
 	var item = this.state.subitem
     $('#react-tinymce-addentry_ifr').contents().find("#tinymce").css('height', '394px')
         return (
-            React.createElement(Modal, {onRequestClose: this.props.addedentry, style: customStyles, isOpen: this.state.addentry}, 
-            React.createElement("div", {className: "modal-content"}, 
-            React.createElement("div", {className: "modal-header"}, 
-            React.createElement("h4", {className: "modal-title"}, this.props.title), React.createElement('div', {className: 'entry-header-info-null', style: {top: '1px', width: '100%', background: '#FFF'}}, React.createElement('h2', {style: {color: '#6C2B2B', 'font-size':'24px', 'text-align': 'left'}}, this.props.header1 ? React.createElement("div" , {style: {display: 'inline-flex'}}, React.createElement("p", null, this.props.header1), React.createElement(ReactTime, { value: this.props.createdTime * 1000, format:"MM/DD/YYYY hh:mm:ss a"}) , React.createElement("p", null, this.props.header2), React.createElement(ReactTime, {value: this.props.updatedTime * 1000,format:"MM/DD/YYYY hh:mm:ss a"}), React.createElement("p", null, this.props.header3)): output)), reply ? React.createElement('div', null, React.createElement(Frame, {id: 'iframe_'+this.props.id, styleSheets: ['/css/sandbox.css'], style: {overflow:'auto',width:'100%', height:'300px'}, frameBorder: '1', sandbox: 'allow-popups allow-same-origin'}, React.createElement('div', {dangerouslySetInnerHTML : {__html:item}}))) : null 
-            ), 
-            React.createElement("div", {className: "modal-body", style: {height: '90%'}}, 
-            React.createElement(TinyMCE, {style: {height: '394px'}, content: "", className: "inputtext",config: {plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'},onChange: this.handleEditorChange}
-            )), 
-            React.createElement("div", {className: "modal-footer"}, React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width': '2px','border-color':'#000','border-radius':'4px',margin:'30px' ,padding: '30px','border-style': 'dashed', 'text-align' : 'center'}}, React.createElement("div",null,"Drop some files here or click to  select files to upload")),
-            this.state.files ? React.createElement("div", null, this.state.files.map((file) => React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p",{style:{display:'inline'}}, file.name),React.createElement('button', {style: {/*width: '2em', height: '1em',*/ 'line-height':'1px'}, className: 'btn btn-info', id: file.name, onClick: this.Close}, 'x'))))): null, 
-            React.createElement("button", {className: 'btn', onClick: this.onCancel}, " Cancel"),//, this.state.edit ? React.createElement(
-        //'button', {className: 'btn btn-primary', onClick: this.Edit}, 'Edit') : null,
-            this.state.saved ? React.createElement("button", {className: 'btn btn-info', onClick: this.submit}, 'Submit') : null
-                //this.state.enablesave ? React.createElement('button', {className: 'btn btn-success', onClick: this.Save},'Save') : null
-            )
-            )
-            ) 
-            )
+            <div>
+                <div className={'row-fluid entry-outer'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
+                    <div className={'row-fluid entry-header'}>
+                        <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/not_saved_0"}>Not_Saved_0</a>]by {whoami}
+                            <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
+                                <Button bsSize={'xsmall'} onClick={this.submit}>Submit</Button>
+                                <Button bsSize={'xsmall'} onClick={this.onCancel}>Cancel</Button>
+                            </span>
+                        </div>
+                    </div>
+                    <TinyMCE content={""} className={'inputtext'} config={{plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}} onChange={this.handleEditorChange} /> 
+                <Dropzone onDrop={this.onDrop} style={{'border-width':'2px','border-color':'#000','border-radius':'4px',margin:'30px' ,padding: '30px','border-style': 'dashed', 'text-align' : 'center'}}><div>'Drop some files here or click to select files to upload'</div></Dropzone>
+                {this.state.files ? <div> {this.state.files.map((file) => <ul style={{'list-style-type' : 'none', margin:'0', padding:'0'}}><li><p style={{display:'inline'}}>{file.name}</p><button style={{'line-height':'1px'}} className='btn btn-info' id={file.name} onClick={this.Close}>x</button></li></ul>)}</div> : null} 
+                </div>    
+            </div>
+        )
     },
     clickable: function(){
 	this.setState({addentry: false})
