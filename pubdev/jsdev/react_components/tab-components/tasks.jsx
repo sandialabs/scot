@@ -62,7 +62,6 @@ module.exports = React.createClass({
         $(document.body).keydown(function(e){
             var obj = $(toggle[0]).find('#'+colorrow[0]).prev('.allevents')
             var obj2 = $(toggle[0]).find('#'+colorrow[0]).next('.allevents')
-            e.preventDefault()
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
                 scrolled = scrolled + 43
                 var set;
