@@ -2105,7 +2105,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         }
         return (
             React.createElement("div", {className: divClass, style: {height:this.props.windowHeight}}, 
-                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected}) : React.createElement("span", null, "Loading..."), 
+                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData}) : React.createElement("span", null, "Loading..."), 
                 this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue}) : null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null
             )       
@@ -2124,7 +2124,7 @@ var EntryIterator = React.createClass({displayName: "EntryIterator",
                 rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id}));
             }.bind(this));
         } else {
-            rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, alertSelected: this.props.alertSelected}));
+            rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected}));
         }
         return (
             React.createElement("div", null, 
@@ -2140,14 +2140,25 @@ var AlertParent = React.createClass({displayName: "AlertParent",
         return {
             activeIndex: arr,
             lastIndex: null,
+            allSelected:false,
         }
     },
     componentDidMount: function() {
         $('#sortabletable').tablesorter();
+        
+        //Ctrl + A to select all alerts
+        $(document.body).keydown(function(event){
+            //check for ctrl + a with keyCode 
+            if (event.keyCode == 65 && (event.ctrlKey == true || event.metaKey == true)) {
+                this.rowClicked(null,null,'all',null);
+                event.preventDefault()
+            }
+        }.bind(this)) 
     },
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();
         var selected = true;
+        this.setState({allSelected:false});
         if (clickType == 'ctrl') {
             for (var i=0; i < array.length; i++) {
                 if (array[i] === index) {
@@ -2174,8 +2185,14 @@ var AlertParent = React.createClass({displayName: "AlertParent",
                 }
                 this.setState({activeIndex:array})
             }
+        } else if (clickType == 'all') {
+            var array = [];
+            for (var i=0; i < this.props.items.length; i++) {
+                array.push(this.props.items[i].id)
+            }
+            this.setState({activeIndex:array,allSelected:true});
         } else {
-            array = [];
+            var array = [];
             array.push(index);
             this.setState({activeIndex:array});
         }
@@ -2185,11 +2202,11 @@ var AlertParent = React.createClass({displayName: "AlertParent",
         } else if (array.length == 0){   
             this.props.alertSelected(null,null,'alert');
         } else {
-            this.props.alertSelected('showall',id,'alert')
+            this.props.alertSelected('showall',null,'alert')
         }
     },
     render: function() {
-        var z = 0;
+        //var z = 0;
         var items = this.props.items;
         var body = [];
         var header = [];
@@ -2209,23 +2226,35 @@ var AlertParent = React.createClass({displayName: "AlertParent",
             for (var i=0; i < col_names.length; i++){
                 header.push(React.createElement(AlertHeader, {colName: col_names[i]}))
             }
-            items.forEach(function(object){
+            for (var z=0; z < items.length; z++) {
+            //items.forEach(function(object){
                 var dataFlair = null;
-                if (Object.getOwnPropertyNames(object.data_with_flair).length != 0) {
-                    dataFlair = object.data_with_flair;
+                if (Object.getOwnPropertyNames(items[z].data_with_flair).length != 0) {
+                    dataFlair = items[z].data_with_flair;
                 } else {
-                    dataFlair = object.data;
+                    dataFlair = items[z].data;
                 }
                 
-                body.push(React.createElement(AlertBody, {index: z, data: object, dataFlair: dataFlair, activeIndex: this.state.activeIndex, rowClicked: this.rowClicked, alertSelected: this.props.alertSelected}))
-                z++;
-            }.bind(this))
+                body.push(React.createElement(AlertBody, {index: z, data: items[z], dataFlair: dataFlair, activeIndex: this.state.activeIndex, rowClicked: this.rowClicked, alertSelected: this.props.alertSelected, allSelected: this.state.allSelected}))
+                //z++;
+            //}.bind(this))
+            }
             var search = null;
             if (items[0].data_with_flair != undefined) {
                 search = items[0].data_with_flair.search;
             } else {
                 search = items[0].data.search;
             }
+        } else if (this.props.headerData != undefined){
+            if (this.props.headerData.body != undefined) {
+                return (
+                    React.createElement("div", null, 
+                        React.createElement("div", {style: {color:'red'}}, "If you see this message, please notify your SCOT admin. Parsing failed on the message below. The raw alert is displayed."), 
+                        React.createElement("div", {className: "alertTableHorizontal", dangerouslySetInnerHTML: { __html: this.props.headerData.body}})
+                    )
+                )
+            }
+
         }
         return (
             React.createElement("div", null, 
@@ -2261,6 +2290,7 @@ var AlertBody = React.createClass({displayName: "AlertBody",
             selected: 'un-selected',
             promotedNumber: null,
             showEntry: false,
+            promoteFetch:false,
         }
     },
     onClick: function(event) {
@@ -2290,16 +2320,21 @@ var AlertBody = React.createClass({displayName: "AlertBody",
             }).success(function(response){
                 this.setState({promotedNumber:response.records[0].id});             
             }.bind(this))
+            this.setState({promoteFetch:true})
         }
+        
     },
     componentWillReceiveProps: function() {
-        if (this.props.data.status == 'promoted') {
-            $.ajax({
-                type: 'GET',
-                url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
-            }).success(function(response){
-                this.setState({promotedNumber:response.records[0].id});             
-            }.bind(this))
+        if (this.state.promoteFetch == false) {
+            if (this.props.data.status == 'promoted') {
+                $.ajax({
+                    type: 'GET',
+                    url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
+                }).success(function(response){
+                    this.setState({promotedNumber:response.records[0].id});             
+                }.bind(this))
+                this.setState({promoteFetch:true});
+            }
         }
     },
     render: function() {
@@ -2331,10 +2366,14 @@ var AlertBody = React.createClass({displayName: "AlertBody",
             var value = columns[i];
             rowReturn.push(React.createElement(AlertRow, {data: data, dataFlair: dataFlair, value: value}))
         }
-        for (var j=0; j < this.props.activeIndex.length; j++) {
-            if (this.props.activeIndex[j] === index) {
-                selected = 'selected';
-            } 
+        if (this.props.allSelected == false) {
+            for (var j=0; j < this.props.activeIndex.length; j++) {
+                if (this.props.activeIndex[j] === index) {
+                    selected = 'selected';
+                } 
+            }
+        } else {
+            selected = 'selected'
         }
         var id = 'alert_'+data.id+'_status';
         return (
@@ -2342,7 +2381,7 @@ var AlertBody = React.createClass({displayName: "AlertBody",
                 React.createElement("tr", {index: index, id: data.id, className: selected, style: {cursor: 'pointer'}, onClick: this.onClick}, 
                     React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.id), 
                     React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.status != 'promoted' ? React.createElement("span", {style: {color:buttonStyle}}, data.status) : React.createElement(Button, {bsSize: "xsmall", bsStyle: buttonStyle, id: id, onClick: this.navigateTo, style: {lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}, data.status)), 
-                    React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, React.createElement("a", {href: "javascript: void(0)", onClick: this.toggleEntry}, data.entry_count)), 
+                    data.entry_count == 0 ? React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.entry_count) : React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, React.createElement("a", {href: "javascript: void(0)", onClick: this.toggleEntry}, data.entry_count)), 
                     rowReturn
                 ), 
                 React.createElement(AlertRowBlank, {id: data.id, type: 'alert', showEntry: this.state.showEntry})
@@ -2887,10 +2926,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         this.forceUpdate();
     },
     scrollTo: function() {
-        if (this.props.taskid != undefined) {
-            /*$(document.body).find('.entry-wrapper').animate({
-                'scrollTop':$('#iframe_'+this.props.taskid).offset().top - 130
-            },2000)*/
+        if (this.props.taskid != undefined) { 
             $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#iframe_'+this.props.taskid).position().top -30)
         }
     },
@@ -2942,7 +2978,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 ), 
                 this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
 
-                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, windowHeight: this.props.windowHeight, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, linkWarningToggle: this.linkWarningToggle})
+                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, headerData: this.state.headerData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, windowHeight: this.props.windowHeight, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, linkWarningToggle: this.linkWarningToggle})
             )
         )
     }
@@ -2963,6 +2999,17 @@ var EntryDataStatus = React.createClass({displayName: "EntryDataStatus",
             buttonStatus:this.props.data.status,
             key: this.props.id
         }
+    },
+    componentDidMount: function() {
+        //Adds open/close hot keys for events/incidents/intel
+        /*$(document.body).keydown(function(event){
+            //check for character "o" for 79 or "c" for 67
+            if (event.keyCode == 79) {
+                this.statusAjax('open');
+            } else if (event.keyCode == 67) {
+                this.statusAjax('closed');
+            }
+        }.bind(this))*/
     },
     componentWillReceiveProps: function() {
         this.setState({buttonStatus:this.props.data.status});
@@ -3057,10 +3104,14 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
         }
     },
     render: function() {
-        var subjectLength = this.state.value.length;
-        var subjectWidth = subjectLength * 18;
-        if (subjectWidth <= 200) {
-            subjectWidth = 200;
+        if (this.state.value != undefined) {
+            var subjectLength = this.state.value.length;
+            var subjectWidth = subjectLength * 14;
+            if (subjectWidth <= 200) {
+                subjectWidth = 200;
+            }
+        } else {
+            var subjectWidth = 1000;
         }
         return (
             React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement(DebounceInput, {debounceTimeout: 1000, forceNotifyOnBlur: true, type: "text", value: this.state.value, onChange: this.handleChange, style: {width:subjectWidth+'px'}}))
@@ -3287,7 +3338,23 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 });
             }        
         }
-    }, 
+    },
+    componentDidMount: function() {
+        //open, close, and promote alerts
+        $(document.body).keydown(function(event){
+            switch (event.keyCode) {
+                case 79:
+                    this.alertOpenSelected();
+                    break;
+                case 67:
+                    this.alertCloseSelected();
+                    break;
+                case 80:
+                    this.alertPromoteSelected();
+                    break;
+            }
+        }.bind(this))
+    },
     render: function() { 
         var subjectType = this.props.subjectType;
         var type = this.props.type;

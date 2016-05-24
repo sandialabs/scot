@@ -379,7 +379,9 @@ sub process_message {
     my $path         = "alertgroup";
 
     $json_to_post->{message_id} = $msghref->{message_id};
-    $json_to_post->{subject}    = $msghref->{subject};
+    unless ( $json_to_post->{subject} ) {
+        $json_to_post->{subject}    = $msghref->{subject};
+    }
     $json_to_post->{sources}    = [ $parser->get_sourcename ];
 
     $log->debug("Json to Post = ", {filter=>\&Dumper, value=>$json_to_post});
