@@ -72,7 +72,7 @@ module.exports = React.createClass({
                 colorrow.push($(set).attr('id'))
                 array.push($(set).find('.index').text())
                 $('.container-fluid2').scrollTop(scrolled)
-                window.history.pushState('Page', 'SCOT', '/#/'+$(set).find('.type').text() + '/' + colorrow[0]) 
+                window.history.pushState('Page', 'SCOT', '/#/'+$(set).find('.type').text() + '/' + array[0]) 
                 this.setState({idsarray: array, type: $(set).find('.type').text(), entry: colorrow[0]})
             }
             else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
@@ -84,7 +84,7 @@ module.exports = React.createClass({
                 colorrow.push($(set).attr('id'))
                 array.push($(set).find('.index').text())
                 $('.container-fluid2').scrollTop(scrolled)
-                window.history.pushState('Page', 'SCOT', '/#/'+$(set).find('.type').text() + '/' + colorrow[0]) 
+                window.history.pushState('Page', 'SCOT', '/#/'+$(set).find('.type').text() + '/' + array[0]) 
                 this.setState({idsarray: array, type: $(set).find('.type').text(), entry: colorrow[0]})
             }
         }.bind(this)) 
