@@ -55,11 +55,9 @@ var Actions = {
                 if(message != ""){
                     var json = JSON.parse(message);
                         console.log(json)
-                        if(json.data.who != 'scot-admin' || json.data.who != 'scot-alerts'){
                             Dispatcher.handleActivemq({
                             activemq: json
                         })
-                    }
                 }
             });       
         }).fail(function(){
@@ -4741,7 +4739,7 @@ module.exports = React.createClass({displayName: "exports",
 
     reloadactive: function(){    
         var notification = this.refs.notificationSystem
-        if(whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
+        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
@@ -5481,7 +5479,7 @@ module.exports = React.createClass({displayName: "exports",
 
     reloadactive: function(){    
         var notification = this.refs.notificationSystem
-        if(whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
+        if(activemqwho !='scot-admin' && activemqwho != 'scot-alerts' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
@@ -6354,7 +6352,7 @@ module.exports = React.createClass({displayName: "exports",
 
     reloadactive: function(){     
         var notification = this.refs.notificationSystem
-        if(activemqwho != whoami && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
+        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && activemqwho != whoami && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
@@ -6791,7 +6789,7 @@ module.exports = React.createClass({displayName: "exports",
 
     reloadactive: function(){    
         var notification = this.refs.notificationSystem
-        if(activemqwho != whoami && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
+        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && activemqwho != whoami && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
@@ -7756,7 +7754,7 @@ module.exports = React.createClass({displayName: "exports",
 
     reloadactive: function(){
         var notification = this.refs.notificationSystem
-        if(activemqwho != whoami && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
+        if(activemqwho != 'scot-admin' && activemqwho != 'scot-alerts' && activemqwho != whoami && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
@@ -8615,7 +8613,7 @@ module.exports = React.createClass({displayName: "exports",
 
     reloadactive: function(){
         var notification = this.refs.notificationSystem
-        if(activemqwho != whoami && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
+        if(activemqwho != 'scot-admin' && activemqwho != 'scot-alerts' && activemqwho != whoami && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',

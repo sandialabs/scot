@@ -136,7 +136,7 @@ module.exports = React.createClass({
 
     reloadactive: function(){    
         var notification = this.refs.notificationSystem
-        if(whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
+        if(activemqwho !='scot-admin' && activemqwho != 'scot-alerts' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
