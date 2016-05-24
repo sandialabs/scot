@@ -302,6 +302,7 @@ var AlertBody = React.createClass({
             selected: 'un-selected',
             promotedNumber: null,
             showEntry: false,
+            promoteFetch:false,
         }
     },
     onClick: function(event) {
@@ -331,17 +332,21 @@ var AlertBody = React.createClass({
             }).success(function(response){
                 this.setState({promotedNumber:response.records[0].id});             
             }.bind(this))
+            this.setState({promoteFetch:true})
         }
         
     },
     componentWillReceiveProps: function() {
-        if (this.props.data.status == 'promoted') {
-            $.ajax({
-                type: 'GET',
-                url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
-            }).success(function(response){
-                this.setState({promotedNumber:response.records[0].id});             
-            }.bind(this))
+        if (this.state.promoteFetch == false) {
+            if (this.props.data.status == 'promoted') {
+                $.ajax({
+                    type: 'GET',
+                    url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
+                }).success(function(response){
+                    this.setState({promotedNumber:response.records[0].id});             
+                }.bind(this))
+                this.setState({promoteFetch:true});
+            }
         }
     },
     render: function() {
@@ -388,7 +393,7 @@ var AlertBody = React.createClass({
                 <tr index={index} id={data.id} className={selected} style={{cursor: 'pointer'}} onClick={this.onClick}>
                     <td valign='top' style={{marginRight:'4px'}}>{data.id}</td>
                     <td valign='top' style={{marginRight:'4px'}}>{data.status != 'promoted' ? <span style={{color:buttonStyle}}>{data.status}</span> : <Button bsSize='xsmall' bsStyle={buttonStyle} id={id} onClick={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{data.status}</Button>}</td>
-                    <td valign='top' style={{marginRight:'4px'}}><a href="javascript: void(0)" onClick={this.toggleEntry}>{data.entry_count}</a></td>
+                    {data.entry_count == 0 ? <td valign='top' style={{marginRight:'4px'}}>{data.entry_count}</td> : <td valign='top' style={{marginRight:'4px'}}><a href="javascript: void(0)" onClick={this.toggleEntry}>{data.entry_count}</a></td>}
                     {rowReturn}
                 </tr>
                 <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} />
