@@ -65,12 +65,12 @@ module.exports = React.createClass({
         this.setState({})
     },
     componentDidMount: function(){
+        
         toggle  = $('#list-view') 
         $('.container-fluid2').scrollTop(0)
         $(document.body).keydown(function(e){
             var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
             var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
-            e.preventDefault()
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
                 scrolled = scrolled + 83
                 var set;
@@ -92,7 +92,7 @@ module.exports = React.createClass({
                 this.setState({idsarray: array})
             }
         }.bind(this))
-        
+         
         var array = []
         if(this.props.ids !== undefined){
             if(this.props.ids.length > 0){
