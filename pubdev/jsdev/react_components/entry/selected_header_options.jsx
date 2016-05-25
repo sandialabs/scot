@@ -145,31 +145,33 @@ var SelectedHeaderOptions = React.createClass({
     alertSelectExisting: function() {
         var text = prompt("Please Enter Event ID to promote into")
         var array = [];
-        $('tr.selected').each(function(index,tr) {
-            var id = $(tr).attr('id');
-            array.push(id);
-        }.bind(this));
-        for (i=0; i < array.length; i++) {
-            if ($.isNumeric(text)) {
-                var data = {
-                    promote:text
+        if (text != '' && text != null){
+            $('tr.selected').each(function(index,tr) {
+                var id = $(tr).attr('id');
+                array.push(id);
+            }.bind(this));
+            for (i=0; i < array.length; i++) {
+                if ($.isNumeric(text)) {
+                    var data = {
+                        promote:text
+                    }
+                    $.ajax({
+                        type: 'PUT',
+                        url: '/scot/api/v2/alert/' + array[i],
+                        data: JSON.stringify(data),
+                        success: function(response){
+                            if($.isNumeric(text)){
+                                window.location = '#/event/' + text
+                            }
+                        }.bind(this),
+                        error: function() {
+                            console.log('failure');
+                        }.bind(this)
+                    })
+                } else {
+                    prompt("Please use numbers only")
+                    this.selectExisting();
                 }
-                $.ajax({
-                    type: 'PUT',
-                    url: '/scot/api/v2/alert/' + array[i],
-                    data: JSON.stringify(data),
-                    success: function(response){
-                        if($.isNumeric(text)){
-                            window.location = '#/event/' + text
-                        }
-                    }.bind(this),
-                    error: function() {
-                        console.log('failure');
-                    }.bind(this)
-                })
-            } else {
-                prompt("Please use numbers only")
-                this.selectExisting();
             }
         }
     },
@@ -218,6 +220,7 @@ var SelectedHeaderOptions = React.createClass({
     componentDidMount: function() {
         //open, close, and promote alerts
         $(document.body).keydown(function(event){
+            if($('input').is(':focus')) {return}
             switch (event.keyCode) {
                 case 79:
                     this.alertOpenSelected();

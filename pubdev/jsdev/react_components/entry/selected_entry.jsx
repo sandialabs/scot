@@ -161,6 +161,8 @@ var AlertParent = React.createClass({
         
         //Ctrl + A to select all alerts
         $(document.body).keydown(function(event){
+            //prevent from working when in input
+            if ($('input').is(':focus')) {return};
             //check for ctrl + a with keyCode 
             if (event.keyCode == 65 && (event.ctrlKey == true || event.metaKey == true)) {
                 this.rowClicked(null,null,'all',null);
