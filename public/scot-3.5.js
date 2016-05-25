@@ -2149,6 +2149,8 @@ var AlertParent = React.createClass({displayName: "AlertParent",
         
         //Ctrl + A to select all alerts
         $(document.body).keydown(function(event){
+            //prevent from working when in input
+            if ($('input').is(':focus')) {return};
             //check for ctrl + a with keyCode 
             if (event.keyCode == 65 && (event.ctrlKey == true || event.metaKey == true)) {
                 this.rowClicked(null,null,'all',null);
@@ -3269,31 +3271,33 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
     alertSelectExisting: function() {
         var text = prompt("Please Enter Event ID to promote into")
         var array = [];
-        $('tr.selected').each(function(index,tr) {
-            var id = $(tr).attr('id');
-            array.push(id);
-        }.bind(this));
-        for (i=0; i < array.length; i++) {
-            if ($.isNumeric(text)) {
-                var data = {
-                    promote:text
+        if (text != '' && text != null){
+            $('tr.selected').each(function(index,tr) {
+                var id = $(tr).attr('id');
+                array.push(id);
+            }.bind(this));
+            for (i=0; i < array.length; i++) {
+                if ($.isNumeric(text)) {
+                    var data = {
+                        promote:text
+                    }
+                    $.ajax({
+                        type: 'PUT',
+                        url: '/scot/api/v2/alert/' + array[i],
+                        data: JSON.stringify(data),
+                        success: function(response){
+                            if($.isNumeric(text)){
+                                window.location = '#/event/' + text
+                            }
+                        }.bind(this),
+                        error: function() {
+                            console.log('failure');
+                        }.bind(this)
+                    })
+                } else {
+                    prompt("Please use numbers only")
+                    this.selectExisting();
                 }
-                $.ajax({
-                    type: 'PUT',
-                    url: '/scot/api/v2/alert/' + array[i],
-                    data: JSON.stringify(data),
-                    success: function(response){
-                        if($.isNumeric(text)){
-                            window.location = '#/event/' + text
-                        }
-                    }.bind(this),
-                    error: function() {
-                        console.log('failure');
-                    }.bind(this)
-                })
-            } else {
-                prompt("Please use numbers only")
-                this.selectExisting();
             }
         }
     },
@@ -3342,6 +3346,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
     componentDidMount: function() {
         //open, close, and promote alerts
         $(document.body).keydown(function(event){
+            if($('input').is(':focus')) {return}
             switch (event.keyCode) {
                 case 79:
                     this.alertOpenSelected();
