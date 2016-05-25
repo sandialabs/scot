@@ -14,15 +14,6 @@ var addentrydata = true
 var finalfiles = []
 
 var recently_updated = 0
-const  customStyles = {
-    content : {
-        top     : '1%',
-        right   : '60%',
-        bottom  : 'auto',
-	    left	: '10%',
-	    width: '80%'
-    }
-}
 
 var reply = false
 var timestamp = new Date()
@@ -75,7 +66,7 @@ var AddEntryModal = React.createClass({
 		this.setState({height: newheight})
 	}
     },
-	componentWillReceiveProps: function(){
+	/*componentWillReceiveProps: function(){
 	if(this.props.stage == 'Edit'){
 	    reply = false
         finalfiles = []
@@ -102,7 +93,7 @@ var AddEntryModal = React.createClass({
 	    output  = output + timestamp.toLocaleString()
 	}
 	this.setState({})
-    },
+    },*/
 	render: function() {
 	var item = this.state.subitem
     $('#react-tinymce-addentry_ifr').contents().find("#tinymce").css('height', '394px')
@@ -236,14 +227,14 @@ var AddEntryModal = React.createClass({
             cancelButtonClass: 'btn-info',
             confirmButton: 'Yes, override change?',
             cancelButton: 'No, Keep change from ' + response.owner + '?',
-            content: response.body,
+            content: response.owner+"'s edit:" +'\n\n'+response.body,
             backgroundDismiss: false,
-            title: "Edit Conflict with: " + response.owner + '\n\n',
+            title: "Edit Conflict" + '\n\n',
             confirm: function(){
             Confirm.launch(true)
             },
             cancel: function(){
-            Confirm.launch(true)
+            return 
             }
         })
         }
