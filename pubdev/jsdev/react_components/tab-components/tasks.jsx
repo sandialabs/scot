@@ -57,13 +57,11 @@ module.exports = React.createClass({
             objectarray:[], csv:true};
     },
     componentDidMount: function(){
-        toggle  = $('#list-view')
-        $('.container-fluid2').scrollTop(0)
-        $(document.body).keydown(function(e){
+        toggle  = $('#list-view').find('.tableview')
+        $('.container-fluid2').keydown(function(e){
             var obj = $(toggle[0]).find('#'+colorrow[0]).prev('.allevents')
             var obj2 = $(toggle[0]).find('#'+colorrow[0]).next('.allevents')
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
-                scrolled = scrolled + 43
                 var set;
                 set  = $(toggle[0]).find('#'+colorrow[0]).next('.allevents').click()
                 var array = []
@@ -72,10 +70,10 @@ module.exports = React.createClass({
                 array.push($(set).find('.index').text())
                 $('.container-fluid2').scrollTop(scrolled)
                 window.history.pushState('Page', 'SCOT', '/#/'+$(set).find('.type').text() + '/' + array[0]) 
+                scrolled = scrolled + $(toggle[0]).find('#'+colorrow[0]).height()
                 this.setState({idsarray: array, type: $(set).find('.type').text(), entry: colorrow[0]})
             }
             else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
-                scrolled = scrolled - 43
                 var set;
                 set  = $(toggle[0]).find('#'+colorrow[0]).prev('.allevents').click()
                 var array = []
@@ -83,6 +81,7 @@ module.exports = React.createClass({
                 colorrow.push($(set).attr('id'))
                 array.push($(set).find('.index').text())
                 $('.container-fluid2').scrollTop(scrolled)
+                scrolled = scrolled - $(toggle[0]).find('#'+colorrow[0]).height()
                 window.history.pushState('Page', 'SCOT', '/#/'+$(set).find('.type').text() + '/' + array[0]) 
                 this.setState({idsarray: array, type: $(set).find('.type').text(), entry: colorrow[0]})
             }
@@ -208,7 +207,7 @@ module.exports = React.createClass({
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'incidentwidth', style: {display:'flex'}},
             React.createElement('div', {id:'list-view'},
-            React.createElement('div', {style:{display: 'flex'}},
+            React.createElement('div', {className: 'tableview', style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid2", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}},
                     React.createElement("div", {className: "table-row header"},
                         React.createElement("div", {className: "wrapper attributes"},
@@ -390,6 +389,7 @@ module.exports = React.createClass({
          }
     },
     clickable: function(v){
+        $('#list-view').find('.container-fluid2').focus()   
         $('#'+$(v.currentTarget).find('.severity').text()).find('.table-row').each(function(x,y){
             var array = []
             colorrow = []

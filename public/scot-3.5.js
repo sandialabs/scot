@@ -4668,29 +4668,28 @@ module.exports = React.createClass({displayName: "exports",
         this.setState({})
     },
     componentDidMount: function(){
-        toggle  = $('#list-view')
-        $('.container-fluid2').scrollTop(0)
-        $(document.body).keydown(function(e){
+        toggle  = $('#list-view').find('.tableview')
+        $('.container-fluid2').keydown(function(e){
             var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
             var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
-                scrolled = scrolled + 48
                 var set;
                 set  = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents').click()
                 var array = []
                 array.push($(set).attr('id'))
                 window.history.pushState('Page', 'SCOT', '/#/alertgroup/'+$(set).attr('id'))
                 $('.container-fluid2').scrollTop(scrolled)
+                scrolled = scrolled + $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 this.setState({idsarray: array})
             }
             else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
-                scrolled = scrolled - 48
                 var set;
                 set  = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents').click()
                 var array = []
                 array.push($(set).attr('id'))
                 window.history.pushState('Page', 'SCOT', '/#/alertgroup/'+$(set).attr('id'))
                 $('.container-fluid2').scrollTop(scrolled)
+                scrolled = scrolled -  $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 this.setState({idsarray: array})
             }
         }.bind(this)) 
@@ -4819,7 +4818,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'eventwidth', style: {display:'flex'}},
             React.createElement('div', {id:'list-view'},  
-            React.createElement('div', {style:{display: 'flex'}},
+            React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid2", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
                         React.createElement("div", {className: "wrapper attributes"}, 
@@ -5146,6 +5145,7 @@ module.exports = React.createClass({displayName: "exports",
         }
     },
     clickable: function(v){
+        $('#list-view').find('.container-fluid2').focus() 
         $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
             var array = []
             array.push($(y).attr('id'))
@@ -5381,7 +5381,7 @@ var colorrow = [];
 sortarray[colsort] = -1
 var columns = ['ID', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
 var toggle;
-var scrolled = 83
+var scrolled = 58
 function Remove(note){
     console.log(note)
 }
@@ -5407,24 +5407,23 @@ module.exports = React.createClass({displayName: "exports",
         this.setState({})
     },
     componentDidMount: function(){
-        
-        toggle  = $('#list-view') 
-        $('.container-fluid2').scrollTop(0)
-        $(document.body).keydown(function(e){
+        toggle  = $('#list-view').find('.tableview') 
+        $('.container-fluid2').keydown(function(e){
+            
             var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
             var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
-                scrolled = scrolled + 83
                 var set;
                 set  = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents').click()
                 var array = []
                 array.push($(set).attr('id'))
                 window.history.pushState('Page', 'SCOT', '/#/event/'+$(set).attr('id'))
                 $('.container-fluid2').scrollTop(scrolled)
+                scrolled = scrolled + $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 this.setState({idsarray: array})
             }
             else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
-                scrolled = scrolled - 83
+                scrolled = scrolled - $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 var set;
                 set  = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents').click()
                 var array = []
@@ -5974,6 +5973,7 @@ module.exports = React.createClass({displayName: "exports",
         }
     },
     clickable: function(v){
+        $('#list-view').find('.container-fluid2').focus()
         $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
             var array = []
             array.push($(y).attr('id'))
@@ -5981,8 +5981,7 @@ module.exports = React.createClass({displayName: "exports",
             window.history.pushState('Page', 'SCOT', '/#/event/'+$(y).attr('id'))
             this.launchEvent(array)
         }.bind(this))
-        scrolled = $('.container-fluid2').scrollTop()
-    
+            scrolled = $('.container-fluid2').scrollTop()
     },
     getNewData: function(page){
         pageSize = page.limit
@@ -6244,8 +6243,8 @@ var end;
 var valuesort = -1
 var SELECTED_ID = {}
 var filter = {}
-var defaultpage = 1
 var sortarray = {}
+var defaultpage = 1
 var names = 'none'
 var getColumn;
 var tab;
@@ -6280,29 +6279,28 @@ module.exports = React.createClass({displayName: "exports",
     },
 
     componentDidMount: function(){
-        toggle  = $('#list-view')
-        $('.container-fluid2').scrollTop(0)
-        $(document.body).keydown(function(e){
+        toggle  = $('#list-view').find('.tableview')
+        $('.container-fluid2').keydown(function(e){
             var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
             var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
-                scrolled = scrolled + 23
                 var set;
                 set  = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents').click()
                 var array = []
                 array.push($(set).attr('id'))
                 window.history.pushState('Page', 'SCOT', '/#/guide/'+$(set).attr('id'))
                 $('.container-fluid2').scrollTop(scrolled)
+                scrolled = scrolled + $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 this.setState({idsarray: array})
             }
             else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
-                scrolled = scrolled - 23
                 var set;
                 set  = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents').click()
                 var array = []
                 array.push($(set).attr('id'))
                 window.history.pushState('Page', 'SCOT', '/#/guide/'+$(set).attr('id'))
                 $('.container-fluid2').scrollTop(scrolled)
+                scrolled = scrolled - $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 this.setState({idsarray: array})
             }
         }.bind(this))
@@ -6432,7 +6430,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'guidewidth', style: {display:'flex'}},
             React.createElement('div', {id:'list-view'},  
-            React.createElement('div', {style:{display: 'flex'}},
+            React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid2", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
                         React.createElement("div", {className: "wrapper attributes"}, 
@@ -6522,6 +6520,7 @@ module.exports = React.createClass({displayName: "exports",
         }
     },
     clickable: function(v){
+        $('#list-view').find('.container-fluid2').focus() 
         $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
             var array = []
             array.push($(y).attr('id'))
@@ -6665,7 +6664,7 @@ var DateRangePicker         = require('../../../node_modules/react-daterange-pic
 var Source                  = require('react-tag-input-tags/react-tag-input').WithContext
 var Tags                    = require('react-tag-input').WithContext
 var toggle
-var scrolled = 73
+var scrolled = 58
 var SORT_INFO;
 var colsort = "id"
 var start;
@@ -6714,29 +6713,28 @@ module.exports = React.createClass({displayName: "exports",
         this.setState({})
     },
     componentDidMount: function(){
-        toggle  = $('#list-view')
-        $('.container-fluid2').scrollTop(0)
-        $(document.body).keydown(function(e){
+        toggle  = $('#list-view').find('.tableview')
+        $('.container-fluid2').keydown(function(e){
             var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
             var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
-                scrolled = scrolled + 73
                 var set;
                 set  = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents').click()
                 var array = []
                 array.push($(set).attr('id'))
                 window.history.pushState('Page', 'SCOT', '/#/incident/'+$(set).attr('id'))
                 $('.container-fluid2').scrollTop(scrolled)
+                scrolled = scrolled  + $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 this.setState({idsarray: array})
             }
             else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
-                scrolled = scrolled - 73
                 var set;
                 set  = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents').click()
                 var array = []
                 array.push($(set).attr('id'))
                 window.history.pushState('Page', 'SCOT', '/#/incident/'+$(set).attr('id'))
                 $('.container-fluid2').scrollTop(scrolled)
+                scrolled = scrolled - $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 this.setState({idsarray: array})
             }
         }.bind(this)) 
@@ -6861,7 +6859,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'incidentwidth', style: {display:'flex'}},
             React.createElement('div', {id:'list-view'},  
-            React.createElement('div', {style:{display: 'flex'}},
+            React.createElement('div', {className: 'tableview', style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid2", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
                         React.createElement("div", {className: "wrapper attributes"}, 
@@ -7113,6 +7111,7 @@ module.exports = React.createClass({displayName: "exports",
         }
     },
     clickable: function(v){
+        $('#list-view').find('.container-fluid2').focus()  
         $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
             var array = []
             array.push($(y).attr('id'))
@@ -7120,7 +7119,7 @@ module.exports = React.createClass({displayName: "exports",
             window.history.pushState('Page', 'SCOT', '/#/incident/'+$(y).attr('id'))  
             this.launchEvent(array)
         }.bind(this))
-        scrolled = $('.container-fluid').scrollTop()
+        scrolled = $('.container-fluid2').scrollTop()
     },
 
     handlePageChange: function(pageNumber){
@@ -7682,29 +7681,28 @@ module.exports = React.createClass({displayName: "exports",
         this.setState({})
     },
     componentDidMount: function(){
-        toggle  = $('#list-view')
-        $('.container-fluid2').scrollTop(0)
-        $(document.body).keydown(function(e){
+        toggle  = $('#list-view').find('.tableview')
+        $('.container-fluid2').keydown(function(e){
             var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
             var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
-                scrolled = scrolled + 83
                 var set;
                 set  = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents').click()
                 var array = []
                 array.push($(set).attr('id'))
                 window.history.pushState('Page', 'SCOT', '/#/intel/'+$(set).attr('id'))
                 $('.container-fluid2').scrollTop(scrolled)
+                scrolled = scrolled + $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 this.setState({idsarray: array})
             }
             else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
-                scrolled = scrolled - 83
                 var set;
                 set  = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents').click()
                 var array = []
                 array.push($(set).attr('id'))
                 window.history.pushState('Page', 'SCOT', '/#/intel/'+$(set).attr('id'))
                 $('.container-fluid2').scrollTop(scrolled)
+                scrolled = scrolled - $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 this.setState({idsarray: array})
             }
         }.bind(this))
@@ -7832,7 +7830,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'eventwidth', style: {display:'flex'}},
             React.createElement('div', {id:'list-view'},  
-            React.createElement('div', {style:{display: 'flex'}},
+            React.createElement('div', {className: 'tableview', style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid2", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
                         React.createElement("div", {className: "wrapper attributes"}, 
@@ -8228,6 +8226,7 @@ module.exports = React.createClass({displayName: "exports",
         }
     },
     clickable: function(v){
+        $('#list-view').find('.container-fluid2').focus() 
         $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
             var array = []
             array.push($(y).attr('id'))
@@ -8534,14 +8533,11 @@ module.exports = React.createClass({displayName: "exports",
             objectarray:[], csv:true};
     },
     componentDidMount: function(){
-        toggle  = $('#list-view')
-        $('.container-fluid2').scrollTop(0)
-        $(document.body).keydown(function(e){
+        toggle  = $('#list-view').find('.tableview')
+        $('.container-fluid2').keydown(function(e){
             var obj = $(toggle[0]).find('#'+colorrow[0]).prev('.allevents')
             var obj2 = $(toggle[0]).find('#'+colorrow[0]).next('.allevents')
-            e.preventDefault()
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
-                scrolled = scrolled + 43
                 var set;
                 set  = $(toggle[0]).find('#'+colorrow[0]).next('.allevents').click()
                 var array = []
@@ -8550,10 +8546,10 @@ module.exports = React.createClass({displayName: "exports",
                 array.push($(set).find('.index').text())
                 $('.container-fluid2').scrollTop(scrolled)
                 window.history.pushState('Page', 'SCOT', '/#/'+$(set).find('.type').text() + '/' + array[0]) 
+                scrolled = scrolled + $(toggle[0]).find('#'+colorrow[0]).height()
                 this.setState({idsarray: array, type: $(set).find('.type').text(), entry: colorrow[0]})
             }
             else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
-                scrolled = scrolled - 43
                 var set;
                 set  = $(toggle[0]).find('#'+colorrow[0]).prev('.allevents').click()
                 var array = []
@@ -8561,6 +8557,7 @@ module.exports = React.createClass({displayName: "exports",
                 colorrow.push($(set).attr('id'))
                 array.push($(set).find('.index').text())
                 $('.container-fluid2').scrollTop(scrolled)
+                scrolled = scrolled - $(toggle[0]).find('#'+colorrow[0]).height()
                 window.history.pushState('Page', 'SCOT', '/#/'+$(set).find('.type').text() + '/' + array[0]) 
                 this.setState({idsarray: array, type: $(set).find('.type').text(), entry: colorrow[0]})
             }
@@ -8686,7 +8683,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'incidentwidth', style: {display:'flex'}},
             React.createElement('div', {id:'list-view'},
-            React.createElement('div', {style:{display: 'flex'}},
+            React.createElement('div', {className: 'tableview', style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid2", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}},
                     React.createElement("div", {className: "table-row header"},
                         React.createElement("div", {className: "wrapper attributes"},
@@ -8868,6 +8865,7 @@ module.exports = React.createClass({displayName: "exports",
          }
     },
     clickable: function(v){
+        $('#list-view').find('.container-fluid2').focus()   
         $('#'+$(v.currentTarget).find('.severity').text()).find('.table-row').each(function(x,y){
             var array = []
             colorrow = []
