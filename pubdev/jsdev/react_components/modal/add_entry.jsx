@@ -96,11 +96,13 @@ var AddEntryModal = React.createClass({
     },*/
     componentDidMount: function() {
         $('#' + this.props.id + '_ifr').css('height', '130px')
+        $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top)
     },
 	render: function() {
 	var item = this.state.subitem
+    var not_saved_entry_id = 'not_saved_entry_'+this.props.id
         return (
-            <div>
+            <div id={not_saved_entry_id}>
                 <div className={'row-fluid entry-outer'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
                     <div className={'row-fluid entry-header'}>
                         <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/not_saved_0"}>Not_Saved_0</a>]by {whoami}
@@ -110,7 +112,7 @@ var AddEntryModal = React.createClass({
                             </span>
                         </div>
                     </div>
-                    <TinyMCE id={this.props.id} content={""} className={'inputtext'} config={{height: '130', plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}} onChange={this.handleEditorChange} /> 
+                    <TinyMCE id={this.props.id} content={""} className={'inputtext'} config={{plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}} onChange={this.handleEditorChange} /> 
                 <Dropzone onDrop={this.onDrop} style={{'border-width':'2px','border-color':'#000','border-radius':'4px',padding: '30px','border-style': 'dashed', 'text-align' : 'center'}}><div style={{fontSize:'16px',color:'blue'}}>'Drop some files here or click to select files to upload'</div></Dropzone>
                 {this.state.files ? <div> {this.state.files.map((file) => <ul style={{'list-style-type' : 'none', margin:'0', padding:'0'}}><li><p style={{display:'inline'}}>{file.name}</p><button style={{'line-height':'1px'}} className='btn btn-info' id={file.name} onClick={this.Close}>x</button></li></ul>)}</div> : null} 
                 </div>    
