@@ -255,47 +255,41 @@ var SelectedHeaderOptions = React.createClass({
             }
             return (
                 <div className="entry-header">
-                    <ButtonGroup bsSize='small'> 
-                        <Button bsStyle='success' onClick={this.props.entryToggle}>Add Entry</Button>
-                        <Button eventKey="1" onClick={this.toggleFlair}>Toggle <b>Flair</b></Button>
-                        <Button eventKey="2" onClick={this.props.historyToggle}>View <b>History</b></Button>
-                        <Button eventKey="3" onClick={this.props.permissionsToggle}><b>Permissions</b></Button>
-                        <Button eventKey="4" onClick={this.props.entitiesToggle}>List <b>Entities</b></Button>
-                        {showPromote ? <Button bsStyle='warning' eventKey="6"><Promote type={type} id={id} updated={this.props.updated} /></Button> : null}
-                        <Button bsStyle='danger' eventKey="5" onClick={this.props.deleteToggle}><b>Delete</b> {subjectType}</Button>
-                    </ButtonGroup>
+                    <Button bsStyle='success' onClick={this.props.entryToggle} bsSize='small'>Add Entry</Button>
+                    <Button eventKey="1" onClick={this.toggleFlair} bsSize='small'>Toggle <b>Flair</b></Button>
+                    <Button eventKey="2" onClick={this.props.historyToggle} bsSize='small'>View <b>History</b></Button>
+                    <Button eventKey="3" onClick={this.props.permissionsToggle} bsSize='small'><b>Permissions</b></Button>
+                    <Button eventKey="4" onClick={this.props.entitiesToggle} bsSize='small'>List <b>Entities</b></Button>
+                    {showPromote ? <Button bsStyle='warning' eventKey="6" bsSize='small'><Promote type={type} id={id} updated={this.props.updated} /></Button> : null}
+                    <Button bsStyle='danger' eventKey="5" onClick={this.props.deleteToggle} bsSize='small'><b>Delete</b> {subjectType}</Button>
                 </div>
             )
         } else {
             if (this.props.aIndex != undefined) {
                 return (
                     <div className="entry-header">
-                        <ButtonGroup bsSize='small' style={{display:'inline-flex'}}>
-                            <Button eventKey='1' onClick={this.toggleFlair}>Toggle <b>Flair</b></Button>
-                            <Button eventKey='2' onClick={this.props.guideToggle}>Guide</Button>
-                            <Button eventKey='3' onClick={this.props.sourceToggle}>View <b>Source</b></Button> 
-                            <Button eventKey='4' onClick={this.props.entitiesToggle}>View <b>Entities</b></Button>
-                            <Button eventKey='4' onClick={this.props.historyToggle}>View <b>AlertGroup History</b></Button>
-                            <Button eventKey='7' onClick={this.alertOpenSelected}><b>Open</b> Selected</Button>
-                            <Button eventKey='8' onClick={this.alertCloseSelected}><b>Close</b> Selected</Button>
-                            <Button eventKey='9' onClick={this.alertPromoteSelected}><b>Promote</b> Selected</Button> 
-                            <Button eventKey='10' onClick={this.props.entryToggle}>Add <b>Entry</b></Button>
-                            <Button eventKey='11' onClick={this.alertSelectExisting}><b>Add</b> Selected to <b>Existing Event</b></Button> 
-                            <Button eventKey='12' onClick={this.alertExportCSV}>Export to <b>CSV</b></Button>
-                            <Button eventKey='13' onClick={this.alertDeleteSelected}><b>Delete</b> Selected</Button> 
-                        </ButtonGroup>
+                        <Button eventKey='1' onClick={this.toggleFlair} bsSize='small'>Toggle <b>Flair</b></Button>
+                        <Button eventKey='2' onClick={this.props.guideToggle} bsSize='small'>Guide</Button>
+                        <Button eventKey='3' onClick={this.props.sourceToggle} bsSize='small'>View <b>Source</b></Button> 
+                        <Button eventKey='4' onClick={this.props.entitiesToggle} bsSize='small'>View <b>Entities</b></Button>
+                        <Button eventKey='4' onClick={this.props.historyToggle} bsSize='small'>View <b>AlertGroup History</b></Button>
+                        <Button eventKey='7' onClick={this.alertOpenSelected} bsSize='small'><b>Open</b> Selected</Button>
+                        <Button eventKey='8' onClick={this.alertCloseSelected} bsSize='small'><b>Close</b> Selected</Button>
+                        <Button eventKey='9' onClick={this.alertPromoteSelected} bsSize='small'><b>Promote</b> Selected</Button> 
+                        <Button eventKey='10' onClick={this.props.entryToggle} bsSize='small'>Add <b>Entry</b></Button>
+                        <Button eventKey='11' onClick={this.alertSelectExisting} bsSize='small'><b>Add</b> Selected to <b>Existing Event</b></Button> 
+                        <Button eventKey='12' onClick={this.alertExportCSV} bsSize='small'>Export to <b>CSV</b></Button>
+                        <Button eventKey='13' onClick={this.alertDeleteSelected} bsSize='small'><b>Delete</b> Selected</Button> 
                     </div>
                 )
             } else { 
                 return (
                     <div className="entry-header">
-                        <ButtonGroup bsSize='small' style={{display:'inline-flex'}}>
-                            <Button eventKey='1' onClick={this.toggleFlair}>Toggle <b>Flair</b></Button>
-                            <Button eventKey='2' onClick={this.props.guideToggle}>Guide</Button>
-                            <Button eventKey='3' onClick={this.props.sourceToggle}>View <b>Source</b></Button> 
-                            <Button eventKey='4' onClick={this.props.entitiesToggle}>View <b>Entities</b></Button>
-                            <Button eventKey='4' onClick={this.props.historyToggle}>View <b>AlertGroup History</b></Button> 
-                        </ButtonGroup>
+                        <Button eventKey='1' onClick={this.toggleFlair} bsSize='small'>Toggle <b>Flair</b></Button>
+                        <Button eventKey='2' onClick={this.props.guideToggle} bsSize='small'>Guide</Button>
+                        <Button eventKey='3' onClick={this.props.sourceToggle} bsSize='small'>View <b>Source</b></Button> 
+                        <Button eventKey='4' onClick={this.props.entitiesToggle} bsSize='small'>View <b>Entities</b></Button>
+                        <Button eventKey='4' onClick={this.props.historyToggle} bsSize='small'>View <b>AlertGroup History</b></Button> 
                     </div>
                 )
             }
