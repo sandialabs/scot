@@ -3642,11 +3642,13 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
     },*/
     componentDidMount: function() {
         $('#' + this.props.id + '_ifr').css('height', '130px')
+        $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top)
     },
 	render: function() {
 	var item = this.state.subitem
+    var not_saved_entry_id = 'not_saved_entry_'+this.props.id
         return (
-            React.createElement("div", null, 
+            React.createElement("div", {id: not_saved_entry_id}, 
                 React.createElement("div", {className: 'row-fluid entry-outer', style: {marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
                     React.createElement("div", {className: 'row-fluid entry-header'}, 
                         React.createElement("div", {className: "entry-header-inner"}, "[", React.createElement("a", {style: {color:'black'}, href: "#/not_saved_0"}, "Not_Saved_0"), "]by ", whoami, 
@@ -3656,7 +3658,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                             )
                         )
                     ), 
-                    React.createElement(TinyMCE, {id: this.props.id, content: "", className: 'inputtext', config: {height: '130', plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}, onChange: this.handleEditorChange}), 
+                    React.createElement(TinyMCE, {id: this.props.id, content: "", className: 'inputtext', config: {plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}, onChange: this.handleEditorChange}), 
                 React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width':'2px','border-color':'#000','border-radius':'4px',padding: '30px','border-style': 'dashed', 'text-align' : 'center'}}, React.createElement("div", {style: {fontSize:'16px',color:'blue'}}, "'Drop some files here or click to select files to upload'")), 
                 this.state.files ? React.createElement("div", null, " ", this.state.files.map((file) => React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p", {style: {display:'inline'}}, file.name), React.createElement("button", {style: {'line-height':'1px'}, className: "btn btn-info", id: file.name, onClick: this.Close}, "x"))))) : null
                 )
