@@ -117,6 +117,7 @@ var SelectedEntry = React.createClass({
         }
         return (
             <div className={divClass} style={{height:this.props.windowHeight}}> 
+                {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : <AddEntryModal title={'Add Entry'} type={this.props.aType} targetid={this.props.aID} addedentry={this.props.entryToggle} updated={this.updatedCB}/> }</div> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData}/> : <span>Loading...</span>} 
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
@@ -160,6 +161,8 @@ var AlertParent = React.createClass({
         
         //Ctrl + A to select all alerts
         $(document.body).keydown(function(event){
+            //prevent from working when in input
+            if ($('input').is(':focus')) {return};
             //check for ctrl + a with keyCode 
             if (event.keyCode == 65 && (event.ctrlKey == true || event.metaKey == true)) {
                 this.rowClicked(null,null,'all',null);
@@ -239,7 +242,6 @@ var AlertParent = React.createClass({
                 header.push(<AlertHeader colName={col_names[i]} />)
             }
             for (var z=0; z < items.length; z++) {
-            //items.forEach(function(object){
                 var dataFlair = null;
                 if (Object.getOwnPropertyNames(items[z].data_with_flair).length != 0) {
                     dataFlair = items[z].data_with_flair;
@@ -248,8 +250,6 @@ var AlertParent = React.createClass({
                 }
                 
                 body.push(<AlertBody index={z} data={items[z]} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected}/>)
-                //z++;
-            //}.bind(this))
             }
             var search = null;
             if (items[0].data_with_flair != undefined) {
@@ -532,10 +532,10 @@ var EntryParent = React.createClass({
                             </span>
                         </div>
                     </div>
-                {itemarr}
-                </div> 
                 {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} parent={items.parent} targetid={id} type={type} stage = {'Edit'} id={items.id} addedentry={this.editEntryToggle} /> : null}
+                {itemarr}
                 {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid={id} id={items.id} addedentry={this.replyEntryToggle} /> : null}
+                </div> 
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} /> : null}     
             </div>
         );
