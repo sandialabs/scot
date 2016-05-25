@@ -1958,7 +1958,7 @@ var SelectedContainer = React.createClass({displayName: "SelectedContainer",
         }
     },
     handleResize: function(){
-        var scrollHeight = $(window).height() - 220
+        var scrollHeight = $(window).height() - $('#header').height() - 90
         var scrollWidth  = $(window).width()  - ($('#list-view').width() + 60)
         this.setState({width:scrollWidth,height:scrollHeight})
     },
@@ -2105,6 +2105,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         }
         return (
             React.createElement("div", {className: divClass, style: {height:this.props.windowHeight}}, 
+                this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: this.props.id, addedentry: this.props.entryToggle, updated: this.updatedCB}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.aType, targetid: this.props.aID, addedentry: this.props.entryToggle, updated: this.updatedCB})) : null, 
                 showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData}) : React.createElement("span", null, "Loading..."), 
                 this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue}) : null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null
@@ -2148,6 +2149,8 @@ var AlertParent = React.createClass({displayName: "AlertParent",
         
         //Ctrl + A to select all alerts
         $(document.body).keydown(function(event){
+            //prevent from working when in input
+            if ($('input').is(':focus')) {return};
             //check for ctrl + a with keyCode 
             if (event.keyCode == 65 && (event.ctrlKey == true || event.metaKey == true)) {
                 this.rowClicked(null,null,'all',null);
@@ -2227,7 +2230,6 @@ var AlertParent = React.createClass({displayName: "AlertParent",
                 header.push(React.createElement(AlertHeader, {colName: col_names[i]}))
             }
             for (var z=0; z < items.length; z++) {
-            //items.forEach(function(object){
                 var dataFlair = null;
                 if (Object.getOwnPropertyNames(items[z].data_with_flair).length != 0) {
                     dataFlair = items[z].data_with_flair;
@@ -2236,8 +2238,6 @@ var AlertParent = React.createClass({displayName: "AlertParent",
                 }
                 
                 body.push(React.createElement(AlertBody, {index: z, data: items[z], dataFlair: dataFlair, activeIndex: this.state.activeIndex, rowClicked: this.rowClicked, alertSelected: this.props.alertSelected, allSelected: this.state.allSelected}))
-                //z++;
-            //}.bind(this))
             }
             var search = null;
             if (items[0].data_with_flair != undefined) {
@@ -2520,10 +2520,10 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                             )
                         )
                     ), 
-                itemarr
-                ), 
                 this.state.editEntryToolbar ? React.createElement(AddEntryModal, {type: this.props.type, title: "Edit Entry", header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, parent: items.parent, targetid: id, type: type, stage: 'Edit', id: items.id, addedentry: this.editEntryToggle}) : null, 
-                this.state.replyEntryToolbar ? React.createElement(AddEntryModal, {title: "Reply Entry", stage: 'Reply', type: type, header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, targetid: id, id: items.id, addedentry: this.replyEntryToggle}) : null, 
+                itemarr, 
+                this.state.replyEntryToolbar ? React.createElement(AddEntryModal, {title: "Reply Entry", stage: 'Reply', type: type, header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, targetid: id, id: items.id, addedentry: this.replyEntryToggle}) : null
+                ), 
                 this.state.deleteToolbar ? React.createElement(DeleteEntry, {type: type, id: id, deleteToggle: this.deleteToggle, entryid: items.id}) : null
             )
         );
@@ -2940,7 +2940,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         var notificationMessage = this.state.notificationMessage;
         return (
             React.createElement("div", null, 
-                React.createElement("div", null, 
+                React.createElement("div", {id: "header"}, 
                 React.createElement("div", {id: "NewEventInfo", className: "entry-header-info-null", style: {width:'100%'}}, 
                     React.createElement("div", {className: "details-subject", style: {display: 'inline-flex',paddingLeft:'5px'}}, 
                         this.state.showEventData ? React.createElement(EntryDataSubject, {data: this.state.headerData, subjectType: subjectType, type: type, id: this.props.id, updated: this.updated}): null, 
@@ -2972,13 +2972,12 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 this.state.historyToolbar ? React.createElement(History, {historyToggle: this.historyToggle, id: id, type: type}) : null, 
                 this.state.entitiesToolbar ? React.createElement(Entities, {entitiesToggle: this.entitiesToggle, entityData: this.state.entityData, flairToolbarToggle: this.flairToolbarToggle}) : null, 
                 this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: id, type: type, permissionData: this.state.headerData, permissionsToggle: this.permissionsToggle, updated: this.updated}) : null, 
-                this.state.entryToolbar ? React.createElement("div", null, this.state.alertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: type, targetid: id, id: id, addedentry: this.entryToggle, updated: this.updated}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.state.aType, targetid: this.state.aID, addedentry: this.entryToggle, updated: this.updated})) : null, 
                 this.state.deleteToolbar ? React.createElement(DeleteEvent, {subjectType: subjectType, type: type, id: id, deleteToggle: this.deleteToggle, updated: this.updated}) :null, 
                 type != 'alertgroup' ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, historyToggle: this.historyToggle, deleteToggle: this.deleteToggle, updated: this.updated}) : React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, historyToggle: this.historyToggle, deleteToggle: this.deleteToggle, updated: this.updated, alertSelected: this.state.alertSelected, aIndex: this.state.aIndex, aType: this.state.aType, aStatus: this.state.aStatus, guideToggle: this.guideToggle, sourceToggle: this.sourceToggle})
                 ), 
                 this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
 
-                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, headerData: this.state.headerData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, windowHeight: this.props.windowHeight, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, linkWarningToggle: this.linkWarningToggle})
+                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, headerData: this.state.headerData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, windowHeight: this.props.windowHeight, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, linkWarningToggle: this.linkWarningToggle, entryToolbar: this.state.entryToolbar, isAlertSelected: this.state.alertSelected, aType: this.state.aType, aID: this.state.aID})
             )
         )
     }
@@ -3269,31 +3268,33 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
     alertSelectExisting: function() {
         var text = prompt("Please Enter Event ID to promote into")
         var array = [];
-        $('tr.selected').each(function(index,tr) {
-            var id = $(tr).attr('id');
-            array.push(id);
-        }.bind(this));
-        for (i=0; i < array.length; i++) {
-            if ($.isNumeric(text)) {
-                var data = {
-                    promote:text
+        if (text != '' && text != null){
+            $('tr.selected').each(function(index,tr) {
+                var id = $(tr).attr('id');
+                array.push(id);
+            }.bind(this));
+            for (i=0; i < array.length; i++) {
+                if ($.isNumeric(text)) {
+                    var data = {
+                        promote:text
+                    }
+                    $.ajax({
+                        type: 'PUT',
+                        url: '/scot/api/v2/alert/' + array[i],
+                        data: JSON.stringify(data),
+                        success: function(response){
+                            if($.isNumeric(text)){
+                                window.location = '#/event/' + text
+                            }
+                        }.bind(this),
+                        error: function() {
+                            console.log('failure');
+                        }.bind(this)
+                    })
+                } else {
+                    prompt("Please use numbers only")
+                    this.selectExisting();
                 }
-                $.ajax({
-                    type: 'PUT',
-                    url: '/scot/api/v2/alert/' + array[i],
-                    data: JSON.stringify(data),
-                    success: function(response){
-                        if($.isNumeric(text)){
-                            window.location = '#/event/' + text
-                        }
-                    }.bind(this),
-                    error: function() {
-                        console.log('failure');
-                    }.bind(this)
-                })
-            } else {
-                prompt("Please use numbers only")
-                this.selectExisting();
             }
         }
     },
@@ -3342,6 +3343,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
     componentDidMount: function() {
         //open, close, and promote alerts
         $(document.body).keydown(function(event){
+            if($('input').is(':focus')) {return}
             switch (event.keyCode) {
                 case 79:
                     this.alertOpenSelected();
@@ -3376,47 +3378,41 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
             }
             return (
                 React.createElement("div", {className: "entry-header"}, 
-                    React.createElement(ButtonGroup, {bsSize: "small"}, 
-                        React.createElement(Button, {bsStyle: "success", onClick: this.props.entryToggle}, "Add Entry"), 
-                        React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair}, "Toggle ", React.createElement("b", null, "Flair")), 
-                        React.createElement(Button, {eventKey: "2", onClick: this.props.historyToggle}, "View ", React.createElement("b", null, "History")), 
-                        React.createElement(Button, {eventKey: "3", onClick: this.props.permissionsToggle}, React.createElement("b", null, "Permissions")), 
-                        React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle}, "List ", React.createElement("b", null, "Entities")), 
-                        showPromote ? React.createElement(Button, {bsStyle: "warning", eventKey: "6"}, React.createElement(Promote, {type: type, id: id, updated: this.props.updated})) : null, 
-                        React.createElement(Button, {bsStyle: "danger", eventKey: "5", onClick: this.props.deleteToggle}, React.createElement("b", null, "Delete"), " ", subjectType)
-                    )
+                    React.createElement(Button, {bsStyle: "success", onClick: this.props.entryToggle, bsSize: "small"}, "Add Entry"), 
+                    React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
+                    React.createElement(Button, {eventKey: "2", onClick: this.props.historyToggle, bsSize: "small"}, "View ", React.createElement("b", null, "History")), 
+                    React.createElement(Button, {eventKey: "3", onClick: this.props.permissionsToggle, bsSize: "small"}, React.createElement("b", null, "Permissions")), 
+                    React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle, bsSize: "small"}, "List ", React.createElement("b", null, "Entities")), 
+                    showPromote ? React.createElement(Button, {bsStyle: "warning", eventKey: "6", bsSize: "small"}, React.createElement(Promote, {type: type, id: id, updated: this.props.updated})) : null, 
+                    React.createElement(Button, {bsStyle: "danger", eventKey: "5", onClick: this.props.deleteToggle, bsSize: "small"}, React.createElement("b", null, "Delete"), " ", subjectType)
                 )
             )
         } else {
             if (this.props.aIndex != undefined) {
                 return (
                     React.createElement("div", {className: "entry-header"}, 
-                        React.createElement(ButtonGroup, {bsSize: "small", style: {display:'inline-flex'}}, 
-                            React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair}, "Toggle ", React.createElement("b", null, "Flair")), 
-                            React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle}, "Guide"), 
-                            React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle}, "View ", React.createElement("b", null, "Source")), 
-                            React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle}, "View ", React.createElement("b", null, "Entities")), 
-                            React.createElement(Button, {eventKey: "4", onClick: this.props.historyToggle}, "View ", React.createElement("b", null, "AlertGroup History")), 
-                            React.createElement(Button, {eventKey: "7", onClick: this.alertOpenSelected}, React.createElement("b", null, "Open"), " Selected"), 
-                            React.createElement(Button, {eventKey: "8", onClick: this.alertCloseSelected}, React.createElement("b", null, "Close"), " Selected"), 
-                            React.createElement(Button, {eventKey: "9", onClick: this.alertPromoteSelected}, React.createElement("b", null, "Promote"), " Selected"), 
-                            React.createElement(Button, {eventKey: "10", onClick: this.props.entryToggle}, "Add ", React.createElement("b", null, "Entry")), 
-                            React.createElement(Button, {eventKey: "11", onClick: this.alertSelectExisting}, React.createElement("b", null, "Add"), " Selected to ", React.createElement("b", null, "Existing Event")), 
-                            React.createElement(Button, {eventKey: "12", onClick: this.alertExportCSV}, "Export to ", React.createElement("b", null, "CSV")), 
-                            React.createElement(Button, {eventKey: "13", onClick: this.alertDeleteSelected}, React.createElement("b", null, "Delete"), " Selected")
-                        )
+                        React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
+                        React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle, bsSize: "small"}, "Guide"), 
+                        React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
+                        React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
+                        React.createElement(Button, {eventKey: "4", onClick: this.props.historyToggle, bsSize: "small"}, "View ", React.createElement("b", null, "AlertGroup History")), 
+                        React.createElement(Button, {eventKey: "7", onClick: this.alertOpenSelected, bsSize: "small"}, React.createElement("b", null, "Open"), " Selected"), 
+                        React.createElement(Button, {eventKey: "8", onClick: this.alertCloseSelected, bsSize: "small"}, React.createElement("b", null, "Close"), " Selected"), 
+                        React.createElement(Button, {eventKey: "9", onClick: this.alertPromoteSelected, bsSize: "small"}, React.createElement("b", null, "Promote"), " Selected"), 
+                        React.createElement(Button, {eventKey: "10", onClick: this.props.entryToggle, bsSize: "small"}, "Add ", React.createElement("b", null, "Entry")), 
+                        React.createElement(Button, {eventKey: "11", onClick: this.alertSelectExisting, bsSize: "small"}, React.createElement("b", null, "Add"), " Selected to ", React.createElement("b", null, "Existing Event")), 
+                        React.createElement(Button, {eventKey: "12", onClick: this.alertExportCSV, bsSize: "small"}, "Export to ", React.createElement("b", null, "CSV")), 
+                        React.createElement(Button, {eventKey: "13", onClick: this.alertDeleteSelected, bsSize: "small"}, React.createElement("b", null, "Delete"), " Selected")
                     )
                 )
             } else { 
                 return (
                     React.createElement("div", {className: "entry-header"}, 
-                        React.createElement(ButtonGroup, {bsSize: "small", style: {display:'inline-flex'}}, 
-                            React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair}, "Toggle ", React.createElement("b", null, "Flair")), 
-                            React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle}, "Guide"), 
-                            React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle}, "View ", React.createElement("b", null, "Source")), 
-                            React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle}, "View ", React.createElement("b", null, "Entities")), 
-                            React.createElement(Button, {eventKey: "4", onClick: this.props.historyToggle}, "View ", React.createElement("b", null, "AlertGroup History"))
-                        )
+                        React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
+                        React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle, bsSize: "small"}, "Guide"), 
+                        React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
+                        React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
+                        React.createElement(Button, {eventKey: "4", onClick: this.props.historyToggle, bsSize: "small"}, "View ", React.createElement("b", null, "AlertGroup History"))
                     )
                 )
             }
@@ -3558,20 +3554,12 @@ var Dropzone    = require('../../../node_modules/react-dropzone')
 var ReactTime   = require('react-time')
 var AppActions  = require('../flux/actions.jsx');
 var Activekey   = require('../activemq/handleupdate.jsx')
+var Button      = require('react-bootstrap/lib/Button.js');
 var marksave = false
 var addentrydata = true
 var finalfiles = []
 
 var recently_updated = 0
-const  customStyles = {
-    content : {
-        top     : '1%',
-        right   : '60%',
-        bottom  : 'auto',
-	    left	: '10%',
-	    width: '80%'
-    }
-}
 
 var reply = false
 var timestamp = new Date()
@@ -3593,17 +3581,17 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	        }).success(function(response){
                 recently_updated = response.updated
                 if(response.body_flair == ""){
-	                $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(response.body)
-            }
-        else{
-	            $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(response.body_flair)
-        }
-	    })
+	                $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
+                }
+                else{
+	                $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_flair)
+                }
+	        }.bind(this))
 	}
 	else if (this.props.title == 'Add Entry'){
 	    finalfiles = []
         reply = false
-	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text('')
+	    $('#' + this.props.id + '_ifr').contents().find("#tinymce").text('')
     }
 	else if(this.props.title == 'Reply Entry'){
 	    finalfiles = []
@@ -3624,7 +3612,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 		this.setState({height: newheight})
 	}
     },
-	componentWillReceiveProps: function(){
+	/*componentWillReceiveProps: function(){
 	if(this.props.stage == 'Edit'){
 	    reply = false
         finalfiles = []
@@ -3634,52 +3622,54 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	   }).success(function(response){
             recently_updated = response.updated
             if(response.body_flair == ""){
-	            $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(response.body)
+	            $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
         }
             else{
-	            $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(response.body_flair)
+	            $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_flair)
         }
         })
 	}
 	else if (this.props.title == 'Add Entry'){
     	reply = false
         finalfiles = []
-        $('#react-tinymce-addentry_ifr').contents().find("#tinymce").text('')
+        $('#' + this.props.id + '_ifr').contents().find("#tinymce").text('')
 	    var timestamp = new Date()
 	    var output = "By You ";
 	    timestamp = new Date(timestamp.toString())
 	    output  = output + timestamp.toLocaleString()
 	}
 	this.setState({})
+    },*/
+    componentDidMount: function() {
+        $('#' + this.props.id + '_ifr').css('height', '130px')
+        $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top)
     },
 	render: function() {
 	var item = this.state.subitem
-    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").css('height', '394px')
+    var not_saved_entry_id = 'not_saved_entry_'+this.props.id
         return (
-            React.createElement(Modal, {onRequestClose: this.props.addedentry, style: customStyles, isOpen: this.state.addentry}, 
-            React.createElement("div", {className: "modal-content"}, 
-            React.createElement("div", {className: "modal-header"}, 
-            React.createElement("h4", {className: "modal-title"}, this.props.title), React.createElement('div', {className: 'entry-header-info-null', style: {top: '1px', width: '100%', background: '#FFF'}}, React.createElement('h2', {style: {color: '#6C2B2B', 'font-size':'24px', 'text-align': 'left'}}, this.props.header1 ? React.createElement("div" , {style: {display: 'inline-flex'}}, React.createElement("p", null, this.props.header1), React.createElement(ReactTime, { value: this.props.createdTime * 1000, format:"MM/DD/YYYY hh:mm:ss a"}) , React.createElement("p", null, this.props.header2), React.createElement(ReactTime, {value: this.props.updatedTime * 1000,format:"MM/DD/YYYY hh:mm:ss a"}), React.createElement("p", null, this.props.header3)): output)), reply ? React.createElement('div', null, React.createElement(Frame, {id: 'iframe_'+this.props.id, styleSheets: ['/css/sandbox.css'], style: {overflow:'auto',width:'100%', height:'300px'}, frameBorder: '1', sandbox: 'allow-popups allow-same-origin'}, React.createElement('div', {dangerouslySetInnerHTML : {__html:item}}))) : null 
-            ), 
-            React.createElement("div", {className: "modal-body", style: {height: '90%'}}, 
-            React.createElement(TinyMCE, {style: {height: '394px'}, content: "", className: "inputtext",config: {plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'},onChange: this.handleEditorChange}
-            )), 
-            React.createElement("div", {className: "modal-footer"}, React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width': '2px','border-color':'#000','border-radius':'4px',margin:'30px' ,padding: '30px','border-style': 'dashed', 'text-align' : 'center'}}, React.createElement("div",null,"Drop some files here or click to  select files to upload")),
-            this.state.files ? React.createElement("div", null, this.state.files.map((file) => React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p",{style:{display:'inline'}}, file.name),React.createElement('button', {style: {/*width: '2em', height: '1em',*/ 'line-height':'1px'}, className: 'btn btn-info', id: file.name, onClick: this.Close}, 'x'))))): null, 
-            React.createElement("button", {className: 'btn', onClick: this.onCancel}, " Cancel"),//, this.state.edit ? React.createElement(
-        //'button', {className: 'btn btn-primary', onClick: this.Edit}, 'Edit') : null,
-            this.state.saved ? React.createElement("button", {className: 'btn btn-info', onClick: this.submit}, 'Submit') : null
-                //this.state.enablesave ? React.createElement('button', {className: 'btn btn-success', onClick: this.Save},'Save') : null
+            React.createElement("div", {id: not_saved_entry_id}, 
+                React.createElement("div", {className: 'row-fluid entry-outer', style: {marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
+                    React.createElement("div", {className: 'row-fluid entry-header'}, 
+                        React.createElement("div", {className: "entry-header-inner"}, "[", React.createElement("a", {style: {color:'black'}, href: "#/not_saved_0"}, "Not_Saved_0"), "]by ", whoami, 
+                            React.createElement("span", {className: "pull-right", style: {display:'inline-flex',paddingRight:'3px'}}, 
+                                React.createElement(Button, {bsSize: 'xsmall', onClick: this.submit}, "Submit"), 
+                                React.createElement(Button, {bsSize: 'xsmall', onClick: this.onCancel}, "Cancel")
+                            )
+                        )
+                    ), 
+                    React.createElement(TinyMCE, {id: this.props.id, content: "", className: 'inputtext', config: {plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}, onChange: this.handleEditorChange}), 
+                React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width':'2px','border-color':'#000','border-radius':'4px',padding: '30px','border-style': 'dashed', 'text-align' : 'center'}}, React.createElement("div", {style: {fontSize:'16px',color:'blue'}}, "'Drop some files here or click to select files to upload'")), 
+                this.state.files ? React.createElement("div", null, " ", this.state.files.map((file) => React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p", {style: {display:'inline'}}, file.name), React.createElement("button", {style: {'line-height':'1px'}, className: "btn btn-info", id: file.name, onClick: this.Close}, "x"))))) : null
+                )
             )
-            )
-            ) 
-            )
+        )
     },
     clickable: function(){
 	this.setState({addentry: false})
 	},
     Edit: function(){
-	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").attr('contenteditable', true)
+	$('#'+this.props.id+'_ifr').contents().find("#tinymce").attr('contenteditable', true)
 	this.setState({saved: false, edit: false, enablesave:true})    
     },
     onCancel: function(){
@@ -3703,23 +3693,23 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
     this.setState({files: finalfiles})
     },
 	Save: function() {
-	if($('#react-tinymce-addentry_ifr').contents().find("#tinymce").text() == ""){
+	if($('#' + this.props.id + '_ifr').contents().find("#tinymce").text() == ""){
 	    alert("Please fill in Text")
 	}
 	else {
-	    $('#react-tinymce-addentry_ifr').contents().find("#tinymce").attr('contenteditable', false)
+	    $('#' + this.props.id + '_ifr').contents().find("#tinymce").attr('contenteditable', false)
 	    this.setState({saved: true, edit: true, enablesave: false})
 	}
         },
 	submit: function(){
-	if($('#react-tinymce-addentry_ifr').contents().find("#tinymce").text() == ""){
+	if($('#' + this.props.id + '_ifr').contents().find("#tinymce").text() == ""){
 	    alert("Please Add Some Text")
 	}
     else {    
         if(this.props.stage == 'Reply')
 	    {
     	    var data = new Object()
-	        $('#react-tinymce-addentry_ifr').contents().find("#tinymce").each(function(x,y){
+	        $('#' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
             $(y).find('p').each(function(r,s){
                 $(s).find('img').each(function(key, value){ 
                     var canvas = document.createElement('canvas')
@@ -3736,7 +3726,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
         })
     })
 
-    data = JSON.stringify({parent: Number(this.props.id), body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
+    data = JSON.stringify({parent: Number(this.props.id), body: $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
 
 	$.ajax({
 	    type: 'post',
@@ -3787,14 +3777,14 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
             cancelButtonClass: 'btn-info',
             confirmButton: 'Yes, override change?',
             cancelButton: 'No, Keep change from ' + response.owner + '?',
-            content: response.body,
+            content: response.owner+"'s edit:" +'\n\n'+response.body,
             backgroundDismiss: false,
-            title: "Edit Conflict with: " + response.owner + '\n\n',
+            title: "Edit Conflict" + '\n\n',
             confirm: function(){
             Confirm.launch(true)
             },
             cancel: function(){
-            Confirm.launch(true)
+            return 
             }
         })
         }
@@ -3805,7 +3795,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
     }
 	else  if(this.props.type == 'alert'){ 
      var data;
-	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").each(function(x,y){
+	$('#' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
         $(y).find('p').each(function(r,s){
                 $(s).find('img').each(function(key, value){ 
                     var canvas = document.createElement('canvas')
@@ -3823,7 +3813,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
     })
     
      
-	            data = JSON.stringify({body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid), target_type: 'alert',  parent: 0})
+	            data = JSON.stringify({body: $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid), target_type: 'alert',  parent: 0})
 	            $.ajax({
 		        type: 'post', 
 		        url: '/scot/api/v2/entry',
@@ -3855,7 +3845,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	}	
 	else {
     var data = new Object();
-	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").each(function(x,y){
+	$('#' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
         $(y).find('p').each(function(r,s){
                 $(s).find('img').each(function(key, value){ 
                     var canvas = document.createElement('canvas')
@@ -3871,7 +3861,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                 })
         })
     })
-    data = {parent: 0, body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
+    data = {parent: 0, body: $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
     $.ajax({
 	type: 'post',
 	url: '/scot/api/v2/entry',
@@ -3904,7 +3894,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
     },
     forEdit: function(set){
     if(set){
-	$('#react-tinymce-addentry_ifr').contents().find("#tinymce").each(function(x,y){
+	$('#' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
         $(y).find('p').each(function(r,s){
                 $(s).find('img').each(function(key, value){ 
                     var canvas = document.createElement('canvas')
@@ -3923,7 +3913,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 
     var data = {
         parent: Number(this.props.parent), 
-        body: $('#react-tinymce-addentry_ifr').contents().find("#tinymce").html(), 
+        body: $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(), 
         target_id: Number(this.props.targetid) , 
         target_type: this.props.type
     }
@@ -3962,7 +3952,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 module.exports = AddEntryModal
 
 
-},{"../../../node_modules/react-dropdown":419,"../../../node_modules/react-dropzone":421,"../../../node_modules/react-frame":433,"../../../node_modules/react-modal":452,"../activemq/handleupdate.jsx":3,"../flux/actions.jsx":19,"react":1157,"react-time":938,"react-tinymce":942}],23:[function(require,module,exports){
+},{"../../../node_modules/react-dropdown":419,"../../../node_modules/react-dropzone":421,"../../../node_modules/react-frame":433,"../../../node_modules/react-modal":452,"../activemq/handleupdate.jsx":3,"../flux/actions.jsx":19,"react":1157,"react-bootstrap/lib/Button.js":352,"react-time":938,"react-tinymce":942}],23:[function(require,module,exports){
 var React               = require('react');
 var Modal               = require('react-modal');
 var Button              = require('react-bootstrap/lib/Button');
@@ -6283,6 +6273,7 @@ module.exports = React.createClass({displayName: "exports",
         $('.container-fluid2').keydown(function(e){
             var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
             var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
+            e.preventDefault()
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
                 var set;
                 set  = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents').click()
