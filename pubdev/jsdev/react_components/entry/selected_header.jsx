@@ -346,7 +346,7 @@ var SelectedHeader = React.createClass({
         var notificationMessage = this.state.notificationMessage;
         return (
             <div>
-                <div>
+                <div id="header">
                 <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%'}}>
                     <div className='details-subject' style={{display: 'inline-flex',paddingLeft:'5px'}}>
                         {this.state.showEventData ? <EntryDataSubject data={this.state.headerData} subjectType={subjectType} type={type} id={this.props.id} updated={this.updated} />: null}
