@@ -39,7 +39,7 @@ var colorrow = [];
 sortarray[colsort] = -1
 var columns = ['ID', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
 var toggle;
-var scrolled = 83
+var scrolled = 58
 function Remove(note){
     console.log(note)
 }
@@ -65,24 +65,23 @@ module.exports = React.createClass({
         this.setState({})
     },
     componentDidMount: function(){
-        
-        toggle  = $('#list-view') 
-        $('.container-fluid2').scrollTop(0)
-        $(document.body).keydown(function(e){
+        toggle  = $('#list-view').find('.tableview') 
+        $('.container-fluid2').keydown(function(e){
+            
             var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
             var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
-                scrolled = scrolled + 83
                 var set;
                 set  = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents').click()
                 var array = []
                 array.push($(set).attr('id'))
                 window.history.pushState('Page', 'SCOT', '/#/event/'+$(set).attr('id'))
                 $('.container-fluid2').scrollTop(scrolled)
+                scrolled = scrolled + $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 this.setState({idsarray: array})
             }
             else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
-                scrolled = scrolled - 83
+                scrolled = scrolled - $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 var set;
                 set  = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents').click()
                 var array = []
@@ -632,6 +631,7 @@ module.exports = React.createClass({
         }
     },
     clickable: function(v){
+        $('#list-view').find('.container-fluid2').focus()
         $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
             var array = []
             array.push($(y).attr('id'))
@@ -639,8 +639,7 @@ module.exports = React.createClass({
             window.history.pushState('Page', 'SCOT', '/#/event/'+$(y).attr('id'))
             this.launchEvent(array)
         }.bind(this))
-        scrolled = $('.container-fluid2').scrollTop()
-    
+            scrolled = $('.container-fluid2').scrollTop()
     },
     getNewData: function(page){
         pageSize = page.limit
