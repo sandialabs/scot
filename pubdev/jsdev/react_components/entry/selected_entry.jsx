@@ -242,7 +242,6 @@ var AlertParent = React.createClass({
                 header.push(<AlertHeader colName={col_names[i]} />)
             }
             for (var z=0; z < items.length; z++) {
-            //items.forEach(function(object){
                 var dataFlair = null;
                 if (Object.getOwnPropertyNames(items[z].data_with_flair).length != 0) {
                     dataFlair = items[z].data_with_flair;
@@ -251,8 +250,6 @@ var AlertParent = React.createClass({
                 }
                 
                 body.push(<AlertBody index={z} data={items[z]} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected}/>)
-                //z++;
-            //}.bind(this))
             }
             var search = null;
             if (items[0].data_with_flair != undefined) {
