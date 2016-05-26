@@ -253,10 +253,11 @@ module.exports = React.createClass({
                         React.createElement('button', {className: 'btn btn-default', onClick: this.createevent, style: styles}, 'Create Event'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */),
 
-                        React.createElement('div', {style: {'padding-left': '100px'}}, 'Hot Key Legend:'),
+                        React.createElement('div', 'Hot Key Legend:'),
                         React.createElement('div', {style: {'padding-left': '5px', 'font-weight': 'bold'}}, 'Old View: CTRL + o,'),
                         React.createElement('div', {style: {'padding-left': '5px', 'font-weight': 'bold'}}, 'New View: CTRL + n,'),
-                        React.createElement('div', {style: {'padding-left': '5px', 'font-weight': 'bold'}}, 'Toggle Details: d')
+                        React.createElement('div', {style: {'padding-left': '5px', 'font-weight': 'bold'}}, 'Toggle Details: d,'),
+                        React.createElement('div', {style: {'padding-left': '5px', 'font-weight': 'bold'}}, 'Select all Alerts: CTRL + a, C - Close Alerts, O - Open Alerts, P - Promote Alerts')
                         ),
             this.state.alldetail ? 
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
