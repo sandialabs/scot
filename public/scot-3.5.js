@@ -5412,12 +5412,12 @@ module.exports = React.createClass({displayName: "exports",
             if(e.keyCode == 79 && (e.ctrlKey == true || e.metaKey == true)){
                 array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
                 this.setState({display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
-                scrollheight: '', maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
+                scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
             }
 
             else if(e.keyCode == 78 && (e.ctrlKey == true || e.metaKey == true)){
                  array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height(), maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                 maxwidth: '915px', minwidth: '650px',scrollwidth: '650px', sizearray: array})                
         
             }
@@ -5508,7 +5508,7 @@ module.exports = React.createClass({displayName: "exports",
             $('.container-fluid2').css('width', 'width')
         }
         else {
-            $('.container-fluid2').css('height', '300px')
+            $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
             $('.container-fluid2').css('width', '100%')
         }
     },
