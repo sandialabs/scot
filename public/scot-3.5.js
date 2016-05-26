@@ -242,29 +242,13 @@ function update(state, callback, payload){
    }
    else if (state == 'alert'){
         
-        $('.z-table').each(function(key, value){
-            $(value).find('.z-row').each(function(x,y){
-                $(y).find('.z-cell').each(function(r,s){
-                    if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
-                        $(y).find('.z-cell').each(function(p,o){
-                            if($(o).attr('name') == 'alertgroup'){        
-                                activemqsetentry = $(o).text()
-                                activemqsetentrytype = 'alertgroup'
-                                callback.emitChange($(o).text())
-                        }
-                    })
-                }
-            })
-        })
-        })
-
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " updated " + 'alert' + " id: " 
         activemqid = payload.action.activemq.data.id
         activemqtype = 'alert'
         callback.emitChange('guidegroup')
         callback.emitChange('intelgroup')
-       // callback.emitChange(payload.action.activemq.data.id)
+        callback.emitChange(payload.action.activemq.data.id)
         callback.emitChange('taskgroup')
         callback.emitChange('selectedHeaderEntry');
         callback.emitChange('alertgroupnotification')
@@ -2105,7 +2089,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         }
         return (
             React.createElement("div", {className: divClass, style: {height:this.props.windowHeight}}, 
-                this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: this.props.id, addedentry: this.props.entryToggle, updated: this.updatedCB}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.aType, targetid: this.props.aID, addedentry: this.props.entryToggle, updated: this.updatedCB})) : null, 
+                this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.aType, targetid: this.props.aID, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB})) : null, 
                 showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData}) : React.createElement("span", null, "Loading..."), 
                 this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue}) : null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null
