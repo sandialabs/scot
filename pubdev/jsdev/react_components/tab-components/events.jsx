@@ -96,7 +96,7 @@ module.exports = React.createClass({
             if(e.keyCode == 79 && (e.ctrlKey == true || e.metaKey == true)){
                 array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
                 this.setState({display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
-                scrollheight: '300px',maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
+                scrollheight: '', maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
             }
 
             else if(e.keyCode == 78 && (e.ctrlKey == true || e.metaKey == true)){
