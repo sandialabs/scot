@@ -2365,7 +2365,7 @@ var AlertBody = React.createClass({displayName: "AlertBody",
                 React.createElement("tr", {index: index, id: data.id, className: selected, style: {cursor: 'pointer'}, onClick: this.onClick}, 
                     React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.id), 
                     React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.status != 'promoted' ? React.createElement("span", {style: {color:buttonStyle}}, data.status) : React.createElement(Button, {bsSize: "xsmall", bsStyle: buttonStyle, id: id, onClick: this.navigateTo, style: {lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}, data.status)), 
-                    data.entry_count == 0 ? React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.entry_count) : React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, React.createElement("a", {href: "javascript: void(0)", onClick: this.toggleEntry}, data.entry_count)), 
+                    data.entry_count == 0 ? React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.entry_count) : React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, React.createElement("span", {style: {color: 'blue', textDecoration: 'underline', cursor: 'pointer'}, onClick: this.toggleEntry}, data.entry_count)), 
                     rowReturn
                 ), 
                 React.createElement(AlertRowBlank, {id: data.id, type: 'alert', showEntry: this.state.showEntry})
@@ -2498,7 +2498,7 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                                     React.createElement(MenuItem, {eventKey: "2", onClick: this.deleteToggle}, "Delete"), 
                                     React.createElement(MenuItem, {eventKey: "3"}, React.createElement(Summary, {type: type, id: id, entryid: items.id, summary: summary})), 
                                     React.createElement(MenuItem, {eventKey: "4"}, React.createElement(Task, {type: type, id: id, entryid: items.id, taskData: items.task})), 
-                                    React.createElement(MenuItem, {eventKey: "5", onClick: this.permissionsToggle}, "Permissions")
+                                    React.createElement(MenuItem, {onClick: this.permissionsToggle}, "Permissions")
                                 ), 
                                 React.createElement(Button, {bsSize: "xsmall", onClick: this.editEntryToggle}, "Edit")
                             )
