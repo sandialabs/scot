@@ -153,29 +153,13 @@ function update(state, callback, payload){
    }
    else if (state == 'alert'){
         
-        $('.z-table').each(function(key, value){
-            $(value).find('.z-row').each(function(x,y){
-                $(y).find('.z-cell').each(function(r,s){
-                    if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
-                        $(y).find('.z-cell').each(function(p,o){
-                            if($(o).attr('name') == 'alertgroup'){        
-                                activemqsetentry = $(o).text()
-                                activemqsetentrytype = 'alertgroup'
-                                callback.emitChange($(o).text())
-                        }
-                    })
-                }
-            })
-        })
-        })
-
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " updated " + 'alert' + " id: " 
         activemqid = payload.action.activemq.data.id
         activemqtype = 'alert'
         callback.emitChange('guidegroup')
         callback.emitChange('intelgroup')
-       // callback.emitChange(payload.action.activemq.data.id)
+        callback.emitChange(payload.action.activemq.data.id)
         callback.emitChange('taskgroup')
         callback.emitChange('selectedHeaderEntry');
         callback.emitChange('alertgroupnotification')
