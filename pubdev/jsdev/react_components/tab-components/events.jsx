@@ -93,12 +93,12 @@ module.exports = React.createClass({
             }
         }.bind(this))
         $(document.body).keydown(function(e){
+            if($('.input').is(':focus')){return}
             if(e.keyCode == 79 && (e.ctrlKey == true || e.metaKey == true)){
                 array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
                 this.setState({display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
                 scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
             }
-
             else if(e.keyCode == 78 && (e.ctrlKey == true || e.metaKey == true)){
                  array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                 this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
@@ -244,13 +244,20 @@ module.exports = React.createClass({
                         React.createElement('h2', {style: {'font-size': '30px'}}, 'Event')), 
                         React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, 
                         React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), 
-                        React.createElement(Search, null)),                        
+                        React.createElement(Search, null)),     
+                        React.createElement('div', {style: {display: 'flex'}},
                         React.createElement('btn-group', {style: {'padding-left': '0px'}},
                         !this.state.mute ?
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Mute Notifications'): React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Turn On Notifications'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.createevent, style: styles}, 'Create Event'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */),
+
+                        React.createElement('div', {style: {'padding-left': '100px'}}, 'Hot Key Legend:'),
+                        React.createElement('div', {style: {'padding-left': '5px', 'font-weight': 'bold'}}, 'Old View: CTRL + o,'),
+                        React.createElement('div', {style: {'padding-left': '5px', 'font-weight': 'bold'}}, 'New View: CTRL + n,'),
+                        React.createElement('div', {style: {'padding-left': '5px', 'font-weight': 'bold'}}, 'Toggle Details: d')
+                        ),
             this.state.alldetail ? 
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
             React.createElement('div', {style: {width: this.state.differentviews},id:'list-view'},  
