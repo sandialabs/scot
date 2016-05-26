@@ -68,10 +68,11 @@ module.exports = React.createClass({
     componentDidMount: function(){
         toggle  = $('#list-view').find('.tableview') 
         $('.container-fluid2').keydown(function(e){
-            
             var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
             var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
+                e.preventDefault() 
+                $(document.body).scrollTop(0)
                 var set;
                 set  = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents').click()
                 var array = []
@@ -82,6 +83,8 @@ module.exports = React.createClass({
                 this.setState({idsarray: array})
             }
             else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
+                e.preventDefault() 
+                $(document.body).scrollTop(0)
                 scrolled = scrolled - $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 var set;
                 set  = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents').click()
@@ -93,14 +96,16 @@ module.exports = React.createClass({
             }
         }.bind(this))
         $(document.body).keydown(function(e){
-            if($('.input').is(':focus')){return}
+            if($('input').is(':focus')){return}
             if(e.keyCode == 79 && (e.ctrlKey == true || e.metaKey == true)){
+                e.preventDefault()
                 array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
                 this.setState({display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
                 scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
             }
             else if(e.keyCode == 78 && (e.ctrlKey == true || e.metaKey == true)){
-                 array = ['dates-small', 'status-owner-small', 'module-reporter-small']
+                e.preventDefault()
+                array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                 this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                 maxwidth: '915px', minwidth: '650px',scrollwidth: '650px', sizearray: array})                
         
@@ -253,12 +258,20 @@ module.exports = React.createClass({
                         React.createElement('button', {className: 'btn btn-default', onClick: this.createevent, style: styles}, 'Create Event'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */),
 
-                        React.createElement('div', 'Hot Key Legend:'),
-                        React.createElement('div', {style: {'padding-left': '5px', 'font-weight': 'bold'}}, 'Old View: CTRL + o,'),
-                        React.createElement('div', {style: {'padding-left': '5px', 'font-weight': 'bold'}}, 'New View: CTRL + n,'),
-                        React.createElement('div', {style: {'padding-left': '5px', 'font-weight': 'bold'}}, 'Toggle Details: d,'),
-                        React.createElement('div', {style: {'padding-left': '5px', 'font-weight': 'bold'}}, 'Select all Alerts: CTRL + a, C - Close Alerts, O - Open Alerts, P - Promote Alerts')
-                        ),
+                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'bottom', positionTop: 50, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null,
+                        React.createElement('div', null,
+                        React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Old View: '), 
+                        React.createElement('div', null, 'CTRL + o')),
+
+                        React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'New View: '), 
+                        React.createElement('div', null, 'CTRL + n')),
+
+                        React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Toggle Detail View: '), 
+                        React.createElement('div', null, 'd'))
+
+                        ))},
+
+                        React.createElement('div', {style: {'font-weight': 'bold', 'padding-left': '30px'}}, 'Key Legend')))),
             this.state.alldetail ? 
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
             React.createElement('div', {style: {width: this.state.differentviews},id:'list-view'},  
