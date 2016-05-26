@@ -5409,7 +5409,7 @@ module.exports = React.createClass({displayName: "exports",
             }
         }.bind(this))
         $(document.body).keydown(function(e){
-            if($('.input').is(':focus')){return}
+            if($('input').is(':focus')){return}
             if(e.keyCode == 79 && (e.ctrlKey == true || e.metaKey == true)){
                 array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
                 this.setState({display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
