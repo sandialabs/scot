@@ -11,9 +11,18 @@ var SelectedContainer = React.createClass({
         }
     },
     handleResize: function(){
-        var scrollHeight = $(window).height() - $('#header').height() - 90
-        var scrollWidth  = $(window).width()  - ($('#list-view').width() + 60)
+        var scrollHeight = this.state.height;
+        var scrollWidth = this.state.width;
+        if ($('.old-list-view')) {
+            scrollHeight = $(window).height() - $('.old-list-view').height() - $('#header').height() - 90
+        } else {
+            scrollHeight = $(window).height() - $('#header').height() - 90
+        }
+        if ($('#list-view')) {
+            scrollWidth  = $(window).width()  - ($('#list-view').width() + 60)
+        }
         this.setState({width:scrollWidth,height:scrollHeight})
+        console.log(scrollHeight);
     },
     componentDidMount: function() {
         this.handleResize();

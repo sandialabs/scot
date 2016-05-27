@@ -1942,9 +1942,18 @@ var SelectedContainer = React.createClass({displayName: "SelectedContainer",
         }
     },
     handleResize: function(){
-        var scrollHeight = $(window).height() - $('#header').height() - 90
-        var scrollWidth  = $(window).width()  - ($('#list-view').width() + 60)
+        var scrollHeight = this.state.height;
+        var scrollWidth = this.state.width;
+        if ($('.old-list-view')) {
+            scrollHeight = $(window).height() - $('.old-list-view').height() - $('#header').height() - 90
+        } else {
+            scrollHeight = $(window).height() - $('#header').height() - 90
+        }
+        if ($('#list-view')) {
+            scrollWidth  = $(window).width()  - ($('#list-view').width() + 60)
+        }
         this.setState({width:scrollWidth,height:scrollHeight})
+        console.log(scrollHeight);
     },
     componentDidMount: function() {
         this.handleResize();
@@ -3380,9 +3389,9 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                         React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
                         React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
                         React.createElement(Button, {eventKey: "4", onClick: this.props.historyToggle, bsSize: "small"}, "View ", React.createElement("b", null, "AlertGroup History")), 
-                        React.createElement(Button, {eventKey: "7", onClick: this.alertOpenSelected, bsSize: "small"}, React.createElement("b", null, "Open"), " Selected"), 
-                        React.createElement(Button, {eventKey: "8", onClick: this.alertCloseSelected, bsSize: "small"}, React.createElement("b", null, "Close"), " Selected"), 
-                        React.createElement(Button, {eventKey: "9", onClick: this.alertPromoteSelected, bsSize: "small"}, React.createElement("b", null, "Promote"), " Selected"), 
+                        React.createElement(Button, {eventKey: "7", onClick: this.alertOpenSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "O"), "pen"), " Selected"), 
+                        React.createElement(Button, {eventKey: "8", onClick: this.alertCloseSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "C"), "lose"), " Selected"), 
+                        React.createElement(Button, {eventKey: "9", onClick: this.alertPromoteSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "P"), "romote"), " Selected"), 
                         React.createElement(Button, {eventKey: "10", onClick: this.props.entryToggle, bsSize: "small"}, "Add ", React.createElement("b", null, "Entry")), 
                         React.createElement(Button, {eventKey: "11", onClick: this.alertSelectExisting, bsSize: "small"}, React.createElement("b", null, "Add"), " Selected to ", React.createElement("b", null, "Existing Event")), 
                         React.createElement(Button, {eventKey: "12", onClick: this.alertExportCSV, bsSize: "small"}, "Export to ", React.createElement("b", null, "CSV")), 
@@ -5375,7 +5384,7 @@ module.exports = React.createClass({displayName: "exports",
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight, alldetail: true, minwidth: '650px',
             display: 'flex',ownertext: '',viewstext: '', entriestext: '', scrollheight: scrollHeight, 
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: ''};
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewClass:'list-view'};
     },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
@@ -5417,13 +5426,13 @@ module.exports = React.createClass({displayName: "exports",
                 e.preventDefault()
                 array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
                 this.setState({display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
-                scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
+                scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical', listViewClass:'old-list-view'})
             }
             else if(e.keyCode == 78 && (e.ctrlKey == true || e.metaKey == true)){
                 e.preventDefault()
                 array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                 this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
-                maxwidth: '915px', minwidth: '650px',scrollwidth: '650px', sizearray: array})                
+                maxwidth: '915px', minwidth: '650px',scrollwidth: '650px', sizearray: array, listViewClass:'list-view'})                
         
             }
             else if(e.keyCode == '68' && this.state.idsarray.length != 0){
@@ -5590,7 +5599,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('div', {style: {'font-weight': 'bold', 'padding-left': '30px'}}, 'Key Legend')))),
             this.state.alldetail ? 
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
-            React.createElement('div', {style: {width: this.state.differentviews},id:'list-view'},  
+            React.createElement('div', {className: this.state.listViewClass, style: {width: this.state.differentviews},id:'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid2", style: {'max-width': this.state.maxwidth, resize:this.state.resize,'min-width': this.state.minwidth, width: this.state.scrollwidth,  'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
