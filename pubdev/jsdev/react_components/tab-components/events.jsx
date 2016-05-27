@@ -59,7 +59,7 @@ module.exports = React.createClass({
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight, alldetail: true, minwidth: '650px',
             display: 'flex',ownertext: '',viewstext: '', entriestext: '', scrollheight: scrollHeight, 
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: ''};
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewClass:'list-view'};
     },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
@@ -101,13 +101,13 @@ module.exports = React.createClass({
                 e.preventDefault()
                 array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
                 this.setState({display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
-                scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
+                scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical', listViewClass:'old-list-view'})
             }
             else if(e.keyCode == 78 && (e.ctrlKey == true || e.metaKey == true)){
                 e.preventDefault()
                 array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                 this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
-                maxwidth: '915px', minwidth: '650px',scrollwidth: '650px', sizearray: array})                
+                maxwidth: '915px', minwidth: '650px',scrollwidth: '650px', sizearray: array, listViewClass:'list-view'})                
         
             }
             else if(e.keyCode == '68' && this.state.idsarray.length != 0){
@@ -274,7 +274,7 @@ module.exports = React.createClass({
                         React.createElement('div', {style: {'font-weight': 'bold', 'padding-left': '30px'}}, 'Key Legend')))),
             this.state.alldetail ? 
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
-            React.createElement('div', {style: {width: this.state.differentviews},id:'list-view'},  
+            React.createElement('div', {className: this.state.listViewClass, style: {width: this.state.differentviews},id:'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid2", style: {'max-width': this.state.maxwidth, resize:this.state.resize,'min-width': this.state.minwidth, width: this.state.scrollwidth,  'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
