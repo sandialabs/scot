@@ -967,15 +967,15 @@ var Watcher = {
                 }.bind(this))
             }.bind(this))
         } else {
-            $('.alert-wrapper').each(function(index,div) {
-                $(div).hover( function() {
+            $('.alert-wrapper').find('table').find('tbody').find('tr').not('.not_selectable').each(function(index,tr) {
+                $(tr).hover( function() {
                     var intervalID = setInterval(checkFlairHover, 100, null, flairToolbarToggle,type,linkWarningToggle,id);
-                    $(div).data('intervalID', intervalID);
-                    console.log('Now watching div ' + intervalID);
+                    $(tr).data('intervalID', intervalID);
+                    console.log('Now watching tr ' + intervalID);
                 }, function() {
-                    var intervalID = $(div).data('intervalID');
+                    var intervalID = $(tr).data('intervalID');
                     window.clearInterval(intervalID);
-                    console.log('No longer watching div ' + intervalID);
+                    console.log('No longer watching tr ' + intervalID);
                 }).bind(this);
             }).bind(this)
         }
@@ -2097,7 +2097,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             divClass = 'row-fluid alert-wrapper entry-wrapper-main';
         }
         return (
-            React.createElement("div", {className: divClass, style: {height:this.props.windowHeight}}, 
+            React.createElement("div", {key: id, className: divClass, style: {height:this.props.windowHeight}}, 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.aType, targetid: this.props.aID, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB})) : null, 
                 showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData}) : React.createElement("span", null, "Loading..."), 
                 this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue}) : null, 
@@ -2408,7 +2408,7 @@ AlertRowBlank = React.createClass({displayName: "AlertRowBlank",
                 React.createElement("td", {style: {padding:'0'}}
                 ), 
                 React.createElement("td", {colSpan: "50", style: {padding:'1px'}}, 
-                    showEntry ? React.createElement("div", null, arr) : null
+                    showEntry ? React.createElement("div", null, React.createElement(SelectedEntry, {type: this.props.type, id: this.props.id})) : null
                 )
             )
         )
@@ -4189,7 +4189,6 @@ var Flair = React.createClass({displayName: "Flair",
     getInitialState: function() {
         return {
             entityData:null,
-            entryToolbar:false,    
             entityid: this.props.entityid,
         }
     },
@@ -4220,23 +4219,16 @@ var Flair = React.createClass({displayName: "Flair",
                         React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
                     ), 
                     React.createElement("div", {className: "modal-body", style: {height: '80vh', overflowY:'auto',width:'800px'}}, 
-                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, entryToggle: this.entryToggle}) : React.createElement("div", null, "Loading...")
+                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid}) : React.createElement("div", null, "Loading...")
                     ), 
                     React.createElement("div", {className: "modal-footer"}, 
                         React.createElement(Button, {onClick: this.props.flairToolbarToggle}, "Done")
                     )
-                ), 
-                this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "entity", targetid: this.state.entityid, id: this.state.entityid, addedentry: this.entryToggle}) : null
+                )
             )
         )
     },
-    entryToggle: function() {
-        if (this.state.entryToolbar == false) {
-            this.setState({entryToolbar:true})
-        } else {
-            this.setState({entryToolbar:false})
-        }
-    },
+    
 });
 
 var EntityValue = React.createClass({displayName: "EntityValue",
@@ -4252,6 +4244,7 @@ var EntityBody = React.createClass({displayName: "EntityBody",
         return {
             loading:"Loading Entries",
             EntryData:null,
+            entryToolbar:false,    
         }
     }, 
     render: function() {
@@ -4271,11 +4264,19 @@ var EntityBody = React.createClass({displayName: "EntityBody",
         return (
             React.createElement(Tabs, {defaultActiveKey: 1}, 
                 React.createElement(Tab, {eventKey: 1, title: "References"}, React.createElement(EntityEventReferences, {entityid: this.props.entityid})), 
-                React.createElement(Tab, {eventKey: 2, title: "Entry"}, React.createElement(Button, {onClick: this.props.entryToggle}, "Add Entry"), React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid})), 
+                React.createElement(Tab, {eventKey: 2, title: "Entry"}, React.createElement(Button, {onClick: this.entryToggle}, "Add Entry"), 
+                this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "entity", targetid: this.props.entityid, id: 'add_entry', addedentry: this.entryToggle}) : null, " ", React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid})), 
                 entityEnrichmentArr
             )
         )
-    }
+    },
+    entryToggle: function() {
+        if (this.state.entryToolbar == false) {
+            this.setState({entryToolbar:true})
+        } else {
+            this.setState({entryToolbar:false})
+        }
+    },
 });
 
 var EntityEnrichmentButtons = React.createClass({displayName: "EntityEnrichmentButtons",
