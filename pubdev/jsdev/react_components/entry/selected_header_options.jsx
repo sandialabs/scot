@@ -273,9 +273,9 @@ var SelectedHeaderOptions = React.createClass({
                         <Button eventKey='3' onClick={this.props.sourceToggle} bsSize='small'>View <b>Source</b></Button> 
                         <Button eventKey='4' onClick={this.props.entitiesToggle} bsSize='small'>View <b>Entities</b></Button>
                         <Button eventKey='4' onClick={this.props.historyToggle} bsSize='small'>View <b>AlertGroup History</b></Button>
-                        <Button eventKey='7' onClick={this.alertOpenSelected} bsSize='small'><b>Open</b> Selected</Button>
-                        <Button eventKey='8' onClick={this.alertCloseSelected} bsSize='small'><b>Close</b> Selected</Button>
-                        <Button eventKey='9' onClick={this.alertPromoteSelected} bsSize='small'><b>Promote</b> Selected</Button> 
+                        <Button eventKey='7' onClick={this.alertOpenSelected} bsSize='small'><b><u>O</u>pen</b> Selected</Button>
+                        <Button eventKey='8' onClick={this.alertCloseSelected} bsSize='small'><b><u>C</u>lose</b> Selected</Button>
+                        <Button eventKey='9' onClick={this.alertPromoteSelected} bsSize='small'><b><u>P</u>romote</b> Selected</Button> 
                         <Button eventKey='10' onClick={this.props.entryToggle} bsSize='small'>Add <b>Entry</b></Button>
                         <Button eventKey='11' onClick={this.alertSelectExisting} bsSize='small'><b>Add</b> Selected to <b>Existing Event</b></Button> 
                         <Button eventKey='12' onClick={this.alertExportCSV} bsSize='small'>Export to <b>CSV</b></Button>

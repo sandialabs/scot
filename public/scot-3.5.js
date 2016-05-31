@@ -967,15 +967,15 @@ var Watcher = {
                 }.bind(this))
             }.bind(this))
         } else {
-            $('.alert-wrapper').each(function(index,div) {
-                $(div).hover( function() {
+            $('.alert-wrapper').find('table').find('tbody').find('tr').not('.not_selectable').each(function(index,tr) {
+                $(tr).hover( function() {
                     var intervalID = setInterval(checkFlairHover, 100, null, flairToolbarToggle,type,linkWarningToggle,id);
-                    $(div).data('intervalID', intervalID);
-                    console.log('Now watching div ' + intervalID);
+                    $(tr).data('intervalID', intervalID);
+                    console.log('Now watching tr ' + intervalID);
                 }, function() {
-                    var intervalID = $(div).data('intervalID');
+                    var intervalID = $(tr).data('intervalID');
                     window.clearInterval(intervalID);
-                    console.log('No longer watching div ' + intervalID);
+                    console.log('No longer watching tr ' + intervalID);
                 }).bind(this);
             }).bind(this)
         }
@@ -1942,9 +1942,18 @@ var SelectedContainer = React.createClass({displayName: "SelectedContainer",
         }
     },
     handleResize: function(){
-        var scrollHeight = $(window).height() - $('#header').height() - 90
-        var scrollWidth  = $(window).width()  - ($('#list-view').width() + 60)
+        var scrollHeight = this.state.height;
+        var scrollWidth = this.state.width;
+        if ($('.old-list-view')) {
+            scrollHeight = $(window).height() - $('.old-list-view').height() - $('#header').height() - 90
+        } else {
+            scrollHeight = $(window).height() - $('#header').height() - 90
+        }
+        if ($('#list-view')) {
+            scrollWidth  = $(window).width()  - ($('#list-view').width() + 60)
+        }
         this.setState({width:scrollWidth,height:scrollHeight})
+        console.log(scrollHeight);
     },
     componentDidMount: function() {
         this.handleResize();
@@ -2088,7 +2097,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             divClass = 'row-fluid alert-wrapper entry-wrapper-main';
         }
         return (
-            React.createElement("div", {className: divClass, style: {height:this.props.windowHeight}}, 
+            React.createElement("div", {key: id, className: divClass, style: {height:this.props.windowHeight}}, 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.aType, targetid: this.props.aID, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB})) : null, 
                 showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData}) : React.createElement("span", null, "Loading..."), 
                 this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue}) : null, 
@@ -2399,7 +2408,7 @@ AlertRowBlank = React.createClass({displayName: "AlertRowBlank",
                 React.createElement("td", {style: {padding:'0'}}
                 ), 
                 React.createElement("td", {colSpan: "50", style: {padding:'1px'}}, 
-                    showEntry ? React.createElement("div", null, arr) : null
+                    showEntry ? React.createElement("div", null, React.createElement(SelectedEntry, {type: this.props.type, id: this.props.id})) : null
                 )
             )
         )
@@ -3380,9 +3389,9 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                         React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
                         React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
                         React.createElement(Button, {eventKey: "4", onClick: this.props.historyToggle, bsSize: "small"}, "View ", React.createElement("b", null, "AlertGroup History")), 
-                        React.createElement(Button, {eventKey: "7", onClick: this.alertOpenSelected, bsSize: "small"}, React.createElement("b", null, "Open"), " Selected"), 
-                        React.createElement(Button, {eventKey: "8", onClick: this.alertCloseSelected, bsSize: "small"}, React.createElement("b", null, "Close"), " Selected"), 
-                        React.createElement(Button, {eventKey: "9", onClick: this.alertPromoteSelected, bsSize: "small"}, React.createElement("b", null, "Promote"), " Selected"), 
+                        React.createElement(Button, {eventKey: "7", onClick: this.alertOpenSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "O"), "pen"), " Selected"), 
+                        React.createElement(Button, {eventKey: "8", onClick: this.alertCloseSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "C"), "lose"), " Selected"), 
+                        React.createElement(Button, {eventKey: "9", onClick: this.alertPromoteSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "P"), "romote"), " Selected"), 
                         React.createElement(Button, {eventKey: "10", onClick: this.props.entryToggle, bsSize: "small"}, "Add ", React.createElement("b", null, "Entry")), 
                         React.createElement(Button, {eventKey: "11", onClick: this.alertSelectExisting, bsSize: "small"}, React.createElement("b", null, "Add"), " Selected to ", React.createElement("b", null, "Existing Event")), 
                         React.createElement(Button, {eventKey: "12", onClick: this.alertExportCSV, bsSize: "small"}, "Export to ", React.createElement("b", null, "CSV")), 
@@ -4180,7 +4189,6 @@ var Flair = React.createClass({displayName: "Flair",
     getInitialState: function() {
         return {
             entityData:null,
-            entryToolbar:false,    
             entityid: this.props.entityid,
         }
     },
@@ -4211,23 +4219,16 @@ var Flair = React.createClass({displayName: "Flair",
                         React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
                     ), 
                     React.createElement("div", {className: "modal-body", style: {height: '80vh', overflowY:'auto',width:'800px'}}, 
-                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, entryToggle: this.entryToggle}) : React.createElement("div", null, "Loading...")
+                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid}) : React.createElement("div", null, "Loading...")
                     ), 
                     React.createElement("div", {className: "modal-footer"}, 
                         React.createElement(Button, {onClick: this.props.flairToolbarToggle}, "Done")
                     )
-                ), 
-                this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "entity", targetid: this.state.entityid, id: this.state.entityid, addedentry: this.entryToggle}) : null
+                )
             )
         )
     },
-    entryToggle: function() {
-        if (this.state.entryToolbar == false) {
-            this.setState({entryToolbar:true})
-        } else {
-            this.setState({entryToolbar:false})
-        }
-    },
+    
 });
 
 var EntityValue = React.createClass({displayName: "EntityValue",
@@ -4243,6 +4244,7 @@ var EntityBody = React.createClass({displayName: "EntityBody",
         return {
             loading:"Loading Entries",
             EntryData:null,
+            entryToolbar:false,    
         }
     }, 
     render: function() {
@@ -4262,11 +4264,19 @@ var EntityBody = React.createClass({displayName: "EntityBody",
         return (
             React.createElement(Tabs, {defaultActiveKey: 1}, 
                 React.createElement(Tab, {eventKey: 1, title: "References"}, React.createElement(EntityEventReferences, {entityid: this.props.entityid})), 
-                React.createElement(Tab, {eventKey: 2, title: "Entry"}, React.createElement(Button, {onClick: this.props.entryToggle}, "Add Entry"), React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid})), 
+                React.createElement(Tab, {eventKey: 2, title: "Entry"}, React.createElement(Button, {onClick: this.entryToggle}, "Add Entry"), 
+                this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "entity", targetid: this.props.entityid, id: 'add_entry', addedentry: this.entryToggle}) : null, " ", React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid})), 
                 entityEnrichmentArr
             )
         )
-    }
+    },
+    entryToggle: function() {
+        if (this.state.entryToolbar == false) {
+            this.setState({entryToolbar:true})
+        } else {
+            this.setState({entryToolbar:false})
+        }
+    },
 });
 
 var EntityEnrichmentButtons = React.createClass({displayName: "EntityEnrichmentButtons",
@@ -5375,7 +5385,7 @@ module.exports = React.createClass({displayName: "exports",
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight, alldetail: true, minwidth: '650px',
             display: 'flex',ownertext: '',viewstext: '', entriestext: '', scrollheight: scrollHeight, 
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: ''};
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewClass:'list-view'};
     },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
@@ -5417,13 +5427,13 @@ module.exports = React.createClass({displayName: "exports",
                 e.preventDefault()
                 array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
                 this.setState({display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
-                scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
+                scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical', listViewClass:'old-list-view'})
             }
             else if(e.keyCode == 78 && (e.ctrlKey == true || e.metaKey == true)){
                 e.preventDefault()
                 array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                 this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
-                maxwidth: '915px', minwidth: '650px',scrollwidth: '650px', sizearray: array})                
+                maxwidth: '915px', minwidth: '650px',scrollwidth: '650px', sizearray: array, listViewClass:'list-view'})                
         
             }
             else if(e.keyCode == '68' && this.state.idsarray.length != 0){
@@ -5600,7 +5610,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('div', {style: {'font-weight': 'bold', 'padding-left': '30px'}}, 'Key Legend')))),
             this.state.alldetail ? 
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
-            React.createElement('div', {style: {width: this.state.differentviews},id:'list-view'},  
+            React.createElement('div', {className: this.state.listViewClass, style: {width: this.state.differentviews},id:'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
                 React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {'max-width': this.state.maxwidth, resize:this.state.resize,'min-width': this.state.minwidth, width: this.state.scrollwidth,  'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
