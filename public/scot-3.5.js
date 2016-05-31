@@ -5368,7 +5368,7 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
 
     return {
-            mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
+            pagedisplay: 'inline-flex', mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             sizearray: ['dates-small', 'status-owner-small', 'module-reporter-small'], sourcetags: [], tags: [], 
             resize: 'horizontal',startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
             upstartepoch: '', upendepoch: '', statustext: '', subjecttext:'', idsarray: [], 
@@ -5504,12 +5504,19 @@ module.exports = React.createClass({displayName: "exports",
         this.getNewData({page:defaultpage , limit: pageSize}) 
     },
     reloadItem: function(){
+       /*
+       console.log($('.container-fluid2').width())
+        if($('.container-fluid2').width() == 100){
+            $('.paging').css('display', 'none')
+        }
+        */
         height = $(window).height() - 170
+        width = $(window).width()
         width = width + 40
         if(this.state.display == 'flex'){
             $('.container-fluid2').css('height', height) 
             $('.container-fluid2').css('max-height', height)
-            $('.container-fluid2').css('max-width', '915px')
+            $('.container-fluid2').css('max-width', width)
             $('.container-fluid2').css('width', 'width')
         }
         else {
@@ -5553,8 +5560,11 @@ module.exports = React.createClass({displayName: "exports",
         }
         })
         })
+        var t2 = document.getElementById('fluid2')
+        t2.addEventListener('DOMAttrModified', this.reloadItem)
         }.bind(this),100)
         window.addEventListener('resize',this.reloadItem);
+
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
@@ -5592,7 +5602,7 @@ module.exports = React.createClass({displayName: "exports",
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
             React.createElement('div', {style: {width: this.state.differentviews},id:'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
-                React.createElement("div", {className: "container-fluid2", style: {'max-width': this.state.maxwidth, resize:this.state.resize,'min-width': this.state.minwidth, width: this.state.scrollwidth,  'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
+                React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {'max-width': this.state.maxwidth, resize:this.state.resize,'min-width': this.state.minwidth, width: this.state.scrollwidth,  'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
                         React.createElement("div", {className: "wrapper attributes"}, 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -5809,6 +5819,7 @@ module.exports = React.createClass({displayName: "exports",
                    // )
                     ))))), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})) , stage ? 
+
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'event', viewEvent:this.viewEvent}) : null
                                                
                         ) : 
@@ -11853,7 +11864,7 @@ module.exports = React.createClass({
 	prepareClassName: function prepareClassName(props) {
 		var className = props.className || '';
 
-		className += ' react-datagrid-pagination-toolbar';
+		className += 'paging';
 
 		return className;
 	},
