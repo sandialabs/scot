@@ -967,15 +967,15 @@ var Watcher = {
                 }.bind(this))
             }.bind(this))
         } else {
-            $('.alert-wrapper').find('table').find('tbody').find('tr').not('.not_selectable').each(function(index,tr) {
+            $('.alert-wrapper').find('table').find('tbody').find('tr').find('a, .entity').not('.not_selectable').each(function(index,tr) {
                 $(tr).hover( function() {
                     var intervalID = setInterval(checkFlairHover, 100, null, flairToolbarToggle,type,linkWarningToggle,id);
                     $(tr).data('intervalID', intervalID);
-                    console.log('Now watching tr ' + intervalID);
+                    console.log('Now watching item ' + intervalID);
                 }, function() {
                     var intervalID = $(tr).data('intervalID');
                     window.clearInterval(intervalID);
-                    console.log('No longer watching tr ' + intervalID);
+                    console.log('No longer watching item ' + intervalID);
                 }).bind(this);
             }).bind(this)
         }
@@ -3642,7 +3642,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
     var not_saved_entry_id = 'not_saved_entry_'+this.props.id
         return (
             React.createElement("div", {id: not_saved_entry_id}, 
-                React.createElement("div", {className: 'row-fluid entry-outer', style: {marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
+                React.createElement("div", {className: 'row-fluid entry-outer', style: {border: '3px solid blue',marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
                     React.createElement("div", {className: 'row-fluid entry-header'}, 
                         React.createElement("div", {className: "entry-header-inner"}, "[", React.createElement("a", {style: {color:'black'}, href: "#/not_saved_0"}, "Not_Saved_0"), "]by ", whoami, 
                             React.createElement("span", {className: "pull-right", style: {display:'inline-flex',paddingRight:'3px'}}, 
@@ -3695,7 +3695,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	}
         },
 	submit: function(){
-	if($('#' + this.props.id + '_ifr').contents().find("#tinymce").text() == ""){
+	if($('#' + this.props.id + '_ifr').contents().find("#tinymce").text() == "" && $('#' + this.props.id + '_ifr').contents().find("#tinymce").find('img').length == 0) {
 	    alert("Please Add Some Text")
 	}
     else {    
