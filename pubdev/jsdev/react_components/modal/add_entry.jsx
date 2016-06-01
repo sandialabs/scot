@@ -103,7 +103,7 @@ var AddEntryModal = React.createClass({
     var not_saved_entry_id = 'not_saved_entry_'+this.props.id
         return (
             <div id={not_saved_entry_id}>
-                <div className={'row-fluid entry-outer'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
+                <div className={'row-fluid entry-outer'} style={{border: '3px solid blue',marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
                     <div className={'row-fluid entry-header'}>
                         <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/not_saved_0"}>Not_Saved_0</a>]by {whoami}
                             <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
@@ -156,7 +156,7 @@ var AddEntryModal = React.createClass({
 	}
         },
 	submit: function(){
-	if($('#' + this.props.id + '_ifr').contents().find("#tinymce").text() == ""){
+	if($('#' + this.props.id + '_ifr').contents().find("#tinymce").text() == "" && $('#' + this.props.id + '_ifr').contents().find("#tinymce").find('img').length == 0) {
 	    alert("Please Add Some Text")
 	}
     else {    
