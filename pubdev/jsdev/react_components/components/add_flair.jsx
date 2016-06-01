@@ -132,7 +132,7 @@ var Watcher = {
                 }.bind(this))
             }.bind(this))
         } else {
-            $('.alert-wrapper').find('table').find('tbody').find('tr').find('a, .entity').not('.not_selectable').each(function(index,tr) {
+            $('.alert-wrapper').find('a, .entity').not('.not_selectable').each(function(index,tr) {
                 $(tr).hover( function() {
                     var intervalID = setInterval(checkFlairHover, 100, null, flairToolbarToggle,type,linkWarningToggle,id);
                     $(tr).data('intervalID', intervalID);
