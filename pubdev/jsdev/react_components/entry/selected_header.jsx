@@ -373,7 +373,7 @@ var SelectedHeader = React.createClass({
                     </div>
                 </div>
                 <Notification ref="notificationSystem" /> 
-                {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue}/> : null}
+                {this.state.flairToolbar ? <Flair key={this.state.entityid} flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null} 
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData} flairToolbarToggle={this.flairToolbarToggle} /> : null}
