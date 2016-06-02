@@ -8,7 +8,7 @@ var DataGrid                = require('events-react-datagrid/react-datagrid');
 var Inspector               = require('react-inspector');
 var SelectedEntry           = require('../entry/selected_entry.jsx');
 var AddEntryModal           = require('./add_entry.jsx');
-
+var Draggable               = require('react-draggable');
 const customStyles = {
     content : {
         top     : '50%',
@@ -62,6 +62,22 @@ var Flair = React.createClass({
                 </Modal>
             </div>
         )
+        /*return (
+            <Draggable>
+                <div>
+                    <div>
+                        <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.flairToolbarToggle} />
+                        <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
+                    </div>
+                    <div style={{height: '80vh', overflowY:'auto',width:'800px'}}>
+                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} /> : <div>Loading...</div>}
+                    </div>
+                    <div>
+                        <Button onClick={this.props.flairToolbarToggle}>Done</Button>
+                    </div>
+                </div>
+            </Draggable>
+        )*/
     },
     
 });
