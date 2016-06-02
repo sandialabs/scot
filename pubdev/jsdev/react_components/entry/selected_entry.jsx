@@ -115,6 +115,8 @@ var SelectedEntry = React.createClass({
         } else if (type =='alertgroup') {
             divClass = 'row-fluid alert-wrapper entry-wrapper-main';
         }
+        //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
+        var Flair = require('../modal/flair_modal.jsx');
         return (
             <div key={id} className={divClass} style={{height:this.props.windowHeight}}> 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : <AddEntryModal title={'Add Entry'} type={this.props.aType} targetid={this.props.aID} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> }</div> : null}
