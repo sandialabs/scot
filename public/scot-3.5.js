@@ -3655,7 +3655,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                     ), 
                     React.createElement(TinyMCE, {id: this.props.id, content: "", className: 'inputtext', config: {plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}, onChange: this.handleEditorChange}), 
                 React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width':'2px','border-color':'#000','border-radius':'4px',padding: '30px','border-style': 'dashed', 'text-align' : 'center'}}, React.createElement("div", {style: {fontSize:'16px',color:'blue'}}, "'Drop some files here or click to select files to upload'")), 
-                this.state.files ? React.createElement("div", null, " ", this.state.files.map((file) => React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p", {style: {display:'inline'}}, file.name), React.createElement("button", {style: {'line-height':'1px'}, className: "btn btn-info", id: file.name, onClick: this.Close}, "x"))))) : null
+                this.state.files ? React.createElement("div", null, " ", this.state.files.map(function(file) { return  React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p", {style: {display:'inline'}}, file.name), React.createElement("button", {style: {'line-height':'1px'}, className: "btn btn-info", id: file.name, onClick: this.Close}, "x")))})) : null
                 )
             )
         )
@@ -4368,7 +4368,7 @@ var EntityEventReferences = React.createClass({displayName: "EntityEventReferenc
         window.open('#/'+this.state.navigateType+'/'+this.state.navigateId);
     },
     render: function() {
-        const rowFact = (rowProps) => {
+        const rowFact = function(rowProps) {
             rowProps.onDoubleClick = this.viewId;
         }
         var columns = [

@@ -201,7 +201,7 @@ var EntityEventReferences = React.createClass({
         window.open('#/'+this.state.navigateType+'/'+this.state.navigateId);
     },
     render: function() {
-        const rowFact = (rowProps) => {
+        const rowFact = function(rowProps) {
             rowProps.onDoubleClick = this.viewId;
         }
         var columns = [
