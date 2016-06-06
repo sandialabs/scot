@@ -38,6 +38,11 @@ var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
 var columns = ['ID', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
+var toggle;
+var scrolled = 58
+function Remove(note){
+    console.log(note)
+}
 
 module.exports = React.createClass({
 
@@ -47,23 +52,84 @@ module.exports = React.createClass({
         width = 650
 
     return {
-            unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
-            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
+            mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
+            sizearray: ['dates-small', 'status-owner-small', 'module-reporter-small'], sourcetags: [], tags: [], 
+            resize: 'horizontal',startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
             upstartepoch: '', upendepoch: '', statustext: '', subjecttext:'', idsarray: [], 
-            ownertext: '',viewstext: '', entriestext: '', scrollheight: scrollHeight, 
+            differentviews: '',maxwidth: '915px', maxheight: scrollHeight, alldetail: true, minwidth: '650px',
+            display: 'flex',ownertext: '',viewstext: '', entriestext: '', scrollheight: scrollHeight, 
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: ''};
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewClass:'list-view'};
     },
     onColumnResize: function(firstCol, firstSize, secondCol, secondSize){
         firstCol.width = firstSize
         this.setState({})
     },
-    componentWillMount: function(){
+    componentDidMount: function(){
+        toggle  = $('#list-view').find('.tableview') 
+        $('.container-fluid2').keydown(function(e){
+            var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
+            var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
+            if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
+                e.preventDefault() 
+                $(document.body).scrollTop(0)
+                var set;
+                set  = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents').click()
+                var array = []
+                array.push($(set).attr('id'))
+                window.history.pushState('Page', 'SCOT', '/#/event/'+$(set).attr('id'))
+                $('.container-fluid2').scrollTop(scrolled)
+                scrolled = scrolled + $(toggle[0]).find('#'+this.state.idsarray[0]).height()
+                this.setState({idsarray: array})
+            }
+            else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
+                e.preventDefault() 
+                $(document.body).scrollTop(0)
+                scrolled = scrolled - $(toggle[0]).find('#'+this.state.idsarray[0]).height()
+                var set;
+                set  = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents').click()
+                var array = []
+                array.push($(set).attr('id'))
+                window.history.pushState('Page', 'SCOT', '/#/event/'+$(set).attr('id'))
+                $('.container-fluid2').scrollTop(scrolled)
+                this.setState({idsarray: array})
+            }
+        }.bind(this))
+        $(document.body).keydown(function(e){
+            if($('input').is(':focus')){return}
+            if(e.keyCode == 79 && (e.ctrlKey == true || e.metaKey == true)){
+                e.preventDefault()
+                array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
+                this.setState({display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
+                scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical', listViewClass:'old-list-view'})
+            }
+            else if(e.keyCode == 78 && (e.ctrlKey == true || e.metaKey == true)){
+                e.preventDefault()
+                array = ['dates-small', 'status-owner-small', 'module-reporter-small']
+                this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                maxwidth: '915px', minwidth: '650px',scrollwidth: '650px', sizearray: array, listViewClass:'list-view'})                
+        
+            }
+            else if(e.keyCode == '68' && this.state.idsarray.length != 0){
+                if(!this.state.alldetail) {
+                    this.setState({alldetail: true})
+                }
+                else {
+                    this.setState({alldetail: false})
+                }
+            }
+        }.bind(this))
+
         var array = []
+        var height = this.state.scrollheight
         if(this.props.ids !== undefined){
             if(this.props.ids.length > 0){
                 array = this.props.ids
                 stage = true
+                scrolled = $('.container-fluid2').scrollTop()
+                if(this.state.display == 'block'){
+                    height = '300px'
+                }
                 }
           }
         var finalarray = [];
@@ -95,13 +161,13 @@ module.exports = React.createClass({
 	                }
 	    })
 	    })
-        this.setState({idsarray: array, objectarray: finalarray,totalcount: response.totalRecordCount})
+        this.setState({scrollheight: height, idsarray: array, objectarray: finalarray,totalcount: response.totalRecordCount})
         }.bind(this))
     },
 
     reloadactive: function(){    
         var notification = this.refs.notificationSystem
-        if(whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
+        if(activemqwho !='scot-admin' && activemqwho != 'scot-alerts' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
@@ -124,14 +190,23 @@ module.exports = React.createClass({
     reloadItem: function(){
         height = $(window).height() - 170
         width = width + 40
-        $('.container-fluid').css('height', height) 
-        $('.container-fluid').css('max-height', height)
-        $('.container-fluid').css('max-width', '915px')
-        $('.container-fluid').css('width', width)
+        if(this.state.display == 'flex'){
+            $('.container-fluid2').css('height', height) 
+            $('.container-fluid2').css('max-height', height)
+            $('.container-fluid2').css('max-width', '915px')
+            $('.container-fluid2').css('width', 'width')
+        }
+        else {
+            $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
+            $('.container-fluid2').css('width', '100%')
+        }
     },
     launchEvent: function(array){
         stage = true
-        this.setState({idsarray:array})
+        if(this.state.display == 'block'){
+            this.state.scrollheight = '300px'
+        }
+        this.setState({scrollheight: this.state.scrollheight, idsarray:array})
 
     },
     render: function() {
@@ -157,36 +232,55 @@ module.exports = React.createClass({
                     else if($(y).text() == 'closed'){
                         $(y).css('color', 'green')
                     }
-        else if($(y).text()  == 'promoted'){
-            $(y).css('color', 'orange')
+            else if($(y).text()  == 'promoted'){
+                $(y).css('color', 'orange')
         }
         })
         })
-
         }.bind(this),100)
         window.addEventListener('resize',this.reloadItem);
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
-                    React.createElement(Notificationactivemq, {ref: 'notificationSystem'})), 
+                    !this.state.mute ? React.createElement(Notificationactivemq, {ref: 'notificationSystem'}) : null), 
                         React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, 
                         React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, 
+                        
                         React.createElement('h2', {style: {'font-size': '30px'}}, 'Event')), 
                         React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, 
                         React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), 
-                        React.createElement(Search, null)),                        
-                        React.createElement('btn-group', {style: {'padding-left': '0px'}}, 
+                        React.createElement(Search, null)),     
+                        React.createElement('div', {style: {display: 'flex'}},
+                        React.createElement('btn-group', {style: {'padding-left': '0px'}},
+                        !this.state.mute ?
+                        React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Mute Notifications'): React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Turn On Notifications'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.createevent, style: styles}, 'Create Event'),
-                        React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
-            React.createElement('div', {className: 'eventwidth', style: {display:'flex'}},
-            React.createElement('div', {id:'list-view'},  
-            React.createElement('div', {style:{display: 'flex'}},
-                React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
+                        React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */),
+
+                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'bottom', positionTop: 50, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null,
+                        React.createElement('div', null,
+                        React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Old View: '), 
+                        React.createElement('div', null, 'CTRL + o')),
+
+                        React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'New View: '), 
+                        React.createElement('div', null, 'CTRL + n')),
+
+                        React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Toggle Detail View: '), 
+                        React.createElement('div', null, 'd'))
+
+                        ))},
+
+                        React.createElement('div', {style: {'font-weight': 'bold', 'padding-left': '30px'}}, 'Key Legend')))),
+            this.state.alldetail ? 
+            React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
+            React.createElement('div', {className: this.state.listViewClass, style: {width: this.state.differentviews},id:'list-view'},  
+            React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
+                React.createElement("div", {className: "container-fluid2", style: {'max-width': this.state.maxwidth, resize:this.state.resize,'min-width': this.state.minwidth, width: this.state.scrollwidth,  'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
                         React.createElement("div", {className: "wrapper attributes"}, 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
-                        React.createElement('div', {className: 'wrapper status-owner'}, 
+                        React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1]}, 
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {ref: 'myPopOverid', trigger:['click','focus'], placement:'bottom', rootClose: true, overlay: React.createElement(Popover, null, 
                         React.createElement('div', {className: 'Filter and Sort', id: 'idheader'}, React.createElement('div',
                         {style: {display: 'inline-flex'}}, React.createElement('div', null, 'ID'), React.createElement('div', 
@@ -232,7 +326,7 @@ module.exports = React.createClass({
                             React.createElement("div", {className: "wrapper title-comment"}, 
                             React.createElement("div", {className: "column title"}, "Subject"))))),
 
-                        React.createElement("div", {className: "wrapper dates"}, 
+                        React.createElement("div", {className: "wrapper dates " + this.state.sizearray[0]}, 
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOvercreated',rootClose: true, overlay: React.createElement(Popover, null, 
                         React.createElement('div', {className: 'Filter and Sort', id: 'createdheader'}, React.createElement('div',
                         {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Created'), React.createElement('div', 
@@ -267,7 +361,7 @@ module.exports = React.createClass({
                         React.createElement("div", {className: "column date"}, "Updated")))
                         ),
 
-                         React.createElement('div', {className:'wrapper module-reporter'},
+                         React.createElement('div', {className:'wrapper module-reporter ' + this.state.sizearray[2]},
                          React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOversource', rootClose: true, overlay: React.createElement(Popover, null, 
                         React.createElement('div', {className: 'Filter and Sort', id: 'sourceheader'}, React.createElement('div',
                         {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Source'), React.createElement('div', 
@@ -302,7 +396,7 @@ module.exports = React.createClass({
                             React.createElement("div", {className: "column reporter"}, "Tags")))
                         ),
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
-                        React.createElement('div', {className: 'wrapper status-owner'},
+                        React.createElement('div', {className: 'wrapper status-owner ' +this.state.sizearray[1]},
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOverowner', rootClose: true, overlay: React.createElement(Popover, null, 
                         React.createElement('div', {className: 'Filter and Sort', id: 'ownerheader'}, React.createElement('div',
                         {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Owner'), React.createElement('div', 
@@ -346,9 +440,9 @@ module.exports = React.createClass({
                     ))
                     )
                     ), 
-
+                    React.createElement('div', {id: 'listpane'},
                     this.state.objectarray.map((value) => React.createElement('div', {className:'allevents', id: value.id}, 
-                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null, 
+                      /*  React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null, 
                         React.createElement('div', null,
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'ID:'),
                         React.createElement('div', null, value.id)),
@@ -368,11 +462,11 @@ module.exports = React.createClass({
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Entries:  '),
                         React.createElement('div', null, value.entries)), React.createElement('div', {style: {display:'flex'}},
                         React.createElement('div', {style: {'font-weight': 'bold'}}, 'Views:  '), React.createElement('div', null, value.views))
-                        ))}, 
+                        ))},*/
                         React.createElement("div", {style: {background: this.state.idsarray[0] == value.id ? this.state.blue : this.state.white},onClick: this.clickable, className: "table-row", id: value.id}, 
                         React.createElement("div", {className: "wrapper attributes"},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
-                        React.createElement('div', {className: 'wrapper status-owner'}, 
+                        React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1]}, 
                             React.createElement("div", {className: 'column index'}, value.id),
                             React.createElement("div", {className: "column owner colorstatus"}, value.status))),
                         React.createElement("div", {className: "wrapper title-comment-module-reporter"}, 
@@ -380,14 +474,14 @@ module.exports = React.createClass({
                             React.createElement("div", {className: "column title"}, value.subject) 
                             )
                         ),     
-                        React.createElement("div", {className: "wrapper dates"}, 
+                        React.createElement("div", {className: "wrapper dates " + this.state.sizearray[0]}, 
                             React.createElement("div", {className: "column date"}, value.created), 
                             React.createElement("div", {className: "column date"}, value.updated)),     
-                        React.createElement('div', {className:'wrapper module-reporter'},
+                        React.createElement('div', {className:'wrapper module-reporter ' + this.state.sizearray[2]},
                         React.createElement("div", {className: "column module"}, value.source), 
                         React.createElement("div", {className: "column reporter"}, value.tags)), 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
-                            React.createElement('div', {className: 'wrapper status-owner'},    
+                            React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1]},    
                             React.createElement("div", {className: "column status"}, value.owner), 
                             React.createElement("div", {className: "column severity"}, value.entries),
                             React.createElement("div", {className: "column owner"}, value.views)
@@ -395,13 +489,34 @@ module.exports = React.createClass({
                         )
                         )
                     )
-                    )
-                    )
-                    )))), 
+                   // )
+                   // )
+                    ))))), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})) , stage ? 
-                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'event', viewEvent:this.viewEvent}) : null) 
+                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'event', viewEvent:this.viewEvent}) : null
+                                               
+                        ) : 
+                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'event', viewEvent:this.viewEvent})  
+
 
         ));
+    },
+    setItem: function(v){
+        console.log(v)
+    },
+    dismissNote: function(){
+        var note = this.refs.notificationSystem
+            note.removeNotification({
+                onRemove: Remove(notification)
+            })
+    },
+    clearNote: function(){
+        if(this.state.mute){
+            this.setState({mute: false})
+        }
+        else {
+            this.setState({mute: true})
+        }
     },
     clearAll: function(){
         sortarray['id'] = -1
@@ -411,6 +526,7 @@ module.exports = React.createClass({
             viewstext: ''})
             this.getNewData({page: 0, limit: pageSize})
     },
+
     getTags:  function(getColumn){
         var array = []
         var values;
@@ -577,6 +693,7 @@ module.exports = React.createClass({
         }
     },
     clickable: function(v){
+        $('#list-view').find('.container-fluid2').focus()
         $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
             var array = []
             array.push($(y).attr('id'))
@@ -584,6 +701,7 @@ module.exports = React.createClass({
             window.history.pushState('Page', 'SCOT', '/#/event/'+$(y).attr('id'))
             this.launchEvent(array)
         }.bind(this))
+            scrolled = $('.container-fluid2').scrollTop()
     },
     getNewData: function(page){
         pageSize = page.limit
