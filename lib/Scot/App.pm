@@ -102,4 +102,12 @@ sub _get_logfile {
     return '/var/log/scot/scot.log';
 }
 
+has base_url    => (
+    is              => 'ro',
+    isa             => 'Str',
+    required        => 1,
+    default         => '/scot/api/v2',
+);
+
+
 1;

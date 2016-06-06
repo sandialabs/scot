@@ -25,6 +25,7 @@ use Scot::Util::Scot;
 use Scot::Util::ElasticSearch;
 use AnyEvent::STOMP::Client;
 use AnyEvent::ForkManager;
+use Sys::Hostname;
 
 use strict;
 use warnings;
@@ -32,16 +33,14 @@ use v5.18;
 
 use Moose;
 
-has env => (
-    is          => 'ro',
-    isa         => 'Scot::Env',
-    required    => 1,
-    builder     => '_get_env',
-);
+extends 'Scot::App';
 
-sub _get_env {
-    return Scot::Env->instance;
-}
+has thishostname    => (
+    is              => 'ro',
+    isa             => 'Str',
+    required        => 1,
+    default         => sub { hostname; },
+);
 
 has scot    => (
     is          => 'ro',
@@ -52,7 +51,14 @@ has scot    => (
 );
 
 sub _build_scot_scot {
-    return Scot::Util::Scot->new();
+    my $self    = shift;
+    return Scot::Util::Scot->new({
+        log         => $self->log,
+        servername  => $self->config->{scot}->{servername},
+        username    => $self->config->{scot}->{username},
+        password    => $self->config->{scot}->{password},
+        authtype    => $self->config->{scot}->{authtype},
+    });
 }
 
 has es      => (
@@ -64,7 +70,11 @@ has es      => (
 );
 
 sub _build_es {
-    return Scot::Util::Elasticsearch->new();
+    my $self    = shift;
+    return Scot::Util::Elasticsearch->new({
+        log     => $self->log,
+        config  => $self->config->{elasticsearch},
+    });
 }
 
 has max_workers => (
