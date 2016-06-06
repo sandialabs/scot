@@ -40,7 +40,7 @@ use Moose;
 
 extends 'Scot::App';
 
-has hostname    =>  (
+has thishostname    =>  (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
@@ -77,12 +77,6 @@ sub _get_img_munger {
     });
 };
 
-has base_url    => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    default    => "/scot/api/v2",
-);
 
 has scot        => (
     is          => 'ro',
@@ -208,7 +202,7 @@ sub run {
     my $stomp   = new AnyEvent::STOMP::Client();
 
     my $subscribe_headers   = {
-        id                          => $self->hostname,
+        id                          => $self->thishostname,
         'activemq.subscriptionName' => 'scot-queue',
     };
 
@@ -228,7 +222,8 @@ sub run {
         }
     );
 
-    my $scot    = $self->scot;
+    my $scot        = $self->scot;
+    my $myusername  = $self->config->{scot}->{username};
 
     $stomp->on_message(
         sub {
@@ -243,13 +238,20 @@ sub run {
             $log->debug("body   : ", { filter => \&Dumper, value => $json});
             my $type    = $json->{data}->{type};
             my $id      = $json->{data}->{id};
+            my $who     = $json->{data}->{who};
             my $action  = $json->{action};
 
             if ( $self->interactive ) {
                 say "---";
                 say "--- $action message received";
-                say "--- $type $id";
+                say "--- $type $id ($who)";
                 say "---";
+            }
+
+
+            if ( $who eq $myusername ) {
+                $log->trace("Message was result of this program, ignoring.");
+                return;
             }
 
             if ( $action ne "created" and $action ne "updated" ) {
