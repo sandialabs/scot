@@ -8,7 +8,7 @@ var DataGrid                = require('events-react-datagrid/react-datagrid');
 var Inspector               = require('react-inspector');
 var SelectedEntry           = require('../entry/selected_entry.jsx');
 var AddEntryModal           = require('./add_entry.jsx');
-
+var Draggable               = require('react-draggable');
 const customStyles = {
     content : {
         top     : '50%',
@@ -24,7 +24,6 @@ var Flair = React.createClass({
     getInitialState: function() {
         return {
             entityData:null,
-            entryToolbar:false,    
             entityid: this.props.entityid,
         }
     },
@@ -55,23 +54,32 @@ var Flair = React.createClass({
                         <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
                     </div>
                     <div className="modal-body" style={{height: '80vh', overflowY:'auto',width:'800px'}}>
-                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} entryToggle={this.entryToggle}/> : <div>Loading...</div>} 
+                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} /> : <div>Loading...</div>} 
                     </div>
                     <div className="modal-footer">
                         <Button onClick={this.props.flairToolbarToggle}>Done</Button>
                     </div>
                 </Modal>
-                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type='entity' targetid={this.state.entityid} id={this.state.entityid} addedentry={this.entryToggle} /> : null}
             </div>
         )
+        /*return (
+            <Draggable>
+                <div>
+                    <div>
+                        <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.flairToolbarToggle} />
+                        <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
+                    </div>
+                    <div style={{height: '80vh', overflowY:'auto',width:'800px'}}>
+                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} /> : <div>Loading...</div>}
+                    </div>
+                    <div>
+                        <Button onClick={this.props.flairToolbarToggle}>Done</Button>
+                    </div>
+                </div>
+            </Draggable>
+        )*/
     },
-    entryToggle: function() {
-        if (this.state.entryToolbar == false) {
-            this.setState({entryToolbar:true})
-        } else {
-            this.setState({entryToolbar:false})
-        }
-    },
+    
 });
 
 var EntityValue = React.createClass({
@@ -87,6 +95,7 @@ var EntityBody = React.createClass({
         return {
             loading:"Loading Entries",
             EntryData:null,
+            entryToolbar:false,    
         }
     }, 
     render: function() {
@@ -106,11 +115,19 @@ var EntityBody = React.createClass({
         return (
             <Tabs defaultActiveKey={1}>
                 <Tab eventKey={1} title="References"><EntityEventReferences entityid={this.props.entityid}/></Tab>
-                <Tab eventKey={2} title="Entry"><Button onClick={this.props.entryToggle}>Add Entry</Button><SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
+                <Tab eventKey={2} title="Entry"><Button onClick={this.entryToggle}>Add Entry</Button>
+                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} /> : null} <SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
                 {entityEnrichmentArr}
             </Tabs>
         )
-    }
+    },
+    entryToggle: function() {
+        if (this.state.entryToolbar == false) {
+            this.setState({entryToolbar:true})
+        } else {
+            this.setState({entryToolbar:false})
+        }
+    },
 });
 
 var EntityEnrichmentButtons = React.createClass({
@@ -184,7 +201,7 @@ var EntityEventReferences = React.createClass({
         window.open('#/'+this.state.navigateType+'/'+this.state.navigateId);
     },
     render: function() {
-        const rowFact = (rowProps) => {
+        const rowFact = function(rowProps) {
             rowProps.onDoubleClick = this.viewId;
         }
         var columns = [

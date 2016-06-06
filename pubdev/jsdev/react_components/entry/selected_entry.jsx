@@ -115,9 +115,12 @@ var SelectedEntry = React.createClass({
         } else if (type =='alertgroup') {
             divClass = 'row-fluid alert-wrapper entry-wrapper-main';
         }
+        //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
+        var Flair = require('../modal/flair_modal.jsx');
         return (
-            <div className={divClass} style={{height:this.props.windowHeight}}> 
-                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected}/> : <span>Loading...</span>} 
+            <div key={id} className={divClass} style={{height:this.props.windowHeight}}> 
+                {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : <AddEntryModal title={'Add Entry'} type={this.props.aType} targetid={this.props.aID} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> }</div> : null}
+                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData}/> : <span>Loading...</span>} 
                 {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
             </div>       
@@ -136,7 +139,7 @@ var EntryIterator = React.createClass({
                 rows.push(<EntryParent key={data.id} items={data} type={type} id={id} />);
             }.bind(this));
         } else {
-            rows.push(<AlertParent items={data} type={type} id={id} alertSelected={this.props.alertSelected} />);
+            rows.push(<AlertParent items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} />);
         }
         return (
             <div>
@@ -152,14 +155,27 @@ var AlertParent = React.createClass({
         return {
             activeIndex: arr,
             lastIndex: null,
+            allSelected:false,
         }
     },
     componentDidMount: function() {
         $('#sortabletable').tablesorter();
+        
+        //Ctrl + A to select all alerts
+        $(document.body).keydown(function(event){
+            //prevent from working when in input
+            if ($('input').is(':focus')) {return};
+            //check for ctrl + a with keyCode 
+            if (event.keyCode == 65 && (event.ctrlKey == true || event.metaKey == true)) {
+                this.rowClicked(null,null,'all',null);
+                event.preventDefault()
+            }
+        }.bind(this)) 
     },
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();
         var selected = true;
+        this.setState({allSelected:false});
         if (clickType == 'ctrl') {
             for (var i=0; i < array.length; i++) {
                 if (array[i] === index) {
@@ -186,8 +202,14 @@ var AlertParent = React.createClass({
                 }
                 this.setState({activeIndex:array})
             }
+        } else if (clickType == 'all') {
+            var array = [];
+            for (var i=0; i < this.props.items.length; i++) {
+                array.push(this.props.items[i].id)
+            }
+            this.setState({activeIndex:array,allSelected:true});
         } else {
-            array = [];
+            var array = [];
             array.push(index);
             this.setState({activeIndex:array});
         }
@@ -197,11 +219,11 @@ var AlertParent = React.createClass({
         } else if (array.length == 0){   
             this.props.alertSelected(null,null,'alert');
         } else {
-            this.props.alertSelected('showall',id,'alert')
+            this.props.alertSelected('showall',null,'alert')
         }
     },
     render: function() {
-        var z = 0;
+        //var z = 0;
         var items = this.props.items;
         var body = [];
         var header = [];
@@ -221,23 +243,32 @@ var AlertParent = React.createClass({
             for (var i=0; i < col_names.length; i++){
                 header.push(<AlertHeader colName={col_names[i]} />)
             }
-            items.forEach(function(object){
+            for (var z=0; z < items.length; z++) {
                 var dataFlair = null;
-                if (Object.getOwnPropertyNames(object.data_with_flair).length != 0) {
-                    dataFlair = object.data_with_flair;
+                if (Object.getOwnPropertyNames(items[z].data_with_flair).length != 0) {
+                    dataFlair = items[z].data_with_flair;
                 } else {
-                    dataFlair = object.data;
+                    dataFlair = items[z].data;
                 }
                 
-                body.push(<AlertBody index={z} data={object} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected}/>)
-                z++;
-            }.bind(this))
+                body.push(<AlertBody index={z} data={items[z]} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected}/>)
+            }
             var search = null;
             if (items[0].data_with_flair != undefined) {
                 search = items[0].data_with_flair.search;
             } else {
                 search = items[0].data.search;
             }
+        } else if (this.props.headerData != undefined){
+            if (this.props.headerData.body != undefined) {
+                return (
+                    <div>
+                        <div style={{color:'red'}}>If you see this message, please notify your SCOT admin. Parsing failed on the message below. The raw alert is displayed.</div>
+                        <div className='alertTableHorizontal' dangerouslySetInnerHTML={{ __html: this.props.headerData.body}}/>
+                    </div>
+                )
+            }
+
         }
         return (
             <div>
@@ -273,6 +304,7 @@ var AlertBody = React.createClass({
             selected: 'un-selected',
             promotedNumber: null,
             showEntry: false,
+            promoteFetch:false,
         }
     },
     onClick: function(event) {
@@ -302,16 +334,21 @@ var AlertBody = React.createClass({
             }).success(function(response){
                 this.setState({promotedNumber:response.records[0].id});             
             }.bind(this))
+            this.setState({promoteFetch:true})
         }
+        
     },
     componentWillReceiveProps: function() {
-        if (this.props.data.status == 'promoted') {
-            $.ajax({
-                type: 'GET',
-                url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
-            }).success(function(response){
-                this.setState({promotedNumber:response.records[0].id});             
-            }.bind(this))
+        if (this.state.promoteFetch == false) {
+            if (this.props.data.status == 'promoted') {
+                $.ajax({
+                    type: 'GET',
+                    url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
+                }).success(function(response){
+                    this.setState({promotedNumber:response.records[0].id});             
+                }.bind(this))
+                this.setState({promoteFetch:true});
+            }
         }
     },
     render: function() {
@@ -343,10 +380,14 @@ var AlertBody = React.createClass({
             var value = columns[i];
             rowReturn.push(<AlertRow data={data} dataFlair={dataFlair} value={value} />)
         }
-        for (var j=0; j < this.props.activeIndex.length; j++) {
-            if (this.props.activeIndex[j] === index) {
-                selected = 'selected';
-            } 
+        if (this.props.allSelected == false) {
+            for (var j=0; j < this.props.activeIndex.length; j++) {
+                if (this.props.activeIndex[j] === index) {
+                    selected = 'selected';
+                } 
+            }
+        } else {
+            selected = 'selected'
         }
         var id = 'alert_'+data.id+'_status';
         return (
@@ -354,7 +395,7 @@ var AlertBody = React.createClass({
                 <tr index={index} id={data.id} className={selected} style={{cursor: 'pointer'}} onClick={this.onClick}>
                     <td valign='top' style={{marginRight:'4px'}}>{data.id}</td>
                     <td valign='top' style={{marginRight:'4px'}}>{data.status != 'promoted' ? <span style={{color:buttonStyle}}>{data.status}</span> : <Button bsSize='xsmall' bsStyle={buttonStyle} id={id} onClick={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{data.status}</Button>}</td>
-                    <td valign='top' style={{marginRight:'4px'}}><a href="javascript: void(0)" onClick={this.toggleEntry}>{data.entry_count}</a></td>
+                    {data.entry_count == 0 ? <td valign='top' style={{marginRight:'4px'}}>{data.entry_count}</td> : <td valign='top' style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onClick={this.toggleEntry}>{data.entry_count}</span></td>}
                     {rowReturn}
                 </tr>
                 <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} />
@@ -388,7 +429,7 @@ AlertRowBlank = React.createClass({
                 <td style={{padding:'0'}}>
                 </td>
                 <td colSpan="50" style={{padding:'1px'}}>
-                    {showEntry ? <div>{arr}</div> : null}
+                    {showEntry ? <div>{<SelectedEntry type={this.props.type} id={this.props.id} />}</div> : null}
                 </td>
             </tr>
         )
@@ -487,16 +528,16 @@ var EntryParent = React.createClass({
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} /></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items.task} /></MenuItem>
-                                    <MenuItem eventKey='5' onClick={this.permissionsToggle}>Permissions</MenuItem>
+                                    <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
                                 </SplitButton>
                                 <Button bsSize='xsmall' onClick={this.editEntryToggle}>Edit</Button>
                             </span>
                         </div>
                     </div>
-                {itemarr}
-                </div> 
                 {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} parent={items.parent} targetid={id} type={type} stage = {'Edit'} id={items.id} addedentry={this.editEntryToggle} /> : null}
+                {itemarr}
                 {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid={id} id={items.id} addedentry={this.replyEntryToggle} /> : null}
+                </div> 
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} /> : null}     
             </div>
         );
