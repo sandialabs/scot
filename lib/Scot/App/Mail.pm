@@ -258,6 +258,7 @@ sub load_parsers  {
     while ( my $filename = readdir(DIR) ) {
         $log->debug("filename is $filename");
         next if ( $filename =~ /^\.+$/ );
+        next if ( $filename =~ /.*swp/ );
         $filename =~ m/^([A-Za-z0-9]+)\.pm$/;
         my $rootname = $1;
         my $attrname = lc($rootname);
