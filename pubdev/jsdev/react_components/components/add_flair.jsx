@@ -132,15 +132,15 @@ var Watcher = {
                 }.bind(this))
             }.bind(this))
         } else {
-            $('.alert-wrapper').each(function(index,div) {
-                $(div).hover( function() {
+            $('.alert-wrapper').find('a, .entity').not('.not_selectable').each(function(index,tr) {
+                $(tr).hover( function() {
                     var intervalID = setInterval(checkFlairHover, 100, null, flairToolbarToggle,type,linkWarningToggle,id);
-                    $(div).data('intervalID', intervalID);
-                    console.log('Now watching div ' + intervalID);
+                    $(tr).data('intervalID', intervalID);
+                    console.log('Now watching item ' + intervalID);
                 }, function() {
-                    var intervalID = $(div).data('intervalID');
+                    var intervalID = $(tr).data('intervalID');
                     window.clearInterval(intervalID);
-                    console.log('No longer watching div ' + intervalID);
+                    console.log('No longer watching item ' + intervalID);
                 }).bind(this);
             }).bind(this)
         }

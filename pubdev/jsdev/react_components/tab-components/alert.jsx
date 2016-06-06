@@ -39,7 +39,8 @@ var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
 var columns = ['ID', 'Status', 'Subject', 'Created', 'Source', 'Tags', 'Views']
-
+var toggle
+var scrolled = 48
 module.exports = React.createClass({
 
     getInitialState: function(){
@@ -48,7 +49,7 @@ module.exports = React.createClass({
         width = 650
 
     return {
-            unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
+            mute: false,unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
             statustext: '', subjecttext:'', idsarray: [], 
             viewstext: '', entriestext: '', scrollheight: scrollHeight, 
@@ -59,13 +60,40 @@ module.exports = React.createClass({
         firstCol.width = firstSize
         this.setState({})
     },
-    componentWillMount: function(){
+    componentDidMount: function(){
+        toggle  = $('#list-view').find('.tableview')
+        $('.container-fluid2').keydown(function(e){
+            var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
+            var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
+            if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
+                var set;
+                set  = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents').click()
+                var array = []
+                array.push($(set).attr('id'))
+                window.history.pushState('Page', 'SCOT', '/#/alertgroup/'+$(set).attr('id'))
+                $('.container-fluid2').scrollTop(scrolled)
+                scrolled = scrolled + $(toggle[0]).find('#'+this.state.idsarray[0]).height()
+                this.setState({idsarray: array})
+            }
+            else if((e.keyCode == 75 && obj.length != 0) || (e.keyCode == 38 && obj.length != 0)){
+                var set;
+                set  = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents').click()
+                var array = []
+                array.push($(set).attr('id'))
+                window.history.pushState('Page', 'SCOT', '/#/alertgroup/'+$(set).attr('id'))
+                $('.container-fluid2').scrollTop(scrolled)
+                scrolled = scrolled -  $(toggle[0]).find('#'+this.state.idsarray[0]).height()
+                this.setState({idsarray: array})
+            }
+        }.bind(this)) 
+
         var array = []
         if(this.props.supertable !== undefined){
             if(this.props.supertable.length > 0){
                 array = this.props.supertable
                 stage = true
-                }
+                scrolled = $('.container-fluid2').scrollTop()    
+            }
           }
         var finalarray = [];
 	    var sortarray = {}
@@ -102,7 +130,7 @@ module.exports = React.createClass({
 
     reloadactive: function(){    
         var notification = this.refs.notificationSystem
-        if(whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
+        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
@@ -125,10 +153,10 @@ module.exports = React.createClass({
     reloadItem: function(){
         height = $(window).height() - 170
         width = width + 40
-        $('.container-fluid').css('height', height) 
-        $('.container-fluid').css('max-height', height)
-        $('.container-fluid').css('max-width', '915px')
-        $('.container-fluid').css('width', width)
+        $('.container-fluid2').css('height', height) 
+        $('.container-fluid2').css('max-height', height)
+        $('.container-fluid2').css('max-width', '915px')
+        $('.container-fluid2').css('width', width)
     },
     launchEvent: function(array){
         stage = true
@@ -169,7 +197,7 @@ module.exports = React.createClass({
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
-                    React.createElement(Notificationactivemq, {ref: 'notificationSystem'})), 
+                    !this.state.mute ? React.createElement(Notificationactivemq, {ref: 'notificationSystem'}) :null ), 
                         React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, 
                         React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, 
                         React.createElement('h2', {style: {'font-size': '30px'}}, 'Alertgroup')), 
@@ -177,12 +205,14 @@ module.exports = React.createClass({
                         React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), 
                         React.createElement(Search, null)),                        
                         React.createElement('btn-group', {style: {'padding-left': '0px'}}, 
+                        !this.state.mute ?
+                        React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Mute Notifications'): React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Turn On Notifications'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
                         React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
             React.createElement('div', {className: 'eventwidth', style: {display:'flex'}},
             React.createElement('div', {id:'list-view'},  
-            React.createElement('div', {style:{display: 'flex'}},
-                React.createElement("div", {className: "container-fluid", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
+            React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
+                React.createElement("div", {className: "container-fluid2", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header"},
                         React.createElement("div", {className: "wrapper attributes"}, 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -305,7 +335,7 @@ module.exports = React.createClass({
                     ), 
 
                     this.state.objectarray.map((value) => React.createElement('div', {className:'allevents', id: value.id}, 
-                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null, 
+                       /* React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null, 
                         React.createElement('div', null,
                         React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'ID:'),
                         React.createElement('div', null, value.id)),
@@ -321,7 +351,7 @@ module.exports = React.createClass({
                         React.createElement('div', {style: {'font-weight':'bold'}}, 'Tags:  '), React.createElement('div', null, value.tags)),
                         React.createElement('div', {style: {display:'flex'}},
                         React.createElement('div', {style: {'font-weight': 'bold'}}, 'Views:  '), React.createElement('div', null, value.views))
-                        ))}, 
+                        ))},*/ 
                         React.createElement("div", {style: {background: this.state.idsarray[0] == value.id ? this.state.blue : this.state.white},onClick: this.clickable, className: "table-row", id: value.id}, 
                         React.createElement("div", {className: "wrapper attributes"},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -351,8 +381,8 @@ module.exports = React.createClass({
                         )
                         )
                     )
-                    )
-                    )
+                    //)
+                    //)
                     )))), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})) , stage ? 
                         React.createElement(SelectedContainer, {height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null) 
@@ -499,7 +529,16 @@ module.exports = React.createClass({
             this.getNewData({page: 0, limit: pageSize})
         }
     },
+    clearNote: function(){
+        if(this.state.mute){
+            this.setState({mute: false})
+        }
+        else {
+            this.setState({mute: true})
+        }
+    },
     clickable: function(v){
+        $('#list-view').find('.container-fluid2').focus() 
         $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
             var array = []
             array.push($(y).attr('id'))
@@ -507,6 +546,7 @@ module.exports = React.createClass({
             window.history.pushState('Page', 'SCOT', '/#/alertgroup/'+$(y).attr('id'))  
             this.launchEvent(array)
         }.bind(this))
+        scrolled = $('.container-fluid2').scrollTop() 
     },
 
     handlePageChange: function(pageNumber){

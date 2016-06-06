@@ -54,9 +54,9 @@ var Actions = {
                 if(message != ""){
                     var json = JSON.parse(message);
                         console.log(json)
-                        Dispatcher.handleActivemq({
-                        activemq: json
-                    })
+                            Dispatcher.handleActivemq({
+                            activemq: json
+                        })
                 }
             });       
         }).fail(function(){
