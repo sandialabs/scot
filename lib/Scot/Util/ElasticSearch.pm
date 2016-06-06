@@ -22,22 +22,36 @@ has es   => (
     builder => '_build_es',
 );
 
-has env     => (
+has log => (
     is      => 'ro',
-    isa     => 'Scot::Env',
+    isa     => 'Log::Log4perl::Logger',
     required    => 1,
-    default => sub { Scot::Env->instance },
+);
+
+has config  => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    default     => sub {
+        {
+            nodes   => [ 'localhost:9200' ],
+        };
+    },
 );
 
 sub _build_es {
     my $self    = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my $es;
 
     $log->debug("Creating ES client");
 
+    my %conparams   = (
+        nodes   => $self->config->{nodes},
+    );
+
     try {
-        $es  = Search::Elasticsearch->new();
+        $es  = Search::Elasticsearch->new(%conparams);
     }
     catch {
         $log->error("Error creating Elasticsearch client: $_");
@@ -52,7 +66,7 @@ sub index {
     my $type    = shift;    # collection
     my $href    = shift;    # the mongo json document
     my $index   = shift // 'scot'; # allow for submitting to a test index
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my $es      = $self->es;
     
     my %msg = (
@@ -73,7 +87,7 @@ sub search {
     my $body    = shift;    # elastic search query doc
     my $index   = shift // 'scot';
     my $es      = $self->es;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
 
     my %msg = (
         index   => $index,
