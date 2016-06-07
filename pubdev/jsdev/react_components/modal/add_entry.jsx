@@ -66,36 +66,8 @@ var AddEntryModal = React.createClass({
 		this.setState({height: newheight})
 	}
     },
-	/*componentWillReceiveProps: function(){
-	if(this.props.stage == 'Edit'){
-	    reply = false
-        finalfiles = []
-        $.ajax({
-	        type: 'GET',
-	        url:  '/scot/api/v2/entry/'+ this.props.id
-	   }).success(function(response){
-            recently_updated = response.updated
-            if(response.body_flair == ""){
-	            $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
-        }
-            else{
-	            $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_flair)
-        }
-        })
-	}
-	else if (this.props.title == 'Add Entry'){
-    	reply = false
-        finalfiles = []
-        $('#' + this.props.id + '_ifr').contents().find("#tinymce").text('')
-	    var timestamp = new Date()
-	    var output = "By You ";
-	    timestamp = new Date(timestamp.toString())
-	    output  = output + timestamp.toLocaleString()
-	}
-	this.setState({})
-    },*/
     componentDidMount: function() {
-        $('#' + this.props.id + '_ifr').css('height', '130px')
+        $('#' + this.props.id + '_ifr').css('height', '200px')
         $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top)
     },
 	render: function() {
@@ -113,8 +85,8 @@ var AddEntryModal = React.createClass({
                         </div>
                     </div>
                     <TinyMCE id={this.props.id} content={""} className={'inputtext'} config={{plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}} onChange={this.handleEditorChange} /> 
-                <Dropzone onDrop={this.onDrop} style={{'border-width':'2px','border-color':'#000','border-radius':'4px',padding: '30px','border-style': 'dashed', 'text-align' : 'center'}}><div style={{fontSize:'16px',color:'blue'}}>'Drop some files here or click to select files to upload'</div></Dropzone>
-                {this.state.files ? <div> {this.state.files.map(function(file) { return  <ul style={{'list-style-type' : 'none', margin:'0', padding:'0'}}><li><p style={{display:'inline'}}>{file.name}</p><button style={{'line-height':'1px'}} className='btn btn-info' id={file.name} onClick={this.Close}>x</button></li></ul>})}</div> : null} 
+                    <Dropzone onDrop={this.onDrop} style={{'border-width':'2px','border-color':'#000','border-radius':'4px','border-style': 'dashed', 'text-align' : 'center','background-color':'azure'}}><div style={{fontSize:'16px',color:'black',margin:'5px'}}>Click or Drop files here to upload</div></Dropzone>
+                    {this.state.files ? <div> {this.state.files.map(function(file) { return  <ul style={{'list-style-type' : 'none', margin:'0', padding:'0'}}><li><p style={{display:'inline'}}>{file.name}</p><button style={{'line-height':'1px'}} className='btn btn-info' id={file.name} onClick={this.Close}>x</button></li></ul>})}</div> : null} 
                 </div>    
             </div>
         )
