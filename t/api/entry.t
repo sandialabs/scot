@@ -9,7 +9,9 @@ use Data::Dumper;
 use Mojo::JSON qw(decode_json encode_json);
 
 $ENV{'scot_mode'}   = "testing";
-$ENV{'SCOT_AUTH_MODE'}   = "Testing";
+$ENV{'SCOT_AUTH_TYPE'}   = "Testing";
+$ENV{'scot_log_file'}   = "/var/log/scot/scot.test.log";
+
 print "Resetting test db...\n";
 system("mongo scot-testing <../../etc/database/reset.js 2>&1 > /dev/null");
 
@@ -90,7 +92,29 @@ $t  ->get_ok("/scot/api/v2/event/$event_id/entry")
     ->json_is('/records/0/children/1/id'    => $entry1b)
     ->json_is('/records/1/id'   => $entry2);
 
-#   print Dumper($t->tx->res->json);
+$t  ->get_ok("/scot/api/v2/event/$event_id")
+    ->status_is(200)
+    ->json_is('/entry_count'    => 5);
+
+my $pre_delete_updated      = $t->tx->res->json->{updated};
+my $pre_delete_entry_count  = $t->tx->res->json->{entry_count};
+sleep 1;
+
+$t  ->delete_ok("/scot/api/v2/entry/$entry2")
+    ->status_is(200);
+
+$t  ->get_ok("/scot/api/v2/entry/$entry2")
+    ->status_is(404);
+
+$t  ->get_ok("/scot/api/v2/event/$event_id")
+    ->status_is(200)
+    ->json_is('/entry_count'    => $pre_delete_entry_count -1 );
+
+my $post_delete_updated = $t->tx->res->json->{update};
+
+ok( $pre_delete_updated != $post_delete_updated, "updated time was updated");
+
+#  print Dumper($t->tx->res->json);
  done_testing();
  exit 0;
 
