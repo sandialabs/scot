@@ -1392,8 +1392,10 @@ sub delete {
             who     => $user,
         }
     });
+
     if ( ref($object) eq "Scot::Model::Entry" ) {
-        my $targetobj   = $mongo->collection(ucfirst($object->target->{type}));
+        my $targetcol   = $mongo->collection(ucfirst($object->target->{type}));
+        my $targetobj   = $targetcol->find_iid($object->target->{id});
         # this is preferable but, getting error so...
         #$targetobj->update({
         #    '$set'  => {
