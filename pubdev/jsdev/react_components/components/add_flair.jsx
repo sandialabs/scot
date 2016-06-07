@@ -52,6 +52,32 @@ var AddFlair = {
                                                         $(entity).append(flag);
                                                     }
                                                 }
+                                                if (entitydata.sidd != undefined) {
+                                                    if (entitydata.sidd.blocklist != undefined) {
+                                                        if (entitydata.sidd.blocklist.action != undefined) {
+                                                            if (entitydata.sidd.blocklist.action.firewall != false) {
+                                                                $(entity).append($('<img>').attr('src', '/images/flair/firewalled.png'));    
+                                                            }
+                                                            if (entitydata.sidd.blocklist.action.watch != false) {
+                                                                $(entity).append($('<img>').attr('src', '/images/flair/watch.png'));
+                                                            }
+                                                            if (entitydata.sidd.blocklist.action.whitelist != false) {
+                                                                $(entity).append($('<img>').attr('src', '/images/flair/white_list.jpg'));
+                                                            }
+                                                            if (entitydata.sidd.blocklist.action.blackhole != false) {
+                                                                $(entity).append($('<img>').attr('src', '/images/flair/blackholed.png'));;
+                                                            }
+                                                            if (entitydata.sidd.blocklist.action.proxy_block != false) {
+                                                                $(entity).append($('<img>').attr('src', '/images/flair/blocked.png'));
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                if (entitydata.entry != undefined) {
+                                                    if (entitydata.entry != 0) {
+                                                        $(entity).append($('<img>').attr('src', '/flair/note.gif'));
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -97,6 +123,32 @@ var AddFlair = {
                                             var flag = $('<img class="noselect">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
                                             flag.addClass('extras');
                                             $(entity).append(flag);
+                                        }
+                                    }
+                                    if (entitydata.sidd != undefined) {
+                                        if (entitydata.sidd.blocklist != undefined) {
+                                            if (entitydata.sidd.blocklist.action != undefined) {
+                                                if (entitydata.sidd.blocklist.action.firewall != false) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/firewalled.png'));    
+                                                }
+                                                if (entitydata.sidd.blocklist.action.watch != false) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/watch.png'));
+                                                }
+                                                if (entitydata.sidd.blocklist.action.whitelist != false) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/white_list.jpg'));
+                                                }
+                                                if (entitydata.sidd.blocklist.action.blackhole != false) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/blackholed.png'));
+                                                }
+                                                if (entitydata.sidd.blocklist.action.proxy_block != false) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/blocked.png'));
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (entitydata.entry != undefined) {
+                                        if (entitydata.entry != 0) {
+                                            $(entity).append($('<img>').attr('src', '/flair/note.gif'));
                                         }
                                     }
                                 }
