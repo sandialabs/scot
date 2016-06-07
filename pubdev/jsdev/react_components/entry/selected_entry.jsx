@@ -480,6 +480,8 @@ var EntryParent = React.createClass({
         var type = this.props.type;
         var id = this.props.id;
         var summary = items.summary;
+        var editEntryToolbar = this.state.editEntryToolbar;
+        var editEntryToggle = this.editEntryToggle;
         var outerClassName = 'row-fluid entry-outer';
         var innerClassName = 'row-fluid entry-header';
         var taskOwner = '';
@@ -498,13 +500,13 @@ var EntryParent = React.createClass({
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
-        itemarr.push(<EntryData id={items.id} key={items.id} subitem = {items} type={type} targetid={id} />);
+        itemarr.push(<EntryData id={items.id} key={items.id} subitem = {items} type={type} targetid={id} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle}/>);
         for (var prop in items) {
             function childfunc(prop){
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(<EntryParent  items = {childobj} id={id} type={type} />));  
+                        subitemarr.push(new Array(<EntryParent  items = {childobj} id={id} type={type} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle}/>));  
                     });
                 }
             }
@@ -534,7 +536,6 @@ var EntryParent = React.createClass({
                             </span>
                         </div>
                     </div>
-                {this.state.editEntryToolbar ? <AddEntryModal type = {this.props.type} title='Edit Entry' header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} parent={items.parent} targetid={id} type={type} stage = {'Edit'} id={items.id} addedentry={this.editEntryToggle} /> : null}
                 {itemarr}
                 {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid={id} id={items.id} addedentry={this.replyEntryToggle} /> : null}
                 </div> 
@@ -556,27 +557,29 @@ var EntryData = React.createClass({
         }
     }, 
     onLoad: function() {
-        if (document.getElementById('iframe_'+this.props.id).contentDocument.readyState === 'complete') {
-            if (this.props.type != 'entity') {
-                setTimeout(function() {
-                    document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
-                        var newheight; 
-                        newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-                        newheight = newheight + 'px';
-                        if (this.state.height != newheight) {
-                            this.setState({height:newheight});
-                        }
-                    }.bind(this))
-                }.bind(this)); 
+        if (document.getElementById('iframe_'+this.props.id) != undefined){
+            if (document.getElementById('iframe_'+this.props.id).contentDocument.readyState === 'complete') {
+                if (this.props.type != 'entity') {
+                    setTimeout(function() {
+                        document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
+                            var newheight; 
+                            newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+                            newheight = newheight + 'px';
+                            if (this.state.height != newheight) {
+                                this.setState({height:newheight});
+                            }
+                        }.bind(this))
+                    }.bind(this)); 
+                }
+                var ifr = $('#iframe_'+this.props.id);
+                var ifrContents = $(ifr).contents();
+                var ifrContentsHead = $(ifrContents).find('head');
+                if (ifrContentsHead) {
+                    ifrContentsHead.append($("<link/>", {rel: "stylesheet", href: 'css/sandbox.css', type: "text/css"}))
+                }
+            } else {
+                setTimeout(this.onLoad,0);
             }
-            var ifr = $('#iframe_'+this.props.id);
-            var ifrContents = $(ifr).contents();
-            var ifrContentsHead = $(ifrContents).find('head');
-            if (ifrContentsHead) {
-                ifrContentsHead.append($("<link/>", {rel: "stylesheet", href: 'css/sandbox.css', type: "text/css"}))
-            }
-        } else {
-            setTimeout(this.onLoad,0);
         }
     },
     componentWillReceiveProps: function() {
@@ -591,9 +594,10 @@ var EntryData = React.createClass({
         return (
             <div key={this.props.id} className={'row-fluid entry-body'}>
                 <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
-                    <Frame frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}>
-                    <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
-                    </Frame>
+                    {this.props.editEntryToolbar ? <AddEntryModal title='Edit Entry' stage={'Edit'} type={this.props.type} targetid={this.props.targetid} id={id} addedentry={this.props.editEntryToggle} parent={this.props.subitem.parent}/> : 
+                    <Frame frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}> 
+                        <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
+                    </Frame>}
                 </div>
             </div>
         )
