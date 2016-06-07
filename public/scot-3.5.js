@@ -887,6 +887,32 @@ var AddFlair = {
                                                         $(entity).append(flag);
                                                     }
                                                 }
+                                                if (entitydata.sidd != undefined) {
+                                                    if (entitydata.sidd.blocklist != undefined) {
+                                                        if (entitydata.sidd.blocklist.action != undefined) {
+                                                            if (entitydata.sidd.blocklist.action.firewall != false) {
+                                                                $(entity).append($('<img>').attr('src', '/images/flair/firewalled.png'));    
+                                                            }
+                                                            if (entitydata.sidd.blocklist.action.watch != false) {
+                                                                $(entity).append($('<img>').attr('src', '/images/flair/watch.png'));
+                                                            }
+                                                            if (entitydata.sidd.blocklist.action.whitelist != false) {
+                                                                $(entity).append($('<img>').attr('src', '/images/flair/white_list.jpg'));
+                                                            }
+                                                            if (entitydata.sidd.blocklist.action.blackhole != false) {
+                                                                $(entity).append($('<img>').attr('src', '/images/flair/blackholed.png'));;
+                                                            }
+                                                            if (entitydata.sidd.blocklist.action.proxy_block != false) {
+                                                                $(entity).append($('<img>').attr('src', '/images/flair/blocked.png'));
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                if (entitydata.entry != undefined) {
+                                                    if (entitydata.entry != 0) {
+                                                        $(entity).append($('<img>').attr('src', '/flair/note.gif'));
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -932,6 +958,32 @@ var AddFlair = {
                                             var flag = $('<img class="noselect">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
                                             flag.addClass('extras');
                                             $(entity).append(flag);
+                                        }
+                                    }
+                                    if (entitydata.sidd != undefined) {
+                                        if (entitydata.sidd.blocklist != undefined) {
+                                            if (entitydata.sidd.blocklist.action != undefined) {
+                                                if (entitydata.sidd.blocklist.action.firewall != false) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/firewalled.png'));    
+                                                }
+                                                if (entitydata.sidd.blocklist.action.watch != false) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/watch.png'));
+                                                }
+                                                if (entitydata.sidd.blocklist.action.whitelist != false) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/white_list.jpg'));
+                                                }
+                                                if (entitydata.sidd.blocklist.action.blackhole != false) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/blackholed.png'));
+                                                }
+                                                if (entitydata.sidd.blocklist.action.proxy_block != false) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/blocked.png'));
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (entitydata.entry != undefined) {
+                                        if (entitydata.entry != 0) {
+                                            $(entity).append($('<img>').attr('src', '/flair/note.gif'));
                                         }
                                     }
                                 }
@@ -2461,6 +2513,8 @@ var EntryParent = React.createClass({displayName: "EntryParent",
         var type = this.props.type;
         var id = this.props.id;
         var summary = items.summary;
+        var editEntryToolbar = this.state.editEntryToolbar;
+        var editEntryToggle = this.editEntryToggle;
         var outerClassName = 'row-fluid entry-outer';
         var innerClassName = 'row-fluid entry-header';
         var taskOwner = '';
@@ -2479,13 +2533,13 @@ var EntryParent = React.createClass({displayName: "EntryParent",
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
-        itemarr.push(React.createElement(EntryData, {id: items.id, key: items.id, subitem: items, type: type, targetid: id}));
+        itemarr.push(React.createElement(EntryData, {id: items.id, key: items.id, subitem: items, type: type, targetid: id, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle}));
         for (var prop in items) {
             function childfunc(prop){
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(React.createElement(EntryParent, {items: childobj, id: id, type: type})));  
+                        subitemarr.push(new Array(React.createElement(EntryParent, {items: childobj, id: id, type: type, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle})));  
                     });
                 }
             }
@@ -2515,7 +2569,6 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                             )
                         )
                     ), 
-                this.state.editEntryToolbar ? React.createElement(AddEntryModal, {type: this.props.type, title: "Edit Entry", header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, parent: items.parent, targetid: id, type: type, stage: 'Edit', id: items.id, addedentry: this.editEntryToggle}) : null, 
                 itemarr, 
                 this.state.replyEntryToolbar ? React.createElement(AddEntryModal, {title: "Reply Entry", stage: 'Reply', type: type, header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, targetid: id, id: items.id, addedentry: this.replyEntryToggle}) : null
                 ), 
@@ -2537,27 +2590,29 @@ var EntryData = React.createClass({displayName: "EntryData",
         }
     }, 
     onLoad: function() {
-        if (document.getElementById('iframe_'+this.props.id).contentDocument.readyState === 'complete') {
-            if (this.props.type != 'entity') {
-                setTimeout(function() {
-                    document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
-                        var newheight; 
-                        newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-                        newheight = newheight + 'px';
-                        if (this.state.height != newheight) {
-                            this.setState({height:newheight});
-                        }
-                    }.bind(this))
-                }.bind(this)); 
+        if (document.getElementById('iframe_'+this.props.id) != undefined){
+            if (document.getElementById('iframe_'+this.props.id).contentDocument.readyState === 'complete') {
+                if (this.props.type != 'entity') {
+                    setTimeout(function() {
+                        document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
+                            var newheight; 
+                            newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+                            newheight = newheight + 'px';
+                            if (this.state.height != newheight) {
+                                this.setState({height:newheight});
+                            }
+                        }.bind(this))
+                    }.bind(this)); 
+                }
+                var ifr = $('#iframe_'+this.props.id);
+                var ifrContents = $(ifr).contents();
+                var ifrContentsHead = $(ifrContents).find('head');
+                if (ifrContentsHead) {
+                    ifrContentsHead.append($("<link/>", {rel: "stylesheet", href: 'css/sandbox.css', type: "text/css"}))
+                }
+            } else {
+                setTimeout(this.onLoad,0);
             }
-            var ifr = $('#iframe_'+this.props.id);
-            var ifrContents = $(ifr).contents();
-            var ifrContentsHead = $(ifrContents).find('head');
-            if (ifrContentsHead) {
-                ifrContentsHead.append($("<link/>", {rel: "stylesheet", href: 'css/sandbox.css', type: "text/css"}))
-            }
-        } else {
-            setTimeout(this.onLoad,0);
         }
     },
     componentWillReceiveProps: function() {
@@ -2572,8 +2627,9 @@ var EntryData = React.createClass({displayName: "EntryData",
         return (
             React.createElement("div", {key: this.props.id, className: 'row-fluid entry-body'}, 
                 React.createElement("div", {className: 'row-fluid entry-body-inner', style: {marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
+                    this.props.editEntryToolbar ? React.createElement(AddEntryModal, {title: "Edit Entry", stage: 'Edit', type: this.props.type, targetid: this.props.targetid, id: id, addedentry: this.props.editEntryToggle, parent: this.props.subitem.parent}) : 
                     React.createElement(Frame, {frameBorder: '0', id: 'iframe_' + id, sandbox: 'allow-same-origin', styleSheets: ['/css/sandbox.css'], style: {width:'100%',height:this.state.height}}, 
-                    React.createElement("div", {dangerouslySetInnerHTML: { __html: rawMarkup}})
+                        React.createElement("div", {dangerouslySetInnerHTML: { __html: rawMarkup}})
                     )
                 )
             )
@@ -2995,15 +3051,21 @@ var EntryDataStatus = React.createClass({displayName: "EntryDataStatus",
         }
     },
     componentDidMount: function() {
-        //Adds open/close hot keys for events/incidents/intel
-        /*$(document.body).keydown(function(event){
-            //check for character "o" for 79 or "c" for 67
-            if (event.keyCode == 79) {
-                this.statusAjax('open');
-            } else if (event.keyCode == 67) {
-                this.statusAjax('closed');
-            }
-        }.bind(this))*/
+        //Adds open/close hot keys for alertgroup
+        if (this.props.type == 'alertgroup') {
+            $(document.body).keydown(function(event){
+                //prevent from working when in input
+                if ($('input').is(':focus')) {return};
+                //check for character "o" for 79 or "c" for 67
+                if (this.state.buttonStatus != 'promoted') {
+                    if (event.keyCode == 79) {
+                        this.statusAjax('open');
+                    } else if (event.keyCode == 67) {
+                        this.statusAjax('closed');
+                    }
+                }
+            }.bind(this))
+        }
     },
     componentWillReceiveProps: function() {
         this.setState({buttonStatus:this.props.data.status});
@@ -3021,7 +3083,8 @@ var EntryDataStatus = React.createClass({displayName: "EntryDataStatus",
         $.ajax({
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-            data: json,
+            data: JSON.stringify(json),
+            dataType: "json",
             success: function(data) {
                 console.log('success status change to: ' + data);
             }.bind(this),
@@ -3032,34 +3095,19 @@ var EntryDataStatus = React.createClass({displayName: "EntryDataStatus",
     },
     render: function() { 
         var buttonStyle = '';
-        var open = '';
-        var closed = '';
-        var promoted = '';
         if (this.state.buttonStatus == 'open') {
             buttonStyle = 'danger'; 
         } else if (this.state.buttonStatus == 'closed') {
             buttonStyle = 'success';
         } else if (this.state.buttonStatus == 'promoted') {
             buttonStyle = 'warning'
-        };
-        if (this.props.type == 'alertgroup') {
-            open = this.props.data.open_count;
-            closed = this.props.data.closed_count;
-            promoted = this.props.data.promoted_count;
-        }
+        }; 
         if (this.props.type == 'guide') {
             return(React.createElement("div", null))
         } else {
             return (
                 React.createElement("div", null, 
-                    this.props.type == 'alertgroup' ? React.createElement(ButtonToolbar, null, 
-                        React.createElement(OverlayTrigger, {trigger: "hover", placement: "bottom", overlay: React.createElement(Popover, {id: this.props.id}, "open/closed/promoted alerts")}, 
-                            React.createElement(Button, {bsSize: "xsmall"}, 
-                                React.createElement("span", {className: "alertgroup"}, 
-                                    React.createElement("span", {className: "alertgroup_open"}, open), " / ", React.createElement("span", {className: "alertgroup_closed"}, closed), " / ", React.createElement("span", {className: "alertgroup_promoted"}, promoted)
-                                )
-                            )
-                        )) : React.createElement(Button, {bsStyle: buttonStyle, id: "event_status", onClick: this.eventStatusToggle, style: {lineHeight: '12pt', fontSize: '14pt', width: '100%', marginLeft: 'auto'}}, this.state.buttonStatus)
+                    React.createElement(Button, {bsStyle: buttonStyle, id: "event_status", onClick: this.eventStatusToggle, style: {lineHeight: '12pt', fontSize: '14pt', width: '100%', marginLeft: 'auto'}}, this.state.buttonStatus)
                 )
             )
         }
@@ -3085,7 +3133,8 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
             $.ajax({
                 type: 'put',
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-                data: json,
+                data: JSON.stringify(json),
+                dataType: "json",
                 success: function(data) {
                     console.log('success: ' + data);
                     this.setState({updatedSubject: true});
@@ -3607,36 +3656,8 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 		this.setState({height: newheight})
 	}
     },
-	/*componentWillReceiveProps: function(){
-	if(this.props.stage == 'Edit'){
-	    reply = false
-        finalfiles = []
-        $.ajax({
-	        type: 'GET',
-	        url:  '/scot/api/v2/entry/'+ this.props.id
-	   }).success(function(response){
-            recently_updated = response.updated
-            if(response.body_flair == ""){
-	            $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
-        }
-            else{
-	            $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_flair)
-        }
-        })
-	}
-	else if (this.props.title == 'Add Entry'){
-    	reply = false
-        finalfiles = []
-        $('#' + this.props.id + '_ifr').contents().find("#tinymce").text('')
-	    var timestamp = new Date()
-	    var output = "By You ";
-	    timestamp = new Date(timestamp.toString())
-	    output  = output + timestamp.toLocaleString()
-	}
-	this.setState({})
-    },*/
     componentDidMount: function() {
-        $('#' + this.props.id + '_ifr').css('height', '130px')
+        $('#' + this.props.id + '_ifr').css('height', '200px')
         $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top)
     },
 	render: function() {
@@ -3654,8 +3675,8 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                         )
                     ), 
                     React.createElement(TinyMCE, {id: this.props.id, content: "", className: 'inputtext', config: {plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}, onChange: this.handleEditorChange}), 
-                React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width':'2px','border-color':'#000','border-radius':'4px',padding: '30px','border-style': 'dashed', 'text-align' : 'center'}}, React.createElement("div", {style: {fontSize:'16px',color:'blue'}}, "'Drop some files here or click to select files to upload'")), 
-                this.state.files ? React.createElement("div", null, " ", this.state.files.map(function(file) { return  React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p", {style: {display:'inline'}}, file.name), React.createElement("button", {style: {'line-height':'1px'}, className: "btn btn-info", id: file.name, onClick: this.Close}, "x")))})) : null
+                    React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width':'2px','border-color':'#000','border-radius':'4px','border-style': 'dashed', 'text-align' : 'center','background-color':'azure'}}, React.createElement("div", {style: {fontSize:'16px',color:'black',margin:'5px'}}, "Click or Drop files here to upload")), 
+                    this.state.files ? React.createElement("div", null, " ", this.state.files.map(function(file) { return  React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p", {style: {display:'inline'}}, file.name), React.createElement("button", {style: {'line-height':'1px'}, className: "btn btn-info", id: file.name, onClick: this.Close}, "x")))})) : null
                 )
             )
         )
@@ -4208,6 +4229,21 @@ var Flair = React.createClass({displayName: "Flair",
                     this.setState({entityData:result})
             }.bind(this));
         }
+        /*$('#qtip').qtip({
+            content: "this is a qtip",
+            hide: 'unfocus',
+            position: {
+                viewport: $(window),
+                adjust: {
+                    method: 'shift',
+                },
+            target: [250, 250]
+            },
+            show: {
+               ready: true,
+               event: 'click'
+            }
+        })*/
     },
     render: function() {
         return (
@@ -4231,18 +4267,23 @@ var Flair = React.createClass({displayName: "Flair",
         )
         /*return (
             <Draggable>
-                <div>
+                <div style={{width:'400px'}}>
                     <div>
-                        <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.flairToolbarToggle} />
                         <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
                     </div>
-                    <div style={{height: '80vh', overflowY:'auto',width:'800px'}}>
+                    <div>
                         {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} /> : <div>Loading...</div>}
                     </div>
                     <div>
                         <Button onClick={this.props.flairToolbarToggle}>Done</Button>
                     </div>
                 </div>
+            </Draggable>
+        )
+        return (
+            <Draggable>
+            <div id="qtip">
+            </div>
             </Draggable>
         )*/
     },
