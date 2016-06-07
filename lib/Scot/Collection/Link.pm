@@ -96,6 +96,7 @@ sub get_total_appearances {
     my $self    = shift;
     my $entity  = shift;
     my $cursor  = $self->find({ entity_id => $entity->id });
+
     return $cursor->count;
 }
 
