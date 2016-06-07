@@ -10,6 +10,7 @@ use Scot::Collection::Alertgroup;
 
 $ENV{'scot_mode'}   = "testing";
 $ENV{'SCOT_AUTH_TYPE'}  = "Testing";
+$ENV{'scot_log_file'}   = "/var/log/scot/scot.test.log";
 print "Resetting test db...\n";
 system("mongo scot-testing <../../etc/database/reset.js 2>&1 > /dev/null");
 
@@ -143,6 +144,20 @@ $t->get_ok("/scot/api/v2/alert/$alert1_id/entry")
 $t->get_ok("/scot/api/v2/alertgroup" => {},
     "checking entry_count in alertgroup listing")
     ->status_is(200);
+
+$t->put_ok("/scot/api/v2/alertgroup/$alertgroup_id" => json =>
+    { status => 'closed' } 
+)->status_is(200)
+ ->json_is("/status" => "successfully updated");
+
+
+$t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
+    "Getting alerts in alertgroup")
+    ->status_is(200)
+    ->json_is('/totalRecordCount'   => 2)
+    ->json_is('/queryRecordCount'   => 2)
+    ->json_is('/records/0/status'   => 'closed')
+    ->json_is('/records/1/status'   => 'closed');
     
 # print Dumper($t->tx->res->json), "\n";
 done_testing();
