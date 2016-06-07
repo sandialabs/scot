@@ -7,13 +7,15 @@ use Scot::Env;
 use Data::Dumper;
 use v5.18;
 
-$ENV{'scot_mode'}   = "testing";
-$ENV{'SCOT_AUTH_TYPE'}   = "Testing";
+$ENV{'scot_mode'}       = "testing";
+$ENV{'SCOT_AUTH_TYPE'}  = "Testing";
+$ENV{'scot_log_file'}   = "/var/log/scot/scot.test.log";
 print "Resetting test db...\n";
 system("mongo scot-testing <../../etc/database/reset.js 2>&1 > /dev/null");
 
 
 my $env     = Scot::Env->new({
+    enrichment_configfile => '/home/tbruner/Scot-Internal-Modules/etc/enrichments.cfg',
 });
 
 ok(defined($env), "Env is defined");
@@ -40,6 +42,8 @@ while ( my $mod = $cursor->next ) {
     my $attr    = $mod->attribute;
     is ( ref($env->$attr), $class, "$attr was loaded correctly");
 }
+
+my $enrichers = $env->entity_enrichers;
 
 
 done_testing();
