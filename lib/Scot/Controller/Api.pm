@@ -843,6 +843,18 @@ sub update {
         }
     }
 
+    if ( ref($object) eq "Scot::Model::Alertgroup" ) {
+        # check if status is being updated.  If it is, apply the status
+        # change to all alerts in alertgroup.
+        $log->debug("updating an Alertgroup");
+        my $json    = $req_href->{request}->{json};
+        $log->debug("json is ",{filter=>\&Dumper, value=>$json});
+        if ( $json->{status} ) {
+            my $col = $mongo->collection('Alert');
+            $col->update_alert_status($object->id,$json->{status});
+        }
+    }
+
 
     if ( ref($object) eq "Scot::Model::Entry" ) {
         $self->do_task_checks($req_href);
@@ -1380,8 +1392,10 @@ sub delete {
             who     => $user,
         }
     });
+
     if ( ref($object) eq "Scot::Model::Entry" ) {
-        my $targetobj   = $mongo->collection(ucfirst($object->target->{type}));
+        my $targetcol   = $mongo->collection(ucfirst($object->target->{type}));
+        my $targetobj   = $targetcol->find_iid($object->target->{id});
         # this is preferable but, getting error so...
         #$targetobj->update({
         #    '$set'  => {
