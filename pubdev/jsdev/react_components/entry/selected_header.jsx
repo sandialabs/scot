@@ -412,10 +412,12 @@ var EntryDataStatus = React.createClass({
                 //prevent from working when in input
                 if ($('input').is(':focus')) {return};
                 //check for character "o" for 79 or "c" for 67
-                if (event.keyCode == 79) {
-                    this.statusAjax('open');
-                } else if (event.keyCode == 67) {
-                    this.statusAjax('closed');
+                if (this.state.buttonStatus != 'promoted') {
+                    if (event.keyCode == 79) {
+                        this.statusAjax('open');
+                    } else if (event.keyCode == 67) {
+                        this.statusAjax('closed');
+                    }
                 }
             }.bind(this))
         }
@@ -436,7 +438,8 @@ var EntryDataStatus = React.createClass({
         $.ajax({
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-            data: json,
+            data: JSON.stringify(json),
+            dataType: "json",
             success: function(data) {
                 console.log('success status change to: ' + data);
             }.bind(this),
@@ -485,7 +488,8 @@ var EntryDataSubject = React.createClass({
             $.ajax({
                 type: 'put',
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-                data: json,
+                data: JSON.stringify(json),
+                dataType: "json",
                 success: function(data) {
                     console.log('success: ' + data);
                     this.setState({updatedSubject: true});
