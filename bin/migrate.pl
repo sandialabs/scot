@@ -40,7 +40,7 @@ if ($colname eq "all") {
     foreach my $collection (@validcols) {
         next if ($collection eq "all");
         say " --- Migrating $collection --- ";
-        $mover->migrate($colname, $opts);
+        $mover->migrate($collection, $opts);
     }
     exit 0;
 }
