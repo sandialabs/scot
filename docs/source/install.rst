@@ -113,10 +113,10 @@ would begin migrating alerts from the 3.4 database using two processes.
 
 Best practice in migration is to open a terminal for each collection, start 
 tmux or screen, and then start the migration for a collection.  Extensive
-loggin is performed in /var/log/scot/migration.alert.log, where alert is
+logging is performed in /var/log/scot/migration.alert.log, where alert is
 the actual collection being migrated.  Pro tip: 'grep -i error /var/log/scot/migration*'
 
-The Migrate the following collections:
+The list of collections to migrate:
 
 # alertgroup
 # alert
