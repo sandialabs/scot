@@ -37,7 +37,7 @@ my $opts   = {
 };
 
 if ($colname eq "all") {
-    foreach $collection (@validcols) {
+    foreach my $collection (@validcols) {
         next if ($collection eq "all");
         say " --- Migrating $collection --- ";
         $mover->migrate($colname, $opts);
