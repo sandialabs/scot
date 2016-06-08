@@ -577,7 +577,6 @@ sub xform_alertgroup {
     $href->{open_count}     = $status{open} // 0;
     $href->{closed_count}   = $status{count} // 0;
     $href->{promoted_count} = $status{promoted} // 0;
-    use warnings qw(uninitialized);
 
     if ( $status{promoted} > 0 ) {
         $href->{status} = "promoted";
@@ -588,6 +587,7 @@ sub xform_alertgroup {
     else {
         $href->{status} = "closed";
     }
+    use warnings qw(uninitialized);
 
     $col->insert_one($href);
 
