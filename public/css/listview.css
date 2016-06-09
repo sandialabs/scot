@@ -15,7 +15,7 @@
   flex-wrap: no-wrap;
   -webkit-flex-wrap: no-wrap;
   width: 100%;
-  padding-left: 15px;
+  padding-left: 0px;
   padding-right: 15px;
 }
 .wrapper {
@@ -99,6 +99,11 @@
   text-align: left;
   padding-right: 4px;
 }
+.allevents > .rowodd:nth-child(odd){
+    background: #E6E6E6;
+}
+
+
 /* growable wrappers */
 .title-comment,
 .title-comment-module-reporter,
@@ -138,7 +143,7 @@
 }
 
 
-@media all and (min-width: 650px){
+@media all and (min-width: 500px){
   
   .dates-small {
     flex-direction: column;
@@ -164,7 +169,6 @@
     flex-grow: 0;
     -webkit-flex-grow: 0;
   }
-
 }
 
 
@@ -216,30 +220,53 @@
     width: 100%;
   }  
 }
-
-@media all and (max-width:500px) {
-  .table-row {
+  .dates-orgclass {
+    flex-direction: column;
+    -webkit-flex-direction: column;
+  }
+  .dates-orglcass div {
+    flex-grow: 0;
+    -webkit-flex-grow: 0;
+  }
+   .status-owner-orgclass {
+    flex-direction: column;
+    -webkit-flex-direction: column;
+  }
+  .status-owner-orgclass div {
+    flex-grow: 0;
+    -webkit-flex-grow: 0;
+  }
+  .module-reporter-orgclass {
+    flex-direction: column;
+    -webkit-flex-direction: column;
+  }
+  .module-reporter-orgclass div {
+    flex-grow: 0;
+    -webkit-flex-grow: 0;
+  }
+  .table-row-smallclass {
     padding-left: 4px;
     padding-right: 4px;
   }
-  .attributes {
+  .attributes-smallclass {
     flex-direction: column;
     -webkit-flex-direction: column;
     width: 10px;
   }
-  .attributes div {
+  .attributes-smallclass div {
     flex-grow: 0;
     -webkit-flex-grow: 0;
   }
-  .attributes > div {
+  .attributes-smallclass > div {
     width: 100%;
   }
-  .module-reporter,
-  .status-owner {
+  .module-reporter-smallclass,
+  .status-owner-smallclass {
     flex-direction: row;
     -webkit-flex-direction: row;
   }
-}
+
+
 /*
  * General good-look styles
  */
