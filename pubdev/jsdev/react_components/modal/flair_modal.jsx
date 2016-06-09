@@ -8,7 +8,7 @@ var DataGrid                = require('events-react-datagrid/react-datagrid');
 var Inspector               = require('react-inspector');
 var SelectedEntry           = require('../entry/selected_entry.jsx');
 var AddEntryModal           = require('./add_entry.jsx');
-
+var Draggable               = require('react-draggable');
 const customStyles = {
     content : {
         top     : '50%',
@@ -41,6 +41,21 @@ var Flair = React.createClass({
                     this.setState({entityData:result})
             }.bind(this));
         }
+        /*$('#qtip').qtip({
+            content: "this is a qtip",
+            hide: 'unfocus',
+            position: {
+                viewport: $(window),
+                adjust: {
+                    method: 'shift',
+                },
+            target: [250, 250]
+            },
+            show: {
+               ready: true,
+               event: 'click'
+            }
+        })*/
     },
     render: function() {
         return (
@@ -62,6 +77,27 @@ var Flair = React.createClass({
                 </Modal>
             </div>
         )
+        /*return (
+            <Draggable>
+                <div style={{width:'400px'}}>
+                    <div>
+                        <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
+                    </div>
+                    <div>
+                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} /> : <div>Loading...</div>}
+                    </div>
+                    <div>
+                        <Button onClick={this.props.flairToolbarToggle}>Done</Button>
+                    </div>
+                </div>
+            </Draggable>
+        )
+        return (
+            <Draggable>
+            <div id="qtip">
+            </div>
+            </Draggable>
+        )*/
     },
     
 });
@@ -185,7 +221,7 @@ var EntityEventReferences = React.createClass({
         window.open('#/'+this.state.navigateType+'/'+this.state.navigateId);
     },
     render: function() {
-        const rowFact = (rowProps) => {
+        const rowFact = function(rowProps) {
             rowProps.onDoubleClick = this.viewId;
         }
         var columns = [

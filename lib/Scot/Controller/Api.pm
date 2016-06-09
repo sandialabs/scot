@@ -531,49 +531,70 @@ sub check_entity_enrichments {
     my $log     = $env->log;
     my $data    = {};
     my $changes = 0;
-    my $enrichers   = $env->entity_enrichers;
+    my $enrichers   = $env->entity_enrichers; # href
     my $timer   = $env->get_timer("checking entity enrichments");
 
-    ENRICHER:
-    foreach my $enricher (@$enrichers) {
-        my ($name, $instance) = each %$enricher;
+    my $entity_value    = $entity->value;
+    my $entity_type     = $entity->type;
 
-        $log->debug("Checking Enricher $name");
+    $log->trace("Checking enrichements for $entity_value of type $entity_type");
 
-        if ( $entity->type ne "domain" and $entity->type ne "ipaddr" and
-             $name eq "sidd" ) {
-            $log->debug("no applicable");
-            next ENRICHER;
+    my $enricher_names  = $enrichers->{types}->{$entity_type};
+
+    $log->trace("Enrichments available = ",{filter=>\&Dumper,value=>$enricher_names});
+
+    ENAME:
+    foreach my $ename (@$enricher_names) {
+        my $ehref   = $enrichers->{modules}->{$ename};
+        unless ($ehref) {
+            $log->error("Enrichment of type $ename does not exist!");
+            next ENAME;
         }
+        $log->trace("Enrichment $ename type ".$ehref->{type});
 
-        if ( $entity->type ne "ipaddr" and $name eq "geoip" ) {
-            $log->debug("no applicable");
-            next ENRICHER;
-        }
-
-        if (defined $entity->data->{$name} and %{$entity->data->{$name}} ) {
-            $log->debug("Enrichment $name is cached...");
-            $data->{$name} = $entity->data->{$name};
-        }
-        else {
-            unless ( ref($instance) ) {
-                $log->error("$name enricher is unblessed!");
+        if ( $ehref->{type} eq 'native' ) {
+            if ( defined $entity->data->{$ename} ) {
+                $log->debug("Enrichment $ename is cached...");
             }
             else {
-                $log->debug("Missing enrichment $name, fetching...");
-                my $type    = $entity->type;
-                my $value   = $entity->value;
-                my $edata   = $instance->get_data($type, $value);
+                $log->debug("Fetching enrichment...");
+                my $emodule = $ehref->{module};
+                my $edata   = $emodule->get_data($entity->type,$entity->value); 
                 if ( $edata ) {
-                    $data->{$name} = $edata;
+                    $data->{$ename} = {
+                        data    => $edata,
+                        type    => 'data',
+                    };
                 }
                 else {
-                    $data->{$name} = { error => 'no data' };
+                    $data->{$ename} = { 
+                        type    => 'error',
+                        data    => 'no data' };
                 }
                 $changes++;
             }
         }
+        elsif ( $ehref->{type} =~ /link/ ) {
+            $log->debug("Link enrichment found");
+            unless ( $data->{$ename} ) {
+                $data->{$ename} = {
+                    type    => 'link',
+                    data    => {
+                        url     => sprintf($ehref->{url}, $entity_value),
+                        title   => $ehref->{title},
+                    }
+                };
+                $changes++;
+            }
+        }
+        else {
+            $log->error("Unsupported type $entity_type");
+            next ENAME;
+        }
     }
+
+    $log->debug("Data is ",{filter=>\&Dumper, value => $data});
+
     if ( $changes > 0 ) {
         $log->debug("updating cache of entity enrichments");
         $entity->update_set( data => $data );
@@ -688,20 +709,33 @@ sub get_subthing {
         my %things  = ();
         my $count   = $cursor->count();
         my $entity_xform_timer = $env->get_timer("entity xform timer");
+        my $gec_total   = 0;
+        my $enc_total   = 0;
 
         while ( my $entity = $cursor->next ) {
 
             $log->debug("Entity : ".$entity->value);
             $self->check_entity_enrichments($entity);
+            my $gec_timer   = $env->get_timer("GEC");
+            my $count = $self->get_entity_count($entity);
+            $gec_total += &$gec_timer;
+            my $entrytimer  = $env->get_timer("EnC");
+            my $entrycount  = $self->get_entry_count($entity);
+            $enc_total  += &$entrytimer;
+
             $things{$entity->value} = {
                 id      => $entity->id,
-                count   => $self->get_entity_count($entity),
+                count   => $count,
                 entry   => $self->get_entry_count($entity),
                 type    => $entity->type,
                 classes => $entity->classes,
                 data    => $entity->data,
             };
         }
+
+        $log->debug("Getting Entity Count total: $gec_total");
+        $log->debug("Getting Entry Count total: $enc_total");
+
         &$entity_xform_timer;
         $log->debug("rendering subthing");
         $self->do_render({
@@ -840,6 +874,18 @@ sub update {
         }
         else {
             $log->trace("No ownership change detected");
+        }
+    }
+
+    if ( ref($object) eq "Scot::Model::Alertgroup" ) {
+        # check if status is being updated.  If it is, apply the status
+        # change to all alerts in alertgroup.
+        $log->debug("updating an Alertgroup");
+        my $json    = $req_href->{request}->{json};
+        $log->debug("json is ",{filter=>\&Dumper, value=>$json});
+        if ( $json->{status} ) {
+            my $col = $mongo->collection('Alert');
+            $col->update_alert_status($object->id,$json->{status});
         }
     }
 
@@ -1380,8 +1426,10 @@ sub delete {
             who     => $user,
         }
     });
+
     if ( ref($object) eq "Scot::Model::Entry" ) {
-        my $targetobj   = $mongo->collection(ucfirst($object->target->{type}));
+        my $targetcol   = $mongo->collection(ucfirst($object->target->{type}));
+        my $targetobj   = $targetcol->find_iid($object->target->{id});
         # this is preferable but, getting error so...
         #$targetobj->update({
         #    '$set'  => {
@@ -2321,7 +2369,10 @@ sub get_entity_count {
     my $env     = $self->env;
     my $mongo   = $env->mongo;
     my $col     = $mongo->collection('Link');
-    return $col->get_total_appearances($entity);
+    my $timer   = $env->get_timer("get_entity_count");
+    my $count   = $col->get_total_appearances($entity);
+    &$timer;
+    return $count;
 }
 
 sub get_entry_count {
@@ -2330,11 +2381,13 @@ sub get_entry_count {
     my $value   = $entity->value;
     my $env     = $self->env;
     my $mongo   = $env->mongo;
+    my $timer   = $env->get_timer("get_entry_count");
     my $col     = $mongo->collection('Entry');
     my $cursor  = $col->get_entries(
         target_id   => $entity->id,
         target_type => "entity",
     );
+    &$timer;
     return $cursor->count;
 }
 

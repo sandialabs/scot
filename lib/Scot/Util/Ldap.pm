@@ -191,7 +191,7 @@ sub get_users_groups {
     );
 
     my $membership  = $search->pop_entry();
-    $log->debug("Membership = ",{filter=>\&Dumper, value=>$membership});
+    # $log->debug("Membership = ",{filter=>\&Dumper, value=>$membership});
     if(defined($membership)) {    
         $log->debug("membership returned");
         foreach my $attr ( $membership->attributes() ) {

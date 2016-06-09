@@ -14,6 +14,7 @@ use Log::Log4perl::Appender;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Module::Runtime qw(require_module compose_module_name);
 use Data::Dumper;
+use Safe;
 
 use Meerkat;
 use MooseX::Singleton;
@@ -135,9 +136,16 @@ sub _get_default_groups {
     }
 }
 
+has enrichment_configfile   => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => '/opt/scot/etc/enrichments.cfg',
+);
+
 has entity_enrichers    => (
     is                  => 'rw',
-    isa                 => 'ArrayRef',
+    isa                 => 'HashRef',
     required            => 1,
     lazy                => 1,
     builder             => '_get_entity_enrichers',
@@ -146,34 +154,56 @@ has entity_enrichers    => (
 
 sub _get_entity_enrichers {
     my $self    = shift;
-    my $mongo   = $self->mongo;
-    my $item    = $mongo->collection('Config')->find_one({
-        module  => 'entity_enrichers',
-    });
-    my @enrichers   = ();
-    if ( $item ) {
-        foreach my $href (@{$item->item->{list}}) {
-            my ($name, $data)   = each %$href;
-            my $type            = $data->{type};
-            my $module          = $data->{module};
-            my $config          = $data->{config};
+    my $log     = $self->log;
+    my $cfgfile = $self->enrichment_configfile;
 
-            if ( $type eq "native" ) {
-                require_module($module);
-                my $init    = {
-                    log     => $self->log,
-                };
-                if ( defined $config ) {
-                    $init->{config} = $config;
-                }
-                push @enrichers, { $name => $module->new($init) };
+    $log->trace("loading $cfgfile");
+
+    unless ( $cfgfile ) {
+        $log->error("Enrichment Configuration File not SET!");
+        return {};
+    }
+    unless ( -e $cfgfile ) {
+        $log->error("Enrichemt Configuration File not FOUND!");
+        return {};
+    }
+
+    my $c       = new Safe 'CONFIG';
+    my $r       = $c->rdo($cfgfile);
+    my $config  = \%CONFIG::enrichments;
+
+    my $enrichers   = {
+        types   => $config->{mappings},
+    };
+
+    foreach my $name (keys %{ $config->{configs} }) {
+        
+        my $href    = $config->{configs}->{$name};
+        my $type    = $href->{type};
+        my $module  = $href->{module};
+        my $config  = $href->{config};
+
+        if ( $type eq "native" ) {
+            require_module($module);
+            my $init    = {
+                log     => $self->log,
+            };
+            if ( defined $config ) {
+                $init->{config} = $config;
             }
-            else {
-                $self->log->warn("no support for webservice yet");
-            }
+            $enrichers->{modules}->{$name} = {
+                type    => $type,
+                module  => $module->new($init),
+            };
+        }
+        elsif ( $type =~ /link/ ) {
+            $enrichers->{modules}->{$name} = $href;
+        }
+        else {
+            $self->log->warn("no support for webservice yet");
         }
     }
-    return \@enrichers;
+    return $enrichers;
 }
 
 has admin_group => (
