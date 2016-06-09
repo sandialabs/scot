@@ -283,7 +283,7 @@ sub update_last_id {
         return;
     }
 
-    my $max = $object->id;
+    my $max = $object->{id};
     $ncol->update_one({for_collection => $type}, { '$set' => { last_id => $max }});
 }
 
