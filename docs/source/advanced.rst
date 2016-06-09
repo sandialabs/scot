@@ -1,7 +1,13 @@
-Advanced Alert Parsing
+Advanced Topics
 ======================
 
-The alert parsing system for SCOT grew organically. In other words, we are planning on turning our attention to improving it soon!  This document will help you understand how alert parsing via email works currently and how to modify, extend, or create new parsers for the email alerts you receive.
+Alert Parsing
+-------------
+
+REST or Email
+^^^^^^^^^^^^^
+
+SCOT can receive alerts via e-mail or by POST to the REST API.
 
 Why E-mail
 ^^^^^^^^^^
@@ -11,48 +17,30 @@ Detections systems offer a wide variety of ways to notify something when a they 
 Getting your Hands Dirty
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Writing new parsers will require some programming work on your part.  If you are comfortable with Perl, you will have an easier time of it.  Ruby, Python, et al. programmers should be able to extrapolate the concepts in the provided modules to develop there own alert input system utilizing the JSON web api.
+Writing new parsers will require some programming work on your part.  Ruby, Python, et al. programmers should be able to extrapolate the concepts in the provided modules to develop there own alert input system utilizing the JSON web api.
 
-Example: "alert_tool.pl"
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-The program $SCOT/bin/alert_tool.pl is a quickly written (don't judge us!) sample program that demonstrates how to write something to insert alerts via the JSON API.  Similar programs can be written in a variety of languages, so knock your self out!
-
-The conceptual flow of any such program is as follows:
-
-#. retrieve alert email ( or data from other means )
-
-#. parse data and populate JSON 
-
-#. POST json to SCOT
 
 Alert JSON 
 ^^^^^^^^^^
 
 So this is what you need to POST to create an alertgroup with alerts.::
 
-    {
-        "sources": [ "source1", "source2_if_you_have_multiple" ],
-        "subject": "The important alert title goes here",
-        "tags"   : [ "tag1", "tag2", "and_so_on" ],
-        "readgroups": [ "groups_if_you_want_to_chang_defaults" ],
-        "modifygroups": [ "groups_if_you_want_to_chang_defaults" ],
-        "data": [
-            {
-                "key1" : "data1",
-                "key2" : "data2",
-            },
-            {
-                "key1" : "data3",
-                "key2" : "data4",
-            }
-        ]
-    }
+      {
+            message_id  => '112233445566778899aabbccddeeff',
+            subject     => 'test message 1',
+            data        => [
+                { foo   => 1,   bar => 2 },
+                { foo   => 3,   bar => 4 },
+            ],
+            tag     => [qw(test testing)],
+            source  => [qw(todd scot)],
+            columns  => [qw(foo bar) ],
+      }
 
 Working with the Perl Parsers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The perl alert parsing modules are located in the $SCOT/lib/Scot/Bot/Parser directory.  They are descendents of the $SCOT/lib/Scot/Bot/Parser.pm class.  The following parsers are included:
+The perl alert parsing modules are located in the /opt/scot/lib/Scot/Parser directory.  They are descendents of the /opt/scot/lib/Scot/Parser.pm class.  The following parsers are included:
  
 .. glossary::
 
@@ -67,14 +55,9 @@ The perl alert parsing modules are located in the $SCOT/lib/Scot/Bot/Parser dire
 
     Splunk.pm
         Splunk can output messages in a variety of formats.  You will want to select HTML, as this parser relies on the HTML table layout of the these messages.  
-
     Generic.pm
         This parser will take the email, convert it to plain text and insert the results into an Alert as a single object. 
 
-Future Alert Parsing Direction
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-In upcoming releases of SCOT, we will be revamping the alert input system to make it more flexible and to allow for the easier creation of parsers in a variety of languages.
 
 Entities, IOC, and Flair
 ========================
