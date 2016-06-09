@@ -67,6 +67,7 @@ to entry to aid the analysts.
 Entries are "owned" by the creator of the entry, but may be edited by anyone
 in the modify group.  Any entry can be "promoted" to Summary status and will
 appear at the top of the detail page.  Entries may also be designated as a "Task."  
+
 Task
 ----
 
@@ -101,10 +102,8 @@ Entity are available, and others that you can implement.
 Intel
 -----
 
-Often, IRTs receive information about threats, reports from other entities, and
-other general information that can be thought of as Intel.  Storing these items
-within SCOT allows SCOT to detect entities, flair them, and cross reference these
-entities in existing and future Alerts and Entries.  
+Often, IRTs receive information about threats, reports from other entities, and other general information that can be thought of as Intel.  Storing these items
+within SCOT allows SCOT to detect entities, flair them, and cross reference these entities in existing and future Alerts and Entries.  
 
 
 
