@@ -9,7 +9,7 @@ use Scot::Collection;
 use Scot::Collection::Alertgroup;
 
 $ENV{'scot_mode'}   = "testing";
-$ENV{'SCOT_AUTH_MODE'}   = "Testing";
+$ENV{'SCOT_AUTH_TYPE'}   = "Testing";
 print "Resetting test db...\n";
 system("mongo scot-testing <../../etc/database/reset.js 2>&1 > /dev/null");
 

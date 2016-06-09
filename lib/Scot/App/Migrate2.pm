@@ -572,6 +572,7 @@ sub xform_alertgroup {
         $newalertcol->insert_one($alert);
     }
 
+    no warnings qw(uninitialized);
     $href->{alert_count}    = $alert_count;
     $href->{open_count}     = $status{open} // 0;
     $href->{closed_count}   = $status{count} // 0;
@@ -586,6 +587,7 @@ sub xform_alertgroup {
     else {
         $href->{status} = "closed";
     }
+    use warnings qw(uninitialized);
 
     $col->insert_one($href);
 
@@ -636,6 +638,17 @@ sub xform_entry {
     my @history = map {
         { entry => $id, history => $_ }
     } @{ delete $href->{history} //[] };
+
+    my $ttype   = $href->{target}->{type};
+    my $target_col = 
+        $self->legacydb->get_collection($href->{target}->{type}.'s');
+    my $target_obj =
+        $target_col->find_one({$ttype.'_id' => $href->{target}->{id}});
+    if ( $target_obj ) {
+        if ( $target_obj->summary_entry_id ) {
+            $href->{summary} = 1;
+        }
+    }
 
     $col->insert_one($href);
     my   @links;
