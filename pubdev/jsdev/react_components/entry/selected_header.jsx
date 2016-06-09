@@ -373,7 +373,7 @@ var SelectedHeader = React.createClass({
                     </div>
                 </div>
                 <Notification ref="notificationSystem" /> 
-                {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue}/> : null}
+                {this.state.flairToolbar ? <Flair key={this.state.entityid} flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null} 
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData} flairToolbarToggle={this.flairToolbarToggle} /> : null}
@@ -406,15 +406,21 @@ var EntryDataStatus = React.createClass({
         }
     },
     componentDidMount: function() {
-        //Adds open/close hot keys for events/incidents/intel
-        /*$(document.body).keydown(function(event){
-            //check for character "o" for 79 or "c" for 67
-            if (event.keyCode == 79) {
-                this.statusAjax('open');
-            } else if (event.keyCode == 67) {
-                this.statusAjax('closed');
-            }
-        }.bind(this))*/
+        //Adds open/close hot keys for alertgroup
+        if (this.props.type == 'alertgroup') {
+            $(document.body).keydown(function(event){
+                //prevent from working when in input
+                if ($('input').is(':focus')) {return};
+                //check for character "o" for 79 or "c" for 67
+                if (this.state.buttonStatus != 'promoted') {
+                    if (event.keyCode == 79) {
+                        this.statusAjax('open');
+                    } else if (event.keyCode == 67) {
+                        this.statusAjax('closed');
+                    }
+                }
+            }.bind(this))
+        }
     },
     componentWillReceiveProps: function() {
         this.setState({buttonStatus:this.props.data.status});
@@ -432,7 +438,8 @@ var EntryDataStatus = React.createClass({
         $.ajax({
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-            data: json,
+            data: JSON.stringify(json),
+            dataType: "json",
             success: function(data) {
                 console.log('success status change to: ' + data);
             }.bind(this),
@@ -443,34 +450,19 @@ var EntryDataStatus = React.createClass({
     },
     render: function() { 
         var buttonStyle = '';
-        var open = '';
-        var closed = '';
-        var promoted = '';
         if (this.state.buttonStatus == 'open') {
             buttonStyle = 'danger'; 
         } else if (this.state.buttonStatus == 'closed') {
             buttonStyle = 'success';
         } else if (this.state.buttonStatus == 'promoted') {
             buttonStyle = 'warning'
-        };
-        if (this.props.type == 'alertgroup') {
-            open = this.props.data.open_count;
-            closed = this.props.data.closed_count;
-            promoted = this.props.data.promoted_count;
-        }
+        }; 
         if (this.props.type == 'guide') {
             return(<div/>)
         } else {
             return (
                 <div>
-                    {this.props.type == 'alertgroup' ? <ButtonToolbar>
-                        <OverlayTrigger trigger='hover' placement='bottom' overlay={<Popover id={this.props.id}>open/closed/promoted alerts</Popover>}>
-                            <Button bsSize='xsmall'>
-                                <span className='alertgroup'>
-                                    <span className='alertgroup_open'>{open}</span> / <span className='alertgroup_closed'>{closed}</span> / <span className='alertgroup_promoted'>{promoted}</span>
-                                </span>
-                            </Button>
-                        </OverlayTrigger></ButtonToolbar> : <Button bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: '14pt', width: '100%', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button > }
+                    <Button bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: '14pt', width: '100%', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button>
                 </div>
             )
         }
@@ -496,7 +488,8 @@ var EntryDataSubject = React.createClass({
             $.ajax({
                 type: 'put',
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-                data: json,
+                data: JSON.stringify(json),
+                dataType: "json",
                 success: function(data) {
                     console.log('success: ' + data);
                     this.setState({updatedSubject: true});

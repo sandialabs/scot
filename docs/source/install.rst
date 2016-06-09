@@ -113,10 +113,10 @@ would begin migrating alerts from the 3.4 database using two processes.
 
 Best practice in migration is to open a terminal for each collection, start 
 tmux or screen, and then start the migration for a collection.  Extensive
-loggin is performed in /var/log/scot/migration.alert.log, where alert is
+logging is performed in /var/log/scot/migration.alert.log, where alert is
 the actual collection being migrated.  Pro tip: 'grep -i error /var/log/scot/migration*'
 
-The Migrate the following collections:
+The list of collections to migrate:
 
 # alertgroup
 # alert
@@ -127,6 +127,39 @@ The Migrate the following collections:
 # handler
 # user
 # file
+
+If you wish for totally hands off operation, do the following::
+  
+   $ cd /opt/scot/bin
+   $ ./migrate.pl all
+
+This will sequentially migrate the collections listed above.  The migration
+will take a bit longer, though.
+
+NOTE:  Migration assumes that the database to be migrated is on the same
+database server as the new server.  So in other words, if you are installing 
+SCOT 3.5 on a new system, and want to migrate your database to that server,
+you will need to use the mongodump and mongorestore to move the old database
+to the new server first.
+
+Example Migration::
+
+   $ ssh oldscot
+   oldscot:/home/scot> mongodump scotng-prod
+   ...
+   oldscot:/home/scot> tar czvf ./scotng-prod.tgz ./dump
+   ...
+   oldscot:/home/scot> scp scotng-prod.tgz scot@newscot:/home/scot
+   ...
+   oldscot:/home/scot> exit
+   $ ssh newscot
+   newscot:/home/scot> tar xzvf ./scotng-prod.tgz
+   ...
+   newscot:/home/scot> mongorestore --db scotng-prod ./dump/scotng-prod
+   ...
+   newscot:/home/scot> cd /opt/scot/bin
+   newscot:/opt/scot/bin> ./migrate.pl all
+
 
 
 Uninstallation
