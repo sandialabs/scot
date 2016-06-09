@@ -7537,6 +7537,7 @@ module.exports = React.createClass({displayName: "exports",
 
                          React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
                          React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))),
+            Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,
         React.createElement('div', {className: 'incidentwidth', style: {display:this.state.display}},
             React.createElement('div', {id:'list-view', style: {width: this.state.differentviews}},  
             React.createElement('div', {className: 'tableview', style:{display: 'flex'}},
