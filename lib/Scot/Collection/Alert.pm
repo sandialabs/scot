@@ -152,5 +152,28 @@ override get_subthing => sub {
     }
 };
 
+sub update_alert_status {
+    my $self    = shift;
+    my $id      = shift;
+    my $status  = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    unless ( grep { /$status/ } (qw(open closed promoted)) ) {
+        $log->error("Invalid Alert Status set attempt: $status");
+        return;
+    }
+
+    my $cur = $self->find({ alertgroup  => $id + 0 });
+
+    unless ( $cur ) {
+        $log->error("failed to find any alerts for alertgroup $id");
+        return;
+    }
+
+    while ( my $alert = $cur->next ) {
+        $alert->update_set( status => $status );
+    }
+}
 
 1;

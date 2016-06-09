@@ -52,6 +52,32 @@ var AddFlair = {
                                                         $(entity).append(flag);
                                                     }
                                                 }
+                                                if (entitydata.sidd != undefined) {
+                                                    if (entitydata.sidd.blocklist != undefined) {
+                                                        if (entitydata.sidd.blocklist.action != undefined) {
+                                                            if (entitydata.sidd.blocklist.action.firewall != false) {
+                                                                $(entity).append($('<img>').attr('src', '/images/flair/firewalled.png'));    
+                                                            }
+                                                            if (entitydata.sidd.blocklist.action.watch != false) {
+                                                                $(entity).append($('<img>').attr('src', '/images/flair/watch.png'));
+                                                            }
+                                                            if (entitydata.sidd.blocklist.action.whitelist != false) {
+                                                                $(entity).append($('<img>').attr('src', '/images/flair/white_list.jpg'));
+                                                            }
+                                                            if (entitydata.sidd.blocklist.action.blackhole != false) {
+                                                                $(entity).append($('<img>').attr('src', '/images/flair/blackholed.png'));;
+                                                            }
+                                                            if (entitydata.sidd.blocklist.action.proxy_block != false) {
+                                                                $(entity).append($('<img>').attr('src', '/images/flair/blocked.png'));
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                if (entitydata.entry != undefined) {
+                                                    if (entitydata.entry != 0) {
+                                                        $(entity).append($('<img>').attr('src', '/flair/note.gif'));
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -99,6 +125,32 @@ var AddFlair = {
                                             $(entity).append(flag);
                                         }
                                     }
+                                    if (entitydata.sidd != undefined) {
+                                        if (entitydata.sidd.blocklist != undefined) {
+                                            if (entitydata.sidd.blocklist.action != undefined) {
+                                                if (entitydata.sidd.blocklist.action.firewall != false) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/firewalled.png'));    
+                                                }
+                                                if (entitydata.sidd.blocklist.action.watch != false) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/watch.png'));
+                                                }
+                                                if (entitydata.sidd.blocklist.action.whitelist != false) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/white_list.jpg'));
+                                                }
+                                                if (entitydata.sidd.blocklist.action.blackhole != false) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/blackholed.png'));
+                                                }
+                                                if (entitydata.sidd.blocklist.action.proxy_block != false) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/blocked.png'));
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (entitydata.entry != undefined) {
+                                        if (entitydata.entry != 0) {
+                                            $(entity).append($('<img>').attr('src', '/flair/note.gif'));
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -132,15 +184,15 @@ var Watcher = {
                 }.bind(this))
             }.bind(this))
         } else {
-            $('.alert-wrapper').find('table').find('tbody').find('tr').not('.not_selectable').each(function(index,tr) {
+            $('.alert-wrapper').find('a, .entity').not('.not_selectable').each(function(index,tr) {
                 $(tr).hover( function() {
                     var intervalID = setInterval(checkFlairHover, 100, null, flairToolbarToggle,type,linkWarningToggle,id);
                     $(tr).data('intervalID', intervalID);
-                    console.log('Now watching tr ' + intervalID);
+                    console.log('Now watching item ' + intervalID);
                 }, function() {
                     var intervalID = $(tr).data('intervalID');
                     window.clearInterval(intervalID);
-                    console.log('No longer watching tr ' + intervalID);
+                    console.log('No longer watching item ' + intervalID);
                 }).bind(this);
             }).bind(this)
         }

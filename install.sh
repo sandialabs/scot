@@ -261,7 +261,7 @@ EOF
             add-apt-repository -y ppa:maxmind/ppa
         fi
 
-        if [[ ! -e /etc/apt/scources.list.d/elasticsearch-2.x.list ]]; then
+        if [[ ! -e /etc/apt/sources.list.d/elasticsearch-2.x.list ]]; then
             wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 
             echo "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-2.x.list
