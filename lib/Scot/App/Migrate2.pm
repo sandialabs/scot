@@ -640,12 +640,13 @@ sub xform_entry {
     } @{ delete $href->{history} //[] };
 
     my $ttype   = $href->{target}->{type};
+
     my $target_col = 
         $self->legacydb->get_collection($href->{target}->{type}.'s');
     my $target_obj =
         $target_col->find_one({$ttype.'_id' => $href->{target}->{id}});
     if ( $target_obj ) {
-        if ( $target_obj->summary_entry_id ) {
+        if ( $target_obj->{summary_entry_id} ) {
             $href->{summary} = 1;
         }
     }
