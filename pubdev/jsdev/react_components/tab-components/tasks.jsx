@@ -7,11 +7,15 @@ var Search                  = require('../components/esearch.jsx')
 var Store                   = require('../activemq/store.jsx')
 var Page                    = require('../components/paging.jsx')
 var Popover                 = require('react-bootstrap/lib/Popover')
+var SplitButton             = require('react-bootstrap/lib/SplitButton.js');
 var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger')
 var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar')
 var DateRangePicker         = require('../../../node_modules/react-daterange-picker')
 var Source                  = require('react-tag-input-tags/react-tag-input').WithContext
 var Tags                    = require('react-tag-input').WithContext
+var Button                  = require('react-bootstrap/lib/Button.js');
+var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
+var size = 450
 var toggle
 var scrolled = 43
 var SORT_INFO;
@@ -45,19 +49,29 @@ module.exports = React.createClass({
 
     getInitialState: function(){
         var scrollHeight = $(window).height() - 170
-        var scrollWidth  = '650px'
-        width = 650
+        var scrollWidth  = '450px'
+        width = 450
 
     return {
-            mute: false, upstartepoch: '', upendepoch: '',white: 'white', blue: '#AEDAFF',
+            resize: 'horizontal', mute: false, pagedisplay: 'inline-flex', 
+            display: 'flex', upstartepoch: '', upendepoch: '',white: 'white', blue: '#AEDAFF',
             idtext: '', totalcount: 0, activepage: 0,
+            sizearray: ['dates-small', 'status-owner-small', 'module-reporter-small'],
+            idarrow: [-1,-1], typearrow: [0, 0], statusarrow: [0, 0],
+            updatedarrow:[0, 0],ownerarrow: [0, 0], entriesarrow: [0, 0],
             entry: 0, type: '', statustext: '', idsarray: [],
             ownertext: '', typetext: '', entriestext: '', scrollheight: scrollHeight,
             scrollwidth: scrollWidth, reload: false,
+            classname: [' ', ' ',' ', ' '],
             objectarray:[], csv:true};
     },
     componentDidMount: function(){
         toggle  = $('#list-view').find('.tableview')
+        $('.toggleview').hide()
+        var t2 = document.getElementById('fluid2')
+        $(t2).resize(function(){
+            this.reloadItem()
+        }.bind(this))
         $('.container-fluid2').keydown(function(e){
             var obj = $(toggle[0]).find('#'+colorrow[0]).prev('.allevents')
             var obj2 = $(toggle[0]).find('#'+colorrow[0]).next('.allevents')
@@ -87,12 +101,16 @@ module.exports = React.createClass({
             }
         }.bind(this)) 
         
-        
+        var height = this.state.scrollheight 
         var array = []
         if(this.props.ids !== undefined){
             if(this.props.ids.length > 0){
                 array = this.props.ids
                 stage = true
+                scrolled = $('.container-fluid2').scrollTop()
+                if(this.state.display == 'block'){
+                    height = '300px'
+                }
                 }
           }
         var finalarray = [];
@@ -123,8 +141,14 @@ module.exports = React.createClass({
                         finalarray[key][num] = item
                     }
         })
+            if(key %2 == 0){
+                finalarray[key]["classname"] = 'table-row roweven'
+            }
+            else {
+                finalarray[key]["classname"] = 'table-row rowodd'
+            }
         })
-        this.setState({idsarray: array, objectarray: finalarray,totalcount: response.totalRecordCount})
+        this.setState({scrollheight: height, idsarray: array, objectarray: finalarray,totalcount: response.totalRecordCount})
         }.bind(this))
     },
 
@@ -151,17 +175,49 @@ module.exports = React.createClass({
         this.getNewData({page:defaultpage , limit: pageSize})
     },
     reloadItem: function(){
+       /*
+       console.log($('.container-fluid2').width())
+        if($('.container-fluid2').width() == 100){
+            $('.paging').css('display', 'none')
+        }
+        */
+        var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
-        width = width + 40
-        $('.container-fluid2').css('height', height)
-        $('.container-fluid2').css('max-height', height)
-        $('.container-fluid2').css('max-width', '915px')
-        $('.container-fluid2').css('width', width)
+        width = $(t2).width()
+        if(this.state.display == 'flex'){
+            $('.container-fluid2').css('height', height)
+            $('.container-fluid2').css('max-height', height)
+            //$('.container-fluid2').css('max-width', '915px')
+            //$('.container-fluid2').css('width', width)
+            if(width < size){
+                var array = []
+                array =  ['table-row-smallclass', 'attributes-smallclass','module-reporter-smallclass', 'status-owner-smallclass']
+
+                $('.paging').css('width', width)
+                $('.paging').css('overflow-x','auto')
+                 this.setState({classname: array})
+           }
+            else {
+                size = 645
+                var array = []
+                var classname = [' ', ' ', ' ', ' ']
+                array = ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass']
+                $('.paging').css('width', width)
+                this.setState({scrollwidth: '650px', sizearray: array, classname:classname})
+               }
+        }
+        else {
+            $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
+            $('.container-fluid2').css('width', '100%')
+        }
     },
 
     launchEvent: function(array,entryid,tasktype){
         stage = true
-        this.setState({idsarray:array, type: tasktype, entry: entryid})
+        if(this.state.display == 'block'){
+            this.state.scrollheight = '300px'
+        }
+        this.setState({scrollheight: this.state.scrollheight, idsarray:array, type: tasktype, entry: entryid})
 
     },
     clearNote: function(){
@@ -200,81 +256,109 @@ module.exports = React.createClass({
                         React.createElement('h2', {style: {'font-size': '30px'}}, 'Task')),
                         React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}},
                         React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')),
-                        React.createElement(Search, null)), React.createElement('btn-group', {style: {'padding-left': '0px'}},
+                        React.createElement(Search, null)), 
+
+                        React.createElement('div', {className: 'mainview', style: {display: this.state.display == 'block' ? 'block' : 'flex'}},
+                        React.createElement('div', {style:{display: 'block'}},
+                        React.createElement('div', {style: {display: 'inline-flex'}},
+                        width < 645 ?
+                        React.createElement('div', null,
+                        React.createElement(SplitButton, {bsSize: 'small' , title: 'Select'},
                         !this.state.mute ?
-                        React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Mute Notifications'): React.createElement('button', {className: 'btn btn-default', onClick: this.clearNote, style: styles}, 'Turn On Notifications'),
-                        React.createElement('button', {className: 'btn btn-default', onClick: this.clearAll, style: styles}, 'Clear All Filters'),
-                        React.createElement('button', {className: 'btn btn-default', onClick: this.exportCSV, style: styles}, 'Export to CSV')),
-            React.createElement('div', {className: 'incidentwidth', style: {display:'flex'}},
-            React.createElement('div', {id:'list-view'},
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '4',bsSize: 'small', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Event')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))) : /* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */
+                        React.createElement('div', null,
+                        !this.state.mute ?
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '4',bsSize: 'small', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Event')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))
+                        ,
+
+                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
+                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))
+            ),
+            Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,
+            React.createElement('div', {className: 'incidentwidth', style: {display:this.state.display}},
+            React.createElement('div', {style: {width: this.state.differentviews},id:'list-view'},
             React.createElement('div', {className: 'tableview', style:{display: 'flex'}},
-                React.createElement("div", {className: "container-fluid2", style: {'max-width': '915px',resize:'horizontal','min-width': '650px', width:this.state.scrollwidth, 'max-height': this.state.scrollheight, 'margin-left': '0px',height: this.state.scrollheight, overflow: 'auto', 'padding-left':'5px'}},
-                    React.createElement("div", {className: "table-row header"},
-                        React.createElement("div", {className: "wrapper attributes"},
+                React.createElement("div", {className: "container-fluid2", id: 'fluid2', style: {/*'max-width': '915px',*/resize:this.state.resize,/*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x' : 'hidden','padding-left':'5px'}},
+                    React.createElement("div", {className: "table-row header "+ this.state.classname[0]},
+                        React.createElement("div", {className: "wrapper attributes "+ this.state.classname[1]},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
-                        React.createElement('div', {className: 'wrapper status-owner'},
+                        React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]},
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOvertype', rootClose: true, overlay: React.createElement(Popover, null,
                         React.createElement('div', {className: 'Filter and Sort', id: 'typeheader'}, React.createElement('div',
                         {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Type'), React.createElement('div',
                         {style:{'padding-left': '100px'}}, 'Sort'),
                         React.createElement('btn-group', null,
-                        React.createElement('button', {style: {height:'5px'}, onClick: this.handlesort, value: 'type', id: 1, className: 'sort glyphicon glyphicon-triangle-top'}),
-                        React.createElement('button', {onClick: this.handlesort, value: 'type', id: -1, className: 'sort glyphicon glyphicon-triangle-bottom', style:{height:'5px'}}))),
+                        React.createElement('button', {style: {height:'5px'}, onClick: this.handlesort, value: 'type', id: -1, className: 'sort glyphicon glyphicon-triangle-top'}),
+                        React.createElement('button', {onClick: this.handlesort, value: 'type', id: 1, className: 'sort glyphicon glyphicon-triangle-bottom', style:{height:'5px'}}))),
                         React.createElement('input', {autoFocus: true,id: 'type', onKeyUp: this.filterUp, defaultValue: this.state.typetext, placeholder: 'Search', style: {background: 'white', width: '200px'}, type:'text', className:'typeinput'}),
                         React.createElement('btn-group', null,
                         React.createElement('button', {className:'btn btn-default clear',  value: 'type', onClick: this.filterclear}, 'Clear'),
                         React.createElement('button', {className:'btn btn-default filter', value: 'type', onClick: this.handlefilter}, 'Filter')))
                         )},
-                        React.createElement("div", {className: "column owner"}, "Type"))),
+                         React.createElement('div', {style: {display: 'flex'}},
+                         React.createElement("div", {className: "column owner"}, "Type"),
+                        this.state.typearrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.typearrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.typearrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.typearrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.typearrow[1] == -1 ? null : '5px solid black', top: '9px', right: '40px', position: 'relative'}}) : null))),
+
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {ref: 'myPopOverid', trigger:['click','focus'], placement:'bottom', rootClose: true, overlay: React.createElement(Popover, null,
                         React.createElement('div', {className: 'Filter and Sort', id: 'idheader'}, React.createElement('div',
                         {style: {display: 'inline-flex'}}, React.createElement('div', null, 'ID'), React.createElement('div',
                         {style:{'padding-left': '100px'}}, 'Sort'),
                         React.createElement('btn-group', null,
-                        React.createElement('button', {style: {height:'5px'},value: 'id', id: 1, onClick: this.handlesort, className: 'sort glyphicon glyphicon-triangle-top'}),
-                        React.createElement('button', {className: 'sort glyphicon glyphicon-triangle-bottom', value: 'id', onClick: this.handlesort, id: -1, style:{height:'5px'}}))),
+                        React.createElement('button', {style: {height:'5px'},value: 'id', id: -1, onClick: this.handlesort, className: 'sort glyphicon glyphicon-triangle-top'}),
+                        React.createElement('button', {className: 'sort glyphicon glyphicon-triangle-bottom', value: 'id', onClick: this.handlesort, id: 1, style:{height:'5px'}}))),
                         React.createElement('input',  {autoFocus: true, id:'id',onKeyUp: this.filterUp, defaultValue: this.state.idtext, placeholder: 'Search', style: {background: 'white', width: '200px'}, type:'text', className:'idinput'}),
                         React.createElement('btn-group', null,
                         React.createElement('button', {className:'btn btn-default clear', value: 'id', onClick: this.filterclear}, 'Clear'),
                         React.createElement('button', {value: 'id',className:'filter btn btn-default', onClick: this.handlefilter}, 'Filter')))
                         )},
-                        React.createElement('div',{className: 'column index'}, 'ID')))
+                        React.createElement('div', {style: {display: 'flex'}},
+                        React.createElement('div',{className: 'column index'}, 'ID'), this.state.idarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.idarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.idarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '30px', position: 'relative'}}) : null)))
                         )),
 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
-                        React.createElement('div', {className: 'wrapper status-owner'},
+                        React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]},
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOverstatus', rootClose: true, overlay: React.createElement(Popover, null,
                         React.createElement('div', {className: 'Filter and Sort', id: 'statusheader'}, React.createElement('div',
                         {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Status'), React.createElement('div',
                         {style:{'padding-left': '100px'}}, 'Sort'),
                         React.createElement('btn-group', null,
-                        React.createElement('button', {style: {height:'5px'}, onClick: this.handlesort, value: 'status', id: 1, className: 'sort glyphicon glyphicon-triangle-top'}),
-                        React.createElement('button', {onClick: this.handlesort, value: 'status', id: -1, className: 'sort glyphicon glyphicon-triangle-bottom', style:{height:'5px'}}))),
+                        React.createElement('button', {style: {height:'5px'}, onClick: this.handlesort, value: 'status', id: -1, className: 'sort glyphicon glyphicon-triangle-top'}),
+                        React.createElement('button', {onClick: this.handlesort, value: 'status', id: 1, className: 'sort glyphicon glyphicon-triangle-bottom', style:{height:'5px'}}))),
                         React.createElement('input', {autoFocus: true,id: 'status', onKeyUp: this.filterUp, defaultValue: this.state.statustext, placeholder: 'Search', style: {background: 'white', width: '200px'}, type:'text', className:'statusinput'}),
                         React.createElement('btn-group', null,
                         React.createElement('button', {className:'btn btn-default clear',  value: 'status', onClick: this.filterclear}, 'Clear'),
                         React.createElement('button', {className:'btn btn-default filter', value: 'status', onClick: this.handlefilter}, 'Filter')))
                         )},
-                         React.createElement("div", {className: "column owner"}, "Status")))
+                         React.createElement('div', {style: {display: 'flex'}},
+                         React.createElement("div", {className: "column owner"}, "Status"),
+                        this.state.statusarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.statusarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.statusarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.statusarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.statusarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '40px', position: 'relative'}}) : null)))
                          )),
                          React.createElement('div', {className: 'wrapper status-owner-severity'},
-                         React.createElement('div', {className: 'wrapper status-owner'},
+                         React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]},
                          React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOverowner', rootClose: true, overlay: React.createElement(Popover, null,
                         React.createElement('div', {className: 'Filter and Sort', id: 'ownerheader'}, React.createElement('div',
                         {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Owner'), React.createElement('div',
                         {style:{'padding-left': '100px'}}, 'Sort'),
                         React.createElement('btn-group', null,
-                        React.createElement('button', {style: {height:'5px'}, onClick: this.handlesort, value: 'owner', id: 1, className: 'sort glyphicon glyphicon-triangle-top'}),
-                        React.createElement('button', {onClick: this.handlesort, value: 'owner', id: -1, className: 'sort glyphicon glyphicon-triangle-bottom', style:{height:'5px'}}))),
+                        React.createElement('button', {style: {height:'5px'}, onClick: this.handlesort, value: 'owner', id: -1, className: 'sort glyphicon glyphicon-triangle-top'}),
+                        React.createElement('button', {onClick: this.handlesort, value: 'owner', id: 1, className: 'sort glyphicon glyphicon-triangle-bottom', style:{height:'5px'}}))),
                         React.createElement('input', {autoFocus: true, id: 'owner', onKeyUp: this.filterUp, defaultValue: this.state.ownertext, placeholder: 'Search', style: {background: 'white', width: '200px'}, type:'text', className:'ownerinput'}),
                         React.createElement('btn-group', null,
                         React.createElement('button', {className:'btn btn-default clear',  value: 'owner', onClick: this.filterclear}, 'Clear'),
                         React.createElement('button', {className:'btn btn-default filter', value: 'owner', onClick: this.handlefilter}, 'Filter')))
                         )},
-                        React.createElement("div", {className: "column severity"}, "Owner")))
+                            React.createElement('div', {style: {display: 'flex'}},
+                            React.createElement("div", {className: "column severity"}, "Owner"),
+                           this.state.ownerarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.ownerarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.ownerarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.ownerarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.ownerarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '30px', position: 'relative'}}) : null)))
                         )), 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
-                        React.createElement('div', {className: 'wrapper status-owner'},
+                        React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]},
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOverentries', rootClose: true, overlay: React.createElement(Popover, null,
                         React.createElement('div', {className: 'Filter and Sort', id: 'entriesheader'}, React.createElement('div',
                         {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Entries'), React.createElement('div',
@@ -287,17 +371,19 @@ module.exports = React.createClass({
                         React.createElement('button', {className:'btn btn-default clear',  value: 'entries', onClick: this.filterclear}, 'Clear'),
                         React.createElement('button', {className:'btn btn-default filter', value: 'entries', onClick: this.handlefilter}, 'Filter')))
                         )},
-                        React.createElement("div", {className: "column owner"}, "Entry")))
+                        React.createElement('div', {style: {display: 'flex'}},
+                        React.createElement("div", {className: "column owner"}, "Entries"),
+                        this.state.entriesarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.entriesarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.entriesarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.entriesarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.entriesarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '45px', position: 'relative'}}) : null)))
                         )),
 
-                        React.createElement("div", {className: "wrapper dates"},
+                        React.createElement("div", {className: "wrapper dates "+ this.state.sizearray[0]},
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOverupdated',rootClose: true, overlay: React.createElement(Popover, null,
                         React.createElement('div', {className: 'Filter and Sort', id: 'updatedheader'}, React.createElement('div',
                         {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Updated'), React.createElement('div',
                         {style:{'padding-left': '80px'}}, 'Sort'),
                         React.createElement('btn-group', null,
-                        React.createElement('button', {style: {height:'5px'}, onClick: this.handlesort, className: 'sort glyphicon glyphicon-triangle-top', value: 'updated', id: 1}),
-                        React.createElement('button', {value: 'updated', id: -1, onClick: this.handlesort, className: 'sort glyphicon glyphicon-triangle-bottom', style:{height:'5px'}}))),
+                        React.createElement('button', {style: {height:'5px'}, onClick: this.handlesort, className: 'sort glyphicon glyphicon-triangle-top', value: 'updated', id: -1}),
+                        React.createElement('button', {value: 'updated', id: 1, onClick: this.handlesort, className: 'sort glyphicon glyphicon-triangle-bottom', style:{height:'5px'}}))),
                         React.createElement('div', {onKeyUp: this.filterUp, id: 'updated', className: 'Dates'},
                         React.createElement(DateRangePicker, {numberOfCalendars: 2, selectionType:"range", showLegend: true, onSelect:this.handleSelectforupdate ,singleDateRange: true}),
                         React.createElement("div",{className: 'dates'}, React.createElement('input', {className: "StartDate",placeholder: 'Start Date', value: this.state.upstartepoch, readOnly:true}),
@@ -306,43 +392,47 @@ module.exports = React.createClass({
                         React.createElement('button', {className:'btn btn-default clear',  value: 'updated',onClick: this.filterclear}, 'Clear'),
                         React.createElement('button', {className:'btn btn-default filter', value: 'updated', onClick: this.handlefilter}, 'Filter')))
                         )},
-                        React.createElement("div", {className: "column date"}, "Updated")))
-                        ))), 
-
-                    this.state.objectarray.map((value) => React.createElement('div', {className:'allevents', id: value.id},
-                        /*React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null,
-                        React.createElement('div', null,
-                        React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'ID:'),
-                        React.createElement('div', null, value.target.id)),
                         React.createElement('div', {style: {display: 'flex'}},
-                        React.createElement('div', {style: {'font-weight': 'bold'}}, 'Status:  '), React.createElement('div', null, value.task.status)),
-                        React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Updated:  '),
-                        React.createElement('div', null, value.updated)),                         
-                        React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Owner:  '),
-                        React.createElement('div', null, value.owner)),
-                        React.createElement('div', {style: {display:'flex'}}, React.createElement('div', {style: {'font-weight': 'bold'}}, 'Entry:  '),
-                        React.createElement('div', null, value.id)), React.createElement('div', {style: {display:'flex'}},
-                        React.createElement('div', {style: {'font-weight': 'bold'}}, 'Type:  '), React.createElement('div', null, value.target.type))
-                        ))},*/
-                        React.createElement("div", {style: {background: colorrow[0] == value.id ? this.state.blue : this.state.white},onClick: this.clickable, className: "table-row", id: value.targetid},
-                        React.createElement("div", {className: "wrapper attributes"},
+                        React.createElement("div", {className: "column date"}, "Updated"),
+                        this.state.updatedarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.updatedarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.updatedarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.updatedarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.updatedarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '45px', position: 'relative'}}) : null))
+                        )))), 
+                   React.createElement('div', {id: 'listpane'},
+                    this.state.objectarray.map((value) => React.createElement('div', {className:'allevents', id: value.id},
+                        
+                        React.createElement("div", {style: {background: colorrow[0] == value.id ? this.state.blue : null},classname: value.classname + ' ' + this.state.classname[0],onClick: this.clickable, className: value.classname + ' ' + this.state.classname[0], id: value.targetid},
+                        React.createElement("div", {className: "wrapper attributes "+ this.state.classname[1]},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
-                        React.createElement('div', {className: 'wrapper status-owner'},
+                        React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]},
                             React.createElement("div", {className: 'column status type'}, value.target.type),
                             React.createElement("div", {className: "column index"}, value.target.id))),
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
-                        React.createElement('div', {className: 'wrapper status-owner'}, 
+                        React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]}, 
                             React.createElement("div", {className: 'column owner colorstatus'}, value.task.status))),
                             React.createElement('div', {className: 'wrapper status-owner-severity'},
-                            React.createElement('div', {className: 'wrapper status-owner'},
+                            React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + '  ' + this.state.classname[3]},
                             React.createElement("div", {className: "column status"}, value.owner))),
                             React.createElement('div', {className: 'wrapper status-owner-severity'},
-                            React.createElement('div', {className: 'wrapper status-owner'}, 
+                            React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]}, 
                             React.createElement("div", {className: "column severity"}, value.id))),
-                        React.createElement("div", {className: "wrapper dates"},
-                            React.createElement("div", {className: "column date"}, value.updated)))))) /*))*/ )),
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})) , stage ?
-                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: this.state.type, taskid: this.state.entry}) : null)
+                        React.createElement("div", {className: "wrapper dates "+this.state.sizearray[0]},
+                            React.createElement("div", {className: "column date"}, value.updated))))))))),
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ?
+                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: this.state.type, taskid: this.state.entry}) : null),
+
+                        React.createElement('div', {className: 'toggleview'},
+                        React.createElement('div', {style: {display:'block'}},
+                         React.createElement('div', {style: {display: 'inline-flex'}},
+                        !this.state.mute ?
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '4',bsSize: 'small', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Event')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
+
+                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
+                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
+            ),
+                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: this.state.type, taskid: this.state.entry })
+        )
         ));
 },
 
@@ -400,7 +490,44 @@ module.exports = React.createClass({
         }.bind(this))
         scrolled = $('.container-fluid2').scrollTop()
     },
+    toggleView: function(){
+        $('.mainview').hide()
+        $('.toggleview').show()
+        this.setState({containerdisplay: 'inherit'})
+        /*var t2 = document.getElementById('fluid2')
+        $(t2).resize(function(){
+            this.reloadItem()
+        }.bind(this))
+         if(!this.state.alldetail) {
+            this.setState({alldetail: true})
+        }
+        else {
+            this.setState({alldetail: false})
+        } */
+    },
+    Portrait: function(){
+        var t2 = document.getElementById('fluid2')
+        width = $(t2).width()
+        $('.paging').css('width', width)
+        $('.mainview').show()
+        $('.toggleview').hide()
+        var array = []
+        array = ['dates-small', 'status-owner-small', 'module-reporter-small']
+                        this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        maxwidth: '915px', minwidth: '650px',scrollwidth: '650px', sizearray: array})
+    },
 
+    Landscap: function(){
+        width = 650
+        $('.paging').css('width', '100%')
+        $('.mainview').show()
+        $('.toggleview').hide()
+        var array = []
+        array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
+        this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
+        scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
+
+    },
     getNewData: function(page){
         pageSize = page.limit
         defaultpage = page.page
@@ -436,6 +563,12 @@ module.exports = React.createClass({
                         newarray[key][num] = item
                     }
                 })
+                if(key %2 == 0){
+                    newarray[key]['classname'] = 'table-row roweven'
+                }
+                else {
+                    newarray[key]['classname'] = 'table-row rowodd'
+                }
             })
                 this.setState({totalcount: response.totalRecordCount, activepage: page, objectarray: newarray})
         }.bind(this))
@@ -467,26 +600,38 @@ module.exports = React.createClass({
          if($($(v.currentTarget).find('.sort').context).attr('value') == 'id'){
             sortarray['id'] = Number($($(v.currentTarget).find('.sort').context).attr('id'))
             this.refs.myPopOverid.hide()
+            this.setState({idarrow: [Number($($(v.currentTarget).find('.sort').context).attr('id'))
+, Number($($(v.currentTarget).find('.sort').context).attr('id'))]})
         }
         else if($($(v.currentTarget).find('.sort').context).attr('value') == 'status'){
             sortarray['task.status'] = Number($($(v.currentTarget).find('.sort').context).attr('id'))
             this.refs.myPopOverstatus.hide()
+            this.setState({statusarrow: [Number($($(v.currentTarget).find('.sort').context).attr('id'))
+, Number($($(v.currentTarget).find('.sort').context).attr('id'))]})
         }
         else if($($(v.currentTarget).find('.sort').context).attr('value') == 'type'){
             sortarray['target.type'] = Number($($(v.currentTarget).find('.sort').context).attr('id'))
             this.refs.myPopOvertype.hide()
+            this.setState({typearrow: [Number($($(v.currentTarget).find('.sort').context).attr('id'))
+, Number($($(v.currentTarget).find('.sort').context).attr('id'))]})
         }
         else if($($(v.currentTarget).find('.sort').context).attr('value') == 'owner'){
             sortarray['owner'] = Number($($(v.currentTarget).find('.sort').context).attr('id'))
             this.refs.myPopOverowner.hide()
+            this.setState({ownerarrow: [Number($($(v.currentTarget).find('.sort').context).attr('id'))
+, Number($($(v.currentTarget).find('.sort').context).attr('id'))]})
         }
         else if($($(v.currentTarget).find('.sort').context).attr('value') == 'updated'){
             sortarray['updated'] = Number($($(v.currentTarget).find('.sort').context).attr('id'))
             this.refs.myPopOverupdated.hide()
+            this.setState({updatedarrow: [Number($($(v.currentTarget).find('.sort').context).attr('id'))
+, Number($($(v.currentTarget).find('.sort').context).attr('id'))]})
         }
         else if($($(v.currentTarget).find('.sort').context).attr('value') == 'entries'){
             sortarray['entries'] = Number($($(v.currentTarget).find('.sort').context).attr('id'))
             this.refs.myPopOverentries.hide()
+            this.setState({entriesarrow: [Number($($(v.currentTarget).find('.sort').context).attr('id'))
+, Number($($(v.currentTarget).find('.sort').context).attr('id'))]})
         }
         this.getNewData({page:0, limit:pageSize})
     },
