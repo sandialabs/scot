@@ -7109,6 +7109,12 @@ module.exports = React.createClass({displayName: "exports",
 	                    newarray[key][num] = item
 	                }
 	            })
+                if(key %2 == 0){
+                    newarray[key]['classname'] = 'table-row roweven'
+                }
+                else {
+                    newarray[key]['classname'] = 'table-row rowodd'
+                }
 	        })
                 this.setState({totalcount: response.totalRecordCount, activepage: page, objectarray: newarray})
         }.bind(this))
