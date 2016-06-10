@@ -553,8 +553,14 @@ if [ "$SFILESDEL" == "yes" ]; then
     rm -rf  $FILESTORE
 fi
 
-echo "+ creating new filestore directory"
-mkdir -p $FILESTORE
+if [ -d $FILESTORE ]; then
+    echo "= filestore directory exists";
+else
+    echo "+ creating new filestore directory"
+    mkdir -p $FILESTORE
+fi
+
+echo "= ensuring proper ownership and permissions of $FILESTORE"
 chown scot $FILESTORE
 chgrp scot $FILESTORE
 chmod g+w $FILESTORE
@@ -562,15 +568,19 @@ chmod g+w $FILESTORE
 ###
 ### set up the backup directory
 ###
-echo -e "${yellow} setting up backup directory $BACKDIR ${NC}"
-mkdir -p $BACKUPDIR
-chown scot:scot $BACKUPDIR
+if [ -d $BACKDIR ]; then
+    echo "= backup directory $BACKDIR exists"
+else 
+    echo "+ creating backup directory $BACKDIR "
+    mkdir -p $BACKUPDIR
+    chown scot:scot $BACKUPDIR
+fi
 
 ###
 ### install the scot
 ###
-echo -e "${yellow} running grunt on reactjs files...${NC}"
-CURDIR=`pwd`
+#echo -e "${yellow} running grunt on reactjs files...${NC}"
+#CURDIR=`pwd`
 
 #if [ $SKIPNODE == "no" ];then
 #    cd $DEVDIR/pubdev 
@@ -578,7 +588,6 @@ CURDIR=`pwd`
 #    cd $CURDIR
 #fi
 
-echo -e "${yellow} installing SCOT files ${NC}"
 
 if [ "$DELDIR" == "true" ]; then
     echo -e "${red}- removing target installation directory $SCOTDIR ${NC}"
@@ -593,9 +602,12 @@ if [ ! -d $SCOTDIR ]; then
 fi
 
 usermod -a -G scot www-data
+
+echo -e "${yellow} installing SCOT files ${NC}"
 cp -r $DEVDIR/* $SCOTDIR/
 
 if [ -d "$PRIVATE_SCOT_MODULES" ]; then
+    echo "Private SCOT modules and config directory exist.  Installing..."
     . $PRIVATE_SCOT_MODULES/install.sh
 fi
 
@@ -605,11 +617,12 @@ chmod -R 755 $SCOTDIR/bin
 ###
 ### Logging file set up
 ###
-echo -e "${yellow} setting up Log dir $LOGDIR ${NC}"
 if [ ! -d $LOGDIR ]; then
+    echo "+ creating Log dir $LOGDIR"
     mkdir -p $LOGDIR
 fi
 
+echo "= ensuring proper log ownership/permissions"
 chown scot.scot $LOGDIR
 chmod g+w $LOGDIR
 
@@ -622,6 +635,8 @@ fi
 
 touch $LOGDIR/scot.log
 chown scot:scot $LOGDIR/scot.log
+
+echo "+ installing logrotate policy"
 cp $DEVDIR/etc/logrotate.scot /etc/logrotate.d/scot
 
 ###
@@ -632,9 +647,17 @@ if [ "$MDBREFRESH" == "yes" ]; then
     echo "= stopping mongod"
     service mongod stop
 
+    echo "+ copying new mongod.conf"
     cp $DEVDIR/etc/mongod.conf /etc/mongod.conf
-    mkdir -p $DBDIR
+
+    if [ ! -d $DBDIR ]; then
+        echo "+ creating database dir $DBDIR"
+        mkdir -p $DBDIR
+    fi
+    echo "+ ensuring prober ownership of $DBDIR"
     chown -R mongodb:mongodb $DBDIR
+
+    echo "- clearing /var/log/mondob/mongod.log"
     cat /dev/null > /var/log/mongodb/mongod.log
 fi
 
