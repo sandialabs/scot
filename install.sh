@@ -394,18 +394,35 @@ EOF
 
                 if [[ $OSVERSION == "7" ]]; then
                     if [[ $AUTHMODE == "Remoteuser" ]]; then
-                        REVPROXY=$DEVDIR/etc/scot-revproxy-rh-7-remoteuser.conf
+                        if [ -e $PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-7-remoteuser.conf ]; then
+                            REVPROXY=$PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-7-remoteuser.conf
+                        else 
+                            REVPROXY=$DEVDIR/etc/scot-revproxy-rh-7-remoteuser.conf
+                        fi
                     else
-                        REVPROXY=$DEVDIR/etc/scot-revproxy-rh-7-aux.conf
+                        if [ -e $PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-7-aux.conf ];then
+                            REVPROXY=$PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-7-aux.conf
+                        else 
+                            REVPROXY=$DEVDIR/etc/scot-revproxy-rh-7-aux.conf
+                        fi
                     fi
                 else
                     if [[ $AUTHMODE == "Remoteuser" ]]; then
-                        REVPROXY=$DEVDIR/etc/scot-revproxy-rh-remoteuser.conf
+                        if [ -e $PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-remoteuser.conf ];then
+                            REVPROXY=$PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-remoteuser.conf
+                        else
+                            REVPROXY=$DEVDIR/etc/scot-revproxy-rh-remoteuser.conf
+                        fi
                     else
-                        REVPROXY=$DEVDIR/etc/scot-revproxy-rh-aux.conf
+                        if [ -e $PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-aux.conf ];then
+                            REVPROXY=$PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-aux.conf
+                        else
+                            REVPROXY=$DEVDIR/etc/scot-revproxy-rh-aux.conf
+                        fi
                     fi
                 fi
             fi
+
             echo -e "${green} --- copying scot.conf apache configuration"
             cp $REVPROXY $HTTPCONFDIR/scot.conf
             echo -e "${yellow} --- sed-ing scot.conf ${NC}"
@@ -459,11 +476,20 @@ EOF
             if [ ! -e $REVPROXY ]; then
                 echo -e "${red}= custom apache config for $MYHOSTNAME not present, using defaults${NC}"
                 if [[ $AUTHMODE == "Remoteuser" ]]; then
-                    REVPROXY=$DEVDIR/etc/scot-revproxy-ubuntu-remoteuser.conf
+                    if [ -e $PRIVATE_SCOT_MODULES/etc/scot-revproxy-ubuntu-remoteuser.conf ]; then
+                        REVPROXY=$PRIVATE_SCOT_MODULES/etc/scot-revproxy-ubuntu-remoteuser.conf
+                    else
+                        REVPROXY=$DEVDIR/etc/scot-revproxy-ubuntu-remoteuser.conf
+                    fi
                 else 
-                    REVPROXY=$DEVDIR/etc/scot-revproxy-ubuntu-aux.conf
+                    if [ -e $PRIVATE_SCOT_MODULES/etc/scot-revproxy-ubuntu-aux.conf ]; then
+                        REVPROXY=$PRIVATE_SCOT_MODULES/etc/scot-revproxy-ubuntu-aux.conf
+                    else
+                        REVPROXY=$DEVDIR/etc/scot-revproxy-ubuntu-aux.conf
+                    fi
                 fi
             fi
+
             echo -e "${green} copying $REVPROXY to $SITESAVAILABLE ${NC}"
             cp $REVPROXY $SITESAVAILABLE/scot.conf
             echo -e "${yellow} sed-ing files ${NC}"
