@@ -359,7 +359,7 @@ module.exports = React.createClass({
                          React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
                          React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
             ),
-                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'event', viewEvent:this.viewEvent})
+                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'guide'})
         )
         ));
     },
