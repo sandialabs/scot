@@ -10,6 +10,16 @@ sub new {
     my $class   = shift;
     my $config  = shift;     # href of config items
 
+    unless (
+        defined($config->{logger_name}) &&
+        defined($config->{layout}) &&
+        defined($config->{appender_name}) &&
+        defined($config->{logfile}) &&
+        defined($config->{log_level}) ) {
+
+        die ("Invalid Configuration for Logger!");
+    }
+
     my $log     = Log::Log4perl->get_logger($config->{logger_name});
     my $layout  = Log::Log4perl::Layout::PatternLayout->new($config->{layout});
     my $append  = Log::Log4perl::Appender->new(
