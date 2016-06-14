@@ -8,6 +8,7 @@ use Carp qw(cluck longmess shortmess);
 use Mojo::Base 'Mojolicious';
 use Mojo::Cache;
 use Scot::Env;
+use Data::Dumper;
 
 
 =head1 Scot.pm 
@@ -22,7 +23,6 @@ It is a child of Mojo::Base and therefore is a Mojolicious based app.
 
 sub startup {
     my $self    = shift;
-
     $self->mode('development'); # remove when in prod
 
 
@@ -198,7 +198,8 @@ sub log_startup {
                 "============================================================\n".
         " "x55 ."| SCOT  ". $self->env->version . "\n".
         " "x55 ."| mode: ". $self->env->mode. "\n".
-        " "x55 ."| db:   ". $self->env->mongo_config->{db_name} . "\n".
+        " "x55 ."| db:   ". 
+                    Dumper($self->env->config) . "\n".
         " "x55 ."============================================================\n"
     );
     # $self->env->dump_env;
