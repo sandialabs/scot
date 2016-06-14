@@ -529,79 +529,19 @@ sub check_entity_enrichments {
     my $entity  = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $data    = {};
-    my $changes = 0;
-    my $enrichers   = $env->entity_enrichers; # href
     my $timer   = $env->get_timer("checking entity enrichments");
 
-    my $entity_value    = $entity->value;
-    my $entity_type     = $entity->type;
+    my $enricher    = $env->enrichments;
+    my ($updates, $data) = $enricher->enrich($entity);
 
-    $log->trace("Checking enrichements for $entity_value of type $entity_type");
-
-    my $enricher_names  = $enrichers->{types}->{$entity_type};
-
-    $log->trace("Enrichments available = ",{filter=>\&Dumper,value=>$enricher_names});
-
-    ENAME:
-    foreach my $ename (@$enricher_names) {
-        my $ehref   = $enrichers->{modules}->{$ename};
-        unless ($ehref) {
-            $log->error("Enrichment of type $ename does not exist!");
-            next ENAME;
-        }
-        $log->trace("Enrichment $ename type ".$ehref->{type});
-
-        if ( $ehref->{type} eq 'native' ) {
-            if ( defined $entity->data->{$ename} ) {
-                $log->debug("Enrichment $ename is cached...");
-            }
-            else {
-                $log->debug("Fetching enrichment...");
-                my $emodule = $ehref->{module};
-                my $edata   = $emodule->get_data($entity->type,$entity->value); 
-                if ( $edata ) {
-                    $data->{$ename} = {
-                        data    => $edata,
-                        type    => 'data',
-                    };
-                }
-                else {
-                    $data->{$ename} = { 
-                        type    => 'error',
-                        data    => 'no data' };
-                }
-                $changes++;
-            }
-        }
-        elsif ( $ehref->{type} =~ /link/ ) {
-            $log->debug("Link enrichment found");
-            unless ( $data->{$ename} ) {
-                $data->{$ename} = {
-                    type    => 'link',
-                    data    => {
-                        url     => sprintf($ehref->{url}, $entity_value),
-                        title   => $ehref->{title},
-                    }
-                };
-                $changes++;
-            }
-        }
-        else {
-            $log->error("Unsupported type $entity_type");
-            next ENAME;
-        }
-    }
-
-    $log->debug("Data is ",{filter=>\&Dumper, value => $data});
-
-    if ( $changes > 0 ) {
+    if ( $updates > 0 ) {
         $log->debug("updating cache of entity enrichments");
         $entity->update_set( data => $data );
         $log->debug("updated cache of entity enrichments");
     }
     &$timer;
 }
+
 
 sub tablify {
     my $self    = shift;
@@ -611,30 +551,6 @@ sub tablify {
     $html .= dumper_html($href);
     $html .= "</div>\n";
     return $html;
-}
-
-sub enrich_entity {
-    my $self    = shift;
-    my $href    = shift;
-    my $entity  = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-
-    if ( $href->{type} eq "native" ) {
-        my $module  = $href->{module};
-        $log->debug("using module $module to get_data about ".$entity->value);
-        my $data    = $env->$module->get_data($entity->type, $entity->value);
-        if ($data) {
-            my $entry   = $env->mongo->collection('Entry')->create({
-                body    => $self->tablify($module, $data),
-                target  => {
-                    type    => "entity",
-                    id      => $entity->id,
-                }
-            });
-        }
-        return $data;
-    }
 }
 
 =item B<GET /scot/api/v2/:thing/:id/:subthing>
