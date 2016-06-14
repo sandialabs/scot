@@ -199,7 +199,7 @@ module.exports = React.createClass({
                }
         }
         else {
-            $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
+    //        $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
             $('.container-fluid2').css('width', '100%')
         }
     },
