@@ -27,6 +27,7 @@ use Scot::App;
 use Scot::Util::Scot;
 use Scot::Util::EntityExtractor;
 use Scot::Util::ImgMunger;
+use Scot::Util::Enrichments;
 use AnyEvent::STOMP::Client;
 use AnyEvent::ForkManager;
 use HTML::Entities;
@@ -77,7 +78,6 @@ sub _get_img_munger {
     });
 };
 
-
 has scot        => (
     is          => 'ro',
     isa         => 'Scot::Util::Scot',
@@ -108,42 +108,18 @@ has interactive => (
 
 has enrichers   => (
     is              => 'ro',
-    isa             => 'ArrayRef',
+    isa             => 'Scot::Util::Enrichments',
     required        => 1,
     lazy            => 1,
     builder         => '_get_enrichers',
 );
 
 sub _get_enrichers {
-    my $self    = shift;
-    my @enrichers   = ();
-    foreach my $href (@{$self->config->{entity_enrichers}}) {
-        my ($name, $data) = each %$href;
-        my $type    = $data->{type};
-        my $module  = $data->{module};
-        my $config  = $data->{config};
-        
-        if ( $type eq "native" ) {
-            require_module($module);
-            my $init    = {
-                log     => $self->log,
-            };
-
-            if (defined $config){
-                $init->{config} = $config;
-            }
-            push @enrichers, {
-                name    => $name,
-                object  => $module->new($init),
-
-            };
-        }
-        else {
-            # TODO: put support for webservice here
-            $self->log->warn("No support for webservice, YET!");
-        }
-    }
-    return \@enrichers;
+    my $self            = shift;
+    my $enrichconfig    = $self->config->{enrichments};
+    my $conf            = $self->get_config($enrichconfig);
+    $conf->{log} = $self->log;
+    return Scot::Util::Enrichments->new($conf);
 }
 
 sub reprocess {
@@ -430,24 +406,10 @@ sub enrich_entities {
     my $log     = $self->log;
     my %data    = ();   # hold all the enriching data
 
-    my $enrichers   = $self->enrichers;
+    my $enricher   = $self->enrichers;
 
     foreach my $entity (@$aref) {
-        my $value   = $entity->{value};
-        my $type    = $entity->{type};
-
-        foreach my $ehref (@{$enrichers}) {
-            my $name        = $ehref->{name};
-            my $instance    = $ehref->{object};
-
-            $log->debug("Enricher $name");
-
-            unless (ref($instance)) {
-                $log->debug("instance is unblessed! ",
-                    {filter=>\&Dumper, value=>$ehref});
-            }
-            $data{$value}{$name} = $instance->get_data($type, $value);
-        }
+        $data{$entity->{value}} = $enricher->enrich($entity, 1);
     }
 
     # don't do this automatically, info lead potential 
