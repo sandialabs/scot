@@ -13,7 +13,7 @@ use Data::Dumper;
 say "--- Starting Mail Ingester ---";
 
 my $processor   = Scot::App::Mail->new({
-    cfile       => "/home/tbruner/mail.app.conf",
-    interactive => "yes",
+    configuration_file         => "/opt/scot/etc/mail.app.cfg",
+    interactive                 => "yes",
 });
 $processor->run();

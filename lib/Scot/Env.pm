@@ -6,34 +6,87 @@ use lib '../../../Scot-Internal-Modules/lib';
 use strict;
 use warnings;
 
-use Log::Log4perl;
-use Log::Log4perl::Layout;
-use Log::Log4perl::Layout::PatternLayout;
-use Log::Log4perl::Level;
-use Log::Log4perl::Appender;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Module::Runtime qw(require_module compose_module_name);
 use Data::Dumper;
+use File::Find;
 use Safe;
-
-use Meerkat;
-use MooseX::Singleton;
 use namespace::autoclean;
+
+use Moose;
+use MooseX::Singleton;
 
 has version => (
     is          => 'ro',
     isa         => 'Str',
+    lazy        => 1,
     required    => 1,
     default     => '3.5',
+);
+
+has configfile  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    builder     => '_get_configfile',
+);
+
+sub _get_configfile {
+    my $self    = shift;
+    if ( $ENV{'scot_env_configfile'} ) {
+        return $ENV{'scot_env_configfile'};
+    }
+    return '/opt/scot/etc/scot_env.cfg';
+}
+
+has config      => (
+    is          => 'rw',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    traits      => ['Hash'],
+    builder     => '_get_environment_config',
+);
+
+sub _get_environment_config {
+    my $self    = shift;
+    my $file    = $self->configfile;
+
+    unless ( $file ) {
+        die "configfile NOT SET!";
+    }
+    unless ( -e $file ) {
+        die "configfile $file does not exist!";
+    }
+
+    no strict 'refs'; # I know, this smells, but...
+    my $container   = new Safe 'CONFIG';
+    my $ret         = $container->rdo($file);
+    my $hname       = "CONFIG::environment";
+    my $href        = \%$hname;
+
+    return $href;
+}
+
+# mainly for testing
+has cachedconfigs => (
+    is          => 'rw',
+    isa         => 'HashRef',
 );
 
 has servername => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default     => '127.0.0.1',
+    lazy        => 1,
     predicate   => 'has_servername',
+    builder     => '_get_servername',
 );
+
+sub _get_servername {
+    my $self    = shift;
+    return $self->config->{servername};
+}
 
 has mojo    => (
     is          => 'rw',
@@ -45,28 +98,38 @@ has mojo    => (
 );
 
 sub _get_mojo_defaults {
-    return {
-        secrets => [qw(scot1sfun sc0t1sc00l)],
-        default_expiration  => 14400,
-    };
+    my $self    = shift;
+    my $config  = $self->config;
+    return $config->{mojo_defaults};
 }
 
 has mode    => (
     is          => 'rw',
     isa         => 'Str',
     required    => 1,
+    lazy        => 1,
     builder     => '_get_mode',
     predicate   => 'has_mode',
 );
 
 sub _get_mode {
-    return $ENV{'scot_mode'} // 'prod';
+    my $self    = shift;
+    # Env then Config then default
+    my $mode    = $self->config->{mode};
+    if ( $ENV{'scot_mode'} ) {
+        $mode   = $ENV{'scot_mode'};
+    }
+    unless ($mode) {
+        $mode   = 'prod';
+    }
+    return $mode;
 }
 
 has authmode    => (
     is          => 'rw',
     isa         => 'Str',
     required    => 1,
+    lazy        => 1,
     builder     => '_get_authmode',
     predicate   => 'has_authmode',
 );
@@ -79,9 +142,16 @@ has group_mode  => (
     is          => 'rw',
     isa         => 'Str',
     required    => 1,
-    default     => 'ldap', # local is other option
+    lazy        => 1,
     predicate   => 'has_group_mode',
+    builder     => '_get_group_mode',
 );
+
+sub _get_group_mode {
+    my $self    = shift;
+    my $config  = $self->config;
+    return $config->{group_mode};
+}
 
 has default_owner   => (
     is              => 'rw',
@@ -94,16 +164,8 @@ has default_owner   => (
 
 sub _get_default_owner {
     my $self    = shift;
-    my $mongo   = $self->mongo;
-    my $item    = $mongo->collection('Config')->find_one({
-        module    => "default_owner",
-    });
-    if ( $item ) {
-        return $item->item->{owner};
-    } 
-    else {
-        return "scot-admin";
-    }
+    my $config  = $self->config;
+    return $config->{default_owner} // "scot-admin";
 }
 
 has default_groups  => ( 
@@ -117,93 +179,9 @@ has default_groups  => (
 
 sub _get_default_groups {
     my $self    = shift;
-    my $mongo   = $self->mongo;
+    my $config  = $self->config;
+    return $config->{default_groups};
     
-    my $collection  = $mongo->collection('Config');
-    my $config_obj  = $collection->find_one({
-        module        => "default_groups",
-    });
-    if ( $config_obj ) {
-        #  config is 
-        # { read => [group1,...], modify => [ group1,...]}
-        return $config_obj->item;
-    }
-    else {
-        return {
-            read        => [ qw(wg-scot-ir testing) ],
-            modify      => [ qw(wg-scot-ir testing) ],
-        };
-    }
-}
-
-has enrichment_configfile   => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    default     => '/opt/scot/etc/enrichments.cfg',
-);
-
-has entity_enrichers    => (
-    is                  => 'rw',
-    isa                 => 'HashRef',
-    required            => 1,
-    lazy                => 1,
-    builder             => '_get_entity_enrichers',
-    predicate           => 'has_entity_enrichers',
-);
-
-sub _get_entity_enrichers {
-    my $self    = shift;
-    my $log     = $self->log;
-    my $cfgfile = $self->enrichment_configfile;
-
-    $log->trace("loading $cfgfile");
-
-    unless ( $cfgfile ) {
-        $log->error("Enrichment Configuration File not SET!");
-        return {};
-    }
-    unless ( -e $cfgfile ) {
-        $log->error("Enrichemt Configuration File not FOUND!");
-        return {};
-    }
-
-    my $c       = new Safe 'CONFIG';
-    my $r       = $c->rdo($cfgfile);
-    my $config  = \%CONFIG::enrichments;
-
-    my $enrichers   = {
-        types   => $config->{mappings},
-    };
-
-    foreach my $name (keys %{ $config->{configs} }) {
-        
-        my $href    = $config->{configs}->{$name};
-        my $type    = $href->{type};
-        my $module  = $href->{module};
-        my $config  = $href->{config};
-
-        if ( $type eq "native" ) {
-            require_module($module);
-            my $init    = {
-                log     => $self->log,
-            };
-            if ( defined $config ) {
-                $init->{config} = $config;
-            }
-            $enrichers->{modules}->{$name} = {
-                type    => $type,
-                module  => $module->new($init),
-            };
-        }
-        elsif ( $type =~ /link/ ) {
-            $enrichers->{modules}->{$name} = $href;
-        }
-        else {
-            $self->log->warn("no support for webservice yet");
-        }
-    }
-    return $enrichers;
 }
 
 has admin_group => (
@@ -217,12 +195,9 @@ has admin_group => (
 
 sub _get_admin_group {
     my $self    = shift;
-    my $mongo   = $self->mongo;
-    my $item    = $mongo->collection('Config')->find_one({
-        module    => "admin_group",
-    });
+    my $item    = $self->config->{admin_group};
     if ( $item ) {
-        return $item->item->{group};
+        return $item;
     } 
     else {
         return "wg-scot-admin";
@@ -244,14 +219,21 @@ has authtype    => (
 
 sub _get_authtype {
     my $self    = shift;
-    my $type    = $ENV{'SCOT_AUTH_TYPE'} // "Remoteuser";
+    # ENV then Config then default
+    my $type    = $ENV{'SCOT_AUTH_TYPE'};
 
-    my $col     = $self->mongo->collection('Config');
-    my $obj     = $col->find_one({ module => "authtype" });
-    if ( $obj ) {
-        return $obj->item->{type};
+    if ( $type ) {
+        return $type;
     }
-    return $type;
+
+    $type = $self->config->{authentication_type};
+
+    if ( $type) { 
+        return $type;
+    }
+
+    return 'RemoteUser';
+
 }
 
 has authclass => (
@@ -269,331 +251,97 @@ sub _get_authclass {
     return 'controller-auth-'.lc($authtype);
 }
 
-has mongo_config    => (
-    is              => 'rw',
-    isa             => 'HashRef',
-    required        => 1,
-    lazy            => 1,
-    builder         => '_get_mongo_config',
-);
-
-sub _get_mongo_config {
-    my $self    = shift;
-    return {
-        host            => 'mongodb://localhost',
-        db_name         => 'scot-' . $self->mode,
-        find_master     => 1,
-        write_safety    => 1,
-        #user            => 'scot',
-        #pass            => 'scot1',
-        port            => 27017,
-    };
-}
-
-has mongo   => (
-    is          => 'ro',
-    isa         => 'Meerkat',
-    lazy        => 1,
-    required    => 1,
-    builder     => '_build_mongo',
-);
-
-sub _build_mongo {
-    my $self    = shift;
-    my $mconf   = $self->mongo_config;
-    $self->log->trace("Mongo Config: ",{ filter=>\&Dumper, value=>$mconf});
-    my $mongo   = Meerkat->new(
-        model_namespace         => "Scot::Model",
-        collection_namespace    => "Scot::Collection",
-        database_name           => $mconf->{db_name},
-        client_options          => {
-            host        => $mconf->{host},
-            # username    => $mconf->{user},
-            # passowrd    => $mconf->{pass},
-            w           => $mconf->{write_safety},
-            find_master => $mconf->{find_master},
-            # max_time_ms => 1000,
-        },
-    );
-    return $mongo;
-}
-
-has mq  => (
-    is          => 'ro',
-    isa         => 'Scot::Util::Messageq',
-    lazy        => 1,
-    required    => 1,
-    builder     => '_get_messageq',
-);
-
-sub _get_messageq {
-    my $self    = shift;
-    my $mongo   = $self->mongo;
-    my $col     = $mongo->collection('Config');
-    my $conf    = $col->find_one({module => 'Scot::Util::Messageq'});
-    my $chref   = {};
-    if ($conf) {
-        if ( $conf->item ) {
-            $chref  = $conf->item;
-        }
-        else {
-            $chref  = {};
-        }
-    }
-    require_module('Scot::Util::Messageq');
-    my $mq      = Scot::Util::Messageq->new($chref);
-    return $mq;
-}
-
 has 'filestorage'   => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default     => '/opt/scotfiles',
+    lazy        => 1,
     predicate   => 'has_filestorage',
+    builder     => '_get_filestorage',
 );
 
-has 'log_level' => (
-    is          => 'rw',
-    isa         => 'Str',
-    required    => 1,
-    default     => "$TRACE",
-    predicate   => 'has_log_level',
-);
-
-has 'log'   => (
-    is          => 'ro',
-    isa         => 'Log::Log4perl::Logger',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_logger',
-);
-
-has 'logfile'   => (
-    is          => 'rw',
-    isa         => 'Str',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_get_log_file',
-    predicate   => 'has_logfile',
-);
-
-sub _get_log_file {
+sub _get_filestorage {
     my $self    = shift;
-    my $logfile = $ENV{'scot_log_file'} // "/var/log/scot/scot.log";
+    return $self->config->{file_store_root};
 }
-    
-
-sub _build_logger {
-    my $self    = shift;
-    my $mode    = $self->mode;
-    my $logfile = $self->logfile;
-
-    my $log     = Log::Log4perl->get_logger("Scot");
-    my $layout  = Log::Log4perl::Layout::PatternLayout->new(
-        '%d %7p [%P] %15F{1}: %4L %m%n'
-    );
-    my $appender    = Log::Log4perl::Appender->new(
-        "Log::Log4perl::Appender::File",
-        name        => "scot_log",
-        filename    => $logfile,
-        autoflush   => 1,
-    );
-    $appender->layout($layout);
-    $log->add_appender($appender);
-    # $log->level($TRACE);
-    $log->level($self->log_level);
-    return $log;
-}
-
-# move this eventually to a database configuration item
-has tor_url => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    default     => 'http://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=132.175.81.4',
-    predicate   => 'has_tor_url',
-);
 
 sub BUILD {
     my $self    = shift;
-    my $log     = $self->log;
-    my $loglevel = $log->level();
-    $log->level($WARN);
-
-    $log->trace("-------------------------");
-    $log->trace("Scot::Env is Initializing");
-    $log->trace("-------------------------");
-
-    my $mongo   = $self->mongo;
-
-    my $prefix  = "";
+    my $conf    = $self->config;
+    my $paths   = $conf->{config_path};
     my $meta    = $self->meta;
     $meta->make_mutable;
 
-    my $module_cursor   = $self->get_module_list;
+    # first build Logger
+    my $logmodule       = delete $conf->{modules}->{log}; # delete it so we don't repeat building later
+    my $logconfigfile   = $conf->{configs}->{log};
+    my $logconfig       = $self->get_config('log', $logconfigfile);
 
-    $log->trace($module_cursor->count . " Modules will be loaded");
+    # say Dumper($logconfig);
 
-    while ( my $module_obj = $module_cursor->next ) {
+    require_module($logmodule);
+    my $log             = $logmodule->new($logconfig);
+    
+    $meta->add_attribute(
+        'log'   => ( 
+            is      => 'rw',
+            isa     => 'Log::Log4perl::Logger',
+        )
+    );
+    $self->log($log);
 
-        my $module_name     = $module_obj->module;
-        my $attribute_name  = $module_obj->attribute;
+    $log->debug("Starting Env.pm");
 
-        #my $fullname    = compose_module_name($prefix, $module_name);
-        my $fullname    = $module_name;
+    my %cacheconfs;
 
-        $log->trace("Requiring module $fullname");
-        require_module($fullname);
-
-        $log->trace("Creating attribute $attribute_name");
+    foreach my $name (keys %{$conf->{modules}} ) {
+        $log->debug("Creating attribute $name");
+        my $class           = $conf->{modules}->{$name};
+        my $configfile      = $conf->{configs}->{$name};
+        my $confhref        = $self->get_config($name, $configfile);
+        $cacheconfs{$name}  = $confhref;
+        $confhref->{log}    = $log;
+        require_module($class);
+        my $instance    = $class->new($confhref);
+        unless ( $instance ) {
+            die "Creating $class instance Failed!";
+        }
+        my $ctype       = ref($instance); # some these may be factories returning a different type
+        
         $meta->add_attribute(
-            $attribute_name => (
-                is  => 'rw',
-                isa => $fullname,
+            $name   => (
+                is      => 'rw',
+                isa     => $ctype,
             )
         );
-
-        my $conf    = $self->get_module_conf($fullname);
-        if ( $attribute_name eq "imap" ) {
-            $conf->{log}    = $log;
-        }
-        my $module  = $fullname->new($conf);
-
-        if ( defined ($module) ) {
-            $self->$attribute_name($module);
-            $log->trace("added link to module");
-        }
-        else {
-            $log->error("Failed to create $fullname");
-        }
+        $self->$name($instance);
     }
-
-    # build auth class
-    my $atype   = $self->authtype;
-    my $amodule = "Scot::Controller::Auth::$atype";
-    $log->trace("Building Auth module $amodule");
-    require_module($amodule);
-    $self->meta->add_attribute(
-        "auth_module"   => {
-            is      => 'rw',
-            isa     => $amodule,
-        }
-    );
-    my $amodobj = $amodule->new;
-    if ( $amodobj ) {
-        $self->auth_module($amodobj);
-    }
-    else {
-        $log->error("Failed to instantiate $amodule");
-    }
-    $self->load_env_config_items();
-    # lock er down
-    $meta->make_immutable;
-    $log->level($loglevel);
+    $self->cachedconfigs(\%cacheconfs);
 }
 
-sub load_env_config_items {
+sub get_config {
     my $self    = shift;
-    my $mongo   = $self->mongo;
-    my $log     = $self->log;
-    my $col     = $mongo->collection('Config');
-    my $cursor  = $col->find({module => 'Scot::Env'});
-    my $meta    = $self->meta;
-
-    $log->debug("Loading Scot::Env configuration from DB");
-
-    while ( my $cobj = $cursor->next ) {
-        my $item    = $cobj->item;
-        
-        foreach my $attribute (keys %{$item}) {
-            my $predicate   = 'has_'.$attribute;
-            if ( $self->$predicate ) {
-                $log->debug("Setting $attribute to ", 
-                            { filter => \&Dumper, value=> $item});
-                $self->$attribute($item);
-            }
-            else {
-                my $type    = "Str";
-                if ( ref($item->{$attribute}) eq "ARRAY" ) {
-                    $type   = "ArrayRef";
-                }
-                if ( ref($item->{$attribute}) eq "HASH" ) {
-                    $type   = "HashRef";
-                }
-                $log->debug("creating attribute $attribute of type $type");
-                $meta->add_attribute(
-                    $attribute    => (
-                        is  => 'rw',
-                        isa => $type,
-                    )
-                );
-                $log->debug("Creating $attribute and setting to ",
-                            {filter=>\&Dumper, value=>$item->{$attribute}});
-                $self->$attribute($item->{$attribute});
-            }
+    my $name    = shift;
+    my $file    = shift;
+    my $conf    = $self->config;
+    my $paths   = $conf->{config_path};
+    my $fqname;
+    find(sub {
+        if ( $_ eq $file ) {
+            $fqname = $File::Find::name;
+            return;
         }
-    }
-}
+    }, @$paths);
 
-sub load_env_config_items_ {
-    my $self    = shift;
-    my $mongo   = $self->mongo;
-    my $log     = $self->log;
-    my $col     = $mongo->collection('Config');
-    my $cursor  = $col->find({module => "Scot::Env"});
-    my $meta    = $self->meta;
+    no strict 'refs'; # I know, but...
+    my $cont    = new Safe 'MCONFIG';
+    my $r       = $cont->rdo($fqname);
+    my $hname   = 'MCONFIG::environment';
+    my $href    = \%$hname;
 
-    $log->debug("loading Env configuration items");
-    
-    while (my $confobj = $cursor->next) {
-        my $item    = $confobj->item;
-        foreach my $key (keys %{$item}) {
-            my $type    = "Str";
-            if ( ref($item->{$key}) eq "ARRAY" ) {
-                $type   = "ArrayRef";
-            }
-            if ( ref($item->{$key}) eq "HASH" ) {
-                $type   = "HashRef";
-            }
-            $log->debug("creating attribute $key of type $type");
-            $meta->add_attribute(
-                $key    => (
-                    is  => 'rw',
-                    isa => $type,
-                )
-            );
-            $log->debug("setting $key to ",{filter=>\&Dumper, value=>$item->{$key}});
-            $self->$key($item->{$key});
-        }
-    }
-}
+    # say "loaded $name config: ", Dumper($href);
 
-sub get_module_list {
-    my $self    = shift;
-    my $mongo   = $self->mongo;
-    my $log     = $self->log;
-
-    $log->trace("Looking for Scot Modules to load");
-
-    my $collection  = $mongo->collection('Scotmod');
-    my $cursor      = $collection->find({});
-    return $cursor;
-}
-
-sub get_module_conf {
-    my $self    = shift;
-    my $class   = shift;
-    my $mongo   = $self->mongo;
-    
-    my $collection  = $mongo->collection('Config');
-    my $config_obj  = $collection->find_one({
-        module       => $class,
-    });
-    unless ($config_obj) {
-        return {};
-    }
-    return $config_obj->item;
+    return $href;
 }
 
 =item C<get_timer(I<$title>)>

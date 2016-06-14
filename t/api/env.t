@@ -4,47 +4,39 @@ use lib '../../lib';
 use Test::More;
 use Test::Deep;
 use Scot::Env;
+use Safe;
 use Data::Dumper;
 use v5.18;
 
 $ENV{'scot_mode'}       = "testing";
 $ENV{'SCOT_AUTH_TYPE'}  = "Testing";
 $ENV{'scot_log_file'}   = "/var/log/scot/scot.test.log";
-print "Resetting test db...\n";
-system("mongo scot-testing <../../etc/database/reset.js 2>&1 > /dev/null");
+$ENV{'scot_env_configfile'} = '../../../Scot-Internal-Modules/etc/scot_env_test.cfg';
 
+my $configfile  = '../../../Scot-Internal-Modules/etc/scot_env_test.cfg';
 
 my $env     = Scot::Env->new({
-    enrichment_configfile => '/home/tbruner/Scot-Internal-Modules/etc/enrichments.cfg',
+    configfile              => $configfile,
 });
 
 ok(defined($env), "Env is defined");
 
+my $ctr = new Safe 'CONFIGTEST';
+my $r   = $ctr->rdo($configfile);
+my $hn  = 'CONFIGTEST::environment';
+my $thref   = \%CONFIGTEST::environment;
+
 is( $env->version, "3.5", "Correct Version");
 is( $env->mojo->{default_expiration}, 14400, "Correct expiration");
 is( $env->mode, "testing", "Got Mode from Environment var");
-is( $env->mongo_config->{db_name}, "scot-testing", "Correct DB Name");
+is ($env->servername, $thref->{servername}, "Correct Servername");
+is ($env->filestorage, $thref->{file_store_root}, "Correct file store root");
 
-my $mongo   = $env->mongo;
-my $col     = $mongo->collection('Scotmod');
-my $cursor  = $col->find();
-
-is( $env->default_owner, "scot-admin", "Correct default owner pulled from db");
-cmp_deeply( $env->default_groups, {
-    read    => [ qw(wg-scot-ir wg-scot-researchers) ],
-    modify  => [ qw(wg-scot-ir ) ],
-}, "Correct default groups from config db");
-
-say Dumper($env->default_groups);
-
-while ( my $mod = $cursor->next ) {
-    my $class   = $mod->module;
-    my $attr    = $mod->attribute;
-    is ( ref($env->$attr), $class, "$attr was loaded correctly");
+foreach my $module (keys %{$thref->{modules}}) {
+    ok(defined($env->$module), "Module $module instantiated.");
 }
 
-my $enrichers = $env->entity_enrichers;
-
+say Dumper($thref);
 
 done_testing();
 
