@@ -2,9 +2,16 @@ package Scot::Util::Enrichments;
 
 use Module::Runtime qw(require_module compose_module_name);
 
+use Data::Dumper;
 use Moose;
 
 # config is passed in the new call
+
+has log         => (
+    is          => 'ro',
+    isa         => 'Log::Log4perl::Logger',
+    required    => 1,
+);
 
 has mappings    => (
     is          => 'ro',
@@ -25,7 +32,10 @@ sub BUILD {
     my $maps    = $self->mappings;
     my $confs   = $self->configs;
     my $meta    = $self->meta;
+    my $log     = $self->log;
     $meta->make_mutable;
+
+    $log->debug("Building Enrichments...");
 
     foreach my $name (keys %{$confs} ) {
         my $href    = $confs->{$name};
@@ -34,6 +44,14 @@ sub BUILD {
         if ( $type eq "native" ) {
             my $module  = $href->{module};
             my $config  = $href->{config};
+            unless (defined $config) {
+                $config = {};
+            }
+
+            $config->{log}  = $log;
+
+            $log->debug("Module $module with config ",{filter=>\&Dumper, value=>$config});
+
             require_module($module);
             $meta->add_attribute(
                 $name   => (
@@ -43,7 +61,7 @@ sub BUILD {
             );
             my $instance  = $module->new($config);
 
-            if ( defined $module ) {
+            if ( defined $instance ) {
                 $self->$name($instance);
             }
         }
