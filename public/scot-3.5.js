@@ -4848,7 +4848,7 @@ module.exports = React.createClass({displayName: "exports",
                }
         }
         else {
-            $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
+    //        $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
             $('.container-fluid2').css('width', '100%')
         }
     },
@@ -5142,9 +5142,11 @@ module.exports = React.createClass({displayName: "exports",
         ));
     },
     toggleView: function(){
-        $('.mainview').hide()
-        $('.toggleview').show()
-        this.setState({containerdisplay: 'inherit'})
+        if(this.state.idsarray.length != 0 ){
+            $('.mainview').hide()
+            $('.toggleview').show()
+            this.setState({containerdisplay: 'inherit'})
+        }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
@@ -5788,7 +5790,7 @@ module.exports = React.createClass({displayName: "exports",
                }
         }
         else {
-            $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
+        //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
             $('.container-fluid2').css('width', '100%')
         }
     },
@@ -6148,9 +6150,11 @@ module.exports = React.createClass({displayName: "exports",
         ));
     },
     toggleView: function(){
-        $('.mainview').hide()
-        $('.toggleview').show()
-        this.setState({containerdisplay: 'inherit'})
+        if(this.state.idsarray.length != 0){  
+            $('.mainview').hide()
+            $('.toggleview').show()
+            this.setState({containerdisplay: 'inherit'})
+        }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
@@ -6861,7 +6865,7 @@ module.exports = React.createClass({displayName: "exports",
                }
         }
         else {
-            $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
+    //        $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
             $('.container-fluid2').css('width', '100%')
         }
     },
@@ -7152,9 +7156,11 @@ module.exports = React.createClass({displayName: "exports",
         this.getNewData({page:0, limit:pageSize})   
 	},
     toggleView: function(){
-        $('.mainview').hide()
-        $('.toggleview').show()
-        this.setState({containerdisplay: 'inherit'})
+        if(this.state.idsarray.length != 0){
+            $('.mainview').hide()
+            $('.toggleview').show()
+            this.setState({containerdisplay: 'inherit'})
+        }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
@@ -7428,7 +7434,7 @@ module.exports = React.createClass({displayName: "exports",
                }
         }
         else {
-            $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
+        //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
             $('.container-fluid2').css('width', '100%')
         }
     },
@@ -7442,9 +7448,11 @@ module.exports = React.createClass({displayName: "exports",
 
     },
     toggleView: function(){
-        $('.mainview').hide()
-        $('.toggleview').show()
-        this.setState({containerdisplay: 'inherit'})
+        if(this.state.idsarray.length != 0){
+            $('.mainview').hide()
+            $('.toggleview').show()
+            this.setState({containerdisplay: 'inherit'})
+        }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
@@ -8587,7 +8595,7 @@ module.exports = React.createClass({displayName: "exports",
                }
         }
         else {
-            $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
+            //$('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
             $('.container-fluid2').css('width', '100%')
         }
     },
@@ -8947,9 +8955,11 @@ module.exports = React.createClass({displayName: "exports",
         ));
     },
     toggleView: function(){
-        $('.mainview').hide()
-        $('.toggleview').show()
-        this.setState({containerdisplay: 'inherit'})
+         if(this.state.idsarray.length != 0){   
+            $('.mainview').hide()
+            $('.toggleview').show()
+            this.setState({containerdisplay: 'inherit'})
+        }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
@@ -9667,7 +9677,7 @@ module.exports = React.createClass({displayName: "exports",
                }
         }
         else {
-            $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
+    //        $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
             $('.container-fluid2').css('width', '100%')
         }
     },
@@ -9948,9 +9958,11 @@ module.exports = React.createClass({displayName: "exports",
         scrolled = $('.container-fluid2').scrollTop()
     },
     toggleView: function(){
-        $('.mainview').hide()
-        $('.toggleview').show()
-        this.setState({containerdisplay: 'inherit'})
+        if(this.state.idsarray.length != 0){
+            $('.mainview').hide()
+            $('.toggleview').show()
+            this.setState({containerdisplay: 'inherit'})
+        }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
