@@ -492,9 +492,11 @@ module.exports = React.createClass({
         this.getNewData({page:0, limit:pageSize})   
 	},
     toggleView: function(){
-        $('.mainview').hide()
-        $('.toggleview').show()
-        this.setState({containerdisplay: 'inherit'})
+        if(this.state.idsarray.length != 0){
+            $('.mainview').hide()
+            $('.toggleview').show()
+            this.setState({containerdisplay: 'inherit'})
+        }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
