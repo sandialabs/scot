@@ -18,7 +18,7 @@ var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var SORT_INFO;
 var colsort = "id"
 var start;
-var size = 450
+var size = 645
 var end;
 var valuesort = -1
 var SELECTED_ID = {}
@@ -52,12 +52,12 @@ module.exports = React.createClass({
 
     getInitialState: function(){
         var scrollHeight = $(window).height() - 170
-        var scrollWidth  = '450px'  
-        width = 450
+        var scrollWidth  = '650px'  
+        width = 650
 
     return {
             pagedisplay: 'inline-flex', mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
-            sizearray: ['dates-small', 'status-owner-small', 'module-reporter-small'], sourcetags: [], tags: [], 
+            sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'], sourcetags: [], tags: [], 
             idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0], 
             createdarrow: [0, 0], updatedarrow:[0, 0], sourcearrow:[0, 0],
             tagsarrow: [0, 0], ownerarrow: [0, 0], entriesarrow: [0, 0],
@@ -573,7 +573,7 @@ module.exports = React.createClass({
                             React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1] + ' ' + this.state.classname[3]},    
                             React.createElement("div", {className: "column status"}, value.owner), 
                             React.createElement("div", {className: "column severity"}, value.entries),
-                            React.createElement("div", {className: "column owner"}, value.views)
+                            React.createElement("div", {className: "column owner"}, value.views == null ? 0 : value.views)
                             ) 
                         )
                         )
