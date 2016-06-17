@@ -4684,7 +4684,7 @@ var setfilter = false
 var savedid;
 var height;
 var width;
-var size = 450
+var size = 645
 var defaultpage = 1;
 var pageSize = 50;
 var readonly = []
@@ -4697,13 +4697,13 @@ module.exports = React.createClass({displayName: "exports",
 
     getInitialState: function(){
         var scrollHeight = $(window).height() - 170
-        var scrollWidth  = '450px'  
-        width = 450
+        var scrollWidth  = '650px'  
+        width = 650
 
     return {
             pagedisplay: 'inline-flex', mute: false,unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
-            sizearray: ['dates-small', 'status-owner-small', 'module-reporter-small'],
+            sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'],
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
             resize: 'horizontal',createdarrow: [0, 0], sourcearrow:[0, 0],tagsarrow: [0, 0],
@@ -5112,7 +5112,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement("div", {className: "column reporter"}, value.tags)), 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                             React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]},    
-                            React.createElement("div", {className: "column owner"}, value.views)
+                            React.createElement("div", {className: "column owner"}, value.views == null ? 0 : value.views)
                             ) 
                         )
                         )
@@ -5565,7 +5565,7 @@ var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var SORT_INFO;
 var colsort = "id"
 var start;
-var size = 450
+var size = 645
 var end;
 var valuesort = -1
 var SELECTED_ID = {}
@@ -5599,19 +5599,20 @@ module.exports = React.createClass({displayName: "exports",
 
     getInitialState: function(){
         var scrollHeight = $(window).height() - 170
-        var scrollWidth  = '450px'  
-        width = 450
+        var scrollWidth  = '650px'  
+        width = 650
+        var max = $(window).width() - 10
 
     return {
             pagedisplay: 'inline-flex', mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
-            sizearray: ['dates-small', 'status-owner-small', 'module-reporter-small'], sourcetags: [], tags: [], 
+            sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'], sourcetags: [], tags: [], 
             idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0], 
             createdarrow: [0, 0], updatedarrow:[0, 0], sourcearrow:[0, 0],
             tagsarrow: [0, 0], ownerarrow: [0, 0], entriesarrow: [0, 0],
             viewsarrow: [0, 0],classname: [' ', ' ',' ', ' '],
             resize: 'horizontal',startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
             upstartepoch: '', upendepoch: '', statustext: '', subjecttext:'', idsarray: [], 
-            differentviews: '',maxwidth: '915px', maxheight: scrollHeight, containerdisplay: 'none',alldetail: true, minwidth: '650px',
+            differentviews: '',maxwidth: max, maxheight: scrollHeight, containerdisplay: 'none',alldetail: true, minwidth: '650px',
             display: 'flex',ownertext: '',viewstext: '', entriestext: '', scrollheight: scrollHeight, 
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
             viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: ''};
@@ -5870,7 +5871,7 @@ module.exports = React.createClass({displayName: "exports",
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
             React.createElement('div', {style: {width: this.state.differentviews},id:'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
-                React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {/*'max-width': this.state.maxwidth, */resize:this.state.resize, /*'min-width': this.state.minwidth, */width: this.state.scrollwidth,  'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x': 'hidden','padding-left':'5px'}}, 
+                React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {'max-width': this.state.maxwidth, resize:this.state.resize, /*'min-width': this.state.minwidth, */width: this.state.scrollwidth,  'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x': 'hidden','padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header " + this.state.classname[0]},
                         React.createElement("div", {className: "wrapper attributes " + this.state.classname[1]}, 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -6120,7 +6121,7 @@ module.exports = React.createClass({displayName: "exports",
                             React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1] + ' ' + this.state.classname[3]},    
                             React.createElement("div", {className: "column status"}, value.owner), 
                             React.createElement("div", {className: "column severity"}, value.entries),
-                            React.createElement("div", {className: "column owner"}, value.views)
+                            React.createElement("div", {className: "column owner"}, value.views == null ? 0 : value.views)
                             ) 
                         )
                         )
@@ -6683,7 +6684,7 @@ var SORT_INFO;
 var colsort = "id"
 var start;
 var toggle
-var size = 450 
+var size = 645 
 var scrolled = 23
 var end;
 var valuesort = -1
@@ -6713,12 +6714,12 @@ module.exports = React.createClass({displayName: "exports",
 
     getInitialState: function(){
         var scrollHeight = $(window).height() - 170
-        var scrollWidth  = '450px'  
-        width = 450
+        var scrollWidth  = '650px'  
+        width = 650
 
     return {
             mute: false, resize: 'horizontal', unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
-            idtext: '', totalcount: 0, activepage: 0,sizearray: ['dates-small', 'status-owner-small', 'module-reporter-small'],
+            idtext: '', totalcount: 0, activepage: 0,sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'],
             pagedisplay: 'inline-flex', idarrow: [-1,-1],subjectarrow: [0, 0],
             subjecttext:'', idsarray: [], scrollheight: scrollHeight, 
             display: 'flex',scrollwidth: scrollWidth, reload: false, 
@@ -7246,7 +7247,7 @@ var Button                  = require('react-bootstrap/lib/Button.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var toggle
 var scrolled = 58
-var size = 450
+var size = 645
 var SORT_INFO;
 var colsort = "id"
 var start;
@@ -7279,14 +7280,14 @@ module.exports = React.createClass({displayName: "exports",
 
     getInitialState: function(){
         var scrollHeight = $(window).height() - 170
-        var scrollWidth  = '450px'  
-        width = 450
+        var scrollWidth  = '650px'  
+        width = 650
 
     return {
             mute: false, startepoch: '', endepoch: '',white: 'white', blue: '#AEDAFF',
             pagedisplay: 'inline-flex', resize: 'horizontal',idtext: '', totalcount: 0, activepage: 0,
             statustext: '', subjecttext:'', idsarray: [],
-            sizearray: ['dates-small', 'status-owner-small', 'module-reporter-small'], 
+            sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'], 
             ownertext: '', doetext: '', typetext: '', scrollheight: scrollHeight, 
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight, minwidth: '650px',
             display: 'flex', idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
@@ -8370,7 +8371,7 @@ var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var SORT_INFO;
 var colsort = "id"
 var start;
-var size = 450
+var size = 645
 var end;
 var valuesort = -1
 var SELECTED_ID = {}
@@ -8404,12 +8405,12 @@ module.exports = React.createClass({displayName: "exports",
 
     getInitialState: function(){
         var scrollHeight = $(window).height() - 170
-        var scrollWidth  = '450px'  
-        width = 450
+        var scrollWidth  = '650px'  
+        width = 650
 
     return {
             pagedisplay: 'inline-flex', mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
-            sizearray: ['dates-small', 'status-owner-small', 'module-reporter-small'], sourcetags: [], tags: [], 
+            sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'], sourcetags: [], tags: [], 
             idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0], 
             createdarrow: [0, 0], updatedarrow:[0, 0], sourcearrow:[0, 0],
             tagsarrow: [0, 0], ownerarrow: [0, 0], entriesarrow: [0, 0],
@@ -8925,7 +8926,7 @@ module.exports = React.createClass({displayName: "exports",
                             React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1] + ' ' + this.state.classname[3]},    
                             React.createElement("div", {className: "column status"}, value.owner), 
                             React.createElement("div", {className: "column severity"}, value.entries),
-                            React.createElement("div", {className: "column owner"}, value.views)
+                            React.createElement("div", {className: "column owner"}, value.views == null ? 0 : value.views)
                             ) 
                         )
                         )
@@ -9485,7 +9486,7 @@ var Source                  = require('react-tag-input-tags/react-tag-input').Wi
 var Tags                    = require('react-tag-input').WithContext
 var Button                  = require('react-bootstrap/lib/Button.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
-var size = 450
+var size = 645
 var toggle
 var scrolled = 43
 var SORT_INFO;
@@ -9519,14 +9520,14 @@ module.exports = React.createClass({displayName: "exports",
 
     getInitialState: function(){
         var scrollHeight = $(window).height() - 170
-        var scrollWidth  = '450px'
-        width = 450
+        var scrollWidth  = '650px'
+        width = 650
 
     return {
             resize: 'horizontal', mute: false, pagedisplay: 'inline-flex', 
             display: 'flex', upstartepoch: '', upendepoch: '',white: 'white', blue: '#AEDAFF',
             idtext: '', totalcount: 0, activepage: 0,
-            sizearray: ['dates-small', 'status-owner-small', 'module-reporter-small'],
+            sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'],
             idarrow: [-1,-1], typearrow: [0, 0], statusarrow: [0, 0],
             updatedarrow:[0, 0],ownerarrow: [0, 0], entriesarrow: [0, 0],
             entry: 0, type: '', statustext: '', idsarray: [],

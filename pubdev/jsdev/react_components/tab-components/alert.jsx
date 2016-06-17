@@ -35,7 +35,7 @@ var setfilter = false
 var savedid;
 var height;
 var width;
-var size = 450
+var size = 645
 var defaultpage = 1;
 var pageSize = 50;
 var readonly = []
@@ -48,13 +48,13 @@ module.exports = React.createClass({
 
     getInitialState: function(){
         var scrollHeight = $(window).height() - 170
-        var scrollWidth  = '450px'  
-        width = 450
+        var scrollWidth  = '650px'  
+        width = 650
 
     return {
             pagedisplay: 'inline-flex', mute: false,unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
-            sizearray: ['dates-small', 'status-owner-small', 'module-reporter-small'],
+            sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'],
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
             resize: 'horizontal',createdarrow: [0, 0], sourcearrow:[0, 0],tagsarrow: [0, 0],
@@ -463,7 +463,7 @@ module.exports = React.createClass({
                         React.createElement("div", {className: "column reporter"}, value.tags)), 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                             React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]},    
-                            React.createElement("div", {className: "column owner"}, value.views)
+                            React.createElement("div", {className: "column owner"}, value.views == null ? 0 : value.views)
                             ) 
                         )
                         )
