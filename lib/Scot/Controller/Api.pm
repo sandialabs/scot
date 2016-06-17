@@ -2141,7 +2141,11 @@ sub build_match_ref {
         elsif($k eq "tags") {
             $log->debug("tag field");
             $match->{$k}  = {'$all' => $v };
-        }	
+        }
+        elsif($k eq "source"){
+            $log->debug("source field");
+            $match->{$k} = {'$all' => $v};
+        }
         elsif ( grep { /$k/ } @datefields ) {
             $log->debug("datefield!");
             if($v =~ m/!/ || $v =~ m/Not/i) {
