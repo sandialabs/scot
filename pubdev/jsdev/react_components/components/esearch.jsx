@@ -1,19 +1,18 @@
 var React = require('react')
-var SearchkitProvider       = require('../../../node_modules/searchkit').SearchkitProvider;
-var SearchkitManager       = require('../../../node_modules/searchkit').SearchkitManager;
-var SearchBox       = require('../../../node_modules/searchkit').SearchBox;
-const searchkit = new SearchkitManager("/scot/api/v2")
+//var SearchkitProvider       = require('../../../node_modules/searchkit').SearchkitProvider;
+//var SearchkitManager       = require('../../../node_modules/searchkit').SearchkitManager;
+//var SearchBox       = require('../../../node_modules/searchkit').SearchBox;
+//const searchkit = new SearchkitManager("/scot/api/v2")
 var Search = React.createClass({
 	render: function(){
-	return (/*
-                    React.createElement('div', null, 
-                    React.createElement(SearchkitProvider, {ref: 'search', searchkit: searchkit},
+	return (
+  /*
+        React.createElement('div', {className: 'searchkit'}, 
+                    React.createElement(SearchkitProvider, {searchkit: searchkit},
                     React.createElement(SearchBox, {autofocus: true, searchOnChange: true, prefixQueryFields: ["My Lord"]}
                     )
                     )
                     ) 
-    
-    
 
 */
 
