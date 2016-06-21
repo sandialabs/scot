@@ -1094,20 +1094,25 @@ module.exports = {AddFlair, Watcher}
 
 },{}],7:[function(require,module,exports){
 var React = require('react')
-//var SearchkitProvider       = require('../../../node_modules/searchkit').SearchkitProvider;
-//var SearchkitManager       = require('../../../node_modules/searchkit').SearchkitManager;
-//var SearchBox       = require('../../../node_modules/searchkit').SearchBox;
-//const searchkit = new SearchkitManager("/scot/api/v2")
+/*
+var SearchkitProvider       = require('../../../node_modules/searchkit').SearchkitProvider;
+var SearchkitManager       = require('../../../node_modules/searchkit').SearchkitManager;
+var SearchBox       = require('../../../node_modules/searchkit').SearchBox;
+const searchkit = new SearchkitManager("/scot/api/v2")
+
+*/
 var Search = React.createClass({displayName: "Search",
 	render: function(){
 	return (
   /*
-        React.createElement('div', {className: 'searchkit'}, 
+  React.createElement('div', {className: 'searchkit'}, 
                     React.createElement(SearchkitProvider, {searchkit: searchkit},
                     React.createElement(SearchBox, {autofocus: true, searchOnChange: true, prefixQueryFields: ["My Lord"]}
                     )
                     )
                     ) 
+    
+    
 
 */
 
