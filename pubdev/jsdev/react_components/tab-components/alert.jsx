@@ -446,11 +446,11 @@ module.exports = React.createClass({
                         React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]}, 
                             React.createElement("div", {className: 'column index'}, value.id),
                             React.createElement("div", {className: "column owner colorstatus"}, 
-                            React.createElement(Button, {bsSize: "xsmall"}, 
-                            React.createElement("span", {className: "alertgroup"}, 
-                            React.createElement("span", {className: "alertgroup_open"}, value.open_count), " / ", 
-                            React.createElement("span", {className: "alertgroup_closed"}, value.closed_count), " / ",   
-                           React.createElement("span", {className: "alertgroup_promoted"}, value.promoted_count)))  
+                            React.createElement(Button, {className: value.status == 'open' ? 'alertgroup_open' : value.status == 'closed' ? 'alertgroup_closed' : 'alertgroup_promoted', bsSize: "xsmall", bsStyle: value.status == 'open' ? 'danger' : value.status == 'closed' ? 'success' : 'default'}, 
+                            React.createElement("span", null, 
+                            React.createElement("span", null, value.open_count), " / ", 
+                            React.createElement("span", null, value.closed_count), " / ",   
+                           React.createElement("span", null, value.promoted_count)))  
                             ))),
                         React.createElement("div", {className: "wrapper title-comment-module-reporter"}, 
                             React.createElement("div", {className: "wrapper title-comment"},  
