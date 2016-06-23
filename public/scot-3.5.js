@@ -4508,12 +4508,15 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
             arr.push(arrClosed);
             arr.push(arrOpen);
             this.setState({entityDataIntel:arr})
-        }.bind(this));    
+        }.bind(this));   
+        $('#sortableentitytable').tablesorter();
     },
-    
+    componentDidUpdate: function() {
+        $('#sortableentitytable').tablesorter(); 
+    },
     render: function() {
         return (
-            React.createElement("table", {className: "tablesorter alertTableHorizontal", id: 'sortabletable', width: "100%"}, 
+            React.createElement("table", {className: "tablesorter alertTableHorizontal", id: 'sortableentitytable', width: "100%"}, 
                 React.createElement("thead", null, 
                     React.createElement("tr", null, 
                         React.createElement("th", null, "status"), 
