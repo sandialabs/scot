@@ -42,6 +42,9 @@ sub BUILD {
         my $type    = $href->{type};
 
         if ( $type eq "native" ) {
+
+            $log->trace("Adding native enrichment: $name");
+
             my $module  = $href->{module};
             my $config  = $href->{config};
             unless (defined $config) {
@@ -66,6 +69,9 @@ sub BUILD {
             }
         }
         elsif ( $type =~ /link/ ) {
+
+            $log->trace("Adding Link enrichment: $name");
+
             $meta->add_attribute(
                 $name   => (
                     is          => 'rw',
@@ -91,6 +97,7 @@ sub enrich {
 
     NAME:
     foreach my $enricher_name (keys %{$self->mappings}) {
+
         my $enricher    = $self->$enricher_name;
 
         unless ( $enricher ) {
