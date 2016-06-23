@@ -3,6 +3,7 @@ package Scot::Util::Enrichments;
 use Module::Runtime qw(require_module compose_module_name);
 
 use Data::Dumper;
+use Try::Tiny;
 use Moose;
 
 # config is passed in the new call
@@ -92,13 +93,24 @@ sub enrich {
     my $entity  = shift;
     my $force   = shift;
     my $data    = {};   # put enrichments here
+    my $log     = $self->log;
 
     my $update_count    = 0;
 
     NAME:
     foreach my $enricher_name (keys %{$self->mappings}) {
 
-        my $enricher    = $self->$enricher_name;
+        $log->trace("Looking for enrichment: $enricher_name.");
+
+
+        my $enricher;
+        try { 
+            $enricher    = $self->$enricher_name;
+        }
+        catch {
+            $log->error("$enricher_name does not have a defined attribute by same name in enrichments");
+            next NAME;
+        };
 
         unless ( $enricher ) {
             $data->{$enricher_name} = {
