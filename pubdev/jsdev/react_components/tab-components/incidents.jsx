@@ -17,7 +17,7 @@ var Button                  = require('react-bootstrap/lib/Button.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var toggle
 var scrolled = 58
-var size = 450
+var size = 645
 var SORT_INFO;
 var colsort = "id"
 var start;
@@ -50,14 +50,14 @@ module.exports = React.createClass({
 
     getInitialState: function(){
         var scrollHeight = $(window).height() - 170
-        var scrollWidth  = '450px'  
-        width = 450
+        var scrollWidth  = '650px'  
+        width = 650
 
     return {
             mute: false, startepoch: '', endepoch: '',white: 'white', blue: '#AEDAFF',
             pagedisplay: 'inline-flex', resize: 'horizontal',idtext: '', totalcount: 0, activepage: 0,
             statustext: '', subjecttext:'', idsarray: [],
-            sizearray: ['dates-small', 'status-owner-small', 'module-reporter-small'], 
+            sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'], 
             ownertext: '', doetext: '', typetext: '', scrollheight: scrollHeight, 
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight, minwidth: '650px',
             display: 'flex', idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],

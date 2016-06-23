@@ -15,7 +15,7 @@ var Source                  = require('react-tag-input-tags/react-tag-input').Wi
 var Tags                    = require('react-tag-input').WithContext
 var Button                  = require('react-bootstrap/lib/Button.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
-var size = 450
+var size = 645
 var toggle
 var scrolled = 43
 var SORT_INFO;
@@ -49,14 +49,14 @@ module.exports = React.createClass({
 
     getInitialState: function(){
         var scrollHeight = $(window).height() - 170
-        var scrollWidth  = '450px'
-        width = 450
+        var scrollWidth  = '650px'
+        width = 650
 
     return {
             resize: 'horizontal', mute: false, pagedisplay: 'inline-flex', 
             display: 'flex', upstartepoch: '', upendepoch: '',white: 'white', blue: '#AEDAFF',
             idtext: '', totalcount: 0, activepage: 0,
-            sizearray: ['dates-small', 'status-owner-small', 'module-reporter-small'],
+            sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'],
             idarrow: [-1,-1], typearrow: [0, 0], statusarrow: [0, 0],
             updatedarrow:[0, 0],ownerarrow: [0, 0], entriesarrow: [0, 0],
             entry: 0, type: '', statustext: '', idsarray: [],
