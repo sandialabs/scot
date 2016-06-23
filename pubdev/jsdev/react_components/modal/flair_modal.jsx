@@ -275,12 +275,15 @@ var EntityReferences = React.createClass({
             arr.push(arrClosed);
             arr.push(arrOpen);
             this.setState({entityDataIntel:arr})
-        }.bind(this));    
+        }.bind(this));   
+        $('#sortableentitytable').tablesorter();
     },
-    
+    componentDidUpdate: function() {
+        $('#sortableentitytable').tablesorter(); 
+    },
     render: function() {
         return (
-            <table className="tablesorter alertTableHorizontal" id={'sortabletable'} width='100%'>
+            <table className="tablesorter alertTableHorizontal" id={'sortableentitytable'} width='100%'>
                 <thead>
                     <tr>
                         <th>status</th>
