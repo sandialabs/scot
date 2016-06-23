@@ -38,9 +38,12 @@ sub BUILD {
 
     $log->debug("Building Enrichments...");
 
+    ENRICHMENT:
     foreach my $name (keys %{$confs} ) {
         my $href    = $confs->{$name};
         my $type    = $href->{type};
+
+        $log->debug("Type is $type");
 
         if ( $type eq "native" ) {
 
@@ -68,8 +71,10 @@ sub BUILD {
             if ( defined $instance ) {
                 $self->$name($instance);
             }
+            next ENRICHMENT;
         }
-        elsif ( $type =~ /link/ ) {
+
+        if ( $type eq 'external_link' or $type eq 'internal_link' ) {
 
             $log->trace("Adding Link enrichment: $name");
 
@@ -77,15 +82,16 @@ sub BUILD {
                 $name   => (
                     is          => 'rw',
                     isa         => 'HashRef',
-                    default     => sub { $href },
                 )
             );
+            $self->$name($href);
         }
         else {
             die "Unsupported Enrichment Type!";
         }
     }
     $meta->make_immutable;
+    $log->debug("Enrichment is ",{filter=>\&Dumper,value=>$self});
 }
 
 sub enrich {
@@ -97,11 +103,16 @@ sub enrich {
 
     my $update_count    = 0;
 
+    my $etype   = $entity->type;
+
+    $log->debug("Entity ". $entity->value. " Type is $etype");
+
+    my $eset    = $self->mappings->{$etype};
+
     NAME:
-    foreach my $enricher_name (keys %{$self->mappings}) {
+    foreach my $enricher_name (@{$eset}) {
 
-        $log->trace("Looking for enrichment: $enricher_name.");
-
+        $log->debug("Looking for enrichment: $enricher_name.");
 
         my $enricher;
         try { 
@@ -113,6 +124,7 @@ sub enrich {
         };
 
         unless ( $enricher ) {
+            $log->error("invalid enricher $enricher_name!");
             $data->{$enricher_name} = {
                 type    => 'error',
                 data    => 'invalid enricher',
@@ -120,15 +132,29 @@ sub enrich {
             next NAME;
         }
 
+        $log->debug("Enricher Hash is ",{filter=>\&Dumper, value=>$enricher});
+
         if ( ref($enricher) eq "HASH" ) {
-            if ( $enricher->{type} =~ /link/ ) {
-                if (! defined $force &&
-                      defined $entity->data->{$enricher_name} ) {
+
+            if ( $enricher->{type} =~ /link/i ) {
+
+                if ( defined $entity->data->{$enricher_name} ) {
+                    if ( $force ) {
+                        $data->{$enricher_name} = {
+                            type    => 'link',
+                            data    => {
+                                url => sprintf($enricher->{url}, $entity->value),
+                                title   => $enricher->{title},
+                            },
+                        };
+                        $update_count++;
+                    }
+                }
+                else {
                     $data->{$enricher_name} = {
                         type    => 'link',
                         data    => {
-                            url     => sprintf($enricher->{url},
-                                               $entity->value),
+                            url => sprintf($enricher->{url}, $entity->value),
                             title   => $enricher->{title},
                         },
                     };
@@ -136,6 +162,7 @@ sub enrich {
                 }
             }
             else {
+                $log->error("unsupported enrichment type!");
                 $data->{$enricher_name} = {
                     type => 'error',
                     data => 'unsupported enrichment type',
@@ -143,9 +170,14 @@ sub enrich {
             }
         }
         else {
-            if (! defined $force && 
-                  defined $entity->data->{$enricher_name}) {
-                next NAME;
+            # this is for native modules
+
+            if ( defined $entity->data->{$enricher_name}) {
+                # we have a cache of enrichment data for this type already
+                if ( ! defined $force ) {
+                    # so unless $force is defined, do not refresh
+                    next NAME;
+                }
             }
             my $entity_data = $enricher->get_data($entity->type, 
                                                   $entity->value);
