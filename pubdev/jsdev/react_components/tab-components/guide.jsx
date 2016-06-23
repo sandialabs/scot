@@ -19,7 +19,7 @@ var SORT_INFO;
 var colsort = "id"
 var start;
 var toggle
-var size = 450 
+var size = 645 
 var scrolled = 23
 var end;
 var valuesort = -1
@@ -49,12 +49,12 @@ module.exports = React.createClass({
 
     getInitialState: function(){
         var scrollHeight = $(window).height() - 170
-        var scrollWidth  = '450px'  
-        width = 450
+        var scrollWidth  = '650px'  
+        width = 650
 
     return {
             mute: false, resize: 'horizontal', unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
-            idtext: '', totalcount: 0, activepage: 0,sizearray: ['dates-small', 'status-owner-small', 'module-reporter-small'],
+            idtext: '', totalcount: 0, activepage: 0,sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'],
             pagedisplay: 'inline-flex', idarrow: [-1,-1],subjectarrow: [0, 0],
             subjecttext:'', idsarray: [], scrollheight: scrollHeight, 
             display: 'flex',scrollwidth: scrollWidth, reload: false, 

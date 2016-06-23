@@ -1,5 +1,6 @@
 'use strict';
 
+
 var React                   = require('react')
 var SelectedContainer       = require('../entry/selected_container.jsx')
 var Notificationactivemq    = require('../../../node_modules/react-notification-system')
@@ -35,7 +36,7 @@ var setfilter = false
 var savedid;
 var height;
 var width;
-var size = 450
+var size = 645
 var defaultpage = 1;
 var pageSize = 50;
 var readonly = []
@@ -48,13 +49,13 @@ module.exports = React.createClass({
 
     getInitialState: function(){
         var scrollHeight = $(window).height() - 170
-        var scrollWidth  = '450px'  
-        width = 450
+        var scrollWidth  = '650px'  
+        width = 650
 
     return {
             pagedisplay: 'inline-flex', mute: false,unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
-            sizearray: ['dates-small', 'status-owner-small', 'module-reporter-small'],
+            sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'],
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
             resize: 'horizontal',createdarrow: [0, 0], sourcearrow:[0, 0],tagsarrow: [0, 0],
@@ -445,11 +446,11 @@ module.exports = React.createClass({
                         React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]}, 
                             React.createElement("div", {className: 'column index'}, value.id),
                             React.createElement("div", {className: "column owner colorstatus"}, 
-                            React.createElement(Button, {bsSize: "xsmall"}, 
-                            React.createElement("span", {className: "alertgroup"}, 
-                            React.createElement("span", {className: "alertgroup_open"}, value.open_count), " / ", 
-                            React.createElement("span", {className: "alertgroup_closed"}, value.closed_count), " / ",   
-                           React.createElement("span", {className: "alertgroup_promoted"}, value.promoted_count)))  
+                            React.createElement(Button, {className: value.status == 'open' ? 'alertgroup_open' : value.status == 'closed' ? 'alertgroup_closed' : 'alertgroup_promoted', bsSize: "xsmall", bsStyle: value.status == 'open' ? 'danger' : value.status == 'closed' ? 'success' : 'default'}, 
+                            React.createElement("span", null, 
+                            React.createElement("span", null, value.open_count), " / ", 
+                            React.createElement("span", null, value.closed_count), " / ",   
+                           React.createElement("span", null, value.promoted_count)))  
                             ))),
                         React.createElement("div", {className: "wrapper title-comment-module-reporter"}, 
                             React.createElement("div", {className: "wrapper title-comment"},  
@@ -463,7 +464,7 @@ module.exports = React.createClass({
                         React.createElement("div", {className: "column reporter"}, value.tags)), 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                             React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]},    
-                            React.createElement("div", {className: "column owner"}, value.views)
+                            React.createElement("div", {className: "column owner"}, value.views == null ? 0 : value.views)
                             ) 
                         )
                         )
