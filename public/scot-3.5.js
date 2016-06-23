@@ -4519,6 +4519,7 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
             React.createElement("table", {className: "tablesorter alertTableHorizontal", id: 'sortableentitytable', width: "100%"}, 
                 React.createElement("thead", null, 
                     React.createElement("tr", null, 
+                        React.createElement("th", null, "peek"), 
                         React.createElement("th", null, "status"), 
                         React.createElement("th", null, "id"), 
                         React.createElement("th", null, "type"), 
@@ -4600,7 +4601,8 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
             href = '/#/' + this.props.type + '/' + this.props.data.id;
         }
         return (
-            React.createElement("tr", {id: trId, index: this.props.index, style: {cursor: 'pointer'}, onClick: this.onClick}, 
+            React.createElement("tr", {id: trId, index: this.props.index}, 
+                React.createElement("td", {valign: "top", style: {textAlign:'center',cursor: 'pointer'}, onClick: this.onClick}, React.createElement("i", {className: "fa fa-eye fa-1", "aria-hidden": "true"})), 
                 React.createElement("td", {valign: "top", style: {color: statusColor, paddingRight:'4px', paddingLeft:'4px'}}, this.props.data.status), 
                 React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, React.createElement("a", {href: href, target: "_blank"}, this.props.data.id)), 
                 React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, this.props.type), 
@@ -4623,41 +4625,6 @@ var ReferencesBlankRow = React.createClass({displayName: "ReferencesBlankRow",
         )   
     }
 });
-
-var ShowSummary = React.createClass({displayName: "ShowSummary",
-    getInitialState: function() {
-        return {
-            showSummary: false,
-            summaryExists: true,
-        }
-    },
-    componentDidMount: function() {
-        this.summaryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
-            var entryResult = result.records;
-            var summary = false;
-            for (i=0; i < entryResult.length; i++) {
-                if (entryResult[i].summary == 1) {
-                    summary = true;
-                    this.setState({showSummary:true,summaryData:entryResult[i].body})
-                    break;
-                }
-            }
-            if (summary == false) {this.setState({summaryExists:false})}
-        }.bind(this)); 
-    },
-    render: function() {
-        var Loading = 'Loading Summary';
-        var summaryData = this.state.summaryData;
-        var showSummary = this.state.showSummary;
-        var summaryExists = this.state.summaryExists;
-        var noSummary = 'No Summary Exists'
-        return (
-            React.createElement("div", {id: this.props.id}, 
-                summaryExists ? React.createElement("div", null, showSummary == true ? summaryData : Loading) : noSummary
-            )     
-        )
-    }
-})
 
 module.exports = Flair;
 
