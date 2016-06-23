@@ -1094,25 +1094,20 @@ module.exports = {AddFlair, Watcher}
 
 },{}],7:[function(require,module,exports){
 var React = require('react')
-/*
-var SearchkitProvider       = require('../../../node_modules/searchkit').SearchkitProvider;
-var SearchkitManager       = require('../../../node_modules/searchkit').SearchkitManager;
-var SearchBox       = require('../../../node_modules/searchkit').SearchBox;
-const searchkit = new SearchkitManager("/scot/api/v2")
-
-*/
+//var SearchkitProvider       = require('../../../node_modules/searchkit').SearchkitProvider;
+//var SearchkitManager       = require('../../../node_modules/searchkit').SearchkitManager;
+//var SearchBox       = require('../../../node_modules/searchkit').SearchBox;
+//const searchkit = new SearchkitManager("/scot/api/v2")
 var Search = React.createClass({displayName: "Search",
 	render: function(){
 	return (
   /*
-  React.createElement('div', {className: 'searchkit'}, 
+        React.createElement('div', {className: 'searchkit'}, 
                     React.createElement(SearchkitProvider, {searchkit: searchkit},
                     React.createElement(SearchBox, {autofocus: true, searchOnChange: true, prefixQueryFields: ["My Lord"]}
                     )
                     )
                     ) 
-    
-    
 
 */
 
@@ -3726,7 +3721,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                     ), 
                     React.createElement(TinyMCE, {id: this.props.id, content: "", className: 'inputtext', config: {plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}, onChange: this.handleEditorChange}), 
                     React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width':'2px','border-color':'#000','border-radius':'4px','border-style': 'dashed', 'text-align' : 'center','background-color':'azure'}}, React.createElement("div", {style: {fontSize:'16px',color:'black',margin:'5px'}}, "Click or Drop files here to upload")), 
-                    this.state.files ? React.createElement("div", null, " ", this.state.files.map(function(file) { return  React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p", {style: {display:'inline'}}, file.name), React.createElement("button", {style: {'line-height':'1px'}, className: "btn btn-info", id: file.name, onClick: this.Close}, "x")))})) : null
+                    this.state.files ? React.createElement("div", null, " ", this.state.files.map(function(file) { return  React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p", {style: {display:'inline'}}, file.name), React.createElement("button", {style: {'line-height':'1px'}, className: "btn btn-info", id: file.name, onClick: this.Close}, "x")))}.bind(this))) : null
                 )
             )
         )
@@ -4240,6 +4235,9 @@ var React                   = require('react');
 var Modal                   = require('react-modal');
 var Button                  = require('react-bootstrap/lib/Button');
 var ButtonGroup             = require('react-bootstrap/lib/ButtonGroup');
+var Popover                 = require('react-bootstrap/lib/Popover');
+var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar');
+var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger');
 var Tabs                    = require('react-bootstrap/lib/Tabs');
 var Tab                     = require('react-bootstrap/lib/Tab');
 var DataGrid                = require('events-react-datagrid/react-datagrid');
@@ -4528,7 +4526,7 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
                 React.createElement("tbody", null, 
                     this.state.entityDataIncident, 
                     this.state.entityDataEvent, 
-                    this.state.entityDataAlert, 
+                    this.state.entityDataAlertGroup, 
                     this.state.entityDataIntel
                 )
             )
@@ -4537,31 +4535,52 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
 });
 
 var ReferencesBody = React.createClass({displayName: "ReferencesBody",
+    getIntialState: function() {
+        return{
+            showSummary:false,
+            summaryExists:true,
+        }
+    },
     onClick: function() {
-        var promise = React.createElement(ShowSummary, {id: this.props.data.id, type: this.props.type})
-        var position = $('#'+this.props.data.id).position();
-        $('#'+this.props.data.id).qtip({
-        content: $(promise),
-        style: {
-            classes: 'qtip-scot'
-        },
-            hide: 'unfocus',
-            position: {
-                viewport: $(window),
-                adjust: {
-                    method: 'shift',
-                },
-                target: [position.top,position.left]
-            },
-            show: {
-                ready: true,
-                event: 'click'
-            }
-        });
+        $.ajax({
+            type: 'GET',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.data.id + '/entry', 
+            success: function(result) {
+                var entryResult = result.records;
+                var summary = false;
+                for (i=0; i < entryResult.length; i++) {
+                    if (entryResult[i].summary == 1) {
+                        summary = true;
+                        this.setState({showSummary:true,summaryData:entryResult[i].body})
+                        $('#entityTable' + this.props.data.id).qtip({ 
+                            content: {text: $(entryResult[i].body)}, 
+                            style: { classes: 'qtip-scot' }, 
+                            hide: 'unfocus', 
+                            position: { my: 'top right', at: 'left', target: $('#entityTable'+this.props.data.id)},//[position.left,position.top] }, 
+                            show: { ready: true, event: 'click' } 
+                        });
+                        break;
+                    }
+                }
+                if (summary == false) {
+                    $('#entityTable' + this.props.data.id).qtip({
+                        content: {text: 'No Summary Found'},
+                        style: { classes: 'qtip-scot' },
+                        hide: 'unfocus',
+                        position: { my: 'top right', at: 'left', target: $('#entityTable'+this.props.data.id)},
+                        show: { ready: true, event: 'click' }
+                    });
+                } 
+            }.bind(this),
+            error: function() {
+                console.log('no summary found for: ' + this.props.type + ':' + this.props.data.id);
+            }.bind(this)
+        })
     },
     render: function() {
         var id = this.props.data.id;
-        var parentid = "#" + this.props.data.id
+        var trId = 'entityTable' + this.props.data.id;
+        var href = null;
         var statusColor = null
         if (this.props.data.status == 'promoted') {
             statusColor = 'orange';
@@ -4572,10 +4591,15 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
         } else {
             statusColor = 'black';
         }
+        if (this.props.type == 'alert') {
+            href = '/#/alertgroup/' + this.props.data.alertgroup;
+        } else {
+            href = '/#/' + this.props.type + '/' + this.props.data.id;
+        }
         return (
-            React.createElement("tr", {id: this.props.data.id, index: this.props.index, style: {cursor: 'pointer'}, onClick: this.onClick}, 
+            React.createElement("tr", {id: trId, index: this.props.index, style: {cursor: 'pointer'}, onClick: this.onClick}, 
                 React.createElement("td", {valign: "top", style: {color: statusColor, paddingRight:'4px', paddingLeft:'4px'}}, this.props.data.status), 
-                React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, this.props.data.id), 
+                React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, React.createElement("a", {href: href, target: "_blank"}, this.props.data.id)), 
                 React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, this.props.type), 
                 React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px', textAlign:'center'}}, this.props.data.entry_count), 
                 React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, this.props.data.subject)
@@ -4634,7 +4658,7 @@ var ShowSummary = React.createClass({displayName: "ShowSummary",
 
 module.exports = Flair;
 
-},{"../entry/selected_entry.jsx":16,"./add_entry.jsx":22,"events-react-datagrid/react-datagrid":109,"react":1134,"react-bootstrap/lib/Button":354,"react-bootstrap/lib/ButtonGroup":355,"react-bootstrap/lib/Tab":373,"react-bootstrap/lib/Tabs":374,"react-draggable":421,"react-inspector":437,"react-modal":455,"react-portal-tooltip":505}],26:[function(require,module,exports){
+},{"../entry/selected_entry.jsx":16,"./add_entry.jsx":22,"events-react-datagrid/react-datagrid":109,"react":1134,"react-bootstrap/lib/Button":354,"react-bootstrap/lib/ButtonGroup":355,"react-bootstrap/lib/ButtonToolbar":356,"react-bootstrap/lib/OverlayTrigger":368,"react-bootstrap/lib/Popover":369,"react-bootstrap/lib/Tab":373,"react-bootstrap/lib/Tabs":374,"react-draggable":421,"react-inspector":437,"react-modal":455,"react-portal-tooltip":505}],26:[function(require,module,exports){
 var React           = require('react');
 var ReactTime       = require('react-time');
 var Modal           = require('react-modal');
