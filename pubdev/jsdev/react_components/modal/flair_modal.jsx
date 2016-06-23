@@ -286,6 +286,7 @@ var EntityReferences = React.createClass({
             <table className="tablesorter alertTableHorizontal" id={'sortableentitytable'} width='100%'>
                 <thead>
                     <tr>
+                        <th>peek</th>
                         <th>status</th>
                         <th>id</th>
                         <th>type</th>
@@ -367,7 +368,8 @@ var ReferencesBody = React.createClass({
             href = '/#/' + this.props.type + '/' + this.props.data.id;
         }
         return (
-            <tr id={trId} index={this.props.index} style={{cursor: 'pointer'}} onClick={this.onClick}>
+            <tr id={trId} index={this.props.index}>
+                <td valign='top' style={{textAlign:'center',cursor: 'pointer'}} onClick={this.onClick}><i className="fa fa-eye fa-1" aria-hidden="true"></i></td>
                 <td valign='top' style={{color: statusColor, paddingRight:'4px', paddingLeft:'4px'}}>{this.props.data.status}</td>
                 <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}><a href={href} target="_blank">{this.props.data.id}</a></td>
                 <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}>{this.props.type}</td>
@@ -390,40 +392,5 @@ var ReferencesBlankRow = React.createClass({
         )   
     }
 });
-
-var ShowSummary = React.createClass({
-    getInitialState: function() {
-        return {
-            showSummary: false,
-            summaryExists: true,
-        }
-    },
-    componentDidMount: function() {
-        this.summaryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
-            var entryResult = result.records;
-            var summary = false;
-            for (i=0; i < entryResult.length; i++) {
-                if (entryResult[i].summary == 1) {
-                    summary = true;
-                    this.setState({showSummary:true,summaryData:entryResult[i].body})
-                    break;
-                }
-            }
-            if (summary == false) {this.setState({summaryExists:false})}
-        }.bind(this)); 
-    },
-    render: function() {
-        var Loading = 'Loading Summary';
-        var summaryData = this.state.summaryData;
-        var showSummary = this.state.showSummary;
-        var summaryExists = this.state.summaryExists;
-        var noSummary = 'No Summary Exists'
-        return (
-            <div id={this.props.id}>
-                {summaryExists ? <div>{showSummary == true ? summaryData : Loading}</div> : noSummary}
-            </div>     
-        )
-    }
-})
 
 module.exports = Flair;
