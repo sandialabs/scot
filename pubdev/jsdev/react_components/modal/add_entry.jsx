@@ -86,7 +86,7 @@ var AddEntryModal = React.createClass({
                     </div>
                     <TinyMCE id={this.props.id} content={""} className={'inputtext'} config={{plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}} onChange={this.handleEditorChange} /> 
                     <Dropzone onDrop={this.onDrop} style={{'border-width':'2px','border-color':'#000','border-radius':'4px','border-style': 'dashed', 'text-align' : 'center','background-color':'azure'}}><div style={{fontSize:'16px',color:'black',margin:'5px'}}>Click or Drop files here to upload</div></Dropzone>
-                    {this.state.files ? <div> {this.state.files.map(function(file) { return  <ul style={{'list-style-type' : 'none', margin:'0', padding:'0'}}><li><p style={{display:'inline'}}>{file.name}</p><button style={{'line-height':'1px'}} className='btn btn-info' id={file.name} onClick={this.Close}>x</button></li></ul>})}</div> : null} 
+                    {this.state.files ? <div> {this.state.files.map(function(file) { return  <ul style={{'list-style-type' : 'none', margin:'0', padding:'0'}}><li><p style={{display:'inline'}}>{file.name}</p><button style={{'line-height':'1px'}} className='btn btn-info' id={file.name} onClick={this.Close}>x</button></li></ul>}.bind(this))}</div> : null} 
                 </div>    
             </div>
         )
