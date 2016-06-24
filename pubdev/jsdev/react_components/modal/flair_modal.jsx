@@ -9,7 +9,6 @@ var Inspector               = require('react-inspector');
 var SelectedEntry           = require('../entry/selected_entry.jsx');
 var AddEntryModal           = require('./add_entry.jsx');
 var Draggable               = require('react-draggable');
-var Popups                  = require('react-popups');
 
 const customStyles = {
     content : {
@@ -81,7 +80,7 @@ var Flair = React.createClass({
                 </div>
             </Draggable>
         )*/
-        /*return (
+        return (
             <div>
                 <Modal isOpen={true}
                     onRequestClose={this.props.flairToolbarToggle}
@@ -92,12 +91,7 @@ var Flair = React.createClass({
                     </div>
                 </Modal>
             </div>
-        )*/
-        return (
-            <div>
-
-            </div>
-        ) 
+        )
     },
     
 });
