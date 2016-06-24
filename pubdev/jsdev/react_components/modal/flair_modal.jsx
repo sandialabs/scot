@@ -3,16 +3,13 @@ var Modal                   = require('react-modal');
 var Button                  = require('react-bootstrap/lib/Button');
 var ButtonGroup             = require('react-bootstrap/lib/ButtonGroup');
 var Popover                 = require('react-bootstrap/lib/Popover');
-var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar');
-var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger');
 var Tabs                    = require('react-bootstrap/lib/Tabs');
 var Tab                     = require('react-bootstrap/lib/Tab');
-var DataGrid                = require('events-react-datagrid/react-datagrid');
 var Inspector               = require('react-inspector');
 var SelectedEntry           = require('../entry/selected_entry.jsx');
 var AddEntryModal           = require('./add_entry.jsx');
 var Draggable               = require('react-draggable');
-var ToolTip                 = require('react-portal-tooltip');
+var Popups                  = require('react-popups');
 
 const customStyles = {
     content : {
@@ -21,7 +18,9 @@ const customStyles = {
         right   : 'auto',
         bottom  : 'auto',
         marginRight: '-50%',
-        transform:  'translate(-50%, -50%)'
+        transform:  'translate(-50%, -50%)',
+        maxWidth: '40%',
+        overflowY: 'hidden',
     }
 }
 
@@ -82,7 +81,7 @@ var Flair = React.createClass({
                 </div>
             </Draggable>
         )*/
-        return (
+        /*return (
             <div>
                 <Modal isOpen={true}
                     onRequestClose={this.props.flairToolbarToggle}
@@ -93,7 +92,12 @@ var Flair = React.createClass({
                     </div>
                 </Modal>
             </div>
-        )
+        )*/
+        return (
+            <div>
+
+            </div>
+        ) 
     },
     
 });
@@ -110,32 +114,17 @@ var EntityBody = React.createClass({
     getInitialState: function() {
         return {
             loading:"Loading Entries",
-            EntryData:null,
-            entryToolbar:false,    
+            entryToolbar:false,
+            appearances:0,
         }
-    }, 
-    render: function() {
-        var entityEnrichmentArr = [];
-        var enrichmentEventKey = 3;
-        if (this.props.data != undefined) {
-            var entityData = this.props.data['data'];
-            for (var prop in entityData) {
-                if (entityData[prop] != undefined) {
-                    entityEnrichmentArr.push(<Tab eventKey={enrichmentEventKey} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} /></Tab>);
-                    enrichmentEventKey++;
-                }
+    },
+    updateAppearances: function(appearancesNumber) {
+        if (appearancesNumber != null) {
+            if (appearancesNumber != 0) {
+                var newAppearancesNumber = this.state.appearances + appearancesNumber;
+                this.setState({appearances:newAppearancesNumber});
             }
         }
-        //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
-        var SelectedEntry = require('../entry/selected_entry.jsx');
-        return (
-            <Tabs defaultActiveKey={1}>
-                <Tab eventKey={1} title="References"><EntityReferences entityid={this.props.entityid}/></Tab>
-                <Tab eventKey={2} title="Entry"><Button onClick={this.entryToggle}>Add Entry</Button>
-                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} /> : null} <SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
-                {entityEnrichmentArr}
-            </Tabs>
-        )
     },
     entryToggle: function() {
         if (this.state.entryToolbar == false) {
@@ -144,13 +133,49 @@ var EntityBody = React.createClass({
             this.setState({entryToolbar:false})
         }
     },
+    render: function() {
+        var entityEnrichmentDataArr = [];
+        var entityEnrichmentLinkArr = [];
+        var entityEnrichmentGeoArr = [];
+        var enrichmentEventKey = 4;
+        if (this.props.data != undefined) {
+            var entityData = this.props.data['data'];
+            for (var prop in entityData) {
+                if (entityData[prop] != undefined) {
+                    if (entityData[prop] == 'geoip') {
+                        entityEnrichmentGeoArr.push(<Tab eventKey={enrichmentEventKey} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} /></Tab>);
+                        enrichmentEventKey++;
+                    } else if (entityData[prop].type == 'data') {
+                        entityEnrichmentDataArr.push(<Tab eventKey={enrichmentEventKey} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} /></Tab>);
+                        enrichmentEventKey++;
+                    } else if (entityData[prop].type == 'link') {
+                        entityEnrichmentLinkArr.push(<Button target='_blank' href={entityData[prop].data.url}>{entityData[prop].data.title}</Button>)
+                        enrichmentEventKey++;
+                    }
+                }
+            }
+        }
+        //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
+        var SelectedEntry = require('../entry/selected_entry.jsx');
+        return (
+            <Tabs defaultActiveKey={1} bsStyle='pills'>
+                <Tab eventKey={1} title={this.state.appearances}><br/>{entityEnrichmentLinkArr}<br/><br/><span><b>Appears: {this.state.appearances} times</b></span><br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances}/></Tab>
+                <Tab eventKey={2} title="Entry"><Button onClick={this.entryToggle}>Add Entry</Button>
+                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} /> : null} <SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
+                
+                {entityEnrichmentGeoArr}
+                {entityEnrichmentDataArr}
+            </Tabs>
+        )
+    }
+    
 });
 
 var EntityEnrichmentButtons = React.createClass({
     render: function() { 
         var dataSource = this.props.dataSource; 
         return (
-            <Inspector.default data={dataSource} expandLevel={4} />
+            <Inspector.default table data={dataSource} expandLevel={4} />
         ) 
     },
 });
@@ -196,6 +221,7 @@ var EntityReferences = React.createClass({
             arr.push(arrPromoted);
             arr.push(arrClosed);
             arr.push(arrOpen);
+            this.props.updateAppearances(result.length);
             this.setState({entityDataAlertGroup:arr})
         }.bind(this));
         this.eventRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/event', function(result) {
@@ -222,6 +248,7 @@ var EntityReferences = React.createClass({
             arr.push(arrPromoted);
             arr.push(arrClosed);
             arr.push(arrOpen);
+            this.props.updateAppearances(result.length);
             this.setState({entityDataEvent:arr})
         }.bind(this));   
         this.incidentRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/incident', function(result) {
@@ -248,6 +275,7 @@ var EntityReferences = React.createClass({
             arr.push(arrPromoted);
             arr.push(arrClosed);
             arr.push(arrOpen);
+            this.props.updateAppearances(result.length);
             this.setState({entityDataIncident:arr})
         }.bind(this));  
         this.intelRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/intel', function(result) {
@@ -274,6 +302,7 @@ var EntityReferences = React.createClass({
             arr.push(arrPromoted);
             arr.push(arrClosed);
             arr.push(arrOpen);
+            this.props.updateAppearances(result.length);
             this.setState({entityDataIntel:arr})
         }.bind(this));   
         $('#sortableentitytable').tablesorter();
@@ -283,6 +312,7 @@ var EntityReferences = React.createClass({
     },
     render: function() {
         return (
+            <div className='entityTableWrapper'>
             <table className="tablesorter alertTableHorizontal" id={'sortableentitytable'} width='100%'>
                 <thead>
                     <tr>
@@ -301,6 +331,7 @@ var EntityReferences = React.createClass({
                     {this.state.entityDataIntel}
                 </tbody>
             </table>
+            </div>
         ) 
     }
 });
@@ -348,6 +379,13 @@ var ReferencesBody = React.createClass({
             }.bind(this)
         })
     },
+    navigateTo: function() {
+        if (this.props.type == 'alert') {
+            window.open('#/event/'+this.props.data.promotion_id);
+        } else if (this.props.type == 'event') {
+            window.open('#/incident/'+this.props.data.promotion_id);
+        }
+    },
     render: function() {
         var id = this.props.data.id;
         var trId = 'entityTable' + this.props.data.id;
@@ -370,7 +408,7 @@ var ReferencesBody = React.createClass({
         return (
             <tr id={trId} index={this.props.index}>
                 <td valign='top' style={{textAlign:'center',cursor: 'pointer'}} onClick={this.onClick}><i className="fa fa-eye fa-1" aria-hidden="true"></i></td>
-                <td valign='top' style={{color: statusColor, paddingRight:'4px', paddingLeft:'4px'}}>{this.props.data.status}</td>
+                {this.props.data.status == 'promoted' ? <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}><Button bsSize='xsmall' bsStyle={'warning'} id={this.props.data.id} onClick={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{this.props.data.status}</Button></td> : <td valign='top' style={{color: statusColor, paddingRight:'4px', paddingLeft:'4px'}}>{this.props.data.status}</td>}
                 <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}><a href={href} target="_blank">{this.props.data.id}</a></td>
                 <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}>{this.props.type}</td>
                 <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px', textAlign:'center'}}>{this.props.data.entry_count}</td>
