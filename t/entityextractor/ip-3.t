@@ -4,10 +4,17 @@ use lib '../../lib';
 use Test::More;
 use Test::Deep;
 use Data::Dumper;
-use Scot::Env;
 use Scot::Util::EntityExtractor;
+use Scot::Util::Config;
+use Scot::Util::Logger;
+my $confobj = Scot::Util::Config->new({
+    paths   => ['../../../Scot-Internal-Modules/etc/'],
+    file    => 'logger_test.cfg',
+});
+my $loghref = $confobj->get_config();
+my $log     = Scot::Util::Logger->new($loghref);
 
-my $extractor   = Scot::Util::EntityExtractor->new();
+my $extractor   = Scot::Util::EntityExtractor->new({log=>$log});
 my $source      = <<'EOF';
 List of weird ipaddres:
 <table>
@@ -24,7 +31,7 @@ List of weird ipaddres:
 EOF
 
 my $flair   = <<'EOF';
-<html><head></head><body><p>List of weird ipaddres:<br /><table><tr><th>Host </th><th>IPaddr </th></tr><tr><td>foobar </td><td><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="10.10.10.1">10.10.10.1</span> </td></tr><tr><td>boombaz </td><td><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="20.20.20.20">20.20.20.20</span> </td></tr></table></body></html>
+<div>List of weird ipaddres:<br /><table><tr><th>Host </th><th>IPaddr </th></tr><tr><td>foobar </td><td><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="10.10.10.1">10.10.10.1</span> </td></tr><tr><td>boombaz </td><td><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="20.20.20.20">20.20.20.20</span> </td></tr></table></div>
 EOF
 
 chomp($flair);
