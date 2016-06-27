@@ -411,6 +411,45 @@ sub process_words {
                     $processed_match = $self->domain_processing($match);
                 }
 
+                if ( $type eq "email" ) {
+                    # now get domain name
+                    my ($user,$domain) = split(/\@/,$match);
+                    $domain = lc($domain);  # domains case insensitive
+                    my $dflair  = $self->do_span('domain', $domain);
+
+                    push @{$dbhref->{entities}}, {
+                        value   => $domain,
+                        type    => 'domain',
+                    };
+                    push @{$dbhref->{entities}}, {
+                        value   => $match,
+                        type    => "email",
+                    };
+                    my $lcdommatch = $user . '@' . $domain;
+
+                    my $emailflair = HTML::Element->new(
+                        'span',
+                        'class' => 'email',
+                        'data-entity-type'  => 'email',
+                        'data-entity-value' => $lcdommatch,
+                    );
+                    $emailflair->push_content(
+                        $user , '@', $dflair
+                    );
+                    push @new, $pre if ($pre);
+                    push @new, $emailflair;
+                    push @new, $post if ($post);
+                    my $nextspace = shift @spaces;
+                    if ( $nextspace ) {
+                        push @new, $nextspace;
+                    }
+                    else {
+                        push @new, ' ';
+                    }
+                    $flairflag++;
+                    last REGEX; 
+                }
+
                 if ( defined $processed_match ) {
 
                     my $flair   = $self->do_span($type, $processed_match);
@@ -496,6 +535,7 @@ sub ipaddr_processing {
 sub domain_processing {
     my $self    = shift;
     my $domain  = shift;
+    $domain     = lc($domain);
     my @parts   = split (/[\[\{\(]*\.[\]\}\)]*/, $domain);
     my $log     = $self->log;
 
@@ -516,6 +556,15 @@ sub domain_processing {
     }
     $log->debug("public suffix doesn't recognize");
     return undef;
+}
+
+sub email_processing {
+    my $self    = shift;
+    my $email   = shift;
+    my $log     = $self->log;
+
+    $log->trace("Processing an Email!");
+
 }
 
 sub do_span {
