@@ -5,14 +5,21 @@ use Test::More;
 use Test::Deep;
 use Data::Dumper;
 use Scot::Util::EntityExtractor;
-use Scot::Env;
+use Scot::Util::Config;
+use Scot::Util::Logger;
+my $confobj = Scot::Util::Config->new({
+    paths   => ['../../../Scot-Internal-Modules/etc/'],
+    file    => 'logger_test.cfg',
+});
+my $loghref = $confobj->get_config();
+my $log     = Scot::Util::Logger->new($loghref);
 
 my $source   = <<EOF;
 <html>  Attack originated from <a href="www.attacker.com/asdf">www.attacker.com/asdf</a> </html>
 EOF
 my $html   = '';
 my $plain = '';
-my $extractor   = Scot::Util::EntityExtractor->new();
+my $extractor   = Scot::Util::EntityExtractor->new({log=>$log});
 my $entity_href = $extractor->process_html($source);
 my $expected_href   = {
     'flair' => q|<html><head></head><body><p> Attack originated from <a href="www.attacker.com/asdf"><span class="entity domain" data-entity-type="domain" data-entity-value="www.attacker.com">www.<span class="entity domain" data-entity-type="domain" data-entity-value="attacker.com">attacker.com</span></span>/asdf</a></body></html>|,
