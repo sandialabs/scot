@@ -87,7 +87,7 @@ var Flair = React.createClass({
                     style={customStyles}> 
                     <div className="modal-body" style={{height:'80vh'}}>
                         <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3> 
-                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} /> : <div>Loading...</div>}
+                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
                     </div>
                 </Modal>
             </div>
@@ -136,8 +136,8 @@ var EntityBody = React.createClass({
             var entityData = this.props.data['data'];
             for (var prop in entityData) {
                 if (entityData[prop] != undefined) {
-                    if (entityData[prop] == 'geoip') {
-                        entityEnrichmentGeoArr.push(<Tab eventKey={enrichmentEventKey} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} /></Tab>);
+                    if (prop == 'geoip') {
+                        entityEnrichmentGeoArr.push(<Tab eventKey={enrichmentEventKey} title={prop}><GeoView data={entityData[prop].data} type={this.props.type} id={this.props.id}/></Tab>);
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'data') {
                         entityEnrichmentDataArr.push(<Tab eventKey={enrichmentEventKey} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} /></Tab>);
@@ -154,9 +154,8 @@ var EntityBody = React.createClass({
         return (
             <Tabs defaultActiveKey={1} bsStyle='pills'>
                 <Tab eventKey={1} title={this.state.appearances}><br/>{entityEnrichmentLinkArr}<br/><br/><span><b>Appears: {this.state.appearances} times</b></span><br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances}/></Tab>
-                <Tab eventKey={2} title="Entry"><Button onClick={this.entryToggle}>Add Entry</Button>
+                <Tab eventKey={2} title="Entry"><br/><Button onClick={this.entryToggle}>Add Entry</Button><br/>
                 {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} /> : null} <SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
-                
                 {entityEnrichmentGeoArr}
                 {entityEnrichmentDataArr}
             </Tabs>
@@ -164,6 +163,43 @@ var EntityBody = React.createClass({
     }
     
 });
+
+var GeoView = React.createClass({
+    getInitialState: function() {
+        return {
+            copyToEntryToolbar: false
+        }
+    },
+    copyToEntry: function() {
+        if (this.state.copyToEntryToolbar == false) {
+            this.setState({copyToEntryToolbar: true});
+        } else {
+            this.setState({copyToEntryToolbar: false})
+        }
+    },
+    render: function() { 
+        var trArr           = [];
+        var copyArr         = [];
+        copyArr.push('<table>');
+        for (var prop in this.props.data) {
+            var keyProp = prop;
+            var value = this.props.data[prop];
+            trArr.push(<tr><td style={{paddingRight:'4px', paddingLeft:'4px'}}><b>{prop}</b></td><td style={{paddingRight:'4px', paddingLeft:'4px'}}>{this.props.data[prop]}</td></tr>);
+            copyArr.push('<tr><td style={{paddingRight:"4px", paddingLeft:"4px"}}><b>' + prop + '</b></td><td style={{paddingRight:"4px", paddingLeft:"4px"}}>' + value + '</td></tr>')
+        }
+        copyArr.push('</table>');
+        var copy = copyArr.join('');
+        return(
+            <div className='entityTableWrapper'>
+                <Button onClick={this.copyToEntry}>Copy to Entry</Button>
+                {this.state.copyToEntryToolbar ? <AddEntryModal title='CopyToEntry' type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.copyToEntry} content={copy}/> : null}
+                <table className="tablesorter entityTableHorizontal" id={'sortableentitytable'} width='100%'>
+                    {trArr}    
+                </table>
+            </div>     
+        )
+    }
+})
 
 var EntityEnrichmentButtons = React.createClass({
     render: function() { 
@@ -202,13 +238,13 @@ var EntityReferences = React.createClass({
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(<ReferencesBody type={'alert'} data={result[i]} index={i}/>)
-                        arrPromoted.push(<ReferencesBlankRow />)
+                       //arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(<ReferencesBody type={'alert'} data={result[i]} index={i}/>)
-                        arrClosed.push(<ReferencesBlankRow />)
+                        //arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(<ReferencesBody type={'alert'} data={result[i]} index={i}/>)
-                        arrOpen.push(<ReferencesBlankRow />)
+                        //arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -229,13 +265,13 @@ var EntityReferences = React.createClass({
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(<ReferencesBody type={'event'} data={result[i]} index={i}/>)
-                        arrPromoted.push(<ReferencesBlankRow />)
+                        //arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(<ReferencesBody type={'event'} data={result[i]} index={i}/>)
-                        arrClosed.push(<ReferencesBlankRow />)
+                        //arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(<ReferencesBody type={'event'} data={result[i]} index={i}/>)
-                        arrOpen.push(<ReferencesBlankRow />)
+                        //arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -256,13 +292,13 @@ var EntityReferences = React.createClass({
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(<ReferencesBody type={'incident'} data={result[i]} index={i}/>)
-                        arrPromoted.push(<ReferencesBlankRow />)
+                       //arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(<ReferencesBody type={'incident'} data={result[i]} index={i}/>)
-                        arrClosed.push(<ReferencesBlankRow />)
+                       //arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(<ReferencesBody type={'incident'} data={result[i]} index={i}/>)
-                        arrOpen.push(<ReferencesBlankRow />)
+                        //arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -283,13 +319,13 @@ var EntityReferences = React.createClass({
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(<ReferencesBody type={'intel'} data={result[i]} index={i}/>)
-                        arrPromoted.push(<ReferencesBlankRow />)
+                        //arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(<ReferencesBody type={'intel'} data={result[i]} index={i}/>)
-                        arrClosed.push(<ReferencesBlankRow />)
+                        //arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(<ReferencesBody type={'intel'} data={result[i]} index={i}/>)
-                        arrOpen.push(<ReferencesBlankRow />)
+                        //arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -307,7 +343,7 @@ var EntityReferences = React.createClass({
     render: function() {
         return (
             <div className='entityTableWrapper'>
-            <table className="tablesorter alertTableHorizontal" id={'sortableentitytable'} width='100%'>
+            <table className="tablesorter entityTableHorizontal" id={'sortableentitytable'} width='100%'>
                 <thead>
                     <tr>
                         <th>peek</th>
