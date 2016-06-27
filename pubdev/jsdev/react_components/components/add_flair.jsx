@@ -31,6 +31,7 @@ var AddFlair = {
                                             var entityid = entityResult[currentEntityValue.toLowerCase()].id;
                                             var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
                                             var entitydata = entityResult[currentEntityValue.toLowerCase()].data;
+                                            var entityEntryCount = entityResult[currentEntityValue.toLowerCase()].entry;
                                             var circle = $('<span class="noselect">');
                                             circle.addClass('circleNumber');
                                             circle.addClass('extras');
@@ -73,10 +74,10 @@ var AddFlair = {
                                                         }
                                                     }
                                                 }
-                                                if (entitydata.entry != undefined) {
-                                                    if (entitydata.entry != 0) {
-                                                        $(entity).append($('<img>').attr('src', '/flair/note.gif'));
-                                                    }
+                                            }
+                                            if (entityEntryCount != undefined) {
+                                                if (entityEntryCount != 0) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/note.gif'));
                                                 }
                                             }
                                         }
@@ -104,6 +105,7 @@ var AddFlair = {
                                 var entityid = entityResult[currentEntityValue.toLowerCase()].id;
                                 var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
                                 var entitydata = entityResult[currentEntityValue.toLowerCase()].data;
+                                var entityEntryCount = entityResult[currentEntityValue.toLowerCase()].entry;
                                 var circle = $('<span class="noselect">');
                                 circle.addClass('circleNumber');
                                 circle.addClass('extras');
@@ -145,11 +147,11 @@ var AddFlair = {
                                                 }
                                             }
                                         }
-                                    }
-                                    if (entitydata.entry != undefined) {
-                                        if (entitydata.entry != 0) {
-                                            $(entity).append($('<img>').attr('src', '/flair/note.gif'));
-                                        }
+                                    }                    
+                                }
+                                if (entityEntryCount != undefined) {
+                                    if (entityEntryCount != 0) {
+                                        $(entity).append($('<img>').attr('src', '/images/flair/note.gif'));
                                     }
                                 }
                             }

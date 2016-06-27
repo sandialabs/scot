@@ -64,11 +64,14 @@ var AddEntryModal = React.createClass({
 		newheight= document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
 		newheight = newheight + 'px'
 		this.setState({height: newheight})
-	}
+	} 
     },
     componentDidMount: function() {
         $('#' + this.props.id + '_ifr').css('height', '200px')
         $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top)
+        if(this.props.title == 'CopyToEntry') {
+            $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(this.props.content)
+        }
     },
 	render: function() {
 	var item = this.state.subitem
