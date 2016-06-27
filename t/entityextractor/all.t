@@ -10,11 +10,11 @@ $harness->runtests(
         ./email.t
         ./domain-ip.t
         ./weird.t
-        ./event_8610_333009.t
         ./broken-html.t
         ./ip.t
         ./ip-2.t
         ./ip-3.t
+        ./ip-4.t
         ./anchor.t
     )
 );
