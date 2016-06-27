@@ -866,6 +866,7 @@ var AddFlair = {
                                             var entityid = entityResult[currentEntityValue.toLowerCase()].id;
                                             var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
                                             var entitydata = entityResult[currentEntityValue.toLowerCase()].data;
+                                            var entityEntryCount = entityResult[currentEntityValue.toLowerCase()].entry;
                                             var circle = $('<span class="noselect">');
                                             circle.addClass('circleNumber');
                                             circle.addClass('extras');
@@ -875,12 +876,12 @@ var AddFlair = {
                                             $(entity).unbind('click');
                                             if (entitydata != undefined) {
                                                 if (entitydata.geoip != undefined) {
-                                                    if (entitydata.geoip.isocode != undefined) {
+                                                    if (entitydata.geoip.data.isocode != undefined) {
                                                         var country_code;
-                                                        if (entitydata.geoip.isp == 'Sandia National Laboratories') {
+                                                        if (entitydata.geoip.data.isp == 'Sandia National Laboratories') {
                                                             country_code = 'sandia';    
                                                         } else {
-                                                            country_code = entitydata.geoip.isocode;
+                                                            country_code = entitydata.geoip.data.isocode;
                                                         }
                                                         var flag = $('<img class="noselect">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
                                                         flag.addClass('extras');
@@ -888,30 +889,30 @@ var AddFlair = {
                                                     }
                                                 }
                                                 if (entitydata.sidd != undefined) {
-                                                    if (entitydata.sidd.blocklist != undefined) {
-                                                        if (entitydata.sidd.blocklist.action != undefined) {
-                                                            if (entitydata.sidd.blocklist.action.firewall != false) {
+                                                    if (entitydata.sidd.data.blocklist != undefined) {
+                                                        if (entitydata.sidd.data.blocklist.action != undefined) {
+                                                            if (entitydata.sidd.data.blocklist.action.firewall != false) {
                                                                 $(entity).append($('<img>').attr('src', '/images/flair/firewalled.png'));    
                                                             }
-                                                            if (entitydata.sidd.blocklist.action.watch != false) {
+                                                            if (entitydata.sidd.data.blocklist.action.watch != false) {
                                                                 $(entity).append($('<img>').attr('src', '/images/flair/watch.png'));
                                                             }
-                                                            if (entitydata.sidd.blocklist.action.whitelist != false) {
+                                                            if (entitydata.sidd.data.blocklist.action.whitelist != false) {
                                                                 $(entity).append($('<img>').attr('src', '/images/flair/white_list.jpg'));
                                                             }
-                                                            if (entitydata.sidd.blocklist.action.blackhole != false) {
+                                                            if (entitydata.sidd.data.blocklist.action.blackhole != false) {
                                                                 $(entity).append($('<img>').attr('src', '/images/flair/blackholed.png'));;
                                                             }
-                                                            if (entitydata.sidd.blocklist.action.proxy_block != false) {
+                                                            if (entitydata.sidd.data.blocklist.action.proxy_block != false) {
                                                                 $(entity).append($('<img>').attr('src', '/images/flair/blocked.png'));
                                                             }
                                                         }
                                                     }
                                                 }
-                                                if (entitydata.entry != undefined) {
-                                                    if (entitydata.entry != 0) {
-                                                        $(entity).append($('<img>').attr('src', '/flair/note.gif'));
-                                                    }
+                                            }
+                                            if (entityEntryCount != undefined) {
+                                                if (entityEntryCount != 0) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/note.gif'));
                                                 }
                                             }
                                         }
@@ -939,6 +940,7 @@ var AddFlair = {
                                 var entityid = entityResult[currentEntityValue.toLowerCase()].id;
                                 var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
                                 var entitydata = entityResult[currentEntityValue.toLowerCase()].data;
+                                var entityEntryCount = entityResult[currentEntityValue.toLowerCase()].entry;
                                 var circle = $('<span class="noselect">');
                                 circle.addClass('circleNumber');
                                 circle.addClass('extras');
@@ -948,12 +950,12 @@ var AddFlair = {
                                 $(entity).unbind('click');
                                 if (entitydata != undefined) {
                                     if (entitydata.geoip != undefined) {
-                                        if (entitydata.geoip.isocode != undefined) {
+                                        if (entitydata.geoip.data.isocode != undefined) {
                                             var country_code;
-                                            if (entitydata.geoip.isp == 'Sandia National Laboratories') {
+                                            if (entitydata.geoip.data.isp == 'Sandia National Laboratories') {
                                                 country_code = 'sandia';    
                                             } else {
-                                                country_code = entitydata.geoip.isocode;
+                                                country_code = entitydata.geoip.data.isocode;
                                             }
                                             var flag = $('<img class="noselect">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
                                             flag.addClass('extras');
@@ -961,30 +963,30 @@ var AddFlair = {
                                         }
                                     }
                                     if (entitydata.sidd != undefined) {
-                                        if (entitydata.sidd.blocklist != undefined) {
-                                            if (entitydata.sidd.blocklist.action != undefined) {
-                                                if (entitydata.sidd.blocklist.action.firewall != false) {
+                                        if (entitydata.sidd.data.blocklist != undefined) {
+                                            if (entitydata.sidd.data.blocklist.action != undefined) {
+                                                if (entitydata.sidd.data.blocklist.action.firewall != false) {
                                                     $(entity).append($('<img>').attr('src', '/images/flair/firewalled.png'));    
                                                 }
-                                                if (entitydata.sidd.blocklist.action.watch != false) {
+                                                if (entitydata.sidd.data.blocklist.action.watch != false) {
                                                     $(entity).append($('<img>').attr('src', '/images/flair/watch.png'));
                                                 }
-                                                if (entitydata.sidd.blocklist.action.whitelist != false) {
+                                                if (entitydata.sidd.data.blocklist.action.whitelist != false) {
                                                     $(entity).append($('<img>').attr('src', '/images/flair/white_list.jpg'));
                                                 }
-                                                if (entitydata.sidd.blocklist.action.blackhole != false) {
+                                                if (entitydata.sidd.data.blocklist.action.blackhole != false) {
                                                     $(entity).append($('<img>').attr('src', '/images/flair/blackholed.png'));
                                                 }
-                                                if (entitydata.sidd.blocklist.action.proxy_block != false) {
+                                                if (entitydata.sidd.data.blocklist.action.proxy_block != false) {
                                                     $(entity).append($('<img>').attr('src', '/images/flair/blocked.png'));
                                                 }
                                             }
                                         }
-                                    }
-                                    if (entitydata.entry != undefined) {
-                                        if (entitydata.entry != 0) {
-                                            $(entity).append($('<img>').attr('src', '/flair/note.gif'));
-                                        }
+                                    }                    
+                                }
+                                if (entityEntryCount != undefined) {
+                                    if (entityEntryCount != 0) {
+                                        $(entity).append($('<img>').attr('src', '/images/flair/note.gif'));
                                     }
                                 }
                             }
@@ -2168,7 +2170,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             React.createElement("div", {key: id, className: divClass, style: {height:this.props.windowHeight}}, 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.aType, targetid: this.props.aID, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB})) : null, 
                 showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData}) : React.createElement("span", null, "Loading..."), 
-                this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue}) : null, 
+                this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, type: this.props.type, id: this.props.id}): null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null
             )       
         );
@@ -3034,7 +3036,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                     )
                 ), 
                 React.createElement(Notification, {ref: "notificationSystem"}), 
-                this.state.flairToolbar ? React.createElement(Flair, {key: this.state.entityid, flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue}) : null, 
+                this.state.flairToolbar ? React.createElement(Flair, {key: this.state.entityid, flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, type: this.props.type, id: this.props.id}) : null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null, 
                 this.state.historyToolbar ? React.createElement(History, {historyToggle: this.historyToggle, id: id, type: type}) : null, 
                 this.state.entitiesToolbar ? React.createElement(Entities, {entitiesToggle: this.entitiesToggle, entityData: this.state.entityData, flairToolbarToggle: this.flairToolbarToggle}) : null, 
@@ -3699,11 +3701,14 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 		newheight= document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
 		newheight = newheight + 'px'
 		this.setState({height: newheight})
-	}
+	} 
     },
     componentDidMount: function() {
         $('#' + this.props.id + '_ifr').css('height', '200px')
         $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top)
+        if(this.props.title == 'CopyToEntry') {
+            $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(this.props.content)
+        }
     },
 	render: function() {
 	var item = this.state.subitem
@@ -4320,7 +4325,7 @@ var Flair = React.createClass({displayName: "Flair",
                     style: customStyles}, 
                     React.createElement("div", {className: "modal-body", style: {height:'80vh'}}, 
                         React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading...")), 
-                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid}) : React.createElement("div", null, "Loading...")
+                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
                     )
                 )
             )
@@ -4369,8 +4374,8 @@ var EntityBody = React.createClass({displayName: "EntityBody",
             var entityData = this.props.data['data'];
             for (var prop in entityData) {
                 if (entityData[prop] != undefined) {
-                    if (entityData[prop] == 'geoip') {
-                        entityEnrichmentGeoArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, title: prop}, React.createElement(EntityEnrichmentButtons, {dataSource: entityData[prop]})));
+                    if (prop == 'geoip') {
+                        entityEnrichmentGeoArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, title: prop}, React.createElement(GeoView, {data: entityData[prop].data, type: this.props.type, id: this.props.id})));
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'data') {
                         entityEnrichmentDataArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, title: prop}, React.createElement(EntityEnrichmentButtons, {dataSource: entityData[prop]})));
@@ -4387,9 +4392,8 @@ var EntityBody = React.createClass({displayName: "EntityBody",
         return (
             React.createElement(Tabs, {defaultActiveKey: 1, bsStyle: "pills"}, 
                 React.createElement(Tab, {eventKey: 1, title: this.state.appearances}, React.createElement("br", null), entityEnrichmentLinkArr, React.createElement("br", null), React.createElement("br", null), React.createElement("span", null, React.createElement("b", null, "Appears: ", this.state.appearances, " times")), React.createElement("br", null), React.createElement(EntityReferences, {entityid: this.props.entityid, updateAppearances: this.updateAppearances})), 
-                React.createElement(Tab, {eventKey: 2, title: "Entry"}, React.createElement(Button, {onClick: this.entryToggle}, "Add Entry"), 
+                React.createElement(Tab, {eventKey: 2, title: "Entry"}, React.createElement("br", null), React.createElement(Button, {onClick: this.entryToggle}, "Add Entry"), React.createElement("br", null), 
                 this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "entity", targetid: this.props.entityid, id: 'add_entry', addedentry: this.entryToggle}) : null, " ", React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid})), 
-                
                 entityEnrichmentGeoArr, 
                 entityEnrichmentDataArr
             )
@@ -4397,6 +4401,43 @@ var EntityBody = React.createClass({displayName: "EntityBody",
     }
     
 });
+
+var GeoView = React.createClass({displayName: "GeoView",
+    getInitialState: function() {
+        return {
+            copyToEntryToolbar: false
+        }
+    },
+    copyToEntry: function() {
+        if (this.state.copyToEntryToolbar == false) {
+            this.setState({copyToEntryToolbar: true});
+        } else {
+            this.setState({copyToEntryToolbar: false})
+        }
+    },
+    render: function() { 
+        var trArr           = [];
+        var copyArr         = [];
+        copyArr.push('<table>');
+        for (var prop in this.props.data) {
+            var keyProp = prop;
+            var value = this.props.data[prop];
+            trArr.push(React.createElement("tr", null, React.createElement("td", {style: {paddingRight:'4px', paddingLeft:'4px'}}, React.createElement("b", null, prop)), React.createElement("td", {style: {paddingRight:'4px', paddingLeft:'4px'}}, this.props.data[prop])));
+            copyArr.push('<tr><td style={{paddingRight:"4px", paddingLeft:"4px"}}><b>' + prop + '</b></td><td style={{paddingRight:"4px", paddingLeft:"4px"}}>' + value + '</td></tr>')
+        }
+        copyArr.push('</table>');
+        var copy = copyArr.join('');
+        return(
+            React.createElement("div", {className: "entityTableWrapper"}, 
+                React.createElement(Button, {onClick: this.copyToEntry}, "Copy to Entry"), 
+                this.state.copyToEntryToolbar ? React.createElement(AddEntryModal, {title: "CopyToEntry", type: this.props.type, targetid: this.props.id, id: this.props.id, addedentry: this.copyToEntry, content: copy}) : null, 
+                React.createElement("table", {className: "tablesorter entityTableHorizontal", id: 'sortableentitytable', width: "100%"}, 
+                    trArr
+                )
+            )     
+        )
+    }
+})
 
 var EntityEnrichmentButtons = React.createClass({displayName: "EntityEnrichmentButtons",
     render: function() { 
@@ -4435,13 +4476,13 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(React.createElement(ReferencesBody, {type: 'alert', data: result[i], index: i}))
-                        arrPromoted.push(React.createElement(ReferencesBlankRow, null))
+                       //arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(React.createElement(ReferencesBody, {type: 'alert', data: result[i], index: i}))
-                        arrClosed.push(React.createElement(ReferencesBlankRow, null))
+                        //arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(React.createElement(ReferencesBody, {type: 'alert', data: result[i], index: i}))
-                        arrOpen.push(React.createElement(ReferencesBlankRow, null))
+                        //arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -4462,13 +4503,13 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(React.createElement(ReferencesBody, {type: 'event', data: result[i], index: i}))
-                        arrPromoted.push(React.createElement(ReferencesBlankRow, null))
+                        //arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(React.createElement(ReferencesBody, {type: 'event', data: result[i], index: i}))
-                        arrClosed.push(React.createElement(ReferencesBlankRow, null))
+                        //arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(React.createElement(ReferencesBody, {type: 'event', data: result[i], index: i}))
-                        arrOpen.push(React.createElement(ReferencesBlankRow, null))
+                        //arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -4489,13 +4530,13 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(React.createElement(ReferencesBody, {type: 'incident', data: result[i], index: i}))
-                        arrPromoted.push(React.createElement(ReferencesBlankRow, null))
+                       //arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(React.createElement(ReferencesBody, {type: 'incident', data: result[i], index: i}))
-                        arrClosed.push(React.createElement(ReferencesBlankRow, null))
+                       //arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(React.createElement(ReferencesBody, {type: 'incident', data: result[i], index: i}))
-                        arrOpen.push(React.createElement(ReferencesBlankRow, null))
+                        //arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -4516,13 +4557,13 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(React.createElement(ReferencesBody, {type: 'intel', data: result[i], index: i}))
-                        arrPromoted.push(React.createElement(ReferencesBlankRow, null))
+                        //arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(React.createElement(ReferencesBody, {type: 'intel', data: result[i], index: i}))
-                        arrClosed.push(React.createElement(ReferencesBlankRow, null))
+                        //arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(React.createElement(ReferencesBody, {type: 'intel', data: result[i], index: i}))
-                        arrOpen.push(React.createElement(ReferencesBlankRow, null))
+                        //arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -4540,7 +4581,7 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
     render: function() {
         return (
             React.createElement("div", {className: "entityTableWrapper"}, 
-            React.createElement("table", {className: "tablesorter alertTableHorizontal", id: 'sortableentitytable', width: "100%"}, 
+            React.createElement("table", {className: "tablesorter entityTableHorizontal", id: 'sortableentitytable', width: "100%"}, 
                 React.createElement("thead", null, 
                     React.createElement("tr", null, 
                         React.createElement("th", null, "peek"), 
