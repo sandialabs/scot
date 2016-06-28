@@ -22,6 +22,7 @@ var ExpandableNavMenuItem = require('../../../node_modules/react-expandable-nav/
 var ExpandableNavPage = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavPage.js')
 var ExpandableNavToggleButton = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavToggleButton.js')
 var SelectedContainer = require('../entry/selected_container.jsx')
+var EntityDetail      = require('../modal/entity_detail.jsx')
 var sethome = false
 var setalerts = false
 var setevents = false
@@ -54,6 +55,21 @@ var App = React.createClass({
                 settask = false
                 setguide = false
             }
+        else if(this.props.params.value.toLowerCase() == 'entity'){
+            setguide = false
+            setevents = false	
+            setintel = false
+            sethome = false
+            setalerts = false
+            setincidents = false
+            settask = false
+            if(this.props.params.id != null) {
+	            state = 8
+	            array = this.props.params.id.split('+')
+	            array.push(this.props.params.type)
+                array.push(this.props.params.typeid)
+            }
+        }
         else if(this.props.params.value.toLowerCase() == 'guide'){
             setguide = true
             setevents = false	
@@ -249,6 +265,10 @@ var App = React.createClass({
         ?
         React.createElement(ExpandableNavPage, null, React.createElement(Guide, {ids: this.state.ids}))
         :
+        this.state.set == 8
+        ?
+        React.createElement(ExpandableNavPage, null, React.createElement(EntityDetail, {entityid: this.state.ids[0], type: this.state.ids[1], id: this.state.ids[2]}))
+        :
         null
         )	
         );
@@ -301,6 +321,7 @@ var App = React.createClass({
         <Route path = '/:value' component = {App} />
         <Route path = '/:value/:id' component = {App} />
         <Route path = '/:value/:id/:id2' component = {App} />
+        <Route path = '/:value/:id/:type/:typeid' component = {App} />
         </Router>
     ), document.getElementById('content'))
 

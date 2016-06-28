@@ -2064,7 +2064,7 @@ var Store                   = require('../activemq/store.jsx');
 var AppActions              = require('../flux/actions.jsx');
 var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var Watcher                 = require('../components/add_flair.jsx').Watcher;
-var Flair                   = require('../modal/flair_modal.jsx');
+var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx'); 
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
 
@@ -2165,12 +2165,12 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             divClass = 'row-fluid alert-wrapper entry-wrapper-main';
         }
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
-        var Flair = require('../modal/flair_modal.jsx');
+        var EntityDetail = require('../modal/entity_detail.jsx');
         return (
             React.createElement("div", {key: id, className: divClass, style: {height:this.props.windowHeight}}, 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.aType, targetid: this.props.aID, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB})) : null, 
                 showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData}) : React.createElement("span", null, "Loading..."), 
-                this.state.flairToolbar ? React.createElement(Flair, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, type: this.props.type, id: this.props.id}): null, 
+                this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, type: this.props.type, id: this.props.id}): null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null
             )       
         );
@@ -2658,7 +2658,7 @@ var EntryData = React.createClass({displayName: "EntryData",
 
 module.exports = SelectedEntry
 
-},{"../activemq/store.jsx":5,"../components/add_flair.jsx":6,"../components/permission.jsx":9,"../components/summary.jsx":12,"../components/task.jsx":14,"../flux/actions.jsx":19,"../modal/add_entry.jsx":22,"../modal/delete.jsx":23,"../modal/flair_modal.jsx":25,"../modal/link_warning.jsx":27,"./selected_header_options.jsx":18,"react":1002,"react-bootstrap/lib/Button.js":225,"react-bootstrap/lib/DropdownButton.js":231,"react-bootstrap/lib/MenuItem.js":235,"react-bootstrap/lib/SplitButton.js":242,"react-dom":291,"react-frame":307,"react-time":812}],17:[function(require,module,exports){
+},{"../activemq/store.jsx":5,"../components/add_flair.jsx":6,"../components/permission.jsx":9,"../components/summary.jsx":12,"../components/task.jsx":14,"../flux/actions.jsx":19,"../modal/add_entry.jsx":22,"../modal/delete.jsx":23,"../modal/entity_detail.jsx":25,"../modal/link_warning.jsx":27,"./selected_header_options.jsx":18,"react":1002,"react-bootstrap/lib/Button.js":225,"react-bootstrap/lib/DropdownButton.js":231,"react-bootstrap/lib/MenuItem.js":235,"react-bootstrap/lib/SplitButton.js":242,"react-dom":291,"react-frame":307,"react-time":812}],17:[function(require,module,exports){
 var React                   = require('react');
 var ReactTime               = require('react-time');
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
@@ -2687,7 +2687,7 @@ var AppActions              = require('../flux/actions.jsx');
 var Notification            = require('react-notification-system');
 var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var Watcher                 = require('../components/add_flair.jsx').Watcher;
-var Flair                   = require('../modal/flair_modal.jsx');
+var EntityDetail            = require('../modal/entity_detail.jsx');
 var ESearch                 = require('../components/esearch.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx');
 var SelectedHeader = React.createClass({displayName: "SelectedHeader",
@@ -3036,7 +3036,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                     )
                 ), 
                 React.createElement(Notification, {ref: "notificationSystem"}), 
-                this.state.flairToolbar ? React.createElement(Flair, {key: this.state.entityid, flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, type: this.props.type, id: this.props.id}) : null, 
+                this.state.flairToolbar ? React.createElement(EntityDetail, {key: this.state.entityid, flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, type: this.props.type, id: this.props.id}) : null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null, 
                 this.state.historyToolbar ? React.createElement(History, {historyToggle: this.historyToggle, id: id, type: type}) : null, 
                 this.state.entitiesToolbar ? React.createElement(Entities, {entitiesToggle: this.entitiesToggle, entityData: this.state.entityData, flairToolbarToggle: this.flairToolbarToggle}) : null, 
@@ -3211,7 +3211,7 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
 
 module.exports = SelectedHeader;
 
-},{"../activemq/store.jsx":5,"../components/add_flair.jsx":6,"../components/esearch.jsx":7,"../components/permission.jsx":9,"../components/source.jsx":11,"../components/tag.jsx":13,"../flux/actions.jsx":19,"../modal/add_entry.jsx":22,"../modal/delete.jsx":23,"../modal/entities.jsx":24,"../modal/flair_modal.jsx":25,"../modal/history.jsx":26,"../modal/link_warning.jsx":27,"../modal/owner.jsx":28,"./selected_entry.jsx":16,"./selected_header_options.jsx":18,"react":1002,"react-bootstrap/lib/Button":225,"react-bootstrap/lib/ButtonToolbar":227,"react-bootstrap/lib/DropdownButton":231,"react-bootstrap/lib/MenuItem":235,"react-bootstrap/lib/OverlayTrigger":239,"react-bootstrap/lib/Popover":240,"react-crouton":266,"react-debounce-input":289,"react-notification-system":342,"react-overlays/lib/Affix.js":346,"react-overlays/lib/AutoAffix.js":347,"react-sticky":431,"react-time":812}],18:[function(require,module,exports){
+},{"../activemq/store.jsx":5,"../components/add_flair.jsx":6,"../components/esearch.jsx":7,"../components/permission.jsx":9,"../components/source.jsx":11,"../components/tag.jsx":13,"../flux/actions.jsx":19,"../modal/add_entry.jsx":22,"../modal/delete.jsx":23,"../modal/entities.jsx":24,"../modal/entity_detail.jsx":25,"../modal/history.jsx":26,"../modal/link_warning.jsx":27,"../modal/owner.jsx":28,"./selected_entry.jsx":16,"./selected_header_options.jsx":18,"react":1002,"react-bootstrap/lib/Button":225,"react-bootstrap/lib/ButtonToolbar":227,"react-bootstrap/lib/DropdownButton":231,"react-bootstrap/lib/MenuItem":235,"react-bootstrap/lib/OverlayTrigger":239,"react-bootstrap/lib/Popover":240,"react-crouton":266,"react-debounce-input":289,"react-notification-system":342,"react-overlays/lib/Affix.js":346,"react-overlays/lib/AutoAffix.js":347,"react-sticky":431,"react-time":812}],18:[function(require,module,exports){
 var React           = require('react');
 var ButtonGroup     = require('react-bootstrap/lib/ButtonGroup.js');
 var Button          = require('react-bootstrap/lib/Button.js');
@@ -3672,17 +3672,17 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	        }).success(function(response){
                 recently_updated = response.updated
                 if(response.body_flair == ""){
-	                $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
+	                $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
                 }
                 else{
-	                $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_flair)
+	                $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_flair)
                 }
 	        }.bind(this))
 	}
 	else if (this.props.title == 'Add Entry'){
 	    finalfiles = []
         reply = false
-	    $('#' + this.props.id + '_ifr').contents().find("#tinymce").text('')
+	    $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text('')
     }
 	else if(this.props.title == 'Reply Entry'){
 	    finalfiles = []
@@ -3704,15 +3704,16 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	} 
     },
     componentDidMount: function() {
-        $('#' + this.props.id + '_ifr').css('height', '200px')
+        $('#tiny_' + this.props.id + '_ifr').css('height', '200px')
         $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top)
         if(this.props.title == 'CopyToEntry') {
-            $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(this.props.content)
+            $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(this.props.content)
         }
     },
 	render: function() {
 	var item = this.state.subitem
     var not_saved_entry_id = 'not_saved_entry_'+this.props.id
+    var tinyID = 'tiny_'+this.props.id
         return (
             React.createElement("div", {id: not_saved_entry_id}, 
                 React.createElement("div", {className: 'row-fluid entry-outer', style: {border: '3px solid blue',marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
@@ -3724,7 +3725,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                             )
                         )
                     ), 
-                    React.createElement(TinyMCE, {id: this.props.id, content: "", className: 'inputtext', config: {plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}, onChange: this.handleEditorChange}), 
+                    React.createElement(TinyMCE, {id: tinyID, content: "", className: 'inputtext', config: {plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}, onChange: this.handleEditorChange}), 
                     React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width':'2px','border-color':'#000','border-radius':'4px','border-style': 'dashed', 'text-align' : 'center','background-color':'azure'}}, React.createElement("div", {style: {fontSize:'16px',color:'black',margin:'5px'}}, "Click or Drop files here to upload")), 
                     this.state.files ? React.createElement("div", null, " ", this.state.files.map(function(file) { return  React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p", {style: {display:'inline'}}, file.name), React.createElement("button", {style: {'line-height':'1px'}, className: "btn btn-info", id: file.name, onClick: this.Close}, "x")))}.bind(this))) : null
                 )
@@ -3735,7 +3736,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	this.setState({addentry: false})
 	},
     Edit: function(){
-	$('#'+this.props.id+'_ifr').contents().find("#tinymce").attr('contenteditable', true)
+	$('#tiny_'+this.props.id+'_ifr').contents().find("#tinymce").attr('contenteditable', true)
 	this.setState({saved: false, edit: false, enablesave:true})    
     },
     onCancel: function(){
@@ -3759,23 +3760,23 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
     this.setState({files: finalfiles})
     },
 	Save: function() {
-	if($('#' + this.props.id + '_ifr').contents().find("#tinymce").text() == ""){
+	if($('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text() == ""){
 	    alert("Please fill in Text")
 	}
 	else {
-	    $('#' + this.props.id + '_ifr').contents().find("#tinymce").attr('contenteditable', false)
+	    $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").attr('contenteditable', false)
 	    this.setState({saved: true, edit: true, enablesave: false})
 	}
         },
 	submit: function(){
-	if($('#' + this.props.id + '_ifr').contents().find("#tinymce").text() == "" && $('#' + this.props.id + '_ifr').contents().find("#tinymce").find('img').length == 0) {
+	if($('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text() == "" && $('#' + this.props.id + '_ifr').contents().find("#tinymce").find('img').length == 0) {
 	    alert("Please Add Some Text")
 	}
     else {    
         if(this.props.stage == 'Reply')
 	    {
     	    var data = new Object()
-	        $('#' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+	        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
             $(y).find('p').each(function(r,s){
                 $(s).find('img').each(function(key, value){ 
                     var canvas = document.createElement('canvas')
@@ -3792,7 +3793,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
         })
     })
 
-    data = JSON.stringify({parent: Number(this.props.id), body: $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
+    data = JSON.stringify({parent: Number(this.props.id), body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
 
 	$.ajax({
 	    type: 'post',
@@ -3861,7 +3862,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
     }
 	else  if(this.props.type == 'alert'){ 
      var data;
-	$('#' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+	$('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
         $(y).find('p').each(function(r,s){
                 $(s).find('img').each(function(key, value){ 
                     var canvas = document.createElement('canvas')
@@ -3879,7 +3880,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
     })
     
      
-	            data = JSON.stringify({body: $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid), target_type: 'alert',  parent: 0})
+	            data = JSON.stringify({body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid), target_type: 'alert',  parent: 0})
 	            $.ajax({
 		        type: 'post', 
 		        url: '/scot/api/v2/entry',
@@ -3911,7 +3912,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	}	
 	else {
     var data = new Object();
-	$('#' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+	$('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
         $(y).find('p').each(function(r,s){
                 $(s).find('img').each(function(key, value){ 
                     var canvas = document.createElement('canvas')
@@ -3927,7 +3928,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                 })
         })
     })
-    data = {parent: 0, body: $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
+    data = {parent: 0, body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
     $.ajax({
 	type: 'post',
 	url: '/scot/api/v2/entry',
@@ -3960,7 +3961,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
     },
     forEdit: function(set){
     if(set){
-	$('#' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+	$('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
         $(y).find('p').each(function(r,s){
                 $(s).find('img').each(function(key, value){ 
                     var canvas = document.createElement('canvas')
@@ -3979,7 +3980,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 
     var data = {
         parent: Number(this.props.parent), 
-        body: $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(), 
+        body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), 
         target_id: Number(this.props.targetid) , 
         target_type: this.props.type
     }
@@ -4121,7 +4122,6 @@ module.exports = {
 var React           = require('react');
 var Modal           = require('react-modal');
 var Button          = require('react-bootstrap/lib/Button');
-var Flair           = require('../modal/flair_modal.jsx');
 const customStyles = {
     content : {
         top     : '50%',
@@ -4235,7 +4235,7 @@ var EntitiesDataValueIterator = React.createClass({displayName: "EntitiesDataVal
 });
 module.exports = Entities;
 
-},{"../modal/flair_modal.jsx":25,"react":1002,"react-bootstrap/lib/Button":225,"react-modal":326}],25:[function(require,module,exports){
+},{"react":1002,"react-bootstrap/lib/Button":225,"react-modal":326}],25:[function(require,module,exports){
 var React                   = require('react');
 var Modal                   = require('react-modal');
 var Button                  = require('react-bootstrap/lib/Button');
@@ -4257,11 +4257,11 @@ const customStyles = {
         marginRight: '-50%',
         transform:  'translate(-50%, -50%)',
         maxWidth: '40%',
-        overflowY: 'hidden',
+        //overflowY: 'hidden',
     }
 }
 
-var Flair = React.createClass({displayName: "Flair",
+var EntityDetail = React.createClass({displayName: "EntityDetail",
     getInitialState: function() {
         return {
             entityData:null,
@@ -4282,6 +4282,9 @@ var Flair = React.createClass({displayName: "Flair",
                     this.setState({entityData:result})
             }.bind(this));
         } 
+    },
+    popOut: function() {
+        
     },
     render: function() {
         /*return (
@@ -4323,6 +4326,7 @@ var Flair = React.createClass({displayName: "Flair",
                 React.createElement(Modal, {isOpen: true, 
                     onRequestClose: this.props.flairToolbarToggle, 
                     style: customStyles}, 
+                    
                     React.createElement("div", {className: "modal-body", style: {height:'80vh'}}, 
                         React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading...")), 
                         this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
@@ -4389,9 +4393,10 @@ var EntityBody = React.createClass({displayName: "EntityBody",
         }
         //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
         var SelectedEntry = require('../entry/selected_entry.jsx');
+        var href = '/#/entity/' + this.props.entityid + '/' + this.props.type + '/' + this.props.id;
         return (
             React.createElement(Tabs, {defaultActiveKey: 1, bsStyle: "pills"}, 
-                React.createElement(Tab, {eventKey: 1, title: this.state.appearances}, React.createElement("br", null), entityEnrichmentLinkArr, React.createElement("br", null), React.createElement("br", null), React.createElement("span", null, React.createElement("b", null, "Appears: ", this.state.appearances, " times")), React.createElement("br", null), React.createElement(EntityReferences, {entityid: this.props.entityid, updateAppearances: this.updateAppearances})), 
+                React.createElement(Tab, {eventKey: 1, title: this.state.appearances}, React.createElement("br", null), React.createElement(Button, {target: "_blank", href: href, onClick: this.props.flairToolbarToggle}, "Pop-Out"), entityEnrichmentLinkArr, React.createElement("br", null), React.createElement("br", null), React.createElement("span", null, React.createElement("b", null, "Appears: ", this.state.appearances, " times")), React.createElement("br", null), React.createElement(EntityReferences, {entityid: this.props.entityid, updateAppearances: this.updateAppearances})), 
                 React.createElement(Tab, {eventKey: 2, title: "Entry"}, React.createElement("br", null), React.createElement(Button, {onClick: this.entryToggle}, "Add Entry"), React.createElement("br", null), 
                 this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "entity", targetid: this.props.entityid, id: 'add_entry', addedentry: this.entryToggle}) : null, " ", React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid})), 
                 entityEnrichmentGeoArr, 
@@ -4471,18 +4476,14 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
             var arrPromoted = [];
             var arrClosed = [];
             var arrOpen = [];
-            //this.setState({entityDataEvent:result,entityDataEventLoading:false})
             for(var i=0; i < result.length; i++) {
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(React.createElement(ReferencesBody, {type: 'alert', data: result[i], index: i}))
-                       //arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(React.createElement(ReferencesBody, {type: 'alert', data: result[i], index: i}))
-                        //arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(React.createElement(ReferencesBody, {type: 'alert', data: result[i], index: i}))
-                        //arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -4498,18 +4499,14 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
             var arrPromoted = [];
             var arrClosed = [];
             var arrOpen = [];
-            //this.setState({entityDataEvent:result,entityDataEventLoading:false})
             for(var i=0; i < result.length; i++) {
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(React.createElement(ReferencesBody, {type: 'event', data: result[i], index: i}))
-                        //arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(React.createElement(ReferencesBody, {type: 'event', data: result[i], index: i}))
-                        //arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(React.createElement(ReferencesBody, {type: 'event', data: result[i], index: i}))
-                        //arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -4525,18 +4522,14 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
             var arrPromoted = [];
             var arrClosed = [];
             var arrOpen = [];
-            //this.setState({entityDataEvent:result,entityDataEventLoading:false})
             for(var i=0; i < result.length; i++) {
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(React.createElement(ReferencesBody, {type: 'incident', data: result[i], index: i}))
-                       //arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(React.createElement(ReferencesBody, {type: 'incident', data: result[i], index: i}))
-                       //arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(React.createElement(ReferencesBody, {type: 'incident', data: result[i], index: i}))
-                        //arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -4552,18 +4545,14 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
             var arrPromoted = [];
             var arrClosed = [];
             var arrOpen = [];
-            //this.setState({entityDataEvent:result,entityDataEventLoading:false})
             for(var i=0; i < result.length; i++) {
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(React.createElement(ReferencesBody, {type: 'intel', data: result[i], index: i}))
-                        //arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(React.createElement(ReferencesBody, {type: 'intel', data: result[i], index: i}))
-                        //arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(React.createElement(ReferencesBody, {type: 'intel', data: result[i], index: i}))
-                        //arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -4647,17 +4636,11 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
             }.bind(this)
         })
     },
-    navigateTo: function() {
-        if (this.props.type == 'alert') {
-            window.open('#/event/'+this.props.data.promotion_id);
-        } else if (this.props.type == 'event') {
-            window.open('#/incident/'+this.props.data.promotion_id);
-        }
-    },
     render: function() {
         var id = this.props.data.id;
         var trId = 'entityTable' + this.props.data.id;
-        var href = null;
+        var aHref = null;
+        var promotedHref = null;
         var statusColor = null
         if (this.props.data.status == 'promoted') {
             statusColor = 'orange';
@@ -4669,15 +4652,20 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
             statusColor = 'black';
         }
         if (this.props.type == 'alert') {
-            href = '/#/alertgroup/' + this.props.data.alertgroup;
-        } else {
-            href = '/#/' + this.props.type + '/' + this.props.data.id;
+            aHref = '/#/alertgroup/' + this.props.data.alertgroup;
+            promotedHref = '/#/event/' + this.props.data.promotion_id;
+        } else if (this.props.type == 'event') {
+            promotedHref = '/#/incident/' + this.props.data.promotion_id;
+            aHref = '/#/' + this.props.type + '/' + this.props.data.id;
+        }
+        else {
+            aHref = '/#/' + this.props.type + '/' + this.props.data.id;
         }
         return (
             React.createElement("tr", {id: trId, index: this.props.index}, 
                 React.createElement("td", {valign: "top", style: {textAlign:'center',cursor: 'pointer'}, onClick: this.onClick}, React.createElement("i", {className: "fa fa-eye fa-1", "aria-hidden": "true"})), 
-                this.props.data.status == 'promoted' ? React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, React.createElement(Button, {bsSize: "xsmall", bsStyle: 'warning', id: this.props.data.id, onClick: this.navigateTo, style: {lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}, this.props.data.status)) : React.createElement("td", {valign: "top", style: {color: statusColor, paddingRight:'4px', paddingLeft:'4px'}}, this.props.data.status), 
-                React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, React.createElement("a", {href: href, target: "_blank"}, this.props.data.id)), 
+                this.props.data.status == 'promoted' ? React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, React.createElement(Button, {bsSize: "xsmall", bsStyle: 'warning', id: this.props.data.id, href: promotedHref, target: "_blank", style: {lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}, this.props.data.status)) : React.createElement("td", {valign: "top", style: {color: statusColor, paddingRight:'4px', paddingLeft:'4px'}}, this.props.data.status), 
+                React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, React.createElement("a", {href: aHref, target: "_blank"}, this.props.data.id)), 
                 React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, this.props.type), 
                 React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px', textAlign:'center'}}, this.props.data.entry_count), 
                 React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, this.props.data.subject)
@@ -4686,20 +4674,7 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
     }
 })
 
-var ReferencesBlankRow = React.createClass({displayName: "ReferencesBlankRow",
-    render: function() {
-        return (
-            React.createElement("tr", {className: "not_selectable"}, 
-                React.createElement("td", {style: {padding:'0'}}
-                ), 
-                    React.createElement("td", {colSpan: "50", style: {padding:'1px'}}
-                )
-            )
-        )   
-    }
-});
-
-module.exports = Flair;
+module.exports = EntityDetail;
 
 },{"../entry/selected_entry.jsx":16,"./add_entry.jsx":22,"react":1002,"react-bootstrap/lib/Button":225,"react-bootstrap/lib/ButtonGroup":226,"react-bootstrap/lib/Popover":240,"react-bootstrap/lib/Tab":244,"react-bootstrap/lib/Tabs":245,"react-draggable":292,"react-inspector":308,"react-modal":326}],26:[function(require,module,exports){
 var React           = require('react');
@@ -8335,6 +8310,7 @@ var ExpandableNavMenuItem = require('../../../node_modules/react-expandable-nav/
 var ExpandableNavPage = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavPage.js')
 var ExpandableNavToggleButton = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavToggleButton.js')
 var SelectedContainer = require('../entry/selected_container.jsx')
+var EntityDetail      = require('../modal/entity_detail.jsx')
 var sethome = false
 var setalerts = false
 var setevents = false
@@ -8367,6 +8343,21 @@ var App = React.createClass({displayName: "App",
                 settask = false
                 setguide = false
             }
+        else if(this.props.params.value.toLowerCase() == 'entity'){
+            setguide = false
+            setevents = false	
+            setintel = false
+            sethome = false
+            setalerts = false
+            setincidents = false
+            settask = false
+            if(this.props.params.id != null) {
+	            state = 8
+	            array = this.props.params.id.split('+')
+	            array.push(this.props.params.type)
+                array.push(this.props.params.typeid)
+            }
+        }
         else if(this.props.params.value.toLowerCase() == 'guide'){
             setguide = true
             setevents = false	
@@ -8562,6 +8553,10 @@ var App = React.createClass({displayName: "App",
         ?
         React.createElement(ExpandableNavPage, null, React.createElement(Guide, {ids: this.state.ids}))
         :
+        this.state.set == 8
+        ?
+        React.createElement(ExpandableNavPage, null, React.createElement(EntityDetail, {entityid: this.state.ids[0], type: this.state.ids[1], id: this.state.ids[2]}))
+        :
         null
         )	
         );
@@ -8613,12 +8608,13 @@ var App = React.createClass({displayName: "App",
         React.createElement(Route, {path: "/", component: App}), 
         React.createElement(Route, {path: "/:value", component: App}), 
         React.createElement(Route, {path: "/:value/:id", component: App}), 
-        React.createElement(Route, {path: "/:value/:id/:id2", component: App})
+        React.createElement(Route, {path: "/:value/:id/:id2", component: App}), 
+        React.createElement(Route, {path: "/:value/:id/:type/:typeid", component: App})
         )
     ), document.getElementById('content'))
 
 
-},{"../../../node_modules/react-expandable-nav":304,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavContainer.js":296,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavHeader.js":297,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavMenu.js":299,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavMenuItem.js":300,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavPage.js":301,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavToggleButton.js":302,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavbar.js":303,"../../../node_modules/react-router":424,"../../../node_modules/react-router/":424,"../activemq/listener.jsx":4,"../entry/selected_container.jsx":15,"../flux/store.jsx":21,"./alert.jsx":29,"./events.jsx":30,"./guide.jsx":31,"./incidents.jsx":32,"./intel.jsx":34,"./tasks.jsx":35,"react":1002,"react-dom":291}],34:[function(require,module,exports){
+},{"../../../node_modules/react-expandable-nav":304,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavContainer.js":296,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavHeader.js":297,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavMenu.js":299,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavMenuItem.js":300,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavPage.js":301,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavToggleButton.js":302,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavbar.js":303,"../../../node_modules/react-router":424,"../../../node_modules/react-router/":424,"../activemq/listener.jsx":4,"../entry/selected_container.jsx":15,"../flux/store.jsx":21,"../modal/entity_detail.jsx":25,"./alert.jsx":29,"./events.jsx":30,"./guide.jsx":31,"./incidents.jsx":32,"./intel.jsx":34,"./tasks.jsx":35,"react":1002,"react-dom":291}],34:[function(require,module,exports){
 'use strict';
 
 var React                   = require('react')
