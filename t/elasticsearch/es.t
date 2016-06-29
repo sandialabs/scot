@@ -1,18 +1,22 @@
 #!/usr/bin/env perl
 use lib '../../lib';
 
+$ENV{'no_proxy'} = 'localhost,127.0.0.1';
 use Test::More;
 use Test::Deep;
 use Data::Dumper;
 use Scot::Util::ElasticSearch;
-use Scot::Env;
-
-my $env = Scot::Env->new({
-    logfile    => '/var/log/scot/es.test.log',
+use Scot::Util::Config;
+use Scot::Util::Logger;
+my $confobj = Scot::Util::Config->new({
+    paths   => ['../../../Scot-Internal-Modules/etc/'],
+    file    => 'logger_test.cfg',
 });
+my $loghref = $confobj->get_config();
+my $log     = Scot::Util::Logger->new($loghref);
 
 my $es  = Scot::Util::ElasticSearch->new({
-    env => $env,
+    log => $log,
 });
 
 my $type    = "testcol";
