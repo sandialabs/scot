@@ -262,13 +262,13 @@ module.exports = React.createClass({
                         React.createElement('div', {style:{display: 'block'}},
                         React.createElement('div', {style: {display: 'inline-flex'}},
                         width < 645 ?
-                        React.createElement('div', null,
+                        React.createElement('div', {className: 'buttonmenu'},
                         React.createElement(SplitButton, {bsSize: 'small' , title: 'Select'},
                         !this.state.mute ?
                         React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
                         React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
                         React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))) : /* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */
-                        React.createElement('div', null,
+                        React.createElement('div', {className: 'buttonmenu'},
                         !this.state.mute ?
                         React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
                         React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
@@ -419,7 +419,7 @@ module.exports = React.createClass({
 
                         React.createElement('div', {className: 'toggleview'},
                         React.createElement('div', {style: {display:'block'}},
-                         React.createElement('div', {style: {display: 'inline-flex'}},
+                         React.createElement('div', {className: 'buttonmenu', style: {display: 'inline-flex'}},
                         !this.state.mute ?
                         React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
                         React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),

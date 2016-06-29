@@ -1,3 +1,4 @@
+var searchboxtext = ''
 var whoami = '';
 var activemqwho = ''
 var activemqid = ''
