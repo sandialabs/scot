@@ -68,21 +68,22 @@ var EntityDetail = React.createClass({
                 </Modal>
             </div>
         )*/
-        /*return (
-            <Draggable>
-                <div style={{width:'400px'}}>
+        return (
+            <Draggable handle="#handle">
+                <div id="dragme" className='box react-draggable' style={{position:'absolute', zIndex:'100',backgroundColor:'#AEC0D0', border:'1px solid black'}}> 
+                    <div id='handle' style={{width:'100%',padding:'5px',background:'#7A8092', color:'white', fontWeight:'900', textAlign:'center', cursor:'move'}}>Drag</div>
                     <div>
                         <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
                     </div>
                     <div>
-                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} /> : <div>Loading...</div>}
+                    {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
                     </div>
                     <div>
                         <Button onClick={this.props.flairToolbarToggle}>Done</Button>
                     </div>
                 </div>
             </Draggable>
-        )*/
+        )/*
         return (
             <div>
                 <Modal isOpen={true}
@@ -95,7 +96,7 @@ var EntityDetail = React.createClass({
                     </div>
                 </Modal>
             </div>
-        )
+        )*/
     },
     
 });
@@ -155,10 +156,11 @@ var EntityBody = React.createClass({
         }
         //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
         var SelectedEntry = require('../entry/selected_entry.jsx');
-        var href = '/#/entity/' + this.props.entityid + '/' + this.props.type + '/' + this.props.id;
+        //PopOut available
+        //var href = '/#/entity/' + this.props.entityid + '/' + this.props.type + '/' + this.props.id;
         return (
             <Tabs defaultActiveKey={1} bsStyle='pills'>
-                <Tab eventKey={1} title={this.state.appearances}><br/><Button target='_blank' href={href} onClick={this.props.flairToolbarToggle}>Pop-Out</Button>{entityEnrichmentLinkArr}<br/><br/><span><b>Appears: {this.state.appearances} times</b></span><br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances}/></Tab>
+                <Tab eventKey={1} title={this.state.appearances}><br/>{entityEnrichmentLinkArr}<br/><br/><span><b>Appears: {this.state.appearances} times</b></span><br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances}/></Tab>
                 <Tab eventKey={2} title="Entry"><br/><Button onClick={this.entryToggle}>Add Entry</Button><br/>
                 {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} /> : null} <SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
                 {entityEnrichmentGeoArr}

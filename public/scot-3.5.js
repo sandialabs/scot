@@ -4031,7 +4031,9 @@ const customStyles = {
         right   : 'auto',
         bottom  : 'auto',
         marginRight: '-50%',
-        transform:  'translate(-50%, -50%)'
+        transform:  'translate(-50%, -50%)',
+        zIndex: '101'
+        
     }
 }
 
@@ -4306,34 +4308,35 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
                 </Modal>
             </div>
         )*/
-        /*return (
-            <Draggable>
-                <div style={{width:'400px'}}>
-                    <div>
-                        <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
-                    </div>
-                    <div>
-                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} /> : <div>Loading...</div>}
-                    </div>
-                    <div>
-                        <Button onClick={this.props.flairToolbarToggle}>Done</Button>
-                    </div>
-                </div>
-            </Draggable>
-        )*/
         return (
-            React.createElement("div", null, 
-                React.createElement(Modal, {isOpen: true, 
-                    onRequestClose: this.props.flairToolbarToggle, 
-                    style: customStyles}, 
-                    
-                    React.createElement("div", {className: "modal-body", style: {height:'80vh'}}, 
-                        React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading...")), 
-                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
+            React.createElement(Draggable, {handle: "#handle"}, 
+                React.createElement("div", {id: "dragme", className: "box react-draggable", style: {position:'absolute', zIndex:'100',backgroundColor:'#AEC0D0', border:'1px solid black'}}, 
+                    React.createElement("div", {id: "handle", style: {width:'100%',padding:'5px',background:'#7A8092', color:'white', fontWeight:'900', textAlign:'center', cursor:'move'}}, "Drag"), 
+                    React.createElement("div", null, 
+                        React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
+                    ), 
+                    React.createElement("div", null, 
+                    this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
+                    ), 
+                    React.createElement("div", null, 
+                        React.createElement(Button, {onClick: this.props.flairToolbarToggle}, "Done")
                     )
                 )
             )
-        )
+        )/*
+        return (
+            <div>
+                <Modal isOpen={true}
+                    onRequestClose={this.props.flairToolbarToggle}
+                    style={customStyles}> 
+                    
+                    <div className="modal-body" style={{height:'80vh'}}>
+                        <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3> 
+                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
+                    </div>
+                </Modal>
+            </div>
+        )*/
     },
     
 });
@@ -4393,10 +4396,11 @@ var EntityBody = React.createClass({displayName: "EntityBody",
         }
         //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
         var SelectedEntry = require('../entry/selected_entry.jsx');
-        var href = '/#/entity/' + this.props.entityid + '/' + this.props.type + '/' + this.props.id;
+        //PopOut available
+        //var href = '/#/entity/' + this.props.entityid + '/' + this.props.type + '/' + this.props.id;
         return (
             React.createElement(Tabs, {defaultActiveKey: 1, bsStyle: "pills"}, 
-                React.createElement(Tab, {eventKey: 1, title: this.state.appearances}, React.createElement("br", null), React.createElement(Button, {target: "_blank", href: href, onClick: this.props.flairToolbarToggle}, "Pop-Out"), entityEnrichmentLinkArr, React.createElement("br", null), React.createElement("br", null), React.createElement("span", null, React.createElement("b", null, "Appears: ", this.state.appearances, " times")), React.createElement("br", null), React.createElement(EntityReferences, {entityid: this.props.entityid, updateAppearances: this.updateAppearances})), 
+                React.createElement(Tab, {eventKey: 1, title: this.state.appearances}, React.createElement("br", null), entityEnrichmentLinkArr, React.createElement("br", null), React.createElement("br", null), React.createElement("span", null, React.createElement("b", null, "Appears: ", this.state.appearances, " times")), React.createElement("br", null), React.createElement(EntityReferences, {entityid: this.props.entityid, updateAppearances: this.updateAppearances})), 
                 React.createElement(Tab, {eventKey: 2, title: "Entry"}, React.createElement("br", null), React.createElement(Button, {onClick: this.entryToggle}, "Add Entry"), React.createElement("br", null), 
                 this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "entity", targetid: this.props.entityid, id: 'add_entry', addedentry: this.entryToggle}) : null, " ", React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid})), 
                 entityEnrichmentGeoArr, 
