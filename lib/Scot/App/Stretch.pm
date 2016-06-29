@@ -52,6 +52,8 @@ has scot    => (
 
 sub _build_scot_scot {
     my $self    = shift;
+    my $log     = $self->log;
+    $log->debug("Config is : ",{filter=>\&Dumper,value=>$self->config});
     return Scot::Util::Scot->new({
         log         => $self->log,
         servername  => $self->config->{scot}->{servername},
@@ -63,7 +65,7 @@ sub _build_scot_scot {
 
 has es      => (
     is          => 'ro',
-    isa         => 'Scot::Util::Elasticsearch',
+    isa         => 'Scot::Util::ElasticSearch',
     required    => 1,
     lazy        => 1,
     builder     => '_build_es',
@@ -71,7 +73,7 @@ has es      => (
 
 sub _build_es {
     my $self    = shift;
-    return Scot::Util::Elasticsearch->new({
+    return Scot::Util::ElasticSearch->new({
         log     => $self->log,
         config  => $self->config->{elasticsearch},
     });
@@ -81,8 +83,14 @@ has max_workers => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
-    default     => 1,   # two processes
+    builder     => '_get_max_workers',
 );
+
+sub _get_max_workers {
+    my $self    = shift;
+    my $conf    = $self->config;
+    return $conf->{max_workers} // 1;
+}
 
 =head2 Autonomous
 
@@ -146,6 +154,34 @@ sub run {
     AnyEvent->condvar->recv;
 }
 
+sub process_by_date {
+    my $self        = shift;
+    my $collection  = shift;
+    my $start       = shift;    # epoch
+    my $end         = shift;    # epoch
+    my $limit       = shift;
+    $limit  = 0 unless $limit;
+    my $scot        = $self->scot;
+    my $es          = $self->es;
+    my $json        = $scot->get(
+        $collection,
+        undef,
+        {
+            match   => {
+                created => { begin => $start, end => $end },
+            },
+            limit   => $limit,
+            columns => [ 'id' ],
+        },
+    );
+
+    foreach my $href (@{$json->{records}}) {
+        my $id      = $href->{id};
+        my $record  = $scot->get($collection, $id);
+        $es->index($collection, $record, 'scot');
+    }
+}
+
 sub process_message {
     my $self    = shift;
     my $action  = shift;
@@ -156,11 +192,12 @@ sub process_message {
     my $es      = $self->es;
 
     if ($action eq "deleted") {
-        # TODO implement a delete from es
+        $es->delete($type, $id, 'scot');
         return;
     }
 
-    my $record  = $self->get_scot($type, $id);
+    my $scot    = $self->scot;
+    my $record  = $scot->get($type, $id);
     $es->index($type, $record, 'scot');
 }
 

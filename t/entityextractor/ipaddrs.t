@@ -4,10 +4,17 @@ use lib '../../lib';
 use Test::More;
 use Test::Deep;
 use Data::Dumper;
-use Scot::Env;
 use Scot::Util::EntityExtractor;
+use Scot::Util::Config;
+use Scot::Util::Logger;
+my $confobj = Scot::Util::Config->new({
+    paths   => ['../../../Scot-Internal-Modules/etc/'],
+    file    => 'logger_test.cfg',
+});
+my $loghref = $confobj->get_config();
+my $log     = Scot::Util::Logger->new($loghref);
 
-my $extractor   = Scot::Util::EntityExtractor->new();
+my $extractor   = Scot::Util::EntityExtractor->new({log=>$log});
 
 my @ipaddrs = ( 
     { 

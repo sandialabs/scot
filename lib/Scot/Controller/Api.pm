@@ -531,13 +531,18 @@ sub check_entity_enrichments {
     my $log     = $env->log;
     my $timer   = $env->get_timer("checking entity enrichments");
 
-    my $enricher    = $env->enrichments;
+    $log->trace("checking entity enrichments");
+
+    my $enricher         = $env->enrichments;
     my ($updates, $data) = $enricher->enrich($entity);
 
     if ( $updates > 0 ) {
         $log->debug("updating cache of entity enrichments");
         $entity->update_set( data => $data );
         $log->debug("updated cache of entity enrichments");
+    }
+    else {
+        $log->debug("No updates performed...");
     }
     &$timer;
 }
