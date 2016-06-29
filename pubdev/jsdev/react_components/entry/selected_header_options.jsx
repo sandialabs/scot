@@ -269,7 +269,7 @@ var SelectedHeaderOptions = React.createClass({
                 return (
                     <div className="entry-header">
                         <Button eventKey='1' onClick={this.toggleFlair} bsSize='small'>Toggle <b>Flair</b></Button>
-                        <Button eventKey='2' onClick={this.props.guideToggle} bsSize='small'>Guide</Button>
+                        {this.props.guideEntryCount != null ? <Button eventKey='2' onClick={this.props.guideToggle} bsSize='small'>Guide</Button> : null}
                         <Button eventKey='3' onClick={this.props.sourceToggle} bsSize='small'>View <b>Source</b></Button> 
                         <Button eventKey='4' onClick={this.props.entitiesToggle} bsSize='small'>View <b>Entities</b></Button>
                         <Button eventKey='4' onClick={this.props.historyToggle} bsSize='small'>View <b>AlertGroup History</b></Button>
@@ -286,7 +286,7 @@ var SelectedHeaderOptions = React.createClass({
                 return (
                     <div className="entry-header">
                         <Button eventKey='1' onClick={this.toggleFlair} bsSize='small'>Toggle <b>Flair</b></Button>
-                        <Button eventKey='2' onClick={this.props.guideToggle} bsSize='small'>Guide</Button>
+                        {this.props.guideEntryCount != null ? <Button eventKey='2' onClick={this.props.guideToggle} bsSize='small'>Guide</Button> : null}
                         <Button eventKey='3' onClick={this.props.sourceToggle} bsSize='small'>View <b>Source</b></Button> 
                         <Button eventKey='4' onClick={this.props.entitiesToggle} bsSize='small'>View <b>Entities</b></Button>
                         <Button eventKey='4' onClick={this.props.historyToggle} bsSize='small'>View <b>AlertGroup History</b></Button> 
