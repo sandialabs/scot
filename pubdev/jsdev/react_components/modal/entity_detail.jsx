@@ -1,5 +1,4 @@
 var React                   = require('react');
-var Modal                   = require('react-modal');
 var Button                  = require('react-bootstrap/lib/Button');
 var ButtonGroup             = require('react-bootstrap/lib/ButtonGroup');
 var Popover                 = require('react-bootstrap/lib/Popover');
@@ -10,18 +9,6 @@ var SelectedEntry           = require('../entry/selected_entry.jsx');
 var AddEntryModal           = require('./add_entry.jsx');
 var Draggable               = require('react-draggable');
 
-const customStyles = {
-    content : {
-        top     : '50%',
-        left    : '50%',
-        right   : 'auto',
-        bottom  : 'auto',
-        marginRight: '-50%',
-        transform:  'translate(-50%, -50%)',
-        maxWidth: '40%',
-        //overflowY: 'hidden',
-    }
-}
 
 var EntityDetail = React.createClass({
     getInitialState: function() {
@@ -43,34 +30,42 @@ var EntityDetail = React.createClass({
                 this.Request = $.get('scot/api/v2/entity/' + this.state.entityid, function(result) {
                     this.setState({entityData:result})
             }.bind(this));
-        } 
-    },
-    popOut: function() {
-        
+        }
+        function resizableStart(e){
+            this.originalW = this.clientWidth;
+            this.originalH = this.clientHeight;
+            this.onmousemove = resizableCheck;
+            this.onmouseup = this.onmouseout = resizableEnd;
+        }
+        function resizableCheck(e){
+            if(this.clientWidth !== this.originalW || this.clientHeight !== this.originalH) {
+                this.originalX = e.clientX;
+                this.originalY = e.clientY;
+                this.onmousemove = resizableMove;
+            }
+        }
+        function resizableMove(e){
+            var newW = this.originalW + e.clientX - this.originalX,
+                newH = this.originalH + e.clientY - this.originalY;
+            if(newW < this.originalW){
+                this.style.width = newW + 'px';
+            }
+            if(newH < this.originalH){
+                this.style.height = newH + 'px';
+            }
+        }
+        function resizableEnd(){
+            this.onmousemove = this.onmouseout = this.onmouseup = null;
+        }
+        var els = document.getElementsByClassName('resizable');
+        for(var i=0, len=els.length; i<len; ++i){
+            els[i].onmouseover = resizableStart;
+        }
     },
     render: function() {
-        /*return (
-            <div>
-                <Modal
-                    isOpen={true}
-                    onRequestClose={this.props.flairToolbarToggle}
-                    style={customStyles}>
-                    <div className="modal-header">
-                        <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.flairToolbarToggle} />
-                        <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
-                    </div>
-                    <div className="modal-body" style={{height: '80vh', overflowY:'auto',width:'800px'}}>
-                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} /> : <div>Loading...</div>} 
-                    </div>
-                    <div className="modal-footer">
-                        <Button onClick={this.props.flairToolbarToggle}>Done</Button>
-                    </div>
-                </Modal>
-            </div>
-        )*/
         return (
             <Draggable handle="#handle">
-                <div id="dragme" className='box react-draggable' style={{position:'absolute', zIndex:'100',backgroundColor:'#AEC0D0', border:'1px solid black'}}> 
+                <div id="dragme" className='box react-draggable entityPopUp resizable'> 
                     <div id='handle' style={{width:'100%',padding:'5px',background:'#7A8092', color:'white', fontWeight:'900', textAlign:'center', cursor:'move'}}>Drag</div>
                     <div>
                         <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
@@ -79,24 +74,11 @@ var EntityDetail = React.createClass({
                     {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
                     </div>
                     <div>
-                        <Button onClick={this.props.flairToolbarToggle}>Done</Button>
+                        <Button onClick={this.props.flairToolbarToggle}>Close</Button>
                     </div>
                 </div>
             </Draggable>
-        )/*
-        return (
-            <div>
-                <Modal isOpen={true}
-                    onRequestClose={this.props.flairToolbarToggle}
-                    style={customStyles}> 
-                    
-                    <div className="modal-body" style={{height:'80vh'}}>
-                        <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3> 
-                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
-                    </div>
-                </Modal>
-            </div>
-        )*/
+        )
     },
     
 });
@@ -160,8 +142,8 @@ var EntityBody = React.createClass({
         //var href = '/#/entity/' + this.props.entityid + '/' + this.props.type + '/' + this.props.id;
         return (
             <Tabs defaultActiveKey={1} bsStyle='pills'>
-                <Tab eventKey={1} title={this.state.appearances}><br/>{entityEnrichmentLinkArr}<br/><br/><span><b>Appears: {this.state.appearances} times</b></span><br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances}/></Tab>
-                <Tab eventKey={2} title="Entry"><br/><Button onClick={this.entryToggle}>Add Entry</Button><br/>
+                <Tab eventKey={1} title={this.state.appearances}>{entityEnrichmentLinkArr}<span><br/><b>Appears: {this.state.appearances} times</b></span><br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances}/><br/></Tab>
+                <Tab eventKey={2} title="Entry"><Button onClick={this.entryToggle}>Add Entry</Button><br/>
                 {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} /> : null} <SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
                 {entityEnrichmentGeoArr}
                 {entityEnrichmentDataArr}
@@ -197,12 +179,14 @@ var GeoView = React.createClass({
         copyArr.push('</table>');
         var copy = copyArr.join('');
         return(
-            <div className='entityTableWrapper'>
-                <Button onClick={this.copyToEntry}>Copy to Entry</Button>
+            <div>
+                <Button onClick={this.copyToEntry}>Copy to <b>{this.props.type} {this.props.id}</b> entry</Button>
                 {this.state.copyToEntryToolbar ? <AddEntryModal title='CopyToEntry' type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.copyToEntry} content={copy}/> : null}
-                <table className="tablesorter entityTableHorizontal" id={'sortableentitytable'} width='100%'>
-                    {trArr}    
-                </table>
+                <div className="entityTableWrapper">
+                    <table className="tablesorter entityTableHorizontal" id={'sortableentitytable'} width='100%'>
+                        {trArr}    
+                    </table>
+                </div>
             </div>     
         )
     }
