@@ -31,6 +31,7 @@ var AddFlair = {
                                             var entityid = entityResult[currentEntityValue.toLowerCase()].id;
                                             var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
                                             var entitydata = entityResult[currentEntityValue.toLowerCase()].data;
+                                            var entityEntryCount = entityResult[currentEntityValue.toLowerCase()].entry;
                                             var circle = $('<span class="noselect">');
                                             circle.addClass('circleNumber');
                                             circle.addClass('extras');
@@ -40,12 +41,12 @@ var AddFlair = {
                                             $(entity).unbind('click');
                                             if (entitydata != undefined) {
                                                 if (entitydata.geoip != undefined) {
-                                                    if (entitydata.geoip.isocode != undefined) {
+                                                    if (entitydata.geoip.data.isocode != undefined) {
                                                         var country_code;
-                                                        if (entitydata.geoip.isp == 'Sandia National Laboratories') {
+                                                        if (entitydata.geoip.data.isp == 'Sandia National Laboratories') {
                                                             country_code = 'sandia';    
                                                         } else {
-                                                            country_code = entitydata.geoip.isocode;
+                                                            country_code = entitydata.geoip.data.isocode;
                                                         }
                                                         var flag = $('<img class="noselect">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
                                                         flag.addClass('extras');
@@ -53,30 +54,30 @@ var AddFlair = {
                                                     }
                                                 }
                                                 if (entitydata.sidd != undefined) {
-                                                    if (entitydata.sidd.blocklist != undefined) {
-                                                        if (entitydata.sidd.blocklist.action != undefined) {
-                                                            if (entitydata.sidd.blocklist.action.firewall != false) {
+                                                    if (entitydata.sidd.data.blocklist != undefined) {
+                                                        if (entitydata.sidd.data.blocklist.action != undefined) {
+                                                            if (entitydata.sidd.data.blocklist.action.firewall != false) {
                                                                 $(entity).append($('<img>').attr('src', '/images/flair/firewalled.png'));    
                                                             }
-                                                            if (entitydata.sidd.blocklist.action.watch != false) {
+                                                            if (entitydata.sidd.data.blocklist.action.watch != false) {
                                                                 $(entity).append($('<img>').attr('src', '/images/flair/watch.png'));
                                                             }
-                                                            if (entitydata.sidd.blocklist.action.whitelist != false) {
+                                                            if (entitydata.sidd.data.blocklist.action.whitelist != false) {
                                                                 $(entity).append($('<img>').attr('src', '/images/flair/white_list.jpg'));
                                                             }
-                                                            if (entitydata.sidd.blocklist.action.blackhole != false) {
+                                                            if (entitydata.sidd.data.blocklist.action.blackhole != false) {
                                                                 $(entity).append($('<img>').attr('src', '/images/flair/blackholed.png'));;
                                                             }
-                                                            if (entitydata.sidd.blocklist.action.proxy_block != false) {
+                                                            if (entitydata.sidd.data.blocklist.action.proxy_block != false) {
                                                                 $(entity).append($('<img>').attr('src', '/images/flair/blocked.png'));
                                                             }
                                                         }
                                                     }
                                                 }
-                                                if (entitydata.entry != undefined) {
-                                                    if (entitydata.entry != 0) {
-                                                        $(entity).append($('<img>').attr('src', '/flair/note.gif'));
-                                                    }
+                                            }
+                                            if (entityEntryCount != undefined) {
+                                                if (entityEntryCount != 0) {
+                                                    $(entity).append($('<img>').attr('src', '/images/flair/note.gif'));
                                                 }
                                             }
                                         }
@@ -104,6 +105,7 @@ var AddFlair = {
                                 var entityid = entityResult[currentEntityValue.toLowerCase()].id;
                                 var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
                                 var entitydata = entityResult[currentEntityValue.toLowerCase()].data;
+                                var entityEntryCount = entityResult[currentEntityValue.toLowerCase()].entry;
                                 var circle = $('<span class="noselect">');
                                 circle.addClass('circleNumber');
                                 circle.addClass('extras');
@@ -113,12 +115,12 @@ var AddFlair = {
                                 $(entity).unbind('click');
                                 if (entitydata != undefined) {
                                     if (entitydata.geoip != undefined) {
-                                        if (entitydata.geoip.isocode != undefined) {
+                                        if (entitydata.geoip.data.isocode != undefined) {
                                             var country_code;
-                                            if (entitydata.geoip.isp == 'Sandia National Laboratories') {
+                                            if (entitydata.geoip.data.isp == 'Sandia National Laboratories') {
                                                 country_code = 'sandia';    
                                             } else {
-                                                country_code = entitydata.geoip.isocode;
+                                                country_code = entitydata.geoip.data.isocode;
                                             }
                                             var flag = $('<img class="noselect">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
                                             flag.addClass('extras');
@@ -126,30 +128,30 @@ var AddFlair = {
                                         }
                                     }
                                     if (entitydata.sidd != undefined) {
-                                        if (entitydata.sidd.blocklist != undefined) {
-                                            if (entitydata.sidd.blocklist.action != undefined) {
-                                                if (entitydata.sidd.blocklist.action.firewall != false) {
+                                        if (entitydata.sidd.data.blocklist != undefined) {
+                                            if (entitydata.sidd.data.blocklist.action != undefined) {
+                                                if (entitydata.sidd.data.blocklist.action.firewall != false) {
                                                     $(entity).append($('<img>').attr('src', '/images/flair/firewalled.png'));    
                                                 }
-                                                if (entitydata.sidd.blocklist.action.watch != false) {
+                                                if (entitydata.sidd.data.blocklist.action.watch != false) {
                                                     $(entity).append($('<img>').attr('src', '/images/flair/watch.png'));
                                                 }
-                                                if (entitydata.sidd.blocklist.action.whitelist != false) {
+                                                if (entitydata.sidd.data.blocklist.action.whitelist != false) {
                                                     $(entity).append($('<img>').attr('src', '/images/flair/white_list.jpg'));
                                                 }
-                                                if (entitydata.sidd.blocklist.action.blackhole != false) {
+                                                if (entitydata.sidd.data.blocklist.action.blackhole != false) {
                                                     $(entity).append($('<img>').attr('src', '/images/flair/blackholed.png'));
                                                 }
-                                                if (entitydata.sidd.blocklist.action.proxy_block != false) {
+                                                if (entitydata.sidd.data.blocklist.action.proxy_block != false) {
                                                     $(entity).append($('<img>').attr('src', '/images/flair/blocked.png'));
                                                 }
                                             }
                                         }
-                                    }
-                                    if (entitydata.entry != undefined) {
-                                        if (entitydata.entry != 0) {
-                                            $(entity).append($('<img>').attr('src', '/flair/note.gif'));
-                                        }
+                                    }                    
+                                }
+                                if (entityEntryCount != undefined) {
+                                    if (entityEntryCount != 0) {
+                                        $(entity).append($('<img>').attr('src', '/images/flair/note.gif'));
                                     }
                                 }
                             }

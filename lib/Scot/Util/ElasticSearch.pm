@@ -14,17 +14,18 @@ use Try::Tiny;
 use Try::Tiny::Retry;
 use namespace::autoclean;
 
+
 has es   => (
-    is      => 'ro',
-    isa     => 'Search::Elasticsearch::Client::2_0::Direct',
+    is          => 'ro',
+    isa         => 'Search::Elasticsearch::Client::2_0::Direct',
     required    => 1,
-    lazy    => 1,
-    builder => '_build_es',
+    lazy        => 1,
+    builder     => '_build_es',
 );
 
 has log => (
-    is      => 'ro',
-    isa     => 'Log::Log4perl::Logger',
+    is          => 'ro',
+    isa         => 'Log::Log4perl::Logger',
     required    => 1,
 );
 
@@ -34,7 +35,8 @@ has config  => (
     required    => 1,
     default     => sub {
         {
-            nodes   => [ 'localhost:9200' ],
+            nodes   => [ '127.0.0.1:9200',
+                         'localhost:9200' ],
         };
     },
 );
@@ -46,17 +48,24 @@ sub _build_es {
 
     $log->debug("Creating ES client");
 
+    my @noproxy = map { m/^(.*):\d+$/ } @{$self->config->{nodes}};
+    $ENV{'no_proxy'} = join ',', @noproxy;
+
     my %conparams   = (
         nodes   => $self->config->{nodes},
+        cxn_pool    => 'Sniff',
+        log_to  => 'Stderr',
     );
 
     try {
         $es  = Search::Elasticsearch->new(%conparams);
+        $es->ping;
     }
     catch {
         $log->error("Error creating Elasticsearch client: $_");
         return undef;
     };
+    $log->debug("ES is ",{filter=>\&Dumper, value=>$es});
     return $es;
 }
 
@@ -76,10 +85,29 @@ sub index {
         body    => $href,
     );
 
-    $log->trace("Sending ES INDEX message: ",{filter=>\&Dumper, value=>\%msg});
+    $log->debug("Sending ES INDEX message: ",{filter=>\&Dumper, value=>\%msg});
 
     $es->index(%msg);
 
+}
+
+sub delete {
+    my $self    = shift;
+    my $type    = shift;
+    my $id      = shift;
+    my $index   = shift // 'scot';
+    my $log     = $self->log;
+    my $es      = $self->es;
+
+    $log->debug("Deleting $type $id from $index");
+
+    my %msg = (
+        index   => $index,
+        type    => $type,
+        id      => $id,
+    );
+
+    $es->delete(%msg);
 }
 
 sub search {

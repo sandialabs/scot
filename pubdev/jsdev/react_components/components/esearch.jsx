@@ -10,17 +10,6 @@ var LayoutBody          = require('../../../node_modules/searchkit').LayoutBody;
 var LayoutResults       = require('../../../node_modules/searchkit').LayoutResults;
 const searchkit         = new SearchkitManager("/scot/api/v2/event")
 
-
-/*
-searchkit.addDefaultQuery((query)=>{
-    return query.addFilter('color',BoolShould([
-            TermQuery("color", "My Lord"),
-            TermQuery("color", "orange")
-        ]))
-})
-    
-*/
-
 class Results extends React.Component{
     render() {
         console.log(this.props)

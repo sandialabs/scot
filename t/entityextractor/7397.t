@@ -5,10 +5,15 @@ use Test::More;
 use Test::Deep;
 use Data::Dumper;
 use Scot::Util::EntityExtractor;
-use Scot::Env;
-
-my $env         = Scot::Env->new();
-my $extractor   = Scot::Util::EntityExtractor->new({log => $env->log});
+use Scot::Util::Config;
+use Scot::Util::Logger;
+my $confobj = Scot::Util::Config->new({
+    paths   => ['../../../Scot-Internal-Modules/etc/'],
+    file    => 'logger_test.cfg',
+});
+my $loghref = $confobj->get_config();
+my $log     = Scot::Util::Logger->new($loghref);
+my $extractor   = Scot::Util::EntityExtractor->new({log => $log});
 
 my $source      = <<'EOF';
 https://cbase.som.sunysb.edu/soap/bss.cfm
