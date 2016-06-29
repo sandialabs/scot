@@ -106,7 +106,7 @@ var SelectedEntry = React.createClass({
         var id = this.props.id;
         var showEntryData = this.props.showEntryData;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
-        if (type =='alert' || type == 'entity') {
+        if (type =='alert') {
             //default size commented out for now
             //divClass = 'row-fluid entry-wrapper entry-wrapper-main-70'
             divClass= 'row-fluid entry-wrapper-main-nh';
@@ -114,6 +114,10 @@ var SelectedEntry = React.createClass({
             showEntryData = this.state.showEntryData;
         } else if (type =='alertgroup') {
             divClass = 'row-fluid alert-wrapper entry-wrapper-main';
+        } else if (type == 'entity') {
+            divClass = 'row-fluid entry-wrapper-entity';
+            data = this.state.entryData;
+            showEntryData = this.state.showEntryData;
         }
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
         var EntityDetail = require('../modal/entity_detail.jsx');
