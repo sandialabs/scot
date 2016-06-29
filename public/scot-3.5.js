@@ -2733,6 +2733,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             aStatus:null,
             aID:0,
             guideID: null,
+            guideEntryCount: null,
         }
     },
     componentDidMount: function() {
@@ -2790,7 +2791,8 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/guide', function(result) {
                 if (result.records[0] != undefined) {
                     var guideID = result.records[0].id;
-                    this.setState({guideID: guideID});
+                    var guideEntryCount = result.records[0].entry_count;
+                    this.setState({guideID: guideID, guideEntryCount:guideEntryCount});
                 }
             }.bind(this));     
         }
@@ -3046,7 +3048,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 this.state.entitiesToolbar ? React.createElement(Entities, {entitiesToggle: this.entitiesToggle, entityData: this.state.entityData, flairToolbarToggle: this.flairToolbarToggle}) : null, 
                 this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: id, type: type, permissionData: this.state.headerData, permissionsToggle: this.permissionsToggle, updated: this.updated}) : null, 
                 this.state.deleteToolbar ? React.createElement(DeleteEvent, {subjectType: subjectType, type: type, id: id, deleteToggle: this.deleteToggle, updated: this.updated}) :null, 
-                type != 'alertgroup' ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, historyToggle: this.historyToggle, deleteToggle: this.deleteToggle, updated: this.updated}) : React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, historyToggle: this.historyToggle, deleteToggle: this.deleteToggle, updated: this.updated, alertSelected: this.state.alertSelected, aIndex: this.state.aIndex, aType: this.state.aType, aStatus: this.state.aStatus, guideToggle: this.guideToggle, sourceToggle: this.sourceToggle})
+                type != 'alertgroup' ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, historyToggle: this.historyToggle, deleteToggle: this.deleteToggle, updated: this.updated}) : React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, historyToggle: this.historyToggle, deleteToggle: this.deleteToggle, updated: this.updated, alertSelected: this.state.alertSelected, aIndex: this.state.aIndex, aType: this.state.aType, aStatus: this.state.aStatus, guideToggle: this.guideToggle, sourceToggle: this.sourceToggle, guideEntryCount: this.state.guideEntryCount})
                 ), 
                 this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
 
@@ -3487,7 +3489,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 return (
                     React.createElement("div", {className: "entry-header"}, 
                         React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
-                        React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle, bsSize: "small"}, "Guide"), 
+                        this.props.guideEntryCount != null ? React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle, bsSize: "small"}, "Guide") : null, 
                         React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
                         React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
                         React.createElement(Button, {eventKey: "4", onClick: this.props.historyToggle, bsSize: "small"}, "View ", React.createElement("b", null, "AlertGroup History")), 
@@ -3504,7 +3506,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 return (
                     React.createElement("div", {className: "entry-header"}, 
                         React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
-                        React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle, bsSize: "small"}, "Guide"), 
+                        this.props.guideEntryCount != null ? React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle, bsSize: "small"}, "Guide") : null, 
                         React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
                         React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
                         React.createElement(Button, {eventKey: "4", onClick: this.props.historyToggle, bsSize: "small"}, "View ", React.createElement("b", null, "AlertGroup History"))
