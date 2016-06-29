@@ -5,8 +5,7 @@ use v5.18;
 use strict;
 use warnings;
 use Scot::Util::Logger;
-use File::Find;
-use Safe;
+use Scot::Util::Config;
 
 use Moose;
 use namespace::autoclean;
@@ -15,6 +14,13 @@ has configuration_file  => (
     is              => 'ro',
     isa             => 'Str',
     required        => 1,
+);
+
+has paths   => (
+    is              => 'ro',
+    isa             => 'ArrayRef',
+    required        => 1,
+    default         => sub { ['/opt/scot/etc' ]; },
 );
 
 has config  => (
@@ -31,39 +37,13 @@ sub _build_config {
     unless ( $file ) {
         die "Error: configuration file attribute not set!";
     }
-    unless ( -e $file ) {
-        die "Error: Unable to find configuration file $file";
-    }
-    return $self->get_config($file);
+    my $confobj = Scot::Util::Config->new({
+        file    => $file,
+        paths   => $self->paths,
+    });
+    return $confobj->get_config;
 }
 
-sub get_config {
-    my $self    = shift;
-    my $file    = shift;
-    my $paths   = shift;
-
-    unless ($paths) {
-        push @$paths, '/opt/scot/etc';
-    }
-    my $fqname;
-    find(sub {
-        if ( $_ eq $file ) {
-            $fqname = $File::Find::name;
-            return;
-        }
-    }, @$paths);
-
-    unless ( -e $fqname ) {
-        die "Config file $file not found!\n";
-    }
-
-    no strict 'refs';
-    my $c   = new Safe 'CONFIG';
-    my $r   = $c->rdo($fqname);
-    my $n   = 'CONFIG::environment';
-    my $h   = \%$n;
-    return $h;
-}
 
 has log => (
     is          => 'ro',
@@ -75,9 +55,8 @@ has log => (
 
 sub _get_logger {
     my $self    = shift;
-    my $cfile   = $self->config->{log_config};
-    my $config  = $self->get_config($cfile);
-    return Scot::Util::Logger->new($config);
+    my $chref   = $self->config->{log};
+    return Scot::Util::Logger->new($chref);
 }
 
 has base_url    => (
