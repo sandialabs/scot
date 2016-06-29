@@ -35,17 +35,17 @@ var AddEntryModal = React.createClass({
 	        }).success(function(response){
                 recently_updated = response.updated
                 if(response.body_flair == ""){
-	                $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
+	                $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
                 }
                 else{
-	                $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_flair)
+	                $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_flair)
                 }
 	        }.bind(this))
 	}
 	else if (this.props.title == 'Add Entry'){
 	    finalfiles = []
         reply = false
-	    $('#' + this.props.id + '_ifr').contents().find("#tinymce").text('')
+	    $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text('')
     }
 	else if(this.props.title == 'Reply Entry'){
 	    finalfiles = []
@@ -64,15 +64,19 @@ var AddEntryModal = React.createClass({
 		newheight= document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
 		newheight = newheight + 'px'
 		this.setState({height: newheight})
-	}
+	} 
     },
     componentDidMount: function() {
-        $('#' + this.props.id + '_ifr').css('height', '200px')
+        $('#tiny_' + this.props.id + '_ifr').css('height', '200px')
         $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top)
+        if(this.props.title == 'CopyToEntry') {
+            $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(this.props.content)
+        }
     },
 	render: function() {
 	var item = this.state.subitem
     var not_saved_entry_id = 'not_saved_entry_'+this.props.id
+    var tinyID = 'tiny_'+this.props.id
         return (
             <div id={not_saved_entry_id}>
                 <div className={'row-fluid entry-outer'} style={{border: '3px solid blue',marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
@@ -84,7 +88,7 @@ var AddEntryModal = React.createClass({
                             </span>
                         </div>
                     </div>
-                    <TinyMCE id={this.props.id} content={""} className={'inputtext'} config={{plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}} onChange={this.handleEditorChange} /> 
+                    <TinyMCE id={tinyID} content={""} className={'inputtext'} config={{plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}} onChange={this.handleEditorChange} /> 
                     <Dropzone onDrop={this.onDrop} style={{'border-width':'2px','border-color':'#000','border-radius':'4px','border-style': 'dashed', 'text-align' : 'center','background-color':'azure'}}><div style={{fontSize:'16px',color:'black',margin:'5px'}}>Click or Drop files here to upload</div></Dropzone>
                     {this.state.files ? <div> {this.state.files.map(function(file) { return  <ul style={{'list-style-type' : 'none', margin:'0', padding:'0'}}><li><p style={{display:'inline'}}>{file.name}</p><button style={{'line-height':'1px'}} className='btn btn-info' id={file.name} onClick={this.Close}>x</button></li></ul>}.bind(this))}</div> : null} 
                 </div>    
@@ -95,7 +99,7 @@ var AddEntryModal = React.createClass({
 	this.setState({addentry: false})
 	},
     Edit: function(){
-	$('#'+this.props.id+'_ifr').contents().find("#tinymce").attr('contenteditable', true)
+	$('#tiny_'+this.props.id+'_ifr').contents().find("#tinymce").attr('contenteditable', true)
 	this.setState({saved: false, edit: false, enablesave:true})    
     },
     onCancel: function(){
@@ -119,23 +123,23 @@ var AddEntryModal = React.createClass({
     this.setState({files: finalfiles})
     },
 	Save: function() {
-	if($('#' + this.props.id + '_ifr').contents().find("#tinymce").text() == ""){
+	if($('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text() == ""){
 	    alert("Please fill in Text")
 	}
 	else {
-	    $('#' + this.props.id + '_ifr').contents().find("#tinymce").attr('contenteditable', false)
+	    $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").attr('contenteditable', false)
 	    this.setState({saved: true, edit: true, enablesave: false})
 	}
         },
 	submit: function(){
-	if($('#' + this.props.id + '_ifr').contents().find("#tinymce").text() == "" && $('#' + this.props.id + '_ifr').contents().find("#tinymce").find('img').length == 0) {
+	if($('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text() == "" && $('#' + this.props.id + '_ifr').contents().find("#tinymce").find('img').length == 0) {
 	    alert("Please Add Some Text")
 	}
     else {    
         if(this.props.stage == 'Reply')
 	    {
     	    var data = new Object()
-	        $('#' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+	        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
             $(y).find('p').each(function(r,s){
                 $(s).find('img').each(function(key, value){ 
                     var canvas = document.createElement('canvas')
@@ -152,7 +156,7 @@ var AddEntryModal = React.createClass({
         })
     })
 
-    data = JSON.stringify({parent: Number(this.props.id), body: $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
+    data = JSON.stringify({parent: Number(this.props.id), body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
 
 	$.ajax({
 	    type: 'post',
@@ -221,7 +225,7 @@ var AddEntryModal = React.createClass({
     }
 	else  if(this.props.type == 'alert'){ 
      var data;
-	$('#' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+	$('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
         $(y).find('p').each(function(r,s){
                 $(s).find('img').each(function(key, value){ 
                     var canvas = document.createElement('canvas')
@@ -239,7 +243,7 @@ var AddEntryModal = React.createClass({
     })
     
      
-	            data = JSON.stringify({body: $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid), target_type: 'alert',  parent: 0})
+	            data = JSON.stringify({body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid), target_type: 'alert',  parent: 0})
 	            $.ajax({
 		        type: 'post', 
 		        url: '/scot/api/v2/entry',
@@ -271,7 +275,7 @@ var AddEntryModal = React.createClass({
 	}	
 	else {
     var data = new Object();
-	$('#' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+	$('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
         $(y).find('p').each(function(r,s){
                 $(s).find('img').each(function(key, value){ 
                     var canvas = document.createElement('canvas')
@@ -287,7 +291,7 @@ var AddEntryModal = React.createClass({
                 })
         })
     })
-    data = {parent: 0, body: $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
+    data = {parent: 0, body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
     $.ajax({
 	type: 'post',
 	url: '/scot/api/v2/entry',
@@ -320,7 +324,7 @@ var AddEntryModal = React.createClass({
     },
     forEdit: function(set){
     if(set){
-	$('#' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+	$('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
         $(y).find('p').each(function(r,s){
                 $(s).find('img').each(function(key, value){ 
                     var canvas = document.createElement('canvas')
@@ -339,7 +343,7 @@ var AddEntryModal = React.createClass({
 
     var data = {
         parent: Number(this.props.parent), 
-        body: $('#' + this.props.id + '_ifr').contents().find("#tinymce").html(), 
+        body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), 
         target_id: Number(this.props.targetid) , 
         target_type: this.props.type
     }
