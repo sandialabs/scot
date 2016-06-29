@@ -19,11 +19,11 @@ const customStyles = {
         marginRight: '-50%',
         transform:  'translate(-50%, -50%)',
         maxWidth: '40%',
-        overflowY: 'hidden',
+        //overflowY: 'hidden',
     }
 }
 
-var Flair = React.createClass({
+var EntityDetail = React.createClass({
     getInitialState: function() {
         return {
             entityData:null,
@@ -45,6 +45,9 @@ var Flair = React.createClass({
             }.bind(this));
         } 
     },
+    popOut: function() {
+        
+    },
     render: function() {
         /*return (
             <div>
@@ -65,33 +68,35 @@ var Flair = React.createClass({
                 </Modal>
             </div>
         )*/
-        /*return (
-            <Draggable>
-                <div style={{width:'400px'}}>
+        return (
+            <Draggable handle="#handle">
+                <div id="dragme" className='box react-draggable' style={{position:'absolute', zIndex:'100',backgroundColor:'#AEC0D0', border:'1px solid black'}}> 
+                    <div id='handle' style={{width:'100%',padding:'5px',background:'#7A8092', color:'white', fontWeight:'900', textAlign:'center', cursor:'move'}}>Drag</div>
                     <div>
                         <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
                     </div>
                     <div>
-                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} /> : <div>Loading...</div>}
+                    {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
                     </div>
                     <div>
                         <Button onClick={this.props.flairToolbarToggle}>Done</Button>
                     </div>
                 </div>
             </Draggable>
-        )*/
+        )/*
         return (
             <div>
                 <Modal isOpen={true}
                     onRequestClose={this.props.flairToolbarToggle}
                     style={customStyles}> 
+                    
                     <div className="modal-body" style={{height:'80vh'}}>
                         <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3> 
-                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} /> : <div>Loading...</div>}
+                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
                     </div>
                 </Modal>
             </div>
-        )
+        )*/
     },
     
 });
@@ -136,8 +141,8 @@ var EntityBody = React.createClass({
             var entityData = this.props.data['data'];
             for (var prop in entityData) {
                 if (entityData[prop] != undefined) {
-                    if (entityData[prop] == 'geoip') {
-                        entityEnrichmentGeoArr.push(<Tab eventKey={enrichmentEventKey} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} /></Tab>);
+                    if (prop == 'geoip') {
+                        entityEnrichmentGeoArr.push(<Tab eventKey={enrichmentEventKey} title={prop}><GeoView data={entityData[prop].data} type={this.props.type} id={this.props.id}/></Tab>);
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'data') {
                         entityEnrichmentDataArr.push(<Tab eventKey={enrichmentEventKey} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} /></Tab>);
@@ -151,12 +156,13 @@ var EntityBody = React.createClass({
         }
         //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
         var SelectedEntry = require('../entry/selected_entry.jsx');
+        //PopOut available
+        //var href = '/#/entity/' + this.props.entityid + '/' + this.props.type + '/' + this.props.id;
         return (
             <Tabs defaultActiveKey={1} bsStyle='pills'>
                 <Tab eventKey={1} title={this.state.appearances}><br/>{entityEnrichmentLinkArr}<br/><br/><span><b>Appears: {this.state.appearances} times</b></span><br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances}/></Tab>
-                <Tab eventKey={2} title="Entry"><Button onClick={this.entryToggle}>Add Entry</Button>
+                <Tab eventKey={2} title="Entry"><br/><Button onClick={this.entryToggle}>Add Entry</Button><br/>
                 {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} /> : null} <SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
-                
                 {entityEnrichmentGeoArr}
                 {entityEnrichmentDataArr}
             </Tabs>
@@ -164,6 +170,43 @@ var EntityBody = React.createClass({
     }
     
 });
+
+var GeoView = React.createClass({
+    getInitialState: function() {
+        return {
+            copyToEntryToolbar: false
+        }
+    },
+    copyToEntry: function() {
+        if (this.state.copyToEntryToolbar == false) {
+            this.setState({copyToEntryToolbar: true});
+        } else {
+            this.setState({copyToEntryToolbar: false})
+        }
+    },
+    render: function() { 
+        var trArr           = [];
+        var copyArr         = [];
+        copyArr.push('<table>');
+        for (var prop in this.props.data) {
+            var keyProp = prop;
+            var value = this.props.data[prop];
+            trArr.push(<tr><td style={{paddingRight:'4px', paddingLeft:'4px'}}><b>{prop}</b></td><td style={{paddingRight:'4px', paddingLeft:'4px'}}>{this.props.data[prop]}</td></tr>);
+            copyArr.push('<tr><td style={{paddingRight:"4px", paddingLeft:"4px"}}><b>' + prop + '</b></td><td style={{paddingRight:"4px", paddingLeft:"4px"}}>' + value + '</td></tr>')
+        }
+        copyArr.push('</table>');
+        var copy = copyArr.join('');
+        return(
+            <div className='entityTableWrapper'>
+                <Button onClick={this.copyToEntry}>Copy to Entry</Button>
+                {this.state.copyToEntryToolbar ? <AddEntryModal title='CopyToEntry' type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.copyToEntry} content={copy}/> : null}
+                <table className="tablesorter entityTableHorizontal" id={'sortableentitytable'} width='100%'>
+                    {trArr}    
+                </table>
+            </div>     
+        )
+    }
+})
 
 var EntityEnrichmentButtons = React.createClass({
     render: function() { 
@@ -197,18 +240,14 @@ var EntityReferences = React.createClass({
             var arrPromoted = [];
             var arrClosed = [];
             var arrOpen = [];
-            //this.setState({entityDataEvent:result,entityDataEventLoading:false})
             for(var i=0; i < result.length; i++) {
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(<ReferencesBody type={'alert'} data={result[i]} index={i}/>)
-                        arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(<ReferencesBody type={'alert'} data={result[i]} index={i}/>)
-                        arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(<ReferencesBody type={'alert'} data={result[i]} index={i}/>)
-                        arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -224,18 +263,14 @@ var EntityReferences = React.createClass({
             var arrPromoted = [];
             var arrClosed = [];
             var arrOpen = [];
-            //this.setState({entityDataEvent:result,entityDataEventLoading:false})
             for(var i=0; i < result.length; i++) {
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(<ReferencesBody type={'event'} data={result[i]} index={i}/>)
-                        arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(<ReferencesBody type={'event'} data={result[i]} index={i}/>)
-                        arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(<ReferencesBody type={'event'} data={result[i]} index={i}/>)
-                        arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -251,18 +286,14 @@ var EntityReferences = React.createClass({
             var arrPromoted = [];
             var arrClosed = [];
             var arrOpen = [];
-            //this.setState({entityDataEvent:result,entityDataEventLoading:false})
             for(var i=0; i < result.length; i++) {
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(<ReferencesBody type={'incident'} data={result[i]} index={i}/>)
-                        arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(<ReferencesBody type={'incident'} data={result[i]} index={i}/>)
-                        arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(<ReferencesBody type={'incident'} data={result[i]} index={i}/>)
-                        arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -278,18 +309,14 @@ var EntityReferences = React.createClass({
             var arrPromoted = [];
             var arrClosed = [];
             var arrOpen = [];
-            //this.setState({entityDataEvent:result,entityDataEventLoading:false})
             for(var i=0; i < result.length; i++) {
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(<ReferencesBody type={'intel'} data={result[i]} index={i}/>)
-                        arrPromoted.push(<ReferencesBlankRow />)
                     } else if (result[i].status == 'closed') {
                         arrClosed.push(<ReferencesBody type={'intel'} data={result[i]} index={i}/>)
-                        arrClosed.push(<ReferencesBlankRow />)
                     } else {
                         arrOpen.push(<ReferencesBody type={'intel'} data={result[i]} index={i}/>)
-                        arrOpen.push(<ReferencesBlankRow />)
                     }
                 }
             }
@@ -307,7 +334,7 @@ var EntityReferences = React.createClass({
     render: function() {
         return (
             <div className='entityTableWrapper'>
-            <table className="tablesorter alertTableHorizontal" id={'sortableentitytable'} width='100%'>
+            <table className="tablesorter entityTableHorizontal" id={'sortableentitytable'} width='100%'>
                 <thead>
                     <tr>
                         <th>peek</th>
@@ -373,17 +400,11 @@ var ReferencesBody = React.createClass({
             }.bind(this)
         })
     },
-    navigateTo: function() {
-        if (this.props.type == 'alert') {
-            window.open('#/event/'+this.props.data.promotion_id);
-        } else if (this.props.type == 'event') {
-            window.open('#/incident/'+this.props.data.promotion_id);
-        }
-    },
     render: function() {
         var id = this.props.data.id;
         var trId = 'entityTable' + this.props.data.id;
-        var href = null;
+        var aHref = null;
+        var promotedHref = null;
         var statusColor = null
         if (this.props.data.status == 'promoted') {
             statusColor = 'orange';
@@ -395,15 +416,20 @@ var ReferencesBody = React.createClass({
             statusColor = 'black';
         }
         if (this.props.type == 'alert') {
-            href = '/#/alertgroup/' + this.props.data.alertgroup;
-        } else {
-            href = '/#/' + this.props.type + '/' + this.props.data.id;
+            aHref = '/#/alertgroup/' + this.props.data.alertgroup;
+            promotedHref = '/#/event/' + this.props.data.promotion_id;
+        } else if (this.props.type == 'event') {
+            promotedHref = '/#/incident/' + this.props.data.promotion_id;
+            aHref = '/#/' + this.props.type + '/' + this.props.data.id;
+        }
+        else {
+            aHref = '/#/' + this.props.type + '/' + this.props.data.id;
         }
         return (
             <tr id={trId} index={this.props.index}>
                 <td valign='top' style={{textAlign:'center',cursor: 'pointer'}} onClick={this.onClick}><i className="fa fa-eye fa-1" aria-hidden="true"></i></td>
-                {this.props.data.status == 'promoted' ? <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}><Button bsSize='xsmall' bsStyle={'warning'} id={this.props.data.id} onClick={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{this.props.data.status}</Button></td> : <td valign='top' style={{color: statusColor, paddingRight:'4px', paddingLeft:'4px'}}>{this.props.data.status}</td>}
-                <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}><a href={href} target="_blank">{this.props.data.id}</a></td>
+                {this.props.data.status == 'promoted' ? <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}><Button bsSize='xsmall' bsStyle={'warning'} id={this.props.data.id} href={promotedHref} target="_blank" style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{this.props.data.status}</Button></td> : <td valign='top' style={{color: statusColor, paddingRight:'4px', paddingLeft:'4px'}}>{this.props.data.status}</td>}
+                <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}><a href={aHref} target="_blank">{this.props.data.id}</a></td>
                 <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}>{this.props.type}</td>
                 <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px', textAlign:'center'}}>{this.props.data.entry_count}</td>
                 <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}>{this.props.data.subject}</td>
@@ -412,17 +438,4 @@ var ReferencesBody = React.createClass({
     }
 })
 
-var ReferencesBlankRow = React.createClass({
-    render: function() {
-        return (
-            <tr className='not_selectable'>
-                <td style={{padding:'0'}}>
-                </td>
-                    <td colSpan="50" style={{padding:'1px'}}>
-                </td>
-            </tr>
-        )   
-    }
-});
-
-module.exports = Flair;
+module.exports = EntityDetail;

@@ -667,10 +667,51 @@ border-radius: 4px 4px 4px 4px;
 //  padding-right:5px; 
 }
 
+.entityTableHorizontal {
+  display: table;
+  padding: 3px;
+  border-radius: 5px;
+  border: 1px solid black;
+  width:99.5%;
+  margin-bottom:10px;
+}
+
+.entityTableHorizontal > div {
+  display: table-row;
+  border-bottom: 1px solid #333;
+}
+
+.entityTableHorizontal > div:first-child  {
+  font-weight:bold;
+}
+
+.entityTableHorizontal tr:nth-child(odd) {
+      background-color: #EEE;
+}
+
+.entityTableHorizontal tr:nth-child(even) {
+      background-color: #FFF;
+}
+
+.entityTableHorizontal th:nth-child(even) {
+  background-color: rgba(0,0,0,0.05) !important;
+}
+
+.entityTableHorizontal th:nth-child(odd) {
+  background-color: rgba(0,0,0,0.1) !important;
+}
+
+.entityTableHorizontal th {
+  box-shadow: 0px -10px 5px -10px  black inset;
+}
+
+.entityTableHorizontal span:last-child {
+}
+
 .entityTableWrapper {
     overflow-y: auto;
     display: inline-block;
-    max-height: 60vh;
+    max-height: 30vh;
 }
 
 .active_tab {
