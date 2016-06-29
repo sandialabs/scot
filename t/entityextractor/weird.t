@@ -5,12 +5,19 @@ use Test::More;
 use Test::Deep;
 use Data::Dumper;
 use Scot::Util::EntityExtractor;
-use Scot::Env;
+use Scot::Util::Config;
+use Scot::Util::Logger;
+my $confobj = Scot::Util::Config->new({
+    paths   => ['../../../Scot-Internal-Modules/etc/'],
+    file    => 'logger_test.cfg',
+});
+my $loghref = $confobj->get_config();
+my $log     = Scot::Util::Logger->new($loghref);
 # Added the following to the blocklist:<br><br><pre>foundersomaha.net <br>externalbatterycase.com <br>spoilrotn.com <br>veloelectric.com.au<br></pre>
 
 #### I think this is just hoplessly broken due to the f'ed up nature of the HTML.
 
-my $extractor   = Scot::Util::EntityExtractor->new();
+my $extractor   = Scot::Util::EntityExtractor->new({log=>$log});
 my $source      = <<EOF;
 Added the following to the blocklist:<br><br><pre>foo foundersomaha.net  meaningless <br>externalbatterycase.com some other post text</pre>
 <p>nothing here</p>
@@ -22,7 +29,7 @@ Added the following to the blocklist:<br><br><pre>foo foundersomaha.net  meaning
 EOF
 
 my $flair   = <<EOF;
-<html><head></head><body><p>Added the following to the blocklist: <br /><br /><pre>foo <span class="entity domain" data-entity-type="domain" data-entity-value="foundersomaha.net">foundersomaha.net</span>  meaningless <br /><span class="entity domain" data-entity-type="domain" data-entity-value="externalbatterycase.com">externalbatterycase.com</span> some other post text </pre><p>nothing here <div><br />IP addr time:<br /><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="10.10.10.10">10.10.10.10</span><br /><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="123.123.123.123">123.123.123.123</span><br /></div></body></html>
+<div>Added the following to the blocklist: <br /><br /><pre>foo <span class="entity domain" data-entity-type="domain" data-entity-value="foundersomaha.net">foundersomaha.net</span>  meaningless <br /><span class="entity domain" data-entity-type="domain" data-entity-value="externalbatterycase.com">externalbatterycase.com</span> some other post text </pre><p>nothing here <div><br />IP addr time:<br /><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="10.10.10.10">10.10.10.10</span><br /><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="123.123.123.123">123.123.123.123</span><br /></div></div>
 EOF
 
 chomp($flair);

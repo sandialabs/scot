@@ -14,6 +14,8 @@ var Button                  = require('react-bootstrap/lib/Button');
 var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar');
 var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger');
 var Popover                 = require('react-bootstrap/lib/Popover');
+var DropdownButton          = require('react-bootstrap/lib/DropdownButton');
+var MenuItem                = require('react-bootstrap/lib/MenuItem');
 var DebounceInput           = require('react-debounce-input');
 var SelectedEntry           = require('./selected_entry.jsx');
 var Tag                     = require('../components/tag.jsx');
@@ -24,7 +26,7 @@ var AppActions              = require('../flux/actions.jsx');
 var Notification            = require('react-notification-system');
 var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var Watcher                 = require('../components/add_flair.jsx').Watcher;
-var Flair                   = require('../modal/flair_modal.jsx');
+var EntityDetail            = require('../modal/entity_detail.jsx');
 var ESearch                 = require('../components/esearch.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx');
 var SelectedHeader = React.createClass({
@@ -373,7 +375,7 @@ var SelectedHeader = React.createClass({
                     </div>
                 </div>
                 <Notification ref="notificationSystem" /> 
-                {this.state.flairToolbar ? <Flair key={this.state.entityid} flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue}/> : null}
+                {this.state.flairToolbar ? <EntityDetail key={this.state.entityid} flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue} type={this.props.type} id={this.props.id}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null} 
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData} flairToolbarToggle={this.flairToolbarToggle} /> : null}
@@ -432,6 +434,12 @@ var EntryDataStatus = React.createClass({
             this.statusAjax('open');
         } 
     },
+    closeAll: function() {
+        this.statusAjax('closed');
+    },
+    openAll: function() {
+        this.statusAjax('open');
+    },
     statusAjax: function(newStatus) {
         console.log(newStatus);
         var json = {'status':newStatus};
@@ -450,19 +458,42 @@ var EntryDataStatus = React.createClass({
     },
     render: function() { 
         var buttonStyle = '';
+        var open = '';
+        var closed = '';
+        var promoted = '';
+        var title = '';
+        var classStatus = '';
         if (this.state.buttonStatus == 'open') {
-            buttonStyle = 'danger'; 
+            buttonStyle = 'danger';
+            classStatus = 'alertgroup_open' 
         } else if (this.state.buttonStatus == 'closed') {
             buttonStyle = 'success';
+            classStatus = 'alertgroup_closed'
         } else if (this.state.buttonStatus == 'promoted') {
-            buttonStyle = 'warning'
-        }; 
+            buttonStyle = 'default'
+            classStatus = 'alertgroup_promoted'
+        };
+        if (this.props.type == 'alertgroup') {
+            open = this.props.data.open_count;
+            closed = this.props.data.closed_count;
+            promoted = this.props.data.promoted_count;
+            title = open + ' / ' + closed + ' / ' + promoted;
+        }
         if (this.props.type == 'guide') {
             return(<div/>)
         } else {
             return (
                 <div>
-                    <Button bsStyle={buttonStyle} id="event_status" onClick={this.eventStatusToggle} style={{lineHeight: '12pt', fontSize: '14pt', width: '100%', marginLeft: 'auto'}}>{this.state.buttonStatus}</Button>
+                    {this.props.type == 'alertgroup' ? <ButtonToolbar>
+                        <OverlayTrigger trigger='hover' placement='top' overlay={<Popover id={this.props.id}>open/closed/promoted alerts</Popover>}>
+                            <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} title={title} id="dropdown" className={classStatus}>
+                                <MenuItem eventKey='1' onClick={this.openAll} bsSize='xsmall'><b>Open</b> All Alerts</MenuItem>
+                                <MenuItem eventKey='2' onClick={this.closeAll}><b>Close</b> All Alerts</MenuItem>
+                            </DropdownButton>
+                        </OverlayTrigger></ButtonToolbar> : <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.state.buttonStatus}>
+                            <MenuItem eventKey='1' onClick={this.openAll}>Open Event</MenuItem>
+                            <MenuItem eventKey='2' onClick={this.closeAll}>Close Event</MenuItem>
+                        </DropdownButton> }
                 </div>
             )
         }

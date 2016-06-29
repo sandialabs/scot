@@ -1,7 +1,6 @@
 var React           = require('react');
 var Modal           = require('react-modal');
 var Button          = require('react-bootstrap/lib/Button');
-var Flair           = require('../modal/flair_modal.jsx');
 const customStyles = {
     content : {
         top     : '50%',
