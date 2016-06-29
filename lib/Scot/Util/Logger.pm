@@ -17,7 +17,6 @@ sub new {
         defined($config->{appender_name}) &&
         defined($config->{logfile}) &&
         defined($config->{log_level}) ) {
-
         print Dumper($config),"\n";
         die ("Invalid Configuration for Logger!");
     }
