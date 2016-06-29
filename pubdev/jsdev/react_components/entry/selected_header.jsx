@@ -26,7 +26,7 @@ var AppActions              = require('../flux/actions.jsx');
 var Notification            = require('react-notification-system');
 var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var Watcher                 = require('../components/add_flair.jsx').Watcher;
-var Flair                   = require('../modal/flair_modal.jsx');
+var EntityDetail            = require('../modal/entity_detail.jsx');
 var ESearch                 = require('../components/esearch.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx');
 var SelectedHeader = React.createClass({
@@ -375,7 +375,7 @@ var SelectedHeader = React.createClass({
                     </div>
                 </div>
                 <Notification ref="notificationSystem" /> 
-                {this.state.flairToolbar ? <Flair key={this.state.entityid} flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue}/> : null}
+                {this.state.flairToolbar ? <EntityDetail key={this.state.entityid} flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue} type={this.props.type} id={this.props.id}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                 {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null} 
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData} flairToolbarToggle={this.flairToolbarToggle} /> : null}
