@@ -15,7 +15,7 @@ var Store                   = require('../activemq/store.jsx');
 var AppActions              = require('../flux/actions.jsx');
 var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var Watcher                 = require('../components/add_flair.jsx').Watcher;
-var Flair                   = require('../modal/flair_modal.jsx');
+var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx'); 
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
 
@@ -116,12 +116,12 @@ var SelectedEntry = React.createClass({
             divClass = 'row-fluid alert-wrapper entry-wrapper-main';
         }
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
-        var Flair = require('../modal/flair_modal.jsx');
+        var EntityDetail = require('../modal/entity_detail.jsx');
         return (
             <div key={id} className={divClass} style={{height:this.props.windowHeight}}> 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : <AddEntryModal title={'Add Entry'} type={this.props.aType} targetid={this.props.aID} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> }</div> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData}/> : <span>Loading...</span>} 
-                {this.state.flairToolbar ? <Flair flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue}/> : null}
+                {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue} type={this.props.type} id={this.props.id}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
             </div>       
         );
