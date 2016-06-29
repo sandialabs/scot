@@ -2155,7 +2155,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         var id = this.props.id;
         var showEntryData = this.props.showEntryData;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
-        if (type =='alert' || type == 'entity') {
+        if (type =='alert') {
             //default size commented out for now
             //divClass = 'row-fluid entry-wrapper entry-wrapper-main-70'
             divClass= 'row-fluid entry-wrapper-main-nh';
@@ -2163,6 +2163,10 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             showEntryData = this.state.showEntryData;
         } else if (type =='alertgroup') {
             divClass = 'row-fluid alert-wrapper entry-wrapper-main';
+        } else if (type == 'entity') {
+            divClass = 'row-fluid entry-wrapper-entity';
+            data = this.state.entryData;
+            showEntryData = this.state.showEntryData;
         }
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
         var EntityDetail = require('../modal/entity_detail.jsx');
@@ -4031,9 +4035,10 @@ const customStyles = {
         right   : 'auto',
         bottom  : 'auto',
         marginRight: '-50%',
-        transform:  'translate(-50%, -50%)',
+        transform:  'translate(-50%, -50%)'
+    },
+    overlay: {
         zIndex: '101'
-        
     }
 }
 
@@ -4239,7 +4244,6 @@ module.exports = Entities;
 
 },{"react":1002,"react-bootstrap/lib/Button":225,"react-modal":326}],25:[function(require,module,exports){
 var React                   = require('react');
-var Modal                   = require('react-modal');
 var Button                  = require('react-bootstrap/lib/Button');
 var ButtonGroup             = require('react-bootstrap/lib/ButtonGroup');
 var Popover                 = require('react-bootstrap/lib/Popover');
@@ -4250,18 +4254,6 @@ var SelectedEntry           = require('../entry/selected_entry.jsx');
 var AddEntryModal           = require('./add_entry.jsx');
 var Draggable               = require('react-draggable');
 
-const customStyles = {
-    content : {
-        top     : '50%',
-        left    : '50%',
-        right   : 'auto',
-        bottom  : 'auto',
-        marginRight: '-50%',
-        transform:  'translate(-50%, -50%)',
-        maxWidth: '40%',
-        //overflowY: 'hidden',
-    }
-}
 
 var EntityDetail = React.createClass({displayName: "EntityDetail",
     getInitialState: function() {
@@ -4283,34 +4275,42 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
                 this.Request = $.get('scot/api/v2/entity/' + this.state.entityid, function(result) {
                     this.setState({entityData:result})
             }.bind(this));
-        } 
-    },
-    popOut: function() {
-        
+        }
+        function resizableStart(e){
+            this.originalW = this.clientWidth;
+            this.originalH = this.clientHeight;
+            this.onmousemove = resizableCheck;
+            this.onmouseup = this.onmouseout = resizableEnd;
+        }
+        function resizableCheck(e){
+            if(this.clientWidth !== this.originalW || this.clientHeight !== this.originalH) {
+                this.originalX = e.clientX;
+                this.originalY = e.clientY;
+                this.onmousemove = resizableMove;
+            }
+        }
+        function resizableMove(e){
+            var newW = this.originalW + e.clientX - this.originalX,
+                newH = this.originalH + e.clientY - this.originalY;
+            if(newW < this.originalW){
+                this.style.width = newW + 'px';
+            }
+            if(newH < this.originalH){
+                this.style.height = newH + 'px';
+            }
+        }
+        function resizableEnd(){
+            this.onmousemove = this.onmouseout = this.onmouseup = null;
+        }
+        var els = document.getElementsByClassName('resizable');
+        for(var i=0, len=els.length; i<len; ++i){
+            els[i].onmouseover = resizableStart;
+        }
     },
     render: function() {
-        /*return (
-            <div>
-                <Modal
-                    isOpen={true}
-                    onRequestClose={this.props.flairToolbarToggle}
-                    style={customStyles}>
-                    <div className="modal-header">
-                        <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.flairToolbarToggle} />
-                        <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
-                    </div>
-                    <div className="modal-body" style={{height: '80vh', overflowY:'auto',width:'800px'}}>
-                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} /> : <div>Loading...</div>} 
-                    </div>
-                    <div className="modal-footer">
-                        <Button onClick={this.props.flairToolbarToggle}>Done</Button>
-                    </div>
-                </Modal>
-            </div>
-        )*/
         return (
             React.createElement(Draggable, {handle: "#handle"}, 
-                React.createElement("div", {id: "dragme", className: "box react-draggable", style: {position:'absolute', zIndex:'100',backgroundColor:'#AEC0D0', border:'1px solid black'}}, 
+                React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp resizable"}, 
                     React.createElement("div", {id: "handle", style: {width:'100%',padding:'5px',background:'#7A8092', color:'white', fontWeight:'900', textAlign:'center', cursor:'move'}}, "Drag"), 
                     React.createElement("div", null, 
                         React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
@@ -4319,24 +4319,11 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
                     this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
                     ), 
                     React.createElement("div", null, 
-                        React.createElement(Button, {onClick: this.props.flairToolbarToggle}, "Done")
+                        React.createElement(Button, {onClick: this.props.flairToolbarToggle}, "Close")
                     )
                 )
             )
-        )/*
-        return (
-            <div>
-                <Modal isOpen={true}
-                    onRequestClose={this.props.flairToolbarToggle}
-                    style={customStyles}> 
-                    
-                    <div className="modal-body" style={{height:'80vh'}}>
-                        <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3> 
-                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
-                    </div>
-                </Modal>
-            </div>
-        )*/
+        )
     },
     
 });
@@ -4400,8 +4387,8 @@ var EntityBody = React.createClass({displayName: "EntityBody",
         //var href = '/#/entity/' + this.props.entityid + '/' + this.props.type + '/' + this.props.id;
         return (
             React.createElement(Tabs, {defaultActiveKey: 1, bsStyle: "pills"}, 
-                React.createElement(Tab, {eventKey: 1, title: this.state.appearances}, React.createElement("br", null), entityEnrichmentLinkArr, React.createElement("br", null), React.createElement("br", null), React.createElement("span", null, React.createElement("b", null, "Appears: ", this.state.appearances, " times")), React.createElement("br", null), React.createElement(EntityReferences, {entityid: this.props.entityid, updateAppearances: this.updateAppearances})), 
-                React.createElement(Tab, {eventKey: 2, title: "Entry"}, React.createElement("br", null), React.createElement(Button, {onClick: this.entryToggle}, "Add Entry"), React.createElement("br", null), 
+                React.createElement(Tab, {eventKey: 1, title: this.state.appearances}, entityEnrichmentLinkArr, React.createElement("span", null, React.createElement("br", null), React.createElement("b", null, "Appears: ", this.state.appearances, " times")), React.createElement("br", null), React.createElement(EntityReferences, {entityid: this.props.entityid, updateAppearances: this.updateAppearances}), React.createElement("br", null)), 
+                React.createElement(Tab, {eventKey: 2, title: "Entry"}, React.createElement(Button, {onClick: this.entryToggle}, "Add Entry"), React.createElement("br", null), 
                 this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "entity", targetid: this.props.entityid, id: 'add_entry', addedentry: this.entryToggle}) : null, " ", React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid})), 
                 entityEnrichmentGeoArr, 
                 entityEnrichmentDataArr
@@ -4437,11 +4424,13 @@ var GeoView = React.createClass({displayName: "GeoView",
         copyArr.push('</table>');
         var copy = copyArr.join('');
         return(
-            React.createElement("div", {className: "entityTableWrapper"}, 
-                React.createElement(Button, {onClick: this.copyToEntry}, "Copy to Entry"), 
+            React.createElement("div", null, 
+                React.createElement(Button, {onClick: this.copyToEntry}, "Copy to ", React.createElement("b", null, this.props.type, " ", this.props.id), " entry"), 
                 this.state.copyToEntryToolbar ? React.createElement(AddEntryModal, {title: "CopyToEntry", type: this.props.type, targetid: this.props.id, id: this.props.id, addedentry: this.copyToEntry, content: copy}) : null, 
-                React.createElement("table", {className: "tablesorter entityTableHorizontal", id: 'sortableentitytable', width: "100%"}, 
-                    trArr
+                React.createElement("div", {className: "entityTableWrapper"}, 
+                    React.createElement("table", {className: "tablesorter entityTableHorizontal", id: 'sortableentitytable', width: "100%"}, 
+                        trArr
+                    )
                 )
             )     
         )
@@ -4680,7 +4669,7 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
 
 module.exports = EntityDetail;
 
-},{"../entry/selected_entry.jsx":16,"./add_entry.jsx":22,"react":1002,"react-bootstrap/lib/Button":225,"react-bootstrap/lib/ButtonGroup":226,"react-bootstrap/lib/Popover":240,"react-bootstrap/lib/Tab":244,"react-bootstrap/lib/Tabs":245,"react-draggable":292,"react-inspector":308,"react-modal":326}],26:[function(require,module,exports){
+},{"../entry/selected_entry.jsx":16,"./add_entry.jsx":22,"react":1002,"react-bootstrap/lib/Button":225,"react-bootstrap/lib/ButtonGroup":226,"react-bootstrap/lib/Popover":240,"react-bootstrap/lib/Tab":244,"react-bootstrap/lib/Tabs":245,"react-draggable":292,"react-inspector":308}],26:[function(require,module,exports){
 var React           = require('react');
 var ReactTime       = require('react-time');
 var Modal           = require('react-modal');
