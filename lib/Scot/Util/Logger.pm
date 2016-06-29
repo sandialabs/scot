@@ -1,5 +1,6 @@
 package Scot::Util::Logger;
 
+use Data::Dumper;
 use Log::Log4perl;
 use Log::Log4perl::Layout;
 use Log::Log4perl::Layout::PatternLayout;
@@ -16,7 +17,7 @@ sub new {
         defined($config->{appender_name}) &&
         defined($config->{logfile}) &&
         defined($config->{log_level}) ) {
-
+        print Dumper($config),"\n";
         die ("Invalid Configuration for Logger!");
     }
 
