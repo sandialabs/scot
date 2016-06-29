@@ -314,18 +314,17 @@ sub get {
     my $json    = shift;    # {sorting, filtering}
     my $log     = $self->log;
 
-    $log->debug("getting $type $id");
 
     unless ($id) {
         $log->debug("no id so doing a get many");
         if ( $json ) {
-            $log->debug("with filtering/sorting");
+            $log->debug("with filtering/sorting", {filter=>\&Dumper, value=>$json});
             return $self->do_request("get", $type, { json => $json });
         }
         $log->debug("straight get_many");
         return $self->do_request("get", $type);
     }
-    $log->debug("get_one");
+    $log->debug("getting $type $id");
     return $self->do_request("get", "$type/$id");
 }
 
