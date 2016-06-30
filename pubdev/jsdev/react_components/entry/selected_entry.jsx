@@ -28,6 +28,7 @@ var SelectedEntry = React.createClass({
             entityData:this.props.entityData,
             key:this.props.id,
             flairToolbar:false,
+            height: null,
         }
     },
     componentDidMount: function() {
@@ -57,7 +58,10 @@ var SelectedEntry = React.createClass({
             }.bind(this)); 
         Store.storeKey(this.props.id);
         Store.addChangeListener(this.updatedCB);
-        } 
+     } 
+    this.containerHeightAdjust();
+    window.addEventListener('resize',this.containerHeightAdjust);
+    $("#list-view").resize(this.containerHeightAdjust);
     }, 
     updatedCB: function() {
        if (this.props.type == 'alert' || this.props.type == 'entity') {
@@ -100,6 +104,17 @@ var SelectedEntry = React.createClass({
             this.setState({linkWarningToolbar:false})
         }
     },
+    containerHeightAdjust: function() {
+        var scrollHeight = this.state.height;
+        if ($('#old-list-view')[0]) {
+            scrollHeight = $(window).height() - $('#old-list-view').height() - $('#header').height() - 90
+            scrollHeight = scrollHeight + 'px'
+        } else {
+            scrollHeight = $(window).height() - $('#header').height() - 55
+            scrollHeight = scrollHeight + 'px'
+        }
+        this.setState({height:scrollHeight});
+    },
     render: function() { 
         var data = this.props.entryData;
         var type = this.props.type;
@@ -121,8 +136,9 @@ var SelectedEntry = React.createClass({
         }
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
         var EntityDetail = require('../modal/entity_detail.jsx');
+        var height = this.state.height;
         return (
-            <div key={id} className={divClass} style={{height:this.props.windowHeight}}> 
+            <div key={id} className={divClass} style={{height:height}}> 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : <AddEntryModal title={'Add Entry'} type={this.props.aType} targetid={this.props.aID} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> }</div> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData}/> : <span>Loading...</span>} 
                 {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue} type={this.props.type} id={this.props.id}/>: null}
