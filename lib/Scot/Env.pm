@@ -337,7 +337,8 @@ sub get_config {
     my $cont    = new Safe 'MCONFIG';
     my $r       = $cont->rdo($fqname);
     my $hname   = 'MCONFIG::environment';
-    my $href    = \%$hname;
+    my %copy    = %$hname;
+    my $href    = \%copy;
 
     # say "loaded $name config: ", Dumper($href);
 
