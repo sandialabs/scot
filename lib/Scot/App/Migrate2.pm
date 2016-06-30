@@ -15,6 +15,7 @@ to a SCOT 3.5 database
 
 use Scot::Env;
 use Scot::Util::EntityExtractor;
+use Scot::Util::ElasticSearch;
 use MongoDB;
 use Data::Dumper;
 use Try::Tiny;
@@ -53,6 +54,25 @@ sub _get_ee {
     my $self    = shift;
     my $log     = $self->env->log;
     return Scot::Util::EntityExtractor->new({log=>$log});
+}
+
+has es => (
+    is       => 'ro',
+    isa      => 'Scot::Util::ElasticSearch',
+    required => 1,
+    lazy     => 1,
+    builder  => '_get_es',
+);
+
+sub _get_es {
+    my $self = shift;
+    my $log  = $self->log;
+    return Scot::Util::EleasticSearch->new({
+        log     => $log,
+        config  => {
+            nodes   => [ qw(localhost:9200 127.0.0.1:9200) ],
+        },
+    });
 }
 
 has legacy_client   => (
@@ -512,15 +532,16 @@ sub xform_alertgroup {
 
     $href->{body}        = delete $href->{body_html};
 
-    my $newalertcol     = $self->db->get_collection('alert');
-    my $leg_alert_col   = $self->legacydb->get_collection('alerts');
-    my $leg_alert_cursor= $leg_alert_col->find({alertgroup => $id});
+    my $newalertcol      = $self->db->get_collection('alert');
+    my $leg_alert_col    = $self->legacydb->get_collection('alerts');
+    my $leg_alert_cursor = $leg_alert_col->find({alertgroup => $id});
     $leg_alert_cursor->immortal(1);
-    my $alert_count     = $leg_alert_cursor->count();
+    my $alert_count      = $leg_alert_cursor->count();
     my $entities;
-    my @alert_promotions    = ();
+    my @alert_promotions = ();
     my %status;
-    my @allentities = ();
+    my @allentities      = ();
+    my $es               = $self->es;
 
     ALERT:
     while ( my $alert = $leg_alert_cursor->next ) {
@@ -570,6 +591,7 @@ sub xform_alertgroup {
             }
         }
         $newalertcol->insert_one($alert);
+        $es->index("alert", $alert);
     }
 
     no warnings qw(uninitialized);
@@ -608,6 +630,7 @@ sub xform_entry {
     my $env     = $self->env;
     my $log     = $env->log;
     my $id      = $href->{id};
+    my $es      = $self->es;
 
     $log->debug("[Entry $id] transformation ");
 
@@ -652,6 +675,7 @@ sub xform_entry {
     }
 
     $col->insert_one($href);
+    $es->index("entry", $href);
     my   @links;
     push @links, $self->create_history(@history);
     push @links, $self->create_entities($entities);
