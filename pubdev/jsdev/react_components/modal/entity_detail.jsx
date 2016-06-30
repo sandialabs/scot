@@ -31,7 +31,8 @@ var EntityDetail = React.createClass({
                     this.setState({entityData:result})
             }.bind(this));
         }
-        function resizableStart(e){
+        //Resize function that acts as a resizer for Chrome because Chrome disallows resizing below the initial height and width- causes a lot of lag in the application so we're not using it for now.
+        /*function resizableStart(e){
             this.originalW = this.clientWidth;
             this.originalH = this.clientHeight;
             this.onmousemove = resizableCheck;
@@ -60,21 +61,18 @@ var EntityDetail = React.createClass({
         var els = document.getElementsByClassName('resizable');
         for(var i=0, len=els.length; i<len; ++i){
             els[i].onmouseover = resizableStart;
-        }
+        }*/
     },
     render: function() {
         return (
             <Draggable handle="#handle">
                 <div id="dragme" className='box react-draggable entityPopUp resizable'> 
-                    <div id='handle' style={{width:'100%',padding:'5px',background:'#7A8092', color:'white', fontWeight:'900', textAlign:'center', cursor:'move'}}>Drag</div>
+                    <div id='handle' style={{width:'100%',padding:'5px',background:'#7A8092', color:'white', fontWeight:'900', textAlign:'center', cursor:'move',overflow:'auto'}}><div><span className='pull-left'><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer'}}><i className="fa fa-times" onClick={this.props.flairToolbarToggle}/></span></div></div>
                     <div>
                         <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
                     </div>
                     <div>
                     {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
-                    </div>
-                    <div>
-                        <Button onClick={this.props.flairToolbarToggle}>Close</Button>
                     </div>
                 </div>
             </Draggable>
