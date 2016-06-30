@@ -8,7 +8,7 @@ var TermQuery           = require('../../../node_modules/searchkit').TermQuery;
 var BoolShould          = require('../../../node_modules/searchkit').BoolShould;
 var LayoutBody          = require('../../../node_modules/searchkit').LayoutBody;
 var LayoutResults       = require('../../../node_modules/searchkit').LayoutResults;
-const searchkit         = new SearchkitManager("/scot/api/v2/event")
+const searchkit         = new SearchkitManager("https://134.253.89.140:9200/")
 
 class Results extends React.Component{
     render() {
