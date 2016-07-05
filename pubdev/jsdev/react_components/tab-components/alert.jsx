@@ -275,7 +275,7 @@ module.exports = React.createClass({
             ),                                    
             Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,            
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
-            React.createElement('div', {style: {width: this.state.differentviews},id:'list-view'},  
+            React.createElement('div', {style: {width: this.state.differentviews}, id: this.state.resize == 'vertical' ? 'old-list-view' :'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
                 React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {/*'max-width': '915px',*/resize:this.state.resize,/*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-x': 'hidden', 'overflow-y': 'auto','padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header " + this.state.classname[0]},
@@ -497,7 +497,6 @@ module.exports = React.createClass({
         if(this.state.idsarray.length != 0 ){
             $('.mainview').hide()
             $('.toggleview').show()
-            this.setState({containerdisplay: 'inherit'})
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -682,6 +681,7 @@ module.exports = React.createClass({
         }
     },
     clickable: function(v){
+        $('#old-list-view').find('.container-fluid2').focus() 
         $('#list-view').find('.container-fluid2').focus() 
         $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
             var array = []
