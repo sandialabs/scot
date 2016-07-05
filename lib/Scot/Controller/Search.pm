@@ -34,6 +34,7 @@ sub search {
     my $log     = $env->log;
     my $mongo   = $env->mongo;
     my $user    = $self->session('user');
+    my $esua    = $env->es;
 
     $log->trace("------------");
     $log->trace("Handler is processing a POST (search) from $user");
@@ -65,6 +66,16 @@ sub search {
     $self->do_render($response);
 
 
+}
+
+sub do_render {
+    my $self    = shift;
+    my $code    = 200;
+    my $href    = shift;
+    $self->render(
+        status  => $code,
+        json    => $href,
+    );
 }
 
 1;

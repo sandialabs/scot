@@ -348,7 +348,7 @@ sub get_many {
 
     $self->do_render({
         records             => \@things,
-        queryRecordCount    => $cursor->count,
+        queryRecordCount    => scalar(@things),
         totalRecordCount    => $total
     });
 
@@ -401,6 +401,16 @@ sub get_one {
     my $req_href    = $self->get_request_params;
     my $id          = $req_href->{id};
     my $col_name    = $req_href->{collection};
+
+    if ( $id eq "maxid" ) {
+        my $maxid = $self->get_max_id($col_name);
+        $self->do_render({
+            max_id => $maxid
+        });
+        return;
+    }
+
+    $id += 0;
 
     if ( $col_name ne "entity") {
         unless ( $self->id_is_valid($id) ) {
@@ -1656,8 +1666,11 @@ sub build_limit {
     my $request = $href->{request};
     my $params  = $request->{params};
     my $json    = $request->{json};
+    my $log     = $self->env->log;
+
 
     my $limit   = $params->{limit} // $json->{limit};
+    $log->debug("LIMIT of $limit detected");
     return $limit;
 }
 
@@ -2122,6 +2135,9 @@ sub build_match_ref {
                     $match->{$k} = {'$in' => $v};
                 }
             }
+            if ( ref($v) eq "HASH" ) {
+                $match->{$k} = $v;
+            }
         }
         elsif ( $k eq "parsed" ) {
             $match->{$k} = $v + 0;
@@ -2316,5 +2332,17 @@ sub get_entry_count {
     return $cursor->count;
 }
 
+sub get_max_id {
+    my $self    = shift;
+    my $col     = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $timer   = $env->get_timer("get_max_id");
+    my $c       = $mongo->collection(ucfirst($col));
+    my $cursor  = $c->find({});
+    $cursor->sort({id => -1});
+    my $obj     = $cursor->next;
+    return $obj->id;
+}
 
 1;
