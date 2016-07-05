@@ -3,25 +3,18 @@ var SelectedHeader = require('./selected_header.jsx');
 
 var SelectedContainer = React.createClass({
     getInitialState: function() {
-        var scrollHeight = '100%';
         var scrollWidth = '100%';
         return {
             width: scrollWidth,
-            height: scrollHeight,
         }
     },
     handleResize: function(){
-        var scrollHeight = this.state.height;
         var scrollWidth = this.state.width;
-        if ($('.old-list-view')) {
-            scrollHeight = $(window).height() - $('.old-list-view').height() - $('#header').height() - 90
-        } else {
-            scrollHeight = $(window).height() - $('#header').height() - 90
-        }
-        if ($('#list-view')) {
+        if ($('#list-view')[0]) {
             scrollWidth  = $(window).width()  - ($('#list-view').width() + 60)
+            scrollWidth = scrollWidth + 'px'
         }
-        this.setState({width:scrollWidth,height:scrollHeight})
+        this.setState({width:scrollWidth})
     },
     componentDidMount: function() {
         this.handleResize();
@@ -34,10 +27,11 @@ var SelectedContainer = React.createClass({
     render: function() {
         var datarows = [];
         for (i=0; i < this.props.ids.length; i++) { 
-            datarows.push(<SelectedHeader windowHeight={this.state.height} key={this.props.ids[i]} id={this.props.ids[i]} type={this.props.type} toggleEventDisplay={this.props.viewEvent} taskid={this.props.taskid}/>); 
+            datarows.push(<SelectedHeader key={this.props.ids[i]} id={this.props.ids[i]} type={this.props.type} toggleEventDisplay={this.props.viewEvent} taskid={this.props.taskid}/>); 
         }
+        var width = this.state.width;
         return (
-            <div className="entry-container" style={{width: this.state.width,position: 'relative'}}> 
+            <div className="entry-container" style={{width: width,position: 'relative'}}> 
                 {datarows}
             </div>
         );
