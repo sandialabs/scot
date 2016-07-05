@@ -17,6 +17,7 @@ my $startepoch;
 my $endepoch;
 my $collection;
 my $limit       = 0;
+my $all;
 
 GetOptions(
     'i'         => \$interactive,
@@ -24,8 +25,7 @@ GetOptions(
     'col=s'     => \$collection,
     'conf=s'    => \$configfile,
     'w=i'       => \$maxworkers,
-    'start=i'   => \$startepoch,
-    'end=i'     => \$endepoch,
+    'a'         => \$all,
 ) or die <<EOF
 
 Invalid option!
@@ -46,14 +46,9 @@ my $loop    = Scot::App::Stretch->new(
     max_workers        => $maxworkers,
 );
 
-if (defined $startepoch ) {
-    unless ( $collection ) {
-        die "You must specify collection!";
-    }
-    unless (defined $endepoch) {
-        $endepoch = time();
-    }
-    $loop->process_by_date($collection,$startepoch, $endepoch, $limit);
+
+if ( $all ) {
+    $loop->process_all($collection);
 }
 else {
     $loop->run();
