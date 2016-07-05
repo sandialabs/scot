@@ -17,6 +17,11 @@ my $log     = Scot::Util::Logger->new($loghref);
 
 my $es  = Scot::Util::ElasticSearch->new({
     log => $log,
+    config => {
+        nodes => [
+         'as3001snllx.sandia.gov:9200',
+        ],
+    },
 });
 
 my $type    = "testcol";
