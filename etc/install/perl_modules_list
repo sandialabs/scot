@@ -79,3 +79,4 @@ Net::Works::Network
 MaxMind::DB::Reader::XS
 Data::Dumper::HTML
 Safe
+Search::Elasticsearch
