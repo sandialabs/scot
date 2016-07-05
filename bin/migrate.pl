@@ -25,10 +25,7 @@ unless ( grep {/$colname/} @validcols ) {
 
 
 
-my $env     = Scot::Env->new({ 
-    logfile  => "/var/log/scot/migration.$colname.log" ,
-    log_level => "$DEBUG",
-});
+my $env     = Scot::Env->new({ });
 my $mover   = Scot::App::Migrate2->new({env=>$env});
 
 
