@@ -213,7 +213,7 @@ sub check_if_forked {
 
 sub do_request {
     my $self    = shift;
-    my $verb    = shift; # get, put, post, delete
+    my $verb    = lc(shift); # get, put, post, delete
     my $suffix  = shift; # stuff after /scot/api/v2/
     my $data    = shift; # json or params or both being sent with request
     my $log     = $self->log;

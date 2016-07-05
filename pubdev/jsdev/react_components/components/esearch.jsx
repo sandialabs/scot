@@ -8,7 +8,7 @@ var TermQuery           = require('../../../node_modules/searchkit').TermQuery;
 var BoolShould          = require('../../../node_modules/searchkit').BoolShould;
 var LayoutBody          = require('../../../node_modules/searchkit').LayoutBody;
 var LayoutResults       = require('../../../node_modules/searchkit').LayoutResults;
-const searchkit         = new SearchkitManager("https://134.253.89.140:9200/")
+const searchkit         = new SearchkitManager("https://as3001snllx.sandia.gov/search/")
 
 class Results extends React.Component{
     render() {
