@@ -4980,7 +4980,6 @@ module.exports = React.createClass({displayName: "exports",
     },
     componentDidMount: function(){
         toggle  = $('#list-view').find('.tableview')
-        $('.toggleview').hide()
         var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
@@ -5385,28 +5384,14 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
                         
 
-
-                        React.createElement(SelectedContainer, {height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null),
                         React.createElement('div', {className: 'toggleview'},
-                        React.createElement('div', {style: {display:'block'}},
-                         React.createElement('div', {className: 'buttonmenu', style: {display: 'inline-flex'}},
-                        !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
-
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
-            ),
-                        React.createElement(SelectedContainer, {height: height - 220,ids: this.state.idsarray, type: 'alertgroup'})
-        ) 
+                        React.createElement(SelectedContainer, {height: height - 220,ids: this.state.idsarray, type: 'alertgroup'})) : null) 
 
         ));
     },
     toggleView: function(){
         if(this.state.idsarray.length != 0 ){
             $('.mainview').hide()
-            $('.toggleview').show()
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -5424,7 +5409,6 @@ module.exports = React.createClass({displayName: "exports",
         width = $(t2).width()
         $('.paging').css('width', width)
         $('.mainview').show()
-        $('.toggleview').hide()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
@@ -5435,7 +5419,6 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
         $('.paging').css('width', '100%')
         $('.mainview').show()
-        $('.toggleview').hide()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
@@ -6974,7 +6957,6 @@ module.exports = React.createClass({displayName: "exports",
 
     componentDidMount: function(){
         toggle  = $('#list-view').find('.tableview')
-        $('.toggleview').hide()
         var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
@@ -7255,22 +7237,9 @@ module.exports = React.createClass({displayName: "exports",
                    // )
                    // )
                     ))))), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
-                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'guide'}) : null) 
-,
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ?
                         React.createElement('div', {className: 'toggleview'},
-                        React.createElement('div', {style: {display:'block'}},
-                         React.createElement('div', {style: {display: 'inline-flex'}, className: 'buttonmenu'},
-                        !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
-
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
-            ),
-                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'guide'})
-        )
+                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'guide'})) : null) 
         ));
     },
     clearAll: function(){
@@ -7405,7 +7374,6 @@ module.exports = React.createClass({displayName: "exports",
     toggleView: function(){
         if(this.state.idsarray.length != 0){
             $('.mainview').hide()
-            $('.toggleview').show()
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -7423,7 +7391,6 @@ module.exports = React.createClass({displayName: "exports",
         width = $(t2).width()
         $('.paging').css('width', width)
         $('.mainview').show()
-        $('.toggleview').hide()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
@@ -7434,7 +7401,6 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
         $('.paging').css('width', '100%')
         $('.mainview').show()
-        $('.toggleview').hide()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
@@ -7548,7 +7514,6 @@ module.exports = React.createClass({displayName: "exports",
     },
     componentDidMount: function(){
         toggle  = $('#list-view').find('.tableview')
-        $('.toggleview').hide()
         var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
@@ -7696,7 +7661,6 @@ module.exports = React.createClass({displayName: "exports",
     toggleView: function(){
         if(this.state.idsarray.length != 0){
             $('.mainview').hide()
-            $('.toggleview').show()
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -7714,7 +7678,6 @@ module.exports = React.createClass({displayName: "exports",
         width = $(t2).width()
         $('.paging').css('width', width)
         $('.mainview').show()
-        $('.toggleview').hide()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
@@ -7725,7 +7688,6 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
         $('.paging').css('width', '100%')
         $('.mainview').show()
-        $('.toggleview').hide()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
@@ -7982,22 +7944,9 @@ module.exports = React.createClass({displayName: "exports",
                    // )
                    // )
                     ))))), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
-                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'incident'}) : null) 
-,
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ?
                         React.createElement('div', {className: 'toggleview'},
-                        React.createElement('div', {style: {display:'block'}},
-                         React.createElement('div', {className: 'buttonmenu',style: {display: 'inline-flex'}},
-                        !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
-
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
-            ),
-                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'incident'})
-        )
+                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'incident'})) : null) 
 
         ));
     },
@@ -8694,7 +8643,6 @@ module.exports = React.createClass({displayName: "exports",
     },
     componentDidMount: function(){
         toggle  = $('#list-view').find('.tableview') 
-        $('.toggleview').hide()
         var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
@@ -9201,30 +9149,15 @@ module.exports = React.createClass({displayName: "exports",
                    // )
                     ))))), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
-
-                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'intel', viewEvent:this.viewEvent}) : null
-                                               
-                        ),
                         React.createElement('div', {className: 'toggleview'},
-                        React.createElement('div', {style: {display:'block'}},
-                         React.createElement('div', {style: {display: 'inline-flex'}, className: 'buttonmenu'},
-                        !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '4',bsSize: 'small', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Intel')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
-                       
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
-            ),
-                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'intel', viewEvent:this.viewEvent})  
-        )
+                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'intel', viewEvent:this.viewEvent})): null
+                                               
+                        )
         ));
     },
     toggleView: function(){
          if(this.state.idsarray.length != 0){   
             $('.mainview').hide()
-            $('.toggleview').show()
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -9242,7 +9175,6 @@ module.exports = React.createClass({displayName: "exports",
         width = $(t2).width()
         $('.paging').css('width', width)
         $('.mainview').show()
-        $('.toggleview').hide()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
@@ -9253,7 +9185,6 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
         $('.paging').css('width', '100%')
         $('.mainview').show()
-        $('.toggleview').hide()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
@@ -9804,7 +9735,6 @@ module.exports = React.createClass({displayName: "exports",
     },
     componentDidMount: function(){
         toggle  = $('#list-view').find('.tableview')
-        $('.toggleview').hide()
         var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
@@ -10152,21 +10082,8 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement("div", {className: "wrapper dates "+this.state.sizearray[0]},
                             React.createElement("div", {className: "column date"}, value.updated))))))))),
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ?
-                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: this.state.type, taskid: this.state.entry}) : null),
-
                         React.createElement('div', {className: 'toggleview'},
-                        React.createElement('div', {style: {display:'block'}},
-                         React.createElement('div', {className: 'buttonmenu', style: {display: 'inline-flex'}},
-                        !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
-
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
-            ),
-                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: this.state.type, taskid: this.state.entry })
-        )
+                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: this.state.type, taskid: this.state.entry})) : null)
         ));
 },
 
@@ -10228,7 +10145,6 @@ module.exports = React.createClass({displayName: "exports",
     toggleView: function(){
         if(this.state.idsarray.length != 0){
             $('.mainview').hide()
-            $('.toggleview').show()
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -10246,7 +10162,6 @@ module.exports = React.createClass({displayName: "exports",
         width = $(t2).width()
         $('.paging').css('width', width)
         $('.mainview').show()
-        $('.toggleview').hide()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
@@ -10257,7 +10172,6 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
         $('.paging').css('width', '100%')
         $('.mainview').show()
-        $('.toggleview').hide()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
