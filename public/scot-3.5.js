@@ -2019,25 +2019,18 @@ var SelectedHeader = require('./selected_header.jsx');
 
 var SelectedContainer = React.createClass({displayName: "SelectedContainer",
     getInitialState: function() {
-        var scrollHeight = '100%';
         var scrollWidth = '100%';
         return {
             width: scrollWidth,
-            height: scrollHeight,
         }
     },
     handleResize: function(){
-        var scrollHeight = this.state.height;
         var scrollWidth = this.state.width;
-        if ($('.old-list-view')) {
-            scrollHeight = $(window).height() - $('.old-list-view').height() - $('#header').height() - 90
-        } else {
-            scrollHeight = $(window).height() - $('#header').height() - 90
-        }
-        if ($('#list-view')) {
+        if ($('#list-view')[0]) {
             scrollWidth  = $(window).width()  - ($('#list-view').width() + 60)
+            scrollWidth = scrollWidth + 'px'
         }
-        this.setState({width:scrollWidth,height:scrollHeight})
+        this.setState({width:scrollWidth})
     },
     componentDidMount: function() {
         this.handleResize();
@@ -2050,10 +2043,11 @@ var SelectedContainer = React.createClass({displayName: "SelectedContainer",
     render: function() {
         var datarows = [];
         for (i=0; i < this.props.ids.length; i++) { 
-            datarows.push(React.createElement(SelectedHeader, {windowHeight: this.state.height, key: this.props.ids[i], id: this.props.ids[i], type: this.props.type, toggleEventDisplay: this.props.viewEvent, taskid: this.props.taskid})); 
+            datarows.push(React.createElement(SelectedHeader, {key: this.props.ids[i], id: this.props.ids[i], type: this.props.type, toggleEventDisplay: this.props.viewEvent, taskid: this.props.taskid})); 
         }
+        var width = this.state.width;
         return (
-            React.createElement("div", {className: "entry-container", style: {width: this.state.width,position: 'relative'}}, 
+            React.createElement("div", {className: "entry-container", style: {width: width,position: 'relative'}}, 
                 datarows
             )
         );
@@ -2093,6 +2087,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             entityData:this.props.entityData,
             key:this.props.id,
             flairToolbar:false,
+            height: null,
         }
     },
     componentDidMount: function() {
@@ -2122,7 +2117,10 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             }.bind(this)); 
         Store.storeKey(this.props.id);
         Store.addChangeListener(this.updatedCB);
-        } 
+     } 
+    this.containerHeightAdjust();
+    window.addEventListener('resize',this.containerHeightAdjust);
+    $("#list-view").resize(this.containerHeightAdjust);
     }, 
     updatedCB: function() {
        if (this.props.type == 'alert' || this.props.type == 'entity') {
@@ -2165,6 +2163,17 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             this.setState({linkWarningToolbar:false})
         }
     },
+    containerHeightAdjust: function() {
+        var scrollHeight = this.state.height;
+        if ($('#old-list-view')[0]) {
+            scrollHeight = $(window).height() - $('#old-list-view').height() - $('#header').height() - 90
+            scrollHeight = scrollHeight + 'px'
+        } else {
+            scrollHeight = $(window).height() - $('#header').height() - 55
+            scrollHeight = scrollHeight + 'px'
+        }
+        this.setState({height:scrollHeight});
+    },
     render: function() { 
         var data = this.props.entryData;
         var type = this.props.type;
@@ -2186,8 +2195,9 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         }
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
         var EntityDetail = require('../modal/entity_detail.jsx');
+        var height = this.state.height;
         return (
-            React.createElement("div", {key: id, className: divClass, style: {height:this.props.windowHeight}}, 
+            React.createElement("div", {key: id, className: divClass, style: {height:height}}, 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.aType, targetid: this.props.aID, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB})) : null, 
                 showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData}) : React.createElement("span", null, "Loading..."), 
                 this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, type: this.props.type, id: this.props.id}): null, 
@@ -3068,7 +3078,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 ), 
                 this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
 
-                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, headerData: this.state.headerData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, windowHeight: this.props.windowHeight, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, linkWarningToggle: this.linkWarningToggle, entryToolbar: this.state.entryToolbar, isAlertSelected: this.state.alertSelected, aType: this.state.aType, aID: this.state.aID})
+                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, headerData: this.state.headerData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, linkWarningToggle: this.linkWarningToggle, entryToolbar: this.state.entryToolbar, isAlertSelected: this.state.alertSelected, aType: this.state.aType, aID: this.state.aID})
             )
         )
     }
@@ -4294,7 +4304,8 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
                     this.setState({entityData:result})
             }.bind(this));
         }
-        function resizableStart(e){
+        //Resize function that acts as a resizer for Chrome because Chrome disallows resizing below the initial height and width- causes a lot of lag in the application so we're not using it for now.
+        /*function resizableStart(e){
             this.originalW = this.clientWidth;
             this.originalH = this.clientHeight;
             this.onmousemove = resizableCheck;
@@ -4323,21 +4334,18 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         var els = document.getElementsByClassName('resizable');
         for(var i=0, len=els.length; i<len; ++i){
             els[i].onmouseover = resizableStart;
-        }
+        }*/
     },
     render: function() {
         return (
             React.createElement(Draggable, {handle: "#handle"}, 
                 React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp resizable"}, 
-                    React.createElement("div", {id: "handle", style: {width:'100%',padding:'5px',background:'#7A8092', color:'white', fontWeight:'900', textAlign:'center', cursor:'move'}}, "Drag"), 
+                    React.createElement("div", {id: "handle", style: {width:'100%',padding:'5px',background:'#7A8092', color:'white', fontWeight:'900', textAlign:'center', cursor:'move',overflow:'auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left"}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
                     React.createElement("div", null, 
                         React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
                     ), 
                     React.createElement("div", null, 
                     this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
-                    ), 
-                    React.createElement("div", null, 
-                        React.createElement(Button, {onClick: this.props.flairToolbarToggle}, "Close")
                     )
                 )
             )
@@ -5177,7 +5185,7 @@ module.exports = React.createClass({displayName: "exports",
             ),                                    
             Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,            
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
-            React.createElement('div', {style: {width: this.state.differentviews},id:'list-view'},  
+            React.createElement('div', {style: {width: this.state.differentviews}, id: this.state.resize == 'vertical' ? 'old-list-view' :'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
                 React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {/*'max-width': '915px',*/resize:this.state.resize,/*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-x': 'hidden', 'overflow-y': 'auto','padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header " + this.state.classname[0]},
@@ -5399,7 +5407,6 @@ module.exports = React.createClass({displayName: "exports",
         if(this.state.idsarray.length != 0 ){
             $('.mainview').hide()
             $('.toggleview').show()
-            this.setState({containerdisplay: 'inherit'})
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -5584,6 +5591,7 @@ module.exports = React.createClass({displayName: "exports",
         }
     },
     clickable: function(v){
+        $('#old-list-view').find('.container-fluid2').focus() 
         $('#list-view').find('.container-fluid2').focus() 
         $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
             var array = []
@@ -6123,7 +6131,7 @@ module.exports = React.createClass({displayName: "exports",
             ),
             Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
-            React.createElement('div', {style: {width: this.state.differentviews},id:'list-view'},  
+            React.createElement('div', {style: {width: this.state.differentviews},id:this.state.resize == 'vertical' ? 'old-list-view' : 'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
                 React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {'max-width': this.state.maxwidth, resize:this.state.resize, /*'min-width': this.state.minwidth, */width: this.state.scrollwidth,  'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x': 'hidden','padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header " + this.state.classname[0]},
@@ -6408,7 +6416,6 @@ module.exports = React.createClass({displayName: "exports",
         if(this.state.idsarray.length != 0){  
             $('.mainview').hide()
             $('.toggleview').show()
-            this.setState({containerdisplay: 'inherit'})
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -6636,6 +6643,7 @@ module.exports = React.createClass({displayName: "exports",
         }
     },
     clickable: function(v){
+        $('#old-list-view').find('.container-fluid2').focus()
         $('#list-view').find('.container-fluid2').focus()
         $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
             var array = []
@@ -7197,7 +7205,7 @@ module.exports = React.createClass({displayName: "exports",
             ),
             Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,
             React.createElement('div', {className: 'guidewidth', style: {display:this.state.display}},
-            React.createElement('div', {id:'list-view', style: {width: this.state.differentviews}},  
+            React.createElement('div', {id:this.state.resize == 'vertical' ? 'old-list-view' : 'list-view', style: {width: this.state.differentviews}},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid2", id: 'fluid2', style: {/*'max-width': '915px',*/resize:this.state.resize,/*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x': 'hidden','padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header "+ this.state.classname[0]},
@@ -7304,6 +7312,7 @@ module.exports = React.createClass({displayName: "exports",
         }
     },
     clickable: function(v){
+        $('#old-list-view').find('.container-fluid2').focus() 
         $('#list-view').find('.container-fluid2').focus() 
         $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
             var array = []
@@ -7414,7 +7423,6 @@ module.exports = React.createClass({displayName: "exports",
         if(this.state.idsarray.length != 0){
             $('.mainview').hide()
             $('.toggleview').show()
-            this.setState({containerdisplay: 'inherit'})
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -7706,7 +7714,6 @@ module.exports = React.createClass({displayName: "exports",
         if(this.state.idsarray.length != 0){
             $('.mainview').hide()
             $('.toggleview').show()
-            this.setState({containerdisplay: 'inherit'})
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -7800,7 +7807,7 @@ module.exports = React.createClass({displayName: "exports",
                          React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))),
             Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,
         React.createElement('div', {className: 'incidentwidth', style: {display:this.state.display}},
-            React.createElement('div', {id:'list-view', style: {width: this.state.differentviews}},  
+            React.createElement('div', {id:this.state.resize == 'vertical' ? 'old-list-view' : 'list-view', style: {width: this.state.differentviews}},  
             React.createElement('div', {className: 'tableview', style:{display: 'flex'}},
                 React.createElement("div", {id: 'fluid2',className: "container-fluid2", style: {/*'max-width': '915px',*/resize:this.state.resize,/*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x': 'hidden','padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header "+this.state.classname[0]},
@@ -8086,6 +8093,7 @@ module.exports = React.createClass({displayName: "exports",
         }
     },
     clickable: function(v){
+        $('#old-list-view').find('.container-fluid2').focus()  
         $('#list-view').find('.container-fluid2').focus()  
         $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
             var array = []
@@ -8949,7 +8957,7 @@ module.exports = React.createClass({displayName: "exports",
             ),
             Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
-            React.createElement('div', {style: {width: this.state.differentviews},id:'list-view'},  
+            React.createElement('div', {style: {width: this.state.differentviews},id:this.state.resize == 'vertical' ? 'old-list-view' : 'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
                 React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {/*'max-width': this.state.maxwidth, */resize:this.state.resize, /*'min-width': this.state.minwidth, */width: this.state.scrollwidth,  'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x': 'hidden','padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header " + this.state.classname[0]},
@@ -9234,7 +9242,6 @@ module.exports = React.createClass({displayName: "exports",
          if(this.state.idsarray.length != 0){   
             $('.mainview').hide()
             $('.toggleview').show()
-            this.setState({containerdisplay: 'inherit'})
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -9462,6 +9469,7 @@ module.exports = React.createClass({displayName: "exports",
         }
     },
     clickable: function(v){
+        $('#old-list-view').find('.container-fluid2').focus()
         $('#list-view').find('.container-fluid2').focus()
         $('#'+$(v.currentTarget).find('.index').text()).find('.table-row').each(function(x,y){
             var array = []
@@ -10026,7 +10034,7 @@ module.exports = React.createClass({displayName: "exports",
             ),
             Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,
             React.createElement('div', {className: 'incidentwidth', style: {display:this.state.display}},
-            React.createElement('div', {style: {width: this.state.differentviews},id:'list-view'},
+            React.createElement('div', {style: {width: this.state.differentviews},id:this.state.resize == 'vertical' ? 'old-list-view' : 'list-view'},
             React.createElement('div', {className: 'tableview', style:{display: 'flex'}},
                 React.createElement("div", {className: "container-fluid2", id: 'fluid2', style: {/*'max-width': '915px',*/resize:this.state.resize,/*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x' : 'hidden','padding-left':'5px'}},
                     React.createElement("div", {className: "table-row header "+ this.state.classname[0]},
@@ -10222,6 +10230,7 @@ module.exports = React.createClass({displayName: "exports",
          }
     },
     clickable: function(v){
+        $('#old-list-view').find('.container-fluid2').focus()   
         $('#list-view').find('.container-fluid2').focus()   
         $('#'+$(v.currentTarget).find('.severity').text()).find('.table-row').each(function(x,y){
             var array = []
@@ -10237,7 +10246,6 @@ module.exports = React.createClass({displayName: "exports",
         if(this.state.idsarray.length != 0){
             $('.mainview').hide()
             $('.toggleview').show()
-            this.setState({containerdisplay: 'inherit'})
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
