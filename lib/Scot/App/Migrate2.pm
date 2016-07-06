@@ -1,5 +1,7 @@
 package Scot::App::Migrate2;
 
+use lib '../lib';
+use lib '../../lib';
 use lib '../../../lib';
 
 =head1 Name
@@ -66,8 +68,8 @@ has es => (
 
 sub _get_es {
     my $self = shift;
-    my $log  = $self->log;
-    return Scot::Util::EleasticSearch->new({
+    my $log  = $self->env->log;
+    return Scot::Util::ElasticSearch->new({
         log     => $log,
         config  => {
             nodes   => [ qw(localhost:9200 127.0.0.1:9200) ],
