@@ -97,7 +97,7 @@ sub BUILD {
 sub enrich {
     my $self    = shift;
     my $entity  = shift;
-    my $force   = shift;
+    my $force   = 1;    # always refresh data
     my $data    = {};   # put enrichments here
     my $log     = $self->log;
 
@@ -108,6 +108,9 @@ sub enrich {
     $log->debug("Entity ". $entity->value. " Type is $etype");
 
     my $eset    = $self->mappings->{$etype};
+
+    $log->debug("Enrichments available for type: ".
+                join(', ',@$eset));
 
     NAME:
     foreach my $enricher_name (@{$eset}) {
@@ -179,8 +182,17 @@ sub enrich {
                     next NAME;
                 }
             }
-            my $entity_data = $enricher->get_data($entity->type, 
+            my $entity_data;
+            try {
+                $entity_data = $enricher->get_data($entity->type, 
                                                   $entity->value);
+            }
+            catch {
+                $log->error("Failed to Get Enrichment data for ",
+                            { filter => \&Dumper, value => $entity });
+                undef $entity_data;
+            };
+
             if ($entity_data) {
                 $data->{$enricher_name} = {
                     data    => $entity_data,
