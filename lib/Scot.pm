@@ -128,6 +128,10 @@ get JSON that was submitted with the web request
     # prepends /scot to the routes below
     my $scot    = $auth->any('/scot');
 
+    $scot   ->route ('/api/v2/search')
+            ->to    ('controller-search#search')
+            ->name  ('search');
+
     $scot   ->route ('/api/v2/command/:action')
             ->via   ('put')
             ->to    ('controller-api#do_command')
