@@ -57,7 +57,7 @@ module.exports = React.createClass({
             sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
             sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'],
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
-            viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
+            alldetail : true, viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
             resize: 'horizontal',createdarrow: [0, 0], sourcearrow:[0, 0],tagsarrow: [0, 0],
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
@@ -70,7 +70,6 @@ module.exports = React.createClass({
     },
     componentDidMount: function(){
         toggle  = $('#list-view').find('.tableview')
-        $('.toggleview').hide()
         var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
@@ -275,7 +274,7 @@ module.exports = React.createClass({
             ),                                    
             Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,            
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
-            React.createElement('div', {style: {width: this.state.differentviews},id:'list-view'},  
+            React.createElement('div', {style: {width: this.state.differentviews},id:this.state.display == 'block' ? 'old-list-view' : 'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
                 React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {/*'max-width': '915px',*/resize:this.state.resize,/*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-x': 'hidden', 'overflow-y': 'auto','padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header " + this.state.classname[0]},
@@ -473,10 +472,9 @@ module.exports = React.createClass({
                     //)
                     ))))), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
-                        
-
-
                         React.createElement(SelectedContainer, {height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null),
+                        !this.state.alldetail ?
+                        React.createElement('div', null,
                         React.createElement('div', {className: 'toggleview'},
                         React.createElement('div', {style: {display:'block'}},
                          React.createElement('div', {className: 'buttonmenu', style: {display: 'inline-flex'}},
@@ -489,15 +487,15 @@ module.exports = React.createClass({
                          React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
             ),
                         React.createElement(SelectedContainer, {height: height - 220,ids: this.state.idsarray, type: 'alertgroup'})
-        ) 
+        )) : React.createElement('div', null) 
 
         ));
     },
     toggleView: function(){
         if(this.state.idsarray.length != 0 ){
+            stage = false
             $('.mainview').hide()
-            $('.toggleview').show()
-            this.setState({containerdisplay: 'inherit'})
+            this.setState({alldetail:false, containerdisplay: 'inherit'})
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -511,22 +509,22 @@ module.exports = React.createClass({
         } */
     },
     Portrait: function(){
+        stage = true
         var t2 = document.getElementById('fluid2')
         width = $(t2).width()
         $('.paging').css('width', width)
         $('.mainview').show()
-        $('.toggleview').hide()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
-                        maxwidth: '915px', minwidth: '650px',scrollwidth: '650px', sizearray: array})
+                        maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
     },
 
     Landscap: function(){
+        stage = true
         width = 650
         $('.paging').css('width', '100%')
         $('.mainview').show()
-        $('.toggleview').hide()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
