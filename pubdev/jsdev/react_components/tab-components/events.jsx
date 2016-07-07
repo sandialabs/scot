@@ -60,7 +60,7 @@ module.exports = React.createClass({
             pagedisplay: 'inline-flex', mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'], sourcetags: [], tags: [], 
             idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0], 
-            createdarrow: [0, 0], updatedarrow:[0, 0], sourcearrow:[0, 0],
+            toggledisplay: 'none', maindisplay: 'relative', createdarrow: [0, 0], updatedarrow:[0, 0], sourcearrow:[0, 0],
             tagsarrow: [0, 0], ownerarrow: [0, 0], entriesarrow: [0, 0],
             viewsarrow: [0, 0],classname: [' ', ' ',' ', ' '],
             resize: 'horizontal',startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
@@ -298,7 +298,7 @@ module.exports = React.createClass({
                         React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), 
                         React.createElement(Search, null)),
                         React.createElement('div', {className: 'mainview', style: {display: this.state.display == 'block' ? 'block' : 'flex'}}, 
-                        React.createElement('div', {className: 'table-table-view', style:{display: 'block'}},    
+                        React.createElement('div', {style:{display: 'block'}},    
                         React.createElement('div', {style: {display: 'inline-flex'}},
                         width < 645 ? 
                         React.createElement('div', {className: 'buttonmenu'}, 
@@ -320,6 +320,7 @@ module.exports = React.createClass({
                          React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))
             ),
             Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,
+            React.createElement('div', {style: {display: this.state.alldetail ? 'relative' : 'none'}},
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
             React.createElement('div', {style: {width: this.state.differentviews},id:this.state.resize == 'vertical' ? 'old-list-view' : 'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
@@ -581,9 +582,9 @@ module.exports = React.createClass({
                    // )
                    // )
                     ))))), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true}))))) , stage ? 
 
-                        React.createElement('div', {style: {width: '100%'}, className: 'toggleview'}, 
+                        React.createElement('div', {style: {display: this.state.alldetail ? 'none' : 'relative'}, className: 'toggleview'}, 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'event', viewEvent:this.viewEvent})) : null
                                                
                         )
@@ -591,7 +592,7 @@ module.exports = React.createClass({
     },
     toggleView: function(){
         if(this.state.idsarray.length != 0){  
-            $('.table-table-view').hide()
+            this.setState({alldetail: false})
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -608,20 +609,18 @@ module.exports = React.createClass({
         var t2 = document.getElementById('fluid2')
         width = $(t2).width()
         $('.paging').css('width', width)
-        $('.table-table-view').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({maindisplay: 'relative', display: 'flex', alldetail: true, toggledisplay: 'none', scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '915px', minwidth: '650px',scrollwidth: '650px', sizearray: array})            
     },
 
     Landscap: function(){
         width = 650
         $('.paging').css('width', '100%')
-        $('.table-table-view').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
-        this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
+        this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maindisplay: 'relative', maxheight: '', alldetail: true, toggledisplay: 'none',differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
 
     },
