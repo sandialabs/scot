@@ -298,7 +298,7 @@ module.exports = React.createClass({
                         React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), 
                         React.createElement(Search, null)),
                         React.createElement('div', {className: 'mainview', style: {display: this.state.display == 'block' ? 'block' : 'flex'}}, 
-                        React.createElement('div', {style:{display: 'block'}},    
+                        React.createElement('div', {className: 'table-table-view', style:{display: 'block'}},    
                         React.createElement('div', {style: {display: 'inline-flex'}},
                         width < 645 ? 
                         React.createElement('div', {className: 'buttonmenu'}, 
@@ -583,7 +583,7 @@ module.exports = React.createClass({
                     ))))), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
 
-                        React.createElement('div', {className: 'toggleview'}, 
+                        React.createElement('div', {style: {width: '100%'}, className: 'toggleview'}, 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'event', viewEvent:this.viewEvent})) : null
                                                
                         )
@@ -591,7 +591,7 @@ module.exports = React.createClass({
     },
     toggleView: function(){
         if(this.state.idsarray.length != 0){  
-            $('.mainview').hide()
+            $('.table-table-view').hide()
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -608,7 +608,7 @@ module.exports = React.createClass({
         var t2 = document.getElementById('fluid2')
         width = $(t2).width()
         $('.paging').css('width', width)
-        $('.mainview').show()
+        $('.table-table-view').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
@@ -618,7 +618,7 @@ module.exports = React.createClass({
     Landscap: function(){
         width = 650
         $('.paging').css('width', '100%')
-        $('.mainview').show()
+        $('.table-table-view').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
