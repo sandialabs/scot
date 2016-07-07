@@ -154,6 +154,54 @@ sub run {
     AnyEvent->condvar->recv;
 }
 
+sub process_all {
+    my $self       = shift;
+    my $collection = shift;
+    my $scot        = $self->scot;
+    my $es          = $self->es;
+    my $limit       = 100;
+    my $last_completed = 0;
+
+    my $resp = $scot->do_request(
+        'get',
+        "$collection/maxid",
+    );
+    my $maxid   = $resp->{max_id} // 500;
+
+    say "Max ID = $maxid";
+
+    my $continue = 1;
+
+    while ( $continue ) {
+        
+
+        if ( $last_completed > $maxid ) {
+            last;
+        }
+
+        say "looking for id > $last_completed";
+        my $json = $scot->get($collection, undef,{
+            match => { id => {'$gt' => $last_completed} },
+            limit => $limit,
+            sort  => { id => 1 },
+        });
+        my $count = 1;
+
+        foreach my $href ( @{$json->{records}} ) {
+
+            say "   $count.    id = ".$href->{id};
+
+            delete $href->{_id};
+            $es->index($collection, $href, 'scot');
+
+            $last_completed = $href->{id};
+            say "         last_completed = $last_completed";
+            $count++;
+        }
+
+    }
+}
+
 sub process_by_date {
     my $self        = shift;
     my $collection  = shift;

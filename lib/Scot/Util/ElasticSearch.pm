@@ -35,8 +35,6 @@ has config  => (
     required    => 1,
     default     => sub {
         {
-            nodes   => [ '127.0.0.1:9200',
-                         'localhost:9200' ],
         };
     },
 );
@@ -51,9 +49,11 @@ sub _build_es {
     my @noproxy = map { m/^(.*):\d+$/ } @{$self->config->{nodes}};
     $ENV{'no_proxy'} = join ',', @noproxy;
 
+    say "NODES : ", Dumper($self->config->{nodes});
+
     my %conparams   = (
         nodes   => $self->config->{nodes},
-        cxn_pool    => 'Sniff',
+        cxn_pool    => 'Static',
         log_to  => 'Stderr',
     );
 
