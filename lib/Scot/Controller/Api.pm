@@ -410,7 +410,9 @@ sub get_one {
         return;
     }
 
-    $id += 0;
+    $log->debug("Get One ID = $id");
+
+    # $id += 0;
 
     if ( $col_name ne "entity") {
         unless ( $self->id_is_valid($id) ) {
