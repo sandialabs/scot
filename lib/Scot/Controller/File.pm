@@ -198,7 +198,13 @@ sub get_groups_and_year {
         return $env->default_groups, $nowdt->year;
     }
 
-    my $dt = DateTime->from_epoch(epoch => $obj->when);
+    my $dt;
+    if ( $type eq "entity" ) {
+        $dt = $nowdt; # entities don't have the Times Role, so just put now in there
+    }
+    else {
+        $dt = DateTime->from_epoch(epoch => $obj->when);
+    }
 
     return $obj->groups, $dt->year;
 }
