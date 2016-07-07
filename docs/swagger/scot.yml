@@ -1,0 +1,32 @@
+swagger: "2.0"
+info:
+    description: |
+        SCOT, the Sandia Cyber Omni Tracker.
+        [Learn about SCOT](http://getscot.sandia.gov)
+
+    version: "3.5.0"
+    title: SCOT
+    contact:
+        name: scot-dev@sandia.gov
+    license:
+        name: Apache 2.0
+        url: http://www.apache.org/licenses/LICENSE-2.0.html
+host: scot 
+basePath: /scot/api/v2
+schemes:
+    - https
+paths:
+    /alertgroup
+        get:
+            tags:
+                - alertgroup
+            summary: Get List of Alertgroups
+            description: Return list of Alertgoups
+            consumes: 
+                - application/json
+            produces:
+                - application/json
+            parameters:
+                -in: query
+                name
+
