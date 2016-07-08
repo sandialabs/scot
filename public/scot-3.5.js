@@ -2195,7 +2195,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         }
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
         var EntityDetail = require('../modal/entity_detail.jsx');
-        if (type != 'entity') {
+        if (type != 'entity' && type != 'alert') {
             var height = this.state.height;
         }
         return (
