@@ -40,6 +40,17 @@ var EntityDetail = React.createClass({
                 this.setState({entityData:result})
             }.bind(this));
         }
+        //Esc key closes popup
+        function escHandler(event){
+            //prevent from working when in input
+            if ($('input').is(':focus')) {return};
+            //check for esc with keyCode
+            if (event.keyCode == 27) {
+                this.props.flairToolbarToggle();
+                event.preventDefault();
+            }
+        }
+        $(document).keydown(escHandler.bind(this))
         //Resize function that acts as a resizer for Chrome because Chrome disallows resizing below the initial height and width- causes a lot of lag in the application so we're not using it for now.
         /*function resizableStart(e){
             this.originalW = this.clientWidth;
@@ -73,6 +84,8 @@ var EntityDetail = React.createClass({
         }*/
     },
     componentWillUnmount: function() {
+        //removes escHandler bind
+        $(document).off('keydown')
         //This makes the size that was last used hold for future entities 
         /*var height = $('#dragme').height();
         var width = $('#dragme').width();
