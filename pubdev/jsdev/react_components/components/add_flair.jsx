@@ -174,7 +174,7 @@ var Watcher = {
                 ifr.contentWindow.requestAnimationFrame( function() {
                     if(ifr.contentDocument != null) {
                         $(ifr).hover( function() {
-                            var intervalID = setInterval(checkFlairHover, 100, ifr, flairToolbarToggle,type,linkWarningToggle);
+                            var intervalID = setInterval(checkFlairHover, 50, ifr, flairToolbarToggle,type,linkWarningToggle);
                             $(ifr).data('intervalID', intervalID);
                             console.log('Now watching iframe ' + intervalID);
                         }, function() {
@@ -188,7 +188,7 @@ var Watcher = {
         } else {
             $('.alert-wrapper').find('a, .entity').not('.not_selectable').each(function(index,tr) {
                 $(tr).hover( function() {
-                    var intervalID = setInterval(checkFlairHover, 100, null, flairToolbarToggle,type,linkWarningToggle,id);
+                    var intervalID = setInterval(checkFlairHover, 50, null, flairToolbarToggle,type,linkWarningToggle,id);
                     $(tr).data('intervalID', intervalID);
                     console.log('Now watching item ' + intervalID);
                 }, function() {
