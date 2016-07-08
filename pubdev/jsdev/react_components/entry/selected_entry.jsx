@@ -110,7 +110,7 @@ var SelectedEntry = React.createClass({
             scrollHeight = $(window).height() - $('#old-list-view').height() - $('#header').height() - 90
             scrollHeight = scrollHeight + 'px'
         } else {
-            scrollHeight = $(window).height() - $('#header').height() - 55
+            scrollHeight = $(window).height() - $('#header').height() - 55 
             scrollHeight = scrollHeight + 'px'
         }
         this.setState({height:scrollHeight});
@@ -136,7 +136,9 @@ var SelectedEntry = React.createClass({
         }
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
         var EntityDetail = require('../modal/entity_detail.jsx');
-        var height = this.state.height;
+        if (type != 'entity') {
+            var height = this.state.height;
+        }
         return (
             <div key={id} className={divClass} style={{height:height}}> 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : <AddEntryModal title={'Add Entry'} type={this.props.aType} targetid={this.props.aID} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> }</div> : null}
