@@ -71,8 +71,11 @@ var SelectedHeader = React.createClass({
             guideEntryCount: null,
         }
     },
-    componentDidMount: function() {
+    componentWillMount: function() {
         this.setState({loading:true});
+    },
+    componentDidMount: function() {
+        //this.setState({loading:true});
         var entryType = 'entry';
         if (this.props.type == 'alertgroup') { entryType = 'alert' };
         this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
@@ -545,7 +548,7 @@ var EntryDataSubject = React.createClass({
             var subjectWidth = 1000;
         }
         return (
-            <div>{this.props.subjectType} {this.props.id}: <DebounceInput debounceTimeout={1000} forceNotifyOnBlur={true} type='text' value={this.state.value} onChange={this.handleChange} style={{width:subjectWidth+'px'}} /></div>
+            <div>{this.props.subjectType} {this.props.id}: <DebounceInput debounceTimeout={1000} forceNotifyOnBlur={true} type='text' value={this.state.value} onChange={this.handleChange} style={{width:subjectWidth+'px',lineHeight:'normal'}} /></div>
         )
     }
 });
