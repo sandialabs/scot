@@ -666,13 +666,16 @@ sub xform_entry {
 
     my $ttype   = $href->{target}->{type};
 
-    my $target_col = 
-        $self->legacydb->get_collection($href->{target}->{type}.'s');
-    my $target_obj =
-        $target_col->find_one({$ttype.'_id' => $href->{target}->{id}});
-    if ( $target_obj ) {
-        if ( $target_obj->{summary_entry_id} ) {
-            $href->{summary} = 1;
+    if ( $href->{target}->{type} eq "event" ) {
+        $log->debug("target of entry is event, looking if this is a summary");
+        my $target_col = 
+            $self->legacydb->get_collection($href->{target}->{type}.'s');
+        my $target_obj =
+            $target_col->find_one({$ttype.'_id' => $href->{target}->{id}});
+        if ( $target_obj ) {
+            if ( $target_obj->{summary_entry_id} == $id) {
+                $href->{summary} = 1;
+            }
         }
     }
 

@@ -19,18 +19,38 @@ var EntityDetail = React.createClass({
     },
     componentDidMount: function () {
         if (this.props.entityid == undefined) {
-            $.get('scot/api/v2/entity/'+this.props.entityvalue.toLowerCase(), function(result) {
+            $.ajax({
+                type: 'GET',
+                url: 'scot/api/v2/entity/'+this.props.entityvalue.toLowerCase()
+            }).success(function(result) {
                 var entityid = result.id;
                 this.setState({entityid:entityid});
-                this.Request = $.get('scot/api/v2/entity/' + entityid, function(result) {
+                $.ajax({
+                    type: 'GET',
+                    url: 'scot/api/v2/entity/' + entityid 
+                }).success(function(result) {
                     this.setState({entityData:result})
                 }.bind(this));
-            }.bind(this))} 
-            else {
-                this.Request = $.get('scot/api/v2/entity/' + this.state.entityid, function(result) {
-                    this.setState({entityData:result})
+            }.bind(this))
+        } else {
+            $.ajax({
+                type: 'GET',
+                url: 'scot/api/v2/entity/' + this.state.entityid
+            }).success(function(result) {
+                this.setState({entityData:result})
             }.bind(this));
         }
+        //Esc key closes popup
+        function escHandler(event){
+            //prevent from working when in input
+            if ($('input').is(':focus')) {return};
+            //check for esc with keyCode
+            if (event.keyCode == 27) {
+                this.props.flairToolbarToggle();
+                event.preventDefault();
+            }
+        }
+        $(document).keydown(escHandler.bind(this))
         //Resize function that acts as a resizer for Chrome because Chrome disallows resizing below the initial height and width- causes a lot of lag in the application so we're not using it for now.
         /*function resizableStart(e){
             this.originalW = this.clientWidth;
@@ -63,10 +83,26 @@ var EntityDetail = React.createClass({
             els[i].onmouseover = resizableStart;
         }*/
     },
+    componentWillUnmount: function() {
+        //removes escHandler bind
+        $(document).off('keydown')
+        //This makes the size that was last used hold for future entities 
+        /*var height = $('#dragme').height();
+        var width = $('#dragme').width();
+        entityPopUpHeight = height;
+        entityPopUpWidth = width;*/
+    },
     render: function() {
+        var entityHeight = '500px';
+        var entityWidth = '600px';
+        //This makes the size that was last used hold for future entities
+        /*if (entityPopUpHeight && entityPopUpWidth) {
+            entityHeight = entityPopUpHeight;
+            entityWidth = entityPopUpWidth;
+        }*/
         return (
             <Draggable handle="#handle">
-                <div id="dragme" className='box react-draggable entityPopUp resizable'> 
+                <div id="dragme" className='box react-draggable entityPopUp resizable' style={{height:entityHeight,width:entityWidth}}> 
                     <div id='handle' style={{width:'100%',padding:'5px',background:'#7A8092', color:'white', fontWeight:'900', textAlign:'center', cursor:'move',overflow:'auto'}}><div><span className='pull-left'><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer'}}><i className="fa fa-times" onClick={this.props.flairToolbarToggle}/></span></div></div>
                     <div>
                         <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
@@ -112,6 +148,7 @@ var EntityBody = React.createClass({
             this.setState({entryToolbar:false})
         }
     },
+
     render: function() {
         var entityEnrichmentDataArr = [];
         var entityEnrichmentLinkArr = [];
@@ -125,7 +162,7 @@ var EntityBody = React.createClass({
                         entityEnrichmentGeoArr.push(<Tab eventKey={enrichmentEventKey} title={prop}><GeoView data={entityData[prop].data} type={this.props.type} id={this.props.id}/></Tab>);
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'data') {
-                        entityEnrichmentDataArr.push(<Tab eventKey={enrichmentEventKey} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} /></Tab>);
+                        entityEnrichmentDataArr.push(<Tab eventKey={enrichmentEventKey} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} type={this.props.type} id={this.props.id} /></Tab>);
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'link') {
                         entityEnrichmentLinkArr.push(<Button target='_blank' href={entityData[prop].data.url}>{entityData[prop].data.title}</Button>)
@@ -194,8 +231,12 @@ var EntityEnrichmentButtons = React.createClass({
     render: function() { 
         var dataSource = this.props.dataSource; 
         return (
-            <Inspector.default table data={dataSource} expandLevel={4} />
-        ) 
+            <div style={{position:'relative'}}>
+                <div style={{overflow:'auto',position:'absolute'}}> 
+                    <Inspector.default data={dataSource} expandLevel={4} />
+                </div>
+            </div>
+        )
     },
 });
 
@@ -356,9 +397,9 @@ var ReferencesBody = React.createClass({
                 for (i=0; i < entryResult.length; i++) {
                     if (entryResult[i].summary == 1) {
                         summary = true;
-                        this.setState({showSummary:true,summaryData:entryResult[i].body})
+                        this.setState({showSummary:true,summaryData:entryResult[i].body_flair})
                         $('#entityTable' + this.props.data.id).qtip({ 
-                            content: {text: $(entryResult[i].body)}, 
+                            content: {text: $(entryResult[i].body_flair)}, 
                             style: { classes: 'qtip-scot' }, 
                             hide: 'unfocus', 
                             position: { my: 'top right', at: 'left', target: $('#entityTable'+this.props.data.id)},//[position.left,position.top] }, 
