@@ -923,6 +923,7 @@ sub update {
     }
 
     $log->trace("Audit...");
+    $log->trace("req_href is ",{filter=>\&Dumper, value=>$req_href});
 
     $self->audit("update_thing", $req_href);
 
@@ -984,6 +985,10 @@ sub build_update_doc {
         $log->trace("JSON is present...");
 
         foreach my $key ( keys %{$json} ) {
+            if ( $key =~ /^\{/ ) {
+                $log->warn("funky char in json");
+                next;
+            }
             $update{$key}   = $json->{$key};
         }
     }
@@ -1930,13 +1935,20 @@ sub audit {
     my $env         = $self->env;
     my $mongo       = $env->mongo;
     my $col         = $mongo->collection('Audit');
-    $env->log->debug("creating audit record");
-    my $audit       = $col->create({
-        who     => $self->session('user') // 'unknown',
-        when    => $env->now(),
-        what    => $what,
-        data    => $data,
-    });
+    my $log         = $env->log;
+    $log->debug("creating audit record");
+    $log->debug("from what = $what and data = ",{filter=>\&Dumper, value=>$data});
+    try {
+        my $audit       = $col->create({
+            who     => $self->session('user') // 'unknown',
+            when    => $env->now(),
+            what    => $what,
+            data    => $data,
+        });
+    }
+    catch {
+        $log->warn("error trying to create audit record! $_");
+    };
 }
 
 sub mypack {
