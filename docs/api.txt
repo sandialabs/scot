@@ -1,3 +1,4 @@
+=pod 
 
 =item B<GET /scot/ihcalendar>
 
@@ -679,3 +680,5 @@ Send the alert triage team things updated since :since (seconds epoch)
 :collection = all | alerts | events | incidents | entries
 
 =cut
+
+=pod
