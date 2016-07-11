@@ -60,7 +60,7 @@ has what    => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default     => '',
+    default     => ' ',
 );
 
 =item B<data>
