@@ -1009,7 +1009,7 @@ var Watcher = {
                 ifr.contentWindow.requestAnimationFrame( function() {
                     if(ifr.contentDocument != null) {
                         $(ifr).hover( function() {
-                            var intervalID = setInterval(checkFlairHover, 100, ifr, flairToolbarToggle,type,linkWarningToggle);
+                            var intervalID = setInterval(checkFlairHover, 50, ifr, flairToolbarToggle,type,linkWarningToggle);
                             $(ifr).data('intervalID', intervalID);
                             console.log('Now watching iframe ' + intervalID);
                         }, function() {
@@ -1023,7 +1023,7 @@ var Watcher = {
         } else {
             $('.alert-wrapper').find('a, .entity').not('.not_selectable').each(function(index,tr) {
                 $(tr).hover( function() {
-                    var intervalID = setInterval(checkFlairHover, 100, null, flairToolbarToggle,type,linkWarningToggle,id);
+                    var intervalID = setInterval(checkFlairHover, 50, null, flairToolbarToggle,type,linkWarningToggle,id);
                     $(tr).data('intervalID', intervalID);
                     console.log('Now watching item ' + intervalID);
                 }, function() {
@@ -2169,7 +2169,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             scrollHeight = $(window).height() - $('#old-list-view').height() - $('#header').height() - 90
             scrollHeight = scrollHeight + 'px'
         } else {
-            scrollHeight = $(window).height() - $('#header').height() - 55
+            scrollHeight = $(window).height() - $('#header').height() - 55 
             scrollHeight = scrollHeight + 'px'
         }
         this.setState({height:scrollHeight});
@@ -2195,7 +2195,9 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         }
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
         var EntityDetail = require('../modal/entity_detail.jsx');
-        var height = this.state.height;
+        if (type != 'entity' && type != 'alert') {
+            var height = this.state.height;
+        }
         return (
             React.createElement("div", {key: id, className: divClass, style: {height:height}}, 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.aType, targetid: this.props.aID, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB})) : null, 
@@ -2762,8 +2764,11 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             guideEntryCount: null,
         }
     },
-    componentDidMount: function() {
+    componentWillMount: function() {
         this.setState({loading:true});
+    },
+    componentDidMount: function() {
+        //this.setState({loading:true});
         var entryType = 'entry';
         if (this.props.type == 'alertgroup') { entryType = 'alert' };
         this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
@@ -3236,7 +3241,7 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
             var subjectWidth = 1000;
         }
         return (
-            React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement(DebounceInput, {debounceTimeout: 1000, forceNotifyOnBlur: true, type: "text", value: this.state.value, onChange: this.handleChange, style: {width:subjectWidth+'px'}}))
+            React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement(DebounceInput, {debounceTimeout: 1000, forceNotifyOnBlur: true, type: "text", value: this.state.value, onChange: this.handleChange, style: {width:subjectWidth+'px',lineHeight:'normal'}}))
         )
     }
 });
@@ -4292,18 +4297,38 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
     },
     componentDidMount: function () {
         if (this.props.entityid == undefined) {
-            $.get('scot/api/v2/entity/'+this.props.entityvalue.toLowerCase(), function(result) {
+            $.ajax({
+                type: 'GET',
+                url: 'scot/api/v2/entity/'+this.props.entityvalue.toLowerCase()
+            }).success(function(result) {
                 var entityid = result.id;
                 this.setState({entityid:entityid});
-                this.Request = $.get('scot/api/v2/entity/' + entityid, function(result) {
+                $.ajax({
+                    type: 'GET',
+                    url: 'scot/api/v2/entity/' + entityid 
+                }).success(function(result) {
                     this.setState({entityData:result})
                 }.bind(this));
-            }.bind(this))} 
-            else {
-                this.Request = $.get('scot/api/v2/entity/' + this.state.entityid, function(result) {
-                    this.setState({entityData:result})
+            }.bind(this))
+        } else {
+            $.ajax({
+                type: 'GET',
+                url: 'scot/api/v2/entity/' + this.state.entityid
+            }).success(function(result) {
+                this.setState({entityData:result})
             }.bind(this));
         }
+        //Esc key closes popup
+        function escHandler(event){
+            //prevent from working when in input
+            if ($('input').is(':focus')) {return};
+            //check for esc with keyCode
+            if (event.keyCode == 27) {
+                this.props.flairToolbarToggle();
+                event.preventDefault();
+            }
+        }
+        $(document).keydown(escHandler.bind(this))
         //Resize function that acts as a resizer for Chrome because Chrome disallows resizing below the initial height and width- causes a lot of lag in the application so we're not using it for now.
         /*function resizableStart(e){
             this.originalW = this.clientWidth;
@@ -4336,10 +4361,26 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
             els[i].onmouseover = resizableStart;
         }*/
     },
+    componentWillUnmount: function() {
+        //removes escHandler bind
+        $(document).off('keydown')
+        //This makes the size that was last used hold for future entities 
+        /*var height = $('#dragme').height();
+        var width = $('#dragme').width();
+        entityPopUpHeight = height;
+        entityPopUpWidth = width;*/
+    },
     render: function() {
+        var entityHeight = '500px';
+        var entityWidth = '600px';
+        //This makes the size that was last used hold for future entities
+        /*if (entityPopUpHeight && entityPopUpWidth) {
+            entityHeight = entityPopUpHeight;
+            entityWidth = entityPopUpWidth;
+        }*/
         return (
             React.createElement(Draggable, {handle: "#handle"}, 
-                React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp resizable"}, 
+                React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp resizable", style: {height:entityHeight,width:entityWidth}}, 
                     React.createElement("div", {id: "handle", style: {width:'100%',padding:'5px',background:'#7A8092', color:'white', fontWeight:'900', textAlign:'center', cursor:'move',overflow:'auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left"}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
                     React.createElement("div", null, 
                         React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
@@ -4385,6 +4426,7 @@ var EntityBody = React.createClass({displayName: "EntityBody",
             this.setState({entryToolbar:false})
         }
     },
+
     render: function() {
         var entityEnrichmentDataArr = [];
         var entityEnrichmentLinkArr = [];
@@ -4398,7 +4440,7 @@ var EntityBody = React.createClass({displayName: "EntityBody",
                         entityEnrichmentGeoArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, title: prop}, React.createElement(GeoView, {data: entityData[prop].data, type: this.props.type, id: this.props.id})));
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'data') {
-                        entityEnrichmentDataArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, title: prop}, React.createElement(EntityEnrichmentButtons, {dataSource: entityData[prop]})));
+                        entityEnrichmentDataArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, title: prop}, React.createElement(EntityEnrichmentButtons, {dataSource: entityData[prop], type: this.props.type, id: this.props.id})));
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'link') {
                         entityEnrichmentLinkArr.push(React.createElement(Button, {target: "_blank", href: entityData[prop].data.url}, entityData[prop].data.title))
@@ -4467,8 +4509,12 @@ var EntityEnrichmentButtons = React.createClass({displayName: "EntityEnrichmentB
     render: function() { 
         var dataSource = this.props.dataSource; 
         return (
-            React.createElement(Inspector.default, {table: true, data: dataSource, expandLevel: 4})
-        ) 
+            React.createElement("div", {style: {position:'relative'}}, 
+                React.createElement("div", {style: {overflow:'auto',position:'absolute'}}, 
+                    React.createElement(Inspector.default, {data: dataSource, expandLevel: 4})
+                )
+            )
+        )
     },
 });
 
@@ -4629,9 +4675,9 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
                 for (i=0; i < entryResult.length; i++) {
                     if (entryResult[i].summary == 1) {
                         summary = true;
-                        this.setState({showSummary:true,summaryData:entryResult[i].body})
+                        this.setState({showSummary:true,summaryData:entryResult[i].body_flair})
                         $('#entityTable' + this.props.data.id).qtip({ 
-                            content: {text: $(entryResult[i].body)}, 
+                            content: {text: $(entryResult[i].body_flair)}, 
                             style: { classes: 'qtip-scot' }, 
                             hide: 'unfocus', 
                             position: { my: 'top right', at: 'left', target: $('#entityTable'+this.props.data.id)},//[position.left,position.top] }, 

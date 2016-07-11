@@ -7,6 +7,8 @@ var activemqtype = ''
 var alertgroupforentity = false
 var activemqstate = ''
 var activemqsetentry = 0
+var entityPopUpHeight = '';
+var entityPopUpWidth = '';
 $.ajax({
     type: 'get',
     url:'scot/api/v2/whoami',
