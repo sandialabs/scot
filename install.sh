@@ -42,6 +42,7 @@ LOGDIR="/var/log/scot";
 AMQDIR="/opt/activemq"
 AMQTAR="apache-activemq-5.13.2-bin.tar.gz"
 AMQURL="https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-activemq/5.13.2/$AMQTAR"
+PROXY="http://wwwproxy.sandia.gov:80"
 
 ##
 ## defaults
@@ -251,7 +252,7 @@ EOF
                 echo "= mongo 10Gen repo already present"
             else 
                 echo "+ Adding Mongo 10Gen repo and updating apt-get caches"
-                apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
+                apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 --keyserver-options http-proxy=$PROXY
                 echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
 
             fi
@@ -267,7 +268,7 @@ EOF
             echo "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-2.x.list
         fi
 
-
+        apt-get install -y elasticsearch
 
         if [ "$REFRESHAPT" == "yes" ]; then
             echo "= updating apt repository"
@@ -328,6 +329,10 @@ EOF
         cp $DEVDIR/etc/activemq-init   /etc/init.d/activemq
         chmod +x /etc/init.d/activemq
         chown -R activemq.activemq $AMQDIR
+    fi
+
+    if [ ! -e "/etc/init.d/activemq" ]; then
+        cp $DEVDIR/etc/activemq-init   /etc/init.d/activemq
     fi
 
     echo -e "${yellow}+ installing ActiveMQ${NC}"

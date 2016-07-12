@@ -225,3 +225,8 @@ libmaxminddb0
 libmaxminddb-dev
 mmdb-bin
 elasticsearch
+libcurses-perl
+libfile-libmagic-perl
+libmagic-dev
+libmagic1
+libnet-xmpp-perl
