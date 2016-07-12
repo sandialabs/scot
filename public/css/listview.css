@@ -47,6 +47,10 @@
 }
 .reporter {
   width: 85px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .status {
   width: 95px;
