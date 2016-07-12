@@ -287,7 +287,7 @@ EOF
             # echo "+ package $pkg"
 	    pkgs="$pkgs $pkg"
         done
-        apt-get -qq install $pkgs > /dev/null
+        apt-get install $pkgs > /dev/null
     fi
 
 
