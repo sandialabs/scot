@@ -692,6 +692,14 @@ if [ "$MDBREFRESH" == "yes" ]; then
     cat /dev/null > /var/log/mongodb/mongod.log
 fi
 
+if [ ! grep failIndexKeyTooLong /etc/init/mongod.conf ];then
+    echo "- SCOT will fail unless failIndexKeyTooLong=false in /etc/init/mongod.conf"
+    echo "+ backing orig, and copying new into place. "
+    cp /etc/init/mongod.conf /etc/init/mongod.conf.bak
+    cp $DEVDIR/etc/init-mongod.conf /etc/init/mongod.conf
+fi
+
+
 MONGOSTATUS=`service mongod status`
 
 if [ "$MONGOSTATUS" == "mongod stop/waiting" ];then
