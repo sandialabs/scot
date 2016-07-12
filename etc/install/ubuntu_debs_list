@@ -1,3 +1,4 @@
+make
 libapache2-mod-authnz-external
 dialog
 libcurses-perl
@@ -230,3 +231,4 @@ libfile-libmagic-perl
 libmagic-dev
 libmagic1
 libnet-xmpp-perl
+perl-doc
