@@ -520,12 +520,12 @@ var EntryDataSubject = React.createClass({
     handleChange: function(event) {
         this.setState({value:event.target.value});
         if (this.state.value != this.props.data.subject) {
-            var json = {subject:this.state.value}
+            var json = {'subject':this.state.value}
             $.ajax({
                 type: 'put',
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
                 data: JSON.stringify(json),
-                dataType: "json",
+                contentType: 'application/json; charset=UTF-8',
                 success: function(data) {
                     console.log('success: ' + data);
                     this.setState({updatedSubject: true});
