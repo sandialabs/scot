@@ -103,12 +103,16 @@ var EntityDetail = React.createClass({
         return (
             <Draggable handle="#handle">
                 <div id="dragme" className='box react-draggable entityPopUp resizable' style={{height:entityHeight,width:entityWidth}}> 
-                    <div id='handle' style={{width:'100%',padding:'5px',background:'#7A8092', color:'white', fontWeight:'900', textAlign:'center', cursor:'move',overflow:'auto'}}><div><span className='pull-left'><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer'}}><i className="fa fa-times" onClick={this.props.flairToolbarToggle}/></span></div></div>
-                    <div>
-                        <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
-                    </div>
-                    <div>
-                    {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
+                    <div id="entity_detail_container" style={{height: '100%', flexFlow: 'column', display: 'flex'}}>
+                        <div id='handle' style={{width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left'><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer'}}><i className="fa fa-times" onClick={this.props.flairToolbarToggle}/></span></div></div>
+                        <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
+                            <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
+                        </div>
+                        <div style={{overflow:'auto',flex:'1 1 auto', margin:'10px'}}>
+                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
+                        </div>
+                        <div id='footer'>
+                        </div>
                     </div>
                 </div>
             </Draggable>
