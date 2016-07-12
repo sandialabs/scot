@@ -3213,12 +3213,12 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
     handleChange: function(event) {
         this.setState({value:event.target.value});
         if (this.state.value != this.props.data.subject) {
-            var json = {subject:this.state.value}
+            var json = {'subject':this.state.value}
             $.ajax({
                 type: 'put',
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
                 data: JSON.stringify(json),
-                dataType: "json",
+                contentType: 'application/json; charset=UTF-8',
                 success: function(data) {
                     console.log('success: ' + data);
                     this.setState({updatedSubject: true});
@@ -4381,12 +4381,16 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         return (
             React.createElement(Draggable, {handle: "#handle"}, 
                 React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp resizable", style: {height:entityHeight,width:entityWidth}}, 
-                    React.createElement("div", {id: "handle", style: {width:'100%',padding:'5px',background:'#7A8092', color:'white', fontWeight:'900', textAlign:'center', cursor:'move',overflow:'auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left"}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
-                    React.createElement("div", null, 
-                        React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
-                    ), 
-                    React.createElement("div", null, 
-                    this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
+                    React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex'}}, 
+                        React.createElement("div", {id: "handle", style: {width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left"}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
+                        React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
+                            React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
+                        ), 
+                        React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto', margin:'10px'}}, 
+                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
+                        ), 
+                        React.createElement("div", {id: "footer"}
+                        )
                     )
                 )
             )
@@ -5127,23 +5131,32 @@ module.exports = React.createClass({displayName: "exports",
         }  
         this.getNewData({page: defaultpage, limit: pageSize}) 
     },
-    reloadItem: function(){
+    reloadItem: function(e){
+        /*
+       console.log($('.container-fluid2').width())
+        if($('.container-fluid2').width() == 100){
+            $('.paging').css('display', 'none')
+        }
+        */
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
         if(this.state.display == 'flex'){
-            $('.container-fluid2').css('height', height) 
+            $('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
-        //$('.container-fluid2').css('max-width', '915px')
-        //$('.container-fluid2').css('width', width)
-    
+            //$('.container-fluid2').css('max-width', '915px')
+            if(e != null){
+                width = e.clientX
+                $('.container-fluid2').css('width', e.clientX)
+            }
             if(width < size){
                 var array = []
                 array =  ['table-row-smallclass', 'attributes-smallclass','module-reporter-smallclass', 'status-owner-smallclass']
 
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                 this.setState({classname: array})
+                $('.splitter').css('width', width)
+                this.setState({classname: array})
            }
             else {
                 size = 645
@@ -5155,8 +5168,11 @@ module.exports = React.createClass({displayName: "exports",
                }
         }
         else {
-    //        $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
-            $('.container-fluid2').css('width', '100%')
+        //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
+              $('.container-fluid2').css('width', '100%')
+              if(e != null){
+                $('.container-fluid2').css('height', e.clientY)
+            }
         }
     },
     launchEvent: function(array){
@@ -5232,7 +5248,7 @@ module.exports = React.createClass({displayName: "exports",
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
             React.createElement('div', {style: {width: this.state.differentviews},id:this.state.display == 'block' ? 'old-list-view' : 'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
-                React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {/*'max-width': '915px',*/resize:this.state.resize,/*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-x': 'hidden', 'overflow-y': 'auto','padding-left':'5px'}}, 
+                React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {/*'max-width': '915px',*//*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-x': 'hidden', 'overflow-y': 'auto','padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header " + this.state.classname[0]},
                         React.createElement("div", {className: "wrapper attributes " + this.state.classname[1]}, 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -5426,7 +5442,7 @@ module.exports = React.createClass({displayName: "exports",
                     )
                     //)
                     //)
-                    ))))), 
+                    ))))), React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
                         React.createElement(SelectedContainer, {height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null),
                         !this.state.alldetail ?
@@ -5447,6 +5463,20 @@ module.exports = React.createClass({displayName: "exports",
 
         ));
     },
+    stopdrag: function(e){
+        document.onmousemove = null
+        $('.container-fluid2').css('width', width)
+        $('.paging').css('width', width)
+        $('.splitter').css('width', width)
+        if(this.state.resize == 'vertical'){
+            $('.paging').css('width', '100%')
+            $('.splitter').css('width', '100%')
+        }
+    },
+    dragdiv: function(e){
+        document.onmousemove = this.reloadItem
+        document.onmouseup  = this.stopdrag
+    },
     toggleView: function(){
         if(this.state.idsarray.length != 0 ){
             stage = false
@@ -5465,10 +5495,14 @@ module.exports = React.createClass({displayName: "exports",
         } */
     },
     Portrait: function(){
+        document.onmousemove = null
+        document.onmousedown = null
+        document.onmouseup = null
         stage = true
-        var t2 = document.getElementById('fluid2')
-        width = $(t2).width()
+        $('.container-fluid2').css('width', '650px')
+        width = 650
         $('.paging').css('width', width)
+        $('.splitter').css('width', '650px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
@@ -5477,9 +5511,13 @@ module.exports = React.createClass({displayName: "exports",
     },
 
     Landscap: function(){
+        document.onmousemove = null
+        document.onmousedown = null
+        document.onmouseup = null
         stage = true
         width = 650
         $('.paging').css('width', '100%')
+        $('.splitter').css('width', '100%')
         $('.mainview').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
@@ -6063,8 +6101,8 @@ module.exports = React.createClass({displayName: "exports",
         }  
         this.getNewData({page:defaultpage , limit: pageSize}) 
     },
-    reloadItem: function(){
-       /*
+    reloadItem: function(e){
+        /*
        console.log($('.container-fluid2').width())
         if($('.container-fluid2').width() == 100){
             $('.paging').css('display', 'none')
@@ -6077,14 +6115,18 @@ module.exports = React.createClass({displayName: "exports",
             $('.container-fluid2').css('height', height) 
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
-            //$('.container-fluid2').css('width', width)
+            if(e != null){
+                width = e.clientX
+                $('.container-fluid2').css('width', e.clientX)
+            }
             if(width < size){
                 var array = []
                 array =  ['table-row-smallclass', 'attributes-smallclass','module-reporter-smallclass', 'status-owner-smallclass']
                
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                 this.setState({classname: array})
+                $('.splitter').css('width', width) 
+                this.setState({classname: array})
            }
             else {
                 size = 645
@@ -6097,7 +6139,10 @@ module.exports = React.createClass({displayName: "exports",
         }
         else {
         //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
-            $('.container-fluid2').css('width', '100%')
+              $('.container-fluid2').css('width', '100%')
+              if(e != null){
+                $('.container-fluid2').css('height', e.clientY) 
+            }
         }
     },
     launchEvent: function(array){
@@ -6138,7 +6183,7 @@ module.exports = React.createClass({displayName: "exports",
         })
 
         }.bind(this),100)
-        window.addEventListener('resize',this.reloadItem);
+        //window.addEventListener('resize',this.reloadItem);
         return (
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
@@ -6176,7 +6221,7 @@ module.exports = React.createClass({displayName: "exports",
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
             React.createElement('div', {style: {width: this.state.differentviews},id:this.state.display == 'block' ? 'old-list-view' : 'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
-                React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {'max-width': this.state.maxwidth, resize:this.state.resize, /*'min-width': this.state.minwidth, */width: this.state.scrollwidth,  'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x': 'hidden','padding-left':'5px'}}, 
+                React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {'max-width': this.state.maxwidth, /*'min-width': this.state.minwidth, */width: this.state.scrollwidth,  'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x': 'hidden','padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header " + this.state.classname[0]},
                         React.createElement("div", {className: "wrapper attributes " + this.state.classname[1]}, 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -6433,7 +6478,8 @@ module.exports = React.createClass({displayName: "exports",
                     )
                    // )
                    // )
-                    ))))), 
+                    ))))),
+                           React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}),
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'event', viewEvent:this.viewEvent}) : null
@@ -6457,6 +6503,20 @@ module.exports = React.createClass({displayName: "exports",
         )) : React.createElement('div', null)
         ));
     },
+    stopdrag: function(e){
+        document.onmousemove = null
+        $('.container-fluid2').css('width', width)
+        $('.paging').css('width', width)
+        $('.splitter').css('width', width)
+        if(this.state.resize == 'vertical'){
+            $('.paging').css('width', '100%')
+            $('.splitter').css('width', '100%')           
+        }
+    },
+    dragdiv: function(e){
+        document.onmousemove = this.reloadItem
+        document.onmouseup  = this.stopdrag
+    },    
     toggleView: function(){
         if(this.state.idsarray.length != 0){  
             stage = false
@@ -6475,10 +6535,14 @@ module.exports = React.createClass({displayName: "exports",
         } */
     },
     Portrait: function(){
+        document.onmousemove = null
+        document.onmousedown = null
+        document.onmouseup = null
         stage = true
-        var t2 = document.getElementById('fluid2')
-        width = $(t2).width()
+        $('.container-fluid2').css('width', '650px')
+        width = 650
         $('.paging').css('width', width)
+        $('.splitter').css('width', '650px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
@@ -6487,9 +6551,13 @@ module.exports = React.createClass({displayName: "exports",
     },
 
     Landscap: function(){
+        document.onmousemove = null
+        document.onmousedown = null
+        document.onmouseup = null
         stage = true
         width = 650
         $('.paging').css('width', '100%')
+        $('.splitter').css('width', '100%') 
         $('.mainview').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
@@ -7138,9 +7206,8 @@ module.exports = React.createClass({displayName: "exports",
         this.getNewData({page:defaultpage , limit: pageSize}) 
     
     },
-
-    reloadItem: function(){
-       /*
+    reloadItem: function(e){
+        /*
        console.log($('.container-fluid2').width())
         if($('.container-fluid2').width() == 100){
             $('.paging').css('display', 'none')
@@ -7153,14 +7220,18 @@ module.exports = React.createClass({displayName: "exports",
             $('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
-            //$('.container-fluid2').css('width', width)
+            if(e != null){
+                width = e.clientX
+                $('.container-fluid2').css('width', e.clientX)
+            }
             if(width < size){
                 var array = []
                 array =  ['table-row-smallclass', 'attributes-smallclass','module-reporter-smallclass', 'status-owner-smallclass']
 
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                 this.setState({classname: array})
+                $('.splitter').css('width', width)
+                this.setState({classname: array})
            }
             else {
                 size = 645
@@ -7172,11 +7243,13 @@ module.exports = React.createClass({displayName: "exports",
                }
         }
         else {
-    //        $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
-            $('.container-fluid2').css('width', '100%')
+        //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
+              $('.container-fluid2').css('width', '100%')
+              if(e != null){
+                $('.container-fluid2').css('height', e.clientY)
+            }
         }
     },
-
     launchEvent: function(array){
         stage = true
         if(this.state.display == 'block'){
@@ -7251,7 +7324,7 @@ module.exports = React.createClass({displayName: "exports",
             React.createElement('div', {className: 'guidewidth', style: {display:this.state.display}},
             React.createElement('div', {id:this.state.display == 'block' ? 'old-list-view' : 'list-view', style: {width: this.state.differentviews}},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
-                React.createElement("div", {className: "container-fluid2", id: 'fluid2', style: {/*'max-width': '915px',*/resize:this.state.resize,/*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x': 'hidden','padding-left':'5px'}}, 
+                React.createElement("div", {className: "container-fluid2", id: 'fluid2', style: {/*'max-width': '915px',*//*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x': 'hidden','padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header "+ this.state.classname[0]},
                         React.createElement("div", {className: "wrapper attributes "+ this.state.classname[1]}, 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -7315,7 +7388,8 @@ module.exports = React.createClass({displayName: "exports",
                     )
                    // )
                    // )
-                    ))))), 
+                    ))))),
+                           React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'guide'}) : null) 
 ,
@@ -7481,11 +7555,29 @@ module.exports = React.createClass({displayName: "exports",
             this.setState({alldetail: false})
         } */
     },
-    Portrait: function(){
-        stage = true
-        var t2 = document.getElementById('fluid2')
-        width = $(t2).width()
+    stopdrag: function(e){
+        document.onmousemove = null
+        $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
+        $('.splitter').css('width', width)
+        if(this.state.resize == 'vertical'){
+            $('.paging').css('width', '100%')
+            $('.splitter').css('width', '100%')
+        }
+    },
+    dragdiv: function(e){
+        document.onmousemove = this.reloadItem
+        document.onmouseup  = this.stopdrag
+    },
+    Portrait: function(){
+        document.onmousemove = null
+        document.onmousedown = null
+        document.onmouseup = null
+        stage = true
+        width = 650
+        $('.container-fluid2').css('width', '650px')
+        $('.paging').css('width', width)
+        $('.splitter').css('width', '650px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
@@ -7494,9 +7586,13 @@ module.exports = React.createClass({displayName: "exports",
     },
 
     Landscap: function(){
+        document.onmousemove = null
+        document.onmousedown = null
+        document.onmouseup = null    
         stage = true
         width = 650
         $('.paging').css('width', '100%')
+        $('.splitter').css('width', '100%')
         $('.mainview').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
@@ -7714,23 +7810,32 @@ module.exports = React.createClass({displayName: "exports",
         }
         this.getNewData({page:defaultpage , limit: pageSize})  
     },
-    reloadItem: function(){
+    reloadItem: function(e){
+        /*
+       console.log($('.container-fluid2').width())
+        if($('.container-fluid2').width() == 100){
+            $('.paging').css('display', 'none')
+        }
+        */
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
-        
         if(this.state.display == 'flex'){
-            $('.container-fluid2').css('height', height) 
+            $('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
-        //$('.container-fluid2').css('max-width', '915px')
-        //$('.container-fluid2').css('width', width)
+            //$('.container-fluid2').css('max-width', '915px')
+            if(e != null){
+                width = e.clientX
+                $('.container-fluid2').css('width', e.clientX)
+            }
             if(width < size){
                 var array = []
                 array =  ['table-row-smallclass', 'attributes-smallclass','module-reporter-smallclass', 'status-owner-smallclass']
 
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                 this.setState({classname: array})
+                $('.splitter').css('width', width)
+                this.setState({classname: array})
            }
             else {
                 size = 645
@@ -7743,7 +7848,10 @@ module.exports = React.createClass({displayName: "exports",
         }
         else {
         //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
-            $('.container-fluid2').css('width', '100%')
+              $('.container-fluid2').css('width', '100%')
+              if(e != null){
+                $('.container-fluid2').css('height', e.clientY)
+            }
         }
     },
     launchEvent: function(array){
@@ -7773,21 +7881,42 @@ module.exports = React.createClass({displayName: "exports",
         } */
     },
     Portrait: function(){
+        document.onmousemove = null
+        document.onmousedown = null
+        document.onmouseup = null
         stage = true
-        var t2 = document.getElementById('fluid2')
-        width = $(t2).width()
+        width = 650
+        $('.container-fluid2').css('width', '650px')
         $('.paging').css('width', width)
+        $('.splitter').css('width', '650px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
     },
-
+    stopdrag: function(e){
+        document.onmousemove = null
+        $('.container-fluid2').css('width', width)
+        $('.paging').css('width', width)
+        $('.splitter').css('width', width)
+        if(this.state.resize == 'vertical'){
+            $('.paging').css('width', '100%')
+            $('.splitter').css('width', '100%')
+        }
+    },
+    dragdiv: function(e){
+        document.onmousemove = this.reloadItem
+        document.onmouseup  = this.stopdrag
+    },
     Landscap: function(){
+        document.onmousemove = null
+        document.onmousedown = null
+        document.onmouseup = null 
         stage = true
         width = 650
         $('.paging').css('width', '100%')
+        $('.splitter').css('width', '100%')
         $('.mainview').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
@@ -7855,7 +7984,7 @@ module.exports = React.createClass({displayName: "exports",
         React.createElement('div', {className: 'incidentwidth', style: {display:this.state.display}},
             React.createElement('div', {id:this.state.display == 'block' ? 'old-list-view' : 'list-view', style: {width: this.state.differentviews}},  
             React.createElement('div', {className: 'tableview', style:{display: 'flex'}},
-                React.createElement("div", {id: 'fluid2',className: "container-fluid2", style: {/*'max-width': '915px',*/resize:this.state.resize,/*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x': 'hidden','padding-left':'5px'}}, 
+                React.createElement("div", {id: 'fluid2',className: "container-fluid2", style: {/*'max-width': '915px',*//*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x': 'hidden','padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header "+this.state.classname[0]},
                         React.createElement("div", {className: "wrapper attributes " + this.state.classname[1]}, 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -8044,7 +8173,7 @@ module.exports = React.createClass({displayName: "exports",
                     )
                    // )
                    // )
-                    ))))), 
+                    ))))),  React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'incident'}) : null) 
 ,
@@ -8892,8 +9021,8 @@ module.exports = React.createClass({displayName: "exports",
         }  
         this.getNewData({page:defaultpage , limit: pageSize}) 
     },
-    reloadItem: function(){
-       /*
+    reloadItem: function(e){
+        /*
        console.log($('.container-fluid2').width())
         if($('.container-fluid2').width() == 100){
             $('.paging').css('display', 'none')
@@ -8903,17 +9032,21 @@ module.exports = React.createClass({displayName: "exports",
         height = $(window).height() - 170
         width = $(t2).width()
         if(this.state.display == 'flex'){
-            $('.container-fluid2').css('height', height) 
+            $('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
-            //$('.container-fluid2').css('width', width)
+            if(e != null){
+                width = e.clientX
+                $('.container-fluid2').css('width', e.clientX)
+            }
             if(width < size){
                 var array = []
                 array =  ['table-row-smallclass', 'attributes-smallclass','module-reporter-smallclass', 'status-owner-smallclass']
-               
+
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                 this.setState({classname: array})
+                $('.splitter').css('width', width)
+                this.setState({classname: array})
            }
             else {
                 size = 645
@@ -8925,8 +9058,11 @@ module.exports = React.createClass({displayName: "exports",
                }
         }
         else {
-            //$('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
-            $('.container-fluid2').css('width', '100%')
+        //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
+              $('.container-fluid2').css('width', '100%')
+              if(e != null){
+                $('.container-fluid2').css('height', e.clientY)
+            }
         }
     },
     launchEvent: function(array){
@@ -9005,7 +9141,7 @@ module.exports = React.createClass({displayName: "exports",
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
             React.createElement('div', {style: {width: this.state.differentviews},id:this.state.display == 'block' ? 'old-list-view' : 'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
-                React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {/*'max-width': this.state.maxwidth, */resize:this.state.resize, /*'min-width': this.state.minwidth, */width: this.state.scrollwidth,  'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x': 'hidden','padding-left':'5px'}}, 
+                React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {/*'max-width': this.state.maxwidth, */ /*'min-width': this.state.minwidth, */width: this.state.scrollwidth,  'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x': 'hidden','padding-left':'5px'}}, 
                     React.createElement("div", {className: "table-row header " + this.state.classname[0]},
                         React.createElement("div", {className: "wrapper attributes " + this.state.classname[1]}, 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -9262,7 +9398,8 @@ module.exports = React.createClass({displayName: "exports",
                     )
                    // )
                    // )
-                    ))))), 
+                    ))))),
+                           React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'intel', viewEvent:this.viewEvent}) : null
@@ -9303,11 +9440,29 @@ module.exports = React.createClass({displayName: "exports",
             this.setState({alldetail: false})
         } */
     },
-    Portrait: function(){
-        stage = true
-        var t2 = document.getElementById('fluid2')
-        width = $(t2).width()
+    stopdrag: function(e){
+        document.onmousemove = null
+        $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
+        $('.splitter').css('width', width)
+        if(this.state.resize == 'vertical'){
+            $('.paging').css('width', '100%')
+            $('.splitter').css('width', '100%')
+        }
+    },
+    dragdiv: function(e){
+        document.onmousemove = this.reloadItem
+        document.onmouseup  = this.stopdrag
+    },
+    Portrait: function(){
+        document.onmousemove = null
+        document.onmousedown = null
+        document.onmouseup = null
+        stage = true
+        width = 650
+        $('.container-fluid2').css('width', '650px')
+        $('.paging').css('width', width)
+        $('.splitter').css('width', '650px')
         $('.mainview').show()
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
@@ -9315,9 +9470,13 @@ module.exports = React.createClass({displayName: "exports",
     },
 
     Landscap: function(){
+        document.onmousemove = null
+        document.onmousedown = null
+        document.onmouseup = null
         stage = true
         width = 650
         $('.paging').css('width', '100%')
+        $('.splitter').css('width', '100%')
         $('.mainview').show()
         $('.toggleview').hide()
         var array = []
@@ -9975,8 +10134,8 @@ module.exports = React.createClass({displayName: "exports",
         }
         this.getNewData({page:defaultpage , limit: pageSize})
     },
-    reloadItem: function(){
-       /*
+    reloadItem: function(e){
+        /*
        console.log($('.container-fluid2').width())
         if($('.container-fluid2').width() == 100){
             $('.paging').css('display', 'none')
@@ -9989,14 +10148,18 @@ module.exports = React.createClass({displayName: "exports",
             $('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
-            //$('.container-fluid2').css('width', width)
+            if(e != null){
+                width = e.clientX
+                $('.container-fluid2').css('width', e.clientX)
+            }
             if(width < size){
                 var array = []
                 array =  ['table-row-smallclass', 'attributes-smallclass','module-reporter-smallclass', 'status-owner-smallclass']
 
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                 this.setState({classname: array})
+                $('.splitter').css('width', width)
+                this.setState({classname: array})
            }
             else {
                 size = 645
@@ -10008,11 +10171,13 @@ module.exports = React.createClass({displayName: "exports",
                }
         }
         else {
-    //        $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
-            $('.container-fluid2').css('width', '100%')
+        //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
+              $('.container-fluid2').css('width', '100%')
+              if(e != null){
+                $('.container-fluid2').css('height', e.clientY)
+            }
         }
     },
-
     launchEvent: function(array,entryid,tasktype){
         stage = true
         if(this.state.display == 'block'){
@@ -10083,7 +10248,7 @@ module.exports = React.createClass({displayName: "exports",
             React.createElement('div', {className: 'incidentwidth', style: {display:this.state.display}},
             React.createElement('div', {style: {width: this.state.differentviews},id:this.state.display == 'block' ? 'old-list-view' : 'list-view'},
             React.createElement('div', {className: 'tableview', style:{display: 'flex'}},
-                React.createElement("div", {className: "container-fluid2", id: 'fluid2', style: {/*'max-width': '915px',*/resize:this.state.resize,/*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x' : 'hidden','padding-left':'5px'}},
+                React.createElement("div", {className: "container-fluid2", id: 'fluid2', style: {/*'max-width': '915px',*//*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x' : 'hidden','padding-left':'5px'}},
                     React.createElement("div", {className: "table-row header "+ this.state.classname[0]},
                         React.createElement("div", {className: "wrapper attributes "+ this.state.classname[1]},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -10215,7 +10380,8 @@ module.exports = React.createClass({displayName: "exports",
                             React.createElement("div", {className: "column severity"}, value.id))),
                         React.createElement("div", {className: "wrapper dates "+this.state.sizearray[0]},
                             React.createElement("div", {className: "column date"}, value.updated))))))))),
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ?
+                                           React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}),        
+                React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ?
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: this.state.type, taskid: this.state.entry}) : null),
                         !this.state.alldetail ?
                         React.createElement('div', null,
@@ -10306,11 +10472,29 @@ module.exports = React.createClass({displayName: "exports",
             this.setState({alldetail: false})
         } */
     },
-    Portrait: function(){
-        stage = true
-        var t2 = document.getElementById('fluid2')
-        width = $(t2).width()
+    stopdrag: function(e){
+        document.onmousemove = null
+        $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
+        $('.splitter').css('width', width)
+        if(this.state.resize == 'vertical'){
+            $('.paging').css('width', '100%')
+            $('.splitter').css('width', '100%')
+        }
+    },
+    dragdiv: function(e){
+        document.onmousemove = this.reloadItem
+        document.onmouseup  = this.stopdrag
+    },
+    Portrait: function(){
+        document.onmousemove = null
+        document.onmousedown = null
+        document.onmouseup = null 
+        stage = true
+        width =650
+        $('.paging').css('width', width)
+        $('.splitter').css('width', '650px')
+        $('.container-fluid2').css('width', '650px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
@@ -10319,9 +10503,13 @@ module.exports = React.createClass({displayName: "exports",
     },
 
     Landscap: function(){
+        document.onmousemove = null
+        document.onmousedown = null
+        document.onmouseup = null
         stage = true
         width = 650
         $('.paging').css('width', '100%')
+        $('.splitter').css('width', '100%')
         $('.mainview').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
