@@ -8,6 +8,7 @@ use v5.18;
 use Moose;
 use Mojo::JSON qw/decode_json encode_json/;
 use Search::Elasticsearch;
+use Search::Elasticsearch::Client::1_0::Direct::Snapshot;
 use Scot::Env;
 use Data::Dumper;
 use Try::Tiny;
@@ -135,6 +136,37 @@ sub delete_index {
     $es->indices->delete(index=>$index);
 }
 
+sub start_snapshot {
+    my $self    = shift;
+    my $conf    = $self->config;
+
+    my $repo    = $conf->{repository};
+
+}
+
+sub get_snapshot_status {
+
+}
+
+sub delete_repo {
+
+}
+
+sub delete_snapshot {
+
+}
+
+sub close_index {
+
+}
+
+sub restore_snapsot {
+
+}
+
+sub restore_status {
+
+}
 
 
 __PACKAGE__->meta->make_immutable;
