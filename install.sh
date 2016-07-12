@@ -692,7 +692,8 @@ if [ "$MDBREFRESH" == "yes" ]; then
     cat /dev/null > /var/log/mongodb/mongod.log
 fi
 
-if [ ! grep failIndexKeyTooLong /etc/init/mongod.conf ];then
+FIKTL=`grep failIndexKeyTooLong /etc/init/mongod.conf`
+if [ "$FIKTL" == "" ]; then
     echo "- SCOT will fail unless failIndexKeyTooLong=false in /etc/init/mongod.conf"
     echo "+ backing orig, and copying new into place. "
     cp /etc/init/mongod.conf /etc/init/mongod.conf.bak
