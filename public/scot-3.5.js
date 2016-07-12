@@ -3213,12 +3213,12 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
     handleChange: function(event) {
         this.setState({value:event.target.value});
         if (this.state.value != this.props.data.subject) {
-            var json = {subject:this.state.value}
+            var json = {'subject':this.state.value}
             $.ajax({
                 type: 'put',
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
                 data: JSON.stringify(json),
-                dataType: "json",
+                contentType: 'application/json; charset=UTF-8',
                 success: function(data) {
                     console.log('success: ' + data);
                     this.setState({updatedSubject: true});
@@ -4381,12 +4381,16 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         return (
             React.createElement(Draggable, {handle: "#handle"}, 
                 React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp resizable", style: {height:entityHeight,width:entityWidth}}, 
-                    React.createElement("div", {id: "handle", style: {width:'100%',padding:'5px',background:'#7A8092', color:'white', fontWeight:'900', textAlign:'center', cursor:'move',overflow:'auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left"}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
-                    React.createElement("div", null, 
-                        React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
-                    ), 
-                    React.createElement("div", null, 
-                    this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
+                    React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex'}}, 
+                        React.createElement("div", {id: "handle", style: {width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left"}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
+                        React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
+                            React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
+                        ), 
+                        React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto', margin:'10px'}}, 
+                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
+                        ), 
+                        React.createElement("div", {id: "footer"}
+                        )
                     )
                 )
             )
