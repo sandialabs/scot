@@ -4373,13 +4373,16 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         entityPopUpWidth = width;*/
     },
     initDrag: function(e) {
-    var elem = document.getElementById('dragme');
-    startX = e.clientX;
-    startY = e.clientY;
-    startWidth = parseInt(document.defaultView.getComputedStyle(elem).width, 10);
-    startHeight = parseInt(document.defaultView.getComputedStyle(elem).height, 10);
-    document.documentElement.addEventListener('mousemove', this.doDrag, false);
-    document.documentElement.addEventListener('mouseup', this.stopDrag, false);
+        var elem = document.getElementById('dragme');
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = parseInt(document.defaultView.getComputedStyle(elem).width, 10);
+        startHeight = parseInt(document.defaultView.getComputedStyle(elem).height, 10);
+        document.documentElement.addEventListener('mousemove', this.doDrag, false);
+        document.documentElement.addEventListener('mouseup', this.stopDrag, false);
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
     },
     doDrag: function(e) {
     var elem = document.getElementById('dragme')
@@ -4388,10 +4391,11 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
     },
     stopDrag: function(e) {
         document.documentElement.removeEventListener('mousemove', this.doDrag, false);    document.documentElement.removeEventListener('mouseup', this.stopDrag, false);
+        $('iframe').each(function(index,ifr){
+            $(ifr).removeClass('pointerEventsOff')
+        })
     },
     render: function() {
-        //var entityHeight = '500px';
-        //var entityWidth = '600px';
         //This makes the size that was last used hold for future entities
         /*if (entityPopUpHeight && entityPopUpWidth) {
             entityHeight = entityPopUpHeight;
