@@ -15,6 +15,8 @@ var EntityDetail = React.createClass({
         return {
             entityData:null,
             entityid: this.props.entityid,
+            entityHeight: '500px',
+            entityWidth: '500px',
         }
     },
     componentDidMount: function () {
@@ -92,9 +94,26 @@ var EntityDetail = React.createClass({
         entityPopUpHeight = height;
         entityPopUpWidth = width;*/
     },
+    initDrag: function(e) {
+    var elem = document.getElementById('dragme');
+    startX = e.clientX;
+    startY = e.clientY;
+    startWidth = parseInt(document.defaultView.getComputedStyle(elem).width, 10);
+    startHeight = parseInt(document.defaultView.getComputedStyle(elem).height, 10);
+    document.documentElement.addEventListener('mousemove', this.doDrag, false);
+    document.documentElement.addEventListener('mouseup', this.stopDrag, false);
+    },
+    doDrag: function(e) {
+    var elem = document.getElementById('dragme')
+    elem.style.width = (startWidth + e.clientX - startX) + 'px';
+    elem.style.height = (startHeight + e.clientY - startY) + 'px';
+    },
+    stopDrag: function(e) {
+        document.documentElement.removeEventListener('mousemove', this.doDrag, false);    document.documentElement.removeEventListener('mouseup', this.stopDrag, false);
+    },
     render: function() {
-        var entityHeight = '500px';
-        var entityWidth = '600px';
+        //var entityHeight = '500px';
+        //var entityWidth = '600px';
         //This makes the size that was last used hold for future entities
         /*if (entityPopUpHeight && entityPopUpWidth) {
             entityHeight = entityPopUpHeight;
@@ -102,16 +121,16 @@ var EntityDetail = React.createClass({
         }*/
         return (
             <Draggable handle="#handle">
-                <div id="dragme" className='box react-draggable entityPopUp resizable' style={{height:entityHeight,width:entityWidth}}> 
+                <div id="dragme" className='box react-draggable entityPopUp' style={{height:this.state.entityHeight,width:this.state.entityWidth}}> 
                     <div id="entity_detail_container" style={{height: '100%', flexFlow: 'column', display: 'flex'}}>
-                        <div id='handle' style={{width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left'><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer'}}><i className="fa fa-times" onClick={this.props.flairToolbarToggle}/></span></div></div>
+                        <div id='handle' style={{width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarToggle}/></span></div></div>
                         <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
                             <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
                         </div>
                         <div style={{overflow:'auto',flex:'1 1 auto', margin:'10px'}}>
                         {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
                         </div>
-                        <div id='footer'>
+                        <div id='footer' onMouseDown={this.initDrag} style={{display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}>
                         </div>
                     </div>
                 </div>
