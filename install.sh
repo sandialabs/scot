@@ -334,6 +334,9 @@ EOF
     if [ ! -e "/etc/init.d/activemq" ]; then
         cp $DEVDIR/etc/activemq-init   /etc/init.d/activemq
     fi
+    if [ ! -e "$DEVDIR/etc/scotamq.xml" ]; then
+        cp $DEVDIR/etc/scotamq.xml     $AMQDIR/conf
+    fi
 
     echo -e "${yellow}+ installing ActiveMQ${NC}"
 
