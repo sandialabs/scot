@@ -6,6 +6,7 @@ use warnings;
 use v5.18;
 
 use Mojo::UserAgent;
+use Mojo::JSON qw/encode_json decode_json/;
 use Data::Dumper;
 use Moose;
 use Try::Tiny::Retry ':all';
@@ -162,20 +163,20 @@ sub _get_useragent {
     my $user    = $self->username;
     my $url;
 
-    if ( $user ne ' ' ) {
-        $log->trace("Building UA for Basic Authentication");
-        $ua = Mojo::UserAgent->new();
-        $url = sprintf "%s://%s:%s@%s/scot/api/v2/whoami",
-                    $self->proto,
-                    $self->username,
-                    $self->password,
-                    $self->servername;
-    }
-    else {
+#    if ( $user ne ' ' ) {
+#        $log->trace("Building UA for Basic Authentication");
+#        $ua = Mojo::UserAgent->new();
+#        $url = sprintf "%s://%s:%s@%s/scot/api/v2/whoami",
+#                    $self->proto,
+#                    $self->username,
+#                    $self->password,
+#                    $self->servername;
+#    }
+#    else {
         $log->trace("No Authentication.");
         $ua = Mojo::UserAgent->new();
         $url = sprintf "%s://%s/_search", $self->proto, $self->servername;
-    }
+#    }
 
     $log->trace("Getting $url");
 
@@ -184,19 +185,12 @@ sub _get_useragent {
 
     if ( my $res = $tx->success ) {
         $log->debug("$user Authenticated to ES");
+        $log->debug("got: ", {filter=>\&Dumper, value=>$res});
     }
     else {
         $log->error("$user FAILED Authentication to ES!");
         # should be return undef?  should we retry?
         $log->error({filter=>\&Dumper, value=>$tx});
-    }
-    return $ua;
-
-    if ( my $res = $tx->success ) {
-        $log->debug("$user Authenticated to ES");
-    }
-    else {
-        $log->error("$user FAILED Authentication to ES");
     }
     return $ua;
 }
@@ -213,27 +207,31 @@ sub check_if_forked {
 
 sub do_request {
     my $self    = shift;
-    my $verb    = lc(shift); # get, put, post, delete
-    my $suffix  = shift; # stuff after /scot/api/v2/
+    my $verb    = lc(shift); 	# get, put, post, delete
+    my $suffix  = shift; 	# stuff after /scot/api/v2/
     my $data    = shift; # json or params or both being sent with request
     my $log     = $self->log;
     my $ua      = $self->ua;
-    my $url     = $self->ua_base_url . $suffix;
+    my $url     = $self->ua_base_url ;#. $suffix;
 
     $log->trace("ESUA performing $verb $url request");
 
     my ($params, $json) = $self->extract_pj($data);
 
-    $log->debug("Params = ",{filter=>\&Dumper, value=>$params) if ($params);
+#    $log->debug("Params = ",{filter=>\&Dumper, value=>$params}) if ($params);
     # $log->debug("Json   = ",{filter=>\&Dumper, value => $json}) if ($json);
 
-    if ( $params ) {
-        $url    = $url . "?" . $params;
-    }
+#    if ( $params ) {
+#        $url    = $url . "?" . $params;
+#    }
 
     my $tx;
     if ( $json ) {
-        $tx     = $ua->$verb($url => json => $json);
+
+	my $newjson = decode_json($json);
+
+	$log->debug("Sending $verb to $url with ",{filter=>\&Dumper,value=>$newjson});
+        $tx     = $ua->$verb($url => json => $newjson);
     }
     else {
         $tx  = $ua->$verb($url);
@@ -241,7 +239,10 @@ sub do_request {
 
     if ( my $res = $tx->success ) {
         $log->debug("Successful $verb");
-        return $res->json;
+	my $datahref = $res->json;
+	$log->debug("response is ",{filter=>\&Dumper, value => $res});
+        $log->debug("datahref is ",{filter=>\&Dumper, value => $datahref});
+        return $datahref;
     }
     else {
         my $err = $tx->error;
