@@ -8,7 +8,7 @@ var TermQuery           = require('../../../node_modules/searchkit').TermQuery;
 var BoolShould          = require('../../../node_modules/searchkit').BoolShould;
 var LayoutBody          = require('../../../node_modules/searchkit').LayoutBody;
 var LayoutResults       = require('../../../node_modules/searchkit').LayoutResults;
-const searchkit         = new SearchkitManager("https://as3001snllx.sandia.gov/search/")
+const searchkit         = new SearchkitManager("https://as3007snllx.sandia.gov/scot/api/v2/search/")
 
 class Results extends React.Component{
     render() {
@@ -27,7 +27,7 @@ var Search = React.createClass({
                 React.createElement(SearchkitProvider, {searchkit: searchkit},
                     React.createElement('div', {className: 'search'},
                     React.createElement('div', {className: 'search_query'},
-                        React.createElement(SearchBox, {autofocus: true, searchOnChange: true})
+                        React.createElement(SearchBox, {autofocus: true, searchOnChange: true, queryFields: ['_index']})
                             ),
                             searchboxtext != '' ?
                             React.createElement('div', {className: 'search_results'},
