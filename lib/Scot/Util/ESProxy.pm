@@ -224,7 +224,7 @@ sub do_request {
 
     my ($params, $json) = $self->extract_pj($data);
 
-    $log->debug("Params = $params") if ($params);
+    $log->debug("Params = ". {filter=>\&Dumper, value=>$params}) if ($params);
     # $log->debug("Json   = ",{filter=>\&Dumper, value => $json}) if ($json);
 
     if ( $params ) {
