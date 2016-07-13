@@ -4293,6 +4293,8 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         return {
             entityData:null,
             entityid: this.props.entityid,
+            entityHeight: '500px',
+            entityWidth: '500px',
         }
     },
     componentDidMount: function () {
@@ -4370,9 +4372,26 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         entityPopUpHeight = height;
         entityPopUpWidth = width;*/
     },
+    initDrag: function(e) {
+    var elem = document.getElementById('dragme');
+    startX = e.clientX;
+    startY = e.clientY;
+    startWidth = parseInt(document.defaultView.getComputedStyle(elem).width, 10);
+    startHeight = parseInt(document.defaultView.getComputedStyle(elem).height, 10);
+    document.documentElement.addEventListener('mousemove', this.doDrag, false);
+    document.documentElement.addEventListener('mouseup', this.stopDrag, false);
+    },
+    doDrag: function(e) {
+    var elem = document.getElementById('dragme')
+    elem.style.width = (startWidth + e.clientX - startX) + 'px';
+    elem.style.height = (startHeight + e.clientY - startY) + 'px';
+    },
+    stopDrag: function(e) {
+        document.documentElement.removeEventListener('mousemove', this.doDrag, false);    document.documentElement.removeEventListener('mouseup', this.stopDrag, false);
+    },
     render: function() {
-        var entityHeight = '500px';
-        var entityWidth = '600px';
+        //var entityHeight = '500px';
+        //var entityWidth = '600px';
         //This makes the size that was last used hold for future entities
         /*if (entityPopUpHeight && entityPopUpWidth) {
             entityHeight = entityPopUpHeight;
@@ -4380,16 +4399,16 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         }*/
         return (
             React.createElement(Draggable, {handle: "#handle"}, 
-                React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp resizable", style: {height:entityHeight,width:entityWidth}}, 
+                React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth}}, 
                     React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex'}}, 
-                        React.createElement("div", {id: "handle", style: {width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left"}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
+                        React.createElement("div", {id: "handle", style: {width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
                         React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
                             React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
                         ), 
                         React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto', margin:'10px'}}, 
                         this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
                         ), 
-                        React.createElement("div", {id: "footer"}
+                        React.createElement("div", {id: "footer", onMouseDown: this.initDrag, style: {display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}
                         )
                     )
                 )
