@@ -286,8 +286,9 @@ EOF
         for pkg in `cat $DEVDIR/etc/install/ubuntu_debs_list`; do
             # echo "+ package $pkg"
 	    pkgs="$pkgs $pkg"
+  	    echo "++++ $pkg ++++"
+            apt-get install $pkg # > /dev/null
         done
-        apt-get install $pkgs > /dev/null
     fi
 
 
