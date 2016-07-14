@@ -337,6 +337,7 @@ sub get_idranges {
 
     if ( $numprocs == 1 or $mtype eq "guide" or $mtype eq "handler" ) {
         $log->debug("total docs = ".$total_docs);
+        $log->debug("max_id = ".$max_id);
         @ids    = (
             [ 1, $max_id ],
         );
@@ -855,8 +856,10 @@ sub get_max_id {
     my $name    = shift;
     my $col     = $self->db->get_collection($name);
     my $cursor  = $col->find();
+    my $log     = $self->env->log;
     $cursor->sort({id => -1});
     my $doc     = $cursor->next;
+    $log->debug("GOT max_id for $name of ".$doc->{id});
     return $doc->{id};
 }
 
