@@ -858,11 +858,11 @@ sub get_max_id {
     my $col     = $self->legacydb->get_collection($name);
     my $cursor  = $col->find();
     my $log     = $self->env->log;
+    my $idfield     = $self->lookup_idfield($necol);
     $log->debug("Cursor has ".$cursor->count." items");
-    $cursor->sort({id => -1});
+    $cursor->sort({$idfield => -1});
     my $doc     = $cursor->next;
     $log->debug("object returned: ",{filter=>\&Dumper, value=>$doc});
-    my $idfield     = $self->lookup_idfield($necol);
     return $doc->{$idfield};
 }
 
