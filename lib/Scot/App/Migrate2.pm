@@ -333,7 +333,7 @@ sub get_idranges {
     my $cursor  = $legcol->find();
     $cursor->immortal(1);
     my $total_docs      = $cursor->count;
-    my $max_id          = $self->get_max_id($colname);
+    my $max_id          = $self->get_max_id($colname,$mtype);
 
     if ( $numprocs == 1 or $mtype eq "guide" or $mtype eq "handler" ) {
         $log->debug("total docs = ".$total_docs);
@@ -854,6 +854,7 @@ sub create_links {
 sub get_max_id {
     my $self    = shift;
     my $name    = shift;
+    my $necol   = shift;
     my $col     = $self->legacydb->get_collection($name);
     my $cursor  = $col->find();
     my $log     = $self->env->log;
@@ -861,7 +862,8 @@ sub get_max_id {
     $cursor->sort({id => -1});
     my $doc     = $cursor->next;
     $log->debug("object returned: ",{filter=>\&Dumper, value=>$doc});
-    return $doc->{id};
+    my $idfield     = $self->lookup_idfield($necol);
+    return $doc->{$idfield};
 }
 
 
