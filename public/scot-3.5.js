@@ -1124,7 +1124,7 @@ var Search = React.createClass({displayName: "Search",
                 React.createElement(SearchkitProvider, {searchkit: searchkit},
                     React.createElement('div', {className: 'search'},
                     React.createElement('div', {className: 'search_query'},
-                        React.createElement(SearchBox, {autofocus: true, searchOnChange: true})
+                        React.createElement(SearchBox, {autofocus: true, searchOnChange: true, queryFields: ['_index']})
                             ),
                             searchboxtext != '' ?
                             React.createElement('div', {className: 'search_results'},
@@ -2027,7 +2027,7 @@ var SelectedContainer = React.createClass({displayName: "SelectedContainer",
     handleResize: function(){
         var scrollWidth = this.state.width;
         if ($('#list-view')[0]) {
-            scrollWidth  = $(window).width()  - ($('#list-view').width() + 60)
+            scrollWidth  = $(window).width()  - ($('#list-view').width() + 48)
             scrollWidth = scrollWidth + 'px'
         }
         this.setState({width:scrollWidth})
