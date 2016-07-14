@@ -333,11 +333,12 @@ sub get_idranges {
     my $cursor  = $legcol->find();
     $cursor->immortal(1);
     my $total_docs      = $cursor->count;
+    my $max_id          = $self->get_max_id($mtype);
 
     if ( $numprocs == 1 or $mtype eq "guide" or $mtype eq "handler" ) {
         $log->debug("total docs = ".$total_docs);
         @ids    = (
-            [ 1, $total_docs + 1 ],
+            [ 1, $max_id ],
         );
         return wantarray ? @ids : \@ids;
     }
