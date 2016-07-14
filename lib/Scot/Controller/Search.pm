@@ -24,7 +24,7 @@ use base 'Mojolicious::Controller';
 
 =over 4
 
-=item I<POST> B<POST /scot/api/v2/_search>
+=item I<POST> B<POST /scot/api/v2/search>
 
 =cut
 
