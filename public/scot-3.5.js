@@ -1124,7 +1124,7 @@ var Search = React.createClass({displayName: "Search",
                 React.createElement(SearchkitProvider, {searchkit: searchkit},
                     React.createElement('div', {className: 'search'},
                     React.createElement('div', {className: 'search_query'},
-                        React.createElement(SearchBox, {autofocus: true, searchOnChange: true})
+                        React.createElement(SearchBox, {autofocus: true, searchOnChange: true, queryFields: ['_index']})
                             ),
                             searchboxtext != '' ?
                             React.createElement('div', {className: 'search_results'},
