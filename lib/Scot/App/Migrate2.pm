@@ -333,11 +333,13 @@ sub get_idranges {
     my $cursor  = $legcol->find();
     $cursor->immortal(1);
     my $total_docs      = $cursor->count;
+    my $max_id          = $self->get_max_id($colname,$mtype);
 
     if ( $numprocs == 1 or $mtype eq "guide" or $mtype eq "handler" ) {
         $log->debug("total docs = ".$total_docs);
+        $log->debug("max_id = ".$max_id);
         @ids    = (
-            [ 1, $total_docs + 1 ],
+            [ 1, $max_id ],
         );
         return wantarray ? @ids : \@ids;
     }
@@ -852,12 +854,18 @@ sub create_links {
 sub get_max_id {
     my $self    = shift;
     my $name    = shift;
-    my $col     = $self->db->get_collection($name);
+    my $necol   = shift;
+    my $col     = $self->legacydb->get_collection($name);
     my $cursor  = $col->find();
-    $cursor->sort({id => -1});
+    my $log     = $self->env->log;
+    my $idfield     = $self->lookup_idfield($necol);
+    $log->debug("Cursor has ".$cursor->count." items");
+    $cursor->sort({$idfield => -1});
     my $doc     = $cursor->next;
-    return $doc->{id};
+    $log->debug("object returned: ",{filter=>\&Dumper, value=>$doc});
+    return $doc->{$idfield};
 }
+
 
 sub create_history {
     my $self    = shift;
