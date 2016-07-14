@@ -285,9 +285,9 @@ EOF
 
         for pkg in `cat $DEVDIR/etc/install/ubuntu_debs_list`; do
             # echo "+ package $pkg"
-	    pkgs="$pkgs $pkg"
+            pkgs="$pkgs $pkg"
+            apt-get -y install $pkg
         done
-        apt-get install $pkgs > /dev/null
     fi
 
 
@@ -333,6 +333,9 @@ EOF
 
     if [ ! -e "/etc/init.d/activemq" ]; then
         cp $DEVDIR/etc/activemq-init   /etc/init.d/activemq
+    fi
+    if [ ! -e "$AMQDIR/conf/scotamq.xml" ]; then
+        cp $DEVDIR/etc/scotamq.xml     $AMQDIR/conf
     fi
 
     echo -e "${yellow}+ installing ActiveMQ${NC}"
