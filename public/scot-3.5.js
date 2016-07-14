@@ -2027,7 +2027,7 @@ var SelectedContainer = React.createClass({displayName: "SelectedContainer",
     handleResize: function(){
         var scrollWidth = this.state.width;
         if ($('#list-view')[0]) {
-            scrollWidth  = $(window).width()  - ($('#list-view').width() + 60)
+            scrollWidth  = $(window).width()  - ($('#list-view').width() + 48)
             scrollWidth = scrollWidth + 'px'
         }
         this.setState({width:scrollWidth})
