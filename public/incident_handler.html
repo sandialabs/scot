@@ -587,6 +587,8 @@ table.fc-border-separate {
 <div id="calendar"></div>
 <script src="/libs/jquery-2.2.0/jquery.min.js"></script>
 <script src="/libs/jquery-ui-1.10.3.custom.min.js"></script>
+<link rel='stylesheet' href='/css/fullcalendar.css' />
+<script src="/libs/moment.min.js"></script>
 <script src="/libs/fullcalendar.min.js"></script>
 <script src="/libs/jquery.datepick.js"></script>"
    <script src="/libs/jquery-ui-timepicker-addon.js"></script>
@@ -609,8 +611,8 @@ $(document).ready(function() {
 });
 
 $(function() {
-  $("#start_date").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
-  $("#end_date").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
+  $("#start").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
+  $("#end").datetimepicker({ showOn: "button", buttonImage: "/images/cal.gif"});
   $("#ih_creator").dialog({
     bgiframe : true,
     autoOpen : false,
@@ -619,11 +621,31 @@ $(function() {
     modal : true,
     buttons : {
       "Create" : function() {
-        $("#ih_form").ajaxSubmit({
+        var startTime= new Date($('#ih_form input[id=start]')[0].value).getTime()/1000;
+        var endTime =  new Date($('#ih_form input[id=end]')[0].value).getTime()/1000;
+        var user = $('#ih_form select[id=user_select]')[0].value;
+        var data = {
+            start: startTime,
+            end: endTime,
+            username: user
+        }
+        $.ajax({
+            type: "POST",
+            url: '/scot/api/v2/handler',
+            data: data,
+            success: function(data) {
+                do_refresh();
+            },
+            error: function() {
+                alert('failed to update calendar')
+            }
+        })
+      /* 
+       $("#ih_form").ajaxSubmit({
         success : do_refresh,
         error : do_refresh,
         dataType : 'json'
-      });
+      });*/
       $(this).dialog('close');
       },
       'Cancel' : function() {
@@ -634,12 +656,13 @@ $(function() {
 }); 
 
 function create_incident_handler(start, end) {
-$("#start_date").val(start);
-$("#end_date").val(end);
+$("#start").val(start);
+$("#end").val(end);
 $("#ih_creator").dialog('open');
 } 
 
- $('#calendar').fullCalendar({
+
+$('#calendar').fullCalendar({
                         theme       :   true,
                         buttonIcons :   false,
                         header      :   {
@@ -660,7 +683,31 @@ $("#ih_creator").dialog('open');
                         },
                         eventSources:   [
                             {
-                                url      :   '/scot/ihcalendar',
+                                events: function(start, end, timezone, callback) {
+                                   $.ajax({
+                                        url: '/scot/api/v2/handler?start='+start+'&end='+end,
+                                        type: 'GET',
+                                        success: function(data) {
+                                            var events = [];
+                                            $(data.records).each(function(index, obj) {
+                                                var startISO = new Date(obj.start * 1000).toISOString();
+                                                var startTime = moment(new Date(obj.start * 1000)).format('LT');
+                                                var endISO = new Date(obj.end * 1000).toISOString();
+                                                var endTime = moment(new Date(obj.end * 1000)).format('LT');
+                                                events.push({
+                                                    title: startTime + ' ' + obj.username + ' ' +  endTime,
+                                                    start: startISO,
+                                                    end: endISO,
+                                                })
+                                            })
+                                            callback(events);
+                                        },
+                                        error: function() {
+                                            console.log('failed to get calendar information');
+                                        }
+                                    })
+
+                                },
                                 color    :   'yellow',
                                 textColor:   'black' 
                             }
@@ -670,15 +717,15 @@ $("#ih_creator").dialog('open');
 </script>
 <div id="ih_creator" title="Create Incident Handler">
     <h3>Select Date Range to assign Incident Handler</h3>
-    <form id="ih_form" action="/scot/ihcalendar/new" method="put">
+    <form id="ih_form" action="/scot/api/v2/handler" method="post">
         <table>
             <tr>
                 <th>Start: </th>
-                <td><input type="text" id="start_date" name="start_date"></td>
+                <td><input type="text" id="start" ></td>
             </tr>
             <tr>
                 <th>End: </th>
-                <td><input type="text" id="end_date" name="end_date"></td>
+                <td><input type="text" id="end" name="end"></td>
             </tr>
             <tr>
                 <th>User: </th>
