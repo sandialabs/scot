@@ -857,9 +857,10 @@ sub get_max_id {
     my $col     = $self->db->get_collection($name);
     my $cursor  = $col->find();
     my $log     = $self->env->log;
+    $log->debug("Cursor has ".$cursor->count." items");
     $cursor->sort({id => -1});
     my $doc     = $cursor->next;
-    $log->debug("GOT max_id for $name of ".$doc->{id});
+    $log->debug("object returned: ",{filter=>\&Dumper, value=>$doc});
     return $doc->{id};
 }
 
