@@ -333,7 +333,7 @@ sub get_idranges {
     my $cursor  = $legcol->find();
     $cursor->immortal(1);
     my $total_docs      = $cursor->count;
-    my $max_id          = $self->get_max_id($mtype);
+    my $max_id          = $self->get_max_id($colname);
 
     if ( $numprocs == 1 or $mtype eq "guide" or $mtype eq "handler" ) {
         $log->debug("total docs = ".$total_docs);
@@ -854,7 +854,7 @@ sub create_links {
 sub get_max_id {
     my $self    = shift;
     my $name    = shift;
-    my $col     = $self->db->get_collection($name);
+    my $col     = $self->legacydb->get_collection($name);
     my $cursor  = $col->find();
     my $log     = $self->env->log;
     $log->debug("Cursor has ".$cursor->count." items");
@@ -863,6 +863,7 @@ sub get_max_id {
     $log->debug("object returned: ",{filter=>\&Dumper, value=>$doc});
     return $doc->{id};
 }
+
 
 sub create_history {
     my $self    = shift;
