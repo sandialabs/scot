@@ -9,17 +9,28 @@ my $ua  = Mojo::UserAgent->new();
 my $url = 'http://localhost:9200/_search';
 
 my $json = {
-    'size' => 0,
     'query' => {
         'simple_query_string' => {
-            'query' => 'test',
+            'query' => 'google',
             'fields' => [
                 '_all'
             ]
         }
-    }
+    },
+    size    => undef
 };
 
-my $tx = $ua->post($url => $json);
+my $reallyjson = encode_json($json);
 
-say Dumper($tx->success);
+my $tx = $ua->post($url => $reallyjson);
+
+my $retjson = Dumper($tx->success->json);
+
+say Dumper($retjson);
+exit 0;
+
+my $foo = `curl -XPOST http://localhost:9200/_search -d'{"query":{"simple_query_string":{"query":"google","fields":["_all"]}},"size":null}'`;
+
+say Dumper($foo);
+
+
