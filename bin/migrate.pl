@@ -3,7 +3,7 @@
 use lib '../lib';
 use Parallel::ForkManager;
 use Scot::Env;
-use Scot::App::Migrate2;
+use Scot::App::Migrate3;
 use Getopt::Long qw(GetOptions);
 use Data::Dumper;
 use Log::Log4perl::Level;
@@ -26,7 +26,7 @@ unless ( grep {/$colname/} @validcols ) {
 
 
 my $env     = Scot::Env->new({ });
-my $mover   = Scot::App::Migrate2->new({env=>$env});
+my $mover   = Scot::App::Migrate3->new({env=>$env});
 
 
 my $opts   = {
