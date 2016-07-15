@@ -186,10 +186,15 @@ sub do_request_mojo {
     my ($params, $json) = $self->extract_pj($data);
 
     my $tx;
+
     if ( $json ) {
         my $href = decode_json($json);
-        $log->debug("Sending $verb to $url with ",{filter=>\&Dumper,value=>$href});
-        $tx     = $ua->post($url => $href);
+        if ( $href->{size} == 0 ) {
+            $href->{size} = undef;
+        }
+        my $sendjson = encode_json($href);
+        $log->debug("Sending $verb to $url with ",{filter=>\&Dumper,value=>$sendjson});
+        $tx     = $ua->post($url => $sendjson);
     }
 
     if ( my $res = $tx->success ) {
