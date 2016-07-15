@@ -227,11 +227,9 @@ sub do_request {
 
     my $tx;
     if ( $json ) {
-
-	my $newjson = decode_json($json);
-
-	$log->debug("Sending $verb to $url with ",{filter=>\&Dumper,value=>$newjson});
-        $tx     = $ua->$verb($url => {Accept => '*/*'} => json => $newjson);
+        my $newjson = decode_json($json);
+        $log->debug("Sending $verb to $url with ",{filter=>\&Dumper,value=>$newjson});
+        $tx     = $ua->$verb($url => {Accept => '*/*'} => body => $newjson);
     }
     else {
         $tx  = $ua->$verb($url);
