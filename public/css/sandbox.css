@@ -47,6 +47,12 @@ pre {
    border-radius: 4px;
 }
 
+blockquote {
+    height: 500px;
+    overflow-y: auto;
+    display: inline-flex;
+}
+
 /** [contenteditable=true] {border: 1px dashed red;}*/
 * [contenteditable=true] { background-color: rgba(0, 200, 0, 0.1); }
 

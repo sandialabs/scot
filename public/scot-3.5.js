@@ -2640,6 +2640,14 @@ var EntryData = React.createClass({displayName: "EntryData",
     onLoad: function() {
         if (document.getElementById('iframe_'+this.props.id) != undefined){
             if (document.getElementById('iframe_'+this.props.id).contentDocument.readyState === 'complete') {
+                var ifr = $('#iframe_'+this.props.id);
+                var ifrContents = $(ifr).contents();
+                var ifrContentsHead = $(ifrContents).find('head');
+                if (ifrContentsHead) {
+                    if (!$(ifrContentsHead).find('link')) {
+                        ifrContentsHead.append($("<link/>", {rel: "stylesheet", href: 'css/sandbox.css', type: "text/css"}))
+                    }
+                }
                 if (this.props.type != 'entity') {
                     setTimeout(function() {
                         document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
@@ -2650,13 +2658,7 @@ var EntryData = React.createClass({displayName: "EntryData",
                                 this.setState({height:newheight});
                             }
                         }.bind(this))
-                    }.bind(this)); 
-                }
-                var ifr = $('#iframe_'+this.props.id);
-                var ifrContents = $(ifr).contents();
-                var ifrContentsHead = $(ifrContents).find('head');
-                if (ifrContentsHead) {
-                    ifrContentsHead.append($("<link/>", {rel: "stylesheet", href: 'css/sandbox.css', type: "text/css"}))
+                    }.bind(this),250); 
                 }
             } else {
                 setTimeout(this.onLoad,0);
