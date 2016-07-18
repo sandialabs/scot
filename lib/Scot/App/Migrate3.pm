@@ -1,4 +1,4 @@
-package Scot::App::Migrate2;
+package Scot::App::Migrate3;
 
 use lib '../../../lib';
 
@@ -283,7 +283,7 @@ sub get_max_id {
     my $type    = shift;    # new or legacy
     my $col     = shift;
     my $db      = ($type eq "legacy") ? 'legacydb' : 'db';
-    my $nc      = $self->$db->collection($col);
+    my $nc      = $self->$db->get_collection($col);
     my $idfield = ($type eq "legacy") ? $self->lookup_idfield($col) : 'id';
     my $cursor  = $nc->find();
     $cursor->sort({$idfield => -1});
@@ -314,7 +314,7 @@ sub has_been_migrated {
     my $type    = shift;
     my $id      = shift;
     my $log     = $self->env->log;
-    my $newcol  = $self->db->collection($type);
+    my $newcol  = $self->db->get_collection($type);
     my $newitem = $newcol->find_one({id => $id});
 
     if ( $newitem ) {
@@ -526,7 +526,7 @@ sub xform_entry {
 
     $href->{summary} = $self->is_summary($href);
 
-    my $col = $self->db->collection('entry');
+    my $col = $self->db->get_collection('entry');
     $col->insert_one($href);
     $self->es->index("entry", $href);
     my   @links;
@@ -588,7 +588,7 @@ sub is_summary {
 
 sub xform_event {
     my $self    = shift;
-    my $col     = $self->db->collection('event');
+    my $col     = $self->db->get_collection('event');
     my $href    = shift;
     my $verbose = shift;
     my $env     = $self->env;
@@ -632,7 +632,7 @@ sub xform_event {
 
 sub xform_incident {
     my $self    = shift;
-    my $col     = $self->db->collection('incident');
+    my $col     = $self->db->get_collection('incident');
     my $href    = shift;
     my $verbose = shift;
     my $env     = $self->env;
@@ -672,7 +672,7 @@ sub xform_incident {
 
 sub xform_handler {
     my $self    = shift;
-    my $col     = $self->db->collection('handler');
+    my $col     = $self->db->get_collection('handler');
     my $href    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
@@ -699,7 +699,7 @@ sub xform_handler {
 
 sub xform_file {
     my $self    = shift;
-    my $col     = $self->db->collection('file');
+    my $col     = $self->db->get_collection('file');
     my $href    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
@@ -718,7 +718,7 @@ sub xform_file {
 
 sub xform_user {
     my $self    = shift;
-    my $col     = $self->db->collection('user');
+    my $col     = $self->db->get_collection('user');
     my $href    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
@@ -735,7 +735,7 @@ sub xform_user {
 
 sub xform_guide {
     my $self    = shift;
-    my $col     = $self->db->collection('guide');
+    my $col     = $self->db->get_collection('guide');
     my $href    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
@@ -1218,6 +1218,23 @@ sub lookup_idfield {
     );
 
     return $map{$collection};
+}
+
+sub lookup_legacy_colname {
+    my $self    = shift;
+    my $type    = shift;
+    my %map     = (
+        alert       => "alerts",
+        alertgroup  => "alertgroups",
+        event       => "events",
+        entry       => "entries",
+        incident    => "incidents",
+        handler     => "incident_handler",
+        guide       => "guides",
+        user        => "users",
+        file        => "files",
+    );
+    return $map{$type};
 }
 
 sub get_pct {
