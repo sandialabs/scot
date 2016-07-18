@@ -15,6 +15,7 @@ to a SCOT 3.5 database
 
 use Scot::Env;
 use Scot::Util::EntityExtractor;
+use Scot::Util::ElasticSearch;
 use MongoDB;
 use Data::Dumper;
 use Try::Tiny;
@@ -201,7 +202,7 @@ sub migrate {
         
         if ( $opts->{verbose} ) {
             my $stats   = $self->calculate_stats($new_col_type, $item, $elapsed, $remaining_docs);
-            $self->output_post_status($new_col_type, $item, $idfield, $stats);
+            $self->output_post_status($new_col_type, $item, $stats);
         }
     }
     $self->update_last_id($new_col_type);
@@ -226,14 +227,16 @@ sub output_pre_status {
     }
 }
 
-sub ouput_post_status {
+sub output_post_status {
     my $self    = shift;
     my $type    = shift;
     my $item    = shift;
-    my $idfield = shift;
     my $stats   = shift;
 
-    print "[$type ".$item->{$idfield}."] ". $stats->{elapsed}. "secs - ";
+    print "[$type ";
+    print $item->{id};
+    print "] ";
+    print $stats->{elapsed}. "secs - ";
 
     if ( $type eq "alertgroup" ) {
         my $format = sprintf("%5s", $stats->{alertcount});
