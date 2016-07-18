@@ -1,4 +1,4 @@
-package Scot::App::Migrate2;
+package Scot::App::Migrate3;
 
 use lib '../../../lib';
 
@@ -15,6 +15,7 @@ to a SCOT 3.5 database
 
 use Scot::Env;
 use Scot::Util::EntityExtractor;
+use Scot::Util::ElasticSearch;
 use MongoDB;
 use Data::Dumper;
 use Try::Tiny;
@@ -40,6 +41,26 @@ has env => (
 sub _get_env {
     return Scot::Env->instance;
 }
+
+has es => (
+    is       => 'ro',
+    isa      => 'Scot::Util::ElasticSearch',
+    required => 1,
+    lazy     => 1,
+    builder  => '_get_es',
+);
+
+sub _get_es {
+    my $self = shift;
+    my $log  = $self->env->log;
+    return Scot::Util::ElasticSearch->new({
+        log     => $log,
+        config  => {
+            nodes   => [ qw(localhost:9200 127.0.0.1:9200) ],
+        },
+    });
+}
+
 
 has extractor   => (
     is       => 'ro',
@@ -181,7 +202,7 @@ sub migrate {
         
         if ( $opts->{verbose} ) {
             my $stats   = $self->calculate_stats($new_col_type, $item, $elapsed, $remaining_docs);
-            $self->output_post_status($new_col_type, $item, $idfield, $stats);
+            $self->output_post_status($new_col_type, $item, $stats);
         }
     }
     $self->update_last_id($new_col_type);
@@ -206,14 +227,16 @@ sub output_pre_status {
     }
 }
 
-sub ouput_post_status {
+sub output_post_status {
     my $self    = shift;
     my $type    = shift;
     my $item    = shift;
-    my $idfield = shift;
     my $stats   = shift;
 
-    print "[$type ".$item->{$idfield}."] ". $stats->{elapsed}. "secs - ";
+    print "[$type ";
+    print $item->{id};
+    print "] ";
+    print $stats->{elapsed}. "secs - ";
 
     if ( $type eq "alertgroup" ) {
         my $format = sprintf("%5s", $stats->{alertcount});
@@ -283,7 +306,7 @@ sub get_max_id {
     my $type    = shift;    # new or legacy
     my $col     = shift;
     my $db      = ($type eq "legacy") ? 'legacydb' : 'db';
-    my $nc      = $self->$db->collection($col);
+    my $nc      = $self->$db->get_collection($col);
     my $idfield = ($type eq "legacy") ? $self->lookup_idfield($col) : 'id';
     my $cursor  = $nc->find();
     $cursor->sort({$idfield => -1});
@@ -314,7 +337,7 @@ sub has_been_migrated {
     my $type    = shift;
     my $id      = shift;
     my $log     = $self->env->log;
-    my $newcol  = $self->db->collection($type);
+    my $newcol  = $self->db->get_collection($type);
     my $newitem = $newcol->find_one({id => $id});
 
     if ( $newitem ) {
@@ -526,7 +549,7 @@ sub xform_entry {
 
     $href->{summary} = $self->is_summary($href);
 
-    my $col = $self->db->collection('entry');
+    my $col = $self->db->get_collection('entry');
     $col->insert_one($href);
     $self->es->index("entry", $href);
     my   @links;
@@ -588,7 +611,7 @@ sub is_summary {
 
 sub xform_event {
     my $self    = shift;
-    my $col     = $self->db->collection('event');
+    my $col     = $self->db->get_collection('event');
     my $href    = shift;
     my $verbose = shift;
     my $env     = $self->env;
@@ -632,7 +655,7 @@ sub xform_event {
 
 sub xform_incident {
     my $self    = shift;
-    my $col     = $self->db->collection('incident');
+    my $col     = $self->db->get_collection('incident');
     my $href    = shift;
     my $verbose = shift;
     my $env     = $self->env;
@@ -672,7 +695,7 @@ sub xform_incident {
 
 sub xform_handler {
     my $self    = shift;
-    my $col     = $self->db->collection('handler');
+    my $col     = $self->db->get_collection('handler');
     my $href    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
@@ -699,7 +722,7 @@ sub xform_handler {
 
 sub xform_file {
     my $self    = shift;
-    my $col     = $self->db->collection('file');
+    my $col     = $self->db->get_collection('file');
     my $href    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
@@ -718,7 +741,7 @@ sub xform_file {
 
 sub xform_user {
     my $self    = shift;
-    my $col     = $self->db->collection('user');
+    my $col     = $self->db->get_collection('user');
     my $href    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
@@ -735,7 +758,7 @@ sub xform_user {
 
 sub xform_guide {
     my $self    = shift;
-    my $col     = $self->db->collection('guide');
+    my $col     = $self->db->get_collection('guide');
     my $href    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
@@ -1218,6 +1241,23 @@ sub lookup_idfield {
     );
 
     return $map{$collection};
+}
+
+sub lookup_legacy_colname {
+    my $self    = shift;
+    my $type    = shift;
+    my %map     = (
+        alert       => "alerts",
+        alertgroup  => "alertgroups",
+        event       => "events",
+        entry       => "entries",
+        incident    => "incidents",
+        handler     => "incident_handler",
+        guide       => "guides",
+        user        => "users",
+        file        => "files",
+    );
+    return $map{$type};
 }
 
 sub get_pct {
