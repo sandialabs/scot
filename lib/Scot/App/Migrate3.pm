@@ -41,6 +41,26 @@ sub _get_env {
     return Scot::Env->instance;
 }
 
+has es => (
+    is       => 'ro',
+    isa      => 'Scot::Util::ElasticSearch',
+    required => 1,
+    lazy     => 1,
+    builder  => '_get_es',
+);
+
+sub _get_es {
+    my $self = shift;
+    my $log  = $self->env->log;
+    return Scot::Util::ElasticSearch->new({
+        log     => $log,
+        config  => {
+            nodes   => [ qw(localhost:9200 127.0.0.1:9200) ],
+        },
+    });
+}
+
+
 has extractor   => (
     is       => 'ro',
     isa      => 'Scot::Util::EntityExtractor',
