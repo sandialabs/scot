@@ -15,6 +15,7 @@ use Log::Log4perl;
 use Log::Log4perl::Level;
 use Log::Log4perl::Appender;
 use Log::Log4perl::Layout::PatternLayout;
+use Search::Elasticsearch;
 
 =head1 Name
 
@@ -136,9 +137,9 @@ sub _get_base_url {
     my $port        = $self->serverport;
     
     if ( $port != 443 ) {
-        return sprintf("%s://%s:%s/_search/", $proto, $servername, $port);
+        return sprintf("%s://%s:%s/_search", $proto, $servername, $port);
     }
-    return sprintf("%s://%s/_search/", $proto, $servername);
+    return sprintf("%s://%s/_search", $proto, $servername);
 }
 
 has ua  => (
@@ -155,43 +156,9 @@ sub _get_useragent {
     my $ua;
     my $log     = $self->log;
 
-    $log->debug("Building UserAgent, ");
-    $log->debug("    username = ".$self->username);
-    $log->debug("    password = ".$self->password);
+    $log->trace("No Authentication.");
+    $ua = Mojo::UserAgent->new();
 
-
-    my $user    = $self->username;
-    my $url;
-
-#    if ( $user ne ' ' ) {
-#        $log->trace("Building UA for Basic Authentication");
-#        $ua = Mojo::UserAgent->new();
-#        $url = sprintf "%s://%s:%s@%s/scot/api/v2/whoami",
-#                    $self->proto,
-#                    $self->username,
-#                    $self->password,
-#                    $self->servername;
-#    }
-#    else {
-        $log->trace("No Authentication.");
-        $ua = Mojo::UserAgent->new();
-        $url = sprintf "%s://%s/_search", $self->proto, $self->servername;
-#    }
-
-    $log->trace("Getting $url");
-
-    my $tx  = $ua->get($url);   # this simple get will send basic auth info
-                                # and cache digest in $ua for later use
-
-    if ( my $res = $tx->success ) {
-        $log->debug("$user Authenticated to ES");
-        $log->debug("got: ", {filter=>\&Dumper, value=>$res});
-    }
-    else {
-        $log->error("$user FAILED Authentication to ES!");
-        # should be return undef?  should we retry?
-        $log->error({filter=>\&Dumper, value=>$tx});
-    }
     return $ua;
 }
 
@@ -205,11 +172,11 @@ sub check_if_forked {
     }
 }
 
-sub do_request {
+sub do_request_mojo {
     my $self    = shift;
-    my $verb    = lc(shift); 	# get, put, post, delete
-    my $suffix  = shift; 	# stuff after /scot/api/v2/
-    my $data    = shift; # json or params or both being sent with request
+    my $verb    = lc(shift); 	    # get, put, post, delete
+    my $suffix  = shift; 	        # stuff after /scot/api/v2/
+    my $data    = shift;            # json or params or both being sent with request
     my $log     = $self->log;
     my $ua      = $self->ua;
     my $url     = $self->ua_base_url ;#. $suffix;
@@ -218,29 +185,22 @@ sub do_request {
 
     my ($params, $json) = $self->extract_pj($data);
 
-#    $log->debug("Params = ",{filter=>\&Dumper, value=>$params}) if ($params);
-    # $log->debug("Json   = ",{filter=>\&Dumper, value => $json}) if ($json);
-
-#    if ( $params ) {
-#        $url    = $url . "?" . $params;
-#    }
-
     my $tx;
+
     if ( $json ) {
-
-	my $newjson = decode_json($json);
-
-	$log->debug("Sending $verb to $url with ",{filter=>\&Dumper,value=>$newjson});
-        $tx     = $ua->$verb($url => json => $newjson);
-    }
-    else {
-        $tx  = $ua->$verb($url);
+        my $href = decode_json($json);
+        if ( $href->{size} == 0 ) {
+            $href->{size} = undef;
+        }
+        my $sendjson = encode_json($href);
+        $log->debug("Sending $verb to $url with ",{filter=>\&Dumper,value=>$sendjson});
+        $tx     = $ua->post($url => $sendjson);
     }
 
     if ( my $res = $tx->success ) {
         $log->debug("Successful $verb");
-	my $datahref = $res->json;
-	$log->debug("response is ",{filter=>\&Dumper, value => $res});
+        my $datahref = $res->json;
+        # $log->debug("response is ",{filter=>\&Dumper, value => $res});
         $log->debug("datahref is ",{filter=>\&Dumper, value => $datahref});
         return $datahref;
     }
@@ -261,6 +221,8 @@ sub extract_pj {
     my $data    = shift;
     my $params;
     my $json;
+
+    $self->log->debug("data is ",{filter=>\&Dumper, value=>$data});
 
     if ( $data->{params} ) {
         $params = $data->{params};
