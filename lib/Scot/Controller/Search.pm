@@ -52,7 +52,7 @@ sub search {
 
     $log->debug("Search Params: ",{filter=>\&Dumper, value=>$params});
 
-    my $response = $esua->do_request(  # ... href of json returned.
+    my $response = $esua->do_request_mojo(  # ... href of json returned.
         'POST',
         '',
         {
@@ -60,6 +60,12 @@ sub search {
             json    => $body,
         },
     ); 
+    #my $response = $esua->do_request_esclient(  # ... href of json returned.
+    #    {
+    #        params  => $params,
+    #        json    => $body,
+    #    },
+    # );
 
     $log->debug("Got Response: ", {filter=>\&Dumper, value=>$response});
 
