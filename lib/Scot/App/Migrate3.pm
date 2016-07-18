@@ -167,6 +167,8 @@ sub migrate {
 
     my $max_already_converted_id    = $self->get_max_id('new',$new_col_type);
 
+    print "Max already converted id === $max_already_converted_id\n";
+
     my $legacy_colname      = $self->lookup_legacy_colname($new_col_type);
     my $legacy_collection   = $self->legacydb->get_collection($legacy_colname);
     my $legacy_cursor       = $legacy_collection->find({
@@ -178,6 +180,8 @@ sub migrate {
     my $migrated_docs   = 0;
     my $total_docs      = $remaining_docs;
     my $total_time      = 0;
+
+    print "$remaining_docs Remain to convert\n";
 
     ITEM:
     while ( my $item = $self->get_next_item($legacy_cursor) ) {
