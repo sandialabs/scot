@@ -76,7 +76,7 @@ var Search = React.createClass({
                         React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
                         React.createElement('div', {className: 'column owner'}, 'Snippet(s)')))
                             )), 
-                            React.createElement(Hits, {hitsPerPage: 10, itemComponent: Results, mod: 'sk-hits-list', highlightFields:['id']})),
+                            React.createElement(Hits, {hitsPerPage: 10, itemComponent: Results, mod: 'sk-hits-list', highlightFields:['subject']})),
                             React.createElement(Pagination, {showNumbers: true}))
                             
         )))
