@@ -7,6 +7,10 @@
  * Basic styles, good for a large display. Everything fits in
  * one row, no wrapping. All text based cells grow equally.
  */
+.search_results {
+    z-index : 1;
+
+}
 .table-row {
   display: flex;
   display: -webkit-flex;
