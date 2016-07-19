@@ -1,4 +1,4 @@
-var searchboxtext = ''
+var searchboxtext = false
 var whoami = '';
 var activemqwho = ''
 var activemqid = ''
