@@ -5542,6 +5542,9 @@ module.exports = React.createClass({displayName: "exports",
         ));
     },
     stopdrag: function(e){
+        $('iframe').each(function(index,ifr){
+        $(ifr).removeClass('pointerEventsOff')
+        }) 
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
@@ -6586,6 +6589,9 @@ module.exports = React.createClass({displayName: "exports",
         ));
     },
     stopdrag: function(e){
+        $('iframe').each(function(index,ifr){
+        $(ifr).removeClass('pointerEventsOff')
+        }) 
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
@@ -7641,6 +7647,9 @@ module.exports = React.createClass({displayName: "exports",
         } */
     },
     stopdrag: function(e){
+        $('iframe').each(function(index,ifr){
+        $(ifr).removeClass('pointerEventsOff')
+        })
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
@@ -7984,6 +7993,9 @@ module.exports = React.createClass({displayName: "exports",
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
     },
     stopdrag: function(e){
+        $('iframe').each(function(index,ifr){
+        $(ifr).removeClass('pointerEventsOff')
+        })
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
@@ -9532,6 +9544,9 @@ module.exports = React.createClass({displayName: "exports",
         } */
     },
     stopdrag: function(e){
+        $('iframe').each(function(index,ifr){
+        $(ifr).removeClass('pointerEventsOff')
+        })
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
@@ -10232,6 +10247,9 @@ module.exports = React.createClass({displayName: "exports",
             $('.paging').css('display', 'none')
         }
         */
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
@@ -10564,6 +10582,9 @@ module.exports = React.createClass({displayName: "exports",
         } */
     },
     stopdrag: function(e){
+        $('iframe').each(function(index,ifr){
+        $(ifr).removeClass('pointerEventsOff')
+        })
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
