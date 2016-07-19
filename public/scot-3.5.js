@@ -1173,7 +1173,7 @@ var Search = React.createClass({displayName: "Search",
                         React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
                         React.createElement('div', {className: 'column owner'}, 'Snippet(s)')))
                             )), 
-                            React.createElement(Hits, {hitsPerPage: 10, itemComponent: Results, mod: 'sk-hits-list', highlightFields:['id']})),
+                            React.createElement(Hits, {hitsPerPage: 10, itemComponent: Results, mod: 'sk-hits-list', highlightFields:['subject']})),
                             React.createElement(Pagination, {showNumbers: true}))
                             
         )))
@@ -5213,6 +5213,9 @@ module.exports = React.createClass({displayName: "exports",
             $('.paging').css('display', 'none')
         }
         */
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
@@ -6183,6 +6186,10 @@ module.exports = React.createClass({displayName: "exports",
             $('.paging').css('display', 'none')
         }
         */
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
+
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
@@ -7288,6 +7295,9 @@ module.exports = React.createClass({displayName: "exports",
             $('.paging').css('display', 'none')
         }
         */
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
@@ -7892,6 +7902,9 @@ module.exports = React.createClass({displayName: "exports",
             $('.paging').css('display', 'none')
         }
         */
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
@@ -9103,6 +9116,9 @@ module.exports = React.createClass({displayName: "exports",
             $('.paging').css('display', 'none')
         }
         */
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
