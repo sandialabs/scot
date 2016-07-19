@@ -113,6 +113,14 @@ var EntityDetail = React.createClass({
         document.documentElement.removeEventListener('mousemove', this.doDrag, false);    document.documentElement.removeEventListener('mouseup', this.stopDrag, false);
         this.allowiFrameMouseEvent();
     },
+    moveDivInit: function(e) {
+        document.documentElement.addEventListener('mouseup', this.moveDivStop,false);
+        this.blockiFrameMouseEvent();
+    },
+    moveDivStop: function(e) {
+        document.documentElement.removeEventListener('mouseup', this.moveDivStop, false);
+        this.allowiFrameMouseEvent();
+    },
     blockiFrameMouseEvent: function() {
         $('iframe').each(function(index,ifr){
             $(ifr).addClass('pointerEventsOff')
@@ -130,7 +138,7 @@ var EntityDetail = React.createClass({
             entityWidth = entityPopUpWidth;
         }*/
         return (
-            <Draggable handle="#handle" onMouseDown={this.blockiFrameMouseEvent} onMouseUp={this.allowiFrameMouseEvent}>
+            <Draggable handle="#handle" onMouseDown={this.moveDivInit}>
                 <div id="dragme" className='box react-draggable entityPopUp' style={{height:this.state.entityHeight,width:this.state.entityWidth}}> 
                     <div id="entity_detail_container" style={{height: '100%', flexFlow: 'column', display: 'flex'}}>
                         <div id='handle' style={{width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarToggle}/></span></div></div>
