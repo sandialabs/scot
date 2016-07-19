@@ -8,34 +8,78 @@ var TermQuery           = require('../../../node_modules/searchkit').TermQuery;
 var BoolShould          = require('../../../node_modules/searchkit').BoolShould;
 var LayoutBody          = require('../../../node_modules/searchkit').LayoutBody;
 var LayoutResults       = require('../../../node_modules/searchkit').LayoutResults;
+var Pagination          = require('../../../node_modules/searchkit').Pagination;
 const searchkit         = new SearchkitManager("/scot/api/v2/search/")
-
+var type = ''
+var id = 0
 class Results extends React.Component{
     render() {
-        console.log(this.props)
+        if(this.props.result._type == 'entry'){
+            type = this.props.result._source.target.type
+            id   = this.props.result._source.target.id
+            if(type == 'alert'){
+                type  = 'alertgroup'
+                id    = 7
+            }
+        }
+        else if(this.props.result._type == 'alert'){
+            type    = 'alertgroup'
+            id      = this.props.result._source.alertgroup 
+        }
+        else {
+            id      = this.props.result._id
+            type    = this.props.result._type
+        }
         return (
+            searchboxtext ? 
             React.createElement('div', null,
-                React.createElement('span', {style: {top: '0px', 'padding-top': '35px !important', width: '600%', left: '-500%', 'z-index': '-999', position: 'absolute', 'background-color': 'white', 'padding-left': '10px', overflow: 'auto', color: 'black', resize: 'vertical', display: 'inline', height: '508px'}}))
+                React.createElement('div', {style: {display: 'inline-flex'}},
+                        React.createElement("div", {className: "wrapper attributes "},
+                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                        React.createElement('a',   {href: '/#/'+type+'/' + id, className: 'column owner'}, id))),
+                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                        React.createElement('a',   {href: '/#/'+type+'/' + id, className: 'column owner'}, type))),
+                        React.createElement('div', {className: 'wrapper title-comment-module-reporter'},
+                        React.createElement('div', {className: 'wrapper title-comment'},
+                        React.createElement('a',   {style: {width: '1200px'},href: '/#/'+type+'/' + id, className: 'column title'}, this.props.result._source.body_plain)))))) : null
     )
     }
 }
 
 var Search = React.createClass({
 	render: function(){
-        console.log(searchboxtext)
         return (
                 React.createElement(SearchkitProvider, {searchkit: searchkit},
                     React.createElement('div', {className: 'search'},
                     React.createElement('div', {className: 'search_query'},
                         React.createElement(SearchBox, {autofocus: true, searchOnChange: true})
                             ),
-                            searchboxtext != '' ?
-                            React.createElement('div', {className: 'search_results'},
-                            React.createElement(Hits, {itemComponent: Results, mod: 'sk-hits-grid'})
-                            ) : null
-                       )
-                )
-        )
+                            React.createElement('div', {style: {color: 'black', 'background-color': 'white',display: 'none', width: '600%', height: '200px', position: 'absolute', 'overflow-y': 'auto', resize: 'vertical', top: '55px', border: '1px solid #DDD', left: ''},className: 'search_results'},
+               React.createElement("div", {className: "container-fluid2", id: 'fluid2', style: {/*'max-width': '915px',*//*'min-width': '650px',*/ width: '100%', 'max-height': '100%', 'margin-left': '0px',height: '100%', 'overflow-y': 'auto', 'overflow-x' : 'hidden','padding-left':'5px'}},
+                    React.createElement("div", {className: "table-row header "},
+                        React.createElement("div", {className: "wrapper attributes "},                        
+                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                        React.createElement('div', {className: 'column owner'}, 'ID'))),
+
+                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                        React.createElement('div', {className: 'column owner'}, 'Type'))),
+
+                        React.createElement('div', {className: 'wrapper title-comment-module-reporter'},
+                        React.createElement('div', {className: 'wrapper title-comment'},
+                        React.createElement('div', {className: 'column title'}, 'Snippet(s)'))),
+
+                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                        React.createElement('div', {className: 'column owner'}, 'Snippet(s)')))
+                            )), 
+                            React.createElement(Hits, {hitsPerPage: 10, itemComponent: Results, mod: 'sk-hits-list', highlightFields:['id']})),
+                            React.createElement(Pagination, {showNumbers: true}))
+                            
+        )))
 	}
 })
 

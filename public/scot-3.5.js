@@ -1105,34 +1105,78 @@ var TermQuery           = require('../../../node_modules/searchkit').TermQuery;
 var BoolShould          = require('../../../node_modules/searchkit').BoolShould;
 var LayoutBody          = require('../../../node_modules/searchkit').LayoutBody;
 var LayoutResults       = require('../../../node_modules/searchkit').LayoutResults;
+var Pagination          = require('../../../node_modules/searchkit').Pagination;
 const searchkit         = new SearchkitManager("/scot/api/v2/search/")
-
+var type = ''
+var id = 0
 class Results extends React.Component{
     render() {
-        console.log(this.props)
+        if(this.props.result._type == 'entry'){
+            type = this.props.result._source.target.type
+            id   = this.props.result._source.target.id
+            if(type == 'alert'){
+                type  = 'alertgroup'
+                id    = 7
+            }
+        }
+        else if(this.props.result._type == 'alert'){
+            type    = 'alertgroup'
+            id      = this.props.result._source.alertgroup 
+        }
+        else {
+            id      = this.props.result._id
+            type    = this.props.result._type
+        }
         return (
+            searchboxtext ? 
             React.createElement('div', null,
-                React.createElement('span', {style: {top: '0px', 'padding-top': '35px !important', width: '600%', left: '-500%', 'z-index': '-999', position: 'absolute', 'background-color': 'white', 'padding-left': '10px', overflow: 'auto', color: 'black', resize: 'vertical', display: 'inline', height: '508px'}}))
+                React.createElement('div', {style: {display: 'inline-flex'}},
+                        React.createElement("div", {className: "wrapper attributes "},
+                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                        React.createElement('a',   {href: '/#/'+type+'/' + id, className: 'column owner'}, id))),
+                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                        React.createElement('a',   {href: '/#/'+type+'/' + id, className: 'column owner'}, type))),
+                        React.createElement('div', {className: 'wrapper title-comment-module-reporter'},
+                        React.createElement('div', {className: 'wrapper title-comment'},
+                        React.createElement('a',   {style: {width: '1200px'},href: '/#/'+type+'/' + id, className: 'column title'}, this.props.result._source.body_plain)))))) : null
     )
     }
 }
 
 var Search = React.createClass({displayName: "Search",
 	render: function(){
-        console.log(searchboxtext)
         return (
                 React.createElement(SearchkitProvider, {searchkit: searchkit},
                     React.createElement('div', {className: 'search'},
                     React.createElement('div', {className: 'search_query'},
                         React.createElement(SearchBox, {autofocus: true, searchOnChange: true})
                             ),
-                            searchboxtext != '' ?
-                            React.createElement('div', {className: 'search_results'},
-                            React.createElement(Hits, {itemComponent: Results, mod: 'sk-hits-grid'})
-                            ) : null
-                       )
-                )
-        )
+                            React.createElement('div', {style: {color: 'black', 'background-color': 'white',display: 'none', width: '600%', height: '200px', position: 'absolute', 'overflow-y': 'auto', resize: 'vertical', top: '55px', border: '1px solid #DDD', left: ''},className: 'search_results'},
+               React.createElement("div", {className: "container-fluid2", id: 'fluid2', style: {/*'max-width': '915px',*//*'min-width': '650px',*/ width: '100%', 'max-height': '100%', 'margin-left': '0px',height: '100%', 'overflow-y': 'auto', 'overflow-x' : 'hidden','padding-left':'5px'}},
+                    React.createElement("div", {className: "table-row header "},
+                        React.createElement("div", {className: "wrapper attributes "},                        
+                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                        React.createElement('div', {className: 'column owner'}, 'ID'))),
+
+                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                        React.createElement('div', {className: 'column owner'}, 'Type'))),
+
+                        React.createElement('div', {className: 'wrapper title-comment-module-reporter'},
+                        React.createElement('div', {className: 'wrapper title-comment'},
+                        React.createElement('div', {className: 'column title'}, 'Snippet(s)'))),
+
+                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                        React.createElement('div', {className: 'column owner'}, 'Snippet(s)')))
+                            )), 
+                            React.createElement(Hits, {hitsPerPage: 10, itemComponent: Results, mod: 'sk-hits-list', highlightFields:['id']})),
+                            React.createElement(Pagination, {showNumbers: true}))
+                            
+        )))
 	}
 })
 
@@ -86777,8 +86821,15 @@ var SearchBox = (function (_super) {
         this.searchQuery(this.getValue());
     };
     SearchBox.prototype.searchQuery = function (query) {
-        searchboxtext = query
-        var shouldResetOtherState = false;
+       if(query != ''){
+        searchboxtext = true
+        $('.search_results').css('display', 'block')
+       }
+       else {
+        searchboxtext = false
+        $('.search_results').css('display', 'none')
+       }
+       var shouldResetOtherState = false;
         this.accessor.setQueryString(query, shouldResetOtherState);
         var now = +new Date;
         var newSearch = now - this.lastSearchMs <= 2000;
@@ -88110,16 +88161,18 @@ var SearchkitManager = (function () {
         }
         this._search();
         if (this.options.useHistory) {
+            /*
             var historyMethod = (replaceState) ?
                 this.history.replace : this.history.push;
             historyMethod({ pathname: window.location.pathname, query: this.state });
+            */
         }
     };
     SearchkitManager.prototype.buildSearchUrl = function (extraParams) {
         if (extraParams === void 0) { extraParams = {}; }
         var params = defaults(extraParams, this.state || this.accessors.getState());
         var queryString = qs.stringify(params, { encode: true });
-        return window.location.pathname + '?' + queryString;
+        //return window.location.pathname + '?' + queryString;
     };
     SearchkitManager.prototype.reloadSearch = function () {
         delete this.query;
@@ -88202,6 +88255,7 @@ var SearchkitManager = (function () {
     return SearchkitManager;
 }());
 exports.SearchkitManager = SearchkitManager;
+
 
 },{"./AccessorManager":1158,"./SearchRequest":1159,"./SearchkitVersion":1161,"./accessors":1185,"./history":1186,"./query":1195,"./support":1239,"./transport":1243,"es6-promise":128,"lodash/after":1425,"lodash/constant":1431,"lodash/defaults":1433,"lodash/get":1440,"lodash/identity":1444,"lodash/isEqual":1452,"lodash/map":1467,"qs":1498}],1161:[function(require,module,exports){
 "use strict";
@@ -89414,12 +89468,13 @@ var StatefulAccessor = (function (_super) {
         this.state = this.state.clear();
     };
     StatefulAccessor.prototype.urlWithState = function (state) {
-        return this.searchkit.buildSearchUrl((_a = {}, _a[this.urlKey] = state, _a));
-        var _a;
+    //return this.searchkit.buildSearchUrl((_a = {}, _a[this.urlKey] = state, _a));
+    //var _a;
     };
     return StatefulAccessor;
 }(Accessor_1.Accessor));
 exports.StatefulAccessor = StatefulAccessor;
+
 
 },{"./Accessor":1162}],1183:[function(require,module,exports){
 "use strict";
