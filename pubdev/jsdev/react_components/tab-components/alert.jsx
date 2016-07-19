@@ -507,6 +507,9 @@ module.exports = React.createClass({
         ));
     },
     stopdrag: function(e){
+        $('iframe').each(function(index,ifr){
+        $(ifr).removeClass('pointerEventsOff')
+        }) 
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
