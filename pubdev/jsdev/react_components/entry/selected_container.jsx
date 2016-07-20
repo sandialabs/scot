@@ -27,7 +27,7 @@ var SelectedContainer = React.createClass({
     render: function() {
         var datarows = [];
         for (i=0; i < this.props.ids.length; i++) { 
-            datarows.push(<SelectedHeader key={this.props.ids[i]} id={this.props.ids[i]} type={this.props.type} toggleEventDisplay={this.props.viewEvent} taskid={this.props.taskid}/>); 
+            datarows.push(<SelectedHeader key={this.props.ids[i]} id={this.props.ids[i]} type={this.props.type} toggleEventDisplay={this.props.viewEvent} taskid={this.props.taskid} alertPreSelectedId={this.props.alertPreSelectedId}/>); 
         }
         var width = this.state.width;
         return (
