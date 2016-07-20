@@ -2087,7 +2087,7 @@ var SelectedContainer = React.createClass({displayName: "SelectedContainer",
     render: function() {
         var datarows = [];
         for (i=0; i < this.props.ids.length; i++) { 
-            datarows.push(React.createElement(SelectedHeader, {key: this.props.ids[i], id: this.props.ids[i], type: this.props.type, toggleEventDisplay: this.props.viewEvent, taskid: this.props.taskid})); 
+            datarows.push(React.createElement(SelectedHeader, {key: this.props.ids[i], id: this.props.ids[i], type: this.props.type, toggleEventDisplay: this.props.viewEvent, taskid: this.props.taskid, alertPreSelectedId: this.props.alertPreSelectedId})); 
         }
         var width = this.state.width;
         return (
@@ -2245,7 +2245,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         return (
             React.createElement("div", {key: id, className: divClass, style: {height:height}}, 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.aType, targetid: this.props.aID, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB})) : null, 
-                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData}) : React.createElement("span", null, "Loading..."), 
+                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId}) : React.createElement("span", null, "Loading..."), 
                 this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, type: this.props.type, id: this.props.id}): null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null
             )       
@@ -2264,7 +2264,7 @@ var EntryIterator = React.createClass({displayName: "EntryIterator",
                 rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id}));
             }.bind(this));
         } else {
-            rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected}));
+            rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected, alertPreSelectedId: this.props.alertPreSelectedId}));
         }
         return (
             React.createElement("div", null, 
@@ -2295,7 +2295,7 @@ var AlertParent = React.createClass({displayName: "AlertParent",
                 this.rowClicked(null,null,'all',null);
                 event.preventDefault()
             }
-        }.bind(this)) 
+        }.bind(this))
     },
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();
@@ -2376,7 +2376,7 @@ var AlertParent = React.createClass({displayName: "AlertParent",
                     dataFlair = items[z].data;
                 }
                 
-                body.push(React.createElement(AlertBody, {index: z, data: items[z], dataFlair: dataFlair, activeIndex: this.state.activeIndex, rowClicked: this.rowClicked, alertSelected: this.props.alertSelected, allSelected: this.state.allSelected}))
+                body.push(React.createElement(AlertBody, {index: z, data: items[z], dataFlair: dataFlair, activeIndex: this.state.activeIndex, rowClicked: this.rowClicked, alertSelected: this.props.alertSelected, allSelected: this.state.allSelected, alertPreSelectedId: this.props.alertPreSelectedId}))
             }
             var search = null;
             if (items[0].data_with_flair != undefined) {
@@ -2461,7 +2461,12 @@ var AlertBody = React.createClass({displayName: "AlertBody",
             }.bind(this))
             this.setState({promoteFetch:true})
         }
-        
+        //Pre Selects the alert in an alertgroup if alertPreSelectedId is passed to the component
+        if (this.props.alertPreSelectedId != null) {
+            if (this.props.alertPreSelectedId == this.props.data.id) {
+                this.props.rowClicked(this.props.data.id,this.props.index,'',this.props.data.status);
+            }
+        }
     },
     componentWillReceiveProps: function() {
         if (this.state.promoteFetch == false) {
@@ -3129,7 +3134,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 ), 
                 this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
 
-                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, headerData: this.state.headerData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, linkWarningToggle: this.linkWarningToggle, entryToolbar: this.state.entryToolbar, isAlertSelected: this.state.alertSelected, aType: this.state.aType, aID: this.state.aID})
+                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, headerData: this.state.headerData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, linkWarningToggle: this.linkWarningToggle, entryToolbar: this.state.entryToolbar, isAlertSelected: this.state.alertSelected, aType: this.state.aType, aID: this.state.aID, alertPreSelectedId: this.props.alertPreSelectedId})
             )
         )
     }
