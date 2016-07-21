@@ -5075,6 +5075,7 @@ var sortarray = {}
 var names = 'none'
 var getColumn;
 var tab;
+var highlight = false
 var datasource
 var ids = []
 var stage = false
@@ -5193,24 +5194,26 @@ module.exports = React.createClass({displayName: "exports",
                 finalarray[key]["classname"] = 'table-row rowodd'
             }
 	    })
-        this.setState({alertPreSelectedId: 0, scrollheight: height, idsarray: array, objectarray: finalarray,totalcount: response.totalRecordCount})
-        }.bind(this))
-        
+
         if(this.props.isalert != null){
             if(this.props.isalert != ''){
-                var selectedid = array[0]
-                console.log(this.props.isalert)
+                highlight = true
                 $.ajax({
                     type: 'get',
                     url: '/scot/api/v2/alert/'+array[0]
-                }).success(function(response){
-                    console.log(response.alertgroup)
+                }).success(function(response1){
+                    var newresponse = response1
                     array = []
-                    array.push(response.alertgroup)
-                     this.setState({alertPreSelectedId: selectedid, idsarray: array})
-                }.bind(this))
-            }
+                    array.push(newresponse.alertgroup)
+                    this.setState({scrollheight: height, idsarray: array, objectarray: finalarray,totalcount: datasource.totalRecordCount})
+        }.bind(this))
         }
+        else {
+                    highlight = false
+                    this.setState({scrollheight: height, idsarray: array, objectarray: finalarray,totalcount: datasource.totalRecordCount})
+        }
+        }
+        }.bind(this)) 
     },
 
     reloadactive: function(){    
@@ -5287,7 +5290,7 @@ module.exports = React.createClass({displayName: "exports",
         if(this.state.display == 'block'){
             this.state.scrollheight = '300px'
         }
-        this.setState({scrollheight: this.state.scrollheight, idsarray:array})
+        this.setState({alertPreSelectedId: 0, scrollheight: this.state.scrollheight, idsarray:array})
 
     },
     render: function() {
@@ -5551,7 +5554,7 @@ module.exports = React.createClass({displayName: "exports",
                     //)
                     ))))), React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
-                        React.createElement(SelectedContainer, {height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null),
+                        React.createElement(SelectedContainer, {alertPreSelectedId: highlight ? this.props.supertable[0] : 0, height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null),
                         !this.state.alldetail ?
                         React.createElement('div', null,
                         React.createElement('div', {className: 'toggleview'},
@@ -5565,7 +5568,7 @@ module.exports = React.createClass({displayName: "exports",
                          React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
                          React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
             ),
-                        React.createElement(SelectedContainer, {alertPreSelectedId: this.state.alertPreSelectedId != 0 ? this.state.alertPreSelectedId : undefined, height: height - 220,ids: this.state.idsarray, type: 'alertgroup'})
+                        React.createElement(SelectedContainer, {alertPreSelectedId: highlight ? this.props.supertable[0] : 0, height: height - 220,ids: this.state.idsarray, type: 'alertgroup'})
         )) : React.createElement('div', null) 
 
         ));
