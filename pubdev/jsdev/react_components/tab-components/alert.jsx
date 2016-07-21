@@ -59,7 +59,7 @@ module.exports = React.createClass({
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             alldetail : true, viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
             resize: 'horizontal',createdarrow: [0, 0], sourcearrow:[0, 0],tagsarrow: [0, 0],
-            viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
+            alertPreSelectedId: 0, viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
             viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: ''};
@@ -145,8 +145,24 @@ module.exports = React.createClass({
                 finalarray[key]["classname"] = 'table-row rowodd'
             }
 	    })
-        this.setState({scrollheight: height, idsarray: array, objectarray: finalarray,totalcount: response.totalRecordCount})
+        this.setState({alertPreSelectedId: 0, scrollheight: height, idsarray: array, objectarray: finalarray,totalcount: response.totalRecordCount})
         }.bind(this))
+        
+        if(this.props.isalert != null){
+            if(this.props.isalert != ''){
+                var selectedid = array[0]
+                console.log(this.props.isalert)
+                $.ajax({
+                    type: 'get',
+                    url: '/scot/api/v2/alert/'+array[0]
+                }).success(function(response){
+                    console.log(response.alertgroup)
+                    array = []
+                    array.push(response.alertgroup)
+                     this.setState({alertPreSelectedId: selectedid, idsarray: array})
+                }.bind(this))
+            }
+        }
     },
 
     reloadactive: function(){    
@@ -501,7 +517,7 @@ module.exports = React.createClass({
                          React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
                          React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
             ),
-                        React.createElement(SelectedContainer, {height: height - 220,ids: this.state.idsarray, type: 'alertgroup'})
+                        React.createElement(SelectedContainer, {alertPreSelectedId: this.state.alertPreSelectedId != 0 ? this.state.alertPreSelectedId : undefined, height: height - 220,ids: this.state.idsarray, type: 'alertgroup'})
         )) : React.createElement('div', null) 
 
         ));
