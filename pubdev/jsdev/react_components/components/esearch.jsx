@@ -18,8 +18,8 @@ class Results extends React.Component{
             type = this.props.result._source.target.type
             id   = this.props.result._source.target.id
             if(type == 'alert'){
-                type  = 'alertgroup'
-                id    = 7
+                type  = 'alert'
+                id    = this.props.result._source.target.id
             }
         }
         else if(this.props.result._type == 'alert'){
