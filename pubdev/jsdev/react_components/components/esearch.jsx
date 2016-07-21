@@ -12,6 +12,10 @@ var Pagination          = require('../../../node_modules/searchkit').Pagination;
 const searchkit         = new SearchkitManager("/scot/api/v2/search/")
 var type = ''
 var id = 0
+var sourceid = ''
+var body = ''
+var owner = ''
+var typeid = ''
 class Results extends React.Component{
     render() {
         if(this.props.result._type == 'entry'){
@@ -23,12 +27,24 @@ class Results extends React.Component{
             }
         }
         else if(this.props.result._type == 'alert'){
-            type    = 'alertgroup'
-            id      = this.props.result._source.alertgroup 
+            type    = 'alert'
+            id      = this.props.result._source.id 
         }
         else {
             id      = this.props.result._id
             type    = this.props.result._type
+        }
+        if(this.props.result._source.id != undefined){
+            sourceid = this.props.result._source.id
+        }
+        if(this.props.result._source.body_plain != undefined){
+            body = this.props.result._source.body_plain
+        }
+        if(this.props.result._source.owner != undefined){
+            owner = this.props.result._source.owner
+        }
+        if(this.props.result._source.type != undefined){
+            typeid = this.props.result._source.type
         }
         return (
             searchboxtext ? 
@@ -43,7 +59,7 @@ class Results extends React.Component{
                         React.createElement('a',   {href: '/#/'+type+'/' + id, className: 'column owner'}, type))),
                         React.createElement('div', {className: 'wrapper title-comment-module-reporter'},
                         React.createElement('div', {className: 'wrapper title-comment'},
-                        React.createElement('a',   {style: {width: '1200px'},href: '/#/'+type+'/' + id, className: 'column title'}, this.props.result._source.body_plain)))))) : null
+                        React.createElement('a',   {style: {width: '1200px'},href: '/#/'+type+'/' + id, className: 'column title'}, sourceid + ' ' + body + ' ' + owner + ' ' + typeid)))))) : null
     )
     }
 }
@@ -76,7 +92,7 @@ var Search = React.createClass({
                         React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
                         React.createElement('div', {className: 'column owner'}, 'Snippet(s)')))
                             )), 
-                            React.createElement(Hits, {hitsPerPage: 10, itemComponent: Results, mod: 'sk-hits-list', highlightFields:['subject']})),
+                            React.createElement(Hits, {hitsPerPage: 10, itemComponent: Results, mod: 'sk-hits-list', highlightFields:['id']})),
                             React.createElement(Pagination, {showNumbers: true}))
                             
         )))
