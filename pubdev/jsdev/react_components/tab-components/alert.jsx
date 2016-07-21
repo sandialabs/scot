@@ -151,12 +151,10 @@ module.exports = React.createClass({
         if(this.props.isalert != null){
             if(this.props.isalert != ''){
                 var selectedid = array[0]
-                console.log(this.props.isalert)
                 $.ajax({
                     type: 'get',
                     url: '/scot/api/v2/alert/'+array[0]
                 }).success(function(response){
-                    console.log(response.alertgroup)
                     array = []
                     array.push(response.alertgroup)
                      this.setState({alertPreSelectedId: selectedid, idsarray: array})
