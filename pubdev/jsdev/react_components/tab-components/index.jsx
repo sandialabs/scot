@@ -30,6 +30,7 @@ var setincidents = false
 var setintel = false
 var settask = false
 var setguide = false
+var isalert = false
 var supertableid = [];
 var statetype = ''
 var eventtableid = []
@@ -85,10 +86,25 @@ var App = React.createClass({
 	            array = this.props.params.id.split('+')
 	        }
         }
+	    else if( this.props.params.value.toLowerCase() == "alert"){
+	        if(this.props.params.id != null){
+	            supertableid = this.props.params.id.split('+')
+	        }
+	        state = 1
+            isalert = true
+	        setalerts = true
+	        setintel = false
+	        sethome = false
+	        setincidents = false
+	        setevents = false
+	        settask = false
+            setguide = false
+	    }
 	    else if( this.props.params.value.toLowerCase() == "alertgroup"){
 	        if(this.props.params.id != null){
 	            supertableid = this.props.params.id.split('+')
 	        }
+            isalert = false
 	        state = 1
 	        setalerts = true
 	        setintel = false
@@ -239,7 +255,7 @@ var App = React.createClass({
             :
         this.state.set == 1
         ?	
-        React.createElement(ExpandableNavPage, null, React.createElement(Alerts, {supertable: supertableid}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(Alerts, {isalert: isalert ? 'isalert' : '', supertable: supertableid}))	
         :
             this.state.set == 2
         ?
