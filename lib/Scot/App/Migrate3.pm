@@ -470,7 +470,7 @@ sub xform_alertgroup {
         }
 
         $new_alert_col->insert_one($alert);
-        $es->index("alert", $alert);
+        # $es->index("alert", $alert);
     }
 
     $self->get_ag_status($href, \%status);
@@ -551,7 +551,7 @@ sub xform_entry {
 
     my $col = $self->db->get_collection('entry');
     $col->insert_one($href);
-    $self->es->index("entry", $href);
+    # $self->es->index("entry", $href);
     my   @links;
     push @links, $self->create_history(@history);
     push @links, $self->create_entities($entities);
