@@ -27,6 +27,7 @@ var sortarray = {}
 var names = 'none'
 var getColumn;
 var tab;
+var highlight = false
 var datasource
 var ids = []
 var stage = false
@@ -59,7 +60,7 @@ module.exports = React.createClass({
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             alldetail : true, viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
             resize: 'horizontal',createdarrow: [0, 0], sourcearrow:[0, 0],tagsarrow: [0, 0],
-            viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
+            alertPreSelectedId: 0, viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
             viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: ''};
@@ -145,8 +146,26 @@ module.exports = React.createClass({
                 finalarray[key]["classname"] = 'table-row rowodd'
             }
 	    })
-        this.setState({scrollheight: height, idsarray: array, objectarray: finalarray,totalcount: response.totalRecordCount})
+
+        if(this.props.isalert != null){
+            if(this.props.isalert != ''){
+                highlight = true
+                $.ajax({
+                    type: 'get',
+                    url: '/scot/api/v2/alert/'+array[0]
+                }).success(function(response1){
+                    var newresponse = response1
+                    array = []
+                    array.push(newresponse.alertgroup)
+                    this.setState({scrollheight: height, idsarray: array, objectarray: finalarray,totalcount: datasource.totalRecordCount})
         }.bind(this))
+        }
+        else {
+                    highlight = false
+                    this.setState({scrollheight: height, idsarray: array, objectarray: finalarray,totalcount: datasource.totalRecordCount})
+        }
+        }
+        }.bind(this)) 
     },
 
     reloadactive: function(){    
@@ -178,6 +197,9 @@ module.exports = React.createClass({
             $('.paging').css('display', 'none')
         }
         */
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
@@ -220,7 +242,7 @@ module.exports = React.createClass({
         if(this.state.display == 'block'){
             this.state.scrollheight = '300px'
         }
-        this.setState({scrollheight: this.state.scrollheight, idsarray:array})
+        this.setState({alertPreSelectedId: 0, scrollheight: this.state.scrollheight, idsarray:array})
 
     },
     render: function() {
@@ -484,7 +506,7 @@ module.exports = React.createClass({
                     //)
                     ))))), React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
-                        React.createElement(SelectedContainer, {height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null),
+                        React.createElement(SelectedContainer, {alertPreSelectedId: highlight ? this.props.supertable[0] : 0, height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null),
                         !this.state.alldetail ?
                         React.createElement('div', null,
                         React.createElement('div', {className: 'toggleview'},
@@ -498,12 +520,15 @@ module.exports = React.createClass({
                          React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
                          React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
             ),
-                        React.createElement(SelectedContainer, {height: height - 220,ids: this.state.idsarray, type: 'alertgroup'})
+                        React.createElement(SelectedContainer, {alertPreSelectedId: highlight ? this.props.supertable[0] : 0, height: height - 220,ids: this.state.idsarray, type: 'alertgroup'})
         )) : React.createElement('div', null) 
 
         ));
     },
     stopdrag: function(e){
+        $('iframe').each(function(index,ifr){
+        $(ifr).removeClass('pointerEventsOff')
+        }) 
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)

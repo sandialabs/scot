@@ -142,7 +142,7 @@ var SelectedEntry = React.createClass({
         return (
             <div key={id} className={divClass} style={{height:height}}> 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : <AddEntryModal title={'Add Entry'} type={this.props.aType} targetid={this.props.aID} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> }</div> : null}
-                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData}/> : <span>Loading...</span>} 
+                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId}/> : <span>Loading...</span>} 
                 {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue} type={this.props.type} id={this.props.id}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
             </div>       
@@ -161,7 +161,7 @@ var EntryIterator = React.createClass({
                 rows.push(<EntryParent key={data.id} items={data} type={type} id={id} />);
             }.bind(this));
         } else {
-            rows.push(<AlertParent items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} />);
+            rows.push(<AlertParent items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} alertPreSelectedId={this.props.alertPreSelectedId}/>);
         }
         return (
             <div>
@@ -192,7 +192,7 @@ var AlertParent = React.createClass({
                 this.rowClicked(null,null,'all',null);
                 event.preventDefault()
             }
-        }.bind(this)) 
+        }.bind(this))
     },
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();
@@ -273,7 +273,7 @@ var AlertParent = React.createClass({
                     dataFlair = items[z].data;
                 }
                 
-                body.push(<AlertBody index={z} data={items[z]} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected}/>)
+                body.push(<AlertBody index={z} data={items[z]} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected} alertPreSelectedId={this.props.alertPreSelectedId}/>)
             }
             var search = null;
             if (items[0].data_with_flair != undefined) {
@@ -358,7 +358,12 @@ var AlertBody = React.createClass({
             }.bind(this))
             this.setState({promoteFetch:true})
         }
-        
+        //Pre Selects the alert in an alertgroup if alertPreSelectedId is passed to the component
+        if (this.props.alertPreSelectedId != null) {
+            if (this.props.alertPreSelectedId == this.props.data.id) {
+                this.props.rowClicked(this.props.data.id,this.props.index,'',this.props.data.status);
+            }
+        }
     },
     componentWillReceiveProps: function() {
         if (this.state.promoteFetch == false) {
@@ -581,6 +586,14 @@ var EntryData = React.createClass({
     onLoad: function() {
         if (document.getElementById('iframe_'+this.props.id) != undefined){
             if (document.getElementById('iframe_'+this.props.id).contentDocument.readyState === 'complete') {
+                var ifr = $('#iframe_'+this.props.id);
+                var ifrContents = $(ifr).contents();
+                var ifrContentsHead = $(ifrContents).find('head');
+                if (ifrContentsHead) {
+                    if (!$(ifrContentsHead).find('link')) {
+                        ifrContentsHead.append($("<link/>", {rel: "stylesheet", href: 'css/sandbox.css', type: "text/css"}))
+                    }
+                }
                 if (this.props.type != 'entity') {
                     setTimeout(function() {
                         document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
@@ -591,13 +604,7 @@ var EntryData = React.createClass({
                                 this.setState({height:newheight});
                             }
                         }.bind(this))
-                    }.bind(this)); 
-                }
-                var ifr = $('#iframe_'+this.props.id);
-                var ifrContents = $(ifr).contents();
-                var ifrContentsHead = $(ifrContents).find('head');
-                if (ifrContentsHead) {
-                    ifrContentsHead.append($("<link/>", {rel: "stylesheet", href: 'css/sandbox.css', type: "text/css"}))
+                    }.bind(this),250); 
                 }
             } else {
                 setTimeout(this.onLoad,0);
