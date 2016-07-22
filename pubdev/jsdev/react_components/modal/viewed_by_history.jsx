@@ -37,7 +37,7 @@ var ViewedByHistory = React.createClass({
                         <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.viewedByHistoryToggle} />
                         <h3 id="myModalLabel">{this.props.subjectType} Viewed By</h3>
                     </div>
-                    <div className="modal-body" style={{height: '75vh', width:'700px',overflowY:'auto'}}>
+                    <div className="modal-body" style={{height: '600px',overflowY:'auto'}}>
                        {this.state.historyBody ? <ViewedByHistoryData data={this.state.data} /> : null }
                     </div>
                     <div className="modal-footer">
