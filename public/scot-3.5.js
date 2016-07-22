@@ -1105,34 +1105,94 @@ var TermQuery           = require('../../../node_modules/searchkit').TermQuery;
 var BoolShould          = require('../../../node_modules/searchkit').BoolShould;
 var LayoutBody          = require('../../../node_modules/searchkit').LayoutBody;
 var LayoutResults       = require('../../../node_modules/searchkit').LayoutResults;
+var Pagination          = require('../../../node_modules/searchkit').Pagination;
 const searchkit         = new SearchkitManager("/scot/api/v2/search/")
-
+var type = ''
+var id = 0
+var sourceid = ''
+var body = ''
+var owner = ''
+var typeid = ''
 class Results extends React.Component{
     render() {
-        console.log(this.props)
+        if(this.props.result._type == 'entry'){
+            type = this.props.result._source.target.type
+            id   = this.props.result._source.target.id
+            if(type == 'alert'){
+                type  = 'alert'
+                id    = this.props.result._source.target.id
+            }
+        }
+        else if(this.props.result._type == 'alert'){
+            type    = 'alert'
+            id      = this.props.result._source.id 
+        }
+        else {
+            id      = this.props.result._id
+            type    = this.props.result._type
+        }
+        if(this.props.result._source.id != undefined){
+            sourceid = this.props.result._source.id
+        }
+        if(this.props.result._source.body_plain != undefined){
+            body = this.props.result._source.body_plain
+        }
+        if(this.props.result._source.owner != undefined){
+            owner = this.props.result._source.owner
+        }
+        if(this.props.result._source.type != undefined){
+            typeid = this.props.result._source.type
+        }
         return (
+            searchboxtext ? 
             React.createElement('div', null,
-                React.createElement('span', {style: {top: '0px', 'padding-top': '35px !important', width: '600%', left: '-500%', 'z-index': '-999', position: 'absolute', 'background-color': 'white', 'padding-left': '10px', overflow: 'auto', color: 'black', resize: 'vertical', display: 'inline', height: '508px'}}))
+                React.createElement('div', {style: {display: 'inline-flex'}},
+                        React.createElement("div", {className: "wrapper attributes "},
+                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                        React.createElement('a',   {href: '/#/'+type+'/' + id, className: 'column owner'}, id))),
+                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                        React.createElement('a',   {href: '/#/'+type+'/' + id, className: 'column owner'}, type))),
+                        React.createElement('div', {className: 'wrapper title-comment-module-reporter'},
+                        React.createElement('div', {className: 'wrapper title-comment'},
+                        React.createElement('a',   {style: {width: '1200px'},href: '/#/'+type+'/' + id, className: 'column title'}, sourceid + ' ' + body + ' ' + owner + ' ' + typeid)))))) : null
     )
     }
 }
 
 var Search = React.createClass({displayName: "Search",
 	render: function(){
-        console.log(searchboxtext)
         return (
                 React.createElement(SearchkitProvider, {searchkit: searchkit},
                     React.createElement('div', {className: 'search'},
                     React.createElement('div', {className: 'search_query'},
                         React.createElement(SearchBox, {autofocus: true, searchOnChange: true})
                             ),
-                            searchboxtext != '' ?
-                            React.createElement('div', {className: 'search_results'},
-                            React.createElement(Hits, {itemComponent: Results, mod: 'sk-hits-grid'})
-                            ) : null
-                       )
-                )
-        )
+                            React.createElement('div', {style: {color: 'black', 'background-color': 'white',display: 'none', width: '600%', height: '200px', position: 'absolute', 'overflow-y': 'auto', resize: 'vertical', top: '55px', border: '1px solid #DDD', left: ''},className: 'search_results'},
+               React.createElement("div", {className: "container-fluid2", id: 'fluid2', style: {/*'max-width': '915px',*//*'min-width': '650px',*/ width: '100%', 'max-height': '100%', 'margin-left': '0px',height: '100%', 'overflow-y': 'auto', 'overflow-x' : 'hidden','padding-left':'5px'}},
+                    React.createElement("div", {className: "table-row header "},
+                        React.createElement("div", {className: "wrapper attributes "},                        
+                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                        React.createElement('div', {className: 'column owner'}, 'ID'))),
+
+                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                        React.createElement('div', {className: 'column owner'}, 'Type'))),
+
+                        React.createElement('div', {className: 'wrapper title-comment-module-reporter'},
+                        React.createElement('div', {className: 'wrapper title-comment'},
+                        React.createElement('div', {className: 'column title'}, 'Snippet(s)'))),
+
+                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                        React.createElement('div', {className: 'column owner'}, 'Snippet(s)')))
+                            )), 
+                            React.createElement(Hits, {hitsPerPage: 10, itemComponent: Results, mod: 'sk-hits-list', highlightFields:['id']})),
+                            React.createElement(Pagination, {showNumbers: true}))
+                            
+        )))
 	}
 })
 
@@ -2043,7 +2103,7 @@ var SelectedContainer = React.createClass({displayName: "SelectedContainer",
     render: function() {
         var datarows = [];
         for (i=0; i < this.props.ids.length; i++) { 
-            datarows.push(React.createElement(SelectedHeader, {key: this.props.ids[i], id: this.props.ids[i], type: this.props.type, toggleEventDisplay: this.props.viewEvent, taskid: this.props.taskid})); 
+            datarows.push(React.createElement(SelectedHeader, {key: this.props.ids[i], id: this.props.ids[i], type: this.props.type, toggleEventDisplay: this.props.viewEvent, taskid: this.props.taskid, alertPreSelectedId: this.props.alertPreSelectedId})); 
         }
         var width = this.state.width;
         return (
@@ -2201,7 +2261,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         return (
             React.createElement("div", {key: id, className: divClass, style: {height:height}}, 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.aType, targetid: this.props.aID, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB})) : null, 
-                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData}) : React.createElement("span", null, "Loading..."), 
+                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId}) : React.createElement("span", null, "Loading..."), 
                 this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, type: this.props.type, id: this.props.id}): null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null
             )       
@@ -2220,7 +2280,7 @@ var EntryIterator = React.createClass({displayName: "EntryIterator",
                 rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id}));
             }.bind(this));
         } else {
-            rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected}));
+            rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected, alertPreSelectedId: this.props.alertPreSelectedId}));
         }
         return (
             React.createElement("div", null, 
@@ -2251,7 +2311,7 @@ var AlertParent = React.createClass({displayName: "AlertParent",
                 this.rowClicked(null,null,'all',null);
                 event.preventDefault()
             }
-        }.bind(this)) 
+        }.bind(this))
     },
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();
@@ -2332,7 +2392,7 @@ var AlertParent = React.createClass({displayName: "AlertParent",
                     dataFlair = items[z].data;
                 }
                 
-                body.push(React.createElement(AlertBody, {index: z, data: items[z], dataFlair: dataFlair, activeIndex: this.state.activeIndex, rowClicked: this.rowClicked, alertSelected: this.props.alertSelected, allSelected: this.state.allSelected}))
+                body.push(React.createElement(AlertBody, {index: z, data: items[z], dataFlair: dataFlair, activeIndex: this.state.activeIndex, rowClicked: this.rowClicked, alertSelected: this.props.alertSelected, allSelected: this.state.allSelected, alertPreSelectedId: this.props.alertPreSelectedId}))
             }
             var search = null;
             if (items[0].data_with_flair != undefined) {
@@ -2417,7 +2477,12 @@ var AlertBody = React.createClass({displayName: "AlertBody",
             }.bind(this))
             this.setState({promoteFetch:true})
         }
-        
+        //Pre Selects the alert in an alertgroup if alertPreSelectedId is passed to the component
+        if (this.props.alertPreSelectedId != null) {
+            if (this.props.alertPreSelectedId == this.props.data.id) {
+                this.props.rowClicked(this.props.data.id,this.props.index,'',this.props.data.status);
+            }
+        }
     },
     componentWillReceiveProps: function() {
         if (this.state.promoteFetch == false) {
@@ -2640,6 +2705,14 @@ var EntryData = React.createClass({displayName: "EntryData",
     onLoad: function() {
         if (document.getElementById('iframe_'+this.props.id) != undefined){
             if (document.getElementById('iframe_'+this.props.id).contentDocument.readyState === 'complete') {
+                var ifr = $('#iframe_'+this.props.id);
+                var ifrContents = $(ifr).contents();
+                var ifrContentsHead = $(ifrContents).find('head');
+                if (ifrContentsHead) {
+                    if (!$(ifrContentsHead).find('link')) {
+                        ifrContentsHead.append($("<link/>", {rel: "stylesheet", href: 'css/sandbox.css', type: "text/css"}))
+                    }
+                }
                 if (this.props.type != 'entity') {
                     setTimeout(function() {
                         document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
@@ -2650,13 +2723,7 @@ var EntryData = React.createClass({displayName: "EntryData",
                                 this.setState({height:newheight});
                             }
                         }.bind(this))
-                    }.bind(this)); 
-                }
-                var ifr = $('#iframe_'+this.props.id);
-                var ifrContents = $(ifr).contents();
-                var ifrContentsHead = $(ifrContents).find('head');
-                if (ifrContentsHead) {
-                    ifrContentsHead.append($("<link/>", {rel: "stylesheet", href: 'css/sandbox.css', type: "text/css"}))
+                    }.bind(this),250); 
                 }
             } else {
                 setTimeout(this.onLoad,0);
@@ -3083,7 +3150,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 ), 
                 this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
 
-                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, headerData: this.state.headerData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, linkWarningToggle: this.linkWarningToggle, entryToolbar: this.state.entryToolbar, isAlertSelected: this.state.alertSelected, aType: this.state.aType, aID: this.state.aID})
+                React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, headerData: this.state.headerData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, linkWarningToggle: this.linkWarningToggle, entryToolbar: this.state.entryToolbar, isAlertSelected: this.state.alertSelected, aType: this.state.aType, aID: this.state.aID, alertPreSelectedId: this.props.alertPreSelectedId})
             )
         )
     }
@@ -4380,9 +4447,7 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         startHeight = parseInt(document.defaultView.getComputedStyle(elem).height, 10);
         document.documentElement.addEventListener('mousemove', this.doDrag, false);
         document.documentElement.addEventListener('mouseup', this.stopDrag, false);
-        $('iframe').each(function(index,ifr){
-            $(ifr).addClass('pointerEventsOff')
-        })
+        this.blockiFrameMouseEvent();
     },
     doDrag: function(e) {
     var elem = document.getElementById('dragme')
@@ -4391,6 +4456,22 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
     },
     stopDrag: function(e) {
         document.documentElement.removeEventListener('mousemove', this.doDrag, false);    document.documentElement.removeEventListener('mouseup', this.stopDrag, false);
+        this.allowiFrameMouseEvent();
+    },
+    moveDivInit: function(e) {
+        document.documentElement.addEventListener('mouseup', this.moveDivStop,false);
+        this.blockiFrameMouseEvent();
+    },
+    moveDivStop: function(e) {
+        document.documentElement.removeEventListener('mouseup', this.moveDivStop, false);
+        this.allowiFrameMouseEvent();
+    },
+    blockiFrameMouseEvent: function() {
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        }) 
+    },
+    allowiFrameMouseEvent: function() {
         $('iframe').each(function(index,ifr){
             $(ifr).removeClass('pointerEventsOff')
         })
@@ -4402,7 +4483,7 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
             entityWidth = entityPopUpWidth;
         }*/
         return (
-            React.createElement(Draggable, {handle: "#handle"}, 
+            React.createElement(Draggable, {handle: "#handle", onMouseDown: this.moveDivInit}, 
                 React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth}}, 
                     React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex'}}, 
                         React.createElement("div", {id: "handle", style: {width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
@@ -5010,6 +5091,7 @@ var sortarray = {}
 var names = 'none'
 var getColumn;
 var tab;
+var highlight = false
 var datasource
 var ids = []
 var stage = false
@@ -5042,7 +5124,7 @@ module.exports = React.createClass({displayName: "exports",
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             alldetail : true, viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
             resize: 'horizontal',createdarrow: [0, 0], sourcearrow:[0, 0],tagsarrow: [0, 0],
-            viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
+            alertPreSelectedId: 0, viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
             viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: ''};
@@ -5128,8 +5210,26 @@ module.exports = React.createClass({displayName: "exports",
                 finalarray[key]["classname"] = 'table-row rowodd'
             }
 	    })
-        this.setState({scrollheight: height, idsarray: array, objectarray: finalarray,totalcount: response.totalRecordCount})
+
+        if(this.props.isalert != null){
+            if(this.props.isalert != ''){
+                highlight = true
+                $.ajax({
+                    type: 'get',
+                    url: '/scot/api/v2/alert/'+array[0]
+                }).success(function(response1){
+                    var newresponse = response1
+                    array = []
+                    array.push(newresponse.alertgroup)
+                    this.setState({scrollheight: height, idsarray: array, objectarray: finalarray,totalcount: datasource.totalRecordCount})
         }.bind(this))
+        }
+        else {
+                    highlight = false
+                    this.setState({scrollheight: height, idsarray: array, objectarray: finalarray,totalcount: datasource.totalRecordCount})
+        }
+        }
+        }.bind(this)) 
     },
 
     reloadactive: function(){    
@@ -5161,6 +5261,9 @@ module.exports = React.createClass({displayName: "exports",
             $('.paging').css('display', 'none')
         }
         */
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
@@ -5203,7 +5306,7 @@ module.exports = React.createClass({displayName: "exports",
         if(this.state.display == 'block'){
             this.state.scrollheight = '300px'
         }
-        this.setState({scrollheight: this.state.scrollheight, idsarray:array})
+        this.setState({alertPreSelectedId: 0, scrollheight: this.state.scrollheight, idsarray:array})
 
     },
     render: function() {
@@ -5467,7 +5570,7 @@ module.exports = React.createClass({displayName: "exports",
                     //)
                     ))))), React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
                         React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
-                        React.createElement(SelectedContainer, {height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null),
+                        React.createElement(SelectedContainer, {alertPreSelectedId: highlight ? this.props.supertable[0] : 0, height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null),
                         !this.state.alldetail ?
                         React.createElement('div', null,
                         React.createElement('div', {className: 'toggleview'},
@@ -5481,12 +5584,15 @@ module.exports = React.createClass({displayName: "exports",
                          React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
                          React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
             ),
-                        React.createElement(SelectedContainer, {height: height - 220,ids: this.state.idsarray, type: 'alertgroup'})
+                        React.createElement(SelectedContainer, {alertPreSelectedId: highlight ? this.props.supertable[0] : 0, height: height - 220,ids: this.state.idsarray, type: 'alertgroup'})
         )) : React.createElement('div', null) 
 
         ));
     },
     stopdrag: function(e){
+        $('iframe').each(function(index,ifr){
+        $(ifr).removeClass('pointerEventsOff')
+        }) 
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
@@ -6131,6 +6237,10 @@ module.exports = React.createClass({displayName: "exports",
             $('.paging').css('display', 'none')
         }
         */
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
+
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
@@ -6527,6 +6637,9 @@ module.exports = React.createClass({displayName: "exports",
         ));
     },
     stopdrag: function(e){
+        $('iframe').each(function(index,ifr){
+        $(ifr).removeClass('pointerEventsOff')
+        }) 
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
@@ -7236,6 +7349,9 @@ module.exports = React.createClass({displayName: "exports",
             $('.paging').css('display', 'none')
         }
         */
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
@@ -7579,6 +7695,9 @@ module.exports = React.createClass({displayName: "exports",
         } */
     },
     stopdrag: function(e){
+        $('iframe').each(function(index,ifr){
+        $(ifr).removeClass('pointerEventsOff')
+        })
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
@@ -7840,6 +7959,9 @@ module.exports = React.createClass({displayName: "exports",
             $('.paging').css('display', 'none')
         }
         */
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
@@ -7919,6 +8041,9 @@ module.exports = React.createClass({displayName: "exports",
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
     },
     stopdrag: function(e){
+        $('iframe').each(function(index,ifr){
+        $(ifr).removeClass('pointerEventsOff')
+        })
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
@@ -8536,6 +8661,7 @@ var setincidents = false
 var setintel = false
 var settask = false
 var setguide = false
+var isalert = false
 var supertableid = [];
 var statetype = ''
 var eventtableid = []
@@ -8591,10 +8717,25 @@ var App = React.createClass({displayName: "App",
 	            array = this.props.params.id.split('+')
 	        }
         }
+	    else if( this.props.params.value.toLowerCase() == "alert"){
+	        if(this.props.params.id != null){
+	            supertableid = this.props.params.id.split('+')
+	        }
+	        state = 1
+            isalert = true
+	        setalerts = true
+	        setintel = false
+	        sethome = false
+	        setincidents = false
+	        setevents = false
+	        settask = false
+            setguide = false
+	    }
 	    else if( this.props.params.value.toLowerCase() == "alertgroup"){
 	        if(this.props.params.id != null){
 	            supertableid = this.props.params.id.split('+')
 	        }
+            isalert = false
 	        state = 1
 	        setalerts = true
 	        setintel = false
@@ -8745,7 +8886,7 @@ var App = React.createClass({displayName: "App",
             :
         this.state.set == 1
         ?	
-        React.createElement(ExpandableNavPage, null, React.createElement(Alerts, {supertable: supertableid}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(Alerts, {isalert: isalert ? 'isalert' : '', supertable: supertableid}))	
         :
             this.state.set == 2
         ?
@@ -9051,6 +9192,9 @@ module.exports = React.createClass({displayName: "exports",
             $('.paging').css('display', 'none')
         }
         */
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
@@ -9464,6 +9608,9 @@ module.exports = React.createClass({displayName: "exports",
         } */
     },
     stopdrag: function(e){
+        $('iframe').each(function(index,ifr){
+        $(ifr).removeClass('pointerEventsOff')
+        })
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
@@ -10164,6 +10311,9 @@ module.exports = React.createClass({displayName: "exports",
             $('.paging').css('display', 'none')
         }
         */
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
@@ -10496,6 +10646,9 @@ module.exports = React.createClass({displayName: "exports",
         } */
     },
     stopdrag: function(e){
+        $('iframe').each(function(index,ifr){
+        $(ifr).removeClass('pointerEventsOff')
+        })
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
@@ -86777,8 +86930,15 @@ var SearchBox = (function (_super) {
         this.searchQuery(this.getValue());
     };
     SearchBox.prototype.searchQuery = function (query) {
-        searchboxtext = query
-        var shouldResetOtherState = false;
+       if(query != ''){
+        searchboxtext = true
+        $('.search_results').css('display', 'block')
+       }
+       else {
+        searchboxtext = false
+        $('.search_results').css('display', 'none')
+       }
+       var shouldResetOtherState = false;
         this.accessor.setQueryString(query, shouldResetOtherState);
         var now = +new Date;
         var newSearch = now - this.lastSearchMs <= 2000;
@@ -88110,16 +88270,18 @@ var SearchkitManager = (function () {
         }
         this._search();
         if (this.options.useHistory) {
+            /*
             var historyMethod = (replaceState) ?
                 this.history.replace : this.history.push;
             historyMethod({ pathname: window.location.pathname, query: this.state });
+            */
         }
     };
     SearchkitManager.prototype.buildSearchUrl = function (extraParams) {
         if (extraParams === void 0) { extraParams = {}; }
         var params = defaults(extraParams, this.state || this.accessors.getState());
         var queryString = qs.stringify(params, { encode: true });
-        return window.location.pathname + '?' + queryString;
+        //return window.location.pathname + '?' + queryString;
     };
     SearchkitManager.prototype.reloadSearch = function () {
         delete this.query;
@@ -88202,6 +88364,7 @@ var SearchkitManager = (function () {
     return SearchkitManager;
 }());
 exports.SearchkitManager = SearchkitManager;
+
 
 },{"./AccessorManager":1158,"./SearchRequest":1159,"./SearchkitVersion":1161,"./accessors":1185,"./history":1186,"./query":1195,"./support":1239,"./transport":1243,"es6-promise":128,"lodash/after":1425,"lodash/constant":1431,"lodash/defaults":1433,"lodash/get":1440,"lodash/identity":1444,"lodash/isEqual":1452,"lodash/map":1467,"qs":1498}],1161:[function(require,module,exports){
 "use strict";
@@ -89414,12 +89577,13 @@ var StatefulAccessor = (function (_super) {
         this.state = this.state.clear();
     };
     StatefulAccessor.prototype.urlWithState = function (state) {
-        return this.searchkit.buildSearchUrl((_a = {}, _a[this.urlKey] = state, _a));
-        var _a;
+    //return this.searchkit.buildSearchUrl((_a = {}, _a[this.urlKey] = state, _a));
+    //var _a;
     };
     return StatefulAccessor;
 }(Accessor_1.Accessor));
 exports.StatefulAccessor = StatefulAccessor;
+
 
 },{"./Accessor":1162}],1183:[function(require,module,exports){
 "use strict";

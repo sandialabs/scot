@@ -102,9 +102,7 @@ var EntityDetail = React.createClass({
         startHeight = parseInt(document.defaultView.getComputedStyle(elem).height, 10);
         document.documentElement.addEventListener('mousemove', this.doDrag, false);
         document.documentElement.addEventListener('mouseup', this.stopDrag, false);
-        $('iframe').each(function(index,ifr){
-            $(ifr).addClass('pointerEventsOff')
-        })
+        this.blockiFrameMouseEvent();
     },
     doDrag: function(e) {
     var elem = document.getElementById('dragme')
@@ -113,6 +111,22 @@ var EntityDetail = React.createClass({
     },
     stopDrag: function(e) {
         document.documentElement.removeEventListener('mousemove', this.doDrag, false);    document.documentElement.removeEventListener('mouseup', this.stopDrag, false);
+        this.allowiFrameMouseEvent();
+    },
+    moveDivInit: function(e) {
+        document.documentElement.addEventListener('mouseup', this.moveDivStop,false);
+        this.blockiFrameMouseEvent();
+    },
+    moveDivStop: function(e) {
+        document.documentElement.removeEventListener('mouseup', this.moveDivStop, false);
+        this.allowiFrameMouseEvent();
+    },
+    blockiFrameMouseEvent: function() {
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        }) 
+    },
+    allowiFrameMouseEvent: function() {
         $('iframe').each(function(index,ifr){
             $(ifr).removeClass('pointerEventsOff')
         })
@@ -124,7 +138,7 @@ var EntityDetail = React.createClass({
             entityWidth = entityPopUpWidth;
         }*/
         return (
-            <Draggable handle="#handle">
+            <Draggable handle="#handle" onMouseDown={this.moveDivInit}>
                 <div id="dragme" className='box react-draggable entityPopUp' style={{height:this.state.entityHeight,width:this.state.entityWidth}}> 
                     <div id="entity_detail_container" style={{height: '100%', flexFlow: 'column', display: 'flex'}}>
                         <div id='handle' style={{width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarToggle}/></span></div></div>
