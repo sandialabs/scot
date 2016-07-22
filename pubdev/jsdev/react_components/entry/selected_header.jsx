@@ -5,7 +5,8 @@ var AddEntryModal           = require('../modal/add_entry.jsx');
 var DeleteEvent             = require('../modal/delete.jsx').DeleteEvent;
 var Owner                   = require('../modal/owner.jsx');
 var Entities                = require('../modal/entities.jsx');
-var History                 = require('../modal/history.jsx');
+var ChangeHistory           = require('../modal/change_history.jsx');
+var ViewedByHistory         = require('../modal/viewed_by_history.jsx');
 var SelectedPermission      = require('../components/permission.jsx');
 var AutoAffix               = require('react-overlays/lib/AutoAffix.js');
 var Affix                   = require('react-overlays/lib/Affix.js');
@@ -40,7 +41,8 @@ var SelectedHeader = React.createClass({
             showTag:false,
             permissionsToolbar:false,
             entitiesToolbar:false,
-            historyToolbar:false,
+            changeHistoryToolbar:false,
+            viewedByHistoryToolbar:false,
             entryToolbar:false, 
             deleteToolbar:false,
             promoteToolbar:false,
@@ -274,11 +276,18 @@ var SelectedHeader = React.createClass({
             this.setState({deleteToolbar:false})
         } 
     },
-    historyToggle: function() {
-        if (this.state.historyToolbar == false) {
-            this.setState({historyToolbar:true});
+    changeHistoryToggle: function() {
+        if (this.state.changeHistoryToolbar == false) {
+            this.setState({changeHistoryToolbar:true});
         } else {
-            this.setState({historyToolbar:false});
+            this.setState({changeHistoryToolbar:false});
+        }
+    },
+    viewedByHistoryToggle: function() {
+        if (this.state.viewedByHistoryToolbar == false) {
+            this.setState({viewedByHistoryToolbar:true});
+        } else {
+            this.setState({viewedByHistoryToolbar:false});
         }
     },
     permissionsToggle: function() {
@@ -382,11 +391,12 @@ var SelectedHeader = React.createClass({
                 <Notification ref="notificationSystem" /> 
                 {this.state.flairToolbar ? <EntityDetail key={this.state.entityid} flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue} type={this.props.type} id={this.props.id}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
-                {this.state.historyToolbar ? <History historyToggle={this.historyToggle} id={id} type={type} /> : null} 
+                {this.state.viewedByHistoryToolbar ? <ViewedByHistory viewedByHistoryToggle={this.viewedByHistoryToggle} id={id} type={type} subjectType={subjectType} viewedby={viewedby}/> : null}
+                {this.state.changeHistoryToolbar ? <ChangeHistory changeHistoryToggle={this.changeHistoryToggle} id={id} type={type} subjectType={subjectType}/> : null} 
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData} flairToolbarToggle={this.flairToolbarToggle} /> : null}
                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
                 {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
-                {type != 'alertgroup' ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle} updated={this.updated} /> : <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} historyToggle={this.historyToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} guideToggle={this.guideToggle} sourceToggle={this.sourceToggle} guideEntryCount={this.state.guideEntryCount} />} 
+                {type != 'alertgroup' ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} /> : <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} guideToggle={this.guideToggle} sourceToggle={this.sourceToggle} guideEntryCount={this.state.guideEntryCount} />} 
                 </div>
                 {this.state.showFlash == true ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} /> : null}
 
