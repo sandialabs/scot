@@ -51,7 +51,7 @@ unless (-d $dumpdir ) {
 }
 
 
-system('rm -rf $dumpdir/*');
+system("rm -rf $dumpdir/*");
 
 my $cmd = "/usr/bin/mongodump ";
 
@@ -82,7 +82,7 @@ my $ts  = $dt->year . $dt->month . $dt->day . $dt->hour . $dt->minute;
 system("tar cvzf $tarloc.$ts.tgz --directory $dumpdir");
 
 if ( $config->cleanup ) {
-    system('rm -rf $dumpdir/*');
+    system("rm -rf $dumpdir/*");
 }
 
 system("rm -f $pidfile");
