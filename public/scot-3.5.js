@@ -1622,7 +1622,7 @@ var Promote = React.createClass({displayName: "Promote",
             data: data,
             success: function(data) {
                 console.log('successfully promoted');
-                window.location.assign('#/'+this.state.newURL+'/'+data.id);
+                window.location.assign('#/'+this.state.newURL+'/'+data.pid);
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to promote');
