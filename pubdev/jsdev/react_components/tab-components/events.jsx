@@ -217,6 +217,10 @@ module.exports = React.createClass({
             $('.paging').css('display', 'none')
         }
         */
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
+
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
@@ -613,6 +617,9 @@ module.exports = React.createClass({
         ));
     },
     stopdrag: function(e){
+        $('iframe').each(function(index,ifr){
+        $(ifr).removeClass('pointerEventsOff')
+        }) 
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
