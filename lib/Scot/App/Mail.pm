@@ -15,6 +15,7 @@ use Module::Runtime qw(require_module compose_module_name);
 use Log::Log4perl::Level;
 
 use Moose;
+extends 'Scot::App';
 
 has imap    => (
     is          => 'ro',
@@ -61,6 +62,22 @@ sub _build_interactive {
         return $self->config->{interactive};
     }
     return 'no';
+}
+
+has verbose => (
+    is      => 'rw',
+    isa     => 'Int',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_verbose',
+);
+
+sub _build_verbose {
+    my $self    = shift;
+    if ( $self->config->{verbose} ) {
+        return $self->config->{verbose};
+    }
+    return 0;
 }
 
 has approved_accounts   => (
@@ -208,6 +225,10 @@ sub run {
     MESSAGE:
     while ( my $uid = $cursor->next ) {
 
+        if ( $self->verbose ) {
+            print "    Message: $uid\n";
+        }
+
         my $msg_href    = $imap->get_message($uid);
 
         my $pid = $taskmgr->start and next;
@@ -237,7 +258,7 @@ sub process_message {
 
     my $message_id  = $msghref->{message_id};
 
-    if ( $self->interactive eq "yes" ) {
+    if ( $self->interactive eq "yes" or $self->verbose == 1) {
         print "- PROCESSING -\n";
         print "---- message_id ". $message_id."\n";
         print "---- subject    ". $msghref->{subject}."\n";
@@ -247,22 +268,26 @@ sub process_message {
     unless ( $self->approved_sender($msghref) ) {
         $log->error("Unapproved Sender is sending message to SCOT");
         $log->error({ filter => \&Dumper, value => $msghref });
-        if ($self->interactive eq "yes") {
+        if ($self->interactive eq "yes" or $self->verbose == 1) {
             print "unapproved sender ".$msghref->{from}." rejected \n";
         }
         return;
+    }
+    if ( $self->interactive eq "yes" or $self->verbose == 1) {
+        print "---- sender is approved\n";
     }
 
     # is message a health check?
     if ( $self->is_health_check($msghref) ) {
         $log->trace("Health check received...");
-        print "health check...skipping.\n" if ($self->interactive eq "yes");
+        print "health check...skipping.\n" if ($self->interactive eq "yes" or
+                                               $self->verbose == 1);
         return;
     }
 
     if ( $self->already_processed($message_id) ) {
         $log->warn("Message_id: $message_id already processed");
-        if ( $self->interactive eq "yes" ) {
+        if ( $self->interactive eq "yes"  or $self->verbose == 1) {
             print "--- $message_id already in database\n";
         }
         return;
@@ -283,7 +308,8 @@ sub process_message {
         $parser = $self->parsermap->{generic};
     }
 
-    print "parsing with ".ref($parser)."\n" if ($self->interactive eq "yes");
+    print "---- parsing with ".ref($parser)."\n" if ($self->interactive eq "yes" or
+                                                $self->verbose == 1);
 
     my $json_to_post = $parser->parse_message($msghref);
     my $path         = "alertgroup";
@@ -303,7 +329,8 @@ sub process_message {
     unless (defined $json_returned) {
         $log->error("ERROR! Undefined transaction object $path ",
                     {filter=>\&Dumper, value=>$json_to_post});
-        print "post to scot failed!\n" if ($self->interactive eq "yes");
+        print "post to scot failed!\n" if ($self->interactive eq "yes" or
+                                            $self->verbose == 1);
         return;
     }
     
@@ -311,10 +338,12 @@ sub process_message {
         $log->error("Failed posting new alertgroup mgs_uid:", $msghref->{imap_uid});
         $log->debug("tx->res is ",{filter=>\&Dumper, value=>$json_returned});
         $self->imap->mark_uid_unseen($msghref->{imap_uid});
-        print "post to scot failed!\n" if ($self->interactive eq "yes");
+        print "post to scot failed!\n" if ($self->interactive eq "yes" or 
+                                            $self->verbose == 1);
         return;
     }
-    print "posted to scot.\n" if ($self->interactive eq "yes");
+    print "posted to scot.\n" if ($self->interactive eq "yes" or 
+                                    $self->verbose == 1);
     $log->trace("Created alertgroup ". $json_returned->{id});
 }
 
