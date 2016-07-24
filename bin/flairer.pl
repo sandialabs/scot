@@ -10,7 +10,7 @@ use Scot::App::Flair;
 
 
 my $loop    = Scot::App::Flair->new( 
-    configuration_file  => '/home/tbruner/flair.app.cfg',
+    configuration_file  => 'flair.app.cfg',
     interactive  => 1,
 );
 $loop->run();
