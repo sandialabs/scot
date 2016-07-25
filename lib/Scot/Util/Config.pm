@@ -27,6 +27,7 @@ sub get_config {
     my $file    = shift // $self->file;
     my $paths   = shift // $self->paths;    # expect array ref
 
+
     my $fqname;
     find(sub {
         if ( $_ eq $file ) {
@@ -34,6 +35,8 @@ sub get_config {
             return;
         }
     }, @$paths);
+
+    print "Reading config file: $fqname\n";
 
     no strict 'refs'; # I know, but...
     my $cont    = new Safe 'MCONFIG';
@@ -46,6 +49,7 @@ sub get_config {
         my $inchref = delete $href->{include};
         
         foreach my $attr (keys %$inchref) {
+            print "... including $attr : $inchref->{$attr}\n";
             $href->{$attr} = $self->get_config($inchref->{$attr});
         }
     }
