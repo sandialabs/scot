@@ -4919,6 +4919,7 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
             statusColor = 'black';
         }
         if (this.props.type == 'alert') {
+            //aHref = '/#/alert/' + this.props.data.id;
             aHref = '/#/alertgroup/' + this.props.data.alertgroup;
             promotedHref = '/#/event/' + this.props.data.promotion_id;
         } else if (this.props.type == 'event') {
