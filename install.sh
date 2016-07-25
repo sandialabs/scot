@@ -34,7 +34,7 @@ SCOTPORT=3000
 FILESTORE="/opt/scotfiles"
 INSTALL_LOG="/tmp/scot.install.log"
 TESTURL="http://getscot.sandia.gov"
-BACKUPDIR="/sdb/scotbackup"
+BACKUPDIR="/sdb/scotbackup"        #TODO: make this user update-able
 GEOIPDIR="/usr/local/share/GeoIP"
 DBDIR="/var/lib/mongodb"
 CPANM="/usr/local/bin/cpanm"
@@ -670,8 +670,12 @@ fi
 touch $LOGDIR/scot.log
 chown scot:scot $LOGDIR/scot.log
 
-echo "+ installing logrotate policy"
-cp $DEVDIR/etc/logrotate.scot /etc/logrotate.d/scot
+if [ ! -e /etc/logrotate.d/scot ]; then
+    echo "+ installing logrotate policy"
+    cp $DEVDIR/etc/logrotate.scot /etc/logrotate.d/scot
+else 
+    echo "= logrotate policy in place"
+fi
 
 ###
 ### Mongo Configuration
