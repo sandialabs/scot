@@ -5692,6 +5692,8 @@ module.exports = React.createClass({displayName: "exports",
         $('.paging').css('width', width)
         $('.splitter').css('width', width)
         if(this.state.resize == 'vertical'){
+            width = 650
+            $('.container-fluid2').css('width', '100%')
             $('.paging').css('width', '100%')
             $('.splitter').css('width', '100%')
         }
@@ -6739,6 +6741,8 @@ module.exports = React.createClass({displayName: "exports",
         $('.paging').css('width', width)
         $('.splitter').css('width', width)
         if(this.state.resize == 'vertical'){
+            width = 650
+            $('.container-fluid2').css('width', '100%')
             $('.paging').css('width', '100%')
             $('.splitter').css('width', '100%')           
         }
@@ -7797,6 +7801,8 @@ module.exports = React.createClass({displayName: "exports",
         $('.paging').css('width', width)
         $('.splitter').css('width', width)
         if(this.state.resize == 'vertical'){
+            width = 650
+            $('.container-fluid2').css('width', '100%')
             $('.paging').css('width', '100%')
             $('.splitter').css('width', '100%')
         }
@@ -8143,6 +8149,8 @@ module.exports = React.createClass({displayName: "exports",
         $('.paging').css('width', width)
         $('.splitter').css('width', width)
         if(this.state.resize == 'vertical'){
+            width = 650 
+            $('.container-fluid2').css('width', '100%')
             $('.paging').css('width', '100%')
             $('.splitter').css('width', '100%')
         }
@@ -9710,6 +9718,8 @@ module.exports = React.createClass({displayName: "exports",
         $('.paging').css('width', width)
         $('.splitter').css('width', width)
         if(this.state.resize == 'vertical'){
+            width = 650
+            $('.container-fluid2').css('width', '100%')
             $('.paging').css('width', '100%')
             $('.splitter').css('width', '100%')
         }
@@ -10748,6 +10758,8 @@ module.exports = React.createClass({displayName: "exports",
         $('.paging').css('width', width)
         $('.splitter').css('width', width)
         if(this.state.resize == 'vertical'){
+            width = 650
+            $('.container-fluid2').css('width', '100%')
             $('.paging').css('width', '100%')
             $('.splitter').css('width', '100%')
         }
