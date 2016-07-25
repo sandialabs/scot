@@ -37,6 +37,7 @@ sub _build_config {
     unless ( $file ) {
         die "Error: configuration file attribute not set!";
     }
+    print "Loading $file\n";
     my $confobj = Scot::Util::Config->new({
         file    => $file,
         paths   => $self->paths,
