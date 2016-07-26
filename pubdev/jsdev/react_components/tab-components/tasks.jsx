@@ -423,7 +423,7 @@ module.exports = React.createClass({
                         React.createElement("div", {className: "wrapper dates "+this.state.sizearray[0]},
                             React.createElement("div", {className: "column date"}, value.updated))))))))),
                                            React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}),        
-                React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ?
+                React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ?
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: this.state.type, taskid: this.state.entry}) : null),
                         !this.state.alldetail ?
                         React.createElement('div', null,
