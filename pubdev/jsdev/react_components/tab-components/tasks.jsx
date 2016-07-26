@@ -43,7 +43,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['Type', 'ID', 'Status', 'Owner', 'Entry', 'Updated']
+var columns = ['Type', 'id', 'Status', 'Owner', 'Entry', 'Updated']
 
 module.exports = React.createClass({
 

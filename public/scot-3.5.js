@@ -5202,7 +5202,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['ID', 'Status', 'Subject', 'Created', 'Source', 'Tags', 'Views']
+var columns = ['id', 'Status', 'Subject', 'Created', 'Source', 'Tags', 'Views']
 var toggle
 var scrolled = 48
 module.exports = React.createClass({displayName: "exports",
@@ -6164,7 +6164,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['ID', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
+var columns = ['id', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
 var toggle;
 var scrolled = 58
 function Remove(note){
@@ -7330,7 +7330,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['ID', 'Subject']
+var columns = ['id', 'Subject']
 
 module.exports = React.createClass({displayName: "exports",
 
@@ -7932,7 +7932,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['ID', 'DOE', 'Status', 'Owner', 'Subject', 'Occurred', 'Type']
+var columns = ['id', 'DOE', 'Status', 'Owner', 'Subject', 'Occurred', 'Type']
 
 
 module.exports = React.createClass({displayName: "exports",
