@@ -43,7 +43,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['ID', 'Status', 'Subject', 'Created', 'Source', 'Tags', 'Views']
+var columns = ['id', 'Status', 'Subject', 'Created', 'Source', 'Tags', 'Views']
 var toggle
 var scrolled = 48
 module.exports = React.createClass({
