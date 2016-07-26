@@ -599,7 +599,7 @@ module.exports = React.createClass({
                    // )
                     ))))),
                            React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}),
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'event', viewEvent:this.viewEvent}) : null
                                                
@@ -922,6 +922,12 @@ module.exports = React.createClass({
 	                    var date = new Date(1000 * item)
 	                    newarray[key][num] = date.toLocaleString()
 	                }
+                    else if (num == 'sources' || num == 'source'){
+                        newarray[key]["sources"] = item
+                    }
+                    else if (num == 'tags' || num == 'tag'){
+                        newarray[key]["tags"] = item
+                    }
 	                else{
 	                    newarray[key][num] = item
 	                }
