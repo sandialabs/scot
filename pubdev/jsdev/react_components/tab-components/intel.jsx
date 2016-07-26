@@ -171,6 +171,12 @@ module.exports = React.createClass({
 	                    var date = new Date(1000 * item)
 	                    finalarray[key][num] = date.toLocaleString()
 	                }
+                    else if (num == 'sources' || num == 'source'){
+                        finalarray[key]["sources"] = item
+                    }
+                    else if (num == 'tags' || num == 'tag'){
+                        finalarray[key]["tags"] = item
+                    }
 	                else{
 	                    finalarray[key][num] = item
 	                }
@@ -576,8 +582,8 @@ module.exports = React.createClass({
                             React.createElement("div", {className: "column date"}, value.created), 
                             React.createElement("div", {className: "column date"}, value.updated)),     
                         React.createElement('div', {className:'wrapper module-reporter ' + this.state.sizearray[2] + ' ' + this.state.classname[2]},
-                        React.createElement("div", {className: "column module"}, value.source), 
-                        React.createElement("div", {className: "column reporter"}, value.tags)), 
+                        React.createElement("div", {className: "column module"}, value.sources.join(',')), 
+                        React.createElement("div", {className: "column reporter"}, value.tags.join(','))), 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                             React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1] + ' ' + this.state.classname[3]},    
                             React.createElement("div", {className: "column status"}, value.owner), 
