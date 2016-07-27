@@ -234,7 +234,11 @@ sub run {
         my $pid = $taskmgr->start and next;
 
         $log->trace("[UID $uid] Child process $pid begins");
-        $self->process_message($msg_href);
+
+        unless ($self->process_message($msg_href)) {
+            $log->error("FAILED to process: ",
+                        {filter=>\&Dumper, value=>$msg_href});
+        }
         $log->trace("[UID $uid] Child process $pid finishes");
         $taskmgr->finish;
 
@@ -258,24 +262,20 @@ sub process_message {
 
     my $message_id  = $msghref->{message_id};
 
-    if ( $self->interactive eq "yes" or $self->verbose == 1) {
-        print "- PROCESSING -\n";
-        print "---- message_id ". $message_id."\n";
-        print "---- subject    ". $msghref->{subject}."\n";
-    }
+    $self->output(
+        "- PROCESSING -\n".
+        "---- message_id ". $message_id."\n".
+        "---- subject    ". $msghref->{subject}."\n".
+    );
 
     # is message from approved sender?
     unless ( $self->approved_sender($msghref) ) {
         $log->error("Unapproved Sender is sending message to SCOT");
         $log->error({ filter => \&Dumper, value => $msghref });
-        if ($self->interactive eq "yes" or $self->verbose == 1) {
-            print "unapproved sender ".$msghref->{from}." rejected \n";
-        }
+        $self->output("unapproved sender ". $msghref->{from} . " rejected\n");
         return;
     }
-    if ( $self->interactive eq "yes" or $self->verbose == 1) {
-        print "---- sender is approved\n";
-    }
+    $self->output("---- sender is approved\n");
 
     # is message a health check?
     if ( $self->is_health_check($msghref) ) {
@@ -287,9 +287,7 @@ sub process_message {
 
     if ( $self->already_processed($message_id) ) {
         $log->warn("Message_id: $message_id already processed");
-        if ( $self->interactive eq "yes"  or $self->verbose == 1) {
-            print "--- $message_id already in database\n";
-        }
+        $self->output("--- $message_id already in database\n");
         return;
     }
 
@@ -308,8 +306,7 @@ sub process_message {
         $parser = $self->parsermap->{generic};
     }
 
-    print "---- parsing with ".ref($parser)."\n" if ($self->interactive eq "yes" or
-                                                $self->verbose == 1);
+    $self->output("---- parsing with ".ref($parser)."\n");
 
     my $json_to_post = $parser->parse_message($msghref);
     my $path         = "alertgroup";
@@ -321,7 +318,6 @@ sub process_message {
     $json_to_post->{sources}    = [ $parser->get_sourcename ];
 
     $log->debug("Json to Post = ", {filter=>\&Dumper, value=>$json_to_post});
-
     $log->debug("posting to $path");
 
     my $json_returned = $scot->post( $path, $json_to_post );
@@ -329,8 +325,7 @@ sub process_message {
     unless (defined $json_returned) {
         $log->error("ERROR! Undefined transaction object $path ",
                     {filter=>\&Dumper, value=>$json_to_post});
-        print "post to scot failed!\n" if ($self->interactive eq "yes" or
-                                            $self->verbose == 1);
+        $self->output("Post to SCOT failed\n");
         return;
     }
     
@@ -338,13 +333,19 @@ sub process_message {
         $log->error("Failed posting new alertgroup mgs_uid:", $msghref->{imap_uid});
         $log->debug("tx->res is ",{filter=>\&Dumper, value=>$json_returned});
         $self->imap->mark_uid_unseen($msghref->{imap_uid});
-        print "post to scot failed!\n" if ($self->interactive eq "yes" or 
-                                            $self->verbose == 1);
+        $self->output("Post to SCOT failed.\n");
         return;
     }
-    print "posted to scot.\n" if ($self->interactive eq "yes" or 
-                                    $self->verbose == 1);
+    $self->output("---- posted to SCOT.\n");
     $log->trace("Created alertgroup ". $json_returned->{id});
+}
+
+sub output {
+    my $self    = shift;
+    my $msg     = shift;
+    if ( $self->interactive eq "yes" or $self->verbose == 1 ) {
+        print $msg;
+    }
 }
 
 sub already_processed {

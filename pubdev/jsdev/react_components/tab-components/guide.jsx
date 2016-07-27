@@ -43,7 +43,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['ID', 'Subject']
+var columns = ['id', 'Subject']
 
 module.exports = React.createClass({
 
@@ -353,7 +353,7 @@ module.exports = React.createClass({
                    // )
                     ))))),
                            React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'guide'}) : null) 
 ,
                         !this.state.alldetail ?
@@ -527,6 +527,8 @@ module.exports = React.createClass({
         $('.paging').css('width', width)
         $('.splitter').css('width', width)
         if(this.state.resize == 'vertical'){
+            width = 650
+            $('.container-fluid2').css('width', '100%')
             $('.paging').css('width', '100%')
             $('.splitter').css('width', '100%')
         }
