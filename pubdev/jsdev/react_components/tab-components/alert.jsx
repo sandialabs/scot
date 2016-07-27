@@ -43,7 +43,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['ID', 'Status', 'Subject', 'Created', 'Source', 'Tags', 'Views']
+var columns = ['id', 'Status', 'Subject', 'Created', 'Source', 'Tags', 'Views']
 var toggle
 var scrolled = 48
 module.exports = React.createClass({
@@ -135,6 +135,12 @@ module.exports = React.createClass({
 	                    var date = new Date(1000 * item)
 	                    finalarray[key][num] = date.toLocaleString()
 	                }
+                    else if (num == 'sources' || num == 'source'){
+                        finalarray[key]["sources"] = item
+                    }
+                    else if (num == 'tags' || num == 'tag'){
+                        finalarray[key]["tags"] = item
+                    }
 	                else{
 	                    finalarray[key][num] = item
 	                }
@@ -493,7 +499,7 @@ module.exports = React.createClass({
                         React.createElement("div", {className: "wrapper dates "+ this.state.sizearray[0]}, 
                             React.createElement("div", {className: "column date"}, value.created)), 
                         React.createElement('div', {className:'wrapper module-reporter '+ this.state.sizearray[2] + ' ' + this.state.classname[2]},
-                        React.createElement("div", {className: "column module"}, value.source), 
+                        React.createElement("div", {className: "column module"}, value.sources), 
                         React.createElement("div", {className: "column reporter"}, value.tags)), 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                             React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]},    
@@ -505,7 +511,7 @@ module.exports = React.createClass({
                     //)
                     //)
                     ))))), React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
                         React.createElement(SelectedContainer, {alertPreSelectedId: highlight ? this.props.supertable[0] : 0, height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null),
                         !this.state.alldetail ?
                         React.createElement('div', null,
@@ -534,6 +540,8 @@ module.exports = React.createClass({
         $('.paging').css('width', width)
         $('.splitter').css('width', width)
         if(this.state.resize == 'vertical'){
+            width = 650
+            $('.container-fluid2').css('width', '100%')
             $('.paging').css('width', '100%')
             $('.splitter').css('width', '100%')
         }
@@ -784,6 +792,12 @@ module.exports = React.createClass({
 	                    var date = new Date(1000 * item)
 	                    newarray[key][num] = date.toLocaleString()
 	                }
+                    else if (num == 'sources' || num == 'source'){
+                        newarray[key]["sources"] = item
+                    }
+                    else if (num == 'tags' || num == 'tag'){
+                        newarray[key]["tags"] = item
+                    }
 	                else{
 	                    newarray[key][num] = item
 	                }

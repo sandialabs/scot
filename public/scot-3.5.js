@@ -1275,7 +1275,7 @@ var Page = React.createClass({displayName: "Page",
             }
         }
         if (stateful) {
-            if(pageSize == 5 || pageSize == 10 || pageSize == 20){
+            if(pageSize == 50 || pageSize == 5 || pageSize == 10 || pageSize == 20){
                 $('.ref-verticalScrollbar').animate({
                 scrollTop: 0},"fast")
             }
@@ -4919,6 +4919,7 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
             statusColor = 'black';
         }
         if (this.props.type == 'alert') {
+            //aHref = '/#/alert/' + this.props.data.id;
             aHref = '/#/alertgroup/' + this.props.data.alertgroup;
             promotedHref = '/#/event/' + this.props.data.promotion_id;
         } else if (this.props.type == 'event') {
@@ -5201,7 +5202,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['ID', 'Status', 'Subject', 'Created', 'Source', 'Tags', 'Views']
+var columns = ['id', 'Status', 'Subject', 'Created', 'Source', 'Tags', 'Views']
 var toggle
 var scrolled = 48
 module.exports = React.createClass({displayName: "exports",
@@ -5293,6 +5294,12 @@ module.exports = React.createClass({displayName: "exports",
 	                    var date = new Date(1000 * item)
 	                    finalarray[key][num] = date.toLocaleString()
 	                }
+                    else if (num == 'sources' || num == 'source'){
+                        finalarray[key]["sources"] = item
+                    }
+                    else if (num == 'tags' || num == 'tag'){
+                        finalarray[key]["tags"] = item
+                    }
 	                else{
 	                    finalarray[key][num] = item
 	                }
@@ -5651,7 +5658,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement("div", {className: "wrapper dates "+ this.state.sizearray[0]}, 
                             React.createElement("div", {className: "column date"}, value.created)), 
                         React.createElement('div', {className:'wrapper module-reporter '+ this.state.sizearray[2] + ' ' + this.state.classname[2]},
-                        React.createElement("div", {className: "column module"}, value.source), 
+                        React.createElement("div", {className: "column module"}, value.sources), 
                         React.createElement("div", {className: "column reporter"}, value.tags)), 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                             React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]},    
@@ -5663,7 +5670,7 @@ module.exports = React.createClass({displayName: "exports",
                     //)
                     //)
                     ))))), React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
                         React.createElement(SelectedContainer, {alertPreSelectedId: highlight ? this.props.supertable[0] : 0, height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null),
                         !this.state.alldetail ?
                         React.createElement('div', null,
@@ -5692,6 +5699,8 @@ module.exports = React.createClass({displayName: "exports",
         $('.paging').css('width', width)
         $('.splitter').css('width', width)
         if(this.state.resize == 'vertical'){
+            width = 650
+            $('.container-fluid2').css('width', '100%')
             $('.paging').css('width', '100%')
             $('.splitter').css('width', '100%')
         }
@@ -5942,6 +5951,12 @@ module.exports = React.createClass({displayName: "exports",
 	                    var date = new Date(1000 * item)
 	                    newarray[key][num] = date.toLocaleString()
 	                }
+                    else if (num == 'sources' || num == 'source'){
+                        newarray[key]["sources"] = item
+                    }
+                    else if (num == 'tags' || num == 'tag'){
+                        newarray[key]["tags"] = item
+                    }
 	                else{
 	                    newarray[key][num] = item
 	                }
@@ -6155,7 +6170,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['ID', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
+var columns = ['id', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
 var toggle;
 var scrolled = 58
 function Remove(note){
@@ -6286,6 +6301,12 @@ module.exports = React.createClass({displayName: "exports",
 	                    var date = new Date(1000 * item)
 	                    finalarray[key][num] = date.toLocaleString()
 	                }
+                    else if (num == 'sources' || num == 'source'){
+                        finalarray[key]["sources"] = item
+                    }
+                    else if (num == 'tags' || num == 'tag'){
+                        finalarray[key]["tags"] = item
+                    }
 	                else{
 	                    finalarray[key][num] = item
 	                }
@@ -6692,8 +6713,8 @@ module.exports = React.createClass({displayName: "exports",
                             React.createElement("div", {className: "column date"}, value.created), 
                             React.createElement("div", {className: "column date"}, value.updated)),     
                         React.createElement('div', {className:'wrapper module-reporter ' + this.state.sizearray[2] + ' ' + this.state.classname[2]},
-                        React.createElement("div", {className: "column module"}, value.source), 
-                        React.createElement("div", {className: "column reporter"}, value.tags)), 
+                        React.createElement("div", {className: "column module"}, value.sources.join(',')), 
+                        React.createElement("div", {className: "column reporter"}, value.tags.join(','))), 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                             React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1] + ' ' + this.state.classname[3]},    
                             React.createElement("div", {className: "column status"}, value.owner), 
@@ -6707,7 +6728,7 @@ module.exports = React.createClass({displayName: "exports",
                    // )
                     ))))),
                            React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}),
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'event', viewEvent:this.viewEvent}) : null
                                                
@@ -6739,6 +6760,8 @@ module.exports = React.createClass({displayName: "exports",
         $('.paging').css('width', width)
         $('.splitter').css('width', width)
         if(this.state.resize == 'vertical'){
+            width = 650
+            $('.container-fluid2').css('width', '100%')
             $('.paging').css('width', '100%')
             $('.splitter').css('width', '100%')           
         }
@@ -7028,6 +7051,12 @@ module.exports = React.createClass({displayName: "exports",
 	                    var date = new Date(1000 * item)
 	                    newarray[key][num] = date.toLocaleString()
 	                }
+                    else if (num == 'sources' || num == 'source'){
+                        newarray[key]["sources"] = item
+                    }
+                    else if (num == 'tags' || num == 'tag'){
+                        newarray[key]["tags"] = item
+                    }
 	                else{
 	                    newarray[key][num] = item
 	                }
@@ -7313,7 +7342,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['ID', 'Subject']
+var columns = ['id', 'Subject']
 
 module.exports = React.createClass({displayName: "exports",
 
@@ -7623,7 +7652,7 @@ module.exports = React.createClass({displayName: "exports",
                    // )
                     ))))),
                            React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'guide'}) : null) 
 ,
                         !this.state.alldetail ?
@@ -7797,6 +7826,8 @@ module.exports = React.createClass({displayName: "exports",
         $('.paging').css('width', width)
         $('.splitter').css('width', width)
         if(this.state.resize == 'vertical'){
+            width = 650
+            $('.container-fluid2').css('width', '100%')
             $('.paging').css('width', '100%')
             $('.splitter').css('width', '100%')
         }
@@ -7913,7 +7944,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['ID', 'DOE', 'Status', 'Owner', 'Subject', 'Occurred', 'Type']
+var columns = ['id', 'DOE', 'Status', 'Owner', 'Subject', 'Occurred', 'Type']
 
 
 module.exports = React.createClass({displayName: "exports",
@@ -8143,6 +8174,8 @@ module.exports = React.createClass({displayName: "exports",
         $('.paging').css('width', width)
         $('.splitter').css('width', width)
         if(this.state.resize == 'vertical'){
+            width = 650 
+            $('.container-fluid2').css('width', '100%')
             $('.paging').css('width', '100%')
             $('.splitter').css('width', '100%')
         }
@@ -8416,7 +8449,7 @@ module.exports = React.createClass({displayName: "exports",
                    // )
                    // )
                     ))))),  React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'incident'}) : null) 
 ,
                         !this.state.alldetail ?
@@ -9111,7 +9144,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['ID', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
+var columns = ['id', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
 var toggle;
 var scrolled = 58
 function Remove(note){
@@ -9241,6 +9274,12 @@ module.exports = React.createClass({displayName: "exports",
 	                    var date = new Date(1000 * item)
 	                    finalarray[key][num] = date.toLocaleString()
 	                }
+                    else if (num == 'sources' || num == 'source'){
+                        finalarray[key]["sources"] = item
+                    }
+                    else if (num == 'tags' || num == 'tag'){
+                        finalarray[key]["tags"] = item
+                    }
 	                else{
 	                    finalarray[key][num] = item
 	                }
@@ -9646,8 +9685,8 @@ module.exports = React.createClass({displayName: "exports",
                             React.createElement("div", {className: "column date"}, value.created), 
                             React.createElement("div", {className: "column date"}, value.updated)),     
                         React.createElement('div', {className:'wrapper module-reporter ' + this.state.sizearray[2] + ' ' + this.state.classname[2]},
-                        React.createElement("div", {className: "column module"}, value.source), 
-                        React.createElement("div", {className: "column reporter"}, value.tags)), 
+                        React.createElement("div", {className: "column module"}, value.sources.join(',')), 
+                        React.createElement("div", {className: "column reporter"}, value.tags.join(','))), 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                             React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1] + ' ' + this.state.classname[3]},    
                             React.createElement("div", {className: "column status"}, value.owner), 
@@ -9661,7 +9700,7 @@ module.exports = React.createClass({displayName: "exports",
                    // )
                     ))))),
                            React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'intel', viewEvent:this.viewEvent}) : null
                                                
@@ -9710,6 +9749,8 @@ module.exports = React.createClass({displayName: "exports",
         $('.paging').css('width', width)
         $('.splitter').css('width', width)
         if(this.state.resize == 'vertical'){
+            width = 650
+            $('.container-fluid2').css('width', '100%')
             $('.paging').css('width', '100%')
             $('.splitter').css('width', '100%')
         }
@@ -9982,6 +10023,12 @@ module.exports = React.createClass({displayName: "exports",
 	                    var date = new Date(1000 * item)
 	                    newarray[key][num] = date.toLocaleString()
 	                }
+                    else if (num == 'sources' || num == 'source'){
+                        newarray[key]["sources"] = item
+                    }
+                    else if (num == 'tags' || num == 'tag'){
+                        newarray[key]["tags"] = item
+                    }
 	                else{
 	                    newarray[key][num] = item
 	                }
@@ -10268,7 +10315,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['Type', 'ID', 'Status', 'Owner', 'Entry', 'Updated']
+var columns = ['Type', 'id', 'Status', 'Owner', 'Entry', 'Updated']
 
 module.exports = React.createClass({displayName: "exports",
 
@@ -10648,7 +10695,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement("div", {className: "wrapper dates "+this.state.sizearray[0]},
                             React.createElement("div", {className: "column date"}, value.updated))))))))),
                                            React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}),        
-                React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ?
+                React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ?
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: this.state.type, taskid: this.state.entry}) : null),
                         !this.state.alldetail ?
                         React.createElement('div', null,
@@ -10748,6 +10795,8 @@ module.exports = React.createClass({displayName: "exports",
         $('.paging').css('width', width)
         $('.splitter').css('width', width)
         if(this.state.resize == 'vertical'){
+            width = 650
+            $('.container-fluid2').css('width', '100%')
             $('.paging').css('width', '100%')
             $('.splitter').css('width', '100%')
         }
