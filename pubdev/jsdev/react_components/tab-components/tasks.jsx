@@ -43,7 +43,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['Type', 'ID', 'Status', 'Owner', 'Entry', 'Updated']
+var columns = ['Type', 'id', 'Status', 'Owner', 'Entry', 'Updated']
 
 module.exports = React.createClass({
 
@@ -423,7 +423,7 @@ module.exports = React.createClass({
                         React.createElement("div", {className: "wrapper dates "+this.state.sizearray[0]},
                             React.createElement("div", {className: "column date"}, value.updated))))))))),
                                            React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}),        
-                React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ?
+                React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ?
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: this.state.type, taskid: this.state.entry}) : null),
                         !this.state.alldetail ?
                         React.createElement('div', null,
@@ -523,6 +523,8 @@ module.exports = React.createClass({
         $('.paging').css('width', width)
         $('.splitter').css('width', width)
         if(this.state.resize == 'vertical'){
+            width = 650
+            $('.container-fluid2').css('width', '100%')
             $('.paging').css('width', '100%')
             $('.splitter').css('width', '100%')
         }
