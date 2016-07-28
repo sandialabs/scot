@@ -100,4 +100,16 @@ sub get_total_appearances {
     return $cursor->count;
 }
 
+sub get_display_count {
+    my $self    = shift;
+    my $entity  = shift;
+    my $cursor  = $self->find({
+        'entity_id'   => $entity->id,
+        'target.type' => {
+            '$nin'  => [ 'alertgroup', 'entry' ]
+        }
+    });
+    return $cursor->count;
+}
+
 1;
