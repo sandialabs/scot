@@ -2325,7 +2325,8 @@ sub get_entity_count {
     my $mongo   = $env->mongo;
     my $col     = $mongo->collection('Link');
     my $timer   = $env->get_timer("get_entity_count");
-    my $count   = $col->get_total_appearances($entity);
+    #my $count   = $col->get_total_appearances($entity);
+    my $count   = $col->get_display_count($entity);
     &$timer;
     return $count;
 }
