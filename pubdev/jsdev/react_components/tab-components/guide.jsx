@@ -323,7 +323,7 @@ module.exports = React.createClass({
                             React.createElement("div", {className: "wrapper title-comment"}, 
                        
                             React.createElement('div', {style: {display: 'flex'}},
-                            React.createElement("div", {className: "column title"}, "Subject"),
+                            React.createElement("div", {className: "column title"}, "Applies To"),
                             this.state.subjectarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.subjectarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.subjectarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.subjectarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.subjectarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '120px', position: 'relative'}}) : null))))) 
                     )
                     ), 
@@ -344,7 +344,7 @@ module.exports = React.createClass({
                             React.createElement("div", {className: 'column index'}, value.id))),
                         React.createElement("div", {className: "wrapper title-comment-module-reporter"}, 
                             React.createElement("div", {className: "wrapper title-comment"},  
-                            React.createElement("div", {className: "column title"}, value.subject) 
+                            React.createElement("div", {className: "column title"}, value.applies_to[0]) 
                             )
                         )
                         )
