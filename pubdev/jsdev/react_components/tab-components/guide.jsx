@@ -575,7 +575,7 @@ module.exports = React.createClass({
             this.setState({idtext: ''})
         }
         else if($($(v.currentTarget).find('.clear').context).attr('value') == 'subject'){
-            delete filter.subject
+            delete filter.applies_to
             this.refs.myPopOversubject.hide()
             this.setState({subjecttext: ''})
         }
