@@ -7342,7 +7342,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['id', 'Subject']
+var columns = ['id', 'Applies_to']
 
 module.exports = React.createClass({displayName: "exports",
 
@@ -7609,7 +7609,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, 
                         React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOversubject', rootClose: true, overlay: React.createElement(Popover, null, 
                         React.createElement('div', {className: 'Filter and Sort', id: 'subjectheader'}, React.createElement('div',
-                        {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Subject'), React.createElement('div', 
+                        {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Applies To'), React.createElement('div', 
                         {style:{'padding-left': '80px'}}, 'Sort'), 
                         React.createElement('btn-group', null, 
                         React.createElement('button', {style: {height:'5px'},value: 'subject', id: -1, onClick: this.handlesort, className: 'sort glyphicon glyphicon-triangle-top'}),
@@ -7686,7 +7686,7 @@ module.exports = React.createClass({displayName: "exports",
                 this.setState({idtext: $('.idinput').val()})
             }
             else if($($(v.currentTarget).find('.subjectinput').context).attr('id') == 'subject'){
-                filter['subject'] = $('.subjectinput').val()
+                filter['applies_to'] = $('.subjectinput').val()
                 this.refs.myPopOversubject.hide()
                 this.setState({subjecttext: $('.subjectinput').val()})
             }
@@ -7793,7 +7793,7 @@ module.exports = React.createClass({displayName: "exports",
 , Number($($(v.currentTarget).find('.sort').context).attr('id'))]})
         }
         else if($($(v.currentTarget).find('.sort').context).attr('value') == 'subject'){
-            sortarray['subject'] = Number($($(v.currentTarget).find('.sort').context).attr('id')) 
+            sortarray['applies_to'] = Number($($(v.currentTarget).find('.sort').context).attr('id')) 
             this.refs.myPopOversubject.hide()
             this.setState({subjectarrow: [Number($($(v.currentTarget).find('.sort').context).attr('id'))
 , Number($($(v.currentTarget).find('.sort').context).attr('id'))]})
@@ -7888,7 +7888,7 @@ module.exports = React.createClass({displayName: "exports",
             this.setState({idtext: $('.idinput').val()})
         }
         else if($($(v.currentTarget).find('.filter').context).attr('value') == 'subject'){
-            filter['subject'] = $('.subjectinput').val()
+            filter['applies_to'] = $('.subjectinput').val()
             this.refs.myPopOversubject.hide()
             this.setState({subjecttext: $('.subjectinput').val()})
         }
