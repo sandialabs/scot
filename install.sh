@@ -314,7 +314,7 @@ EOF
         chmod -R g+w /var/log/activemq
     fi
 
-    if [ $REFRESH_AMQ_CONFIG == "yes" ]; then
+    if [ $REFRESH_AMQ_CONFIG == "yes" || ! -d $AMQDIR/webapps/scot ]; then
         echo "+ adding/refreshing scot activemq config"
         echo "- removing $AMQDIR/webapps/scot"
         rm -rf $AMQDIR/webapps/scot

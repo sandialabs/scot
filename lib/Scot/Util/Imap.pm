@@ -136,7 +136,7 @@ sub _connect_to_imap {
     return $client;
 }
 
-sub check_imap_connection {
+sub reconnect_if_forked {
     my $self    = shift;
     my $log     = $self->log;
 
@@ -152,7 +152,7 @@ sub get_mail_since {
     my $self    = shift;
     my $epoch   = shift;
     my $log     = $self->log;
-    $self->check_imap_connection;
+    $self->reconnect_if_forked;
     my $client  = $self->client;
     my $since_epoch = $epoch;
 
@@ -163,11 +163,21 @@ sub get_mail_since {
         $since_epoch = time() - $seconds_ago;
     }
 
-    $client->select($self->mailbox);
+    retry {
+        $client->select($self->mailbox);
+    }
+    on_retry {
+        $self->clear_client_connection;
+    }
+    catch {
+        $log->error("Failed to reconnect to IMAP server to perform select");
+        $log->error($_);
+        die "Failed to reconnect to IMAP server for select operation\n";
+    };
     $client->Peek(1);   # do not mark messages as read
 
     my @uids;
-    $self->self->log->debug("Lookin for messages since $since_epoch");
+    $self->log->debug("Lookin for messages since $since_epoch");
 
     foreach my $message_id ($client->since($since_epoch)) {
         if ( $message_id =~ $MSG_ID_FMT ) {
@@ -180,16 +190,24 @@ sub get_mail_since {
 sub get_unseen_mail {
     my $self    = shift;
     my $log     = $self->log;
-    $self->check_imap_connection;
+    $self->reconnect_if_forked;
     my $client  = $self->client;
 
     $log->trace("Retrieving unseen mail");
 
-    $client->select($self->mailbox);
-    
-    my @unseen_uids = $client->unseen; 
-
-    $log->debug("Unseen Mail: ",{filter=>\&Dumper, value=>\@unseen_uids});
+    my @unseen_uids;
+    retry {
+        $client->select($self->mailbox);
+        @unseen_uids = $client->unseen; 
+        $log->debug("Unseen Mail: ",{filter=>\&Dumper, value=>\@unseen_uids});
+    }
+    on_retry {
+        $self->clear_client_connection;
+    }
+    catch {
+        $log->error("Failed to get unseen messages: $_");
+        die "Failed to get unseen messages\n";
+    };
 
     if ( scalar(@unseen_uids) == 0 ) {
         $log->warn("No unseen messages...");
@@ -205,6 +223,21 @@ sub get_unseen_cursor {
     my @uids    = $self->get_unseen_mail;
     my $cursor  = Scot::Util::Imap::Cursor->new({uids => \@uids});
     return $cursor;
+}
+
+sub see {
+    my $self    = shift;
+    my $uid     = shift;
+    my $log     = $self->log;
+    retry {
+        $self->client->see($uid);
+    }
+    on_retry {
+        $self->clear_client_connection;
+    }
+    catch {
+        $log->error("Failed to mark message $uid as seen");
+    };
 }
 
 sub get_since_cursor {
@@ -242,35 +275,60 @@ sub mark_uid_unseen {
     my $self    = shift;
     my $uid     = shift;
     my $log     = $self->log;
-    $self->check_imap_connection;
+    $self->reconnect_if_forked;
     my $client  = $self->client;
     my @usuid   = ( $uid );
 
     $log->trace("marking message $uid as unseen");
 
-
-    if ( $client->unset_flag('\Seen', @usuid) ) {
-        $log->trace("UID $uid is now unseen");
+    retry {
+        $client->unset_flag('\Seen', @usuid);
+    } 
+    on_retry {
+        $self->clear_client_connection;
     }
-    else {
+    catch {
         $log->error("Failed to mark $uid as unseen");
     }
 }
+
+sub delete_message {
+    my $self    = shift;
+    my $uid     = shift;
+    my $log     = $self->log;
+    $self->reconnect_if_forked;
+    my $client  = $self->client;
+    my $usuid   = [ $uid ];
+
+    retry {
+        $client->delete_message($usuid);
+    }
+    on_retry {
+        $self->clear_client_connection;
+    }
+    catch {
+        $log->error("Error deleting $uid");
+    };
+}
+
 
 sub get_message {
     my $self    = shift;
     my $uid     = shift;
     my $peek    = shift;
     my $log     = $self->log;
-    $self->check_imap_connection;
+    $self->reconnect_if_forked;
     my $client  = $self->client;
 
     $log->trace("Getting Message uid=$uid");
 
     my $envelope;
-    try {
+    retry {
         $envelope    = $client->get_envelope($uid);
         $log->trace("Envelope is ",{filter=>\&Dumper,value=>$envelope});
+    }
+    on_retry {
+        $self->clear_client_connection;
     }
     catch {
         $log->error("Error from IMAP: $_");
@@ -324,7 +382,7 @@ sub extract_body {
 sub get_subject {
     my $self    = shift;
     my $uid     = shift;
-    $self->check_imap_connection;
+    $self->reconnect_if_forked;
     my $client  = $self->client;
     my $log     = $self->log;
 
@@ -365,7 +423,7 @@ sub get_to {
 sub get_when {
     my $self    = shift;
     my $uid     = shift;
-    $self->check_imap_connection;
+    $self->reconnect_if_forked;
     my $client  = $self->client;
     my $log     = $self->log;
     my $msgstring   = retry {
@@ -391,7 +449,7 @@ sub get_when {
 sub get_message_id {
     my $self    = shift;
     my $uid     = shift;
-    $self->check_imap_connection;
+    $self->reconnect_if_forked;
     my $client  = $self->client;
     my $log     = $self->log;
 

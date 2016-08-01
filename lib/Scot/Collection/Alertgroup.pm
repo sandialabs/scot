@@ -113,7 +113,8 @@ sub create_from_api {
             action  => "created", 
             data    => {
                 type        => "alert",
-                id          => $alert->id
+                id          => $alert->id,
+                who         => $request->{user},
             }
         });
 
