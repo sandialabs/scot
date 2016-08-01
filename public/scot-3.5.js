@@ -1171,7 +1171,7 @@ var Search = React.createClass({displayName: "Search",
                         React.createElement(SearchBox, {autofocus: true, searchOnChange: true})
                             ),
                 React.createElement(Draggable, {handle: '#handle1' ,onMouseDown:this.moveDivInit},
-                React.createElement("div", {style: {transform: 'translate(117px, 49px)', 'background-color': '#FFF'},id: "dragme1", className: "box react-draggable searchPopUp"},
+                React.createElement("div", {style: {transform: 'translate(117px, 49px)', 'background-color': '#FFF', overflow: 'hidden'},id: "dragme1", className: "box react-draggable searchPopUp"},
                     React.createElement("div", {className: 'search_results', id: "search_container", style: {height: '100%', flexFlow: 'column', display: 'none'}},
                         React.createElement("div", {id: "handle1", style: {width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.close})))),
                         React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}},
@@ -1194,6 +1194,7 @@ var Search = React.createClass({displayName: "Search",
                         React.createElement('div', {className: 'column title'}, 'Snippet(s)')))
                             )), 
                             React.createElement(Hits, {hitsPerPage: 10, itemComponent: Results, mod: 'sk-hits-list', highlightFields:['id']})),
+                            
                             React.createElement(Pagination, {showNumbers: true})),
                         React.createElement("div", {onMouseDown: this.initDrag, id: "footer", style: {display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}
                         )
@@ -1241,6 +1242,11 @@ var Search = React.createClass({displayName: "Search",
     var elem2 = document.getElementById('container1')
     elem2.style.width = (startWidth + e.clientX - startX) + 'px';
     elem2.style.height = (startHeight + e.clientY - startY - 147) + 'px';   
+    $('#dragme1').each(function(x, y){
+        var height = elem.style.height.replace('px', '')
+        $(y).find('.is-numbered').css('width', elem.style.width)
+        $(y).find('.sk-hits-list').css({'overflow': 'auto', 'height': height - 185 + 'px'}) 
+    })
     },
     stopDrag: function(e) {
         document.documentElement.removeEventListener('mousemove', this.doDrag, false);    document.documentElement.removeEventListener('mouseup', this.stopDrag, false);
