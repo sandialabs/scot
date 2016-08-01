@@ -100,12 +100,15 @@ sub enrich {
     my $force   = 1;    # always refresh data
     my $data    = {};   # put enrichments here
     my $log     = $self->log;
-
     my $update_count    = 0;
 
-    my $etype   = $entity->type;
+    if (ref($entity) eq "Scot::Model::Entity") {
+        $entity = $entity->as_hash;
+    }
 
-    $log->debug("Entity ". $entity->value. " Type is $etype");
+    my $etype   = $entity->{type};
+
+    $log->debug("Entity ". $entity->{value}. " Type is $etype");
 
     my $eset    = $self->mappings->{$etype};
 
@@ -141,12 +144,12 @@ sub enrich {
 
             if ( $enricher->{type} =~ /link/i ) {
 
-                if ( defined $entity->data->{$enricher_name} ) {
+                if ( defined $entity->{data}->{$enricher_name} ) {
                     if ( $force ) {
                         $data->{$enricher_name} = {
                             type    => 'link',
                             data    => {
-                                url => sprintf($enricher->{url}, $entity->value),
+                                url => sprintf($enricher->{url}, $entity->{value}),
                                 title   => $enricher->{title},
                             },
                         };
@@ -157,7 +160,7 @@ sub enrich {
                     $data->{$enricher_name} = {
                         type    => 'link',
                         data    => {
-                            url => sprintf($enricher->{url}, $entity->value),
+                            url => sprintf($enricher->{url}, $entity->{value}),
                             title   => $enricher->{title},
                         },
                     };
@@ -175,7 +178,7 @@ sub enrich {
         else {
             # this is for native modules
 
-            if ( defined $entity->data->{$enricher_name}) {
+            if ( defined $entity->{data}->{$enricher_name}) {
                 # we have a cache of enrichment data for this type already
                 if ( ! defined $force ) {
                     # so unless $force is defined, do not refresh
@@ -184,8 +187,8 @@ sub enrich {
             }
             my $entity_data;
             try {
-                $entity_data = $enricher->get_data($entity->type, 
-                                                  $entity->value);
+                $entity_data = $enricher->get_data($entity->{type}, 
+                                                  $entity->{value});
             }
             catch {
                 $log->error("Failed to Get Enrichment data for ",
