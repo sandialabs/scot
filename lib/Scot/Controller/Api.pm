@@ -35,6 +35,8 @@ sub create {
     my $mongo   = $env->mongo;
     my $user    = $self->session('user');
 
+    $user = "DOOFUS" unless ($user);
+
     $log->trace("------------");
     $log->trace("Handler is processing a POST (create) from $user");
     $log->trace("------------");
@@ -107,6 +109,7 @@ sub create {
     }
 
     # $env->amq->send_amq_notification("creation", $object, $user);
+    $log->debug("HEY USER IS $user");
     $env->mq->send("scot", {
         action  => "created",
         data    => {
@@ -730,6 +733,7 @@ sub update {
     my $mongo   = $env->mongo;
     my $log     = $env->log;
     my $user    = $self->session('user');
+    $user = "DOOFUS" unless ($user);
 
     $log->trace("------------");
     $log->trace("API is processing a PUT update request from $user");

@@ -15,6 +15,9 @@ sub will_parse {
     if ( $subject =~ /splunk alert/i ) {
         return 1;
     }
+    if ( $from eq 'splunk@sandia.gov' ) {
+        return 1;
+    }
     return undef;
 }
 
@@ -100,15 +103,21 @@ sub parse_message {
 }
 
 sub get_splunk_report_info {
-    my $self    = shift;
-    my $tree    = shift;
-    my $top_table       = ( $tree->look_down('_tag', 'table') )[0];
-    my @top_table_tds   = $top_table->look_down('_tag', 'td');
-    my $alertname       = $top_table_tds[0]->as_text;
+    my $self          = shift;
+    my $tree          = shift;
+    my $top_table     = ( $tree->look_down('_tag', 'table') )[0];
+    unless ( $top_table ) {
+        return "splunk parse error", "see source for search";
+    }
+    my @top_table_tds = $top_table->look_down('_tag', 'td');
 
-    my $search          = "splunk is not sending the search terms";
+    my $search        = "splunk is not sending the search terms";
     if ( scalar(@top_table_tds) > 1 ) {
-        $search         = $top_table_tds[1]->as_text;
+        $search       = $top_table_tds[1]->as_text;
+    }
+    my $alertname     = "unknown alert name";
+    if ( defined $top_table_tds[0] ) {
+        $alertname = $top_table_tds[0]->as_text;
     }
     return $alertname, $search;
 }
