@@ -138,7 +138,7 @@ sub enrich {
             next NAME;
         }
 
-        $log->debug("Enricher Hash is ",{filter=>\&Dumper, value=>$enricher});
+        # $log->debug("Enricher Hash is ",{filter=>\&Dumper, value=>$enricher});
 
         if ( ref($enricher) eq "HASH" ) {
 
