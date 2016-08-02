@@ -347,6 +347,18 @@ sub get_many {
 
     my @things = $cursor->all;
 
+    $log->debug("req_href is ",{filter=>\&Dumper, value => $req_href});
+    my $selected_fields = $self->build_fields($req_href);
+    if ( $selected_fields ) {
+        foreach my $thing (@things) {
+            foreach my $key (keys %$thing) {
+                unless ( $selected_fields->{$key} ) {
+                    delete $thing->{$key};
+                }
+            }
+        }
+    }
+
     $log->trace("submitting for render");
 
     $self->do_render({
@@ -1709,15 +1721,20 @@ set the fields that you wish to return
 sub build_fields {
     my $self        = shift;
     my $href        = shift;
-    my $params      = $href->{params};
+    my $params      = $href->{request}->{params};
     my $aref        = $params->{fields};
+    my $log         = $self->env->log;
     my %fields;
 
+    $log->debug("Looking for field limit",{filter=>\&Dumper, value=>$params});
+
     foreach my $f (@$aref) {
+        $log->debug("Limit field to $f");
         $fields{$f} = 1;
     }
 
     if ( scalar(keys %fields) > 0 ) {
+        $log->debug("only want these fields:",{filter=>\&Dumper, value=>\%fields});
         return \%fields;
     }
     return undef;
@@ -1825,7 +1842,7 @@ sub get_request_params  {
             json    => $json,
         },
     );
-
+    # $log->debug("Request is ",{ filter => \&Dumper, value => \%request } );
     return wantarray ? %request : \%request;
 }
 
