@@ -305,7 +305,7 @@ module.exports = React.createClass({
                         React.createElement('button', {value: 'id',className:'filter btn btn-default', onClick: this.handlefilter}, 'Filter')))
                         )}, 
                         React.createElement('div', {style: {display: 'flex'}},
-                        React.createElement('div',{className: 'column index'}, 'ID'), this.state.idarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.idarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.idarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '30px', position: 'relative'}}) : null))))),
+                        React.createElement('div',{style: {width: '87px'}, className: 'column index'}, 'ID'), this.state.idarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.idarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.idarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '30px', position: 'relative'}}) : null))))),
                         React.createElement("div", {className: "wrapper title-comment-module-reporter"}, 
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, 
                         React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOversubject', rootClose: true, overlay: React.createElement(Popover, null, 
@@ -341,7 +341,7 @@ module.exports = React.createClass({
                         React.createElement("div", {className: "wrapper attributes " + this.state.classname[1]},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                         React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]}, 
-                            React.createElement("div", {className: 'column index'}, value.id))),
+                            React.createElement("div", {style: {width: '100px'}, className: 'column index'}, value.id))),
                         React.createElement("div", {className: "wrapper title-comment-module-reporter"}, 
                             React.createElement("div", {className: "wrapper title-comment"},  
                             React.createElement("div", {className: "column title"}, value.applies_to[0]) 
