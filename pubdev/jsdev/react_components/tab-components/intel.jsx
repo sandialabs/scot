@@ -41,7 +41,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['ID', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
+var columns = ['id', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
 var toggle;
 var scrolled = 58
 function Remove(note){
@@ -171,6 +171,12 @@ module.exports = React.createClass({
 	                    var date = new Date(1000 * item)
 	                    finalarray[key][num] = date.toLocaleString()
 	                }
+                    else if (num == 'sources' || num == 'source'){
+                        finalarray[key]["sources"] = item
+                    }
+                    else if (num == 'tags' || num == 'tag'){
+                        finalarray[key]["tags"] = item
+                    }
 	                else{
 	                    finalarray[key][num] = item
 	                }
@@ -350,7 +356,7 @@ module.exports = React.createClass({
                         React.createElement('button', {value: 'id',className:'filter btn btn-default', onClick: this.handlefilter}, 'Filter')))
                         )},
                         React.createElement('div', {style: {display: 'flex'}},
-                        React.createElement('div',{className: 'column index'}, 'ID'), this.state.idarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.idarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.idarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '30px', position: 'relative'}}) : null))),
+                        React.createElement('div',{style: {width: '87px'}, className: 'column index'}, 'ID'), this.state.idarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.idarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.idarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '30px', position: 'relative'}}) : null))),
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOverstatus', rootClose: true, overlay: React.createElement(Popover, null, 
                         React.createElement('div', {className: 'Filter and Sort', id: 'statusheader'}, React.createElement('div',
                         {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Status'), React.createElement('div', 
@@ -565,7 +571,7 @@ module.exports = React.createClass({
                         React.createElement("div", {className: "wrapper attributes " + this.state.classname[1]},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                         React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1] + ' ' + this.state.classname[3]}, 
-                            React.createElement("div", {className: 'column index'}, value.id),
+                            React.createElement("div", {style: {width: '100px'}, className: 'column index'}, value.id),
                             React.createElement("div", {className: "column owner colorstatus"}, value.status))),
                         React.createElement("div", {className: "wrapper title-comment-module-reporter"}, 
                             React.createElement("div", {className: "wrapper title-comment"},  
@@ -576,8 +582,8 @@ module.exports = React.createClass({
                             React.createElement("div", {className: "column date"}, value.created), 
                             React.createElement("div", {className: "column date"}, value.updated)),     
                         React.createElement('div', {className:'wrapper module-reporter ' + this.state.sizearray[2] + ' ' + this.state.classname[2]},
-                        React.createElement("div", {className: "column module"}, value.source), 
-                        React.createElement("div", {className: "column reporter"}, value.tags)), 
+                        React.createElement("div", {className: "column module"}, value.sources.join(',')), 
+                        React.createElement("div", {className: "column reporter"}, value.tags.join(','))), 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                             React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1] + ' ' + this.state.classname[3]},    
                             React.createElement("div", {className: "column status"}, value.owner), 
@@ -591,7 +597,7 @@ module.exports = React.createClass({
                    // )
                     ))))),
                            React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'intel', viewEvent:this.viewEvent}) : null
                                                
@@ -914,6 +920,12 @@ module.exports = React.createClass({
 	                    var date = new Date(1000 * item)
 	                    newarray[key][num] = date.toLocaleString()
 	                }
+                    else if (num == 'sources' || num == 'source'){
+                        newarray[key]["sources"] = item
+                    }
+                    else if (num == 'tags' || num == 'tag'){
+                        newarray[key]["tags"] = item
+                    }
 	                else{
 	                    newarray[key][num] = item
 	                }

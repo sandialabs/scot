@@ -43,7 +43,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['ID', 'Subject']
+var columns = ['id', 'Applies_to']
 
 module.exports = React.createClass({
 
@@ -305,12 +305,12 @@ module.exports = React.createClass({
                         React.createElement('button', {value: 'id',className:'filter btn btn-default', onClick: this.handlefilter}, 'Filter')))
                         )}, 
                         React.createElement('div', {style: {display: 'flex'}},
-                        React.createElement('div',{className: 'column index'}, 'ID'), this.state.idarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.idarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.idarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '30px', position: 'relative'}}) : null))))),
+                        React.createElement('div',{style: {width: '87px'}, className: 'column index'}, 'ID'), this.state.idarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.idarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.idarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '30px', position: 'relative'}}) : null))))),
                         React.createElement("div", {className: "wrapper title-comment-module-reporter"}, 
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, 
                         React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOversubject', rootClose: true, overlay: React.createElement(Popover, null, 
                         React.createElement('div', {className: 'Filter and Sort', id: 'subjectheader'}, React.createElement('div',
-                        {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Subject'), React.createElement('div', 
+                        {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Applies To'), React.createElement('div', 
                         {style:{'padding-left': '80px'}}, 'Sort'), 
                         React.createElement('btn-group', null, 
                         React.createElement('button', {style: {height:'5px'},value: 'subject', id: -1, onClick: this.handlesort, className: 'sort glyphicon glyphicon-triangle-top'}),
@@ -323,7 +323,7 @@ module.exports = React.createClass({
                             React.createElement("div", {className: "wrapper title-comment"}, 
                        
                             React.createElement('div', {style: {display: 'flex'}},
-                            React.createElement("div", {className: "column title"}, "Subject"),
+                            React.createElement("div", {className: "column title"}, "Applies To"),
                             this.state.subjectarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.subjectarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.subjectarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.subjectarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.subjectarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '120px', position: 'relative'}}) : null))))) 
                     )
                     ), 
@@ -341,10 +341,10 @@ module.exports = React.createClass({
                         React.createElement("div", {className: "wrapper attributes " + this.state.classname[1]},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                         React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]}, 
-                            React.createElement("div", {className: 'column index'}, value.id))),
+                            React.createElement("div", {style: {width: '100px'}, className: 'column index'}, value.id))),
                         React.createElement("div", {className: "wrapper title-comment-module-reporter"}, 
                             React.createElement("div", {className: "wrapper title-comment"},  
-                            React.createElement("div", {className: "column title"}, value.subject) 
+                            React.createElement("div", {className: "column title"}, value.applies_to[0]) 
                             )
                         )
                         )
@@ -353,7 +353,7 @@ module.exports = React.createClass({
                    // )
                     ))))),
                            React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'guide'}) : null) 
 ,
                         !this.state.alldetail ?
@@ -387,7 +387,7 @@ module.exports = React.createClass({
                 this.setState({idtext: $('.idinput').val()})
             }
             else if($($(v.currentTarget).find('.subjectinput').context).attr('id') == 'subject'){
-                filter['subject'] = $('.subjectinput').val()
+                filter['applies_to'] = $('.subjectinput').val()
                 this.refs.myPopOversubject.hide()
                 this.setState({subjecttext: $('.subjectinput').val()})
             }
@@ -494,7 +494,7 @@ module.exports = React.createClass({
 , Number($($(v.currentTarget).find('.sort').context).attr('id'))]})
         }
         else if($($(v.currentTarget).find('.sort').context).attr('value') == 'subject'){
-            sortarray['subject'] = Number($($(v.currentTarget).find('.sort').context).attr('id')) 
+            sortarray['applies_to'] = Number($($(v.currentTarget).find('.sort').context).attr('id')) 
             this.refs.myPopOversubject.hide()
             this.setState({subjectarrow: [Number($($(v.currentTarget).find('.sort').context).attr('id'))
 , Number($($(v.currentTarget).find('.sort').context).attr('id'))]})
@@ -575,7 +575,7 @@ module.exports = React.createClass({
             this.setState({idtext: ''})
         }
         else if($($(v.currentTarget).find('.clear').context).attr('value') == 'subject'){
-            delete filter.subject
+            delete filter.applies_to
             this.refs.myPopOversubject.hide()
             this.setState({subjecttext: ''})
         }
@@ -589,7 +589,7 @@ module.exports = React.createClass({
             this.setState({idtext: $('.idinput').val()})
         }
         else if($($(v.currentTarget).find('.filter').context).attr('value') == 'subject'){
-            filter['subject'] = $('.subjectinput').val()
+            filter['applies_to'] = $('.subjectinput').val()
             this.refs.myPopOversubject.hide()
             this.setState({subjecttext: $('.subjectinput').val()})
         }

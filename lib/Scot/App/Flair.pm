@@ -88,7 +88,7 @@ has scot        => (
 
 sub _build_scot_scot {
     my $self    = shift;
-    say Dumper($self->config);
+    # say Dumper($self->config);
     return Scot::Util::Scot->new({
         log         => $self->log,
         servername  => $self->config->{scot}->{servername},
@@ -117,9 +117,8 @@ has enrichers   => (
 sub _get_enrichers {
     my $self            = shift;
     my $enrichconfig    = $self->config->{enrichments};
-    my $conf            = $self->get_config($enrichconfig);
-    $conf->{log} = $self->log;
-    return Scot::Util::Enrichments->new($conf);
+    $enrichconfig->{log} = $self->log;
+    return Scot::Util::Enrichments->new($enrichconfig);
 }
 
 sub reprocess {
@@ -212,6 +211,10 @@ sub run {
             # read $body to determine alert or entry number
             my $json    = decode_json $body;
             $log->debug("body   : ", { filter => \&Dumper, value => $json});
+            say "----------------- JSON Message -------------";
+            say Dumper($json);
+            say "----------------- ------------ -------------";
+            
             my $type    = $json->{data}->{type};
             my $id      = $json->{data}->{id};
             my $who     = $json->{data}->{who};
