@@ -153,7 +153,7 @@ var SelectedHeaderOptions = React.createClass({
             for (i=0; i < array.length; i++) {
                 if ($.isNumeric(text)) {
                     var data = {
-                        promote:text
+                        promote:parseInt(text)
                     }
                     $.ajax({
                         type: 'PUT',
