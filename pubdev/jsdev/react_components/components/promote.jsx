@@ -1,4 +1,4 @@
-React           = require('react');
+var React           = require('react');
 
 var Promote = React.createClass({
     getInitialState: function () {

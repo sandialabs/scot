@@ -106,19 +106,35 @@ var SelectedHeaderOptions = React.createClass({
             var id = $(tr).attr('id');
             array.push(id);
         }.bind(this));
-        for (i=0; i < array.length; i++) {
-            $.ajax({
-                type:'put',
-                url: '/scot/api/v2/alert/'+array[i],
-                data: data,
-                success: function(response){
-                    console.log('success');
-                }.bind(this),
-                error: function() {
-                    console.log('failure');
-                }.bind(this)
-            })
-        }
+        //Start by promoting the first one in the array
+        $.ajax({
+            type:'put',
+            url: '/scot/api/v2/alert/'+array[0],
+            data: data,
+            success: function(response){
+                //With the entry number, promote the others into the existing event
+                var promoteTo = {
+                    promote:response.pid
+                }
+                for (i=1; i < array.length; i++) {
+                    $.ajax({
+                        type:'put',
+                        url: '/scot/api/v2/alert/'+array[i],
+                        data: JSON.stringify(promoteTo),
+                        success: function(response){
+                            console.log('success');
+                        }.bind(this),
+                        error: function() {
+                            console.log('failure');
+                        }.bind(this)
+                    })
+                }
+            }.bind(this),
+            error: function() {
+                console.log('failure');
+            }.bind(this)
+        })
+        
     },
     /*Future use?
     alertUnpromoteSelected: function() {
