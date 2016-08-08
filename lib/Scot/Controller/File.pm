@@ -140,44 +140,11 @@ sub create_file_upload_entry {
     my $fid         = $fileobj->id;
     my $env         = $self->env;
     my $mongo       = $env->mongo;
-    my $log         = $env->log;
-    my $htmlsrc     = <<EOF;
-<div class="fileinfo">
-    <table>
-        <tr>
-            <th>File Id</th>%d</td>
-            <th>Filename</th><td>%s</td>
-            <th>Size</th><td>%s</td>
-            <th>md5</th><td>%s</td>
-            <th>sha1</th><td>%s</td>
-            <th>sha256</th><td>%s<d>
-            <th>notes</th><td>%s</td>
-    </table>
-    <a href="/scot/file/%d?download=1">
-        Download
-    </a>
-</div>
-EOF
-    my $html = sprintf( $htmlsrc,
-        $fileobj->id,
-        $fileobj->filename,
-        $fileobj->size,
-        $fileobj->md5,
-        $fileobj->sha1,
-        $fileobj->sha256,
-        $fileobj->notes,
-        $fileobj->id);
-
-    my $entry_href  = {
-        parent  => $entry_id,
-        body    => $html,
-        groups  => $fileobj->groups,
-    };
-
-    my $col     = $mongo->collection('Entry');
-    my $entry   = $col->create($entry_href);
-
-    
+    my $col         = $mongo->collection('Entry');
+    my $entry       = $col->create_from_file_upload($fileobj,
+                                                    $entry_id,
+                                                    $target_type,
+                                                    $target_id);
 }
 
 sub get_groups_and_year {
