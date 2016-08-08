@@ -1,3 +1,6 @@
+perl-Net-SSLeay
+perl-Curses
+perl-Net-XMPP
 httpd
 dialog
 mongodb-org
