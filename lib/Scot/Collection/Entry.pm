@@ -62,19 +62,19 @@ sub create_from_file_upload {
 <div class="fileinfo">
     <table>
         <tr>
-            <th>File Id</th> <td>%d</td>
+            <th align="left">File Id</th> <td>%d</td>
         </tr><tr>
-            <th>Filename</th><td>%s</td>
+            <th align="left">Filename</th><td>%s</td>
         </tr><tr>
-            <th>Size</th>    <td>%s</td>
+            <th align="left">Size</th>    <td>%s</td>
         </tr><tr>
-            <th>md5</th>     <td>%s</td>
+            <th align="left">md5</th>     <td>%s</td>
         </tr><tr>
-            <th>sha1</th>    <td>%s</td>
+            <th align="left">sha1</th>    <td>%s</td>
         </tr><tr>
-            <th>sha256</th>  <td>%s</td>
+            <th align="left">sha256</th>  <td>%s</td>
         </tr><tr>
-            <th>notes</th>   <td>%s</td>
+            <th align="left">notes</th>   <td>%s</td>
         </tr>
     </table>
     <a href="/scot/file/%d?download=1">
