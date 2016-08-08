@@ -122,7 +122,7 @@ sub get_groups {
             return wantarray ? () :[];
         }
         
-        $log->debug("got ". join(',',@$results));
+        $log->debug("got ". join(',', grep {/scot/i} @$results));
         push @groups, @$results;
         return wantarray ? @groups : \@groups;
     }
