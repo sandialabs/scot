@@ -2315,9 +2315,13 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         var EntityDetail = require('../modal/entity_detail.jsx');
         if (type != 'entity' && type != 'alert') {
             var height = this.state.height;
+            var width = '100%';
+            if ($('#list-view')[0] != undefined ) {
+                width = 'calc(100% ' + '- ' + $('#list-view').width() + 'px)';
+            }
         }
         return (
-            React.createElement("div", {key: id, className: divClass, style: {height:height}}, 
+            React.createElement("div", {key: id, className: divClass, style: {height:height,width:width}}, 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.aType, targetid: this.props.aID, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB})) : null, 
                 showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId}) : React.createElement("span", null, "Loading..."), 
                 this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, type: this.props.type, id: this.props.id}): null, 
@@ -4638,7 +4642,7 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
             React.createElement(Draggable, {handle: "#handle", onMouseDown: this.moveDivInit}, 
                 React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth}}, 
                     React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex'}}, 
-                        React.createElement("div", {id: "handle", style: {width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
+                        React.createElement("div", {id: "handle", style: {width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
                         React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
                             React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
                         ), 
