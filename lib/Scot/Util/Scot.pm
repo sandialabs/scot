@@ -284,12 +284,16 @@ sub do_request {
         my $err = $tx->error;
         if ( $err->{code} ) {
             $log->error("Error ".$err->{code}." response: ".$err->{message});
+            if ( $err->{code} eq "403" ) {
+                die "SCOT returned 403 Forrbidden";
+            }
         }
         else {
             $log->error("Error: ".$err->{message} );
+            die $err->{message};
         }
     }
-    return undef;
+    die "Request FUBAR";
 }
 
 sub extract_pj {
@@ -319,7 +323,17 @@ sub get {
         $log->debug("no id so doing a get many");
         if ( $json ) {
             $log->debug("with filtering/sorting", {filter=>\&Dumper, value=>$json});
-            return $self->do_request("get", $type, { json => $json });
+            my $return =  retry {
+                $self->do_request("get", $type, { json => $json });
+            }
+            delay_exp { 3, 1e5 }
+            on_retry {
+                $self->clear_ua;
+            }
+            catch {
+                $log->error("GET ERROR: $_");
+            };
+            return $return;
         }
         $log->debug("straight get_many");
         return $self->do_request("get", $type);
@@ -335,7 +349,14 @@ sub put {
     my $data    = {
         json    => shift
     };
-    return $self->do_request("put", "$type/$id", $data);
+    my $log     = $self->log;
+    my $return  = retry {
+        $self->do_request("put", "$type/$id", $data);
+    }
+    delay_exp { 3, 1e5 }
+    on_retry { $self->clear_ua; }
+    catch { $log->error("PUT ERROR: $_"); };
+    return $return;
 }
 
 sub post {
@@ -344,23 +365,47 @@ sub post {
     my $data    = {
         json    => shift
     };
-    return $self->do_request("post", "$type", $data);
+    my $log     = $self->log;
+    my $return  = retry {
+        $self->do_request("post", "$type", $data);
+    }
+    delay_exp { 3, 1e5 }
+    on_retry { $self->clear_ua; }
+    catch { $log->error("POST ERROR: $_"); };
+    return $return;
+
 }
 
 sub delete {
     my $self    = shift;
     my $type    = shift;
     my $id      = shift;
+    my $log     = $self->log;
 
-    return $self->do_request("delete", "$type/$id");
+    return retry {
+        $self->do_request("delete", "$type/$id");
+    }
+    delay_exp { 3, 1e5 }
+    on_retry { $self->clear_ua; }
+    catch { $log->error("DELETE ERROR: $_"); };
+
 }
 
 sub get_alertgroup_by_msgid {
     my $self    = shift;
     my $id      = shift;
     my $json    = { message_id => $id };
+    my $log     = $self->log;
 
-    return $self->do_request("get", "alertgroup", {json => {match=>$json}});
+    return retry {
+        $self->do_request("get", "alertgroup", {json => {match=>$json}});
+    }
+    delay_exp { 3, 1e5 }
+    on_retry { $self->clear_ua; }
+    catch { 
+        $log->error("GET alertgroup by message_id FAIL: $_");
+        return undef;
+    };
 }
 
 

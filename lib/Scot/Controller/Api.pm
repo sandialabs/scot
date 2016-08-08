@@ -35,6 +35,8 @@ sub create {
     my $mongo   = $env->mongo;
     my $user    = $self->session('user');
 
+    $user = "DOOFUS" unless ($user);
+
     $log->trace("------------");
     $log->trace("Handler is processing a POST (create) from $user");
     $log->trace("------------");
@@ -107,6 +109,7 @@ sub create {
     }
 
     # $env->amq->send_amq_notification("creation", $object, $user);
+    $log->debug("HEY USER IS $user");
     $env->mq->send("scot", {
         action  => "created",
         data    => {
@@ -343,6 +346,18 @@ sub get_many {
     }
 
     my @things = $cursor->all;
+
+    $log->debug("req_href is ",{filter=>\&Dumper, value => $req_href});
+    my $selected_fields = $self->build_fields($req_href);
+    if ( $selected_fields ) {
+        foreach my $thing (@things) {
+            foreach my $key (keys %$thing) {
+                unless ( $selected_fields->{$key} ) {
+                    delete $thing->{$key};
+                }
+            }
+        }
+    }
 
     $log->trace("submitting for render");
 
@@ -730,6 +745,7 @@ sub update {
     my $mongo   = $env->mongo;
     my $log     = $env->log;
     my $user    = $self->session('user');
+    $user = "DOOFUS" unless ($user);
 
     $log->trace("------------");
     $log->trace("API is processing a PUT update request from $user");
@@ -1705,15 +1721,20 @@ set the fields that you wish to return
 sub build_fields {
     my $self        = shift;
     my $href        = shift;
-    my $params      = $href->{params};
+    my $params      = $href->{request}->{params};
     my $aref        = $params->{fields};
+    my $log         = $self->env->log;
     my %fields;
 
+    $log->debug("Looking for field limit",{filter=>\&Dumper, value=>$params});
+
     foreach my $f (@$aref) {
+        $log->debug("Limit field to $f");
         $fields{$f} = 1;
     }
 
     if ( scalar(keys %fields) > 0 ) {
+        $log->debug("only want these fields:",{filter=>\&Dumper, value=>\%fields});
         return \%fields;
     }
     return undef;
@@ -1821,7 +1842,7 @@ sub get_request_params  {
             json    => $json,
         },
     );
-
+    # $log->debug("Request is ",{ filter => \&Dumper, value => \%request } );
     return wantarray ? %request : \%request;
 }
 
@@ -2325,7 +2346,8 @@ sub get_entity_count {
     my $mongo   = $env->mongo;
     my $col     = $mongo->collection('Link');
     my $timer   = $env->get_timer("get_entity_count");
-    my $count   = $col->get_total_appearances($entity);
+    #my $count   = $col->get_total_appearances($entity);
+    my $count   = $col->get_display_count($entity);
     &$timer;
     return $count;
 }

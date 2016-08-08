@@ -192,7 +192,7 @@ if [[ $INSTMODE != "SCOTONLY" ]]; then
 
     echo -e "${yellow}+ installing prerequisite packages ${NC}"
 
-    if [[ $OS == "RedHatEnterpriseServer" ]]; then
+    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
         #
         # install mongo
         #
@@ -223,6 +223,10 @@ enabled=1
 EOF
         fi
 
+	echo "+ adding line to allow unverifyed ssl in yum"
+	echo "sslverify=false" >> /etc/yum.conf
+
+	echo "+ installing rpms..."
         for pkg in `cat $DEVDIR/etc/install/rpms_list`; do
             echo "+ package = $pkg";
             yum install $pkg -y
@@ -231,6 +235,7 @@ EOF
         #
         # get cpanm going for later use
         # 
+	echo "+ ensuring cpanm is installed"
         curl -L http://cpanmin.us | perl - --sudo App::cpanminus
 
         # 
@@ -314,7 +319,7 @@ EOF
         chmod -R g+w /var/log/activemq
     fi
 
-    if [ $REFRESH_AMQ_CONFIG == "yes" ]; then
+    if [ $REFRESH_AMQ_CONFIG == "yes" ] || ! [ -d $AMQDIR/webapps/scot ] ; then
         echo "+ adding/refreshing scot activemq config"
         echo "- removing $AMQDIR/webapps/scot"
         rm -rf $AMQDIR/webapps/scot

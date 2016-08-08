@@ -2,6 +2,7 @@ package Scot::App::Mail;
 
 use lib '../../../lib';
 use Data::Dumper;
+use DateTime;
 use Try::Tiny;
 use Mojo::UserAgent;
 use Scot::Env;
@@ -195,6 +196,30 @@ sub load_parsers  {
     return wantarray ? %pmap : \%pmap;
 }
 
+sub mark_all_read {
+    my $self    = shift;
+    my $log     = $self->log;
+    my $imap    = $self->imap;
+
+    $log->trace("Marking all messages as Seen");
+    my $cursor  = $imap->get_unseen_cursor;
+    while ( my $uid = $cursor->next ) {
+        $imap->see($uid);
+    }
+}
+
+sub mark_some_unread {
+    my $self    = shift;
+    my $since   = shift;
+    my $log     = $self->log;
+    my $imap    = $self->imap;
+
+    my $cursor  = $imap->get_since_cursor($since);
+    while ( my $uid = $cursor->next ) {
+        $imap->mark_uid_unseen($uid);
+    }
+}
+
 sub run {
     my $self    = shift;
     my $log     = $self->log;
@@ -215,18 +240,23 @@ sub run {
         $cursor = $imap->get_since_cursor($self->since);
     }
 
-    unless (scalar($cursor) > 0) {
+    my $msg_to_process = $cursor->count;
+
+    unless ($msg_to_process > 0) {
         $log->warn("No Messages UIDs returned from IMAP server");
         exit 1;
     }
 
     my $taskmgr = Parallel::ForkManager->new($self->max_processes);
 
+    my $proc_count = 0;
+
     MESSAGE:
     while ( my $uid = $cursor->next ) {
 
         if ( $self->verbose ) {
-            print "    Message: $uid\n";
+            print "\nMessage: $uid\n";
+            print "           $proc_count processed of $msg_to_process\n";
         }
 
         my $msg_href    = $imap->get_message($uid);
@@ -239,6 +269,7 @@ sub run {
             $log->error("FAILED to process: ",
                         {filter=>\&Dumper, value=>$msg_href});
         }
+        $proc_count++;
         $log->trace("[UID $uid] Child process $pid finishes");
         $taskmgr->finish;
 
@@ -259,13 +290,16 @@ sub process_message {
     my $msghref = shift;
     my $log     = $self->log;
     my $scot    = $self->scot;
+    my $imap    = $self->imap;
 
     my $message_id  = $msghref->{message_id};
 
+    my $received    = DateTime->from_epoch(epoch=>$msghref->{when});
+
     $self->output(
-        "- PROCESSING -\n".
         "---- message_id ". $message_id."\n".
-        "---- subject    ". $msghref->{subject}."\n".
+        "---- subject    ". $msghref->{subject}."\n" .
+        "---- date       ". $received->ymd . " ".$received->hms."\n"
     );
 
     # is message from approved sender?
@@ -282,12 +316,14 @@ sub process_message {
         $log->trace("Health check received...");
         print "health check...skipping.\n" if ($self->interactive eq "yes" or
                                                $self->verbose == 1);
+        $imap->delete_message($msghref->{imap_uid});
         return;
     }
 
     if ( $self->already_processed($message_id) ) {
         $log->warn("Message_id: $message_id already processed");
         $self->output("--- $message_id already in database\n");
+        $imap->see($msghref->{imap_uid});
         return;
     }
 
@@ -311,7 +347,8 @@ sub process_message {
     my $json_to_post = $parser->parse_message($msghref);
     my $path         = "alertgroup";
 
-    $json_to_post->{message_id} = $msghref->{message_id};
+    $json_to_post->{message_id}     = $msghref->{message_id};
+
     unless ( $json_to_post->{subject} ) {
         $json_to_post->{subject}    = $msghref->{subject};
     }
@@ -338,6 +375,8 @@ sub process_message {
     }
     $self->output("---- posted to SCOT.\n");
     $log->trace("Created alertgroup ". $json_returned->{id});
+    $imap->see($msghref->{imap_uid});
+    return 1;
 }
 
 sub output {

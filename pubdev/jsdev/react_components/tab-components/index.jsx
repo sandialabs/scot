@@ -212,7 +212,7 @@ var App = React.createClass({
         <span className = "glyphicon glyphicon-screenshot"></span>,
         <span className = "glyphicon glyphicon-edit"></span>,
         <span className = "glyphicon glyphicon-pencil"></span>,
-        <span className = "glyphicon glyphicon-cog"></span>,
+      //  <span className = "glyphicon glyphicon-cog"></span>,
         <span className = "glyphicon glyphicon-user"></span>,
         ]	
 
@@ -224,7 +224,7 @@ var App = React.createClass({
         <span>Incident</span>,
         <span>Tasks</span>,
         <span>Guide</span>,
-        <span>Admin</span>,
+        //<span>Admin</span>,
         <span>Incident Handler : {this.state.handler}</span>,
         ];
         var headerStyle = { paddingLeft: 5 };
@@ -244,8 +244,8 @@ var App = React.createClass({
                 React.createElement(ExpandableNavMenuItem, {active: setincidents,small: menuItemsSmall[4], full: menuItemsFull[4], tooltip: "Incident", jquery: window.$, onClick: this.handleIncidents}),
                     React.createElement(ExpandableNavMenuItem, {active: settask, small: menuItemsSmall[5], full: menuItemsFull[5], tooltip: "Task", jquery: window.$, onClick: this.handleTasks}),
             React.createElement(ExpandableNavMenuItem, {active: setguide, small: menuItemsSmall[6], full: menuItemsFull[6], tooltip: "Guide", jquery: window.$, onClick: this.handleGuide}),
-                    React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Admin", jquery: window.$, onClick:this.handlePad}),
-                    React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[8], full: menuItemsFull[8], tooltip: "Incident Handler:  " + this.state.handler, jquery: window.$, onClick: this.handleHandler}) 
+        //            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Admin", jquery: window.$, onClick:this.handlePad}),
+                    React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Incident Handler:  " + this.state.handler, jquery: window.$, onClick: this.handleHandler}) 
                 )
 
             ),
@@ -324,7 +324,7 @@ var App = React.createClass({
 	    window.open('/scot/chat/irt')
     },
     handlePad: function(){
-	    window.open('scratchpad.html')
+	    //window.open('scratchpad.html')
     },
     handlePlugin: function(){
 	    window.open('plugin.html')
