@@ -12,6 +12,117 @@ with    qw(
     Scot::Role::GetTagged
 );
 
+sub create_from_promoted_alert {
+    my $self    = shift;
+    my $alert   = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $mq      = $env->mq;
+    my $json;
+
+    $json->{groups}->{read} = $alert->groups->{read} // 
+                                $env->default_groups->{read};
+    $json->{groups}->{modify} = $alert->groups->{modify} // 
+                                $env->default_groups->{modify};
+    $json->{target} = {
+        type    => 'alert',
+        id      => $alert->id,
+    };
+    $json->{body}   = $self->build_table($alert);
+    my $entry_obj   = $self->create($json);
+    return $entry_obj;
+}
+
+sub build_table {
+    my $self    = shift;
+    my $alert   = shift;
+    my $data    = $alert->data;
+    my $html    = qq|<table class="tablesorter alertTableHorizontal">\n|;
+
+    foreach my $key ( @{$alert->columns} ) {
+        my $value   = $alert->data->{$key};
+        $html .= qq|<tr><th>$key</th><td>$value</td></tr>\n|;
+    }
+    $html .= qq|</table>|;
+    return $html;
+}
+
+sub create_from_file_upload {
+    my $self        = shift;
+    my $fileobj     = shift;
+    my $entry_id    = shift;
+    my $target_type = shift;
+    my $target_id   = shift;
+    my $fid         = $fileobj->id;
+    my $env         = $self->env;
+    my $mongo       = $env->mongo;
+    my $log         = $env->log;
+    my $htmlsrc     = <<EOF;
+<div class="fileinfo">
+    <table>
+        <tr>
+            <th>File Id</th> <td>%d</td>
+        </tr><tr>
+            <th>Filename</th><td>%s</td>
+        </tr><tr>
+            <th>Size</th>    <td>%s</td>
+        </tr><tr>
+            <th>md5</th>     <td>%s</td>
+        </tr><tr>
+            <th>sha1</th>    <td>%s</td>
+        </tr><tr>
+            <th>sha256</th>  <td>%s</td>
+        </tr><tr>
+            <th>notes</th>   <td>%s</td>
+        </tr>
+    </table>
+    <a href="/scot/file/%d?download=1">
+        Download
+    </a>
+</div>
+EOF
+    my $html = sprintf( $htmlsrc,
+        $fileobj->id,
+        $fileobj->filename,
+        $fileobj->size,
+        $fileobj->md5,
+        $fileobj->sha1,
+        $fileobj->sha256,
+        $fileobj->notes,
+        $fileobj->id);
+    
+    my $entry_href  = {
+        parent     => $entry_id,
+        body       => $html,
+        target     => {
+            id     => $target_id,
+            type   => $target_type,
+        },
+        groups     => {
+            read   => $fileobj->groups->{read} // $env->default_groups->{read},
+            modify => $fileobj->groups->{modify} // $env->default_groups->{modify},
+        },
+    };
+
+    my $entry_obj   = $self->create($entry_href);
+
+    # TODO: need to actually update the updated time in the target
+
+    my $mq      = $env->mq;
+    $mq->send("scot", {
+        action  => 'updated',
+        data    => {
+            type    => $target_type,
+            id      => $target_id,
+            who     => 'fileupload',
+        }
+    });
+
+    return $entry_obj;
+
+}
+
 sub create_from_api {
     my $self    = shift;
     my $request = shift;

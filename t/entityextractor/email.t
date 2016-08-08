@@ -18,7 +18,8 @@ my $extractor   = Scot::Util::EntityExtractor->new({
     log => $log
 });
 my $source      = <<'EOF';
-<div>tbruner@sandia.gov</div>
+<div>tbruner@sandia.gov
+   mailman-bounces@trilinos.org</div>
 EOF
 
 my $flair   = <<'EOF';
