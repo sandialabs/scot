@@ -1095,6 +1095,9 @@ sub handle_promotion {
         if ( ref($object) eq "Scot::Model::Alert" ) {
             $mongo->collection('Alertgroup')
                   ->refresh_data($object->alertgroup, $user);
+            # copy alert data into an entry for that event
+            my $entrycol    = $mongo->collection('Entry');
+            my $entryobj    = $entrycol->create_from_promoted_alert($object);
         }
 
         try {
@@ -1360,6 +1363,12 @@ sub delete {
         });
     }
 
+    # TODO:
+    #OK. Issue 153, says there is problem deleting.
+    # looks like we need special handling of tags/sources
+    # because we really don't want to delete the "tag" record,
+    # just the link between the tag and the target.
+
     $object->remove;
     
     # $env->amq->send_amq_notification("delete", $object, $user);
@@ -1496,7 +1505,12 @@ sub breaklink {
                 }
                 # TODO ERROR
                 # this isn't removeing this from events for some reason!
-                $thingobj->update_remove( $subthing => \@values );
+                if ( $thingobj->update_remove( $subthing => @values ) ) {
+                    $log->debug("remove syncronized");
+                }
+                else {
+                    $log->error("failed to remove");
+                }
             }
             catch {
                 $log->error("Error: $_");
@@ -1738,33 +1752,6 @@ sub build_fields {
         return \%fields;
     }
     return undef;
-}
-
-=item B<disambiguate($value)>
-
-take the value and see if looks like JSON, if it does, return the 
-parsed result, otherwise return $value.
-
-=cut
-
-sub disambiguate {
-    my $self    = shift;
-    my $value   = shift;
-    my $log     = $self->env->log;
-
-    # try to convert it from JSON, if it fails, then it must be a simple 
-    # value.  
-
-    my $return;
-    eval {
-        $return = decode_json($value);
-    };
-    if ($@) {
-        # $log->trace("Appears not to be JSON. ($@)");
-        # $log->debug("value = ".Dumper($value));
-        $return = $value;
-    }
-    return $return;
 }
 
 =item B<get_request_params>
