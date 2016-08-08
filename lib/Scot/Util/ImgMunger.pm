@@ -19,12 +19,10 @@ use Digest::MD5 qw(md5_hex);
 use Moose;
 use namespace::autoclean;
 
-
-has env => (
-    is          => 'ro',
-    isa         => 'Scot::Env',
+has log => (
+    is      => 'ro',
+    isa     => 'Log::Log4perl::Logger',
     required    => 1,
-    default     => sub { Scot::Env->instance },
 );
 
 has conf => (
@@ -37,20 +35,16 @@ has conf => (
 
 sub _get_conf {
     my $self    = shift;
-    my $env     = $self->env;
     # {
     #   html_root   => 'the / where the webserver finds the cached_images dir
     #   image_dir   => the real dir on the server where to store the file
     #   storage     => local | api
     # }
-    my $href    =  $env->get_module_conf('Scot::Util::ImgMunger');
-    unless ( defined $href->{html_root} ) {
-        $href = {
+    my $href = {
             html_root   => "/cached_images",
             image_dir   => ".",
             storage     => "local",
         };
-    }
     return $href;
 }
 
@@ -111,7 +105,7 @@ sub extract_data_image {
     my $encoding = $2;
     my $data     = $3;
 
-    $self->env->log->debug("mimetype = $mimetype encoding = $encoding");
+    $self->log->debug("mimetype = $mimetype encoding = $encoding");
 
     my ( $type, $ext ) = split('/', $mimetype);
 
@@ -155,8 +149,7 @@ sub create_file {
     my $data        = shift;
     my $name        = shift;
     my $ext         = shift; 
-    my $env         = $self->env;
-    my $log         = $env->log;
+    my $log         = $self->log;
     my $dir         = $self->conf->{image_dir} // "/opt/scot/public/cached_images";
     my $storage     = $self->conf->{storage} // 'local';
 
