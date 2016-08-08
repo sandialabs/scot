@@ -14,105 +14,58 @@ my $confobj = Scot::Util::Config->new({
 my $loghref = $confobj->get_config();
 my $log     = Scot::Util::Logger->new($loghref);
 
-my $extractor   = Scot::Util::EntityExtractor->new({log=>$log});
+my $extractor   = Scot::Util::EntityExtractor->new({
+    log => $log
+});
 my $source      = <<'EOF';
-    This is a list of emails:
-    todd@www.todd.com
-    boo@foo.bar.org
-    yuk@172.16.4.4
-    user@34net.net
-Useless text here.
-
-    BOO@zoo.com
-    Boo@Zoo.com
-    boo@ZOO.com
-    boo@zoo.com
+<div>tbruner@sandia.gov</div>
 EOF
 
 my $flair   = <<'EOF';
-<div>    This is a list of emails:<br /><span class="email" data-entity-type="email" data-entity-value="todd@www.todd.com">todd@<span class="entity domain" data-entity-type="domain" data-entity-value="www.todd.com">www.todd.com</span></span><br /><span class="email" data-entity-type="email" data-entity-value="boo@foo.bar.org">boo@<span class="entity domain" data-entity-type="domain" data-entity-value="foo.bar.org">foo.bar.org</span></span><br />yuk@<span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="172.16.4.4">172.16.4.4</span><br /><span class="email" data-entity-type="email" data-entity-value="user@34net.net">user@<span class="entity domain" data-entity-type="domain" data-entity-value="34net.net">34net.net</span></span><br />Useless text here.<br /><span class="email" data-entity-type="email" data-entity-value="BOO@zoo.com">BOO@<span class="entity domain" data-entity-type="domain" data-entity-value="zoo.com">zoo.com</span></span><br /><span class="email" data-entity-type="email" data-entity-value="Boo@zoo.com">Boo@<span class="entity domain" data-entity-type="domain" data-entity-value="zoo.com">zoo.com</span></span><br /><span class="email" data-entity-type="email" data-entity-value="boo@zoo.com">boo@<span class="entity domain" data-entity-type="domain" data-entity-value="zoo.com">zoo.com</span></span><br /><span class="email" data-entity-type="email" data-entity-value="boo@zoo.com">boo@<span class="entity domain" data-entity-type="domain" data-entity-value="zoo.com">zoo.com</span></span><br /></div>
+<div><div><span class="entity email" data-entity-type="email" data-entity-value="tbruner@sandia.gov">tbruner@<span class="entity domain" data-entity-type="domain" data-entity-value="sandia.gov">sandia.gov</span></span> </div></div>
 EOF
+
 chomp($flair);
 
 my $plain = <<'EOF';
-   This is a list of emails: todd@www.todd.com boo@foo.bar.org yuk@172.16.4.4
-   user@34net.net
-Uselesstexthere.
+   tbruner@sandia.gov
 EOF
 
 chomp($plain);
 
 my $result  = $extractor->process_html($source);
 
-# print Dumper($result);
-
 my @entities = (
-        {
-        'type' => 'domain',
-        'value' => 'www.todd.com'
-        },
-        {
-        'type' => 'email',
-        'value' => 'todd@www.todd.com'
-        },
-        {
-        'type' => 'domain',
-        'value' => 'foo.bar.org'
-        },
-        {
-        'value' => 'boo@foo.bar.org',
-        'type' => 'email'
-        },
-        {
-        'type' => 'ipaddr',
-        'value' => '172.16.4.4'
-        },
-        {
-        'type' => 'domain',
-        'value' => '34net.net'
-        },
-        {
-        'value' => 'user@34net.net',
-        'type' => 'email'
-        },
-        {
-        'type' => 'domain',
-        'value' => 'zoo.com'
-        },
-        {
-        'value' => 'BOO@zoo.com',
-        'type' => 'email'
-        },
-        {
-        'value' => 'zoo.com',
+    {
+        'value' => 'sandia.gov',
         'type' => 'domain'
-        },
-        {
-        'value' => 'Boo@Zoo.com',
+    },
+    {
+        'value' => 'tbruner@sandia.gov',
         'type' => 'email'
-        },
-        {
-        'type' => 'domain',
-        'value' => 'zoo.com'
-        },
-        {
-        'type' => 'email',
-        'value' => 'boo@ZOO.com'
-        },
-        {
-        'value' => 'zoo.com',
-        'type' => 'domain'
-        },
-        {
-        'value' => 'boo@zoo.com',
-        'type' => 'email'
-        }
+    },
 );
+
+my @sorted = sort { $a->{value} cmp $b->{value} } @{$result->{entities}};
+print Dumper(@sorted);
+print "-------\n";
+print Dumper(@entities);
 
 ok(defined($result), "We have a result");
 is(ref($result), "HASH", "and its a hash");
-is($result->{flair}, $flair, "flair correct");
-cmp_deeply($result->{entities}, \@entities,"entities correct");
+cmp_bag(\@entities, \@sorted, "Entities are correct");
+
+is($result->{flair}, $flair, "Flair is correct");
+
+# my @plain_words = split(/\s+/, $plain);
+# my @post_words  = split(/\s+/, $result->{text});
+
+# is (scalar(@plain_words), scalar(@post_words), "text has same number of words");
+
+# foreach my $pw (@post_words) {
+#     my $expected = shift @plain_words;
+#     is ($pw, $expected, "$pw matches");
+# }
 
 
 # print Dumper($result);
