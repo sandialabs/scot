@@ -17,3 +17,6 @@ mod_ssl
 openssl
 redhat-lsb
 elasticsearch
+perl-Net-SSLeay
+perl-Curses
+perl-Net-XMPP
