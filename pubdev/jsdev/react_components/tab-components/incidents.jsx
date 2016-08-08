@@ -43,7 +43,7 @@ var pageSize = 50;
 var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
-var columns = ['ID', 'DOE', 'Status', 'Owner', 'Subject', 'Occurred', 'Type']
+var columns = ['id', 'DOE', 'Status', 'Owner', 'Subject', 'Occurred', 'Type']
 
 
 module.exports = React.createClass({
@@ -376,8 +376,8 @@ module.exports = React.createClass({
                         React.createElement('button', {value: 'id',className:'filter btn btn-default', onClick: this.handlefilter}, 'Filter')))
                         )},
                         React.createElement('div', {style: {display: 'flex'}},
-                        React.createElement('div',{className: 'column index'}, 'ID'), this.state.idarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.idarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.idarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '30px', position: 'relative'}}) : null))))), 
-                        React.createElement('div', {className:'doeownerstatus', style: {'padding-left': this.state.display == 'block' ? '33px' : null}},
+                        React.createElement('div',{style:{width: '87px'},className: 'column index'}, 'ID'), this.state.idarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.idarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.idarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '30px', position: 'relative'}}) : null))))), 
+                        React.createElement('div', {className:'doeownerstatus', style: {'padding-left': this.state.display == 'block' ? '8px' : null}},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                         React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1] + ' ' + this.state.classname[3]},
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {ref: 'myPopOverdoe', trigger:['click','focus'], placement:'bottom', rootClose: true, overlay: React.createElement(Popover, null, 
@@ -394,7 +394,7 @@ module.exports = React.createClass({
                         )}, 
                         
                         React.createElement('div', {style: {display: 'flex'}},
-                        React.createElement('div',{className: 'column index'}, 'DOE'), this.state.doearrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.doearrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.doearrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.doearrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.doearrow[1] == -1 ? null : '5px solid black', top: '9px', right: '15px', position: 'relative'}}) : null))), 
+                        React.createElement('div',{style: {width: '76px'}, className: 'column index'}, 'DOE'), this.state.doearrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.doearrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.doearrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.doearrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.doearrow[1] == -1 ? null : '5px solid black', top: '9px', right: '15px', position: 'relative'}}) : null))), 
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOverstatus', rootClose: true, overlay: React.createElement(Popover, null, 
                         React.createElement('div', {className: 'Filter and Sort', id: 'statusheader'}, React.createElement('div',
                         {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Status'), React.createElement('div', 
@@ -526,11 +526,11 @@ module.exports = React.createClass({
                         React.createElement("div", {className: "wrapper attributes "+ this.state.classname[1]},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                         React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1] + ' ' + this.state.classname[3]}, 
-                            React.createElement("div", {className: 'column index'}, value.id))),
+                            React.createElement("div", {style: {width: '100px'}, className: 'column index'}, value.id))),
                         React.createElement('div', {className: this.state.display == 'block' ? 'doeownerstatus' : null},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                         React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1] + ' ' + this.state.classname[3]},
-                             React.createElement("div", {className: "column owner"}, value.doe),
+                             React.createElement("div", {style: {width: '83px'},className: "column owner"}, value.doe),
                             React.createElement("div", {className: "column owner colorstatus"}, value.status),
                             React.createElement("div", {className: "column status"}, value.owner)))), 
                         React.createElement("div", {className: "wrapper title-comment-module-reporter"}, 
@@ -540,15 +540,15 @@ module.exports = React.createClass({
                         ),
                         React.createElement('div', {className: 'otype'},     
                         React.createElement("div", {className: "wrapper dates "+ this.state.sizearray[0]}, 
-                            React.createElement("div", {className: "column date"}, value.occurred),      
-                            React.createElement("div", {className: "column severity"}, value.type))
+                            React.createElement("div", {style: {position: this.state.display == 'block' ? 'relative' :  null, right: this.state.display == 'block' ? '14px' : null }, className: "column date"}, value.occurred),      
+                            React.createElement("div", {style: {position: this.state.display == 'block' ? 'relative' :  null, right: this.state.display == 'block' ? '14px' : null },className: "column severity"}, value.type))
                         )
                         )
                     )
                    // )
                    // )
                     ))))),  React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'incident'}) : null) 
 ,
                         !this.state.alldetail ?

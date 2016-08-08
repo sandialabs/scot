@@ -57,7 +57,7 @@ has 'suffixfile'    => (
     is          => 'ro',
     isa         => 'Str',
     required    => '1',
-    default     => '/home/tbruner/dev/Extractor/etc/effective_tld_names.dat',
+    default     => '/opt/scot/etc/effective_tld_names.dat',
 );
 
 sub _build_suffix {
@@ -429,7 +429,7 @@ sub process_words {
 
                     my $emailflair = HTML::Element->new(
                         'span',
-                        'class' => 'email',
+                        'class' => 'entity email',
                         'data-entity-type'  => 'email',
                         'data-entity-value' => $lcdommatch,
                     );

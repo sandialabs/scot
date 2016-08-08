@@ -73,7 +73,7 @@ var Page = React.createClass({
             }
         }
         if (stateful) {
-            if(pageSize == 5 || pageSize == 10 || pageSize == 20){
+            if(pageSize == 50 || pageSize == 5 || pageSize == 10 || pageSize == 20){
                 $('.ref-verticalScrollbar').animate({
                 scrollTop: 0},"fast")
             }

@@ -416,11 +416,19 @@ sub xform_alertgroup {
         } @{ delete $href->{history} // [] }; # ... history is in new collection
     my @tags    = map {
             {alertgroup => $id, tag => { value => $_ }}
-        } @{ delete $href->{tags} // [] };  # ... tags are in new collection
+        } @{ $href->{tags} // [] };  # ... tags are in new collection
     my @sources = map {
             {alertgroup => $id, source => { value => $_ }}
         } @{ delete $href->{sources} // [] };   # ... sources are pulled to new collection
+    if ( $href->{source} ) {
+        # some confusion over source vs. sources in various iteration of database
+        push @sources, {alertgroup => $id, source => { value => $href->{source} } };
+    }
 
+    # force the new source array
+    my @newsources = map { $_->{source}->{value} } @sources;
+    $href->{source} = \@newsources;
+    $href->{tag}    = delete $href->{tags};
     $href->{body}   = delete $href->{body_html};    # ...renaming
 
 
@@ -644,7 +652,9 @@ sub xform_event {
         { event => $id, source => { value => $_, } }
     } @{ $href->{sources} //[] };
 
+    $href->{source} = delete $href->{sources};
     $href->{views}  = delete $href->{view_count};
+    $href->{tag}    = delete $href->{tags};
 
     $col->insert_one($href);
 
@@ -687,6 +697,8 @@ sub xform_incident {
         { incident => $id, source => { value => $_, } }
     } @{ $href->{sources} //[] };
 
+    $href->{source} = delete $href->{sources};
+    $href->{tag} = delete $href->{tags};
     $col->insert_one($href);
 
     push @links, $self->create_history(@history);
