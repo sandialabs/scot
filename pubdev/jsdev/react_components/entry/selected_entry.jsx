@@ -138,9 +138,13 @@ var SelectedEntry = React.createClass({
         var EntityDetail = require('../modal/entity_detail.jsx');
         if (type != 'entity' && type != 'alert') {
             var height = this.state.height;
+            var width = '100%';
+            if ($('#list-view')[0] != undefined ) {
+                width = 'calc(100% ' + '- ' + $('#list-view').width() + 'px)';
+            }
         }
         return (
-            <div key={id} className={divClass} style={{height:height}}> 
+            <div key={id} className={divClass} style={{height:height,width:width}}> 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : <AddEntryModal title={'Add Entry'} type={this.props.aType} targetid={this.props.aID} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> }</div> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId}/> : <span>Loading...</span>} 
                 {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue} type={this.props.type} id={this.props.id}/>: null}
