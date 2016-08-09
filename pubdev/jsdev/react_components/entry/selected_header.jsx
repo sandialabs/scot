@@ -70,7 +70,6 @@ var SelectedHeader = React.createClass({
             aStatus:null,
             aID:0,
             guideID: null,
-            guideEntryCount: null,
         }
     },
     componentWillMount: function() {
@@ -131,8 +130,7 @@ var SelectedHeader = React.createClass({
             this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/guide', function(result) {
                 if (result.records[0] != undefined) {
                     var guideID = result.records[0].id;
-                    var guideEntryCount = result.records[0].entry_count;
-                    this.setState({guideID: guideID, guideEntryCount:guideEntryCount});
+                    this.setState({guideID: guideID});
                 }
             }.bind(this));     
         }
@@ -396,7 +394,7 @@ var SelectedHeader = React.createClass({
                 {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData} flairToolbarToggle={this.flairToolbarToggle} /> : null}
                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
                 {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
-                {type != 'alertgroup' ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} /> : <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} guideToggle={this.guideToggle} sourceToggle={this.sourceToggle} guideEntryCount={this.state.guideEntryCount} />} 
+                {type != 'alertgroup' ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} /> : <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} guideToggle={this.guideToggle} sourceToggle={this.sourceToggle} guideID={this.state.guideID} />} 
                 </div>
                 {this.state.showFlash == true ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} /> : null}
 
@@ -462,7 +460,7 @@ var EntryDataStatus = React.createClass({
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
             data: JSON.stringify(json),
-            dataType: "json",
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success status change to: ' + data);
             }.bind(this),
