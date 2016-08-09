@@ -293,6 +293,7 @@ sub do_request {
             die $err->{message};
         }
     }
+    $log->error("TX is ",{filter=>\&Dumper, value=>$tx});
     die "Request FUBAR";
 }
 

@@ -42,7 +42,7 @@ sub _get_conf {
     # }
     my $href = {
             html_root   => "/cached_images",
-            image_dir   => ".",
+            image_dir   => "/opt/scot/public/cached_images/",
             storage     => "local",
         };
     return $href;
