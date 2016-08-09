@@ -26,13 +26,14 @@ var SelectedEntry = React.createClass({
             showEntityData:this.props.showEntityData,
             entryData:this.props.entryData,
             entityData:this.props.entityData,
+            entitytype:null,
             key:this.props.id,
             flairToolbar:false,
             height: null,
         }
     },
     componentDidMount: function() {
-        if (this.props.type == 'alert' || this.props.type == 'entity') {
+        if (this.props.type == 'alert' || this.props.type == 'entity' || this.props.isPopUp == 1) {
             this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
                 var entryResult = result.records;
                 this.setState({showEntryData:true, entryData:entryResult})
@@ -67,7 +68,7 @@ var SelectedEntry = React.createClass({
         this.containerHeightAdjust();
     },
     updatedCB: function() {
-       if (this.props.type == 'alert' || this.props.type == 'entity') {
+       if (this.props.type == 'alert' || this.props.type == 'entity' || this.props.isPopUp == 1) {
             this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
                 var entryResult = result.records;
                 this.setState({showEntryData:true, entryData:entryResult})
@@ -93,9 +94,9 @@ var SelectedEntry = React.createClass({
             }.bind(this)); 
         }
     },
-    flairToolbarToggle: function(id,value) {
+    flairToolbarToggle: function(id,value,type) {
         if (this.state.flairToolbar == false) {
-            this.setState({flairToolbar:true,entityid:id,entityvalue:value})
+            this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
         } else {
             this.setState({flairToolbar:false})
         }
@@ -132,21 +133,21 @@ var SelectedEntry = React.createClass({
             showEntryData = this.state.showEntryData;
         } else if (type =='alertgroup') {
             divClass = 'row-fluid alert-wrapper entry-wrapper-main';
-        } else if (type == 'entity') {
+        } else if (type == 'entity' || this.props.isPopUp == 1) {
             divClass = 'row-fluid entry-wrapper-entity';
             data = this.state.entryData;
             showEntryData = this.state.showEntryData;
         }
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
         var EntityDetail = require('../modal/entity_detail.jsx');
-        if (type != 'entity' && type != 'alert') {
+        if (type != 'entity' && type != 'alert' && this.props.isPopUp != 1) {
             var height = this.state.height;
         }
         return (
             <div key={id} className={divClass} style={{height:height}}> 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : <AddEntryModal title={'Add Entry'} type={this.props.aType} targetid={this.props.aID} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> }</div> : null}
-                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId}/> : <span>Loading...</span>} 
-                {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue} type={this.props.type} id={this.props.id}/>: null}
+                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp}/> : <span>Loading...</span>} 
+                {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
             </div>       
         );
@@ -161,7 +162,7 @@ var EntryIterator = React.createClass({
         var id = this.props.id;  
         if (type != 'alertgroup') {
             data.forEach(function(data) {
-                rows.push(<EntryParent key={data.id} items={data} type={type} id={id} />);
+                rows.push(<EntryParent key={data.id} items={data} type={type} id={id} isPopUp={this.props.isPopUp}/>);
             }.bind(this));
         } else {
             rows.push(<AlertParent items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} alertPreSelectedId={this.props.alertPreSelectedId}/>);
@@ -502,12 +503,23 @@ var EntryParent = React.createClass({
             this.setState({permissionsToolbar:false})
         }
     },
+    reparseFlair: function() {
+        $.ajax({
+            type: 'put',
+            url: '/scot/api/v2/entry/'+this.props.items.id,
+            data: JSON.stringify({parsed:0}),
+            contentType: 'application/json; charset=UTF-8',
+        }).success(function(response){
+            console.log('reparsing started');
+        }.bind(this))
+    },
     render: function() {
         var itemarr = [];
         var subitemarr = [];
         var items = this.props.items;
         var type = this.props.type;
         var id = this.props.id;
+        var isPopUp = this.props.isPopUp;
         var summary = items.summary;
         var editEntryToolbar = this.state.editEntryToolbar;
         var editEntryToggle = this.editEntryToggle;
@@ -521,21 +533,21 @@ var EntryParent = React.createClass({
             taskOwner = '-- Task Owner ' + items.task.who + ' ';
             outerClassName += ' todo_open_outer';
             innerClassName += ' todo_open';
-        } else if (items.task.status == 'closed' && items.task.who != null ) {
+        } else if ((items.task.status == 'closed' || items.task.status == 'completed') && items.task.who != null ) {
             taskOwner = '-- Task Owner ' + items.task.who + ' ';
             outerClassName += ' todo_completed_outer';
             innerClassName += ' todo_completed';
-        } else if (items.task.status == 'closed') {
+        } else if (items.task.status == 'closed' || items.task.status == 'completed') {
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
-        itemarr.push(<EntryData id={items.id} key={items.id} subitem = {items} type={type} targetid={id} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle}/>);
+        itemarr.push(<EntryData id={items.id} key={items.id} subitem = {items} type={type} targetid={id} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={isPopUp}/>);
         for (var prop in items) {
             function childfunc(prop){
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(<EntryParent  items = {childobj} id={id} type={type} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle}/>));  
+                        subitemarr.push(new Array(<EntryParent  items = {childobj} id={id} type={type} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={isPopUp}/>));  
                     });
                 }
             }
@@ -560,6 +572,7 @@ var EntryParent = React.createClass({
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} /></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items.task} /></MenuItem>
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
+                                    <MenuItem onClick={this.reparseFlair}>Reparse Flair</MenuItem>
                                 </SplitButton>
                                 <Button bsSize='xsmall' onClick={this.editEntryToggle}>Edit</Button>
                             </span>
@@ -576,7 +589,7 @@ var EntryParent = React.createClass({
 
 var EntryData = React.createClass({ 
     getInitialState: function() {
-        if (this.props.type == 'entity') {
+        if (this.props.type == 'entity' || this.props.isPopUp == 1) {
             return {
                 height: '250px',
             }
