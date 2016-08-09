@@ -251,7 +251,7 @@ function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle,id) {
 }
         
 function infopop(entityid, entityvalue, flairToolbarToggle) {
-    flairToolbarToggle(entityid,entityvalue);
+    flairToolbarToggle(entityid,entityvalue,'entity');
 }
 function linkWarningPopup(url,linkWarningToggle) {
     linkWarningToggle(url);
