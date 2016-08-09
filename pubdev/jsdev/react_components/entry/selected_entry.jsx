@@ -503,12 +503,23 @@ var EntryParent = React.createClass({
             this.setState({permissionsToolbar:false})
         }
     },
+    reparseFlair: function() {
+        $.ajax({
+            type: 'put',
+            url: '/scot/api/v2/entry/'+this.props.items.id,
+            data: JSON.stringify({parsed:0}),
+            contentType: 'application/json; charset=UTF-8',
+        }).success(function(response){
+            console.log('reparsing started');
+        }.bind(this))
+    },
     render: function() {
         var itemarr = [];
         var subitemarr = [];
         var items = this.props.items;
         var type = this.props.type;
         var id = this.props.id;
+        var isPopUp = this.props.isPopUp;
         var summary = items.summary;
         var editEntryToolbar = this.state.editEntryToolbar;
         var editEntryToggle = this.editEntryToggle;
@@ -530,13 +541,13 @@ var EntryParent = React.createClass({
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
-        itemarr.push(<EntryData id={items.id} key={items.id} subitem = {items} type={type} targetid={id} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={this.props.isPopUp}/>);
+        itemarr.push(<EntryData id={items.id} key={items.id} subitem = {items} type={type} targetid={id} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={isPopUp}/>);
         for (var prop in items) {
             function childfunc(prop){
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(<EntryParent  items = {childobj} id={id} type={type} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={this.props.isPopUp}/>));  
+                        subitemarr.push(new Array(<EntryParent  items = {childobj} id={id} type={type} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={isPopUp}/>));  
                     });
                 }
             }
@@ -561,6 +572,7 @@ var EntryParent = React.createClass({
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} /></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items.task} /></MenuItem>
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
+                                    <MenuItem onClick={this.reparseFlair}>Reparse Flair</MenuItem>
                                 </SplitButton>
                                 <Button bsSize='xsmall' onClick={this.editEntryToggle}>Edit</Button>
                             </span>
