@@ -22,6 +22,7 @@ var Promote = React.createClass({
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
             data: data,
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('successfully promoted');
                 window.location.assign('#/'+this.state.newURL+'/'+data.pid);
