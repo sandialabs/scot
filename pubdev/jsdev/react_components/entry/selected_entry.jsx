@@ -62,7 +62,10 @@ var SelectedEntry = React.createClass({
     this.containerHeightAdjust();
     window.addEventListener('resize',this.containerHeightAdjust);
     $("#list-view").resize(this.containerHeightAdjust);
-    }, 
+    },
+    componentWillReceiveProps: function() {
+        this.containerHeightAdjust();
+    },
     updatedCB: function() {
        if (this.props.type == 'alert' || this.props.type == 'entity') {
             this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
@@ -425,7 +428,6 @@ var AlertBody = React.createClass({
                     {data.entry_count == 0 ? <td valign='top' style={{marginRight:'4px'}}>{data.entry_count}</td> : <td valign='top' style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onClick={this.toggleEntry}>{data.entry_count}</span></td>}
                     {rowReturn}
                 </tr>
-                <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} />
             </div>
         )
     }

@@ -34,6 +34,7 @@ var Task = React.createClass({
             type: 'put',
             url: 'scot/api/v2/entry/' + this.props.entryid,
             data: JSON.stringify(json),
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success: ' + data);
                 AppActions.updateItem(this.state.key,'headerUpdate');
@@ -49,6 +50,7 @@ var Task = React.createClass({
             type: 'put',
             url: 'scot/api/v2/entry/' + this.props.entryid,
             data: JSON.stringify(json),
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success: ' + data);
                 AppActions.updateItem(this.state.key,'headerUpdate');
@@ -64,6 +66,7 @@ var Task = React.createClass({
             type: 'put',
             url: 'scot/api/v2/entry/' + this.props.entryid,
             data: JSON.stringify(json),
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success: ' + data);
                  AppActions.updateItem(this.state.key,'headerUpdate');
