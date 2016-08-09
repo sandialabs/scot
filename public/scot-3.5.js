@@ -8202,7 +8202,7 @@ module.exports = React.createClass({displayName: "exports",
 
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                $('.splitter').css('width', width)
+                $('.splitter').css('width', '5px')
                 this.setState({classname: array})
            }
             else {
