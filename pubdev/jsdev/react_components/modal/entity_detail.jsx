@@ -23,13 +23,13 @@ var EntityDetail = React.createClass({
         if (this.props.entityid == undefined) {
             $.ajax({
                 type: 'GET',
-                url: 'scot/api/v2/entity/'+this.props.entityvalue.toLowerCase()
+                url: 'scot/api/v2/' + this.props.entitytype + '/' +this.props.entityvalue.toLowerCase()
             }).success(function(result) {
                 var entityid = result.id;
                 this.setState({entityid:entityid});
                 $.ajax({
                     type: 'GET',
-                    url: 'scot/api/v2/entity/' + entityid 
+                    url: 'scot/api/v2/' + this.props.entitytype + '/' + entityid 
                 }).success(function(result) {
                     this.setState({entityData:result})
                 }.bind(this));
@@ -37,7 +37,7 @@ var EntityDetail = React.createClass({
         } else {
             $.ajax({
                 type: 'GET',
-                url: 'scot/api/v2/entity/' + this.state.entityid
+                url: 'scot/api/v2/' + this.props.entitytype + '/' + this.state.entityid
             }).success(function(result) {
                 this.setState({entityData:result})
             }.bind(this));
@@ -137,23 +137,44 @@ var EntityDetail = React.createClass({
             entityHeight = entityPopUpHeight;
             entityWidth = entityPopUpWidth;
         }*/
-        return (
-            <Draggable handle="#handle" onMouseDown={this.moveDivInit}>
-                <div id="dragme" className='box react-draggable entityPopUp' style={{height:this.state.entityHeight,width:this.state.entityWidth}}> 
-                    <div id="entity_detail_container" style={{height: '100%', flexFlow: 'column', display: 'flex'}}>
-                        <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarToggle}/></span></div></div>
-                        <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
-                            <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
-                        </div>
-                        <div style={{overflow:'auto',flex:'1 1 auto', margin:'10px'}}>
-                        {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
-                        </div>
-                        <div id='footer' onMouseDown={this.initDrag} style={{display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}>
+        if (this.props.entitytype == 'entity') {
+            return (
+                <Draggable handle="#handle" onMouseDown={this.moveDivInit}>
+                    <div id="dragme" className='box react-draggable entityPopUp' style={{height:this.state.entityHeight,width:this.state.entityWidth}}> 
+                        <div id="entity_detail_container" style={{height: '100%', flexFlow: 'column', display: 'flex'}}>
+                            <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarToggle}/></span></div></div>
+                            <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
+                                <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
+                            </div>
+                            <div style={{overflow:'auto',flex:'1 1 auto', margin:'10px'}}>
+                            {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
+                            </div>
+                            <div id='footer' onMouseDown={this.initDrag} style={{display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </Draggable>
-        )
+                </Draggable>
+            )
+        } else if (this.props.entitytype == 'guide') {
+            var guideurl = '/#/guide/' + this.state.entityid;
+            return (
+                <Draggable handle="#handle" onMouseDown={this.moveDivInit}>
+                    <div id="dragme" className='box react-draggable entityPopUp' style={{height:this.state.entityHeight,width:this.state.entityWidth}}> 
+                        <div id="entity_detail_container" style={{height: '100%', flexFlow: 'column', display: 'flex'}}>
+                            <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarToggle}/></span></div></div>
+                            <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
+                                <a href={guideurl} target="_blank"><h3 id="myModalLabel">Guide {this.state.entityData != null ? <span><span><EntityValue value={this.state.entityid} /></span><div><EntityValue value={this.state.entityData.applies_to} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3></a>
+                            </div>
+                            <div style={{overflow:'auto',flex:'1 1 auto', margin:'10px'}}>
+                            {this.state.entityData != null ? <GuideBody entityid={this.state.entityid} entitytype={this.props.entitytype}/> : <div>Loading...</div>}
+                            </div>
+                            <div id='footer' onMouseDown={this.initDrag} style={{display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}>
+                            </div>
+                        </div>
+                    </div>
+                </Draggable>
+            )
+        }
     },
     
 });
@@ -500,6 +521,31 @@ var ReferencesBody = React.createClass({
                 <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}>{this.props.data.subject}</td>
             </tr>
         )    
+    }
+})
+
+var GuideBody = React.createClass ({
+    getInitialState: function() {
+        return {
+            entryToolbar:false
+        }
+    },
+    entryToggle: function() {
+        if (this.state.entryToolbar == false) {
+            this.setState({entryToolbar:true})
+        } else {
+            this.setState({entryToolbar:false})
+        }
+    },
+    render: function() {
+        //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
+        var SelectedEntry = require('../entry/selected_entry.jsx');
+        return (
+            <Tabs defaultActiveKey={1} bsStyle='pills'>
+                <Tab eventKey={1}><Button onClick={this.entryToggle}>Add Entry</Button><br/>
+                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} /> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} /></Tab>
+            </Tabs>
+        )
     }
 })
 
