@@ -161,7 +161,8 @@ var AddEntryModal = React.createClass({
 	$.ajax({
 	    type: 'post',
 	    url: '/scot/api/v2/entry',
-	    data: data
+	    data: data,
+        contentType: 'application/json; charset=UTF-8'
 	}).success(function(response){
         if(finalfiles.length > 0){
 			for(var i = 0; i<finalfiles.length; i++){	
@@ -176,7 +177,7 @@ var AddEntryModal = React.createClass({
 			        url: '/scot/api/v2/file',
                     data: data,
                     processData: false,
-                    contentType: false,
+                    contentType: 'application/json; charset=UTF-8',
                     dataType: 'json',
                     cache: false
             }).success(function(response){
@@ -247,7 +248,8 @@ var AddEntryModal = React.createClass({
 	            $.ajax({
 		        type: 'post', 
 		        url: '/scot/api/v2/entry',
-		        data: data
+		        data: data,
+                contentType: 'application/json; charset=UTF-8',
 		        }).success(function(response){
                     if(finalfiles.length > 0){
 			            for(var i = 0; i<finalfiles.length; i++){	
@@ -262,7 +264,7 @@ var AddEntryModal = React.createClass({
                                 url: '/scot/api/v2/file',
                                 data: data,
                                 processData: false,
-                                contentType: false,
+                                contentType: 'application/json; charset=UTF-8',
                                 dataType: 'json',
                                 cache: false
                                 }).success(function(response){
@@ -295,8 +297,9 @@ var AddEntryModal = React.createClass({
     $.ajax({
 	type: 'post',
 	url: '/scot/api/v2/entry',
-	data: JSON.stringify(data)
-	}).success(function(response){
+	data: JSON.stringify(data),
+	contentType: 'application/json; charset=UTF-8'
+    }).success(function(response){
 		   if(finalfiles.length > 0){
 		        for(var i = 0; i<finalfiles.length; i++){	
                     data  = new FormData()
@@ -309,7 +312,7 @@ var AddEntryModal = React.createClass({
                         url: '/scot/api/v2/file',
                         data: data,
                         processData: false,
-                        contentType: false,
+                        contentType: 'application/json; charset=UTF-8',
                         dataType: 'json',
                         cache: false
                         }).success(function(response){
@@ -350,7 +353,8 @@ var AddEntryModal = React.createClass({
 	$.ajax({
         type: 'put',
         url: '/scot/api/v2/entry/'+this.props.id,
-        data: data
+        data: data,
+        contentType: 'application/json; charset=UTF-8'
         }).success(function(response){
             if(finalfiles.length > 0){
                 for(var i = 0; i<finalfiles.length; i++){	
@@ -365,7 +369,7 @@ var AddEntryModal = React.createClass({
                         url: '/scot/api/v2/file',
                         data: data,
                         processData: false,
-                        contentType: false,
+                        contentType: 'application/json; charset=UTF-8',
                         dataType: 'json',
                         cache: false
                     }).success(function(response){
