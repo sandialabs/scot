@@ -5264,6 +5264,7 @@ var ids = []
 var stage = false
 var savedsearch = false
 var savedfsearch;
+var fluidheight;
 var setfilter = false
 var savedid;
 var height;
@@ -5283,8 +5284,9 @@ module.exports = React.createClass({displayName: "exports",
         var scrollHeight = $(window).height() - 170
         var scrollWidth  = '650px'  
         width = 650
-
+        fluidheight = $(window).height() - 108
     return {
+            splitter: true, 
             pagedisplay: 'inline-flex', mute: false,unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
             sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'],
@@ -5441,6 +5443,7 @@ module.exports = React.createClass({displayName: "exports",
         height = $(window).height() - 170
         width = $(t2).width()
         if(this.state.display == 'flex'){
+        fluidheight = $(window).height() - 108
             $('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
@@ -5454,7 +5457,7 @@ module.exports = React.createClass({displayName: "exports",
 
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                $('.splitter').css('width', width)
+                $('.splitter').css('width', '5px')
                 this.setState({classname: array})
            }
             else {
@@ -5741,8 +5744,16 @@ module.exports = React.createClass({displayName: "exports",
                     )
                     //)
                     //)
-                    ))))), React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                    ))))), 
+
+                        !this.state.splitter ? React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}):null, 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , 
+                        this.state.splitter ?
+                        React.createElement('div' , null,
+                        React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', width: '5px', height: fluidheight, 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}})) : null,
+
+
+                        stage ? 
                         React.createElement(SelectedContainer, {alertPreSelectedId: highlight ? this.props.supertable[0] : 0, height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null),
                         !this.state.alldetail ?
                         React.createElement('div', null,
@@ -5769,7 +5780,7 @@ module.exports = React.createClass({displayName: "exports",
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
-        $('.splitter').css('width', width)
+        $('.splitter').css('width', '5px')
         if(this.state.resize == 'vertical'){
             width = 650
             $('.container-fluid2').css('width', '100%')
@@ -5806,11 +5817,11 @@ module.exports = React.createClass({displayName: "exports",
         $('.container-fluid2').css('width', '650px')
         width = 650
         $('.paging').css('width', width)
-        $('.splitter').css('width', '650px')
+        $('.splitter').css('width', '5px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
     },
 
@@ -5825,7 +5836,7 @@ module.exports = React.createClass({displayName: "exports",
         $('.mainview').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
-        this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
+        this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
 
     },
@@ -6218,6 +6229,7 @@ var Button                  = require('react-bootstrap/lib/Button.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var SORT_INFO;
 var colsort = "id"
+var fluidheight;
 var start;
 var size = 645
 var end;
@@ -6246,7 +6258,6 @@ var columns = ['id', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags'
 var toggle;
 var scrolled = 58
 function Remove(note){
-    console.log(note)
 }
 
 module.exports = React.createClass({displayName: "exports",
@@ -6256,8 +6267,9 @@ module.exports = React.createClass({displayName: "exports",
         var scrollWidth  = '650px'  
         width = 650
         var max = $(window).width() - 10
-
+        fluidheight = $(window).height() - 108
     return {
+            splitter: true,
             pagedisplay: 'inline-flex', mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'], sourcetags: [], tags: [], 
             idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0], 
@@ -6418,6 +6430,7 @@ module.exports = React.createClass({displayName: "exports",
         this.getNewData({page:defaultpage , limit: pageSize}) 
     },
     reloadItem: function(e){
+        
         /*
        console.log($('.container-fluid2').width())
         if($('.container-fluid2').width() == 100){
@@ -6432,6 +6445,7 @@ module.exports = React.createClass({displayName: "exports",
         height = $(window).height() - 170
         width = $(t2).width()
         if(this.state.display == 'flex'){
+            fluidheight = $(window).height() - 108
             $('.container-fluid2').css('height', height) 
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
@@ -6442,10 +6456,9 @@ module.exports = React.createClass({displayName: "exports",
             if(width < size){
                 var array = []
                 array =  ['table-row-smallclass', 'attributes-smallclass','module-reporter-smallclass', 'status-owner-smallclass']
-               
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                $('.splitter').css('width', width) 
+                $('.splitter').css('width', '5px') 
                 this.setState({classname: array})
            }
             else {
@@ -6799,8 +6812,13 @@ module.exports = React.createClass({displayName: "exports",
                    // )
                    // )
                     ))))),
-                           React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}),
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                    !this.state.splitter ? 
+React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}): null, 
+                           React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))),
+                        this.state.splitter ? 
+                        React.createElement('div' , null, 
+                        React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', width: '5px', height: fluidheight, 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}})) : null,
+                        stage ? 
 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'event', viewEvent:this.viewEvent}) : null
                                                
@@ -6830,7 +6848,7 @@ module.exports = React.createClass({displayName: "exports",
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
-        $('.splitter').css('width', width)
+        $('.splitter').css('width', '5px')
         if(this.state.resize == 'vertical'){
             width = 650
             $('.container-fluid2').css('width', '100%')
@@ -6867,11 +6885,11 @@ module.exports = React.createClass({displayName: "exports",
         $('.container-fluid2').css('width', '650px')
         width = 650
         $('.paging').css('width', width)
-        $('.splitter').css('width', '650px')
+        $('.splitter').css('width', '5px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})            
     },
 
@@ -6886,12 +6904,11 @@ module.exports = React.createClass({displayName: "exports",
         $('.mainview').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
-        this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
+        this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
 
     },
     setItem: function(v){
-        console.log(v)
     },
     dismissNote: function(){
         var note = this.refs.notificationSystem
@@ -7386,6 +7403,7 @@ var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar')
 var DateRangePicker         = require('../../../node_modules/react-daterange-picker')
 var Source                  = require('react-tag-input-tags/react-tag-input').WithContext
 var Tags                    = require('react-tag-input').WithContext
+var fluidheight
 var SORT_INFO;
 var colsort = "id"
 var start;
@@ -7422,9 +7440,9 @@ module.exports = React.createClass({displayName: "exports",
         var scrollHeight = $(window).height() - 170
         var scrollWidth  = '650px'  
         width = 650
-
+        fluidheight = $(window).height() - 108
     return {
-            mute: false, resize: 'horizontal', unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
+            mute: false, resize: 'horizontal', splitter: true, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             idtext: '', totalcount: 0, activepage: 0,sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'],
             pagedisplay: 'inline-flex', idarrow: [-1,-1],subjectarrow: [0, 0],
             subjecttext:'', idsarray: [], scrollheight: scrollHeight, 
@@ -7551,6 +7569,7 @@ module.exports = React.createClass({displayName: "exports",
         height = $(window).height() - 170
         width = $(t2).width()
         if(this.state.display == 'flex'){
+                   fluidheight = $(window).height() - 108 
             $('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
@@ -7564,7 +7583,7 @@ module.exports = React.createClass({displayName: "exports",
 
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                $('.splitter').css('width', width)
+                $('.splitter').css('width', '5px')
                 this.setState({classname: array})
            }
             else {
@@ -7723,10 +7742,15 @@ module.exports = React.createClass({displayName: "exports",
                    // )
                    // )
                     ))))),
-                           React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
-                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'guide'}) : null) 
-,
+                        !this.state.splitter ?
+React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}): null, 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , 
+                        this.state.splitter ?
+                        React.createElement('div' , null,
+                        React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', width: '5px', height: fluidheight, 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}})) : null,
+                stage ? 
+                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'guide'}) : null), 
+
                         !this.state.alldetail ?
                         React.createElement('div', null,
                         React.createElement('div', {className: 'toggleview'},
@@ -7896,7 +7920,7 @@ module.exports = React.createClass({displayName: "exports",
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
-        $('.splitter').css('width', width)
+        $('.splitter').css('width', '5px')
         if(this.state.resize == 'vertical'){
             width = 650
             $('.container-fluid2').css('width', '100%')
@@ -7916,11 +7940,11 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
         $('.container-fluid2').css('width', '650px')
         $('.paging').css('width', width)
-        $('.splitter').css('width', '650px')
+        $('.splitter').css('width', '5px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
     },
 
@@ -7935,7 +7959,7 @@ module.exports = React.createClass({displayName: "exports",
         $('.mainview').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
-        this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
+        this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
 
     },
@@ -7988,6 +8012,7 @@ var Tags                    = require('react-tag-input').WithContext
 var SplitButton             = require('react-bootstrap/lib/SplitButton.js');
 var Button                  = require('react-bootstrap/lib/Button.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
+var fluidheight;
 var toggle
 var scrolled = 58
 var size = 645
@@ -8025,9 +8050,9 @@ module.exports = React.createClass({displayName: "exports",
         var scrollHeight = $(window).height() - 170
         var scrollWidth  = '650px'  
         width = 650
-
+        fluidheight = $(window).height() - 108
     return {
-            mute: false, startepoch: '', endepoch: '',white: 'white', blue: '#AEDAFF',
+            mute: false, startepoch: '', splitter: true, endepoch: '',white: 'white', blue: '#AEDAFF',
             pagedisplay: 'inline-flex', resize: 'horizontal',idtext: '', totalcount: 0, activepage: 0,
             statustext: '', subjecttext:'', idsarray: [],
             alldetail: true,sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'], 
@@ -8163,6 +8188,7 @@ module.exports = React.createClass({displayName: "exports",
         height = $(window).height() - 170
         width = $(t2).width()
         if(this.state.display == 'flex'){
+            fluidheight = $(window).height() - 108
             $('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
@@ -8230,11 +8256,11 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
         $('.container-fluid2').css('width', '650px')
         $('.paging').css('width', width)
-        $('.splitter').css('width', '650px')
+        $('.splitter').css('width', '5px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({splitter: true,display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
     },
     stopdrag: function(e){
@@ -8244,7 +8270,7 @@ module.exports = React.createClass({displayName: "exports",
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
-        $('.splitter').css('width', width)
+        $('.splitter').css('width', '5px')
         if(this.state.resize == 'vertical'){
             width = 650 
             $('.container-fluid2').css('width', '100%')
@@ -8267,7 +8293,7 @@ module.exports = React.createClass({displayName: "exports",
         $('.mainview').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
-        this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
+        this.setState({splitter: false, classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
 
     },
@@ -8520,8 +8546,15 @@ module.exports = React.createClass({displayName: "exports",
                     )
                    // )
                    // )
-                    ))))),  React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                    ))))),
+    !this.state.splitter ?
+React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}): null, 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , 
+                        this.state.splitter ?
+                        React.createElement('div' , null,
+                        React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', width: '5px', height: fluidheight, 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}})) : null,
+
+            stage ? 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'incident'}) : null) 
 ,
                         !this.state.alldetail ?
@@ -9190,6 +9223,7 @@ var Source                  = require('react-tag-input-tags/react-tag-input').Wi
 var Tags                    = require('react-tag-input').WithContext
 var Button                  = require('react-bootstrap/lib/Button.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
+var fluidheight
 var SORT_INFO;
 var colsort = "id"
 var start;
@@ -9229,9 +9263,9 @@ module.exports = React.createClass({displayName: "exports",
         var scrollHeight = $(window).height() - 170
         var scrollWidth  = '650px'  
         width = 650
-
+       fluidheight = $(window).height() - 108
     return {
-            pagedisplay: 'inline-flex', mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
+            pagedisplay: 'inline-flex', splitter: true, mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'], sourcetags: [], tags: [], 
             idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0], 
             createdarrow: [0, 0], updatedarrow:[0, 0], sourcearrow:[0, 0],
@@ -9404,7 +9438,8 @@ module.exports = React.createClass({displayName: "exports",
         height = $(window).height() - 170
         width = $(t2).width()
         if(this.state.display == 'flex'){
-            $('.container-fluid2').css('height', height)
+               fluidheight = $(window).height() - 108    
+        $('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
             if(e != null){
@@ -9417,7 +9452,7 @@ module.exports = React.createClass({displayName: "exports",
 
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                $('.splitter').css('width', width)
+                $('.splitter').css('width', '5px')
                 this.setState({classname: array})
            }
             else {
@@ -9771,8 +9806,15 @@ module.exports = React.createClass({displayName: "exports",
                    // )
                    // )
                     ))))),
-                           React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                    !this.state.splitter ?
+React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}): null, 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , 
+
+                        this.state.splitter ?
+                        React.createElement('div' , null,
+                        React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', width: '5px', height: fluidheight, 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}})) : null,
+
+stage ? 
 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'intel', viewEvent:this.viewEvent}) : null
                                                
@@ -9819,7 +9861,7 @@ module.exports = React.createClass({displayName: "exports",
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
-        $('.splitter').css('width', width)
+        $('.splitter').css('width', '5px')
         if(this.state.resize == 'vertical'){
             width = 650
             $('.container-fluid2').css('width', '100%')
@@ -9839,10 +9881,10 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
         $('.container-fluid2').css('width', '650px')
         $('.paging').css('width', width)
-        $('.splitter').css('width', '650px')
+        $('.splitter').css('width', '5px')
         $('.mainview').show()
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})            
     },
 
@@ -9858,7 +9900,7 @@ module.exports = React.createClass({displayName: "exports",
         $('.toggleview').hide()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
-        this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
+        this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
 
     },
@@ -10359,6 +10401,7 @@ var Source                  = require('react-tag-input-tags/react-tag-input').Wi
 var Tags                    = require('react-tag-input').WithContext
 var Button                  = require('react-bootstrap/lib/Button.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
+var fluidheight
 var size = 645
 var toggle
 var scrolled = 43
@@ -10395,9 +10438,9 @@ module.exports = React.createClass({displayName: "exports",
         var scrollHeight = $(window).height() - 170
         var scrollWidth  = '650px'
         width = 650
-
+        fluidheight = $(window).height() - 108
     return {
-            resize: 'horizontal', mute: false, pagedisplay: 'inline-flex', 
+            resize: 'horizontal', mute: false, splitter: true, pagedisplay: 'inline-flex', 
             display: 'flex', upstartepoch: '', upendepoch: '',white: 'white', blue: '#AEDAFF',
             idtext: '', totalcount: 0, activepage: 0,
             sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'],
@@ -10531,7 +10574,8 @@ module.exports = React.createClass({displayName: "exports",
         height = $(window).height() - 170
         width = $(t2).width()
         if(this.state.display == 'flex'){
-            $('.container-fluid2').css('height', height)
+        fluidheight = $(window).height() - 108            
+$('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
             if(e != null){
@@ -10544,7 +10588,7 @@ module.exports = React.createClass({displayName: "exports",
 
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                $('.splitter').css('width', width)
+                $('.splitter').css('width', '5px')
                 this.setState({classname: array})
            }
             else {
@@ -10766,8 +10810,14 @@ module.exports = React.createClass({displayName: "exports",
                             React.createElement("div", {className: "column severity"}, value.id))),
                         React.createElement("div", {className: "wrapper dates "+this.state.sizearray[0]},
                             React.createElement("div", {className: "column date"}, value.updated))))))))),
-                                           React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}),        
-                React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ?
+                                                               !this.state.splitter ?
+React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}): null,        
+                React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , 
+
+                        this.state.splitter ?
+                        React.createElement('div' , null,
+                        React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', width: '5px', height: fluidheight, 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}})) : null,
+stage ?
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: this.state.type, taskid: this.state.entry}) : null),
                         !this.state.alldetail ?
                         React.createElement('div', null,
@@ -10865,7 +10915,7 @@ module.exports = React.createClass({displayName: "exports",
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
-        $('.splitter').css('width', width)
+        $('.splitter').css('width', '5px')
         if(this.state.resize == 'vertical'){
             width = 650
             $('.container-fluid2').css('width', '100%')
@@ -10884,12 +10934,12 @@ module.exports = React.createClass({displayName: "exports",
         stage = true
         width =650
         $('.paging').css('width', width)
-        $('.splitter').css('width', '650px')
+        $('.splitter').css('width', '5px')
         $('.container-fluid2').css('width', '650px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({splitter: true,display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
     },
 
@@ -10905,7 +10955,7 @@ module.exports = React.createClass({displayName: "exports",
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
-        scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
+        splitter: false, scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
 
     },
     getNewData: function(page){
