@@ -171,12 +171,25 @@ sub refresh_data {
         $count{total}++;
         $count{$alert->status}++;
     }
+    my $status;
+
+    if ( $count{promoted} > 0 ) {
+        $status = "promoted";
+    }
+    elsif ( $count{closed} == $count{total} ) {
+        $status = "closed";
+    }
+    else {
+        $status = "open";
+    }
+
     $alertgroup->update({
         '$set'  => {
             open_count      => $count{open} // 0,
             closed_count    => $count{closed} // 0,
             promoted_count  => $count{promoted} // 0,
             alert_count     => $count{total},
+            status          => $status,
             updated         => $env->now,
         }
     });
