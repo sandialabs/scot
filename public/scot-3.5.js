@@ -2667,12 +2667,23 @@ var EntryParent = React.createClass({displayName: "EntryParent",
             this.setState({permissionsToolbar:false})
         }
     },
+    reparseFlair: function() {
+        $.ajax({
+            type: 'put',
+            url: '/scot/api/v2/entry/'+this.props.items.id,
+            data: JSON.stringify({parsed:0}),
+            contentType: 'application/json; charset=UTF-8',
+        }).success(function(response){
+            console.log('reparsing started');
+        }.bind(this))
+    },
     render: function() {
         var itemarr = [];
         var subitemarr = [];
         var items = this.props.items;
         var type = this.props.type;
         var id = this.props.id;
+        var isPopUp = this.props.isPopUp;
         var summary = items.summary;
         var editEntryToolbar = this.state.editEntryToolbar;
         var editEntryToggle = this.editEntryToggle;
@@ -2694,13 +2705,13 @@ var EntryParent = React.createClass({displayName: "EntryParent",
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
-        itemarr.push(React.createElement(EntryData, {id: items.id, key: items.id, subitem: items, type: type, targetid: id, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle, isPopUp: this.props.isPopUp}));
+        itemarr.push(React.createElement(EntryData, {id: items.id, key: items.id, subitem: items, type: type, targetid: id, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle, isPopUp: isPopUp}));
         for (var prop in items) {
             function childfunc(prop){
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(React.createElement(EntryParent, {items: childobj, id: id, type: type, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle, isPopUp: this.props.isPopUp})));  
+                        subitemarr.push(new Array(React.createElement(EntryParent, {items: childobj, id: id, type: type, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle, isPopUp: isPopUp})));  
                     });
                 }
             }
@@ -2724,7 +2735,8 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                                     React.createElement(MenuItem, {eventKey: "2", onClick: this.deleteToggle}, "Delete"), 
                                     React.createElement(MenuItem, {eventKey: "3"}, React.createElement(Summary, {type: type, id: id, entryid: items.id, summary: summary})), 
                                     React.createElement(MenuItem, {eventKey: "4"}, React.createElement(Task, {type: type, id: id, entryid: items.id, taskData: items.task})), 
-                                    React.createElement(MenuItem, {onClick: this.permissionsToggle}, "Permissions")
+                                    React.createElement(MenuItem, {onClick: this.permissionsToggle}, "Permissions"), 
+                                    React.createElement(MenuItem, {onClick: this.reparseFlair}, "Reparse Flair")
                                 ), 
                                 React.createElement(Button, {bsSize: "xsmall", onClick: this.editEntryToggle}, "Edit")
                             )
@@ -3647,6 +3659,16 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
             window.open('/#/guide/' + response.id);        
         }.bind(this)) 
     },
+    reparseFlair: function() {
+        $.ajax({
+            type: 'put',
+            url: '/scot/api/v2/'+this.props.type+'/'+this.props.id,
+            data: JSON.stringify({parsed:0}),
+            contentType: 'application/json; charset=UTF-8',
+        }).success(function(response){
+            console.log('reparsing started');
+        }.bind(this))
+    },
     render: function() { 
         var subjectType = this.props.subjectType;
         var type = this.props.type;
@@ -3670,12 +3692,12 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 React.createElement("div", {className: "entry-header"}, 
                     React.createElement(Button, {bsStyle: "success", onClick: this.props.entryToggle, bsSize: "small"}, "Add Entry"), 
                     React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
-                    React.createElement(Button, {eventKey: "2", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
-                    React.createElement(Button, {eventKey: "3", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History")), 
-                    React.createElement(Button, {eventKey: "4", onClick: this.props.permissionsToggle, bsSize: "small"}, React.createElement("b", null, "Permissions")), 
-                    React.createElement(Button, {eventKey: "5", onClick: this.props.entitiesToggle, bsSize: "small"}, "List ", React.createElement("b", null, "Entities")), 
-                    showPromote ? React.createElement(Button, {bsStyle: "warning", eventKey: "6", bsSize: "small"}, React.createElement(Promote, {type: type, id: id, updated: this.props.updated})) : null, 
-                    React.createElement(Button, {bsStyle: "danger", eventKey: "7", onClick: this.props.deleteToggle, bsSize: "small"}, React.createElement("b", null, "Delete"), " ", subjectType)
+                    React.createElement(Button, {eventKey: "3", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
+                    React.createElement(Button, {eventKey: "4", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History")), 
+                    React.createElement(Button, {eventKey: "5", onClick: this.props.permissionsToggle, bsSize: "small"}, React.createElement("b", null, "Permissions")), 
+                    React.createElement(Button, {eventKey: "6", onClick: this.props.entitiesToggle, bsSize: "small"}, "List ", React.createElement("b", null, "Entities")), 
+                    showPromote ? React.createElement(Button, {bsStyle: "warning", eventKey: "7", bsSize: "small"}, React.createElement(Promote, {type: type, id: id, updated: this.props.updated})) : null, 
+                    React.createElement(Button, {bsStyle: "danger", eventKey: "8", onClick: this.props.deleteToggle, bsSize: "small"}, React.createElement("b", null, "Delete"), " ", subjectType)
                 )
             )
         } else {
@@ -3683,29 +3705,31 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 return (
                     React.createElement("div", {className: "entry-header"}, 
                         React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
-                        this.props.guideID == null ? null : React.createElement("span", null, this.props.guideID != 0 ? React.createElement(Button, {eventKey: "2", onClick: this.guideToggle, bsSize: "small"}, "Guide") : React.createElement(Button, {eventKey: "2", onClick: this.createGuide, bsSize: "small"}, "Create Guide")), 
-                        React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
-                        React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
-                        React.createElement(Button, {eventKey: "5", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
-                        React.createElement(Button, {eventKey: "6", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History")), 
-                        React.createElement(Button, {eventKey: "7", onClick: this.alertOpenSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "O"), "pen"), " Selected"), 
-                        React.createElement(Button, {eventKey: "8", onClick: this.alertCloseSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "C"), "lose"), " Selected"), 
-                        React.createElement(Button, {eventKey: "9", onClick: this.alertPromoteSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "P"), "romote"), " Selected"), 
-                        React.createElement(Button, {eventKey: "10", onClick: this.props.entryToggle, bsSize: "small"}, "Add ", React.createElement("b", null, "Entry")), 
-                        React.createElement(Button, {eventKey: "11", onClick: this.alertSelectExisting, bsSize: "small"}, React.createElement("b", null, "Add"), " Selected to ", React.createElement("b", null, "Existing Event")), 
-                        React.createElement(Button, {eventKey: "12", onClick: this.alertExportCSV, bsSize: "small"}, "Export to ", React.createElement("b", null, "CSV")), 
-                        React.createElement(Button, {eventKey: "13", onClick: this.alertDeleteSelected, bsSize: "small"}, React.createElement("b", null, "Delete"), " Selected")
+                        React.createElement(Button, {eventKey: "2", onClick: this.reparseFlair, bsSize: "small"}, React.createElement("b", null, "Reparse"), " Flair"), 
+                        this.props.guideID == null ? null : React.createElement("span", null, this.props.guideID != 0 ? React.createElement(Button, {eventKey: "3", onClick: this.guideToggle, bsSize: "small"}, "Guide") : React.createElement(Button, {eventKey: "3", onClick: this.createGuide, bsSize: "small"}, "Create Guide")), 
+                        React.createElement(Button, {eventKey: "4", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
+                        React.createElement(Button, {eventKey: "5", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
+                        React.createElement(Button, {eventKey: "6", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
+                        React.createElement(Button, {eventKey: "7", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History")), 
+                        React.createElement(Button, {eventKey: "8", onClick: this.alertOpenSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "O"), "pen"), " Selected"), 
+                        React.createElement(Button, {eventKey: "9", onClick: this.alertCloseSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "C"), "lose"), " Selected"), 
+                        React.createElement(Button, {eventKey: "10", onClick: this.alertPromoteSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "P"), "romote"), " Selected"), 
+                        React.createElement(Button, {eventKey: "11", onClick: this.props.entryToggle, bsSize: "small"}, "Add ", React.createElement("b", null, "Entry")), 
+                        React.createElement(Button, {eventKey: "12", onClick: this.alertSelectExisting, bsSize: "small"}, React.createElement("b", null, "Add"), " Selected to ", React.createElement("b", null, "Existing Event")), 
+                        React.createElement(Button, {eventKey: "13", onClick: this.alertExportCSV, bsSize: "small"}, "Export to ", React.createElement("b", null, "CSV")), 
+                        React.createElement(Button, {eventKey: "14", onClick: this.alertDeleteSelected, bsSize: "small"}, React.createElement("b", null, "Delete"), " Selected")
                     )
                 )
             } else { 
                 return (
                     React.createElement("div", {className: "entry-header"}, 
                         React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
-                        this.props.guideID == null ? null : React.createElement("span", null, this.props.guideID != 0 ? React.createElement(Button, {eventKey: "2", onClick: this.guideToggle, bsSize: "small"}, "Guide") : React.createElement(Button, {eventKey: "2", onClick: this.createGuide, bsSize: "small"}, "Create Guide")), 
-                        React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
-                        React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
-                        React.createElement(Button, {eventKey: "5", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
-                        React.createElement(Button, {eventKey: "6", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History"))
+                        React.createElement(Button, {eventKey: "2", onClick: this.reparseFlair, bsSize: "small"}, React.createElement("b", null, "Reparse"), " Flair"), 
+                        this.props.guideID == null ? null : React.createElement("span", null, this.props.guideID != 0 ? React.createElement(Button, {eventKey: "3", onClick: this.guideToggle, bsSize: "small"}, "Guide") : React.createElement(Button, {eventKey: "3", onClick: this.createGuide, bsSize: "small"}, "Create Guide")), 
+                        React.createElement(Button, {eventKey: "4", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
+                        React.createElement(Button, {eventKey: "5", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
+                        React.createElement(Button, {eventKey: "6", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
+                        React.createElement(Button, {eventKey: "7", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History"))
                     )
                 )
             }
