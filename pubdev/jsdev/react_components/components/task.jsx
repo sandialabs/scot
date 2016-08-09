@@ -88,7 +88,7 @@ var Task = React.createClass({
         } else if (whoami == this.state.taskOwner && this.state.taskStatus == 'open') {
             taskDisplay = 'Close Task';
             onClick = this.closeTask;
-        } else if (this.state.taskStatus == 'closed') {
+        } else if (this.state.taskStatus == 'closed' || this.state.taskStatus == 'completed') {
             taskDisplay = 'Reopen Task';
             onClick = this.makeTask;
         } else if (whoami == this.state.taskOwner && this.state.taskStatus == 'assigned') {

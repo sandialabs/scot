@@ -2118,7 +2118,7 @@ var Task = React.createClass({displayName: "Task",
         } else if (whoami == this.state.taskOwner && this.state.taskStatus == 'open') {
             taskDisplay = 'Close Task';
             onClick = this.closeTask;
-        } else if (this.state.taskStatus == 'closed') {
+        } else if (this.state.taskStatus == 'closed' || this.state.taskStatus == 'completed') {
             taskDisplay = 'Reopen Task';
             onClick = this.makeTask;
         } else if (whoami == this.state.taskOwner && this.state.taskStatus == 'assigned') {
@@ -2685,11 +2685,11 @@ var EntryParent = React.createClass({displayName: "EntryParent",
             taskOwner = '-- Task Owner ' + items.task.who + ' ';
             outerClassName += ' todo_open_outer';
             innerClassName += ' todo_open';
-        } else if (items.task.status == 'closed' && items.task.who != null ) {
+        } else if ((items.task.status == 'closed' || items.task.status == 'completed') && items.task.who != null ) {
             taskOwner = '-- Task Owner ' + items.task.who + ' ';
             outerClassName += ' todo_completed_outer';
             innerClassName += ' todo_completed';
-        } else if (items.task.status == 'closed') {
+        } else if (items.task.status == 'closed' || items.task.status == 'completed') {
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
