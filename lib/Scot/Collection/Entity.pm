@@ -46,8 +46,10 @@ sub update_entities {
     my $log     = $env->log;
     my $mongo   = $env->mongo;
 
-    #$self->env->log->debug("updating entities on target ",
-    #                        { filter =>\&Dumper, value => $target});
+    $self->env->log->debug("updating entities on target ",
+                            { filter =>\&Dumper, value => $target});
+
+    $log->debug("earef is ",{filter=>\&Dumper, value=>$earef});
 
     my $type    = $target->get_collection_name;
     my $id      = $target->id;
