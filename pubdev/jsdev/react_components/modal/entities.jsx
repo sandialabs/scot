@@ -103,7 +103,7 @@ var EntitiesDataHeaderIterator = React.createClass({
 
 var EntitiesDataValueIterator = React.createClass({
     toggle: function() {
-        this.props.flairToolbarToggle(this.props.entityId); 
+        this.props.flairToolbarToggle(this.props.entityId,null,'entity'); 
     },
     render: function() {
         var entityValue = this.props.entityValue;

@@ -1086,7 +1086,7 @@ function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle,id) {
 }
         
 function infopop(entityid, entityvalue, flairToolbarToggle) {
-    flairToolbarToggle(entityid,entityvalue);
+    flairToolbarToggle(entityid,entityvalue,'entity');
 }
 function linkWarningPopup(url,linkWarningToggle) {
     linkWarningToggle(url);
@@ -2190,13 +2190,14 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             showEntityData:this.props.showEntityData,
             entryData:this.props.entryData,
             entityData:this.props.entityData,
+            entitytype:null,
             key:this.props.id,
             flairToolbar:false,
             height: null,
         }
     },
     componentDidMount: function() {
-        if (this.props.type == 'alert' || this.props.type == 'entity') {
+        if (this.props.type == 'alert' || this.props.type == 'entity' || this.props.isPopUp == 1) {
             this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
                 var entryResult = result.records;
                 this.setState({showEntryData:true, entryData:entryResult})
@@ -2231,7 +2232,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         this.containerHeightAdjust();
     },
     updatedCB: function() {
-       if (this.props.type == 'alert' || this.props.type == 'entity') {
+       if (this.props.type == 'alert' || this.props.type == 'entity' || this.props.isPopUp == 1) {
             this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
                 var entryResult = result.records;
                 this.setState({showEntryData:true, entryData:entryResult})
@@ -2257,9 +2258,9 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             }.bind(this)); 
         }
     },
-    flairToolbarToggle: function(id,value) {
+    flairToolbarToggle: function(id,value,type) {
         if (this.state.flairToolbar == false) {
-            this.setState({flairToolbar:true,entityid:id,entityvalue:value})
+            this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
         } else {
             this.setState({flairToolbar:false})
         }
@@ -2296,21 +2297,21 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             showEntryData = this.state.showEntryData;
         } else if (type =='alertgroup') {
             divClass = 'row-fluid alert-wrapper entry-wrapper-main';
-        } else if (type == 'entity') {
+        } else if (type == 'entity' || this.props.isPopUp == 1) {
             divClass = 'row-fluid entry-wrapper-entity';
             data = this.state.entryData;
             showEntryData = this.state.showEntryData;
         }
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
         var EntityDetail = require('../modal/entity_detail.jsx');
-        if (type != 'entity' && type != 'alert') {
+        if (type != 'entity' && type != 'alert' && this.props.isPopUp != 1) {
             var height = this.state.height;
         }
         return (
             React.createElement("div", {key: id, className: divClass, style: {height:height}}, 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.aType, targetid: this.props.aID, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB})) : null, 
-                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId}) : React.createElement("span", null, "Loading..."), 
-                this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, type: this.props.type, id: this.props.id}): null, 
+                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId, isPopUp: this.props.isPopUp}) : React.createElement("span", null, "Loading..."), 
+                this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id}): null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null
             )       
         );
@@ -2325,7 +2326,7 @@ var EntryIterator = React.createClass({displayName: "EntryIterator",
         var id = this.props.id;  
         if (type != 'alertgroup') {
             data.forEach(function(data) {
-                rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id}));
+                rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id, isPopUp: this.props.isPopUp}));
             }.bind(this));
         } else {
             rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected, alertPreSelectedId: this.props.alertPreSelectedId}));
@@ -2693,13 +2694,13 @@ var EntryParent = React.createClass({displayName: "EntryParent",
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
-        itemarr.push(React.createElement(EntryData, {id: items.id, key: items.id, subitem: items, type: type, targetid: id, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle}));
+        itemarr.push(React.createElement(EntryData, {id: items.id, key: items.id, subitem: items, type: type, targetid: id, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle, isPopUp: this.props.isPopUp}));
         for (var prop in items) {
             function childfunc(prop){
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(React.createElement(EntryParent, {items: childobj, id: id, type: type, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle})));  
+                        subitemarr.push(new Array(React.createElement(EntryParent, {items: childobj, id: id, type: type, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle, isPopUp: this.props.isPopUp})));  
                     });
                 }
             }
@@ -2740,7 +2741,7 @@ var EntryParent = React.createClass({displayName: "EntryParent",
 
 var EntryData = React.createClass({displayName: "EntryData", 
     getInitialState: function() {
-        if (this.props.type == 'entity') {
+        if (this.props.type == 'entity' || this.props.isPopUp == 1) {
             return {
                 height: '250px',
             }
@@ -2862,6 +2863,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             showEntityData:false,
             entityData:'',
             entityid:null,
+            entitytype:null,
             flairToolbar:false,
             linkWarningToolbar:false,
             refreshing:false,
@@ -2938,6 +2940,8 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 if (result.records[0] != undefined) {
                     var guideID = result.records[0].id;
                     this.setState({guideID: guideID});
+                } else {
+                    this.setState({guideID: 0});
                 }
             }.bind(this));     
         }
@@ -3046,9 +3050,9 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             waitForEntry.waitEntry();
         }.bind(this));
      },*/
-    flairToolbarToggle: function(id,value){
+    flairToolbarToggle: function(id,value,type){
         if (this.state.flairToolbar == false) {
-            this.setState({flairToolbar:true,entityid:id,entityvalue:value})
+            this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
         } else {
             this.setState({flairToolbar:false})
         }
@@ -3194,14 +3198,14 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                     )
                 ), 
                 React.createElement(Notification, {ref: "notificationSystem"}), 
-                this.state.flairToolbar ? React.createElement(EntityDetail, {key: this.state.entityid, flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, type: this.props.type, id: this.props.id}) : null, 
+                this.state.flairToolbar ? React.createElement(EntityDetail, {key: this.state.entityid, flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id}) : null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null, 
                 this.state.viewedByHistoryToolbar ? React.createElement(ViewedByHistory, {viewedByHistoryToggle: this.viewedByHistoryToggle, id: id, type: type, subjectType: subjectType, viewedby: viewedby}) : null, 
                 this.state.changeHistoryToolbar ? React.createElement(ChangeHistory, {changeHistoryToggle: this.changeHistoryToggle, id: id, type: type, subjectType: subjectType}) : null, 
                 this.state.entitiesToolbar ? React.createElement(Entities, {entitiesToggle: this.entitiesToggle, entityData: this.state.entityData, flairToolbarToggle: this.flairToolbarToggle}) : null, 
                 this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: id, type: type, permissionData: this.state.headerData, permissionsToggle: this.permissionsToggle, updated: this.updated}) : null, 
                 this.state.deleteToolbar ? React.createElement(DeleteEvent, {subjectType: subjectType, type: type, id: id, deleteToggle: this.deleteToggle, updated: this.updated}) :null, 
-                type != 'alertgroup' ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated}) : React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated, alertSelected: this.state.alertSelected, aIndex: this.state.aIndex, aType: this.state.aType, aStatus: this.state.aStatus, guideToggle: this.guideToggle, sourceToggle: this.sourceToggle, guideID: this.state.guideID})
+                type != 'alertgroup' ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated, subjectName: this.state.headerData.subject}) : React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated, alertSelected: this.state.alertSelected, aIndex: this.state.aIndex, aType: this.state.aType, aStatus: this.state.aStatus, flairToolbarToggle: this.flairToolbarToggle, sourceToggle: this.sourceToggle, guideID: this.state.guideID, subjectName: this.state.headerData.subject})
                 ), 
                 this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
 
@@ -3629,6 +3633,20 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
             }
         }.bind(this))
     },
+    guideToggle: function() {
+        this.props.flairToolbarToggle(this.props.guideID,null,'guide')
+    },
+    createGuide: function() {
+       var data = JSON.stringify({subject: 'ENTER A GUIDE NAME',applies_to:[this.props.subjectName],entry:[]})
+        $.ajax({
+            type: 'POST',
+            url: '/scot/api/v2/guide',
+            data: data,
+            contentType: 'application/json; charset=UTF-8',
+        }).success(function(response){
+            window.open('/#/guide/' + response.id);        
+        }.bind(this)) 
+    },
     render: function() { 
         var subjectType = this.props.subjectType;
         var type = this.props.type;
@@ -3665,7 +3683,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 return (
                     React.createElement("div", {className: "entry-header"}, 
                         React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
-                        this.props.guideID != null ? React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle, bsSize: "small"}, "Guide") : null, 
+                        this.props.guideID == null ? null : React.createElement("span", null, this.props.guideID != 0 ? React.createElement(Button, {eventKey: "2", onClick: this.guideToggle, bsSize: "small"}, "Guide") : React.createElement(Button, {eventKey: "2", onClick: this.createGuide, bsSize: "small"}, "Create Guide")), 
                         React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
                         React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
                         React.createElement(Button, {eventKey: "5", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
@@ -3683,7 +3701,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 return (
                     React.createElement("div", {className: "entry-header"}, 
                         React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
-                        this.props.guideID != null ? React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle, bsSize: "small"}, "Guide") : null, 
+                        this.props.guideID == null ? null : React.createElement("span", null, this.props.guideID != 0 ? React.createElement(Button, {eventKey: "2", onClick: this.guideToggle, bsSize: "small"}, "Guide") : React.createElement(Button, {eventKey: "2", onClick: this.createGuide, bsSize: "small"}, "Create Guide")), 
                         React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
                         React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
                         React.createElement(Button, {eventKey: "5", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
@@ -4496,7 +4514,7 @@ var EntitiesDataHeaderIterator = React.createClass({displayName: "EntitiesDataHe
 
 var EntitiesDataValueIterator = React.createClass({displayName: "EntitiesDataValueIterator",
     toggle: function() {
-        this.props.flairToolbarToggle(this.props.entityId); 
+        this.props.flairToolbarToggle(this.props.entityId,null,'entity'); 
     },
     render: function() {
         var entityValue = this.props.entityValue;
@@ -4533,13 +4551,13 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         if (this.props.entityid == undefined) {
             $.ajax({
                 type: 'GET',
-                url: 'scot/api/v2/entity/'+this.props.entityvalue.toLowerCase()
+                url: 'scot/api/v2/' + this.props.entitytype + '/' +this.props.entityvalue.toLowerCase()
             }).success(function(result) {
                 var entityid = result.id;
                 this.setState({entityid:entityid});
                 $.ajax({
                     type: 'GET',
-                    url: 'scot/api/v2/entity/' + entityid 
+                    url: 'scot/api/v2/' + this.props.entitytype + '/' + entityid 
                 }).success(function(result) {
                     this.setState({entityData:result})
                 }.bind(this));
@@ -4547,7 +4565,7 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         } else {
             $.ajax({
                 type: 'GET',
-                url: 'scot/api/v2/entity/' + this.state.entityid
+                url: 'scot/api/v2/' + this.props.entitytype + '/' + this.state.entityid
             }).success(function(result) {
                 this.setState({entityData:result})
             }.bind(this));
@@ -4647,23 +4665,44 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
             entityHeight = entityPopUpHeight;
             entityWidth = entityPopUpWidth;
         }*/
-        return (
-            React.createElement(Draggable, {handle: "#handle", onMouseDown: this.moveDivInit}, 
-                React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth}}, 
-                    React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex'}}, 
-                        React.createElement("div", {id: "handle", style: {width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
-                        React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
-                            React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
-                        ), 
-                        React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto', margin:'10px'}}, 
-                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
-                        ), 
-                        React.createElement("div", {id: "footer", onMouseDown: this.initDrag, style: {display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}
+        if (this.props.entitytype == 'entity') {
+            return (
+                React.createElement(Draggable, {handle: "#handle", onMouseDown: this.moveDivInit}, 
+                    React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth}}, 
+                        React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex'}}, 
+                            React.createElement("div", {id: "handle", style: {width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
+                            React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
+                                React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
+                            ), 
+                            React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto', margin:'10px'}}, 
+                            this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
+                            ), 
+                            React.createElement("div", {id: "footer", onMouseDown: this.initDrag, style: {display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}
+                            )
                         )
                     )
                 )
             )
-        )
+        } else if (this.props.entitytype == 'guide') {
+            var guideurl = '/#/guide/' + this.state.entityid;
+            return (
+                React.createElement(Draggable, {handle: "#handle", onMouseDown: this.moveDivInit}, 
+                    React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth}}, 
+                        React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex'}}, 
+                            React.createElement("div", {id: "handle", style: {width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
+                            React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
+                                React.createElement("a", {href: guideurl, target: "_blank"}, React.createElement("h3", {id: "myModalLabel"}, "Guide ", this.state.entityData != null ? React.createElement("span", null, React.createElement("span", null, React.createElement(EntityValue, {value: this.state.entityid})), React.createElement("div", null, React.createElement(EntityValue, {value: this.state.entityData.applies_to}))) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading...")))
+                            ), 
+                            React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto', margin:'10px'}}, 
+                            this.state.entityData != null ? React.createElement(GuideBody, {entityid: this.state.entityid, entitytype: this.props.entitytype}) : React.createElement("div", null, "Loading...")
+                            ), 
+                            React.createElement("div", {id: "footer", onMouseDown: this.initDrag, style: {display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}
+                            )
+                        )
+                    )
+                )
+            )
+        }
     },
     
 });
@@ -5010,6 +5049,31 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
                 React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, this.props.data.subject)
             )
         )    
+    }
+})
+
+var GuideBody = React.createClass ({displayName: "GuideBody",
+    getInitialState: function() {
+        return {
+            entryToolbar:false
+        }
+    },
+    entryToggle: function() {
+        if (this.state.entryToolbar == false) {
+            this.setState({entryToolbar:true})
+        } else {
+            this.setState({entryToolbar:false})
+        }
+    },
+    render: function() {
+        //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
+        var SelectedEntry = require('../entry/selected_entry.jsx');
+        return (
+            React.createElement(Tabs, {defaultActiveKey: 1, bsStyle: "pills"}, 
+                React.createElement(Tab, {eventKey: 1}, React.createElement(Button, {onClick: this.entryToggle}, "Add Entry"), React.createElement("br", null), 
+                this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "guide", targetid: this.props.entityid, id: 'add_entry', addedentry: this.entryToggle}) : null, " ", React.createElement(SelectedEntry, {type: 'guide', id: this.props.entityid, isPopUp: 1}))
+            )
+        )
     }
 })
 

@@ -256,6 +256,20 @@ var SelectedHeaderOptions = React.createClass({
             }
         }.bind(this))
     },
+    guideToggle: function() {
+        this.props.flairToolbarToggle(this.props.guideID,null,'guide')
+    },
+    createGuide: function() {
+       var data = JSON.stringify({subject: 'ENTER A GUIDE NAME',applies_to:[this.props.subjectName],entry:[]})
+        $.ajax({
+            type: 'POST',
+            url: '/scot/api/v2/guide',
+            data: data,
+            contentType: 'application/json; charset=UTF-8',
+        }).success(function(response){
+            window.open('/#/guide/' + response.id);        
+        }.bind(this)) 
+    },
     render: function() { 
         var subjectType = this.props.subjectType;
         var type = this.props.type;
@@ -292,7 +306,7 @@ var SelectedHeaderOptions = React.createClass({
                 return (
                     <div className="entry-header">
                         <Button eventKey='1' onClick={this.toggleFlair} bsSize='small'>Toggle <b>Flair</b></Button>
-                        {this.props.guideID != null ? <Button eventKey='2' onClick={this.props.guideToggle} bsSize='small'>Guide</Button> : null}
+                        {this.props.guideID == null ? null : <span>{this.props.guideID != 0 ? <Button eventKey='2' onClick={this.guideToggle} bsSize='small'>Guide</Button> : <Button eventKey='2' onClick={this.createGuide} bsSize='small'>Create Guide</Button>}</span>}
                         <Button eventKey='3' onClick={this.props.sourceToggle} bsSize='small'>View <b>Source</b></Button> 
                         <Button eventKey='4' onClick={this.props.entitiesToggle} bsSize='small'>View <b>Entities</b></Button>
                         <Button eventKey="5" onClick={this.props.viewedByHistoryToggle} bsSize='small'><b>Viewed By History</b></Button>
@@ -310,7 +324,7 @@ var SelectedHeaderOptions = React.createClass({
                 return (
                     <div className="entry-header">
                         <Button eventKey='1' onClick={this.toggleFlair} bsSize='small'>Toggle <b>Flair</b></Button>
-                        {this.props.guideID != null ? <Button eventKey='2' onClick={this.props.guideToggle} bsSize='small'>Guide</Button> : null}
+                        {this.props.guideID == null ? null : <span>{this.props.guideID != 0 ? <Button eventKey='2' onClick={this.guideToggle} bsSize='small'>Guide</Button> : <Button eventKey='2' onClick={this.createGuide} bsSize='small'>Create Guide</Button>}</span>}
                         <Button eventKey='3' onClick={this.props.sourceToggle} bsSize='small'>View <b>Source</b></Button> 
                         <Button eventKey='4' onClick={this.props.entitiesToggle} bsSize='small'>View <b>Entities</b></Button>
                         <Button eventKey="5" onClick={this.props.viewedByHistoryToggle} bsSize='small'><b>Viewed By History</b></Button>
