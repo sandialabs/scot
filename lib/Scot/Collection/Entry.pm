@@ -15,22 +15,23 @@ with    qw(
 sub create_from_promoted_alert {
     my $self    = shift;
     my $alert   = shift;
+    my $event   = shift;
     my $env     = $self->env;
     my $log     = $env->log;
     my $mongo   = $env->mongo;
     my $mq      = $env->mq;
     my $json;
 
-    $json->{groups}->{read} = $alert->groups->{read} // 
-                                $env->default_groups->{read};
-    $json->{groups}->{modify} = $alert->groups->{modify} // 
-                                $env->default_groups->{modify};
-    $json->{target} = {
-        type    => 'alert',
-        id      => $alert->id,
+    $json->{groups}->{read}    = $alert->groups->{read} // 
+                                 $env->default_groups->{read};
+    $json->{groups}->{modify}  = $alert->groups->{modify} // 
+                                 $env->default_groups->{modify};
+    $json->{target}            = {
+        type                  => 'event',
+        id                    => $event->id,
     };
-    $json->{body}   = $self->build_table($alert);
-    my $entry_obj   = $self->create($json);
+    $json->{body}              = $self->build_table($alert);
+    my $entry_obj              = $self->create($json);
     return $entry_obj;
 }
 
