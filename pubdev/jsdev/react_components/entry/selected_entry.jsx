@@ -521,11 +521,11 @@ var EntryParent = React.createClass({
             taskOwner = '-- Task Owner ' + items.task.who + ' ';
             outerClassName += ' todo_open_outer';
             innerClassName += ' todo_open';
-        } else if (items.task.status == 'closed' && items.task.who != null ) {
+        } else if ((items.task.status == 'closed' || items.task.status == 'completed') && items.task.who != null ) {
             taskOwner = '-- Task Owner ' + items.task.who + ' ';
             outerClassName += ' todo_completed_outer';
             innerClassName += ' todo_completed';
-        } else if (items.task.status == 'closed') {
+        } else if (items.task.status == 'closed' || items.task.status == 'completed') {
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
