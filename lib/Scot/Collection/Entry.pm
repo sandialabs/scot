@@ -22,6 +22,8 @@ sub create_from_promoted_alert {
     my $mq      = $env->mq;
     my $json;
 
+    $log->debug("Creating Entry from promoted Alert");
+
     $json->{groups}->{read}    = $alert->groups->{read} // 
                                  $env->default_groups->{read};
     $json->{groups}->{modify}  = $alert->groups->{modify} // 
@@ -31,7 +33,12 @@ sub create_from_promoted_alert {
         id                    => $event->id,
     };
     $json->{body}              = $self->build_table($alert);
+
+    $log->debug("Using : ",{filter=>\&Dumper, value => $json});
+
     my $entry_obj              = $self->create($json);
+
+    $log->debug("Created Entry : ".$entry_obj->id);
     return $entry_obj;
 }
 
