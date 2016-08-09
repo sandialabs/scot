@@ -1086,7 +1086,7 @@ function checkFlairHover(iframe,flairToolbarToggle,type,linkWarningToggle,id) {
 }
         
 function infopop(entityid, entityvalue, flairToolbarToggle) {
-    flairToolbarToggle(entityid,entityvalue);
+    flairToolbarToggle(entityid,entityvalue,'entity');
 }
 function linkWarningPopup(url,linkWarningToggle) {
     linkWarningToggle(url);
@@ -2118,7 +2118,7 @@ var Task = React.createClass({displayName: "Task",
         } else if (whoami == this.state.taskOwner && this.state.taskStatus == 'open') {
             taskDisplay = 'Close Task';
             onClick = this.closeTask;
-        } else if (this.state.taskStatus == 'closed') {
+        } else if (this.state.taskStatus == 'closed' || this.state.taskStatus == 'completed') {
             taskDisplay = 'Reopen Task';
             onClick = this.makeTask;
         } else if (whoami == this.state.taskOwner && this.state.taskStatus == 'assigned') {
@@ -2190,13 +2190,14 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             showEntityData:this.props.showEntityData,
             entryData:this.props.entryData,
             entityData:this.props.entityData,
+            entitytype:null,
             key:this.props.id,
             flairToolbar:false,
             height: null,
         }
     },
     componentDidMount: function() {
-        if (this.props.type == 'alert' || this.props.type == 'entity') {
+        if (this.props.type == 'alert' || this.props.type == 'entity' || this.props.isPopUp == 1) {
             this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
                 var entryResult = result.records;
                 this.setState({showEntryData:true, entryData:entryResult})
@@ -2231,7 +2232,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         this.containerHeightAdjust();
     },
     updatedCB: function() {
-       if (this.props.type == 'alert' || this.props.type == 'entity') {
+       if (this.props.type == 'alert' || this.props.type == 'entity' || this.props.isPopUp == 1) {
             this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
                 var entryResult = result.records;
                 this.setState({showEntryData:true, entryData:entryResult})
@@ -2257,9 +2258,9 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             }.bind(this)); 
         }
     },
-    flairToolbarToggle: function(id,value) {
+    flairToolbarToggle: function(id,value,type) {
         if (this.state.flairToolbar == false) {
-            this.setState({flairToolbar:true,entityid:id,entityvalue:value})
+            this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
         } else {
             this.setState({flairToolbar:false})
         }
@@ -2296,21 +2297,21 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             showEntryData = this.state.showEntryData;
         } else if (type =='alertgroup') {
             divClass = 'row-fluid alert-wrapper entry-wrapper-main';
-        } else if (type == 'entity') {
+        } else if (type == 'entity' || this.props.isPopUp == 1) {
             divClass = 'row-fluid entry-wrapper-entity';
             data = this.state.entryData;
             showEntryData = this.state.showEntryData;
         }
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
         var EntityDetail = require('../modal/entity_detail.jsx');
-        if (type != 'entity' && type != 'alert') {
+        if (type != 'entity' && type != 'alert' && this.props.isPopUp != 1) {
             var height = this.state.height;
         }
         return (
             React.createElement("div", {key: id, className: divClass, style: {height:height}}, 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.aType, targetid: this.props.aID, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB})) : null, 
-                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId}) : React.createElement("span", null, "Loading..."), 
-                this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, type: this.props.type, id: this.props.id}): null, 
+                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId, isPopUp: this.props.isPopUp}) : React.createElement("span", null, "Loading..."), 
+                this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id}): null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null
             )       
         );
@@ -2325,7 +2326,7 @@ var EntryIterator = React.createClass({displayName: "EntryIterator",
         var id = this.props.id;  
         if (type != 'alertgroup') {
             data.forEach(function(data) {
-                rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id}));
+                rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id, isPopUp: this.props.isPopUp}));
             }.bind(this));
         } else {
             rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected, alertPreSelectedId: this.props.alertPreSelectedId}));
@@ -2666,12 +2667,23 @@ var EntryParent = React.createClass({displayName: "EntryParent",
             this.setState({permissionsToolbar:false})
         }
     },
+    reparseFlair: function() {
+        $.ajax({
+            type: 'put',
+            url: '/scot/api/v2/entry/'+this.props.items.id,
+            data: JSON.stringify({parsed:0}),
+            contentType: 'application/json; charset=UTF-8',
+        }).success(function(response){
+            console.log('reparsing started');
+        }.bind(this))
+    },
     render: function() {
         var itemarr = [];
         var subitemarr = [];
         var items = this.props.items;
         var type = this.props.type;
         var id = this.props.id;
+        var isPopUp = this.props.isPopUp;
         var summary = items.summary;
         var editEntryToolbar = this.state.editEntryToolbar;
         var editEntryToggle = this.editEntryToggle;
@@ -2685,21 +2697,21 @@ var EntryParent = React.createClass({displayName: "EntryParent",
             taskOwner = '-- Task Owner ' + items.task.who + ' ';
             outerClassName += ' todo_open_outer';
             innerClassName += ' todo_open';
-        } else if (items.task.status == 'closed' && items.task.who != null ) {
+        } else if ((items.task.status == 'closed' || items.task.status == 'completed') && items.task.who != null ) {
             taskOwner = '-- Task Owner ' + items.task.who + ' ';
             outerClassName += ' todo_completed_outer';
             innerClassName += ' todo_completed';
-        } else if (items.task.status == 'closed') {
+        } else if (items.task.status == 'closed' || items.task.status == 'completed') {
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
-        itemarr.push(React.createElement(EntryData, {id: items.id, key: items.id, subitem: items, type: type, targetid: id, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle}));
+        itemarr.push(React.createElement(EntryData, {id: items.id, key: items.id, subitem: items, type: type, targetid: id, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle, isPopUp: isPopUp}));
         for (var prop in items) {
             function childfunc(prop){
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(React.createElement(EntryParent, {items: childobj, id: id, type: type, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle})));  
+                        subitemarr.push(new Array(React.createElement(EntryParent, {items: childobj, id: id, type: type, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle, isPopUp: isPopUp})));  
                     });
                 }
             }
@@ -2723,7 +2735,8 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                                     React.createElement(MenuItem, {eventKey: "2", onClick: this.deleteToggle}, "Delete"), 
                                     React.createElement(MenuItem, {eventKey: "3"}, React.createElement(Summary, {type: type, id: id, entryid: items.id, summary: summary})), 
                                     React.createElement(MenuItem, {eventKey: "4"}, React.createElement(Task, {type: type, id: id, entryid: items.id, taskData: items.task})), 
-                                    React.createElement(MenuItem, {onClick: this.permissionsToggle}, "Permissions")
+                                    React.createElement(MenuItem, {onClick: this.permissionsToggle}, "Permissions"), 
+                                    React.createElement(MenuItem, {onClick: this.reparseFlair}, "Reparse Flair")
                                 ), 
                                 React.createElement(Button, {bsSize: "xsmall", onClick: this.editEntryToggle}, "Edit")
                             )
@@ -2740,7 +2753,7 @@ var EntryParent = React.createClass({displayName: "EntryParent",
 
 var EntryData = React.createClass({displayName: "EntryData", 
     getInitialState: function() {
-        if (this.props.type == 'entity') {
+        if (this.props.type == 'entity' || this.props.isPopUp == 1) {
             return {
                 height: '250px',
             }
@@ -2862,6 +2875,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             showEntityData:false,
             entityData:'',
             entityid:null,
+            entitytype:null,
             flairToolbar:false,
             linkWarningToolbar:false,
             refreshing:false,
@@ -2938,6 +2952,8 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 if (result.records[0] != undefined) {
                     var guideID = result.records[0].id;
                     this.setState({guideID: guideID});
+                } else {
+                    this.setState({guideID: 0});
                 }
             }.bind(this));     
         }
@@ -3046,9 +3062,9 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             waitForEntry.waitEntry();
         }.bind(this));
      },*/
-    flairToolbarToggle: function(id,value){
+    flairToolbarToggle: function(id,value,type){
         if (this.state.flairToolbar == false) {
-            this.setState({flairToolbar:true,entityid:id,entityvalue:value})
+            this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
         } else {
             this.setState({flairToolbar:false})
         }
@@ -3194,14 +3210,14 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                     )
                 ), 
                 React.createElement(Notification, {ref: "notificationSystem"}), 
-                this.state.flairToolbar ? React.createElement(EntityDetail, {key: this.state.entityid, flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, type: this.props.type, id: this.props.id}) : null, 
+                this.state.flairToolbar ? React.createElement(EntityDetail, {key: this.state.entityid, flairToolbarToggle: this.flairToolbarToggle, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id}) : null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null, 
                 this.state.viewedByHistoryToolbar ? React.createElement(ViewedByHistory, {viewedByHistoryToggle: this.viewedByHistoryToggle, id: id, type: type, subjectType: subjectType, viewedby: viewedby}) : null, 
                 this.state.changeHistoryToolbar ? React.createElement(ChangeHistory, {changeHistoryToggle: this.changeHistoryToggle, id: id, type: type, subjectType: subjectType}) : null, 
                 this.state.entitiesToolbar ? React.createElement(Entities, {entitiesToggle: this.entitiesToggle, entityData: this.state.entityData, flairToolbarToggle: this.flairToolbarToggle}) : null, 
                 this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: id, type: type, permissionData: this.state.headerData, permissionsToggle: this.permissionsToggle, updated: this.updated}) : null, 
                 this.state.deleteToolbar ? React.createElement(DeleteEvent, {subjectType: subjectType, type: type, id: id, deleteToggle: this.deleteToggle, updated: this.updated}) :null, 
-                type != 'alertgroup' ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated}) : React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated, alertSelected: this.state.alertSelected, aIndex: this.state.aIndex, aType: this.state.aType, aStatus: this.state.aStatus, guideToggle: this.guideToggle, sourceToggle: this.sourceToggle, guideID: this.state.guideID})
+                type != 'alertgroup' ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated, subjectName: this.state.headerData.subject}) : React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated, alertSelected: this.state.alertSelected, aIndex: this.state.aIndex, aType: this.state.aType, aStatus: this.state.aStatus, flairToolbarToggle: this.flairToolbarToggle, sourceToggle: this.sourceToggle, guideID: this.state.guideID, subjectName: this.state.headerData.subject})
                 ), 
                 this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
 
@@ -3629,6 +3645,30 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
             }
         }.bind(this))
     },
+    guideToggle: function() {
+        this.props.flairToolbarToggle(this.props.guideID,null,'guide')
+    },
+    createGuide: function() {
+       var data = JSON.stringify({subject: 'ENTER A GUIDE NAME',applies_to:[this.props.subjectName],entry:[]})
+        $.ajax({
+            type: 'POST',
+            url: '/scot/api/v2/guide',
+            data: data,
+            contentType: 'application/json; charset=UTF-8',
+        }).success(function(response){
+            window.open('/#/guide/' + response.id);        
+        }.bind(this)) 
+    },
+    reparseFlair: function() {
+        $.ajax({
+            type: 'put',
+            url: '/scot/api/v2/'+this.props.type+'/'+this.props.id,
+            data: JSON.stringify({parsed:0}),
+            contentType: 'application/json; charset=UTF-8',
+        }).success(function(response){
+            console.log('reparsing started');
+        }.bind(this))
+    },
     render: function() { 
         var subjectType = this.props.subjectType;
         var type = this.props.type;
@@ -3652,12 +3692,12 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 React.createElement("div", {className: "entry-header"}, 
                     React.createElement(Button, {bsStyle: "success", onClick: this.props.entryToggle, bsSize: "small"}, "Add Entry"), 
                     React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
-                    React.createElement(Button, {eventKey: "2", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
-                    React.createElement(Button, {eventKey: "3", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History")), 
-                    React.createElement(Button, {eventKey: "4", onClick: this.props.permissionsToggle, bsSize: "small"}, React.createElement("b", null, "Permissions")), 
-                    React.createElement(Button, {eventKey: "5", onClick: this.props.entitiesToggle, bsSize: "small"}, "List ", React.createElement("b", null, "Entities")), 
-                    showPromote ? React.createElement(Button, {bsStyle: "warning", eventKey: "6", bsSize: "small"}, React.createElement(Promote, {type: type, id: id, updated: this.props.updated})) : null, 
-                    React.createElement(Button, {bsStyle: "danger", eventKey: "7", onClick: this.props.deleteToggle, bsSize: "small"}, React.createElement("b", null, "Delete"), " ", subjectType)
+                    React.createElement(Button, {eventKey: "3", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
+                    React.createElement(Button, {eventKey: "4", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History")), 
+                    React.createElement(Button, {eventKey: "5", onClick: this.props.permissionsToggle, bsSize: "small"}, React.createElement("b", null, "Permissions")), 
+                    React.createElement(Button, {eventKey: "6", onClick: this.props.entitiesToggle, bsSize: "small"}, "List ", React.createElement("b", null, "Entities")), 
+                    showPromote ? React.createElement(Button, {bsStyle: "warning", eventKey: "7", bsSize: "small"}, React.createElement(Promote, {type: type, id: id, updated: this.props.updated})) : null, 
+                    React.createElement(Button, {bsStyle: "danger", eventKey: "8", onClick: this.props.deleteToggle, bsSize: "small"}, React.createElement("b", null, "Delete"), " ", subjectType)
                 )
             )
         } else {
@@ -3665,29 +3705,31 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 return (
                     React.createElement("div", {className: "entry-header"}, 
                         React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
-                        this.props.guideID != null ? React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle, bsSize: "small"}, "Guide") : null, 
-                        React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
-                        React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
-                        React.createElement(Button, {eventKey: "5", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
-                        React.createElement(Button, {eventKey: "6", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History")), 
-                        React.createElement(Button, {eventKey: "7", onClick: this.alertOpenSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "O"), "pen"), " Selected"), 
-                        React.createElement(Button, {eventKey: "8", onClick: this.alertCloseSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "C"), "lose"), " Selected"), 
-                        React.createElement(Button, {eventKey: "9", onClick: this.alertPromoteSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "P"), "romote"), " Selected"), 
-                        React.createElement(Button, {eventKey: "10", onClick: this.props.entryToggle, bsSize: "small"}, "Add ", React.createElement("b", null, "Entry")), 
-                        React.createElement(Button, {eventKey: "11", onClick: this.alertSelectExisting, bsSize: "small"}, React.createElement("b", null, "Add"), " Selected to ", React.createElement("b", null, "Existing Event")), 
-                        React.createElement(Button, {eventKey: "12", onClick: this.alertExportCSV, bsSize: "small"}, "Export to ", React.createElement("b", null, "CSV")), 
-                        React.createElement(Button, {eventKey: "13", onClick: this.alertDeleteSelected, bsSize: "small"}, React.createElement("b", null, "Delete"), " Selected")
+                        React.createElement(Button, {eventKey: "2", onClick: this.reparseFlair, bsSize: "small"}, React.createElement("b", null, "Reparse"), " Flair"), 
+                        this.props.guideID == null ? null : React.createElement("span", null, this.props.guideID != 0 ? React.createElement(Button, {eventKey: "3", onClick: this.guideToggle, bsSize: "small"}, "Guide") : React.createElement(Button, {eventKey: "3", onClick: this.createGuide, bsSize: "small"}, "Create Guide")), 
+                        React.createElement(Button, {eventKey: "4", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
+                        React.createElement(Button, {eventKey: "5", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
+                        React.createElement(Button, {eventKey: "6", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
+                        React.createElement(Button, {eventKey: "7", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History")), 
+                        React.createElement(Button, {eventKey: "8", onClick: this.alertOpenSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "O"), "pen"), " Selected"), 
+                        React.createElement(Button, {eventKey: "9", onClick: this.alertCloseSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "C"), "lose"), " Selected"), 
+                        React.createElement(Button, {eventKey: "10", onClick: this.alertPromoteSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "P"), "romote"), " Selected"), 
+                        React.createElement(Button, {eventKey: "11", onClick: this.props.entryToggle, bsSize: "small"}, "Add ", React.createElement("b", null, "Entry")), 
+                        React.createElement(Button, {eventKey: "12", onClick: this.alertSelectExisting, bsSize: "small"}, React.createElement("b", null, "Add"), " Selected to ", React.createElement("b", null, "Existing Event")), 
+                        React.createElement(Button, {eventKey: "13", onClick: this.alertExportCSV, bsSize: "small"}, "Export to ", React.createElement("b", null, "CSV")), 
+                        React.createElement(Button, {eventKey: "14", onClick: this.alertDeleteSelected, bsSize: "small"}, React.createElement("b", null, "Delete"), " Selected")
                     )
                 )
             } else { 
                 return (
                     React.createElement("div", {className: "entry-header"}, 
                         React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
-                        this.props.guideID != null ? React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle, bsSize: "small"}, "Guide") : null, 
-                        React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
-                        React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
-                        React.createElement(Button, {eventKey: "5", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
-                        React.createElement(Button, {eventKey: "6", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History"))
+                        React.createElement(Button, {eventKey: "2", onClick: this.reparseFlair, bsSize: "small"}, React.createElement("b", null, "Reparse"), " Flair"), 
+                        this.props.guideID == null ? null : React.createElement("span", null, this.props.guideID != 0 ? React.createElement(Button, {eventKey: "3", onClick: this.guideToggle, bsSize: "small"}, "Guide") : React.createElement(Button, {eventKey: "3", onClick: this.createGuide, bsSize: "small"}, "Create Guide")), 
+                        React.createElement(Button, {eventKey: "4", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
+                        React.createElement(Button, {eventKey: "5", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
+                        React.createElement(Button, {eventKey: "6", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
+                        React.createElement(Button, {eventKey: "7", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History"))
                     )
                 )
             }
@@ -4496,7 +4538,7 @@ var EntitiesDataHeaderIterator = React.createClass({displayName: "EntitiesDataHe
 
 var EntitiesDataValueIterator = React.createClass({displayName: "EntitiesDataValueIterator",
     toggle: function() {
-        this.props.flairToolbarToggle(this.props.entityId); 
+        this.props.flairToolbarToggle(this.props.entityId,null,'entity'); 
     },
     render: function() {
         var entityValue = this.props.entityValue;
@@ -4533,13 +4575,13 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         if (this.props.entityid == undefined) {
             $.ajax({
                 type: 'GET',
-                url: 'scot/api/v2/entity/'+this.props.entityvalue.toLowerCase()
+                url: 'scot/api/v2/' + this.props.entitytype + '/' +this.props.entityvalue.toLowerCase()
             }).success(function(result) {
                 var entityid = result.id;
                 this.setState({entityid:entityid});
                 $.ajax({
                     type: 'GET',
-                    url: 'scot/api/v2/entity/' + entityid 
+                    url: 'scot/api/v2/' + this.props.entitytype + '/' + entityid 
                 }).success(function(result) {
                     this.setState({entityData:result})
                 }.bind(this));
@@ -4547,7 +4589,7 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         } else {
             $.ajax({
                 type: 'GET',
-                url: 'scot/api/v2/entity/' + this.state.entityid
+                url: 'scot/api/v2/' + this.props.entitytype + '/' + this.state.entityid
             }).success(function(result) {
                 this.setState({entityData:result})
             }.bind(this));
@@ -4647,23 +4689,44 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
             entityHeight = entityPopUpHeight;
             entityWidth = entityPopUpWidth;
         }*/
-        return (
-            React.createElement(Draggable, {handle: "#handle", onMouseDown: this.moveDivInit}, 
-                React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth}}, 
-                    React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex'}}, 
-                        React.createElement("div", {id: "handle", style: {width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
-                        React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
-                            React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
-                        ), 
-                        React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto', margin:'10px'}}, 
-                        this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
-                        ), 
-                        React.createElement("div", {id: "footer", onMouseDown: this.initDrag, style: {display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}
+        if (this.props.entitytype == 'entity') {
+            return (
+                React.createElement(Draggable, {handle: "#handle", onMouseDown: this.moveDivInit}, 
+                    React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth}}, 
+                        React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex'}}, 
+                            React.createElement("div", {id: "handle", style: {width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
+                            React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
+                                React.createElement("h3", {id: "myModalLabel"}, "Entity ", this.state.entityData != null ? React.createElement(EntityValue, {value: this.state.entityData.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
+                            ), 
+                            React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto', margin:'10px'}}, 
+                            this.state.entityData != null ? React.createElement(EntityBody, {data: this.state.entityData, entityid: this.state.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
+                            ), 
+                            React.createElement("div", {id: "footer", onMouseDown: this.initDrag, style: {display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}
+                            )
                         )
                     )
                 )
             )
-        )
+        } else if (this.props.entitytype == 'guide') {
+            var guideurl = '/#/guide/' + this.state.entityid;
+            return (
+                React.createElement(Draggable, {handle: "#handle", onMouseDown: this.moveDivInit}, 
+                    React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth}}, 
+                        React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex'}}, 
+                            React.createElement("div", {id: "handle", style: {width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarToggle})))), 
+                            React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
+                                React.createElement("a", {href: guideurl, target: "_blank"}, React.createElement("h3", {id: "myModalLabel"}, "Guide ", this.state.entityData != null ? React.createElement("span", null, React.createElement("span", null, React.createElement(EntityValue, {value: this.state.entityid})), React.createElement("div", null, React.createElement(EntityValue, {value: this.state.entityData.applies_to}))) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading...")))
+                            ), 
+                            React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto', margin:'10px'}}, 
+                            this.state.entityData != null ? React.createElement(GuideBody, {entityid: this.state.entityid, entitytype: this.props.entitytype}) : React.createElement("div", null, "Loading...")
+                            ), 
+                            React.createElement("div", {id: "footer", onMouseDown: this.initDrag, style: {display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}
+                            )
+                        )
+                    )
+                )
+            )
+        }
     },
     
 });
@@ -5013,6 +5076,31 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
     }
 })
 
+var GuideBody = React.createClass ({displayName: "GuideBody",
+    getInitialState: function() {
+        return {
+            entryToolbar:false
+        }
+    },
+    entryToggle: function() {
+        if (this.state.entryToolbar == false) {
+            this.setState({entryToolbar:true})
+        } else {
+            this.setState({entryToolbar:false})
+        }
+    },
+    render: function() {
+        //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
+        var SelectedEntry = require('../entry/selected_entry.jsx');
+        return (
+            React.createElement(Tabs, {defaultActiveKey: 1, bsStyle: "pills"}, 
+                React.createElement(Tab, {eventKey: 1}, React.createElement(Button, {onClick: this.entryToggle}, "Add Entry"), React.createElement("br", null), 
+                this.state.entryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: "guide", targetid: this.props.entityid, id: 'add_entry', addedentry: this.entryToggle}) : null, " ", React.createElement(SelectedEntry, {type: 'guide', id: this.props.entityid, isPopUp: 1}))
+            )
+        )
+    }
+})
+
 module.exports = EntityDetail;
 
 },{"../entry/selected_entry.jsx":16,"./add_entry.jsx":22,"react":1104,"react-bootstrap/lib/Button":298,"react-bootstrap/lib/ButtonGroup":299,"react-bootstrap/lib/Popover":313,"react-bootstrap/lib/Tab":317,"react-bootstrap/lib/Tabs":318,"react-draggable":365,"react-inspector":381}],27:[function(require,module,exports){
@@ -5264,6 +5352,7 @@ var ids = []
 var stage = false
 var savedsearch = false
 var savedfsearch;
+var fluidheight;
 var setfilter = false
 var savedid;
 var height;
@@ -5283,8 +5372,9 @@ module.exports = React.createClass({displayName: "exports",
         var scrollHeight = $(window).height() - 170
         var scrollWidth  = '650px'  
         width = 650
-
+        fluidheight = $(window).height() - 108
     return {
+            splitter: true, 
             pagedisplay: 'inline-flex', mute: false,unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: 0,
             sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'],
@@ -5441,6 +5531,7 @@ module.exports = React.createClass({displayName: "exports",
         height = $(window).height() - 170
         width = $(t2).width()
         if(this.state.display == 'flex'){
+        fluidheight = $(window).height() - 108
             $('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
@@ -5454,7 +5545,7 @@ module.exports = React.createClass({displayName: "exports",
 
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                $('.splitter').css('width', width)
+                $('.splitter').css('width', '5px')
                 this.setState({classname: array})
            }
             else {
@@ -5741,8 +5832,16 @@ module.exports = React.createClass({displayName: "exports",
                     )
                     //)
                     //)
-                    ))))), React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                    ))))), 
+
+                        !this.state.splitter ? React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}):null, 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , 
+                        this.state.splitter ?
+                        React.createElement('div' , null,
+                        React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', width: '5px', height: fluidheight, 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}})) : null,
+
+
+                        stage ? 
                         React.createElement(SelectedContainer, {alertPreSelectedId: highlight ? this.props.supertable[0] : 0, height: height - 220,ids: this.state.idsarray, type: 'alertgroup'}) : null),
                         !this.state.alldetail ?
                         React.createElement('div', null,
@@ -5769,7 +5868,7 @@ module.exports = React.createClass({displayName: "exports",
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
-        $('.splitter').css('width', width)
+        $('.splitter').css('width', '5px')
         if(this.state.resize == 'vertical'){
             width = 650
             $('.container-fluid2').css('width', '100%')
@@ -5806,11 +5905,11 @@ module.exports = React.createClass({displayName: "exports",
         $('.container-fluid2').css('width', '650px')
         width = 650
         $('.paging').css('width', width)
-        $('.splitter').css('width', '650px')
+        $('.splitter').css('width', '5px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
     },
 
@@ -5825,7 +5924,7 @@ module.exports = React.createClass({displayName: "exports",
         $('.mainview').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
-        this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
+        this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
 
     },
@@ -6218,6 +6317,7 @@ var Button                  = require('react-bootstrap/lib/Button.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var SORT_INFO;
 var colsort = "id"
+var fluidheight;
 var start;
 var size = 645
 var end;
@@ -6246,7 +6346,6 @@ var columns = ['id', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags'
 var toggle;
 var scrolled = 58
 function Remove(note){
-    console.log(note)
 }
 
 module.exports = React.createClass({displayName: "exports",
@@ -6256,8 +6355,9 @@ module.exports = React.createClass({displayName: "exports",
         var scrollWidth  = '650px'  
         width = 650
         var max = $(window).width() - 10
-
+        fluidheight = $(window).height() - 108
     return {
+            splitter: true,
             pagedisplay: 'inline-flex', mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'], sourcetags: [], tags: [], 
             idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0], 
@@ -6418,6 +6518,7 @@ module.exports = React.createClass({displayName: "exports",
         this.getNewData({page:defaultpage , limit: pageSize}) 
     },
     reloadItem: function(e){
+        
         /*
        console.log($('.container-fluid2').width())
         if($('.container-fluid2').width() == 100){
@@ -6432,6 +6533,7 @@ module.exports = React.createClass({displayName: "exports",
         height = $(window).height() - 170
         width = $(t2).width()
         if(this.state.display == 'flex'){
+            fluidheight = $(window).height() - 108
             $('.container-fluid2').css('height', height) 
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
@@ -6442,10 +6544,9 @@ module.exports = React.createClass({displayName: "exports",
             if(width < size){
                 var array = []
                 array =  ['table-row-smallclass', 'attributes-smallclass','module-reporter-smallclass', 'status-owner-smallclass']
-               
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                $('.splitter').css('width', width) 
+                $('.splitter').css('width', '5px') 
                 this.setState({classname: array})
            }
             else {
@@ -6799,8 +6900,13 @@ module.exports = React.createClass({displayName: "exports",
                    // )
                    // )
                     ))))),
-                           React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}),
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                    !this.state.splitter ? 
+React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}): null, 
+                           React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))),
+                        this.state.splitter ? 
+                        React.createElement('div' , null, 
+                        React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', width: '5px', height: fluidheight, 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}})) : null,
+                        stage ? 
 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'event', viewEvent:this.viewEvent}) : null
                                                
@@ -6830,7 +6936,7 @@ module.exports = React.createClass({displayName: "exports",
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
-        $('.splitter').css('width', width)
+        $('.splitter').css('width', '5px')
         if(this.state.resize == 'vertical'){
             width = 650
             $('.container-fluid2').css('width', '100%')
@@ -6867,11 +6973,11 @@ module.exports = React.createClass({displayName: "exports",
         $('.container-fluid2').css('width', '650px')
         width = 650
         $('.paging').css('width', width)
-        $('.splitter').css('width', '650px')
+        $('.splitter').css('width', '5px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})            
     },
 
@@ -6886,12 +6992,11 @@ module.exports = React.createClass({displayName: "exports",
         $('.mainview').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
-        this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
+        this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
 
     },
     setItem: function(v){
-        console.log(v)
     },
     dismissNote: function(){
         var note = this.refs.notificationSystem
@@ -7386,6 +7491,7 @@ var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar')
 var DateRangePicker         = require('../../../node_modules/react-daterange-picker')
 var Source                  = require('react-tag-input-tags/react-tag-input').WithContext
 var Tags                    = require('react-tag-input').WithContext
+var fluidheight
 var SORT_INFO;
 var colsort = "id"
 var start;
@@ -7422,9 +7528,9 @@ module.exports = React.createClass({displayName: "exports",
         var scrollHeight = $(window).height() - 170
         var scrollWidth  = '650px'  
         width = 650
-
+        fluidheight = $(window).height() - 108
     return {
-            mute: false, resize: 'horizontal', unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
+            mute: false, resize: 'horizontal', splitter: true, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             idtext: '', totalcount: 0, activepage: 0,sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'],
             pagedisplay: 'inline-flex', idarrow: [-1,-1],subjectarrow: [0, 0],
             subjecttext:'', idsarray: [], scrollheight: scrollHeight, 
@@ -7551,6 +7657,7 @@ module.exports = React.createClass({displayName: "exports",
         height = $(window).height() - 170
         width = $(t2).width()
         if(this.state.display == 'flex'){
+                   fluidheight = $(window).height() - 108 
             $('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
@@ -7564,7 +7671,7 @@ module.exports = React.createClass({displayName: "exports",
 
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                $('.splitter').css('width', width)
+                $('.splitter').css('width', '5px')
                 this.setState({classname: array})
            }
             else {
@@ -7723,10 +7830,15 @@ module.exports = React.createClass({displayName: "exports",
                    // )
                    // )
                     ))))),
-                           React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
-                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'guide'}) : null) 
-,
+                        !this.state.splitter ?
+React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}): null, 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , 
+                        this.state.splitter ?
+                        React.createElement('div' , null,
+                        React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', width: '5px', height: fluidheight, 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}})) : null,
+                stage ? 
+                        React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'guide'}) : null), 
+
                         !this.state.alldetail ?
                         React.createElement('div', null,
                         React.createElement('div', {className: 'toggleview'},
@@ -7896,7 +8008,7 @@ module.exports = React.createClass({displayName: "exports",
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
-        $('.splitter').css('width', width)
+        $('.splitter').css('width', '5px')
         if(this.state.resize == 'vertical'){
             width = 650
             $('.container-fluid2').css('width', '100%')
@@ -7916,11 +8028,11 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
         $('.container-fluid2').css('width', '650px')
         $('.paging').css('width', width)
-        $('.splitter').css('width', '650px')
+        $('.splitter').css('width', '5px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
     },
 
@@ -7935,7 +8047,7 @@ module.exports = React.createClass({displayName: "exports",
         $('.mainview').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
-        this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
+        this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
 
     },
@@ -7988,6 +8100,7 @@ var Tags                    = require('react-tag-input').WithContext
 var SplitButton             = require('react-bootstrap/lib/SplitButton.js');
 var Button                  = require('react-bootstrap/lib/Button.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
+var fluidheight;
 var toggle
 var scrolled = 58
 var size = 645
@@ -8025,9 +8138,9 @@ module.exports = React.createClass({displayName: "exports",
         var scrollHeight = $(window).height() - 170
         var scrollWidth  = '650px'  
         width = 650
-
+        fluidheight = $(window).height() - 108
     return {
-            mute: false, startepoch: '', endepoch: '',white: 'white', blue: '#AEDAFF',
+            mute: false, startepoch: '', splitter: true, endepoch: '',white: 'white', blue: '#AEDAFF',
             pagedisplay: 'inline-flex', resize: 'horizontal',idtext: '', totalcount: 0, activepage: 0,
             statustext: '', subjecttext:'', idsarray: [],
             alldetail: true,sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'], 
@@ -8163,6 +8276,7 @@ module.exports = React.createClass({displayName: "exports",
         height = $(window).height() - 170
         width = $(t2).width()
         if(this.state.display == 'flex'){
+            fluidheight = $(window).height() - 108
             $('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
@@ -8176,7 +8290,7 @@ module.exports = React.createClass({displayName: "exports",
 
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                $('.splitter').css('width', width)
+                $('.splitter').css('width', '5px')
                 this.setState({classname: array})
            }
             else {
@@ -8230,11 +8344,11 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
         $('.container-fluid2').css('width', '650px')
         $('.paging').css('width', width)
-        $('.splitter').css('width', '650px')
+        $('.splitter').css('width', '5px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({splitter: true,display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
     },
     stopdrag: function(e){
@@ -8244,7 +8358,7 @@ module.exports = React.createClass({displayName: "exports",
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
-        $('.splitter').css('width', width)
+        $('.splitter').css('width', '5px')
         if(this.state.resize == 'vertical'){
             width = 650 
             $('.container-fluid2').css('width', '100%')
@@ -8267,7 +8381,7 @@ module.exports = React.createClass({displayName: "exports",
         $('.mainview').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
-        this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
+        this.setState({splitter: false, classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
 
     },
@@ -8520,8 +8634,15 @@ module.exports = React.createClass({displayName: "exports",
                     )
                    // )
                    // )
-                    ))))),  React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                    ))))),
+    !this.state.splitter ?
+React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}): null, 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , 
+                        this.state.splitter ?
+                        React.createElement('div' , null,
+                        React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', width: '5px', height: fluidheight, 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}})) : null,
+
+            stage ? 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'incident'}) : null) 
 ,
                         !this.state.alldetail ?
@@ -9190,6 +9311,7 @@ var Source                  = require('react-tag-input-tags/react-tag-input').Wi
 var Tags                    = require('react-tag-input').WithContext
 var Button                  = require('react-bootstrap/lib/Button.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
+var fluidheight
 var SORT_INFO;
 var colsort = "id"
 var start;
@@ -9229,9 +9351,9 @@ module.exports = React.createClass({displayName: "exports",
         var scrollHeight = $(window).height() - 170
         var scrollWidth  = '650px'  
         width = 650
-
+       fluidheight = $(window).height() - 108
     return {
-            pagedisplay: 'inline-flex', mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
+            pagedisplay: 'inline-flex', splitter: true, mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'], sourcetags: [], tags: [], 
             idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0], 
             createdarrow: [0, 0], updatedarrow:[0, 0], sourcearrow:[0, 0],
@@ -9404,7 +9526,8 @@ module.exports = React.createClass({displayName: "exports",
         height = $(window).height() - 170
         width = $(t2).width()
         if(this.state.display == 'flex'){
-            $('.container-fluid2').css('height', height)
+               fluidheight = $(window).height() - 108    
+        $('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
             if(e != null){
@@ -9417,7 +9540,7 @@ module.exports = React.createClass({displayName: "exports",
 
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                $('.splitter').css('width', width)
+                $('.splitter').css('width', '5px')
                 this.setState({classname: array})
            }
             else {
@@ -9771,8 +9894,15 @@ module.exports = React.createClass({displayName: "exports",
                    // )
                    // )
                     ))))),
-                           React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}), 
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                    !this.state.splitter ?
+React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}): null, 
+                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , 
+
+                        this.state.splitter ?
+                        React.createElement('div' , null,
+                        React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', width: '5px', height: fluidheight, 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}})) : null,
+
+stage ? 
 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'intel', viewEvent:this.viewEvent}) : null
                                                
@@ -9819,7 +9949,7 @@ module.exports = React.createClass({displayName: "exports",
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
-        $('.splitter').css('width', width)
+        $('.splitter').css('width', '5px')
         if(this.state.resize == 'vertical'){
             width = 650
             $('.container-fluid2').css('width', '100%')
@@ -9839,10 +9969,10 @@ module.exports = React.createClass({displayName: "exports",
         width = 650
         $('.container-fluid2').css('width', '650px')
         $('.paging').css('width', width)
-        $('.splitter').css('width', '650px')
+        $('.splitter').css('width', '5px')
         $('.mainview').show()
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})            
     },
 
@@ -9858,7 +9988,7 @@ module.exports = React.createClass({displayName: "exports",
         $('.toggleview').hide()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
-        this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
+        this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
 
     },
@@ -10359,6 +10489,7 @@ var Source                  = require('react-tag-input-tags/react-tag-input').Wi
 var Tags                    = require('react-tag-input').WithContext
 var Button                  = require('react-bootstrap/lib/Button.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
+var fluidheight
 var size = 645
 var toggle
 var scrolled = 43
@@ -10395,9 +10526,9 @@ module.exports = React.createClass({displayName: "exports",
         var scrollHeight = $(window).height() - 170
         var scrollWidth  = '650px'
         width = 650
-
+        fluidheight = $(window).height() - 108
     return {
-            resize: 'horizontal', mute: false, pagedisplay: 'inline-flex', 
+            resize: 'horizontal', mute: false, splitter: true, pagedisplay: 'inline-flex', 
             display: 'flex', upstartepoch: '', upendepoch: '',white: 'white', blue: '#AEDAFF',
             idtext: '', totalcount: 0, activepage: 0,
             sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'],
@@ -10531,7 +10662,8 @@ module.exports = React.createClass({displayName: "exports",
         height = $(window).height() - 170
         width = $(t2).width()
         if(this.state.display == 'flex'){
-            $('.container-fluid2').css('height', height)
+        fluidheight = $(window).height() - 108            
+$('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
             if(e != null){
@@ -10544,7 +10676,7 @@ module.exports = React.createClass({displayName: "exports",
 
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                $('.splitter').css('width', width)
+                $('.splitter').css('width', '5px')
                 this.setState({classname: array})
            }
             else {
@@ -10766,8 +10898,14 @@ module.exports = React.createClass({displayName: "exports",
                             React.createElement("div", {className: "column severity"}, value.id))),
                         React.createElement("div", {className: "wrapper dates "+this.state.sizearray[0]},
                             React.createElement("div", {className: "column date"}, value.updated))))))))),
-                                           React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}),        
-                React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ?
+                                                               !this.state.splitter ?
+React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}): null,        
+                React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , 
+
+                        this.state.splitter ?
+                        React.createElement('div' , null,
+                        React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', width: '5px', height: fluidheight, 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}})) : null,
+stage ?
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: this.state.type, taskid: this.state.entry}) : null),
                         !this.state.alldetail ?
                         React.createElement('div', null,
@@ -10865,7 +11003,7 @@ module.exports = React.createClass({displayName: "exports",
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
-        $('.splitter').css('width', width)
+        $('.splitter').css('width', '5px')
         if(this.state.resize == 'vertical'){
             width = 650
             $('.container-fluid2').css('width', '100%')
@@ -10884,12 +11022,12 @@ module.exports = React.createClass({displayName: "exports",
         stage = true
         width =650
         $('.paging').css('width', width)
-        $('.splitter').css('width', '650px')
+        $('.splitter').css('width', '5px')
         $('.container-fluid2').css('width', '650px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({splitter: true,display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
     },
 
@@ -10905,7 +11043,7 @@ module.exports = React.createClass({displayName: "exports",
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
-        scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
+        splitter: false, scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
 
     },
     getNewData: function(page){

@@ -17,6 +17,7 @@ var Button                  = require('react-bootstrap/lib/Button.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var SORT_INFO;
 var colsort = "id"
+var fluidheight;
 var start;
 var size = 645
 var end;
@@ -45,7 +46,6 @@ var columns = ['id', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags'
 var toggle;
 var scrolled = 58
 function Remove(note){
-    console.log(note)
 }
 
 module.exports = React.createClass({
@@ -55,8 +55,9 @@ module.exports = React.createClass({
         var scrollWidth  = '650px'  
         width = 650
         var max = $(window).width() - 10
-
+        fluidheight = $(window).height() - 108
     return {
+            splitter: true,
             pagedisplay: 'inline-flex', mute: false, unbold: '', bold: 'bold', white: 'white', blue: '#AEDAFF',
             sizearray: ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass'], sourcetags: [], tags: [], 
             idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0], 
@@ -217,6 +218,7 @@ module.exports = React.createClass({
         this.getNewData({page:defaultpage , limit: pageSize}) 
     },
     reloadItem: function(e){
+        
         /*
        console.log($('.container-fluid2').width())
         if($('.container-fluid2').width() == 100){
@@ -231,6 +233,7 @@ module.exports = React.createClass({
         height = $(window).height() - 170
         width = $(t2).width()
         if(this.state.display == 'flex'){
+            fluidheight = $(window).height() - 108
             $('.container-fluid2').css('height', height) 
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
@@ -241,10 +244,9 @@ module.exports = React.createClass({
             if(width < size){
                 var array = []
                 array =  ['table-row-smallclass', 'attributes-smallclass','module-reporter-smallclass', 'status-owner-smallclass']
-               
                 $('.paging').css('width', width)
                 $('.paging').css('overflow-x','auto')
-                $('.splitter').css('width', width) 
+                $('.splitter').css('width', '5px') 
                 this.setState({classname: array})
            }
             else {
@@ -598,8 +600,13 @@ module.exports = React.createClass({
                    // )
                    // )
                     ))))),
-                           React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}),
-                        React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))) , stage ? 
+                    !this.state.splitter ? 
+React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', height: '5px', 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}}): null, 
+                           React.createElement(Page, {paginationToolbarProps: { pageSizes: [5, 20, 50, 100]}, pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true})))),
+                        this.state.splitter ? 
+                        React.createElement('div' , null, 
+                        React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', style: {display: 'block', width: '5px', height: fluidheight, 'background-color': 'black', 'border-top': '1px solid #AAA', 'border-bottom': '1px solid #AAA', cursor: 'nwse-resize', overflow: 'hidden'}})) : null,
+                        stage ? 
 
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'event', viewEvent:this.viewEvent}) : null
                                                
@@ -629,7 +636,7 @@ module.exports = React.createClass({
         document.onmousemove = null
         $('.container-fluid2').css('width', width)
         $('.paging').css('width', width)
-        $('.splitter').css('width', width)
+        $('.splitter').css('width', '5px')
         if(this.state.resize == 'vertical'){
             width = 650
             $('.container-fluid2').css('width', '100%')
@@ -666,11 +673,11 @@ module.exports = React.createClass({
         $('.container-fluid2').css('width', '650px')
         width = 650
         $('.paging').css('width', width)
-        $('.splitter').css('width', '650px')
+        $('.splitter').css('width', '5px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})            
     },
 
@@ -685,12 +692,11 @@ module.exports = React.createClass({
         $('.mainview').show()
         var array = []
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
-        this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
+        this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
 
     },
     setItem: function(v){
-        console.log(v)
     },
     dismissNote: function(){
         var note = this.refs.notificationSystem
