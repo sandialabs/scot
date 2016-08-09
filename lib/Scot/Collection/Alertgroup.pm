@@ -166,7 +166,12 @@ sub refresh_data {
 
     my $cursor  = $self->meerkat->collection('Alert')->find({alertgroup => $id});
 
-    my %count   = ();
+    my %count   = (
+        total       => 0,
+        promoted    => 0,
+        closed      => 0,
+        open        => 0,
+    );
     while ( my $alert = $cursor->next ) {
         $count{total}++;
         $count{$alert->status}++;

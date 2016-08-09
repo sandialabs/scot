@@ -53,15 +53,16 @@ $t  ->put_ok("/scot/api/v2/entry/$entry1" => json => {
     make_task => 1 })
     ->status_is(200);
 
-# print Dumper($t->tx->res->json);
-# done_testing();
-# exit 0;
-
 $t  ->get_ok("/scot/api/v2/entry/$entry1" => {}, 
     "Seeing if Entry $entry1 is now a task" )
     ->status_is(200)
     ->json_is('/is_task'        => 1)
     ->json_is('/task/status'    => 'open');
+
+# print Dumper($t->tx->res->json);
+# done_testing();
+# exit 0;
+
 
 $t  ->put_ok("/scot/api/v2/entry/$entry1" => json => {
     take_task => 1 })
