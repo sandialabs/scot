@@ -62,7 +62,10 @@ var SelectedEntry = React.createClass({
     this.containerHeightAdjust();
     window.addEventListener('resize',this.containerHeightAdjust);
     $("#list-view").resize(this.containerHeightAdjust);
-    }, 
+    },
+    componentWillReceiveProps: function() {
+        this.containerHeightAdjust();
+    },
     updatedCB: function() {
        if (this.props.type == 'alert' || this.props.type == 'entity') {
             this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
@@ -138,13 +141,9 @@ var SelectedEntry = React.createClass({
         var EntityDetail = require('../modal/entity_detail.jsx');
         if (type != 'entity' && type != 'alert') {
             var height = this.state.height;
-            var width = '100%';
-            if ($('#list-view')[0] != undefined ) {
-                width = 'calc(100% ' + '- ' + $('#list-view').width() + 'px)';
-            }
         }
         return (
-            <div key={id} className={divClass} style={{height:height,width:width}}> 
+            <div key={id} className={divClass} style={{height:height}}> 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : <AddEntryModal title={'Add Entry'} type={this.props.aType} targetid={this.props.aID} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> }</div> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId}/> : <span>Loading...</span>} 
                 {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue} type={this.props.type} id={this.props.id}/>: null}
@@ -429,7 +428,6 @@ var AlertBody = React.createClass({
                     {data.entry_count == 0 ? <td valign='top' style={{marginRight:'4px'}}>{data.entry_count}</td> : <td valign='top' style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onClick={this.toggleEntry}>{data.entry_count}</span></td>}
                     {rowReturn}
                 </tr>
-                <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} />
             </div>
         )
     }
