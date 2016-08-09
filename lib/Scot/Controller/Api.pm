@@ -1027,6 +1027,24 @@ sub get_promotion_collection {
     $self->env->log->error("INVALID PROMOTION TYPE!");
     return undef, undef;
 }
+sub check_promotion_input {
+    my $self    = shift;
+    my $to      = shift;
+    my $from    = shift;
+    my $log     = $self->env->log;
+
+    if ( defined $to and defined $from ) {
+        $log->error("ERROR: can not promote and unpromote as same time");
+        $self->do_error(444, { error_msg => "Promotion and unpromotion conflict" });
+        return undef;
+    }
+
+    unless ( defined $to or defined $from ) {
+        $log->trace("No promoting or unpromoting in update.");
+        return undef;
+    }
+    return 1;
+}
 
 sub handle_promotion {
     my $self    = shift;
@@ -1041,14 +1059,7 @@ sub handle_promotion {
     my $promote_to      = $self->get_value_from_request($req, "promote");
     my $unpromote_from  = $self->get_value_from_request($req, "unpromote");
 
-    if ( defined $promote_to and defined $unpromote_from ) {
-        $log->error("ERROR: can not promote and unpromote as same time");
-        $self->do_error(444, { error_msg => "Promotion and unpromotion conflict" });
-        return 0;
-    }
-
-    unless ( defined $promote_to or defined $unpromote_from ) {
-        $log->trace("No promoting or unpromoting in update.");
+    if ( $self->check_promotion_input($promote_to, $unpromote_from) ) {
         return -1;
     }
 
@@ -1096,8 +1107,8 @@ sub handle_promotion {
             $mongo->collection('Alertgroup')
                   ->refresh_data($object->alertgroup, $user);
             # copy alert data into an entry for that event
-            my $entrycol    = $mongo->collection('Entry');
-            my $entryobj    = $entrycol->create_from_promoted_alert($object);
+            my $entrycol = $mongo->collection('Entry');
+            my $entryobj = $entrycol->create_from_promoted_alert($object,$proobj);
         }
 
         try {
