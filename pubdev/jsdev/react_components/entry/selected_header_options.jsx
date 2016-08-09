@@ -68,6 +68,7 @@ var SelectedHeaderOptions = React.createClass({
                 type:'put',
                 url: '/scot/api/v2/alert/'+array[i],
                 data: data,
+                contentType: 'application/json; charset=UTF-8',
                 success: function(response){
                     console.log('success');
                 }.bind(this),
@@ -90,6 +91,7 @@ var SelectedHeaderOptions = React.createClass({
                 type:'put',
                 url: '/scot/api/v2/alert/'+array[i],
                 data: data,
+                contentType: 'application/json; charset=UTF-8',
                 success: function(response){
                     console.log('success');
                 }.bind(this),
@@ -111,6 +113,7 @@ var SelectedHeaderOptions = React.createClass({
             type:'put',
             url: '/scot/api/v2/alert/'+array[0],
             data: data,
+            contentType: 'application/json; charset=UTF-8',
             success: function(response){
                 //With the entry number, promote the others into the existing event
                 var promoteTo = {
@@ -121,6 +124,7 @@ var SelectedHeaderOptions = React.createClass({
                         type:'put',
                         url: '/scot/api/v2/alert/'+array[i],
                         data: JSON.stringify(promoteTo),
+                        contentType: 'application/json; charset=UTF-8',
                         success: function(response){
                             console.log('success');
                         }.bind(this),
@@ -149,6 +153,7 @@ var SelectedHeaderOptions = React.createClass({
                 type:'put',
                 url: '/scot/api/v2/alert/'+array[i],
                 data: data,
+                contentType: 'application/json; charset=UTF-8',
                 success: function(response){
                     console.log('success');
                 }.bind(this),
@@ -175,6 +180,7 @@ var SelectedHeaderOptions = React.createClass({
                         type: 'PUT',
                         url: '/scot/api/v2/alert/' + array[i],
                         data: JSON.stringify(data),
+                        contentType: 'application/json; charset=UTF-8',
                         success: function(response){
                             if($.isNumeric(text)){
                                 window.location = '#/event/' + text
@@ -286,7 +292,7 @@ var SelectedHeaderOptions = React.createClass({
                 return (
                     <div className="entry-header">
                         <Button eventKey='1' onClick={this.toggleFlair} bsSize='small'>Toggle <b>Flair</b></Button>
-                        {this.props.guideEntryCount != null ? <Button eventKey='2' onClick={this.props.guideToggle} bsSize='small'>Guide</Button> : null}
+                        {this.props.guideID != null ? <Button eventKey='2' onClick={this.props.guideToggle} bsSize='small'>Guide</Button> : null}
                         <Button eventKey='3' onClick={this.props.sourceToggle} bsSize='small'>View <b>Source</b></Button> 
                         <Button eventKey='4' onClick={this.props.entitiesToggle} bsSize='small'>View <b>Entities</b></Button>
                         <Button eventKey="5" onClick={this.props.viewedByHistoryToggle} bsSize='small'><b>Viewed By History</b></Button>
@@ -304,7 +310,7 @@ var SelectedHeaderOptions = React.createClass({
                 return (
                     <div className="entry-header">
                         <Button eventKey='1' onClick={this.toggleFlair} bsSize='small'>Toggle <b>Flair</b></Button>
-                        {this.props.guideEntryCount != null ? <Button eventKey='2' onClick={this.props.guideToggle} bsSize='small'>Guide</Button> : null}
+                        {this.props.guideID != null ? <Button eventKey='2' onClick={this.props.guideToggle} bsSize='small'>Guide</Button> : null}
                         <Button eventKey='3' onClick={this.props.sourceToggle} bsSize='small'>View <b>Source</b></Button> 
                         <Button eventKey='4' onClick={this.props.entitiesToggle} bsSize='small'>View <b>Entities</b></Button>
                         <Button eventKey="5" onClick={this.props.viewedByHistoryToggle} bsSize='small'><b>Viewed By History</b></Button>

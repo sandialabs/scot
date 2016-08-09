@@ -32,6 +32,7 @@ var Summary = React.createClass({
             type: 'put',
             url: 'scot/api/v2/entry/' + this.props.entryid,
             data: json,
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success: ' + data);
                 AppActions.updateItem(this.state.key,'headerUpdate');
