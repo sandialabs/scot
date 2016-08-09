@@ -1678,6 +1678,7 @@ var Promote = React.createClass({displayName: "Promote",
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
             data: data,
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('successfully promoted');
                 window.location.assign('#/'+this.state.newURL+'/'+data.pid);
@@ -1866,6 +1867,7 @@ var Summary = React.createClass({displayName: "Summary",
             type: 'put',
             url: 'scot/api/v2/entry/' + this.props.entryid,
             data: json,
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success: ' + data);
                 AppActions.updateItem(this.state.key,'headerUpdate');
@@ -2062,6 +2064,7 @@ var Task = React.createClass({displayName: "Task",
             type: 'put',
             url: 'scot/api/v2/entry/' + this.props.entryid,
             data: JSON.stringify(json),
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success: ' + data);
                 AppActions.updateItem(this.state.key,'headerUpdate');
@@ -2077,6 +2080,7 @@ var Task = React.createClass({displayName: "Task",
             type: 'put',
             url: 'scot/api/v2/entry/' + this.props.entryid,
             data: JSON.stringify(json),
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success: ' + data);
                 AppActions.updateItem(this.state.key,'headerUpdate');
@@ -2092,6 +2096,7 @@ var Task = React.createClass({displayName: "Task",
             type: 'put',
             url: 'scot/api/v2/entry/' + this.props.entryid,
             data: JSON.stringify(json),
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success: ' + data);
                  AppActions.updateItem(this.state.key,'headerUpdate');
@@ -2136,28 +2141,6 @@ var React = require('react');
 var SelectedHeader = require('./selected_header.jsx');
 
 var SelectedContainer = React.createClass({displayName: "SelectedContainer",
-    /*getInitialState: function() {
-        var scrollWidth = '100%';
-        return {
-            width: scrollWidth,
-        }
-    },
-    handleResize: function(){
-        var scrollWidth = this.state.width;
-        if ($('#list-view')[0]) {
-            scrollWidth  = $(window).width()  - ($('#list-view').width() + 48)
-            scrollWidth = scrollWidth + 'px'
-        }
-        this.setState({width:scrollWidth})
-    },
-    componentDidMount: function() {
-        this.handleResize();
-        window.addEventListener('resize',this.handleResize);
-        $("#list-view").resize(this.handleResize);
-    },
-    componentWillUnmount: function() {
-        window.removeEventListener('resize', this.handleResize);
-    },*/
     render: function() {
         var datarows = [];
         for (i=0; i < this.props.ids.length; i++) { 
@@ -2894,7 +2877,6 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             aStatus:null,
             aID:0,
             guideID: null,
-            guideEntryCount: null,
         }
     },
     componentWillMount: function() {
@@ -2955,8 +2937,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/guide', function(result) {
                 if (result.records[0] != undefined) {
                     var guideID = result.records[0].id;
-                    var guideEntryCount = result.records[0].entry_count;
-                    this.setState({guideID: guideID, guideEntryCount:guideEntryCount});
+                    this.setState({guideID: guideID});
                 }
             }.bind(this));     
         }
@@ -3220,7 +3201,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 this.state.entitiesToolbar ? React.createElement(Entities, {entitiesToggle: this.entitiesToggle, entityData: this.state.entityData, flairToolbarToggle: this.flairToolbarToggle}) : null, 
                 this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: id, type: type, permissionData: this.state.headerData, permissionsToggle: this.permissionsToggle, updated: this.updated}) : null, 
                 this.state.deleteToolbar ? React.createElement(DeleteEvent, {subjectType: subjectType, type: type, id: id, deleteToggle: this.deleteToggle, updated: this.updated}) :null, 
-                type != 'alertgroup' ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated}) : React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated, alertSelected: this.state.alertSelected, aIndex: this.state.aIndex, aType: this.state.aType, aStatus: this.state.aStatus, guideToggle: this.guideToggle, sourceToggle: this.sourceToggle, guideEntryCount: this.state.guideEntryCount})
+                type != 'alertgroup' ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated}) : React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated, alertSelected: this.state.alertSelected, aIndex: this.state.aIndex, aType: this.state.aType, aStatus: this.state.aStatus, guideToggle: this.guideToggle, sourceToggle: this.sourceToggle, guideID: this.state.guideID})
                 ), 
                 this.state.showFlash == true ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage}) : null, 
 
@@ -3286,7 +3267,7 @@ var EntryDataStatus = React.createClass({displayName: "EntryDataStatus",
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
             data: JSON.stringify(json),
-            dataType: "json",
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success status change to: ' + data);
             }.bind(this),
@@ -3460,6 +3441,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 type:'put',
                 url: '/scot/api/v2/alert/'+array[i],
                 data: data,
+                contentType: 'application/json; charset=UTF-8',
                 success: function(response){
                     console.log('success');
                 }.bind(this),
@@ -3482,6 +3464,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 type:'put',
                 url: '/scot/api/v2/alert/'+array[i],
                 data: data,
+                contentType: 'application/json; charset=UTF-8',
                 success: function(response){
                     console.log('success');
                 }.bind(this),
@@ -3503,6 +3486,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
             type:'put',
             url: '/scot/api/v2/alert/'+array[0],
             data: data,
+            contentType: 'application/json; charset=UTF-8',
             success: function(response){
                 //With the entry number, promote the others into the existing event
                 var promoteTo = {
@@ -3513,6 +3497,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                         type:'put',
                         url: '/scot/api/v2/alert/'+array[i],
                         data: JSON.stringify(promoteTo),
+                        contentType: 'application/json; charset=UTF-8',
                         success: function(response){
                             console.log('success');
                         }.bind(this),
@@ -3541,6 +3526,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 type:'put',
                 url: '/scot/api/v2/alert/'+array[i],
                 data: data,
+                contentType: 'application/json; charset=UTF-8',
                 success: function(response){
                     console.log('success');
                 }.bind(this),
@@ -3567,6 +3553,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                         type: 'PUT',
                         url: '/scot/api/v2/alert/' + array[i],
                         data: JSON.stringify(data),
+                        contentType: 'application/json; charset=UTF-8',
                         success: function(response){
                             if($.isNumeric(text)){
                                 window.location = '#/event/' + text
@@ -3678,7 +3665,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 return (
                     React.createElement("div", {className: "entry-header"}, 
                         React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
-                        this.props.guideEntryCount != null ? React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle, bsSize: "small"}, "Guide") : null, 
+                        this.props.guideID != null ? React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle, bsSize: "small"}, "Guide") : null, 
                         React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
                         React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
                         React.createElement(Button, {eventKey: "5", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
@@ -3696,7 +3683,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                 return (
                     React.createElement("div", {className: "entry-header"}, 
                         React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
-                        this.props.guideEntryCount != null ? React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle, bsSize: "small"}, "Guide") : null, 
+                        this.props.guideID != null ? React.createElement(Button, {eventKey: "2", onClick: this.props.guideToggle, bsSize: "small"}, "Guide") : null, 
                         React.createElement(Button, {eventKey: "3", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
                         React.createElement(Button, {eventKey: "4", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
                         React.createElement(Button, {eventKey: "5", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
@@ -3995,7 +3982,8 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	$.ajax({
 	    type: 'post',
 	    url: '/scot/api/v2/entry',
-	    data: data
+	    data: data,
+        contentType: 'application/json; charset=UTF-8'
 	}).success(function(response){
         if(finalfiles.length > 0){
 			for(var i = 0; i<finalfiles.length; i++){	
@@ -4010,7 +3998,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 			        url: '/scot/api/v2/file',
                     data: data,
                     processData: false,
-                    contentType: false,
+                    contentType: 'application/json; charset=UTF-8',
                     dataType: 'json',
                     cache: false
             }).success(function(response){
@@ -4081,7 +4069,8 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	            $.ajax({
 		        type: 'post', 
 		        url: '/scot/api/v2/entry',
-		        data: data
+		        data: data,
+                contentType: 'application/json; charset=UTF-8',
 		        }).success(function(response){
                     if(finalfiles.length > 0){
 			            for(var i = 0; i<finalfiles.length; i++){	
@@ -4096,7 +4085,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                                 url: '/scot/api/v2/file',
                                 data: data,
                                 processData: false,
-                                contentType: false,
+                                contentType: 'application/json; charset=UTF-8',
                                 dataType: 'json',
                                 cache: false
                                 }).success(function(response){
@@ -4129,8 +4118,9 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
     $.ajax({
 	type: 'post',
 	url: '/scot/api/v2/entry',
-	data: JSON.stringify(data)
-	}).success(function(response){
+	data: JSON.stringify(data),
+	contentType: 'application/json; charset=UTF-8'
+    }).success(function(response){
 		   if(finalfiles.length > 0){
 		        for(var i = 0; i<finalfiles.length; i++){	
                     data  = new FormData()
@@ -4143,7 +4133,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                         url: '/scot/api/v2/file',
                         data: data,
                         processData: false,
-                        contentType: false,
+                        contentType: 'application/json; charset=UTF-8',
                         dataType: 'json',
                         cache: false
                         }).success(function(response){
@@ -4184,7 +4174,8 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	$.ajax({
         type: 'put',
         url: '/scot/api/v2/entry/'+this.props.id,
-        data: data
+        data: data,
+        contentType: 'application/json; charset=UTF-8'
         }).success(function(response){
             if(finalfiles.length > 0){
                 for(var i = 0; i<finalfiles.length; i++){	
@@ -4199,7 +4190,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                         url: '/scot/api/v2/file',
                         data: data,
                         processData: false,
-                        contentType: false,
+                        contentType: 'application/json; charset=UTF-8',
                         dataType: 'json',
                         cache: false
                     }).success(function(response){
@@ -5112,6 +5103,7 @@ var Owner = React.createClass({displayName: "Owner",
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id,
             data: json,
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 var key = this.state.key;
                 AppActions.updateItem(key,'headerUpdate');
