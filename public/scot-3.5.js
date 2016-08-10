@@ -2592,7 +2592,8 @@ var AlertBody = React.createClass({displayName: "AlertBody",
                     React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.status != 'promoted' ? React.createElement("span", {style: {color:buttonStyle}}, data.status) : React.createElement(Button, {bsSize: "xsmall", bsStyle: buttonStyle, id: id, onClick: this.navigateTo, style: {lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}, data.status)), 
                     data.entry_count == 0 ? React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.entry_count) : React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, React.createElement("span", {style: {color: 'blue', textDecoration: 'underline', cursor: 'pointer'}, onClick: this.toggleEntry}, data.entry_count)), 
                     rowReturn
-                )
+                ), 
+                React.createElement(AlertRowBlank, {id: data.id, type: 'alert', showEntry: this.state.showEntry})
             )
         )
     }
@@ -2612,7 +2613,7 @@ var AlertRow = React.createClass({displayName: "AlertRow",
     }
 });
 
-AlertRowBlank = React.createClass({displayName: "AlertRowBlank",
+var AlertRowBlank = React.createClass({displayName: "AlertRowBlank",
     render: function() {
         var id = this.props.id;
         var showEntry = this.props.showEntry;
@@ -2622,7 +2623,7 @@ AlertRowBlank = React.createClass({displayName: "AlertRowBlank",
             React.createElement("tr", {className: "not_selectable"}, 
                 React.createElement("td", {style: {padding:'0'}}
                 ), 
-                React.createElement("td", {colSpan: "50", style: {padding:'1px'}}, 
+                React.createElement("td", {colSpan: "50"}, 
                     showEntry ? React.createElement("div", null, React.createElement(SelectedEntry, {type: this.props.type, id: this.props.id})) : null
                 )
             )
