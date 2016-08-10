@@ -32,7 +32,10 @@ sub create_from_promoted_alert {
         type                  => 'event',
         id                    => $event->id,
     };
-    $json->{body}              = $self->build_table($alert);
+    my $id  = $alert->id;
+    $json->{body}              = 
+        qq|<h3>From Alert <a href="/#/alert/$id">$id</h3>|.
+        $self->build_table($alert);
 
     $log->debug("Using : ",{filter=>\&Dumper, value => $json});
 
@@ -48,9 +51,10 @@ sub build_table {
     my $data    = $alert->data;
     my $html    = qq|<table class="tablesorter alertTableHorizontal">\n|;
 
-    foreach my $key ( @{$alert->columns} ) {
+    foreach my $key ( @{$alert->data->{columns}} ) {
+        next if ($key eq "columns");
         my $value   = $alert->data->{$key};
-        $html .= qq|<tr><th>$key</th><td>$value</td></tr>\n|;
+        $html .= qq|<tr><th align="left">$key</th><td>$value</td></tr>\n|;
     }
     $html .= qq|</table>|;
     return $html;
