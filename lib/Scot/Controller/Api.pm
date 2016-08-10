@@ -792,7 +792,27 @@ sub update {
     return undef unless ( $self->check_update_permission($req_href, $object));
 
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
-        $self->update_alertgroup($req_href, $object);
+        $log->debug("ALERTGROUP ALERTGROUP ALERTGROUP !!!!!!!!!!!!!!!!!!!");
+        my @updated_alert_ids = $self->update_alertgroup($req_href, $object);
+        foreach my $aid (@updated_alert_ids) {
+            $log->debug("Alert $aid was updated");
+            $env->mq->send("scot", {
+                action  => "updated",
+                data    => {
+                    who     => $user,
+                    type    => "alert",
+                    id      => $aid,
+                }
+            });
+        }
+        $env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                who     => $user,
+                type    => "alertgroup",
+                id      => $object->id,
+            }
+        });
     }
     if ( ref($object) eq "Scot::Model::Entry" ) {
         $self->do_task_checks($req_href);
@@ -957,15 +977,24 @@ sub update_alertgroup {
     my $log     = $self->env->log;
     my $mongo   = $self->env->mongo;
 
-    $log->debug("updating alertgroup");
+    $log->debug("UPDATING ALERTGROUP");
 
-    my $json = $href->{request}->{json};
-    my $status  = $json->{status};
+    my $json   = $href->{request}->{json};
 
-    if ( $status ) {
-        my $col = $mongo->collection('Alert');
-        $col->update_alert_status($obj->id, $status);
+    $log->debug("json request: ", {filter=>\&Dumper, value=>$json});
+
+    my $status = $json->{status};
+    my $parsed = $json->{parsed};
+    my $col    = $mongo->collection('Alert');
+    my @ids    = ();
+
+    if ( defined $status ) {
+        push @ids, @{$col->update_alert_status($obj->id, $status)};
     }
+    if ( defined $parsed ) {
+        push @ids, @{$col->update_alert_parsed($obj->id, $status)};
+    }
+    return wantarray ? @ids : \@ids;
 }
 
 sub process_entities {
@@ -1046,6 +1075,14 @@ sub process_promotion {
         # copy alert data into an entry for that event
         my $entrycol = $mongo->collection('Entry');
         my $entryobj = $entrycol->create_from_promoted_alert($object,$proobj);
+        $env->mq->send("scot", {
+            action  => "created",
+            data    => {
+                who => $user,
+                type    => "entry",
+                id      => $entryobj->id,
+            }
+        });
     }
 
     try {
