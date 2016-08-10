@@ -156,7 +156,7 @@ sub run {
     my $log     = $self->log;
 
     $log->debug("Starting STOMP watcher");
-    $log->debug("Config is ",{filter=>\&Dumper,value=>$self->config});
+    # $log->debug("Config is ",{filter=>\&Dumper,value=>$self->config});
 
     my $pm  = AnyEvent::ForkManager->new(max_workers => 10);
 
@@ -206,11 +206,11 @@ sub run {
             $log->debug("-"x50);
             $log->debug("Received STOMP Message");
             $log->debug("header : ", { filter => \&Dumper, value => $header});
-            # $log->debug("body   : ", { filter => \&Dumper, value => $body});
+            $log->debug("body   : ", { filter => \&Dumper, value => $body});
 
             # read $body to determine alert or entry number
             my $json    = decode_json $body;
-            $log->debug("body   : ", { filter => \&Dumper, value => $json});
+            # $log->debug("body   : ", { filter => \&Dumper, value => $json});
             say "----------------- JSON Message -------------";
             say Dumper($json);
             say "----------------- ------------ -------------";
@@ -251,7 +251,7 @@ sub run {
                     my $record = $scot->get($type,$id);
 
                     if ( $self->interactive ) {
-                        say "+ got $type $id from scot: ".
+                        say "+ got $type $id from scot: "; # .
                             Dumper($record);
                     }
 
@@ -367,7 +367,7 @@ sub process_alert  {
         entities        => \@entities,
         parsed          => 1,
     });
-    my $enriched = $self->enrich_entities(\@entities);
+    # my $enriched = $self->enrich_entities(\@entities);
 }
 
 sub process_entry {
@@ -398,8 +398,8 @@ sub process_entry {
 
     $log->debug("Putting: ", { filter => \&Dumper, value => $json});
 
-    my $tx  = $scot->put($url, $json);
-    my $enriched = $self->enrich_entities($eehref->{entities});
+    my $tx  = $scot->put('entry', $record->{id}, $json);
+    # my $enriched = $self->enrich_entities($eehref->{entities});
     
 }
 
