@@ -429,6 +429,7 @@ var AlertBody = React.createClass({
                     {data.entry_count == 0 ? <td valign='top' style={{marginRight:'4px'}}>{data.entry_count}</td> : <td valign='top' style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onClick={this.toggleEntry}>{data.entry_count}</span></td>}
                     {rowReturn}
                 </tr>
+                <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} />
             </div>
         )
     }
@@ -448,7 +449,7 @@ var AlertRow = React.createClass({
     }
 });
 
-AlertRowBlank = React.createClass({
+var AlertRowBlank = React.createClass({
     render: function() {
         var id = this.props.id;
         var showEntry = this.props.showEntry;
@@ -458,7 +459,7 @@ AlertRowBlank = React.createClass({
             <tr className='not_selectable'>
                 <td style={{padding:'0'}}>
                 </td>
-                <td colSpan="50" style={{padding:'1px'}}>
+                <td colSpan="50">
                     {showEntry ? <div>{<SelectedEntry type={this.props.type} id={this.props.id} />}</div> : null}
                 </td>
             </tr>
