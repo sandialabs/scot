@@ -118,6 +118,7 @@ module.exports = React.createClass({
 	    sortarray[colsort] = -1
         Store.storeKey('activealertgroup')
         Store.addChangeListener(this.reloadactive)
+        //List View code
         $.ajax({
 	        type: 'GET',
 	        url: '/scot/api/v2/alertgroup',
@@ -154,7 +155,7 @@ module.exports = React.createClass({
                 finalarray[key]["classname"] = 'table-row rowodd'
             }
 	    })
-
+        //Elastic Search Code
         if(this.props.isalert != null){
             if(this.props.isalert != ''){
                 highlight = true
@@ -175,7 +176,8 @@ module.exports = React.createClass({
         }
         }.bind(this)) 
     },
-
+    
+    //Callback for AMQ updates
     reloadactive: function(){    
         var notification = this.refs.notificationSystem
         if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
@@ -198,6 +200,8 @@ module.exports = React.createClass({
         }  
         this.getNewData({page: defaultpage, limit: pageSize}) 
     },
+
+    //This is used for the dragging portrait and landscape views
     reloadItem: function(e){
         /*
        console.log($('.container-fluid2').width())
@@ -211,6 +215,7 @@ module.exports = React.createClass({
         var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
         width = $(t2).width()
+        //portrait
         if(this.state.display == 'flex'){
         fluidheight = $(window).height() - 108
             $('.container-fluid2').css('height', height)
@@ -238,6 +243,7 @@ module.exports = React.createClass({
                 this.setState({scrollwidth: '650px', sizearray: array, classname:classname})
                }
         }
+        //landscape
         else {
         //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
               $('.container-fluid2').css('width', '100%')

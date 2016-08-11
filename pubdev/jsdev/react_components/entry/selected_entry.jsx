@@ -95,11 +95,14 @@ var SelectedEntry = React.createClass({
         }
     },
     flairToolbarToggle: function(id,value,type) {
-        if (this.state.flairToolbar == false) {
+        //if (this.state.flairToolbar == false) {
             this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
-        } else {
-            this.setState({flairToolbar:false})
-        }
+        //} else {
+        //    this.setState({flairToolbar:false})
+        //}
+    },
+    flairToolbarOff: function() {
+        this.setState({flairToolbar:false});
     },
     linkWarningToggle: function(href) {
         if (this.state.linkWarningToolbar == false) {
@@ -147,7 +150,7 @@ var SelectedEntry = React.createClass({
             <div key={id} className={divClass} style={{height:height}}> 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : <AddEntryModal title={'Add Entry'} type={this.props.aType} targetid={this.props.aID} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> }</div> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp}/> : <span>Loading...</span>} 
-                {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id}/>: null}
+                {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
             </div>       
         );
