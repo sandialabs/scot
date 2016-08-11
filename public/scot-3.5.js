@@ -2327,18 +2327,26 @@ var EntryIterator = React.createClass({displayName: "EntryIterator",
         var data = this.props.data;
         var type = this.props.type;
         var id = this.props.id;  
-        if (type != 'alertgroup') {
-            data.forEach(function(data) {
-                rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id, isPopUp: this.props.isPopUp}));
-            }.bind(this));
-        } else {
-            rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected, alertPreSelectedId: this.props.alertPreSelectedId}));
-        }
-        return (
-            React.createElement("div", null, 
-                rows
+        if (data[0] == undefined) {
+            return (
+                React.createElement("div", null, 
+                    React.createElement("div", {style: {color:'blue'}}, "No entries found. Would you like to create one?")
+                )
             )
-        )
+        } else {
+            if (type != 'alertgroup') {
+                data.forEach(function(data) {
+                    rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id, isPopUp: this.props.isPopUp}));
+                }.bind(this));
+            } else {
+                rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected, alertPreSelectedId: this.props.alertPreSelectedId}));
+            }
+            return (
+                React.createElement("div", null, 
+                    rows
+                )
+            )
+        }
     }
 });
 
