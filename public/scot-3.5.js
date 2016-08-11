@@ -4883,7 +4883,7 @@ var EntityBody = React.createClass({displayName: "EntityBody",
             for (var prop in entityData) {
                 if (entityData[prop] != undefined) {
                     if (prop == 'geoip') {
-                        entityEnrichmentGeoArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, style: {overflow:'auto'}, title: prop}, React.createElement(GeoView, {data: entityData[prop].data, type: this.props.type, id: this.props.id})));
+                        entityEnrichmentGeoArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, style: {overflow:'auto'}, title: prop}, React.createElement(GeoView, {data: entityData[prop].data, type: this.props.type, id: this.props.id, entityData: this.props.data})));
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'data') {
                         entityEnrichmentDataArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, style: {overflow:'auto'}, title: prop}, React.createElement(EntityEnrichmentButtons, {dataSource: entityData[prop], type: this.props.type, id: this.props.id})));
@@ -4915,7 +4915,8 @@ var EntityBody = React.createClass({displayName: "EntityBody",
 var GeoView = React.createClass({displayName: "GeoView",
     getInitialState: function() {
         return {
-            copyToEntryToolbar: false
+            copyToEntryToolbar: false,
+            copyToEntityToolbar: false,
         }
     },
     copyToEntry: function() {
@@ -4923,6 +4924,13 @@ var GeoView = React.createClass({displayName: "GeoView",
             this.setState({copyToEntryToolbar: true});
         } else {
             this.setState({copyToEntryToolbar: false})
+        }
+    },
+    copyToEntity: function() {
+        if (this.state.copyToEntityToolbar == false) {
+            this.setState({copyToEntityToolbar:true})
+        } else {
+            this.setState({copyToEntityToolbar: false})
         }
     },
     render: function() { 
@@ -4939,8 +4947,10 @@ var GeoView = React.createClass({displayName: "GeoView",
         var copy = copyArr.join('');
         return(
             React.createElement("div", null, 
+                React.createElement(Button, {bsSize: "small", onClick: this.copyToEntity}, "Copy to ", React.createElement("b", null, "entity"), " entry"), 
                 React.createElement(Button, {bsSize: "small", onClick: this.copyToEntry}, "Copy to ", React.createElement("b", null, this.props.type, " ", this.props.id), " entry"), 
                 this.state.copyToEntryToolbar ? React.createElement(AddEntryModal, {title: "CopyToEntry", type: this.props.type, targetid: this.props.id, id: this.props.id, addedentry: this.copyToEntry, content: copy}) : null, 
+                this.state.copyToEntityToolbar ? React.createElement(AddEntryModal, {title: "CopyToEntry", type: 'entity', targetid: this.props.entityData.id, id: this.props.entityData.id, addedentry: this.copyToEntity, content: copy}) : null, 
                 React.createElement("div", {className: "entityTableWrapper"}, 
                     React.createElement("table", {className: "tablesorter entityTableHorizontal", id: 'sortableentitytable', width: "100%"}, 
                         trArr
