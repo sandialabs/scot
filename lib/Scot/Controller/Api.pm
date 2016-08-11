@@ -739,146 +739,91 @@ sub get_subthing {
 
 =cut
 
+sub move_entry {
+    my $self    = shift;
+    my $req     = shift;
+    my $obj     = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    $log->debug("moving entry");
+
+    my $current = $obj->target;
+    my $new     = $req->{target};
+
+    my $current_target  = $mongo->collection(ucfirst($current->{type}))
+                          ->find_iid($current->{id});
+    my $new_target      = $mongo->collection(ucfirst($new->{type}))
+                          ->find_iid($new->{id});
+
+    $current_target->upate({
+        '$set' => { updated     => $env->now },
+        '$inc' => { entry_count => -1 },
+    });
+    $new_target->upate({
+        '$set' => { updated     => $env->now },
+        '$inc' => { entry_count => 1 },
+    });
+}
+
 sub update {
     my $self    = shift;
     my $env     = $self->env;
     my $mongo   = $env->mongo;
     my $log     = $env->log;
     my $user    = $self->session('user');
-    $user = "DOOFUS" unless ($user);
 
-    $log->trace("------------");
-    $log->trace("API is processing a PUT update request from $user");
-    $log->trace("------------");
+    $log->debug("User $user trying to update something");
 
     my $req_href    = $self->get_request_params;
     my $id          = $req_href->{id};
     my $col_name    = $req_href->{collection};
 
-    $log->debug("Request = ", { filter =>\&Dumper, value => $req_href});
+    # update requires a valid id
+    return undef unless ( $self->invalid_id_check($req_href) );
 
-    unless ( $self->id_is_valid($id) ) {
-        $self->do_error(400, {
-            error_msg   => "Invalid integer id: $id"
-        });
-        return;
-    }
+    my $collection  = $self->get_update_collection($col_name);
+    return undef unless ( $collection );
 
-    my $collection;
+    my $object      = $self->get_update_object($collection, $id);
+    return undef unless ( $object );
 
-    try {
-        $collection  = $mongo->collection(ucfirst($col_name));
-    }
-    catch {
-        $log->error("Weird collection error dude");
-        $self->do_error(400, {
-            error_msg   => "collection definition failure"
-        });
-        return;
-    };
-
-    unless ( defined $collection ) {
-        $self->do_error(400, 
-            { error_msg => "No collection matching $col_name"});
-        return;
-    }
-
-    my $object;
-    try {
-        $object = $collection->find_iid($id);
-    }
-    catch {
-        $log->error("Error finding $col_name $id");
-        return undef;
-    };
-
-    if ( $object->meta->does_role("Scot::Role::Permission") ) {
-        my $users_groups    = $self->session('groups');
-        # $log->debug("User groups are ",
-        #    {filter=>\&Dumper, value=>$users_groups});
-        unless ( $object->is_modifiable($users_groups) ) {
-            $self->modify_not_permitted_error($object, $users_groups);
-            return;
-        }
-        $log->trace("Update is permittable");
-        # only admin can change ownership, unless this is an task entry
-        # and then you can only take ownership
-        my $newowner    = $req_href->{request}->{params}->{owner} // 
-                          $req_href->{request}->{json}->{owner};
-
-        if ( $newowner ) {
-            # the request wants to change the owner
-            if ( $self->ownership_change_permitted($req_href, $object) ) {
-                $log->warn("Ownership change of ".ref($object)." ".$object->id .
-                            " from ".$object->owner." to ".  $newowner);
-            }
-            else {
-                $log->error("Non permitted ownership change! ".
-                            ref($object) . " ". $object->id . " to ".  $newowner);
-                $self->do_error(403, {
-                    error_msg   => "Insufficient privilege to complete request"
-                });
-                return
-            }
-        }
-        else {
-            $log->trace("No ownership change detected");
-        }
-    }
+    return undef unless ( $self->check_update_permission($req_href, $object));
 
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
-        # check if status is being updated.  If it is, apply the status
-        # change to all alerts in alertgroup.
-        $log->debug("updating an Alertgroup");
-        my $json    = $req_href->{request}->{json};
-        $log->debug("json is ",{filter=>\&Dumper, value=>$json});
-        if ( $json->{status} ) {
-            my $col = $mongo->collection('Alert');
-            $col->update_alert_status($object->id,$json->{status});
+        $log->debug("ALERTGROUP ALERTGROUP ALERTGROUP !!!!!!!!!!!!!!!!!!!");
+        my @updated_alert_ids = $self->update_alertgroup($req_href, $object);
+        foreach my $aid (@updated_alert_ids) {
+            $log->debug("Alert $aid was updated");
+            $env->mq->send("scot", {
+                action  => "updated",
+                data    => {
+                    who     => $user,
+                    type    => "alert",
+                    id      => $aid,
+                }
+            });
         }
+        $env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                who     => $user,
+                type    => "alertgroup",
+                id      => $object->id,
+            }
+        });
     }
-
-
     if ( ref($object) eq "Scot::Model::Entry" ) {
         $self->do_task_checks($req_href);
-        $log->debug("Request is now: ",{filter=>\&Dumper, value => $req_href});
         if ( $req_href->{target} ) {
-            # changing the target of the entry is moving it...
-            my $current_target  = $object->target;
-            my $ct_col  = $mongo->collection(ucfirst($current_target->{type}));
-            my $ct_obj  = $ct_col->find_iid($current_target->{id});
-
-            my $new_target      = $req_href->{target};
-            my $nt_col  = $mongo->collection(ucfirst($new_target->{type}));
-            my $nt_obj  = $nt_col->find_iid($new_target->{id});
-
-            $ct_obj->update({
-                '$set'  => { updated        => $env->now },
-                '$inc'  => { entry_count    => -1 },
-            });
-            $nt_obj->update({
-                '$set'  => { updated        => $env->now },
-                '$inc'  => { entry_count    => 1 },
-            });
+            $self->move_entry($req_href,$object);
         }
     }
 
     if ( $object->meta->does_role("Scot::Role::Entitiable") ) {
-        $log->debug("object is Entitiable, checking for discovered entities");
-        my $json    = $req_href->{request}->{json};
-        my $earef   = $json->{entities};
-        delete $json->{entities};
-
-        if ( defined $earef ) {
-            if ( scalar(@$earef) > 0 ) {
-                $log->debug("we have some!");
-                my $ecol    = $mongo->collection('Entity');
-                # $ecol->update_entities_from_target($object, $json->{entities});
-                $ecol->update_entities($object, $earef);
-            }
-        }
+        $self->process_entities($req_href, $object);
     }
-
     if ( $object->meta->does_role("Scot::Role::Tags") ) {
         $self->apply_tags($req_href, $col_name, $id);
     }
@@ -887,83 +832,313 @@ sub update {
     }
 
     if ( $object->meta->does_role("Scot::Role::Promotable") ) {
-        # check for a promotion
-        # promote => 'new'  === create new next object up heirarchy
-        # promote => int    === add thing to existing object
-
-        my $ret =  $self->handle_promotion($object, $req_href);
-        if ( $ret >= 0 ) {
-            $env->mq->send("scot", {
-                action  => 'updated',
-                data    => {
-                    who     => $user,
-                    type    => $object->get_collection_name,
-                    id      => $object->id,
-                }
-            });
+        if ($self->process_promotion($req_href, $object, $user)) {
+            $log->debug("we did a promotion, we're done.");
             return;
         }
     }
 
-    my %update = $self->build_update_doc($req_href);
+    my %update  = $self->build_update_doc($req_href);
 
-    $log->trace("Updating " . ref($object) . " id = ".$object->id . " with ",
-        { filter =>\&Dumper, value => \%update});
+    $log->debug("Updating ". ref($object). " id = $id with ",
+                { filter => \&Dumper, value => \%update });
 
     unless ( $object->update({ '$set' => \%update }) ) {
-        $log->error("Problem applying update for $col_name");
-        $log->error("update was: ", { filter => \&Dumper, value => \%update});
-        $self->do_error(444, { error_msg => "Failed Update" });
+        $log->error("Error applying Update!");
+        $self->do_error(445, { error_msg => "failed update" });
         return;
     }
 
-    $log->trace("Updated object");
-
-    # $env->amq->send_amq_notification("update", $object, $user);
-
     $self->do_render({
-        id      => $object->id,
-        status  => "successfully updated",
+        id     => $object->id,
+        status => "successfully updated",
     });
 
-    $log->trace("Checking Historable...");
-
     if ( $object->meta->does_role("Scot::Role::Historable") ) {
-        $log->debug("Historable object!  let's write history...");
-        $mongo->collection('History')->add_history_entry({
-            who     => $user,
-            what    => "updated via api",
-            when    => $env->now,
-            targets =>  { id => $object->id, type => $col_name } ,
-        });
+        $self->update_history($object, $user, $col_name);
     }
-
-    $log->trace("Audit...");
-    $log->trace("req_href is ",{filter=>\&Dumper, value=>$req_href});
 
     $self->audit("update_thing", $req_href);
 
-    $log->trace("mq messages...");
+    $env->mq->send("scot", { 
+        action  => "updated",
+        data    => {
+            who  => $user,
+            type => $col_name,
+            id   => $id
+        }
+    });
+    if ( ref($object) eq "Scot::Model::Entry" ) {
+        $env->mq->send("scot", { 
+            action  => "updated",
+            data    => {
+                who  => $user,
+                type => $object->target->{type},
+                id   => $object->target->{id}
+            }
+        });
+    }
+}
+
+sub invalid_id_check {
+    my $self    = shift;
+    my $href    = shift;
+    my $id      = $href->{id};
+
+    if ( $self->id_is_valid($href->{id}) ) {
+        return 1;
+    }
+    $self->do_error(400, {
+        error_msg   => "Invalid integer id: $id"
+    });
+    return undef;
+}
+
+sub get_update_collection {
+    my $self    = shift;
+    my $name    = shift;
+    my $log     = $self->env->log;
+    my $col;
+
+    try {
+        $col    = $self->env->mongo->collection(ucfirst($name));
+    }
+    catch {
+        $log->error("Weird collection error!");
+        $self->do_error(400, {
+            error_msg   => "collection def error"
+        });
+        return undef;
+    };
+    return $col;
+}
+
+sub get_update_object {
+    my $self    = shift;
+    my $col     = shift;
+    my $id      = shift;
+    my $log     = $self->env->log;
+    my $obj;
+
+    try {
+        $obj    = $col->find_iid($id);
+    }
+    catch {
+        $log->error("Error finding ".ref($col)." id = $id");
+        return undef;
+    };
+    return $obj;
+}
+
+sub check_update_permission {
+    my $self    = shift;
+    my $href    = shift;
+    my $object  = shift;
+    my $log     = $self->env->log;
+
+    if ( $object->meta->does_role("Scot::Role::Permission") ) {
+
+        my $groups = $self->session('groups');
+
+        unless ( $object->is_modifiable($groups) ) {
+            $self->modify_not_permitted_error($object,$groups);
+            return undef;
+        }
+
+        my $newowner    = $href->{request}->{params}->{owner} //
+                          $href->{request}->{json}->{owner};
+
+        unless ($newowner) {
+            return 1;
+        }
+
+        if ( $self->ownership_change_permitted($href, $object) ) {
+            $log->warn("Ownership change of ".
+                        ref($object) . " ". $object->id. 
+                        " from ". $object->owner. " to ".
+                        $newowner);
+            return 1;
+        }
+        $log->error("Non permitted ownership change attempt! ".
+                    ref($object). " ". $object->id. " to ". $newowner
+        );
+        $self->do_error(403, {
+            error_msg => "insufficient privilege to change ownership"
+        });
+        return undef;
+    }
+    return 1;
+}
+
+sub update_alertgroup {
+    my $self    = shift;
+    my $href    = shift;
+    my $obj     = shift;
+    my $log     = $self->env->log;
+    my $mongo   = $self->env->mongo;
+
+    $log->debug("UPDATING ALERTGROUP");
+
+    my $json   = $href->{request}->{json};
+
+    $log->debug("json request: ", {filter=>\&Dumper, value=>$json});
+
+    my $status = $json->{status};
+    my $parsed = $json->{parsed};
+    my $col    = $mongo->collection('Alert');
+    my @ids    = ();
+
+    if ( defined $status ) {
+        push @ids, @{$col->update_alert_status($obj->id, $status)};
+    }
+    if ( defined $parsed ) {
+        push @ids, @{$col->update_alert_parsed($obj->id, $status)};
+    }
+    return wantarray ? @ids : \@ids;
+}
+
+sub process_entities {
+    my $self    = shift;
+    my $href    = shift;
+    my $obj     = shift;
+    my $log     = $self->env->log;
+    my $mongo   = $self->env->mongo;
+
+    $log->debug("processing entities");
+
+    my $json    = $href->{request}->{json};
+    my $earef   = delete $json->{entities};
+
+    if ( defined $earef ) {
+        if ( scalar(@$earef) > 0 ) {
+            $log->debug("we have entities!");
+            $mongo->collection('Entity')->update_entities($obj,$earef);
+        }
+    }
+}
+
+sub process_promotion {
+    my $self    = shift;
+    my $href    = shift;
+    my $object  = shift;
+    my $user    = shift;
+    my $env     = $self->env;
+    my $log     = $self->env->log;
+    my $mongo   = $self->env->mongo;
+
+    $log->debug("processing promotion");
+
+    my $promote_to      = $self->get_value_from_request($href, "promote");
+    my $unpromote_from  = $self->get_value_from_request($href, "unpromote");
+
+    unless ( $self->check_promotion_input($promote_to, $unpromote_from) ) {
+        $log->error("failed promotion input check!");
+        return undef;
+    }
+
+    unless ( $promote_to ) {
+        $log->warn("no promotion for you");
+        return undef;
+    }
+
+    my $object_type         = $object->get_collection_name;
+    my ($proname, $procol)  = $self->get_promotion_collection($object_type);
+    my $proobj              = $self->get_promotion_obj( $href, 
+                                                        $object, 
+                                                        $procol, 
+                                                        $promote_to);
+    unless ( $proobj ) {
+        $log->error("failed creation/retrieval of promotion object");
+        $self->do_error(444, {
+            error_msg => "failed to create promotion target"
+        });
+        return 1;
+    }
+
+    $promote_to = $proobj->id; # to catch id if "new" was requested
+    $proobj->update_push(promoted_from => $object->id);
+
+    $env->mq->send("scot", {
+        action  => 'created',
+        data    => {
+            who     => $self->session('user'),
+            type    => $proobj->get_collection_name,
+            id      => $proobj->id,
+        }
+    });
+
+
+    if ( ref($object) eq "Scot::Model::Alert" ) {
+        $mongo->collection('Alertgroup')
+                ->refresh_data($object->alertgroup, $user);
+
+        # copy alert data into an entry for that event
+        my $entrycol = $mongo->collection('Entry');
+        my $entryobj = $entrycol->create_from_promoted_alert($object,$proobj);
+        $env->mq->send("scot", {
+            action  => "created",
+            data    => {
+                who => $user,
+                type    => "entry",
+                id      => $entryobj->id,
+            }
+        });
+    }
+
+    try {
+        $object->update({
+            '$set'  => {
+                status          => 'promoted',
+                updated         => $env->now(),
+                promotion_id    => $promote_to
+            }
+        });
+    }
+    catch {
+        $log->error("Failed update of promoted object");
+        return 1;
+    };
+
+    $self->do_render({
+        id      => $object->id,
+        pid     => $proobj->id,
+        status  => "successfully promoted",
+    });
+
+    if ( $object->meta->does_role("Scot::Role::Historable") ) {
+        $mongo->collection('History')->add_history_entry({
+            who     => $self->session('user'),
+            what    => "$object_type promotion to $proname",
+            when    => $env->now(),
+            targets => { id => $object->id, type => $object_type },
+        });
+    }
 
     $env->mq->send("scot", {
         action  => "updated",
         data    => {
             who     => $user,
-            type    => $col_name,
-            id      => $id,
+            type    => $object->get_collection_name,
+            id      => $object->id,
         }
     });
+}
 
-    if ( ref($object) eq "Scot::Model::Entry" ) {
-        $env->mq->send("scot", {
-            action  => 'updated',
-            data    => {
-                who     => $user,
-                type    => $object->target->{type},
-                id      => $object->target->{id},
-            }
-        });
-    }
+
+sub update_history {
+    my $self    = shift;
+    my $obj     = shift;
+    my $user    = shift;
+    my $colname = shift;
+    my $log     = $self->env->log;
+    my $mongo   = $self->env->mongo;
+
+    $mongo->collection('History')->add_history_entry({
+        who     => $user,
+        what    => "updated via api",
+        when    => $self->env->now,
+        targets => { id => $obj->id, type => $colname },
+    });
 }
 
 sub build_update_doc {
@@ -1027,145 +1202,75 @@ sub get_promotion_collection {
     $self->env->log->error("INVALID PROMOTION TYPE!");
     return undef, undef;
 }
-
-sub handle_promotion {
+sub check_promotion_input {
     my $self    = shift;
-    my $object  = shift;
-    my $req     = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
+    my $to      = shift;
+    my $from    = shift;
+    my $log     = $self->env->log;
 
-    $log->trace(ref($object)." is promotable, checking if promotion is needed");
-
-    my $promote_to      = $self->get_value_from_request($req, "promote");
-    my $unpromote_from  = $self->get_value_from_request($req, "unpromote");
-
-    if ( defined $promote_to and defined $unpromote_from ) {
-        $log->error("ERROR: can not promote and unpromote as same time");
-        $self->do_error(444, { error_msg => "Promotion and unpromotion conflict" });
-        return 0;
-    }
-
-    unless ( defined $promote_to or defined $unpromote_from ) {
-        $log->trace("No promoting or unpromoting in update.");
-        return -1;
-    }
-
-    my $object_type         = $object->get_collection_name;
-    my ($proname, $procol)  = $self->get_promotion_collection($object_type);
-    my $user                = $self->session('user');
-
-    if ( $promote_to ) {
+    $log->debug("Checking promotion input");
+    $log->debug("to is $to");
+    # $log->debug("from is $from");
     
-        my $proobj;
-
-        if ( $promote_to =~ /\d+/ ) {
-
-            $log->trace("Promoting to an supposedly existing id");
-            $proobj  = $procol->find_iid($promote_to+0);
-            
-            unless ( $proobj ) {
-                $log->error("Can not promote to non-existing thing");
-                $self->do_error(444, { error_msg => "invalid promotion target" });
-                return 0;
-            }
-        }
-        else {
-            $proobj = $procol->create_promotion($object, $req);
-            unless ( $proobj ) {
-                $log->error("Failed to create promotion target!");
-                $self->do_error(444, { 
-                    error_msg => "failed to create promotion target"});
-                return 0;
-            }
-            $promote_to = $proobj->id;
-            $env->mq->send("scot", {
-                action  => 'created',
-                data    => {
-                    who     => $self->session('user'),
-                    type    => $proobj->get_collection_name,
-                    id      => $proobj->id,
-                }
-            });
-        }
-
-        $proobj->update_push(promoted_from => $object->id);
-
-        if ( ref($object) eq "Scot::Model::Alert" ) {
-            $mongo->collection('Alertgroup')
-                  ->refresh_data($object->alertgroup, $user);
-            # copy alert data into an entry for that event
-            my $entrycol    = $mongo->collection('Entry');
-            my $entryobj    = $entrycol->create_from_promoted_alert($object);
-        }
-
-        try {
-            $object->update({
-                '$set'  => {
-                    status          => 'promoted',
-                    updated         => $env->now(),
-                    promotion_id    => $promote_to
-                }
-            });
-        }
-        catch {
-            $log->error("Failed update of promoted object");
-        };
-
-        $self->do_render({
-            id      => $object->id,
-            pid     => $proobj->id,
-            status  => "successfully promoted",
-        });
-
-        if ( $object->meta->does_role("Scot::Role::Historable") ) {
-            $mongo->collection('History')->add_history_entry({
-                who     => $self->session('user'),
-                what    => "$object_type promotion to $proname",
-                when    => $env->now(),
-                targets => { id => $object->id, type => $object_type },
-            });
-        }
+    if ( defined $from ) {
+        $log->error("unpromotion not supported!");
+        return undef;
     }
-    else {
-        my $promotion_id   = $object->promotion_id;
-        $log->trace("Unpromoting object $promotion_id");
-        $object->update({
-            '$set'  => {
-                promotion_id    => 0,
-                status          => 'closed',
-            }
-        });
-        my $object_type         = $object->get_collection_name;
-        my ($proname, $procol)  = $self->get_promotion_collection($object_type);
-        my $promobj             = $procol->find_one({id => $promotion_id});
 
-        if ( $promobj ) {
-            $promobj->update_remove(promoted_from => $object->id);
-        }
-        else {
-            $log->warn("couldn't find a promotion object for $proname $promotion_id");
-        }
 
-        if ( ref($object) eq "Scot::Model::Alert" ) {
-            $mongo->collection('Alertgroup')
-                  ->refresh_data($object->alertgroup, $user);
-        }
-        $self->do_render({
-            id      => $object->id,
-            pid     => $promobj->id,
-            status  => "successfully unpromoted",
-        });
+    unless ( defined $to ) {
+        $log->trace("No promoting or unpromoting in update.");
+        return undef;
     }
     return 1;
 }
+
+sub get_promotion_obj {
+    my $self          = shift;
+    my $req           = shift;
+    my $object        = shift;
+    my $procollection = shift;
+    my $promote_to    = shift;
+    my $user          = $self->session('user');
+    my $log           = $self->env->log;
+
+
+    $log->debug("geting Promotion object");
+
+    my $promotion_obj;
+
+    if ( $promote_to    =~ /\d+/ ) {
+
+        $log->debug("We have a numeric id, looking for existing");
+        $promotion_obj = $procollection->find_iid($promote_to+0);
+
+    }
+
+    unless ( ref($promotion_obj) ) {
+
+        $log->debug("promotion object does not exist, creating one...");
+        $promotion_obj = $procollection->create_promotion($object, $req);
+
+    }
+
+    unless ( ref($promotion_obj) ) {
+        $log->error("failed to create a promotion object.");
+        return undef;
+    }
+    
+    return $promotion_obj;
+}
+
+    
+
 
 sub get_value_from_request {
     my $self    = shift;
     my $req     = shift;
     my $attr    = shift;
-    return $req->{request}->{params}->{$attr} // $req->{request}->{json}->{$attr};
+    $self->env->log->debug("getting value for $attr");
+    return  $req->{request}->{params}->{$attr} // 
+            $req->{request}->{json}->{$attr};
 }
 
 sub write_promotion_history_notification {
@@ -1707,7 +1812,7 @@ sub build_limit {
 
 
     my $limit   = $params->{limit} // $json->{limit};
-    $log->debug("LIMIT of $limit detected");
+    # $log->debug("LIMIT of $limit detected");
     return $limit;
 }
 
