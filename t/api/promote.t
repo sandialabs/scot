@@ -67,6 +67,11 @@ $t->put_ok("/scot/api/v2/alert/$alert_1_id" => json =>
 )->status_is(200)
  ->json_is('/status'    => "successfully promoted");
 
+#print Dumper($t->tx->res->json), "\n";
+#done_testing();
+#exit 0;
+
+
 my $event1  = $t->tx->res->json->{id};
 
 
@@ -187,27 +192,27 @@ $t->get_ok("/scot/api/v2/incident/$incident1/event" => {},
     ->json_is('/records/1/status'       => 'promoted');
 
 
-$t->put_ok("/scot/api/v2/event/$event2" => json => 
-    {   unpromote => $incident1 }
-)   ->status_is(200)
-    ->json_is('/id'     => $event2)
-    ->json_is('/status' => "successfully unpromoted");
+#$t->put_ok("/scot/api/v2/event/$event2" => json => 
+#    {   unpromote => $incident1 }
+#)   ->status_is(200)
+#    ->json_is('/id'     => $event2)
+#    ->json_is('/status' => "successfully unpromoted");
 
 # print Dumper($t->tx->res->json), "\n";
 # done_testing();
 # exit 0;
     
-$t->get_ok("/scot/api/v2/event/$event2/incident" => {},
-            "Checking event $event2")
-    ->status_is(200)
-    ->json_is('/queryRecordCount'    => 0);
+#$t->get_ok("/scot/api/v2/event/$event2/incident" => {},
+#            "Checking event $event2")
+#    ->status_is(200)
+#    ->json_is('/queryRecordCount'    => 0);
 
-$t->get_ok("/scot/api/v2/incident/$incident1/event" => {},
-            "Checking event $event2")
-    ->status_is(200)
-    ->json_is('/queryRecordCount'       => 1)
-    ->json_is('/records/0/id'           => $event1)
-    ->json_is('/records/0/status'       => 'promoted');
+#$t->get_ok("/scot/api/v2/incident/$incident1/event" => {},
+#            "Checking event $event2")
+#    ->status_is(200)
+#    ->json_is('/queryRecordCount'       => 1)
+#    ->json_is('/records/0/id'           => $event1)
+#    ->json_is('/records/0/status'       => 'promoted');
     
 
 # print Dumper($t->tx->res->json), "\n";
