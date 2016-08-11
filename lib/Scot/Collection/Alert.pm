@@ -158,6 +158,9 @@ sub update_alert_status {
     my $status  = shift;
     my $env     = $self->env;
     my $log     = $env->log;
+    my @ids     = ();
+
+    $log->debug("attempting updating alert status");
 
     unless ( grep { /$status/ } (qw(open closed promoted)) ) {
         $log->error("Invalid Alert Status set attempt: $status");
@@ -171,9 +174,44 @@ sub update_alert_status {
         return;
     }
 
+    $log->debug("updating alert status");
+
     while ( my $alert = $cur->next ) {
         $alert->update_set( status => $status );
+        push @ids, $alert->id +0;
     }
+    return wantarray ? @ids : \@ids;
+}
+sub update_alert_parsed {
+    my $self    = shift;
+    my $id      = shift;
+    my $status  = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    $status     += 0;
+    my @ids     = ();
+
+    $log->debug("attempting updating alert status");
+
+    unless ( $status == 0 or $status == 1 ) {
+        $log->error("Invalid Alert parsed set attempt: $status");
+        return;
+    }
+
+    my $cur = $self->find({ alertgroup  => $id + 0 });
+
+    unless ( $cur ) {
+        $log->error("failed to find any alerts for alertgroup $id");
+        return;
+    }
+    $log->debug("updating alert parsed status");
+
+    while ( my $alert = $cur->next ) {
+        $alert->update_set( parsed => $status );
+        $log->debug("reset parsed on alert ".$alert->id);
+        push @ids, $alert->id +0;
+    }
+    return wantarray ? @ids : \@ids;
 }
 
 1;

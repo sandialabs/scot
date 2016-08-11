@@ -15,22 +15,33 @@ with    qw(
 sub create_from_promoted_alert {
     my $self    = shift;
     my $alert   = shift;
+    my $event   = shift;
     my $env     = $self->env;
     my $log     = $env->log;
     my $mongo   = $env->mongo;
     my $mq      = $env->mq;
     my $json;
 
-    $json->{groups}->{read} = $alert->groups->{read} // 
-                                $env->default_groups->{read};
-    $json->{groups}->{modify} = $alert->groups->{modify} // 
-                                $env->default_groups->{modify};
-    $json->{target} = {
-        type    => 'alert',
-        id      => $alert->id,
+    $log->debug("Creating Entry from promoted Alert");
+
+    $json->{groups}->{read}    = $alert->groups->{read} // 
+                                 $env->default_groups->{read};
+    $json->{groups}->{modify}  = $alert->groups->{modify} // 
+                                 $env->default_groups->{modify};
+    $json->{target}            = {
+        type                  => 'event',
+        id                    => $event->id,
     };
-    $json->{body}   = $self->build_table($alert);
-    my $entry_obj   = $self->create($json);
+    my $id  = $alert->id;
+    $json->{body}              = 
+        qq|<h3>From Alert <a href="/#/alert/$id">$id</h3>|.
+        $self->build_table($alert);
+
+    $log->debug("Using : ",{filter=>\&Dumper, value => $json});
+
+    my $entry_obj              = $self->create($json);
+
+    $log->debug("Created Entry : ".$entry_obj->id);
     return $entry_obj;
 }
 
@@ -40,9 +51,10 @@ sub build_table {
     my $data    = $alert->data;
     my $html    = qq|<table class="tablesorter alertTableHorizontal">\n|;
 
-    foreach my $key ( @{$alert->columns} ) {
+    foreach my $key ( @{$alert->data->{columns}} ) {
+        next if ($key eq "columns");
         my $value   = $alert->data->{$key};
-        $html .= qq|<tr><th>$key</th><td>$value</td></tr>\n|;
+        $html .= qq|<tr><th align="left">$key</th><td>$value</td></tr>\n|;
     }
     $html .= qq|</table>|;
     return $html;
