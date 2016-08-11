@@ -306,7 +306,7 @@ var EntityBody = React.createClass({
             for (var prop in entityData) {
                 if (entityData[prop] != undefined) {
                     if (prop == 'geoip') {
-                        entityEnrichmentGeoArr.push(<Tab eventKey={enrichmentEventKey} style={{overflow:'auto'}} title={prop}><GeoView data={entityData[prop].data} type={this.props.type} id={this.props.id}/></Tab>);
+                        entityEnrichmentGeoArr.push(<Tab eventKey={enrichmentEventKey} style={{overflow:'auto'}} title={prop}><GeoView data={entityData[prop].data} type={this.props.type} id={this.props.id} entityData={this.props.data}/></Tab>);
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'data') {
                         entityEnrichmentDataArr.push(<Tab eventKey={enrichmentEventKey} style={{overflow:'auto'}} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} type={this.props.type} id={this.props.id} /></Tab>);
@@ -338,7 +338,8 @@ var EntityBody = React.createClass({
 var GeoView = React.createClass({
     getInitialState: function() {
         return {
-            copyToEntryToolbar: false
+            copyToEntryToolbar: false,
+            copyToEntityToolbar: false,
         }
     },
     copyToEntry: function() {
@@ -346,6 +347,13 @@ var GeoView = React.createClass({
             this.setState({copyToEntryToolbar: true});
         } else {
             this.setState({copyToEntryToolbar: false})
+        }
+    },
+    copyToEntity: function() {
+        if (this.state.copyToEntityToolbar == false) {
+            this.setState({copyToEntityToolbar:true})
+        } else {
+            this.setState({copyToEntityToolbar: false})
         }
     },
     render: function() { 
@@ -362,8 +370,10 @@ var GeoView = React.createClass({
         var copy = copyArr.join('');
         return(
             <div>
+                <Button bsSize='small' onClick={this.copyToEntity}>Copy to <b>{"entity"}</b> entry</Button>
                 <Button bsSize='small' onClick={this.copyToEntry}>Copy to <b>{this.props.type} {this.props.id}</b> entry</Button>
                 {this.state.copyToEntryToolbar ? <AddEntryModal title='CopyToEntry' type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.copyToEntry} content={copy}/> : null}
+                {this.state.copyToEntityToolbar ? <AddEntryModal title='CopyToEntry' type={'entity'} targetid={this.props.entityData.id} id={this.props.entityData.id} addedentry={this.copyToEntity} content={copy}/> : null}
                 <div className="entityTableWrapper">
                     <table className="tablesorter entityTableHorizontal" id={'sortableentitytable'} width='100%'>
                         {trArr}    
