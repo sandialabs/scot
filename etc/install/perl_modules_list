@@ -82,3 +82,4 @@ Data::Dumper
 Safe
 Search::Elasticsearch
 Server::Starter
+Data::Clean::FromJSON
