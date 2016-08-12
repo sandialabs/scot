@@ -26,6 +26,7 @@ use Scot::Util::ElasticSearch;
 use AnyEvent::STOMP::Client;
 use AnyEvent::ForkManager;
 use Sys::Hostname;
+use Data::Clean::FromJSON;
 
 use strict;
 use warnings;
@@ -171,6 +172,7 @@ sub process_all {
     say "Max ID = $maxid";
 
     my $continue = 1;
+    my $cleanser = Data::Clean::FromJSON->get_cleanser;
 
     while ( $continue ) {
         
@@ -187,12 +189,19 @@ sub process_all {
         });
         my $count = 1;
 
+        $cleanser->clean_in_place($json);
+
         foreach my $href ( @{$json->{records}} ) {
 
             say "   $count.    id = ".$href->{id};
 
             delete $href->{_id};
-            $es->index($collection, $href, 'scot');
+            try {
+                $es->index($collection, $href, 'scot');
+            }
+            catch {
+                die Dumper($href);
+            };
 
             $last_completed = $href->{id};
             say "         last_completed = $last_completed";
@@ -243,9 +252,10 @@ sub process_message {
         $es->delete($type, $id, 'scot');
         return;
     }
-
+    my $cleanser = Data::Clean::FromJSON->get_cleanser;
     my $scot    = $self->scot;
     my $record  = $scot->get($type, $id);
+    $cleanser->clean_in_place($record);
     $es->index($type, $record, 'scot');
 }
 
@@ -295,6 +305,10 @@ sub import_range {
 sub reprocess_collection {
 
 }
+
+        
+
+
 
 
 1;
