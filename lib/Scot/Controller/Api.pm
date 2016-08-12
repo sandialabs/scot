@@ -86,6 +86,7 @@ sub create {
         return;
     }
 
+
     my $object  = $collection->create_from_api($req_href);
 
     unless ( defined $object ) {
@@ -99,6 +100,25 @@ sub create {
         # a specific error condition is in the object hashref
         $self->do_error(400, $object);
         return;
+    }
+
+    if ( ref($object) eq "Scot::Model::Entry" ) {
+        # need to update entry_count in target
+        my $thref   = $object->target;
+        my $target  = $mongo->collection(ucfirst($thref->{type}))
+                            ->find_iid($thref->{id});
+        if ( $target->meta->does_role("Scot::Role::Entriable") ) {
+            $target->update_inc( entry_count => 1 );
+            $target->update_set( updated => $env->now );
+        }
+        $env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                type    => $thref->{type},
+                id      => $thref->{id},
+                who     => $user,
+            }
+        });
     }
 
     if ( $object->meta->does_role("Scot::Role::Tags") ) {
@@ -142,6 +162,8 @@ sub create {
         my $target_type = $object->target->{type};
         my $col         = $mongo->collection(ucfirst($target_type));
         my $obj         = $col->find_iid($target_id);
+
+        $log->debug(uc("updating $target_type entry count"));
         $obj->update({
             '$set'  => {
                 updated => $env->now

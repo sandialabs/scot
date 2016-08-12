@@ -105,7 +105,7 @@ Readonly my $STRICT_URL_REGEX    => qr{
 
 Readonly my $SNUMBER_REGEX => qr{
     \b(
-        [sS][0-9]{6}
+        [sS][0-9]{6,7}
     )\b
 }xms;
 

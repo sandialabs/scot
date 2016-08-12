@@ -13,11 +13,11 @@ has entry_count => (
     traits      => [ 'Counter' ],
     required    => 1,
     default     => 0,
-    handles     => {
-        inc_entry_count => 'inc',
-        dec_entry_count => 'dec',
-        reset_entry_count   => 'reset',
-    }
+#    handles     => {
+#        inc_entry_count => 'inc',
+#        dec_entry_count => 'dec',
+#        reset_entry_count   => 'reset',
+#    }
 );
 
 
