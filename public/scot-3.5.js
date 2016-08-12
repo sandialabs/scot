@@ -864,7 +864,7 @@ var AddFlair = {
                                         if (entityResult[currentEntityValue.toLowerCase()] != undefined ) {
                                             var entityType = entityResult[currentEntityValue.toLowerCase()].type;
                                             var entityid = entityResult[currentEntityValue.toLowerCase()].id;
-                                            var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
+                                            var entityCount = abbreviateNumber(parseInt(entityResult[currentEntityValue.toLowerCase()].count),0);
                                             var entitydata = entityResult[currentEntityValue.toLowerCase()].data;
                                             var entityEntryCount = entityResult[currentEntityValue.toLowerCase()].entry;
                                             var circle = $('<span class="noselect">');
@@ -938,7 +938,7 @@ var AddFlair = {
                             if (entityResult[currentEntityValue.toLowerCase()] != undefined ) {
                                 var entityType = entityResult[currentEntityValue.toLowerCase()].type;
                                 var entityid = entityResult[currentEntityValue.toLowerCase()].id;
-                                var entityCount = entityResult[currentEntityValue.toLowerCase()].count;
+                                var entityCount = abbreviateNumber(entityResult[currentEntityValue.toLowerCase()].count);
                                 var entitydata = entityResult[currentEntityValue.toLowerCase()].data;
                                 var entityEntryCount = entityResult[currentEntityValue.toLowerCase()].entry;
                                 var circle = $('<span class="noselect">');
@@ -1091,7 +1091,17 @@ function infopop(entityid, entityvalue, flairToolbarToggle) {
 function linkWarningPopup(url,linkWarningToggle) {
     linkWarningToggle(url);
 }
-
+function abbreviateNumber(num, fixed) {
+    if (num === null) { return null; } // terminate early
+    if (num === 0) { return '0'; } // terminate early
+    fixed = (!fixed || fixed < 0) ? 0 : fixed; // number of decimal places to show
+    var b = (num).toPrecision(2).split("e"), // get power
+        k = b.length === 1 ? 0 : Math.floor(Math.min(b[1].slice(1), 14) / 3), // floor at decimals, ceiling at trillions
+        c = k < 1 ? num.toFixed(0 + fixed) : (num / Math.pow(10, k * 3) ).toFixed(1 + fixed), // divide by power
+        d = c < 0 ? c : Math.abs(c), // enforce -0 is 0
+        e = d + ['', 'K', 'M', 'B', 'T'][k]; // append power
+    return e;
+}
 module.exports = {AddFlair, Watcher}
 
 },{}],7:[function(require,module,exports){
@@ -2327,18 +2337,26 @@ var EntryIterator = React.createClass({displayName: "EntryIterator",
         var data = this.props.data;
         var type = this.props.type;
         var id = this.props.id;  
-        if (type != 'alertgroup') {
-            data.forEach(function(data) {
-                rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id, isPopUp: this.props.isPopUp}));
-            }.bind(this));
-        } else {
-            rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected, alertPreSelectedId: this.props.alertPreSelectedId}));
-        }
-        return (
-            React.createElement("div", null, 
-                rows
+        if (data[0] == undefined) {
+            return (
+                React.createElement("div", null, 
+                    React.createElement("div", {style: {color:'blue'}}, "No entries found. Would you like to create one?")
+                )
             )
-        )
+        } else {
+            if (type != 'alertgroup') {
+                data.forEach(function(data) {
+                    rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id, isPopUp: this.props.isPopUp}));
+                }.bind(this));
+            } else {
+                rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected, alertPreSelectedId: this.props.alertPreSelectedId}));
+            }
+            return (
+                React.createElement("div", null, 
+                    rows
+                )
+            )
+        }
     }
 });
 
@@ -3676,6 +3694,9 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
             console.log('reparsing started');
         }.bind(this))
     },
+    manualUpdate: function() {
+        this.props.updated(null,null);
+    },
     render: function() { 
         var subjectType = this.props.subjectType;
         var type = this.props.type;
@@ -3704,7 +3725,8 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                     React.createElement(Button, {eventKey: "5", onClick: this.props.permissionsToggle, bsSize: "small"}, React.createElement("b", null, "Permissions")), 
                     React.createElement(Button, {eventKey: "6", onClick: this.props.entitiesToggle, bsSize: "small"}, "List ", React.createElement("b", null, "Entities")), 
                     showPromote ? React.createElement(Button, {bsStyle: "warning", eventKey: "7", bsSize: "small"}, React.createElement(Promote, {type: type, id: id, updated: this.props.updated})) : null, 
-                    React.createElement(Button, {bsStyle: "danger", eventKey: "8", onClick: this.props.deleteToggle, bsSize: "small"}, React.createElement("b", null, "Delete"), " ", subjectType)
+                    React.createElement(Button, {bsStyle: "danger", eventKey: "8", onClick: this.props.deleteToggle, bsSize: "small"}, React.createElement("b", null, "Delete"), " ", subjectType), 
+                    React.createElement(Button, {bsStyle: "info", eventKey: "9", onClick: this.manualUpdate, bsSize: "small", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
                 )
             )
         } else {
@@ -3724,7 +3746,8 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                         React.createElement(Button, {eventKey: "11", onClick: this.props.entryToggle, bsSize: "small"}, "Add ", React.createElement("b", null, "Entry")), 
                         React.createElement(Button, {eventKey: "12", onClick: this.alertSelectExisting, bsSize: "small"}, React.createElement("b", null, "Add"), " Selected to ", React.createElement("b", null, "Existing Event")), 
                         React.createElement(Button, {eventKey: "13", onClick: this.alertExportCSV, bsSize: "small"}, "Export to ", React.createElement("b", null, "CSV")), 
-                        React.createElement(Button, {eventKey: "14", onClick: this.alertDeleteSelected, bsSize: "small"}, React.createElement("b", null, "Delete"), " Selected")
+                        React.createElement(Button, {eventKey: "14", onClick: this.alertDeleteSelected, bsSize: "small"}, React.createElement("b", null, "Delete"), " Selected"), 
+                        React.createElement(Button, {bsStyle: "info", eventKey: "9", onClick: this.manualUpdate, bsSize: "small", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
                     )
                 )
             } else { 
@@ -3736,7 +3759,8 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                         React.createElement(Button, {eventKey: "4", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
                         React.createElement(Button, {eventKey: "5", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
                         React.createElement(Button, {eventKey: "6", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
-                        React.createElement(Button, {eventKey: "7", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History"))
+                        React.createElement(Button, {eventKey: "7", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History")), 
+                        React.createElement(Button, {bsStyle: "info", eventKey: "9", onClick: this.manualUpdate, bsSize: "small", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
                     )
                 )
             }
@@ -4865,7 +4889,7 @@ var EntityBody = React.createClass({displayName: "EntityBody",
             for (var prop in entityData) {
                 if (entityData[prop] != undefined) {
                     if (prop == 'geoip') {
-                        entityEnrichmentGeoArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, style: {overflow:'auto'}, title: prop}, React.createElement(GeoView, {data: entityData[prop].data, type: this.props.type, id: this.props.id})));
+                        entityEnrichmentGeoArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, style: {overflow:'auto'}, title: prop}, React.createElement(GeoView, {data: entityData[prop].data, type: this.props.type, id: this.props.id, entityData: this.props.data})));
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'data') {
                         entityEnrichmentDataArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, style: {overflow:'auto'}, title: prop}, React.createElement(EntityEnrichmentButtons, {dataSource: entityData[prop], type: this.props.type, id: this.props.id})));
@@ -4897,7 +4921,8 @@ var EntityBody = React.createClass({displayName: "EntityBody",
 var GeoView = React.createClass({displayName: "GeoView",
     getInitialState: function() {
         return {
-            copyToEntryToolbar: false
+            copyToEntryToolbar: false,
+            copyToEntityToolbar: false,
         }
     },
     copyToEntry: function() {
@@ -4905,6 +4930,13 @@ var GeoView = React.createClass({displayName: "GeoView",
             this.setState({copyToEntryToolbar: true});
         } else {
             this.setState({copyToEntryToolbar: false})
+        }
+    },
+    copyToEntity: function() {
+        if (this.state.copyToEntityToolbar == false) {
+            this.setState({copyToEntityToolbar:true})
+        } else {
+            this.setState({copyToEntityToolbar: false})
         }
     },
     render: function() { 
@@ -4921,8 +4953,10 @@ var GeoView = React.createClass({displayName: "GeoView",
         var copy = copyArr.join('');
         return(
             React.createElement("div", null, 
+                React.createElement(Button, {bsSize: "small", onClick: this.copyToEntity}, "Copy to ", React.createElement("b", null, "entity"), " entry"), 
                 React.createElement(Button, {bsSize: "small", onClick: this.copyToEntry}, "Copy to ", React.createElement("b", null, this.props.type, " ", this.props.id), " entry"), 
                 this.state.copyToEntryToolbar ? React.createElement(AddEntryModal, {title: "CopyToEntry", type: this.props.type, targetid: this.props.id, id: this.props.id, addedentry: this.copyToEntry, content: copy}) : null, 
+                this.state.copyToEntityToolbar ? React.createElement(AddEntryModal, {title: "CopyToEntry", type: 'entity', targetid: this.props.entityData.id, id: this.props.entityData.id, addedentry: this.copyToEntity, content: copy}) : null, 
                 React.createElement("div", {className: "entityTableWrapper"}, 
                     React.createElement("table", {className: "tablesorter entityTableHorizontal", id: 'sortableentitytable', width: "100%"}, 
                         trArr
@@ -48301,7 +48335,7 @@ var ExpandableNavMenuItem = React.createClass({displayName: "ExpandableNavMenuIt
       paddingTop: 13,
       paddingRight: 15,
       paddingBottom: 13,
-      paddingLeft: 12
+      paddingLeft: 15
     };
     return {
       smallStyle: sharedStyle,
