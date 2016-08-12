@@ -280,6 +280,9 @@ var SelectedHeaderOptions = React.createClass({
             console.log('reparsing started');
         }.bind(this))
     },
+    manualUpdate: function() {
+        this.props.updated(null,null);
+    },
     render: function() { 
         var subjectType = this.props.subjectType;
         var type = this.props.type;
@@ -309,6 +312,7 @@ var SelectedHeaderOptions = React.createClass({
                     <Button eventKey="6" onClick={this.props.entitiesToggle} bsSize='small'>List <b>Entities</b></Button>
                     {showPromote ? <Button bsStyle='warning' eventKey="7" bsSize='small'><Promote type={type} id={id} updated={this.props.updated} /></Button> : null}
                     <Button bsStyle='danger' eventKey="8" onClick={this.props.deleteToggle} bsSize='small'><b>Delete</b> {subjectType}</Button>
+                    <Button bsStyle='info' eventKey="9" onClick={this.manualUpdate} bsSize='small' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                 </div>
             )
         } else {
@@ -329,6 +333,7 @@ var SelectedHeaderOptions = React.createClass({
                         <Button eventKey='12' onClick={this.alertSelectExisting} bsSize='small'><b>Add</b> Selected to <b>Existing Event</b></Button> 
                         <Button eventKey='13' onClick={this.alertExportCSV} bsSize='small'>Export to <b>CSV</b></Button>
                         <Button eventKey='14' onClick={this.alertDeleteSelected} bsSize='small'><b>Delete</b> Selected</Button> 
+                        <Button bsStyle='info' eventKey="9" onClick={this.manualUpdate} bsSize='small' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                     </div>
                 )
             } else { 
@@ -341,6 +346,7 @@ var SelectedHeaderOptions = React.createClass({
                         <Button eventKey='5' onClick={this.props.entitiesToggle} bsSize='small'>View <b>Entities</b></Button>
                         <Button eventKey="6" onClick={this.props.viewedByHistoryToggle} bsSize='small'><b>Viewed By History</b></Button>
                         <Button eventKey='7' onClick={this.props.changeHistoryToggle} bsSize='small'><b>{subjectType} History</b></Button> 
+                        <Button bsStyle='info' eventKey="9" onClick={this.manualUpdate} bsSize='small' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                     </div>
                 )
             }
