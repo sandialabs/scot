@@ -163,18 +163,26 @@ var EntryIterator = React.createClass({
         var data = this.props.data;
         var type = this.props.type;
         var id = this.props.id;  
-        if (type != 'alertgroup') {
-            data.forEach(function(data) {
-                rows.push(<EntryParent key={data.id} items={data} type={type} id={id} isPopUp={this.props.isPopUp}/>);
-            }.bind(this));
+        if (data[0] == undefined) {
+            return (
+                <div>
+                    <div style={{color:'blue'}}>No entries found. Would you like to create one?</div>
+                </div>
+            )
         } else {
-            rows.push(<AlertParent items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} alertPreSelectedId={this.props.alertPreSelectedId}/>);
+            if (type != 'alertgroup') {
+                data.forEach(function(data) {
+                    rows.push(<EntryParent key={data.id} items={data} type={type} id={id} isPopUp={this.props.isPopUp}/>);
+                }.bind(this));
+            } else {
+                rows.push(<AlertParent items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} alertPreSelectedId={this.props.alertPreSelectedId}/>);
+            }
+            return (
+                <div>
+                    {rows}
+                </div>
+            )
         }
-        return (
-            <div>
-                {rows}
-            </div>
-        )
     }
 });
 
