@@ -174,25 +174,14 @@ sub create_from_api {
         $json->{groups}->{modify} = $env->default_groups->{modify};
     }
 
-    $log->debug("Creating entry with: ", { filter=>\&Dumper, value => $json});
-
     $json->{target} = {
         type    => $target_type,
         id      => $target_id,
     };
 
+    $log->debug("Creating entry with: ", { filter=>\&Dumper, value => $json});
+
     my $entry_obj   = $self->create($json);
-
-    # TODO: need to actually update the updated time in the target
-
-    $mq->send("scot", {
-        action  => 'updated',
-        data    => {
-            type    => $target_type,
-            id      => $target_id,
-            who     => $request->{user} // 'api',
-        }
-    });
 
     return $entry_obj;
 
