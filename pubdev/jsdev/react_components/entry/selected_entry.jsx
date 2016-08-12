@@ -193,6 +193,8 @@ var AlertParent = React.createClass({
             activeIndex: arr,
             lastIndex: null,
             allSelected:false,
+            lastId: null,
+            activeId: arr,
         }
     },
     componentDidMount: function() {
@@ -211,49 +213,64 @@ var AlertParent = React.createClass({
     },
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();
+        var activeIdArray = this.state.activeId.slice();
         var selected = true;
         this.setState({allSelected:false});
         if (clickType == 'ctrl') {
-            for (var i=0; i < array.length; i++) {
-                if (array[i] === index) {
-                    array.splice(i,1)
-                    this.setState({activeIndex:array})
+            for (var i=0; i < activeIdArray.length; i++) {
+                if (activeIdArray[i] === id) {
+                    activeIdArray.splice(i,1)
+                    this.setState({activeId:activeIdArray})
                     selected = false;
                 }
             }
             if (selected == true) {
-                array.push(index);
-                this.setState({activeIndex:array})
+                activeIdArray.push(id);
+                this.setState({activeId:activeIdArray})
             }
         } else if (clickType == 'shift') {
-            if (this.state.lastIndex != undefined) {
-                var min = Math.min(this.state.lastIndex,index);
-                var max = Math.max(this.state.lastIndex,index);
-                var min = max - min + 1;
+            var keyObj = {};
+            var i = 0;
+            $('.alertTableHorizontal').find('tr').not('.not_selectable').each(function(index,x){
+                var id = $(x).attr('id');
+                keyObj[id] = i;
+                i++;
+            }.bind(this));
+            if (this.state.lastId != undefined) { 
+                var min = Math.min(keyObj[this.state.lastId],keyObj[id]);
+                var max = Math.max(keyObj[this.state.lastId],keyObj[id]);
+                //var min = max - min + 1;
                 var range = [];
-                while (min--) {
+                /*while (min--) {
                     range[min]=max--;
+                }*/
+                for (q=min; q <= max; q++) {
+                    range.push(q)
                 }
                 for (i=0; i < range.length; i++) {
-                    array.push(range[i]);
+                    for (prop in keyObj) {
+                        if (keyObj[prop] == range[i]) {
+                            activeIdArray.push(parseInt(prop));
+                        }
+                    }
                 }
-                this.setState({activeIndex:array})
+                this.setState({activeId:activeIdArray})
             }
         } else if (clickType == 'all') {
             var array = [];
             for (var i=0; i < this.props.items.length; i++) {
                 array.push(this.props.items[i].id)
             }
-            this.setState({activeIndex:array,allSelected:true});
+            this.setState({activeId:array,allSelected:true});
         } else {
             var array = [];
-            array.push(index);
-            this.setState({activeIndex:array});
+            array.push(id);
+            this.setState({activeId:array});
         }
-        this.setState({lastIndex:index});
-        if (array.length == 1) {
-            this.props.alertSelected(array[0],id,'alert');
-        } else if (array.length == 0){   
+        this.setState({lastIndex:index,lastId:id});
+        if (activeIdArray.length == 1) {
+            this.props.alertSelected(activeIdArray[0],id,'alert');
+        } else if (activeIdArray.length == 0){   
             this.props.alertSelected(null,null,'alert');
         } else {
             this.props.alertSelected('showall',null,'alert')
@@ -288,7 +305,7 @@ var AlertParent = React.createClass({
                     dataFlair = items[z].data;
                 }
                 
-                body.push(<AlertBody index={z} data={items[z]} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected} alertPreSelectedId={this.props.alertPreSelectedId}/>)
+                body.push(<AlertBody index={z} data={items[z]} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected} alertPreSelectedId={this.props.alertPreSelectedId} activeId={this.state.activeId}/>)
             }
             var search = null;
             if (items[0].data_with_flair != undefined) {
@@ -423,8 +440,8 @@ var AlertBody = React.createClass({
             rowReturn.push(<AlertRow data={data} dataFlair={dataFlair} value={value} />)
         }
         if (this.props.allSelected == false) {
-            for (var j=0; j < this.props.activeIndex.length; j++) {
-                if (this.props.activeIndex[j] === index) {
+            for (var j=0; j < this.props.activeId.length; j++) {
+                if (this.props.activeId[j] === data.id) {
                     selected = 'selected';
                 } 
             }
