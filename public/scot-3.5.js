@@ -3694,6 +3694,9 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
             console.log('reparsing started');
         }.bind(this))
     },
+    manualUpdate: function() {
+        this.props.updated(null,null);
+    },
     render: function() { 
         var subjectType = this.props.subjectType;
         var type = this.props.type;
@@ -3722,7 +3725,8 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                     React.createElement(Button, {eventKey: "5", onClick: this.props.permissionsToggle, bsSize: "small"}, React.createElement("b", null, "Permissions")), 
                     React.createElement(Button, {eventKey: "6", onClick: this.props.entitiesToggle, bsSize: "small"}, "List ", React.createElement("b", null, "Entities")), 
                     showPromote ? React.createElement(Button, {bsStyle: "warning", eventKey: "7", bsSize: "small"}, React.createElement(Promote, {type: type, id: id, updated: this.props.updated})) : null, 
-                    React.createElement(Button, {bsStyle: "danger", eventKey: "8", onClick: this.props.deleteToggle, bsSize: "small"}, React.createElement("b", null, "Delete"), " ", subjectType)
+                    React.createElement(Button, {bsStyle: "danger", eventKey: "8", onClick: this.props.deleteToggle, bsSize: "small"}, React.createElement("b", null, "Delete"), " ", subjectType), 
+                    React.createElement(Button, {bsStyle: "info", eventKey: "9", onClick: this.manualUpdate, bsSize: "small", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
                 )
             )
         } else {
@@ -3742,7 +3746,8 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                         React.createElement(Button, {eventKey: "11", onClick: this.props.entryToggle, bsSize: "small"}, "Add ", React.createElement("b", null, "Entry")), 
                         React.createElement(Button, {eventKey: "12", onClick: this.alertSelectExisting, bsSize: "small"}, React.createElement("b", null, "Add"), " Selected to ", React.createElement("b", null, "Existing Event")), 
                         React.createElement(Button, {eventKey: "13", onClick: this.alertExportCSV, bsSize: "small"}, "Export to ", React.createElement("b", null, "CSV")), 
-                        React.createElement(Button, {eventKey: "14", onClick: this.alertDeleteSelected, bsSize: "small"}, React.createElement("b", null, "Delete"), " Selected")
+                        React.createElement(Button, {eventKey: "14", onClick: this.alertDeleteSelected, bsSize: "small"}, React.createElement("b", null, "Delete"), " Selected"), 
+                        React.createElement(Button, {bsStyle: "info", eventKey: "9", onClick: this.manualUpdate, bsSize: "small", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
                     )
                 )
             } else { 
@@ -3754,7 +3759,8 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                         React.createElement(Button, {eventKey: "4", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
                         React.createElement(Button, {eventKey: "5", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
                         React.createElement(Button, {eventKey: "6", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
-                        React.createElement(Button, {eventKey: "7", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History"))
+                        React.createElement(Button, {eventKey: "7", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History")), 
+                        React.createElement(Button, {bsStyle: "info", eventKey: "9", onClick: this.manualUpdate, bsSize: "small", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
                     )
                 )
             }
@@ -48329,7 +48335,7 @@ var ExpandableNavMenuItem = React.createClass({displayName: "ExpandableNavMenuIt
       paddingTop: 13,
       paddingRight: 15,
       paddingBottom: 13,
-      paddingLeft: 12
+      paddingLeft: 15
     };
     return {
       smallStyle: sharedStyle,
