@@ -88,7 +88,7 @@ body {
   line-height: 140%;
   border-radius: 0px;
   position: inherit;
-  height: 45px;
+  /*height: 45px;*/
   /*top: 75px;*/
   left: 77px;
   right: 325px;
@@ -96,32 +96,42 @@ body {
   width: 100%;
   /*text-align: center;*/
   background: #FFF;
-  padding: 4px;
+  /*padding: 4px;*/
   margin:-20 auto; }
   .crouton div {
     padding: 0px; }
     .crouton div.info {
-      background-color: #1F8DD6; }
+        display:flex;
+        background-color: #1F8DD6; }
     .crouton div.success {
-      background-color: #50CD84; }
+        display:flex;
+        background-color: #50CD84; }
     .crouton div.warning {
-      background-color: #FF8859; }
+        display: flex;
+        background-color: #FF8859; }
     .crouton div.error {
-      background-color: #FF5F5F; }
+        display:flex;
+        background-color: #FF5F5F; }
     .crouton div span {
-      display: block;
-      margin-bottom: 0;
-      margin-left: 5px; }
+        display: block;
+        margin-bottom: 0;
+        margin-left: 5px; 
+        width:100%;
+    }
     .crouton div .buttons {
-      text-align: right; }
+        text-align: right;
+        width:100%;
+    }
       .crouton div .buttons button.retry, .crouton div .buttons button.close, .crouton div .buttons button.cancel, .crouton div .buttons button.ignore {
-        padding: 5px 15px;
-	color: white;
-        border: 1px solid transparent;
-        border-radius: 2px; }
-      .crouton div .buttons button:hover {
+        padding: 5px;
+        color: white;
+        /*border: 1px solid transparent;*/
+        border-radius: 2px;
+        opacity: 1;
+        background-color:inherit}
+    .crouton div .buttons button:hover {
         opacity: 0.75; }
-      .crouton div .buttons button.retry {
+    .crouton div .buttons button.retry {
         border-color: #FFF; }
 	
 

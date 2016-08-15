@@ -17,6 +17,7 @@ var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger');
 var Popover                 = require('react-bootstrap/lib/Popover');
 var DropdownButton          = require('react-bootstrap/lib/DropdownButton');
 var MenuItem                = require('react-bootstrap/lib/MenuItem');
+var Modal                   = require('react-modal');
 var DebounceInput           = require('react-debounce-input');
 var SelectedEntry           = require('./selected_entry.jsx');
 var Tag                     = require('../components/tag.jsx');
@@ -30,6 +31,7 @@ var Watcher                 = require('../components/add_flair.jsx').Watcher;
 var EntityDetail            = require('../modal/entity_detail.jsx');
 var ESearch                 = require('../components/esearch.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx');
+
 var SelectedHeader = React.createClass({
     getInitialState: function() {
         return {
@@ -48,7 +50,6 @@ var SelectedHeader = React.createClass({
             promoteToolbar:false,
             notificationType:null,
             notificationMessage:null,
-            showFlash:false,
             key:this.props.id,
             showEntryData:false,
             entryData:'',
@@ -71,6 +72,7 @@ var SelectedHeader = React.createClass({
             aStatus:null,
             aID:0,
             guideID: null,
+            errorDisplay: false,
         }
     },
     componentWillMount: function() {
@@ -80,62 +82,131 @@ var SelectedHeader = React.createClass({
         //this.setState({loading:true});
         var entryType = 'entry';
         if (this.props.type == 'alertgroup') { entryType = 'alert' };
-        this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
-            var sourceResult = result.records;
-            this.setState({showSource:true, sourceData:sourceResult})
-            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                this.setState({loading:false});        
-            }        
-        }.bind(this));
-        this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
-            var eventResult = result;
-            this.setState({showEventData:true, headerData:eventResult})
-            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                this.setState({loading:false});        
-            }
-        }.bind(this));
-        this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
-            var tagResult = result.records;
-            this.setState({showTag:true, tagData:tagResult});
-            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                this.setState({loading:false});
-            }        
-        }.bind(this));
-        this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, function(result) {
-            var entryResult = result.records;
-            this.setState({showEntryData:true, entryData:entryResult})
-            Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
-            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                this.setState({loading:false});
-            }        
-        }.bind(this));
-        this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
-            var entityResult = result.records;
-            this.setState({showEntityData:true, entityData:entityResult})
-            var waitForEntry = {
-                waitEntry: function() {
-                    if(this.state.showEntryData == false && alertgroupforentity === false) {
-                        setTimeout(waitForEntry.waitEntry,50);
-                    } else {
-                        alertgroupforentity = false;
-                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,this.scrollTo)}.bind(this));
-                        if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                            this.setState({loading:false});        
-                        }
-                    }
-                }.bind(this)
-            };
-            waitForEntry.waitEntry();
-        }.bind(this));
-        if (this.props.type == 'alertgroup') {
-            this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/guide', function(result) {
-                if (result.records[0] != undefined) {
-                    var guideID = result.records[0].id;
-                    this.setState({guideID: guideID});
-                } else {
-                    this.setState({guideID: 0});
+        //source load 
+        $.ajax({
+            type: 'get',
+            url:'scot/api/v2/' + this.props.type + '/' + this.props.id + '/source',
+            success:function(result) {
+                var sourceResult = result.records;
+                this.setState({showSource:true, sourceData:sourceResult})
+                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                    this.setState({loading:false});        
                 }
-            }.bind(this));     
+            }.bind(this),
+            error: function(result) {
+                this.setState({showSource:true})
+                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                    this.setState({loading:false});        
+                }
+                this.errorToggle("No data returned for source lookup (404 or another network error) Error: " + result.responseText);
+            }.bind(this),
+        });
+        //Main Type Load
+        $.ajax({
+            type:'get',
+            url:'scot/api/v2/' + this.props.type + '/' + this.props.id,
+            success:function(result) {
+                var eventResult = result;
+                this.setState({headerData:eventResult,showEventData:true})
+                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                    this.setState({loading:false})
+                }
+            }.bind(this),
+            error: function(result) {
+                this.setState({showEventData:true})
+                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                    this.setState({loading:false})
+                }
+                this.errorToggle("No data returned for main lookup (404 or another network error) Error: " + result.responseText);
+            }.bind(this),
+        });
+        //tag load
+        $.ajax({
+            type: 'get',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag',
+            success: function(result) {
+                var tagResult = result.records;
+                this.setState({showTag:true, tagData:tagResult});
+                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                    this.setState({loading:false});
+                }
+            }.bind(this),
+            error: function(result) {
+                this.setState({showTag:true});
+                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                    this.setState({loading:false});
+                } 
+                this.errorToggle("No data returned for tag lookup (404 or another network error) Error: " + result.responseText);
+            }.bind(this),
+        });
+        //entry load
+        $.ajax({
+            type: 'get',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, 
+            success: function(result) {
+                var entryResult = result.records;
+                this.setState({showEntryData:true, entryData:entryResult})
+                Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
+                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                    this.setState({loading:false});
+                }
+            }.bind(this),
+            error: function(result) {
+                this.setState({showEntryData:true})
+                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                    this.setState({loading:false});
+                }
+                this.errorToggle("No data returned for entry lookup (404 or another network error) Error: " + result.responseText);
+            }
+        });
+        //entity load
+        $.ajax({
+            type: 'get',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
+            success: function(result) {
+                var entityResult = result.records;
+                this.setState({showEntityData:true, entityData:entityResult})
+                var waitForEntry = {
+                    waitEntry: function() {
+                        if(this.state.showEntryData == false && alertgroupforentity === false) {
+                            setTimeout(waitForEntry.waitEntry,50);
+                        } else {
+                            alertgroupforentity = false;
+                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,this.scrollTo)}.bind(this));
+                            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                                this.setState({loading:false});        
+                            }
+                        }
+                    }.bind(this)
+                };
+                waitForEntry.waitEntry();
+            }.bind(this),
+            error: function(result) {
+                this.setState({showEntityData:true})
+                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                    this.setState({loading:false});
+                }
+                this.errorToggle("No data returned for entity lookup (404 or another network error) Error: " + result.responseText);
+            }.bind(this)
+        });
+        //guide load
+        if (this.props.type == 'alertgroup') {
+            $.ajax({
+                type:'get',
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/guide', 
+                success: function(result) {
+                    if (result.records[0] != undefined) {
+                        var guideID = result.records[0].id;
+                        this.setState({guideID: guideID});
+                    } else {
+                        this.setState({guideID: 0});
+                    }
+                }.bind(this),
+                error: function(result) {
+                    this.setState({guideID: null})
+                    this.errorToggle("No data returned for guide lookup (404 or another network error) Error: " + reuslt.responseText);
+                }.bind(this)
+            });     
         }
         Store.storeKey(this.state.key);
         Store.addChangeListener(this.updated); 
@@ -146,58 +217,117 @@ var SelectedHeader = React.createClass({
         var entryType = 'entry';
         if (this.props.type == 'alertgroup') {entryType = 'alert'};
         setTimeout(function(){
-            this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
-                var sourceResult = result.records;
-                this.setState({showSource:true, sourceLoaded:true, sourceData:sourceResult})
-                if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                    this.setState({refreshing:false});
+            //source load
+            $.ajax({
+                type: 'get',
+                url:'scot/api/v2/' + this.props.type + '/' + this.props.id + '/source',
+                success:function(result) {
+                    var sourceResult = result.records;
+                    this.setState({showSource:true, sourceLoaded:true, sourceData:sourceResult})
+                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                        this.setState({refreshing:false});
+                    } 
+                }.bind(this),
+                error: function(result) {
+                    this.setState({showSource:true, sourceLoaded:true})
+                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                        this.setState({refreshing:false});
+                    } 
+                    this.errorToggle("No data returned for source lookup (404 or another network error) Error: " + result.responseText);
+                }.bind(this),
+            });
+            //main type load
+            $.ajax({
+                type:'get',
+                url:'scot/api/v2/' + this.props.type + '/' + this.props.id,
+                success:function(result) {
+                    var eventResult = result;
+                    this.setState({headerData:eventResult,showEventData:true, eventLoaded:true})
+                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                        this.setState({refreshing:false})
+                    }
+                }.bind(this),
+                error: function(result) {
+                    this.setState({showEventData:true, eventLoaded:true})
+                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                        this.setState({refreshing:false})
+                    }
+                    this.errorToggle("No Data Returned (404 or another network error) Error: " + result.responseText);
+                }.bind(this),
+            });    
+            //tag load
+            $.ajax({
+                type: 'get',
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag',
+                success: function(result) {
+                    var tagResult = result.records;
+                    this.setState({showTag:true, tagLoaded:true, tagData:tagResult});
+                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                        this.setState({refreshing:false});
+                    }
+                }.bind(this),
+                error: function(result) {
+                    this.setState({showTag:true, tagLoaded:true});
+                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                        this.setState({refreshing:false});
+                    } 
+                    this.errorToggle("No data returned for tag lookup (404 or another network error) Error: " + result.responseText);
+                }.bind(this),
+            });
+            //entry load
+            $.ajax({
+                type: 'get',
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType,
+                success: function(result) {
+                    var entryResult = result.records;
+                    this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult})
+                    Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
+                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                        this.setState({refreshing:false});
+                    } 
+                }.bind(this),
+                error: function(result) {
+                    this.setState({showEntryData:true, entryLoaded:true})
+                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                        this.setState({refreshing:false});
+                    } 
+                    this.errorToggle("No data returned for entry lookup (404 or another network error) Error: " + result.responseText);
                 }
-            }.bind(this));
-            this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
-                var eventResult = result;
-                this.setState({showEventData:true, eventLoaded:true, headerData:eventResult})
-                if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                    this.setState({refreshing:false});
-                }
-            }.bind(this));
-            this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
-                var tagResult = result.records;
-                this.setState({showTag:true, tagLoaded:true, tagData:tagResult});
-                if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                    this.setState({refreshing:false});
-                }            
-            }.bind(this));
-            this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, function(result) {
-                var entryResult = result.records;
-                this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult})
-                Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
-                if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                    this.setState({refreshing:false});
-                }
-            }.bind(this));
-            this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
-                var entityResult = result.records;
-                this.setState({showEntityData:true, entityLoaded:true, entityData:entityResult})
-                var waitForEntry = {
-                    waitEntry: function() {
-                        if(this.state.entryLoaded == false && alertgroupforentity === false){
-                            setTimeout(waitForEntry.waitEntry,50);
-                        } else {
-                            alertgroupforentity = false;
-                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
-                            if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {                                
-                                this.setState({refreshing:false});
+            });
+            //entity load
+            $.ajax({
+                type: 'get',
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
+                success: function(result) {
+                    var entityResult = result.records;
+                    this.setState({showEntityData:true, entityLoaded:true, entityData:entityResult})
+                    var waitForEntry = {
+                        waitEntry: function() {
+                            if(this.state.entryLoaded == false && alertgroupforentity === false){
+                                setTimeout(waitForEntry.waitEntry,50);
+                            } else {
+                                alertgroupforentity = false;
+                                setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+                                if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                                    this.setState({refreshing:false});
+                                }
                             }
-                        }
-                    }.bind(this)
-                };
-                waitForEntry.waitEntry();
-            }.bind(this));
+                        }.bind(this)
+                    };
+                    waitForEntry.waitEntry();                    
+                }.bind(this),
+                error: function(result) {
+                    this.setState({showEntityData:true})
+                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                        this.setState({refreshing:false});
+                    } 
+                    this.errorToggle("No data returned for entity lookup (404 or another network error) Error: " + result.responseText);
+                }.bind(this)
+            });
         }.bind(this),0)
+        //error popup if an error occurs
         if (_type!= undefined && _message != undefined) {
-            this.setState({notificationMessage:_message, notificationType:_type, showFlash:true});
-        } else {
-            this.setState({notificationType:null,notificationMessage:null,showFlash:false}); 
+            this.errorToggle(_message);
         }
     },
     /*granular updates -- to be implemented later 
@@ -242,6 +372,13 @@ var SelectedHeader = React.createClass({
             waitForEntry.waitEntry();
         }.bind(this));
      },*/
+    errorToggle: function(string) {
+        if (this.state.errorDisplay == false) {
+            this.setState({notificationMessage:string,notificationType:'error',errorDisplay:true})
+        } else {
+            this.setState({errorDisplay:false})
+        }
+    },
     flairToolbarToggle: function(id,value,type){
         //if (this.state.flairToolbar == false) {
             this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
@@ -362,8 +499,6 @@ var SelectedHeader = React.createClass({
         var type = this.props.type;
         var subjectType = this.titleCase(this.props.type);
         var id = this.props.id; 
-        var notificationType = this.state.notificationType;
-        var notificationMessage = this.state.notificationMessage;
         return (
             <div>
                 <div id="header">
@@ -393,6 +528,7 @@ var SelectedHeader = React.createClass({
                     </div>
                 </div>
                 <Notification ref="notificationSystem" /> 
+                {this.state.errorDisplay ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} buttons="CLOSE MESSAGE" onDismiss={this.errorToggle}/> : null}
                 {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id}/> : null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                 {this.state.viewedByHistoryToolbar ? <ViewedByHistory viewedByHistoryToggle={this.viewedByHistoryToggle} id={id} type={type} subjectType={subjectType} viewedby={viewedby}/> : null}
@@ -402,8 +538,6 @@ var SelectedHeader = React.createClass({
                 {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
                 {type != 'alertgroup' ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} subjectName={this.state.headerData.subject} /> : <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} />} 
                 </div>
-                {this.state.showFlash == true ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} /> : null}
-
                 <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} /> 
             </div>
         )
