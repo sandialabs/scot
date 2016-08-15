@@ -30,36 +30,55 @@ var SelectedEntry = React.createClass({
             key:this.props.id,
             flairToolbar:false,
             height: null,
+            errorDisplay:false,
+            notificationType:null,
+            notificationMessage: '',
         }
     },
     componentDidMount: function() {
         if (this.props.type == 'alert' || this.props.type == 'entity' || this.props.isPopUp == 1) {
-            this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
-                var entryResult = result.records;
-                this.setState({showEntryData:true, entryData:entryResult})
-                for (i=0; i < result.records.length; i++) {
-                    Store.storeKey(result.records[i].id)
-                    Store.addChangeListener(this.updatedCB);
-                }
-                Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
-            }.bind(this));
-            this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
-                var entityResult = result.records;
-                this.setState({showEntityData:true, entityData:entityResult})
-                var waitForEntry = {
-                    waitEntry: function() {
-                        if(this.state.showEntryData == false){
-                            setTimeout(waitForEntry.waitEntry,50);
-                        } else {
-                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
-                        }
-                    }.bind(this)
-                };
-                waitForEntry.waitEntry();
-            }.bind(this)); 
-        Store.storeKey(this.props.id);
-        Store.addChangeListener(this.updatedCB);
-     } 
+            $.ajax({
+                type: 'get',
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', 
+                success: function(result) {
+                    var entryResult = result.records;
+                    this.setState({showEntryData:true, entryData:entryResult})
+                    for (i=0; i < result.records.length; i++) {
+                        Store.storeKey(result.records[i].id)
+                        Store.addChangeListener(this.updatedCB);
+                    }
+                    Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
+                }.bind(this),
+                error: function(result) {
+                    this.setState({showEntryData:true});
+                    this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                }.bind(this)
+            });
+            $.ajax({
+                type: 'get',
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
+                success: function(result) {
+                    var entityResult = result.records;
+                    this.setState({showEntityData:true, entityData:entityResult})
+                    var waitForEntry = {
+                        waitEntry: function() {
+                            if(this.state.showEntryData == false){
+                                setTimeout(waitForEntry.waitEntry,50);
+                            } else {
+                                setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+                            }
+                        }.bind(this)
+                    };
+                    waitForEntry.waitEntry();
+                }.bind(this),
+                error: function(result) {
+                    this.setState({showEntityData: true})
+                    this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                }.bind(this)
+            });
+            Store.storeKey(this.props.id);
+            Store.addChangeListener(this.updatedCB);
+        } 
     this.containerHeightAdjust();
     window.addEventListener('resize',this.containerHeightAdjust);
     $("#list-view").resize(this.containerHeightAdjust);
@@ -69,29 +88,45 @@ var SelectedEntry = React.createClass({
     },
     updatedCB: function() {
        if (this.props.type == 'alert' || this.props.type == 'entity' || this.props.isPopUp == 1) {
-            this.headerRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', function(result) {
-                var entryResult = result.records;
-                this.setState({showEntryData:true, entryData:entryResult})
-                for (i=0; i < result.records.length; i++) {
-                    Store.storeKey(result.records[i].id)
-                    Store.addChangeListener(this.updatedCB);
-                }
-                Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
-            }.bind(this));
-            this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
-                var entityResult = result.records;
-                this.setState({showEntityData:true, entityData:entityResult})
-                var waitForEntry = {
-                    waitEntry: function() {
-                        if(this.state.showEntryData == false){
-                            setTimeout(waitForEntry.waitEntry,50);
-                        } else {
-                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
-                        }
-                    }.bind(this)
-                };
-                waitForEntry.waitEntry();
-            }.bind(this)); 
+           $.ajax({
+                type: 'get',
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry',
+                success: function(result) {
+                    var entryResult = result.records;
+                    this.setState({showEntryData:true, entryData:entryResult})
+                    for (i=0; i < result.records.length; i++) {
+                        Store.storeKey(result.records[i].id)
+                        Store.addChangeListener(this.updatedCB);
+                    }
+                    Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
+                }.bind(this),
+                error: function(result) {
+                    this.setState({showEntryData:true});
+                    this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                }.bind(this)
+            }); 
+            $.ajax({
+                type: 'get',
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
+                success: function(result) {
+                    var entityResult = result.records;
+                    this.setState({showEntityData:true, entityData:entityResult})
+                    var waitForEntry = {
+                        waitEntry: function() {
+                            if(this.state.showEntryData == false){
+                                setTimeout(waitForEntry.waitEntry,50);
+                            } else {
+                                setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+                            }
+                        }.bind(this)
+                    };
+                    waitForEntry.waitEntry();
+                }.bind(this),
+                error: function(result) {
+                    this.setState({showEntityData: true})
+                    this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                }.bind(this)
+            }); 
         }
     },
     flairToolbarToggle: function(id,value,type) {
@@ -109,6 +144,13 @@ var SelectedEntry = React.createClass({
             this.setState({linkWarningToolbar:true,link:href})
         } else {
             this.setState({linkWarningToolbar:false})
+        }
+    },
+    errorToggle: function(string) {
+        if (this.state.errorDisplay == false) {
+            this.setState({notificationMessage:string,notificationType:'error',errorDisplay:true})
+        } else {
+            this.setState({errorDisplay:false})
         }
     },
     containerHeightAdjust: function() {
@@ -152,6 +194,7 @@ var SelectedEntry = React.createClass({
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp}/> : <span>Loading...</span>} 
                 {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
+                {this.state.errorDisplay ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} buttons="CLOSE MESSAGE" onDismiss={this.errorToggle}/> : null} 
             </div>       
         );
     }
