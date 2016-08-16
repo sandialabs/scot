@@ -2698,10 +2698,14 @@ var AlertRowBlank = React.createClass({displayName: "AlertRowBlank",
     render: function() {
         var id = this.props.id;
         var showEntry = this.props.showEntry;
+        var DisplayValue = 'none';
         var arr = [];
         arr.push(React.createElement(SelectedEntry, {type: this.props.type, id: this.props.id}))
+        if (showEntry == true) {
+            DisplayValue = 'table-row';
+        }
         return (
-            React.createElement("tr", {className: "not_selectable"}, 
+            React.createElement("tr", {className: "not_selectable", style: {display:DisplayValue}}, 
                 React.createElement("td", {style: {padding:'0'}}
                 ), 
                 React.createElement("td", {colSpan: "50"}, 
