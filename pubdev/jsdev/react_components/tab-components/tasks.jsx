@@ -72,7 +72,8 @@ module.exports = React.createClass({
         $(t2).resize(function(){
             this.reloadItem()
         }.bind(this))
-        $('.container-fluid2').keydown(function(e){
+        $(document.body).keydown(function(e){
+            if ($('input').is(':focus')) {return};
             var obj = $(toggle[0]).find('#'+colorrow[0]).prev('.allevents')
             var obj2 = $(toggle[0]).find('#'+colorrow[0]).next('.allevents')
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){

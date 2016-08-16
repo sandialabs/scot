@@ -5020,7 +5020,7 @@ var TabContents = React.createClass({displayName: "TabContents",
                     React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
                         React.createElement("h3", {id: "myModalLabel"}, "Entity: ", this.props.data != null ? React.createElement(EntityValue, {value: this.props.data.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
                     ), 
-                    React.createElement("div", {style: {height:'100%',display:'flex', flex:'1 1 auto', margin:'10px'}}, 
+                    React.createElement("div", {style: {height:'100%',display:'flex', flex:'1 1 auto', margin:'10px', flexFlow:'inherit'}}, 
                     this.props.data != null ? React.createElement(EntityBody, {data: this.props.data, entityid: this.props.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
                     )
                 )
@@ -5716,7 +5716,8 @@ module.exports = React.createClass({displayName: "exports",
         $(t2).resize(function(){
             this.reloadItem()
         }.bind(this))
-        $('.container-fluid2').keydown(function(e){
+        $(document.body).keydown(function(e){
+            if ($('input').is(':focus')) {return};
             var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
             var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
@@ -6707,7 +6708,8 @@ module.exports = React.createClass({displayName: "exports",
         $(t2).resize(function(){
             this.reloadItem()
         }.bind(this))
-        $('.container-fluid2').keydown(function(e){
+        $(document.body).keydown(function(e){
+            if ($('input').is(':focus')) {return};
             var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
             var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
@@ -7871,7 +7873,8 @@ module.exports = React.createClass({displayName: "exports",
         $(t2).resize(function(){
             this.reloadItem()
         }.bind(this))
-        $('.container-fluid2').keydown(function(e){
+        $(document.body).keydown(function(e){
+            if ($('input').is(':focus')) {return};
             var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
             var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
@@ -8489,7 +8492,8 @@ module.exports = React.createClass({displayName: "exports",
         $(t2).resize(function(){
             this.reloadItem()
         }.bind(this))
-        $('.container-fluid2').keydown(function(e){
+        $(document.body).keydown(function(e){
+            if ($('input').is(':focus')) {return};
             var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
             var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
@@ -9702,7 +9706,8 @@ module.exports = React.createClass({displayName: "exports",
         $(t2).resize(function(){
             this.reloadItem()
         }.bind(this))
-        $('.container-fluid2').keydown(function(e){
+        $(document.body).keydown(function(e){
+            if ($('input').is(':focus')) {return};
             var obj = $(toggle[0]).find('#'+this.state.idsarray[0]).prevAll('.allevents')
             var obj2 = $(toggle[0]).find('#'+this.state.idsarray[0]).nextAll('.allevents')
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
@@ -10872,7 +10877,8 @@ module.exports = React.createClass({displayName: "exports",
         $(t2).resize(function(){
             this.reloadItem()
         }.bind(this))
-        $('.container-fluid2').keydown(function(e){
+        $(document.body).keydown(function(e){
+            if ($('input').is(':focus')) {return};
             var obj = $(toggle[0]).find('#'+colorrow[0]).prev('.allevents')
             var obj2 = $(toggle[0]).find('#'+colorrow[0]).next('.allevents')
             if((e.keyCode == 74 && obj2.length != 0) || (e.keyCode == 40 && obj2.length != 0)){
