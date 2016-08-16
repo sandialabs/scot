@@ -92,6 +92,8 @@ module.exports = React.createClass({
                 $('.container-fluid2').scrollTop(scrolled)
                 scrolled = scrolled - $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 this.setState({idsarray: array})
+            } else if (e.keyCode == 70) {
+                this.toggleView();
             }
         }.bind(this))
         var height = this.state.scrollheight
@@ -510,10 +512,14 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
         this.getNewData({page:0, limit:pageSize})   
 	},
     toggleView: function(){
-        if(this.state.idsarray.length != 0){
+        if(this.state.idsarray.length != 0 && stage == true){
             stage = false
             $('.mainview').hide()
             this.setState({alldetail: false, containerdisplay: 'inherit'})
+        }  else {
+            stage = true;
+            $('.mainview').show();
+            this.setState({alldetail:true});
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
