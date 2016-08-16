@@ -2474,19 +2474,19 @@ var AlertParent = React.createClass({displayName: "AlertParent",
                 this.setState({activeId:activeIdArray})
             }
         } else if (clickType == 'all') {
-            var array = [];
+            activeIdArray = [];
             for (var i=0; i < this.props.items.length; i++) {
-                array.push(this.props.items[i].id)
+                activeIdArray.push(this.props.items[i].id)
             }
-            this.setState({activeId:array,allSelected:true});
+            this.setState({activeId:activeIdArray,allSelected:true});
         } else {
-            var array = [];
-            array.push(id);
-            this.setState({activeId:array});
+            activeIdArray = [];
+            activeIdArray.push(id);
+            this.setState({activeId:activeIdArray});
         }
         this.setState({lastIndex:index,lastId:id});
         if (activeIdArray.length == 1) {
-            this.props.alertSelected(activeIdArray[0],id,'alert');
+            this.props.alertSelected('oneactive',activeIdArray[0],'alert');
         } else if (activeIdArray.length == 0){   
             this.props.alertSelected(null,null,'alert');
         } else {
@@ -3938,8 +3938,8 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                         React.createElement(Button, {eventKey: "5", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
                         React.createElement(Button, {eventKey: "6", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
                         React.createElement(Button, {eventKey: "7", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History")), 
-                        React.createElement(Button, {eventKey: "8", onClick: this.alertOpenSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "O"), "pen"), " Selected"), 
-                        React.createElement(Button, {eventKey: "9", onClick: this.alertCloseSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "C"), "lose"), " Selected"), 
+                        React.createElement(Button, {eventKey: "8", onClick: this.alertOpenSelected, bsSize: "small"}, React.createElement("b", null, "Open"), " Selected"), 
+                        React.createElement(Button, {eventKey: "9", onClick: this.alertCloseSelected, bsSize: "small"}, React.createElement("b", null, "Close"), " Selected"), 
                         React.createElement(Button, {eventKey: "10", onClick: this.alertPromoteSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "P"), "romote"), " Selected"), 
                         React.createElement(Button, {eventKey: "11", onClick: this.props.entryToggle, bsSize: "small"}, "Add ", React.createElement("b", null, "Entry")), 
                         React.createElement(Button, {eventKey: "12", onClick: this.alertSelectExisting, bsSize: "small"}, React.createElement("b", null, "Add"), " Selected to ", React.createElement("b", null, "Existing Event")), 
