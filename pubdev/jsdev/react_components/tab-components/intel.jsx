@@ -107,6 +107,8 @@ module.exports = React.createClass({
                 window.history.pushState('Page', 'SCOT', '/#/intel/'+$(set).attr('id'))
                 $('.container-fluid2').scrollTop(scrolled)
                 this.setState({idsarray: array})
+            } else if (e.keyCode == 70) {
+                this.toggleView();
             }
         }.bind(this))
 /*
@@ -631,10 +633,14 @@ stage ?
         ));
     },
     toggleView: function(){
-         if(this.state.idsarray.length != 0){   
+         if(this.state.idsarray.length != 0 && stage == true){   
             stage = false
             $('.mainview').hide()
             this.setState({alldetail: false, containerdisplay: 'inherit'})
+        }  else {
+            stage = true;
+            $('.mainview').show();
+            this.setState({alldetail:true});
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){

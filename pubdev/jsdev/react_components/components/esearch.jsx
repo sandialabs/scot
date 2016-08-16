@@ -71,7 +71,7 @@ var Search = React.createClass({
                 React.createElement(SearchkitProvider, {searchkit: searchkit},
                     React.createElement('div', {className: 'search'},
                     React.createElement('div', {className: 'search_query'},
-                        React.createElement(SearchBox, {autofocus: true, searchOnChange: true})
+                        React.createElement(SearchBox, {autofocus: false, searchOnChange: true})
                             ),
                 React.createElement(Draggable, {handle: '#handle1' ,onMouseDown:this.moveDivInit},
                 React.createElement("div", {style: {transform: 'translate(117px, 49px)', 'background-color': '#FFF', overflow: 'hidden'},id: "dragme1", className: "box react-draggable searchPopUp"},

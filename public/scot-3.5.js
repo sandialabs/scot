@@ -1178,7 +1178,7 @@ var Search = React.createClass({displayName: "Search",
                 React.createElement(SearchkitProvider, {searchkit: searchkit},
                     React.createElement('div', {className: 'search'},
                     React.createElement('div', {className: 'search_query'},
-                        React.createElement(SearchBox, {autofocus: true, searchOnChange: true})
+                        React.createElement(SearchBox, {autofocus: false, searchOnChange: true})
                             ),
                 React.createElement(Draggable, {handle: '#handle1' ,onMouseDown:this.moveDivInit},
                 React.createElement("div", {style: {transform: 'translate(117px, 49px)', 'background-color': '#FFF', overflow: 'hidden'},id: "dragme1", className: "box react-draggable searchPopUp"},
@@ -5739,6 +5739,8 @@ module.exports = React.createClass({displayName: "exports",
                 $('.container-fluid2').scrollTop(scrolled)
                 scrolled = scrolled -  $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 this.setState({idsarray: array})
+            } else if (e.keyCode == 70) {
+                this.toggleView();
             }
         }.bind(this)) 
         var height = this.state.scrollheight
@@ -6208,10 +6210,14 @@ module.exports = React.createClass({displayName: "exports",
         document.onmouseup  = this.stopdrag
     },
     toggleView: function(){
-        if(this.state.idsarray.length != 0 ){
+        if(this.state.idsarray.length != 0 && stage == true){
             stage = false
             $('.mainview').hide()
             this.setState({alldetail:false, containerdisplay: 'inherit'})
+        } else {
+            stage = true;
+            $('.mainview').show();
+            this.setState({alldetail:true});
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -6735,6 +6741,8 @@ module.exports = React.createClass({displayName: "exports",
                 window.history.pushState('Page', 'SCOT', '/#/event/'+$(set).attr('id'))
                 $('.container-fluid2').scrollTop(scrolled)
                 this.setState({idsarray: array})
+            } else if (e.keyCode == 70) {
+                this.toggleView();
             }
         }.bind(this))
 /*
@@ -7277,11 +7285,15 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
         document.onmouseup  = this.stopdrag
     },    
     toggleView: function(){
-        if(this.state.idsarray.length != 0){  
+        if(this.state.idsarray.length != 0 && stage == true){  
             stage = false
             $('.mainview').hide()
             this.setState({containerdisplay: 'inherit', alldetail: false})
-        }
+        }  else {
+            stage = true;
+            $('.mainview').show();
+            this.setState({alldetail:true});
+        } 
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
@@ -7896,6 +7908,8 @@ module.exports = React.createClass({displayName: "exports",
                 $('.container-fluid2').scrollTop(scrolled)
                 scrolled = scrolled - $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 this.setState({idsarray: array})
+            } else if (e.keyCode == 70) {
+                this.toggleView();
             }
         }.bind(this))
         var height = this.state.scrollheight
@@ -8314,10 +8328,14 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
         this.getNewData({page:0, limit:pageSize})   
 	},
     toggleView: function(){
-        if(this.state.idsarray.length != 0){
+        if(this.state.idsarray.length != 0 && stage == true){
             stage = false
             $('.mainview').hide()
             this.setState({alldetail: false, containerdisplay: 'inherit'})
+        }  else {
+            stage = true;
+            $('.mainview').show();
+            this.setState({alldetail:true});
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -8515,7 +8533,9 @@ module.exports = React.createClass({displayName: "exports",
                 $('.container-fluid2').scrollTop(scrolled)
                 scrolled = scrolled - $(toggle[0]).find('#'+this.state.idsarray[0]).height()
                 this.setState({idsarray: array})
-            }
+            } else if (e.keyCode == 70) {
+                this.toggleView();
+            } 
         }.bind(this)) 
         
         
@@ -8650,10 +8670,14 @@ module.exports = React.createClass({displayName: "exports",
 
     },
     toggleView: function(){
-        if(this.state.idsarray.length != 0){
+        if(this.state.idsarray.length != 0 && stage == true){
             stage = false
             $('.mainview').hide()
             this.setState({alldetail: false, containerdisplay: 'inherit'})
+        }  else {
+            stage = true;
+            $('.mainview').show();
+            this.setState({alldetail:true});
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -9733,6 +9757,8 @@ module.exports = React.createClass({displayName: "exports",
                 window.history.pushState('Page', 'SCOT', '/#/intel/'+$(set).attr('id'))
                 $('.container-fluid2').scrollTop(scrolled)
                 this.setState({idsarray: array})
+            } else if (e.keyCode == 70) {
+                this.toggleView();
             }
         }.bind(this))
 /*
@@ -10257,10 +10283,14 @@ stage ?
         ));
     },
     toggleView: function(){
-         if(this.state.idsarray.length != 0){   
+         if(this.state.idsarray.length != 0 && stage == true){   
             stage = false
             $('.mainview').hide()
             this.setState({alldetail: false, containerdisplay: 'inherit'})
+        }  else {
+            stage = true;
+            $('.mainview').show();
+            this.setState({alldetail:true});
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -10904,6 +10934,8 @@ module.exports = React.createClass({displayName: "exports",
                 scrolled = scrolled - $(toggle[0]).find('#'+colorrow[0]).height()
                 window.history.pushState('Page', 'SCOT', '/#/'+$(set).find('.type').text() + '/' + array[0]) 
                 this.setState({idsarray: array, type: $(set).find('.type').text(), entry: colorrow[0]})
+            } else if (e.keyCode == 70) {
+                this.toggleView();
             }
         }.bind(this)) 
         
@@ -11312,10 +11344,14 @@ stage ?
         scrolled = $('.container-fluid2').scrollTop()
     },
     toggleView: function(){
-        if(this.state.idsarray.length != 0){
+        if(this.state.idsarray.length != 0 && stage == true){
             stage = false
             $('.mainview').hide()
             this.setState({alldetail: false, containerdisplay: 'inherit'})
+        }  else {
+            stage = true;
+            $('.mainview').show();
+            this.setState({alldetail:true});
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){

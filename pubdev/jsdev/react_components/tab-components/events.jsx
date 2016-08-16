@@ -108,6 +108,8 @@ module.exports = React.createClass({
                 window.history.pushState('Page', 'SCOT', '/#/event/'+$(set).attr('id'))
                 $('.container-fluid2').scrollTop(scrolled)
                 this.setState({idsarray: array})
+            } else if (e.keyCode == 70) {
+                this.toggleView();
             }
         }.bind(this))
 /*
@@ -650,11 +652,15 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
         document.onmouseup  = this.stopdrag
     },    
     toggleView: function(){
-        if(this.state.idsarray.length != 0){  
+        if(this.state.idsarray.length != 0 && stage == true){  
             stage = false
             $('.mainview').hide()
             this.setState({containerdisplay: 'inherit', alldetail: false})
-        }
+        }  else {
+            stage = true;
+            $('.mainview').show();
+            this.setState({alldetail:true});
+        } 
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
