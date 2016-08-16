@@ -300,19 +300,19 @@ var AlertParent = React.createClass({
                 this.setState({activeId:activeIdArray})
             }
         } else if (clickType == 'all') {
-            var array = [];
+            activeIdArray = [];
             for (var i=0; i < this.props.items.length; i++) {
-                array.push(this.props.items[i].id)
+                activeIdArray.push(this.props.items[i].id)
             }
-            this.setState({activeId:array,allSelected:true});
+            this.setState({activeId:activeIdArray,allSelected:true});
         } else {
-            var array = [];
-            array.push(id);
-            this.setState({activeId:array});
+            activeIdArray = [];
+            activeIdArray.push(id);
+            this.setState({activeId:activeIdArray});
         }
         this.setState({lastIndex:index,lastId:id});
         if (activeIdArray.length == 1) {
-            this.props.alertSelected(activeIdArray[0],id,'alert');
+            this.props.alertSelected('oneactive',activeIdArray[0],'alert');
         } else if (activeIdArray.length == 0){   
             this.props.alertSelected(null,null,'alert');
         } else {
