@@ -243,7 +243,7 @@ var TabContents = React.createClass({
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
                         <h3 id="myModalLabel">Entity: {this.props.data != null ? <EntityValue value={this.props.data.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
                     </div>
-                    <div style={{height:'100%',display:'flex', flex:'1 1 auto', margin:'10px'}}>
+                    <div style={{height:'100%',display:'flex', flex:'1 1 auto', margin:'10px', flexFlow:'inherit'}}>
                     {this.props.data != null ? <EntityBody data={this.props.data} entityid={this.props.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
                     </div>
                 </div>
