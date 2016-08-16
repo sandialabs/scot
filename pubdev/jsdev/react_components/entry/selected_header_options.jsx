@@ -326,8 +326,8 @@ var SelectedHeaderOptions = React.createClass({
                         <Button eventKey='5' onClick={this.props.entitiesToggle} bsSize='small'>View <b>Entities</b></Button>
                         <Button eventKey="6" onClick={this.props.viewedByHistoryToggle} bsSize='small'><b>Viewed By History</b></Button>
                         <Button eventKey='7' onClick={this.props.changeHistoryToggle} bsSize='small'><b>{subjectType} History</b></Button>
-                        <Button eventKey='8' onClick={this.alertOpenSelected} bsSize='small'><b><u>O</u>pen</b> Selected</Button>
-                        <Button eventKey='9' onClick={this.alertCloseSelected} bsSize='small'><b><u>C</u>lose</b> Selected</Button>
+                        <Button eventKey='8' onClick={this.alertOpenSelected} bsSize='small'><b>Open</b> Selected</Button>
+                        <Button eventKey='9' onClick={this.alertCloseSelected} bsSize='small'><b>Close</b> Selected</Button>
                         <Button eventKey='10' onClick={this.alertPromoteSelected} bsSize='small'><b><u>P</u>romote</b> Selected</Button> 
                         <Button eventKey='11' onClick={this.props.entryToggle} bsSize='small'>Add <b>Entry</b></Button>
                         <Button eventKey='12' onClick={this.alertSelectExisting} bsSize='small'><b>Add</b> Selected to <b>Existing Event</b></Button> 
