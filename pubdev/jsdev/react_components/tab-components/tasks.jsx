@@ -99,6 +99,8 @@ module.exports = React.createClass({
                 scrolled = scrolled - $(toggle[0]).find('#'+colorrow[0]).height()
                 window.history.pushState('Page', 'SCOT', '/#/'+$(set).find('.type').text() + '/' + array[0]) 
                 this.setState({idsarray: array, type: $(set).find('.type').text(), entry: colorrow[0]})
+            } else if (e.keyCode == 70) {
+                this.toggleView();
             }
         }.bind(this)) 
         
@@ -507,10 +509,14 @@ stage ?
         scrolled = $('.container-fluid2').scrollTop()
     },
     toggleView: function(){
-        if(this.state.idsarray.length != 0){
+        if(this.state.idsarray.length != 0 && stage == true){
             stage = false
             $('.mainview').hide()
             this.setState({alldetail: false, containerdisplay: 'inherit'})
+        }  else {
+            stage = true;
+            $('.mainview').show();
+            this.setState({alldetail:true});
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
