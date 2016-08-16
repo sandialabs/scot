@@ -524,10 +524,14 @@ var AlertRowBlank = React.createClass({
     render: function() {
         var id = this.props.id;
         var showEntry = this.props.showEntry;
+        var DisplayValue = 'none';
         var arr = [];
         arr.push(<SelectedEntry type={this.props.type} id={this.props.id} />)
+        if (showEntry == true) {
+            DisplayValue = 'table-row';
+        }
         return (
-            <tr className='not_selectable'>
+            <tr className='not_selectable' style={{display:DisplayValue}}>
                 <td style={{padding:'0'}}>
                 </td>
                 <td colSpan="50">
