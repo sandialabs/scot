@@ -304,49 +304,49 @@ var SelectedHeaderOptions = React.createClass({
             }
             return (
                 <div className="entry-header">
-                    <Button bsStyle='success' onClick={this.props.entryToggle} bsSize='small'>Add Entry</Button>
-                    <Button eventKey="1" onClick={this.toggleFlair} bsSize='small'>Toggle <b>Flair</b></Button>
-                    <Button eventKey="3" onClick={this.props.viewedByHistoryToggle} bsSize='small'><b>Viewed By History</b></Button>
-                    <Button eventKey="4" onClick={this.props.changeHistoryToggle} bsSize='small'><b>{subjectType} History</b></Button>
-                    <Button eventKey="5" onClick={this.props.permissionsToggle} bsSize='small'><b>Permissions</b></Button>
-                    <Button eventKey="6" onClick={this.props.entitiesToggle} bsSize='small'>List <b>Entities</b></Button>
-                    {showPromote ? <Button bsStyle='warning' eventKey="7" bsSize='small'><Promote type={type} id={id} updated={this.props.updated} /></Button> : null}
-                    <Button bsStyle='danger' eventKey="8" onClick={this.props.deleteToggle} bsSize='small'><b>Delete</b> {subjectType}</Button>
-                    <Button bsStyle='info' eventKey="9" onClick={this.manualUpdate} bsSize='small' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
+                    <Button bsStyle='success' onClick={this.props.entryToggle} bsSize='xsmall'><i className="fa fa-plus-circle" aria-hidden="true"></i> Add Entry</Button>
+                    <Button eventKey="1" onClick={this.toggleFlair} bsSize='xsmall'><i className="fa fa-eye-slash" aria-hidden="true"></i> Toggle Flair</Button>
+                    <Button eventKey="3" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button>
+                    <Button eventKey="4" onClick={this.props.changeHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> {subjectType} History</Button>
+                    <Button eventKey="5" onClick={this.props.permissionsToggle} bsSize='xsmall'><i className="fa fa-users" aria-hidden="true"></i> Permissions</Button>
+                    <Button eventKey="6" onClick={this.props.entitiesToggle} bsSize='xsmall'><span className='entity'>__</span> View Entities</Button>
+                    {showPromote ? <Button bsStyle='warning' eventKey="7" bsSize='xsmall'><img src='/images/megaphone.png'/> <Promote type={type} id={id} updated={this.props.updated} /></Button> : null}
+                    <Button bsStyle='danger' eventKey="8" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button>
+                    <Button bsStyle='info' eventKey="9" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                 </div>
             )
         } else {
             if (this.props.aIndex != undefined) {
                 return (
-                    <div className="entry-header">
-                        <Button eventKey='1' onClick={this.toggleFlair} bsSize='small'>Toggle <b>Flair</b></Button>
-                        <Button eventKey="2" onClick={this.reparseFlair} bsSize='small'><b>Reparse</b> Flair</Button>
-                        {this.props.guideID == null ? null : <span>{this.props.guideID != 0 ? <Button eventKey='3' onClick={this.guideToggle} bsSize='small'>Guide</Button> : <Button eventKey='3' onClick={this.createGuide} bsSize='small'>Create Guide</Button>}</span>}
-                        <Button eventKey='4' onClick={this.props.sourceToggle} bsSize='small'>View <b>Source</b></Button> 
-                        <Button eventKey='5' onClick={this.props.entitiesToggle} bsSize='small'>View <b>Entities</b></Button>
-                        <Button eventKey="6" onClick={this.props.viewedByHistoryToggle} bsSize='small'><b>Viewed By History</b></Button>
-                        <Button eventKey='7' onClick={this.props.changeHistoryToggle} bsSize='small'><b>{subjectType} History</b></Button>
-                        <Button eventKey='8' onClick={this.alertOpenSelected} bsSize='small'><b>Open</b> Selected</Button>
-                        <Button eventKey='9' onClick={this.alertCloseSelected} bsSize='small'><b>Close</b> Selected</Button>
-                        <Button eventKey='10' onClick={this.alertPromoteSelected} bsSize='small'><b><u>P</u>romote</b> Selected</Button> 
-                        <Button eventKey='11' onClick={this.props.entryToggle} bsSize='small'>Add <b>Entry</b></Button>
-                        <Button eventKey='12' onClick={this.alertSelectExisting} bsSize='small'><b>Add</b> Selected to <b>Existing Event</b></Button> 
-                        <Button eventKey='13' onClick={this.alertExportCSV} bsSize='small'>Export to <b>CSV</b></Button>
-                        <Button eventKey='14' onClick={this.alertDeleteSelected} bsSize='small'><b>Delete</b> Selected</Button> 
-                        <Button bsStyle='info' eventKey="9" onClick={this.manualUpdate} bsSize='small' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
+                    <div className="entry-header second-menu">
+                        <Button eventKey='1' onClick={this.toggleFlair} bsSize='xsmall'><i className="fa fa-eye-slash" aria-hidden="true"></i> Toggle Flair</Button>
+                        <Button eventKey="2" onClick={this.reparseFlair} bsSize='xsmall'><i className='fa fa-refresh' aria-hidden='true'></i> Reparse Flair</Button>
+                        {this.props.guideID == null ? null : <span>{this.props.guideID != 0 ? <Button eventKey='3' onClick={this.guideToggle} bsSize='xsmall'><img src='/images/guide.png'/> Guide</Button> : <Button eventKey='3' onClick={this.createGuide} bsSize='xsmall'><img src='/images/guide.png'/> Create Guide</Button>}</span>}
+                        <Button eventKey='4' onClick={this.props.sourceToggle} bsSize='xsmall'><img src='/images/code.png'/> View Source</Button> 
+                        <Button eventKey='5' onClick={this.props.entitiesToggle} bsSize='xsmall'><span className='entity'>__</span> View Entities</Button>
+                        <Button eventKey="6" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button>
+                        <Button eventKey='7' onClick={this.props.changeHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> {subjectType} History</Button>
+                        <Button eventKey='8' onClick={this.alertOpenSelected} bsSize='xsmall' bsStyle='danger'><img src='/images/open.png'/> Open Selected</Button>
+                        <Button eventKey='9' onClick={this.alertCloseSelected} bsSize='xsmall' bsStyle='success'><i className="fa fa-flag-checkered" aria-hidden="true"></i> Close Selected</Button>
+                        <Button eventKey='10' onClick={this.alertPromoteSelected} bsSize='xsmall' bsStyle='warning'><img src='/images/megaphone.png'/> Promote Selected</Button> 
+                        <Button eventKey='11' onClick={this.alertSelectExisting} bsSize='xsmall'><img src='/images/megaphone_plus.png' /> Add Selected to <b>Existing Event</b></Button> 
+                        <Button eventKey='12' onClick={this.props.entryToggle} bsSize='xsmall'><i className="fa fa-plus-circle" aria-hidden="true"></i> Add Entry</Button>
+                        <Button eventKey='13' onClick={this.alertExportCSV} bsSize='xsmall'><img src='/images/csv_text.png'/> Export to CSV</Button>
+                        <Button eventKey='14' onClick={this.alertDeleteSelected} bsSize='xsmall' bsStyle='danger'><i className="fa fa-trash" aria-hidden="true"></i> Delete Selected</Button> 
+                        <Button bsStyle='info' eventKey="9" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                     </div>
                 )
             } else { 
                 return (
                     <div className="entry-header">
-                        <Button eventKey='1' onClick={this.toggleFlair} bsSize='small'>Toggle <b>Flair</b></Button>
-                        <Button eventKey="2" onClick={this.reparseFlair} bsSize='small'><b>Reparse</b> Flair</Button>
-                        {this.props.guideID == null ? null : <span>{this.props.guideID != 0 ? <Button eventKey='3' onClick={this.guideToggle} bsSize='small'>Guide</Button> : <Button eventKey='3' onClick={this.createGuide} bsSize='small'>Create Guide</Button>}</span>}
-                        <Button eventKey='4' onClick={this.props.sourceToggle} bsSize='small'>View <b>Source</b></Button> 
-                        <Button eventKey='5' onClick={this.props.entitiesToggle} bsSize='small'>View <b>Entities</b></Button>
-                        <Button eventKey="6" onClick={this.props.viewedByHistoryToggle} bsSize='small'><b>Viewed By History</b></Button>
-                        <Button eventKey='7' onClick={this.props.changeHistoryToggle} bsSize='small'><b>{subjectType} History</b></Button> 
-                        <Button bsStyle='info' eventKey="9" onClick={this.manualUpdate} bsSize='small' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
+                        <Button eventKey='1' onClick={this.toggleFlair} bsSize='xsmall'><i className="fa fa-eye-slash" aria-hidden="true"></i> Toggle Flair</Button>
+                        <Button eventKey="2" onClick={this.reparseFlair} bsSize='xsmall'><i className='fa fa-refresh' aria-hidden='true'></i> Reparse Flair</Button>
+                        {this.props.guideID == null ? null : <span>{this.props.guideID != 0 ? <Button eventKey='3' onClick={this.guideToggle} bsSize='xsmall'><img src='/images/guide.png'/> Guide</Button> : <Button eventKey='3' onClick={this.createGuide} bsSize='xsmall'><img src='/images/guide.png'/> Create Guide</Button>}</span>}
+                        <Button eventKey='4' onClick={this.props.sourceToggle} bsSize='xsmall'><img src='/images/code.png'/> View Source</Button> 
+                        <Button eventKey='5' onClick={this.props.entitiesToggle} bsSize='xsmall'><span className='entity'>__</span> View Entities</Button>
+                        <Button eventKey="6" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button>
+                        <Button eventKey='7' onClick={this.props.changeHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> {subjectType} History</Button>
+                        <Button bsStyle='info' eventKey="9" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                     </div>
                 )
             }
