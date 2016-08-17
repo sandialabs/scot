@@ -329,7 +329,7 @@ module.exports = React.createClass({
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
             React.createElement('div', {style: {width: this.state.differentviews},id:this.state.display == 'block' ? 'old-list-view' : 'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
-                React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {/*'max-width': '915px',*//*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-x': 'hidden', 'overflow-y': 'auto','padding-left':'5px'}}, 
+                React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {/*'max-width': '915px',*//*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow': 'hidden','padding-left':'5px', display:'flex', flexFlow: 'column'}}, 
                     React.createElement("div", {className: "table-row header " + this.state.classname[0]},
                         React.createElement("div", {className: "wrapper attributes " + this.state.classname[1]}, 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -473,7 +473,7 @@ module.exports = React.createClass({
                     ))
                     )
                     ), 
-                    React.createElement('div', {id: 'listpane'},
+                    React.createElement('div', {id: 'listpane', style:{overflowY:'auto'}},
                     this.state.objectarray.map((value) => React.createElement('div', {className:'allevents', id: value.id}, 
                        /* React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['hover', 'focus'], placement:'top', positionTop: 50, title: value.id, style: {overflow: 'auto'}, overlay: React.createElement(Popover, null, 
                         React.createElement('div', null,
