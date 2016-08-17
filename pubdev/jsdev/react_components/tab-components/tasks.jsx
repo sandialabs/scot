@@ -296,7 +296,7 @@ $('.container-fluid2').css('height', height)
             React.createElement('div', {className: 'incidentwidth', style: {display:this.state.display}},
             React.createElement('div', {style: {width: this.state.differentviews},id:this.state.display == 'block' ? 'old-list-view' : 'list-view'},
             React.createElement('div', {className: 'tableview', style:{display: 'flex'}},
-                React.createElement("div", {className: "container-fluid2", id: 'fluid2', style: {/*'max-width': '915px',*//*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow-y': 'auto', 'overflow-x' : 'hidden','padding-left':'5px'}},
+                React.createElement("div", {className: "container-fluid2", id: 'fluid2', style: {/*'max-width': '915px',*//*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow' : 'hidden','padding-left':'5px', display:'flex', flexFlow:'column'}},
                     React.createElement("div", {className: "table-row header "+ this.state.classname[0]},
                         React.createElement("div", {className: "wrapper attributes "+ this.state.classname[1]},
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
@@ -408,7 +408,7 @@ $('.container-fluid2').css('height', height)
                         React.createElement("div", {style: {position: this.state.display == 'block' ? 'relative' : null, right: this.state.display == 'block' ? '12px' : null},className: "column date"}, "Updated"),
                         this.state.updatedarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.updatedarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.updatedarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.updatedarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.updatedarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '45px', position: 'relative'}}) : null))
                         )))), 
-                   React.createElement('div', {id: 'listpane'},
+                   React.createElement('div', {id: 'listpane', style:{overflowY:'auto'}},
                     this.state.objectarray.map((value) => React.createElement('div', {className:'allevents', id: value.id},
                         
                         React.createElement("div", {style: {background: colorrow[0] == value.id ? this.state.blue : null},classname: value.classname + ' ' + this.state.classname[0],onClick: this.clickable, className: value.classname + ' ' + this.state.classname[0], id: value.targetid},
