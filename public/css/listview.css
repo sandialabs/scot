@@ -27,6 +27,7 @@
   display: -webkit-flex;
   flex-direction: row;
   -webkit-flex-direction: row;
+  padding-bottom:10px;
 }
 .column {
   flex-grow: 0;
@@ -288,6 +289,7 @@
   font-weight: bold;
   padding-top: 6px;
   padding-bottom: 6px;
+  display:block;
 }
 .glyphicon {
   color: #DDDDDD;
