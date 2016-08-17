@@ -5658,6 +5658,7 @@ var Source                  = require('react-tag-input-tags/react-tag-input').Wi
 var Tags                    = require('react-tag-input').WithContext
 var Button                  = require('react-bootstrap/lib/Button')
 var SplitButton             = require('react-bootstrap/lib/SplitButton.js');
+var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var SORT_INFO;
 var colsort = "id"
@@ -5955,17 +5956,17 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('div', {className:'buttonmenu'},
                         React.createElement(SplitButton, {bsSize: 'small' , title: 'Select'},
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))) : /* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))) : /* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */
                         React.createElement('div', {className: 'buttonmenu'},
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))
                         ,
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))
+                         React.createElement(DropdownButton, {bsSize: 'xsmall', title: 'View'},
+                         React.createElement(MenuItem, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))
             ),                                    
             Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,            
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
@@ -6182,12 +6183,12 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('div', {style: {display:'block'}},
                          React.createElement('div', {className: 'buttonmenu', style: {display: 'inline-flex'}},
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
 
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
+                         React.createElement(DropdownButton, {bsSize: 'xsmall', title: 'View'},
+                         React.createElement(MenuItem, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
             ),
                         React.createElement(SelectedContainer, {alertPreSelectedId: highlight ? this.props.supertable[0] : 0, height: height - 220,ids: this.state.idsarray, type: 'alertgroup'})
         )) : React.createElement('div', null) 
@@ -6634,7 +6635,7 @@ module.exports = React.createClass({displayName: "exports",
 });
 
 
-},{"../../../node_modules/react-daterange-picker":340,"../../../node_modules/react-notification-system":414,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../components/paging.jsx":8,"../entry/selected_container.jsx":15,"react":1103,"react-bootstrap/lib/Button":298,"react-bootstrap/lib/ButtonToolbar":300,"react-bootstrap/lib/MenuItem.js":308,"react-bootstrap/lib/OverlayTrigger":312,"react-bootstrap/lib/Popover":313,"react-bootstrap/lib/SplitButton.js":315,"react-tag-input":760,"react-tag-input-tags/react-tag-input":635}],31:[function(require,module,exports){
+},{"../../../node_modules/react-daterange-picker":340,"../../../node_modules/react-notification-system":414,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../components/paging.jsx":8,"../entry/selected_container.jsx":15,"react":1103,"react-bootstrap/lib/Button":298,"react-bootstrap/lib/ButtonToolbar":300,"react-bootstrap/lib/DropdownButton.js":304,"react-bootstrap/lib/MenuItem.js":308,"react-bootstrap/lib/OverlayTrigger":312,"react-bootstrap/lib/Popover":313,"react-bootstrap/lib/SplitButton.js":315,"react-tag-input":760,"react-tag-input-tags/react-tag-input":635}],31:[function(require,module,exports){
 'use strict';
 
 var React                   = require('react')
@@ -6651,6 +6652,7 @@ var DateRangePicker         = require('../../../node_modules/react-daterange-pic
 var Source                  = require('react-tag-input-tags/react-tag-input').WithContext
 var Tags                    = require('react-tag-input').WithContext
 var Button                  = require('react-bootstrap/lib/Button.js');
+var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var SORT_INFO;
 var colsort = "id"
@@ -6961,22 +6963,22 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('div', {style: {display: 'inline-flex'}},
                         width < 645 ? 
                         React.createElement('div', {className: 'buttonmenu'}, 
-                        React.createElement(SplitButton, {bsSize: 'small' , title: 'Select'}, 
+                        React.createElement(DropdownButton, {bsSize: 'xsmall' , title: 'Select'}, 
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '4',bsSize: 'small', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Event')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))) : /* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '4',bsSize: 'xsmall', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Event')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))) : /* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */
                         React.createElement('div', {className: 'buttonmenu'}, 
                         !this.state.mute ? 
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '4',bsSize: 'small', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Event')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '4',bsSize: 'xsmall', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Event')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))
                         ,
                        
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))
+                         React.createElement(DropdownButton, {bsSize: 'xsmall', title: 'View'},
+                         React.createElement(MenuItem, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))
             ),
             Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
@@ -7257,13 +7259,13 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
                         React.createElement('div', {style: {display:'block'}},
                          React.createElement('div', {className: 'buttonmenu',style: {display: 'inline-flex'}},
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '4',bsSize: 'small', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Event')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '4',bsSize: 'xsmall', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Event')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
                        
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
+                         React.createElement(DropdownButton, {bsSize: 'xsmall', title: 'View'},
+                         React.createElement(MenuItem, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
             ),
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'event', viewEvent:this.viewEvent})  
         )) : React.createElement('div', null)
@@ -7817,7 +7819,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
 });
 
 
-},{"../../../node_modules/react-daterange-picker":340,"../../../node_modules/react-notification-system":414,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../components/paging.jsx":8,"../entry/selected_container.jsx":15,"react":1103,"react-bootstrap/lib/Button.js":298,"react-bootstrap/lib/ButtonToolbar":300,"react-bootstrap/lib/MenuItem.js":308,"react-bootstrap/lib/OverlayTrigger":312,"react-bootstrap/lib/Popover":313,"react-bootstrap/lib/SplitButton.js":315,"react-tag-input":760,"react-tag-input-tags/react-tag-input":635}],32:[function(require,module,exports){
+},{"../../../node_modules/react-daterange-picker":340,"../../../node_modules/react-notification-system":414,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../components/paging.jsx":8,"../entry/selected_container.jsx":15,"react":1103,"react-bootstrap/lib/Button.js":298,"react-bootstrap/lib/ButtonToolbar":300,"react-bootstrap/lib/DropdownButton.js":304,"react-bootstrap/lib/MenuItem.js":308,"react-bootstrap/lib/OverlayTrigger":312,"react-bootstrap/lib/Popover":313,"react-bootstrap/lib/SplitButton.js":315,"react-tag-input":760,"react-tag-input-tags/react-tag-input":635}],32:[function(require,module,exports){
 'use strict';
 
 var React                   = require('react')
@@ -7826,6 +7828,7 @@ var Notificationactivemq    = require('../../../node_modules/react-notification-
 var Search                  = require('../components/esearch.jsx')
 var Store                   = require('../activemq/store.jsx')
 var Button                  = require('react-bootstrap/lib/Button.js');
+var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var SplitButton             = require('react-bootstrap/lib/SplitButton.js');
 var Page                    = require('../components/paging.jsx')
@@ -8093,20 +8096,20 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('div', {style: {display: 'inline-flex'}},
                         width < 645 ?
                         React.createElement('div', {className: 'buttonmenu'},
-                        React.createElement(SplitButton, {bsSize: 'small' , title: 'Select'},
+                        React.createElement(SplitButton, {bsSize: 'xsmall' , title: 'Select'},
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))) : /* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))) : /* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */
                         React.createElement('div', {className: 'buttonmenu'},
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))
                         ,
 
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))
+                         React.createElement(DropdownButton, {bsSize: 'xsmall', title: 'View'},
+                         React.createElement(MenuItem, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))
             ),
             Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,
             React.createElement('div', {className: 'guidewidth', style: {display:this.state.display}},
@@ -8192,12 +8195,12 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
                         React.createElement('div', {style: {display:'block'}},
                          React.createElement('div', {style: {display: 'inline-flex'}, className: 'buttonmenu'},
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
 
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
+                         React.createElement(DropdownButton, {bsSize: 'xsmall', title: 'View'},
+                         React.createElement(MenuItem, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
             ),
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'guide'})
         )) : React.createElement('div', null)
@@ -8433,7 +8436,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
 });
 
 
-},{"../../../node_modules/react-daterange-picker":340,"../../../node_modules/react-notification-system":414,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../components/paging.jsx":8,"../entry/selected_container.jsx":15,"react":1103,"react-bootstrap/lib/Button.js":298,"react-bootstrap/lib/ButtonToolbar":300,"react-bootstrap/lib/MenuItem.js":308,"react-bootstrap/lib/OverlayTrigger":312,"react-bootstrap/lib/Popover":313,"react-bootstrap/lib/SplitButton.js":315,"react-tag-input":760,"react-tag-input-tags/react-tag-input":635}],33:[function(require,module,exports){
+},{"../../../node_modules/react-daterange-picker":340,"../../../node_modules/react-notification-system":414,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../components/paging.jsx":8,"../entry/selected_container.jsx":15,"react":1103,"react-bootstrap/lib/Button.js":298,"react-bootstrap/lib/ButtonToolbar":300,"react-bootstrap/lib/DropdownButton.js":304,"react-bootstrap/lib/MenuItem.js":308,"react-bootstrap/lib/OverlayTrigger":312,"react-bootstrap/lib/Popover":313,"react-bootstrap/lib/SplitButton.js":315,"react-tag-input":760,"react-tag-input-tags/react-tag-input":635}],33:[function(require,module,exports){
 'use strict';
 
 var React                   = require('react')
@@ -8449,6 +8452,7 @@ var DateRangePicker         = require('../../../node_modules/react-daterange-pic
 var Source                  = require('react-tag-input-tags/react-tag-input').WithContext
 var Tags                    = require('react-tag-input').WithContext
 var SplitButton             = require('react-bootstrap/lib/SplitButton.js');
+var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
 var Button                  = require('react-bootstrap/lib/Button.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var fluidheight;
@@ -8785,20 +8789,20 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('div', {style: {display: 'inline-flex'}},
                         width < 645 ?
                         React.createElement('div', {className: 'buttonmenu'},
-                        React.createElement(SplitButton, {bsSize: 'small' , title: 'Select'},
+                        React.createElement(SplitButton, {bsSize: 'xsmall' , title: 'Select'},
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))) : /* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))) : /* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */
                         React.createElement('div', {className: 'buttonmenu'},
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))
                         ,
 
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))),
+                         React.createElement(DropdownButton, {bsSize: 'xsmall', title: 'View'},
+                         React.createElement(MenuItem, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))),
             Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,
         React.createElement('div', {className: 'incidentwidth', style: {display:this.state.display}},
             React.createElement('div', {id:this.state.display == 'block' ? 'old-list-view' : 'list-view', style: {width: this.state.differentviews}},  
@@ -9009,12 +9013,12 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
                         React.createElement('div', {style: {display:'block'}},
                          React.createElement('div', {className: 'buttonmenu',style: {display: 'inline-flex'}},
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
 
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
+                         React.createElement(DropdownButton, {bsSize: 'xsmall', title: 'View'},
+                         React.createElement(MenuItem, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
             ),
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'incident'})
         )) : React.createElement('div', null)
@@ -9306,7 +9310,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
 });
 
 
-},{"../../../node_modules/react-daterange-picker":340,"../../../node_modules/react-notification-system":414,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../components/paging.jsx":8,"../entry/selected_container.jsx":15,"react":1103,"react-bootstrap/lib/Button.js":298,"react-bootstrap/lib/ButtonToolbar":300,"react-bootstrap/lib/MenuItem.js":308,"react-bootstrap/lib/OverlayTrigger":312,"react-bootstrap/lib/Popover":313,"react-bootstrap/lib/SplitButton.js":315,"react-tag-input":760,"react-tag-input-tags/react-tag-input":635}],34:[function(require,module,exports){
+},{"../../../node_modules/react-daterange-picker":340,"../../../node_modules/react-notification-system":414,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../components/paging.jsx":8,"../entry/selected_container.jsx":15,"react":1103,"react-bootstrap/lib/Button.js":298,"react-bootstrap/lib/ButtonToolbar":300,"react-bootstrap/lib/DropdownButton.js":304,"react-bootstrap/lib/MenuItem.js":308,"react-bootstrap/lib/OverlayTrigger":312,"react-bootstrap/lib/Popover":313,"react-bootstrap/lib/SplitButton.js":315,"react-tag-input":760,"react-tag-input-tags/react-tag-input":635}],34:[function(require,module,exports){
 'use strict';
 var ReactDOM	    = require('react-dom')
 var React           = require('react')
@@ -9659,6 +9663,7 @@ var SelectedContainer       = require('../entry/selected_container.jsx')
 var Notificationactivemq    = require('../../../node_modules/react-notification-system')
 var Search                  = require('../components/esearch.jsx')
 var SplitButton             = require('react-bootstrap/lib/SplitButton.js');
+var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
 var Store                   = require('../activemq/store.jsx')
 var Page                    = require('../components/paging.jsx')
 var Popover                 = require('react-bootstrap/lib/Popover')
@@ -9976,22 +9981,22 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement('div', {style: {display: 'inline-flex'}},
                         width < 645 ? 
                         React.createElement('div', {className: 'buttonmenu'}, 
-                        React.createElement(SplitButton, {bsSize: 'small' , title: 'Select'}, 
+                        React.createElement(SplitButton, {bsSize: 'xsmall' , title: 'Select'}, 
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '4',bsSize: 'small', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Intel')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))) : /* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '4',bsSize: 'xsmall', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Intel')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))) : /* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */
                         React.createElement('div', {className: 'buttonmenu'},
                         !this.state.mute ? 
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '4',bsSize: 'small', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Intel')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '4',bsSize: 'xsmall', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Intel')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))
                         ,
                        
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))
+                         React.createElement(DropdownButton, {bsSize: 'xsmall', title: 'View'},
+                         React.createElement(MenuItem, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))
             ),
             Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,
             React.createElement('div', {className: 'eventwidth', style: {display:this.state.display}},
@@ -10274,13 +10279,13 @@ stage ?
                         React.createElement('div', {style: {display:'block'}},
                          React.createElement('div', {style: {display: 'inline-flex'}, className: 'buttonmenu'},
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '4',bsSize: 'small', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Intel')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '4',bsSize: 'xsmall', onClick: this.createevent}, 'Create ', React.createElement('b', null, 'Intel')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
                        
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
+                         React.createElement(DropdownButton, {bsSize: 'xsmall', title: 'View'},
+                         React.createElement(MenuItem, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
             ),
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: 'intel', viewEvent:this.viewEvent})  
         )) : React.createElement('div', null)
@@ -10836,7 +10841,7 @@ stage ?
 
 
 
-},{"../../../node_modules/react-daterange-picker":340,"../../../node_modules/react-notification-system":414,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../components/paging.jsx":8,"../entry/selected_container.jsx":15,"react":1103,"react-bootstrap/lib/Button.js":298,"react-bootstrap/lib/ButtonToolbar":300,"react-bootstrap/lib/MenuItem.js":308,"react-bootstrap/lib/OverlayTrigger":312,"react-bootstrap/lib/Popover":313,"react-bootstrap/lib/SplitButton.js":315,"react-tag-input":760,"react-tag-input-tags/react-tag-input":635}],36:[function(require,module,exports){
+},{"../../../node_modules/react-daterange-picker":340,"../../../node_modules/react-notification-system":414,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../components/paging.jsx":8,"../entry/selected_container.jsx":15,"react":1103,"react-bootstrap/lib/Button.js":298,"react-bootstrap/lib/ButtonToolbar":300,"react-bootstrap/lib/DropdownButton.js":304,"react-bootstrap/lib/MenuItem.js":308,"react-bootstrap/lib/OverlayTrigger":312,"react-bootstrap/lib/Popover":313,"react-bootstrap/lib/SplitButton.js":315,"react-tag-input":760,"react-tag-input-tags/react-tag-input":635}],36:[function(require,module,exports){
 'use strict';
 
 var React                   = require('react')
@@ -10853,6 +10858,7 @@ var DateRangePicker         = require('../../../node_modules/react-daterange-pic
 var Source                  = require('react-tag-input-tags/react-tag-input').WithContext
 var Tags                    = require('react-tag-input').WithContext
 var Button                  = require('react-bootstrap/lib/Button.js');
+var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var fluidheight
 var size = 645
@@ -11115,20 +11121,20 @@ $('.container-fluid2').css('height', height)
                         React.createElement('div', {style: {display: 'inline-flex'}},
                         width < 645 ?
                         React.createElement('div', {className: 'buttonmenu'},
-                        React.createElement(SplitButton, {bsSize: 'small' , title: 'Select'},
+                        React.createElement(SplitButton, {bsSize: 'xsmall' , title: 'Select'},
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))) : /* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))) : /* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */
                         React.createElement('div', {className: 'buttonmenu'},
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV')))
                         ,
 
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))
+                         React.createElement(DropdownButton, {bsSize: 'xsmall', title: 'View'},
+                         React.createElement(MenuItem, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View')))
             ),
             Object.getOwnPropertyNames(filter).length !== 0 ? React.createElement("div", {style: {width: width, color: 'blue', 'text-overflow': 'ellipsis', 'overflow-x': 'auto', 'font-weight': 'bold', 'font-style': 'italic', 'white-space': 'nowrap','padding-left': '5px'}}, 'Filtered: ' + JSON.stringify(filter)) : null,
             React.createElement('div', {className: 'incidentwidth', style: {display:this.state.display}},
@@ -11281,12 +11287,12 @@ stage ?
                         React.createElement('div', {style: {display:'block'}},
                          React.createElement('div', {className: 'buttonmenu', style: {display: 'inline-flex'}},
                         !this.state.mute ?
-                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'small'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'small'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
-                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'small'}, 'Clear All ', React.createElement('b', null, 'Filters')),
-                        React.createElement(Button, {eventKey: '5', bsSize: 'small',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
+                        React.createElement(Button, {eventKey: '1', onClick: this.clearNote, bsSize: 'xsmall'}, 'Mute ', React.createElement('b', null, 'Notifications')): React.createElement(Button , {eventKey: '2', onClick: this.clearNote, bsSize: 'xsmall'}, 'Turn On ', React.createElement('b', null, 'Notifications')),
+                        React.createElement(Button, {onClick: this.clearAll, eventKey: '3', bsSize: 'xsmall'}, 'Clear All ', React.createElement('b', null, 'Filters')),
+                        React.createElement(Button, {eventKey: '5', bsSize: 'xsmall',onClick: this.exportCSV}, 'Export to ', React.createElement('b', null, 'CSV'))/* , !this.state.mute ? React.createElement('button', {className: 'btn btn-default', onClick:this.dismissNote, style: styles}, 'Clear All Notifications') : null */,
 
-                         React.createElement(SplitButton, {bsSize: 'small', title: 'View'},
-                         React.createElement(Button, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(Button, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
+                         React.createElement(DropdownButton, {bsSize: 'xsmall', title: 'View'},
+                         React.createElement(MenuItem, {eventKey: '10', onClick:this.Portrait}, 'Portrait ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '11', onClick:this.Landscap}, 'Landscape ', React.createElement('b', null, 'View')), React.createElement(MenuItem, {eventKey: '3', onClick: this.toggleView}, 'Toggle ', React.createElement('b', null, 'Detail View'))))
             ),
                         React.createElement(SelectedContainer, {height: height - 117,ids: this.state.idsarray, type: this.state.type, taskid: this.state.entry })
         )) : React.createElement('div', null)
@@ -11592,7 +11598,7 @@ stage ?
     }
 });
 
-},{"../../../node_modules/react-daterange-picker":340,"../../../node_modules/react-notification-system":414,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../components/paging.jsx":8,"../entry/selected_container.jsx":15,"react":1103,"react-bootstrap/lib/Button.js":298,"react-bootstrap/lib/ButtonToolbar":300,"react-bootstrap/lib/MenuItem.js":308,"react-bootstrap/lib/OverlayTrigger":312,"react-bootstrap/lib/Popover":313,"react-bootstrap/lib/SplitButton.js":315,"react-tag-input":760,"react-tag-input-tags/react-tag-input":635}],37:[function(require,module,exports){
+},{"../../../node_modules/react-daterange-picker":340,"../../../node_modules/react-notification-system":414,"../activemq/store.jsx":5,"../components/esearch.jsx":7,"../components/paging.jsx":8,"../entry/selected_container.jsx":15,"react":1103,"react-bootstrap/lib/Button.js":298,"react-bootstrap/lib/ButtonToolbar":300,"react-bootstrap/lib/DropdownButton.js":304,"react-bootstrap/lib/MenuItem.js":308,"react-bootstrap/lib/OverlayTrigger":312,"react-bootstrap/lib/Popover":313,"react-bootstrap/lib/SplitButton.js":315,"react-tag-input":760,"react-tag-input-tags/react-tag-input":635}],37:[function(require,module,exports){
 /**
  * @ignore
  * base event object for custom and dom event.
