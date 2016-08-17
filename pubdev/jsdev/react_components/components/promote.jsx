@@ -37,7 +37,7 @@ var Promote = React.createClass({
         var id = this.props.id; 
         return (
             <span onClick={this.promote}>
-                Make <b>{this.state.newType}</b>
+                Promote to {this.state.newType}
             </span>
         )
     }
