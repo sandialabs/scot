@@ -5024,7 +5024,7 @@ var TabContents = React.createClass({displayName: "TabContents",
                     React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
                         React.createElement("h3", {id: "myModalLabel"}, "Entity: ", this.props.data != null ? React.createElement(EntityValue, {value: this.props.data.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
                     ), 
-                    React.createElement("div", {style: {height:'100%',display:'flex', flex:'1 1 auto', margin:'10px', flexFlow:'inherit'}}, 
+                    React.createElement("div", {style: {height:'100%',display:'flex', flex:'1 1 auto', margin:'10px', flexFlow:'inherit', minHeight:'1px'}}, 
                     this.props.data != null ? React.createElement(EntityBody, {data: this.props.data, entityid: this.props.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
                     )
                 )
