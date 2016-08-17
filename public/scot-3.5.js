@@ -1511,17 +1511,17 @@ var SelectedPermission = React.createClass({displayName: "SelectedPermission",
         }
         else {
             return (
-                React.createElement("div", {id: "", className: "toolbar entry-header-info-null"}, 
-                    React.createElement("img", {src: "/images/close_toolbar.png", className: "close_toolbar", onClick: this.props.permissionsToggle}), 
+                React.createElement("div", {id: "", className: "toolbar entry-header-info-null", style: {paddingTop:'0px'}}, 
                     React.createElement("span", {style: {display:'inline-flex',paddingRight:'10px',paddingLeft:'5px'}}, 
-                        React.createElement("h3", null, "Permissions:")
+                        React.createElement("h4", null, "Permissions:")
                     ), 
                         "Read Groups: ", readRows, 
                         this.state.readPermissionEntry ? React.createElement(NewPermission, {readUpdate: 1, modifyUpdate: 0, dataRead: data[0], dataModify: data[1], type: type, updateid: this.props.updateid, id: id, toggleNewReadPermission: this.toggleNewReadPermission, updated: this.props.updated, permissionsToggle: this.props.permissionsToggle}) : null, 
                         this.state.readPermissionEntry ? React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'danger', onClick: this.toggleNewReadPermission}, React.createElement("span", {className: "glyphicon glyphicon-minus", ariaHidden: "true"})) : React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'success', onClick: this.toggleNewReadPermission}, React.createElement("span", {className: "glyphicon glyphicon-plus", ariaHidden: "true"})), 
                         React.createElement("span", {style: {paddingLeft:'5px'}}, "Modify Groups: "), modifyRows, 
                         this.state.modifyPermissionEntry ? React.createElement(NewPermission, {readUpdate: 0, modifyUpdate: 1, dataRead: data[0], dataModify: data[1], type: type, updateid: this.props.updateid, id: id, toggleNewModifyPermission: this.toggleNewModifyPermission, updated: this.props.updated, permissionsToggle: this.props.permissionsToggle}) : null, 
-                        this.state.modifyPermissionEntry ? React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'danger', onClick: this.toggleNewModifyPermission}, React.createElement("span", {className: "glyphicon glyphicon-minus", ariaHidden: "true"})) : React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'success', onClick: this.toggleNewModifyPermission}, React.createElement("span", {className: "glyphicon glyphicon-plus", ariaHidden: "true"}))
+                        this.state.modifyPermissionEntry ? React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'danger', onClick: this.toggleNewModifyPermission}, React.createElement("span", {className: "glyphicon glyphicon-minus", ariaHidden: "true"})) : React.createElement(Button, {bsSize: 'xsmall', bsStyle: 'success', onClick: this.toggleNewModifyPermission}, React.createElement("span", {className: "glyphicon glyphicon-plus", ariaHidden: "true"})), 
+                        React.createElement("img", {src: "/images/close_toolbar.png", className: "close_toolbar", onClick: this.props.permissionsToggle})
                 ) 
             )
         }
@@ -1703,7 +1703,7 @@ var Promote = React.createClass({displayName: "Promote",
         var id = this.props.id; 
         return (
             React.createElement("span", {onClick: this.promote}, 
-                "Make ", React.createElement("b", null, this.state.newType)
+                "Promote to ", this.state.newType
             )
         )
     }
@@ -3440,9 +3440,9 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 this.state.viewedByHistoryToolbar ? React.createElement(ViewedByHistory, {viewedByHistoryToggle: this.viewedByHistoryToggle, id: id, type: type, subjectType: subjectType, viewedby: viewedby}) : null, 
                 this.state.changeHistoryToolbar ? React.createElement(ChangeHistory, {changeHistoryToggle: this.changeHistoryToggle, id: id, type: type, subjectType: subjectType}) : null, 
                 this.state.entitiesToolbar ? React.createElement(Entities, {entitiesToggle: this.entitiesToggle, entityData: this.state.entityData, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff}) : null, 
-                this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: id, type: type, permissionData: this.state.headerData, permissionsToggle: this.permissionsToggle, updated: this.updated}) : null, 
                 this.state.deleteToolbar ? React.createElement(DeleteEvent, {subjectType: subjectType, type: type, id: id, deleteToggle: this.deleteToggle, updated: this.updated}) :null, 
-                type != 'alertgroup' ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated, subjectName: this.state.headerData.subject}) : React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated, alertSelected: this.state.alertSelected, aIndex: this.state.aIndex, aType: this.state.aType, aStatus: this.state.aStatus, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, sourceToggle: this.sourceToggle, guideID: this.state.guideID, subjectName: this.state.headerData.subject})
+                type != 'alertgroup' ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated, subjectName: this.state.headerData.subject}) : React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated, alertSelected: this.state.alertSelected, aIndex: this.state.aIndex, aType: this.state.aType, aStatus: this.state.aStatus, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, sourceToggle: this.sourceToggle, guideID: this.state.guideID, subjectName: this.state.headerData.subject}), 
+                this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: id, type: type, permissionData: this.state.headerData, permissionsToggle: this.permissionsToggle, updated: this.updated}) : null
                 ), 
                 React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, headerData: this.state.headerData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, linkWarningToggle: this.linkWarningToggle, entryToolbar: this.state.entryToolbar, isAlertSelected: this.state.alertSelected, aType: this.state.aType, aID: this.state.aID, alertPreSelectedId: this.props.alertPreSelectedId})
             )
@@ -3916,49 +3916,49 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
             }
             return (
                 React.createElement("div", {className: "entry-header"}, 
-                    React.createElement(Button, {bsStyle: "success", onClick: this.props.entryToggle, bsSize: "small"}, "Add Entry"), 
-                    React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
-                    React.createElement(Button, {eventKey: "3", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
-                    React.createElement(Button, {eventKey: "4", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History")), 
-                    React.createElement(Button, {eventKey: "5", onClick: this.props.permissionsToggle, bsSize: "small"}, React.createElement("b", null, "Permissions")), 
-                    React.createElement(Button, {eventKey: "6", onClick: this.props.entitiesToggle, bsSize: "small"}, "List ", React.createElement("b", null, "Entities")), 
-                    showPromote ? React.createElement(Button, {bsStyle: "warning", eventKey: "7", bsSize: "small"}, React.createElement(Promote, {type: type, id: id, updated: this.props.updated})) : null, 
-                    React.createElement(Button, {bsStyle: "danger", eventKey: "8", onClick: this.props.deleteToggle, bsSize: "small"}, React.createElement("b", null, "Delete"), " ", subjectType), 
-                    React.createElement(Button, {bsStyle: "info", eventKey: "9", onClick: this.manualUpdate, bsSize: "small", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
+                    React.createElement(Button, {bsStyle: "success", onClick: this.props.entryToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-plus-circle", "aria-hidden": "true"}), " Add Entry"), 
+                    React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-eye-slash", "aria-hidden": "true"}), " Toggle Flair"), 
+                    React.createElement(Button, {eventKey: "3", onClick: this.props.viewedByHistoryToggle, bsSize: "xsmall"}, React.createElement("img", {src: "/images/clock.png"}), " Viewed By History"), 
+                    React.createElement(Button, {eventKey: "4", onClick: this.props.changeHistoryToggle, bsSize: "xsmall"}, React.createElement("img", {src: "/images/clock.png"}), " ", subjectType, " History"), 
+                    React.createElement(Button, {eventKey: "5", onClick: this.props.permissionsToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-users", "aria-hidden": "true"}), " Permissions"), 
+                    React.createElement(Button, {eventKey: "6", onClick: this.props.entitiesToggle, bsSize: "xsmall"}, React.createElement("span", {className: "entity"}, "__"), " View Entities"), 
+                    showPromote ? React.createElement(Button, {bsStyle: "warning", eventKey: "7", bsSize: "xsmall"}, React.createElement("img", {src: "/images/megaphone.png"}), " ", React.createElement(Promote, {type: type, id: id, updated: this.props.updated})) : null, 
+                    React.createElement(Button, {bsStyle: "danger", eventKey: "8", onClick: this.props.deleteToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-trash", "aria-hidden": "true"}), " Delete ", subjectType), 
+                    React.createElement(Button, {bsStyle: "info", eventKey: "9", onClick: this.manualUpdate, bsSize: "xsmall", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
                 )
             )
         } else {
             if (this.props.aIndex != undefined) {
                 return (
-                    React.createElement("div", {className: "entry-header"}, 
-                        React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
-                        React.createElement(Button, {eventKey: "2", onClick: this.reparseFlair, bsSize: "small"}, React.createElement("b", null, "Reparse"), " Flair"), 
-                        this.props.guideID == null ? null : React.createElement("span", null, this.props.guideID != 0 ? React.createElement(Button, {eventKey: "3", onClick: this.guideToggle, bsSize: "small"}, "Guide") : React.createElement(Button, {eventKey: "3", onClick: this.createGuide, bsSize: "small"}, "Create Guide")), 
-                        React.createElement(Button, {eventKey: "4", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
-                        React.createElement(Button, {eventKey: "5", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
-                        React.createElement(Button, {eventKey: "6", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
-                        React.createElement(Button, {eventKey: "7", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History")), 
-                        React.createElement(Button, {eventKey: "8", onClick: this.alertOpenSelected, bsSize: "small"}, React.createElement("b", null, "Open"), " Selected"), 
-                        React.createElement(Button, {eventKey: "9", onClick: this.alertCloseSelected, bsSize: "small"}, React.createElement("b", null, "Close"), " Selected"), 
-                        React.createElement(Button, {eventKey: "10", onClick: this.alertPromoteSelected, bsSize: "small"}, React.createElement("b", null, React.createElement("u", null, "P"), "romote"), " Selected"), 
-                        React.createElement(Button, {eventKey: "11", onClick: this.props.entryToggle, bsSize: "small"}, "Add ", React.createElement("b", null, "Entry")), 
-                        React.createElement(Button, {eventKey: "12", onClick: this.alertSelectExisting, bsSize: "small"}, React.createElement("b", null, "Add"), " Selected to ", React.createElement("b", null, "Existing Event")), 
-                        React.createElement(Button, {eventKey: "13", onClick: this.alertExportCSV, bsSize: "small"}, "Export to ", React.createElement("b", null, "CSV")), 
-                        React.createElement(Button, {eventKey: "14", onClick: this.alertDeleteSelected, bsSize: "small"}, React.createElement("b", null, "Delete"), " Selected"), 
-                        React.createElement(Button, {bsStyle: "info", eventKey: "9", onClick: this.manualUpdate, bsSize: "small", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
+                    React.createElement("div", {className: "entry-header second-menu"}, 
+                        React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-eye-slash", "aria-hidden": "true"}), " Toggle Flair"), 
+                        React.createElement(Button, {eventKey: "2", onClick: this.reparseFlair, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}), " Reparse Flair"), 
+                        this.props.guideID == null ? null : React.createElement("span", null, this.props.guideID != 0 ? React.createElement(Button, {eventKey: "3", onClick: this.guideToggle, bsSize: "xsmall"}, React.createElement("img", {src: "/images/guide.png"}), " Guide") : React.createElement(Button, {eventKey: "3", onClick: this.createGuide, bsSize: "xsmall"}, React.createElement("img", {src: "/images/guide.png"}), " Create Guide")), 
+                        React.createElement(Button, {eventKey: "4", onClick: this.props.sourceToggle, bsSize: "xsmall"}, React.createElement("img", {src: "/images/code.png"}), " View Source"), 
+                        React.createElement(Button, {eventKey: "5", onClick: this.props.entitiesToggle, bsSize: "xsmall"}, React.createElement("span", {className: "entity"}, "__"), " View Entities"), 
+                        React.createElement(Button, {eventKey: "6", onClick: this.props.viewedByHistoryToggle, bsSize: "xsmall"}, React.createElement("img", {src: "/images/clock.png"}), " Viewed By History"), 
+                        React.createElement(Button, {eventKey: "7", onClick: this.props.changeHistoryToggle, bsSize: "xsmall"}, React.createElement("img", {src: "/images/clock.png"}), " ", subjectType, " History"), 
+                        React.createElement(Button, {eventKey: "8", onClick: this.alertOpenSelected, bsSize: "xsmall", bsStyle: "danger"}, React.createElement("img", {src: "/images/open.png"}), " Open Selected"), 
+                        React.createElement(Button, {eventKey: "9", onClick: this.alertCloseSelected, bsSize: "xsmall", bsStyle: "success"}, React.createElement("i", {className: "fa fa-flag-checkered", "aria-hidden": "true"}), " Close Selected"), 
+                        React.createElement(Button, {eventKey: "10", onClick: this.alertPromoteSelected, bsSize: "xsmall", bsStyle: "warning"}, React.createElement("img", {src: "/images/megaphone.png"}), " Promote Selected"), 
+                        React.createElement(Button, {eventKey: "11", onClick: this.alertSelectExisting, bsSize: "xsmall"}, React.createElement("img", {src: "/images/megaphone_plus.png"}), " Add Selected to ", React.createElement("b", null, "Existing Event")), 
+                        React.createElement(Button, {eventKey: "12", onClick: this.props.entryToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-plus-circle", "aria-hidden": "true"}), " Add Entry"), 
+                        React.createElement(Button, {eventKey: "13", onClick: this.alertExportCSV, bsSize: "xsmall"}, React.createElement("img", {src: "/images/csv_text.png"}), " Export to CSV"), 
+                        React.createElement(Button, {eventKey: "14", onClick: this.alertDeleteSelected, bsSize: "xsmall", bsStyle: "danger"}, React.createElement("i", {className: "fa fa-trash", "aria-hidden": "true"}), " Delete Selected"), 
+                        React.createElement(Button, {bsStyle: "info", eventKey: "9", onClick: this.manualUpdate, bsSize: "xsmall", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
                     )
                 )
             } else { 
                 return (
                     React.createElement("div", {className: "entry-header"}, 
-                        React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "small"}, "Toggle ", React.createElement("b", null, "Flair")), 
-                        React.createElement(Button, {eventKey: "2", onClick: this.reparseFlair, bsSize: "small"}, React.createElement("b", null, "Reparse"), " Flair"), 
-                        this.props.guideID == null ? null : React.createElement("span", null, this.props.guideID != 0 ? React.createElement(Button, {eventKey: "3", onClick: this.guideToggle, bsSize: "small"}, "Guide") : React.createElement(Button, {eventKey: "3", onClick: this.createGuide, bsSize: "small"}, "Create Guide")), 
-                        React.createElement(Button, {eventKey: "4", onClick: this.props.sourceToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Source")), 
-                        React.createElement(Button, {eventKey: "5", onClick: this.props.entitiesToggle, bsSize: "small"}, "View ", React.createElement("b", null, "Entities")), 
-                        React.createElement(Button, {eventKey: "6", onClick: this.props.viewedByHistoryToggle, bsSize: "small"}, React.createElement("b", null, "Viewed By History")), 
-                        React.createElement(Button, {eventKey: "7", onClick: this.props.changeHistoryToggle, bsSize: "small"}, React.createElement("b", null, subjectType, " History")), 
-                        React.createElement(Button, {bsStyle: "info", eventKey: "9", onClick: this.manualUpdate, bsSize: "small", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
+                        React.createElement(Button, {eventKey: "1", onClick: this.toggleFlair, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-eye-slash", "aria-hidden": "true"}), " Toggle Flair"), 
+                        React.createElement(Button, {eventKey: "2", onClick: this.reparseFlair, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}), " Reparse Flair"), 
+                        this.props.guideID == null ? null : React.createElement("span", null, this.props.guideID != 0 ? React.createElement(Button, {eventKey: "3", onClick: this.guideToggle, bsSize: "xsmall"}, React.createElement("img", {src: "/images/guide.png"}), " Guide") : React.createElement(Button, {eventKey: "3", onClick: this.createGuide, bsSize: "xsmall"}, React.createElement("img", {src: "/images/guide.png"}), " Create Guide")), 
+                        React.createElement(Button, {eventKey: "4", onClick: this.props.sourceToggle, bsSize: "xsmall"}, React.createElement("img", {src: "/images/code.png"}), " View Source"), 
+                        React.createElement(Button, {eventKey: "5", onClick: this.props.entitiesToggle, bsSize: "xsmall"}, React.createElement("span", {className: "entity"}, "__"), " View Entities"), 
+                        React.createElement(Button, {eventKey: "6", onClick: this.props.viewedByHistoryToggle, bsSize: "xsmall"}, React.createElement("img", {src: "/images/clock.png"}), " Viewed By History"), 
+                        React.createElement(Button, {eventKey: "7", onClick: this.props.changeHistoryToggle, bsSize: "xsmall"}, React.createElement("img", {src: "/images/clock.png"}), " ", subjectType, " History"), 
+                        React.createElement(Button, {bsStyle: "info", eventKey: "9", onClick: this.manualUpdate, bsSize: "xsmall", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
                     )
                 )
             }

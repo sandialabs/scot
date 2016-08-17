@@ -80,10 +80,9 @@ var SelectedPermission = React.createClass({
         }
         else {
             return (
-                <div id="" className="toolbar entry-header-info-null">
-                    <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.permissionsToggle} />
+                <div id="" className="toolbar entry-header-info-null" style={{paddingTop:'0px'}}>
                     <span style={{display:'inline-flex',paddingRight:'10px',paddingLeft:'5px'}}>
-                        <h3>Permissions:</h3>
+                        <h4>Permissions:</h4>
                     </span>
                         Read Groups: {readRows} 
                         {this.state.readPermissionEntry ? <NewPermission readUpdate={1} modifyUpdate={0} dataRead={data[0]} dataModify={data[1]} type={type} updateid={this.props.updateid} id={id} toggleNewReadPermission={this.toggleNewReadPermission} updated={this.props.updated} permissionsToggle={this.props.permissionsToggle}/> : null }
@@ -91,6 +90,7 @@ var SelectedPermission = React.createClass({
                         <span style={{paddingLeft:'5px'}}>Modify Groups: </span>{modifyRows}
                         {this.state.modifyPermissionEntry ? <NewPermission readUpdate={0} modifyUpdate={1} dataRead={data[0]} dataModify={data[1]} type={type} updateid={this.props.updateid} id={id} toggleNewModifyPermission={this.toggleNewModifyPermission} updated={this.props.updated} permissionsToggle={this.props.permissionsToggle}/> : null}
                         {this.state.modifyPermissionEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleNewModifyPermission}><span className='glyphicon glyphicon-minus' ariaHidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleNewModifyPermission}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>}
+                        <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.permissionsToggle} />
                 </div> 
             )
         }
