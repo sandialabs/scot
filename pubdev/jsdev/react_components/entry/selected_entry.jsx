@@ -81,7 +81,7 @@ var SelectedEntry = React.createClass({
         } 
     this.containerHeightAdjust();
     window.addEventListener('resize',this.containerHeightAdjust);
-    $("#list-view").resize(this.containerHeightAdjust);
+    $("#fluid2").bind('resize', function() {this.containerHeightAdjust}.bind(this));
     },
     componentWillReceiveProps: function() {
         this.containerHeightAdjust();
@@ -156,7 +156,7 @@ var SelectedEntry = React.createClass({
     containerHeightAdjust: function() {
         var scrollHeight = this.state.height;
         if ($('#old-list-view')[0]) {
-            scrollHeight = $(window).height() - $('#old-list-view').height() - $('#header').height() - 90
+            scrollHeight = $(window).height() - $('#old-list-view').height() - $('#header').height() - 77
             scrollHeight = scrollHeight + 'px'
         } else {
             scrollHeight = $(window).height() - $('#header').height() - 55 

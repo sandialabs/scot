@@ -267,7 +267,8 @@ module.exports = React.createClass({
               $('.container-fluid2').css('width', '100%')
               if(e != null){
                 $('.container-fluid2').css('height', e.clientY) 
-            }
+                this.forceUpdate();
+              }
         }
     },
     launchEvent: function(array){

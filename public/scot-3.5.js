@@ -2255,7 +2255,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         } 
     this.containerHeightAdjust();
     window.addEventListener('resize',this.containerHeightAdjust);
-    $("#list-view").resize(this.containerHeightAdjust);
+    $("#fluid2").bind('resize', function() {this.containerHeightAdjust}.bind(this));
     },
     componentWillReceiveProps: function() {
         this.containerHeightAdjust();
@@ -2330,7 +2330,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
     containerHeightAdjust: function() {
         var scrollHeight = this.state.height;
         if ($('#old-list-view')[0]) {
-            scrollHeight = $(window).height() - $('#old-list-view').height() - $('#header').height() - 90
+            scrollHeight = $(window).height() - $('#old-list-view').height() - $('#header').height() - 77
             scrollHeight = scrollHeight + 'px'
         } else {
             scrollHeight = $(window).height() - $('#header').height() - 55 
@@ -5896,6 +5896,7 @@ module.exports = React.createClass({displayName: "exports",
               $('.container-fluid2').css('width', '100%')
               if(e != null){
                 $('.container-fluid2').css('height', e.clientY)
+                this.forceUpdate();
             }
         }
     },
@@ -6905,7 +6906,8 @@ module.exports = React.createClass({displayName: "exports",
               $('.container-fluid2').css('width', '100%')
               if(e != null){
                 $('.container-fluid2').css('height', e.clientY) 
-            }
+                this.forceUpdate();
+              }
         }
     },
     launchEvent: function(array){
@@ -8038,6 +8040,7 @@ module.exports = React.createClass({displayName: "exports",
               $('.container-fluid2').css('width', '100%')
               if(e != null){
                 $('.container-fluid2').css('height', e.clientY)
+                this.forceUpdate();
             }
         }
     },
@@ -8665,6 +8668,7 @@ module.exports = React.createClass({displayName: "exports",
               $('.container-fluid2').css('width', '100%')
               if(e != null){
                 $('.container-fluid2').css('height', e.clientY)
+                this.forceUpdate();
             }
         }
     },
@@ -9923,6 +9927,7 @@ module.exports = React.createClass({displayName: "exports",
               $('.container-fluid2').css('width', '100%')
               if(e != null){
                 $('.container-fluid2').css('height', e.clientY)
+                this.forceUpdate(); 
             }
         }
     },
@@ -11067,6 +11072,7 @@ $('.container-fluid2').css('height', height)
               $('.container-fluid2').css('width', '100%')
               if(e != null){
                 $('.container-fluid2').css('height', e.clientY)
+                this.forceUpdate();
             }
         }
     },
