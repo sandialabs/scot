@@ -27,7 +27,7 @@
   display: -webkit-flex;
   flex-direction: row;
   -webkit-flex-direction: row;
-  padding-bottom:10px;
+  /*padding-bottom:10px;*/
 }
 .column {
   flex-grow: 0;
@@ -49,6 +49,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex-grow: 1;
 }
 .reporter {
   width: 85px;
@@ -56,6 +57,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex-grow: 1;
 }
 .status {
   width: 95px;
@@ -63,6 +65,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex-grow: 1;
 }
 .owner {
   width: 95px;
@@ -70,9 +73,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex-grow: 1;
 }
 .severity {
   width: 80px;
+  flex-grow: 1;
 }
 .watch,
 .add-comment {
@@ -99,7 +104,7 @@
   flex-grow: 1;
   -webkit-flex-grow: 1;
   overflow: hidden;
-  white-space: nowrap;
+  /*white-space: nowrap;*/
   text-overflow: ellipsis;
   padding-right: 4px;
 }
@@ -187,6 +192,7 @@
   .dates-wide {
     flex-direction: column;
     -webkit-flex-direction: column;
+    
   }
   .dates-wide div {
     flex-grow: 0;
@@ -288,7 +294,7 @@
   background-color: #ECECEC;
   font-weight: bold;
   padding-top: 6px;
-  padding-bottom: 6px;
+  padding-bottom: 15px;
   display:block;
 }
 .glyphicon {
@@ -320,7 +326,51 @@
   color: green;
 }
 
+.dates {
+    flex-grow:1 !important;
+}
 
+.date {
+    flex-grow:1 !important;
+}
 
+.title-comment-module-reporter {
+    flex-grow: 2 !important;
+}
 
+.module-reporter {
+    flex-grow: 1 !important;
+}
+
+.list-source {
+    flex-grow: 1 !important;
+}
+
+.list-tag {
+    flex-grow: 1 !important;
+}
+
+.list-owner {
+    flex-grow: 1 !important;
+}
+
+.list-entry {
+    flex-grow: 1 !important;
+}
+
+.list-view {
+    flex-grow: 1 !important;
+}
+
+.status-owner-severity {
+    flex-grow: 1 !important;
+}
+
+.status-owner {
+    flex-grow: 1 !important;
+}
+
+.otype {
+    flex-grow: 1 !important;
+}
 
