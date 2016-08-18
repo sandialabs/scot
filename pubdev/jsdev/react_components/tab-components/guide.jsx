@@ -67,9 +67,15 @@ module.exports = React.createClass({
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight, containerdisplay: 'none',alldetail: true, minwidth: '650px',classname: [' ', ' ',' ', ' '],
             viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: ''};
     },
-
+    componentWillMount: function() {
+        this.Landscap()
+    },
     componentDidMount: function(){
-        toggle  = $('#list-view').find('.tableview')
+        if ($('#list-view')[0] != undefined) {
+            toggle  = $('#list-view').find('.tableview')
+        } else {
+            toggle = $('#old-list-view').find('.tableview')
+        } 
         var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
