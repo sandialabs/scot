@@ -5691,6 +5691,10 @@ sortarray[colsort] = -1
 var columns = ['id', 'Status', 'Subject', 'Created', 'Source', 'Tags', 'Views']
 var toggle
 var scrolled = 48
+var listStartX;
+var listStartY;
+var listStartWidth;
+var listStartHeight;
 module.exports = React.createClass({displayName: "exports",
 
     getInitialState: function(){
@@ -5869,8 +5873,8 @@ module.exports = React.createClass({displayName: "exports",
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
             if(e != null){
-                width = e.clientX
-                $('.container-fluid2').css('width', e.clientX)
+                //width = e.clientX
+                $('.container-fluid2').css('width', listStartWidth + e.clientX - listStartX)
             }
             if(width < size){
                 var array = []
@@ -5895,7 +5899,7 @@ module.exports = React.createClass({displayName: "exports",
         //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
               $('.container-fluid2').css('width', '100%')
               if(e != null){
-                $('.container-fluid2').css('height', e.clientY)
+                $('.container-fluid2').css('height', listStartHeight + e.clientY - listStartY)
                 this.forceUpdate();
             }
         }
@@ -6212,6 +6216,11 @@ module.exports = React.createClass({displayName: "exports",
         }
     },
     dragdiv: function(e){
+        var elem = document.getElementById('fluid2');
+        listStartX = e.clientX;
+        listStartY = e.clientY;
+        listStartWidth = parseInt(document.defaultView.getComputedStyle(elem).width,10)
+        listStartHeight = parseInt(document.defaultView.getComputedStyle(elem).height,10) 
         document.onmousemove = this.reloadItem
         document.onmouseup  = this.stopdrag
     },
@@ -6685,6 +6694,10 @@ sortarray[colsort] = -1
 var columns = ['id', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
 var toggle;
 var scrolled = 58
+var listStartX;
+var listStartY;
+var listStartWidth;
+var listStartHeight;
 function Remove(note){
 }
 
@@ -6881,8 +6894,9 @@ module.exports = React.createClass({displayName: "exports",
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
             if(e != null){
-                width = e.clientX
-                $('.container-fluid2').css('width', e.clientX)
+                //width = e.clientX
+                //$('.container-fluid2').css('width', e.clientX)
+                $('.container-fluid2').css('width',listStartWidth + e.clientX - listStartX)
             }
             if(width < size){
                 var array = []
@@ -6905,7 +6919,7 @@ module.exports = React.createClass({displayName: "exports",
         //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
               $('.container-fluid2').css('width', '100%')
               if(e != null){
-                $('.container-fluid2').css('height', e.clientY) 
+                $('.container-fluid2').css('height', listStartHeight + e.clientY - listStartY) 
                 this.forceUpdate();
               }
         }
@@ -7289,6 +7303,11 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
         }
     },
     dragdiv: function(e){
+        var elem = document.getElementById('fluid2');
+        listStartX = e.clientX;
+        listStartY = e.clientY;
+        listStartWidth = parseInt(document.defaultView.getComputedStyle(elem).width,10)
+        listStartHeight = parseInt(document.defaultView.getComputedStyle(elem).height,10)
         document.onmousemove = this.reloadItem
         document.onmouseup  = this.stopdrag
     },    
@@ -7306,7 +7325,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
         $(t2).resize(function(){
             this.reloadItem()
         }.bind(this))
-         if(!this.state.alldetail) {
+    e    if(!this.state.alldetail) {
             this.setState({alldetail: true})
         }
         else {
@@ -7870,6 +7889,10 @@ var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
 var columns = ['id', 'Applies_to']
+var listStartX;
+var listStartY;
+var listStartWidth;
+var listStartHeight;
 
 module.exports = React.createClass({displayName: "exports",
 
@@ -8014,8 +8037,8 @@ module.exports = React.createClass({displayName: "exports",
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
             if(e != null){
-                width = e.clientX
-                $('.container-fluid2').css('width', e.clientX)
+                //width = e.clientX
+                $('.container-fluid2').css('width', listStartWidth + e.clientX - listStartX)
             }
             if(width < size){
                 var array = []
@@ -8039,7 +8062,7 @@ module.exports = React.createClass({displayName: "exports",
         //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
               $('.container-fluid2').css('width', '100%')
               if(e != null){
-                $('.container-fluid2').css('height', e.clientY)
+                $('.container-fluid2').css('height', listStartHeight + e.clientY - listStartY)
                 this.forceUpdate();
             }
         }
@@ -8374,6 +8397,11 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
         }
     },
     dragdiv: function(e){
+        var elem = document.getElementById('fluid2');
+        listStartX = e.clientX;
+        listStartY = e.clientY;
+        listStartWidth = parseInt(document.defaultView.getComputedStyle(elem).width,10)
+        listStartHeight = parseInt(document.defaultView.getComputedStyle(elem).height,10) 
         document.onmousemove = this.reloadItem
         document.onmouseup  = this.stopdrag
     },
@@ -8488,7 +8516,10 @@ var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
 var columns = ['id', 'DOE', 'Status', 'Owner', 'Subject', 'Occurred', 'Type']
-
+var listStartX;
+var listStartY;
+var listStartWidth;
+var listStartHeight;
 
 module.exports = React.createClass({displayName: "exports",
 
@@ -8642,8 +8673,8 @@ module.exports = React.createClass({displayName: "exports",
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
             if(e != null){
-                width = e.clientX
-                $('.container-fluid2').css('width', e.clientX)
+                //width = e.clientX
+                $('.container-fluid2').css('width', listStartWidth + e.clientX - listStartX)
             }
             if(width < size){
                 var array = []
@@ -8667,7 +8698,7 @@ module.exports = React.createClass({displayName: "exports",
         //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
               $('.container-fluid2').css('width', '100%')
               if(e != null){
-                $('.container-fluid2').css('height', e.clientY)
+                $('.container-fluid2').css('height', listStartHeight + e.clientY - listStartY)
                 this.forceUpdate();
             }
         }
@@ -8733,6 +8764,11 @@ module.exports = React.createClass({displayName: "exports",
         }
     },
     dragdiv: function(e){
+        var elem = document.getElementById('fluid2');
+        listStartX = e.clientX;
+        listStartY = e.clientY;
+        listStartWidth = parseInt(document.defaultView.getComputedStyle(elem).width,10)
+        listStartHeight = parseInt(document.defaultView.getComputedStyle(elem).height,10) 
         document.onmousemove = this.reloadItem
         document.onmouseup  = this.stopdrag
     },
@@ -9708,6 +9744,10 @@ sortarray[colsort] = -1
 var columns = ['id', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
 var toggle;
 var scrolled = 58
+var listStartX;
+var listStartY;
+var listStartWidth;
+var listStartHeight;
 function Remove(note){
     console.log(note)
 }
@@ -9901,8 +9941,8 @@ module.exports = React.createClass({displayName: "exports",
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
             if(e != null){
-                width = e.clientX
-                $('.container-fluid2').css('width', e.clientX)
+                //width = e.clientX
+                $('.container-fluid2').css('width', listStartWidth + e.clientX - listStartX)
             }
             if(width < size){
                 var array = []
@@ -9926,7 +9966,7 @@ module.exports = React.createClass({displayName: "exports",
         //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
               $('.container-fluid2').css('width', '100%')
               if(e != null){
-                $('.container-fluid2').css('height', e.clientY)
+                $('.container-fluid2').css('height', listStartHeight + e.clientY - listStartY)
                 this.forceUpdate(); 
             }
         }
@@ -10333,6 +10373,11 @@ stage ?
         }
     },
     dragdiv: function(e){
+        var elem = document.getElementById('fluid2');
+        listStartX = e.clientX;
+        listStartY = e.clientY;
+        listStartWidth = parseInt(document.defaultView.getComputedStyle(elem).width,10)
+        listStartHeight = parseInt(document.defaultView.getComputedStyle(elem).height,10) 
         document.onmousemove = this.reloadItem
         document.onmouseup  = this.stopdrag
     },
@@ -10895,6 +10940,10 @@ var readonly = []
 var colorrow = [];
 sortarray[colsort] = -1
 var columns = ['Type', 'id', 'Status', 'Owner', 'Entry', 'Updated']
+var listStartX;
+var listStartY;
+var listStartWidth;
+var listStartHeight;
 
 module.exports = React.createClass({displayName: "exports",
 
@@ -11046,8 +11095,8 @@ $('.container-fluid2').css('height', height)
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
             if(e != null){
-                width = e.clientX
-                $('.container-fluid2').css('width', e.clientX)
+                //width = e.clientX
+                $('.container-fluid2').css('width', listStartWidth + e.clientX - listStartX)
             }
             if(width < size){
                 var array = []
@@ -11071,7 +11120,7 @@ $('.container-fluid2').css('height', height)
         //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
               $('.container-fluid2').css('width', '100%')
               if(e != null){
-                $('.container-fluid2').css('height', e.clientY)
+                $('.container-fluid2').css('height', listStartHeight + e.clientY - listStartY)
                 this.forceUpdate();
             }
         }
@@ -11396,6 +11445,11 @@ stage ?
         }
     },
     dragdiv: function(e){
+        var elem = document.getElementById('fluid2');
+        listStartX = e.clientX;
+        listStartY = e.clientY;
+        listStartWidth = parseInt(document.defaultView.getComputedStyle(elem).width,10)
+        listStartHeight = parseInt(document.defaultView.getComputedStyle(elem).height,10)
         document.onmousemove = this.reloadItem
         document.onmouseup  = this.stopdrag
     },
