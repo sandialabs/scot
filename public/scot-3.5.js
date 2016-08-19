@@ -9615,13 +9615,13 @@ var App = React.createClass({displayName: "App",
 	    var headerFull = React.createElement("a", {href: "/"}, "Scot3")
         var headerSmall = ""
         var menuItemsSmall = [
-        React.createElement("span", {className: "glyphicon glyphicon-home"}),
-        React.createElement("span", {className: "glyphicon glyphicon-eye-open"}),
-        React.createElement("span", {className: "glyphicon glyphicon-warning-sign"}),
-        React.createElement("span", {className: "glyphicon glyphicon-list-alt"}),
-        React.createElement("span", {className: "glyphicon glyphicon-screenshot"}),
-        React.createElement("span", {className: "glyphicon glyphicon-edit"}),
-        React.createElement("span", {className: "glyphicon glyphicon-pencil"}),
+        React.createElement("span", {className: "home"}),
+        React.createElement("span", {className: "intel"}, React.createElement("i", {className: "fa fa-lightbulb-o", "aria-hidden": "true"})),
+        React.createElement("span", {className: "fa fa-a"}),
+        React.createElement("span", {className: "fa fa-e"}),
+        React.createElement("span", {className: "fa fa-i"}),
+        React.createElement("span", {className: "fa fa-t"}),
+        React.createElement("span", {className: "fa fa-g"}),
       //  <span className = "glyphicon glyphicon-cog"></span>,
         React.createElement("span", {className: "glyphicon glyphicon-user"}),
         ]	
@@ -9647,21 +9647,22 @@ var App = React.createClass({displayName: "App",
                 React.createElement(ExpandableNavbar, {fullClass: "full", smallClass: "small"}, 
                 React.createElement(ExpandableNavHeader, {small: headerSmall, full: headerFull, headerStyle: headerStyle, fullStyle: fullStyle}), 
                 
-            React.createElement(ExpandableNavMenu, null, React.createElement(ExpandableNavMenuItem, {url: '#/home',active: sethome,small: menuItemsSmall[0], full: menuItemsFull[0], tooltip: "Home", jquery: window.$ ,onClick : this.handleHome}),
-            React.createElement(ExpandableNavMenuItem, {active: setintel,small: menuItemsSmall[1], full: menuItemsFull[1], tooltip: "Intel", jquery: window.$, onClick: this.handleIntel}),
+            React.createElement(ExpandableNavMenu, null, 
+            
                     React.createElement(ExpandableNavMenuItem, {active:setalerts ,small: menuItemsSmall[2], full: menuItemsFull[2], tooltip: "Alert", jquery: window.$, onClick: this.handleAlerts}),
                 React.createElement(ExpandableNavMenuItem, {active: setevents,small: menuItemsSmall[3], full: menuItemsFull[3], tooltip: "Event", jquery: window.$,onClick: this.handleEvents}),
                 React.createElement(ExpandableNavMenuItem, {active: setincidents,small: menuItemsSmall[4], full: menuItemsFull[4], tooltip: "Incident", jquery: window.$, onClick: this.handleIncidents}),
                     React.createElement(ExpandableNavMenuItem, {active: settask, small: menuItemsSmall[5], full: menuItemsFull[5], tooltip: "Task", jquery: window.$, onClick: this.handleTasks}),
             React.createElement(ExpandableNavMenuItem, {active: setguide, small: menuItemsSmall[6], full: menuItemsFull[6], tooltip: "Guide", jquery: window.$, onClick: this.handleGuide}),
         //            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Admin", jquery: window.$, onClick:this.handlePad}),
-                    React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Incident Handler:  " + this.state.handler, jquery: window.$, onClick: this.handleHandler}) 
+            React.createElement(ExpandableNavMenuItem, {active: setintel,small: menuItemsSmall[1], full: menuItemsFull[1], tooltip: "Intel", jquery: window.$, onClick: this.handleIntel}),
+            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Incident Handler:  " + this.state.handler, jquery: window.$, onClick: this.handleHandler}) 
                 )
 
             ),
             this.state.set == 0 
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement('div', {className: 'Text'}, React.createElement('img', {src: 'scot.png', style: {width:'350px', height: '320px','margin-left':'auto', 'margin-right':'auto', display: 'block'}}), React.createElement('h1', null, "Sandia Cyber Omni Tracker, v. 3.5"), React.createElement('h1', null, 'Official Use Only')))  
+        React.createElement(ExpandableNavPage, null, React.createElement('div', {className: 'Text'}, React.createElement('img', {src: '/images/scot-600h.png', style: {width:'350px', height: '320px','margin-left':'auto', 'margin-right':'auto', display: 'block'}}), React.createElement('h1', null, "Sandia Cyber Omni Tracker, v. 3.5"), React.createElement('h1', null, 'Official Use Only')))  
             :
         this.state.set == 1
         ?	
@@ -48734,9 +48735,8 @@ var ExpandableNavMenuItem = React.createClass({displayName: "ExpandableNavMenuIt
   getDefaultProps:function() {
     var sharedStyle = {
       paddingTop: 13,
-      paddingRight: 15,
       paddingBottom: 13,
-      paddingLeft: 15
+      textAlign: 'center',
     };
     return {
       smallStyle: sharedStyle,
