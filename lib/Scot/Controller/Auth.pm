@@ -108,4 +108,23 @@ sub update_user_failure {
     }
 }
 
+sub check_for_csrf {
+    my $self    = shift;
+    # see: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet
+    # for now, choosing the Custom Request Header check for it's friendliness to REST
+
+    my $headers = $self->req->headers;
+    my $reqwith = $headers->header('X-Requested-With');
+    my $log     = $self->env->log;
+
+    $log->debug("CSRF Check...");
+
+    if ( $reqwith eq "XMLHttpRequest" ) {
+        $log->debug("Passed CSRF Check");
+        return 1;
+    }
+    $log->error("Invalid Content of header X-Requested-With: ".$reqwith);
+    return undef;
+}
+
 1;

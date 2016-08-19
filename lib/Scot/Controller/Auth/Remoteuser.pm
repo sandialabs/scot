@@ -39,6 +39,11 @@ sub check {
     my $request     = $self->req;
     my $headers     = $request->headers;
 
+    unless ( $self->check_for_csrf ) {
+        $log->error("CSRF attempt! from ", $self->tx->remote_address);
+        return undef;
+    }
+
 
     # $log->debug("headers = ".Dumper($headers));
 
