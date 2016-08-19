@@ -208,13 +208,13 @@ var App = React.createClass({
 	    var headerFull = <a href='/'>Scot3</a>
         var headerSmall = ""
         var menuItemsSmall = [
-        <span className = "glyphicon glyphicon-home"></span>,
-        <span className = "glyphicon glyphicon-eye-open"></span>,
-        <span className = "glyphicon glyphicon-warning-sign"></span>,
-        <span className = "glyphicon glyphicon-list-alt"></span>,
-        <span className = "glyphicon glyphicon-screenshot"></span>,
-        <span className = "glyphicon glyphicon-edit"></span>,
-        <span className = "glyphicon glyphicon-pencil"></span>,
+        <span className = "home"></span>,
+        <span className = "intel"><i className="fa fa-lightbulb-o" aria-hidden="true"></i></span>,
+        <span className = "fa fa-a"></span>,
+        <span className = "fa fa-e"></span>,
+        <span className = "fa fa-i"></span>,
+        <span className = "fa fa-t"></span>,
+        <span className = "fa fa-g"></span>,
       //  <span className = "glyphicon glyphicon-cog"></span>,
         <span className = "glyphicon glyphicon-user"></span>,
         ]	
@@ -240,21 +240,22 @@ var App = React.createClass({
                 React.createElement(ExpandableNavbar, {fullClass: "full", smallClass: "small"}, 
                 React.createElement(ExpandableNavHeader, {small: headerSmall, full: headerFull, headerStyle: headerStyle, fullStyle: fullStyle}), 
                 
-            React.createElement(ExpandableNavMenu, null, React.createElement(ExpandableNavMenuItem, {url: '#/home',active: sethome,small: menuItemsSmall[0], full: menuItemsFull[0], tooltip: "Home", jquery: window.$ ,onClick : this.handleHome}),
-            React.createElement(ExpandableNavMenuItem, {active: setintel,small: menuItemsSmall[1], full: menuItemsFull[1], tooltip: "Intel", jquery: window.$, onClick: this.handleIntel}),
+            React.createElement(ExpandableNavMenu, null, 
+            
                     React.createElement(ExpandableNavMenuItem, {active:setalerts ,small: menuItemsSmall[2], full: menuItemsFull[2], tooltip: "Alert", jquery: window.$, onClick: this.handleAlerts}),
                 React.createElement(ExpandableNavMenuItem, {active: setevents,small: menuItemsSmall[3], full: menuItemsFull[3], tooltip: "Event", jquery: window.$,onClick: this.handleEvents}),
                 React.createElement(ExpandableNavMenuItem, {active: setincidents,small: menuItemsSmall[4], full: menuItemsFull[4], tooltip: "Incident", jquery: window.$, onClick: this.handleIncidents}),
                     React.createElement(ExpandableNavMenuItem, {active: settask, small: menuItemsSmall[5], full: menuItemsFull[5], tooltip: "Task", jquery: window.$, onClick: this.handleTasks}),
             React.createElement(ExpandableNavMenuItem, {active: setguide, small: menuItemsSmall[6], full: menuItemsFull[6], tooltip: "Guide", jquery: window.$, onClick: this.handleGuide}),
         //            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Admin", jquery: window.$, onClick:this.handlePad}),
-                    React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Incident Handler:  " + this.state.handler, jquery: window.$, onClick: this.handleHandler}) 
+            React.createElement(ExpandableNavMenuItem, {active: setintel,small: menuItemsSmall[1], full: menuItemsFull[1], tooltip: "Intel", jquery: window.$, onClick: this.handleIntel}),
+            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Incident Handler:  " + this.state.handler, jquery: window.$, onClick: this.handleHandler}) 
                 )
 
             ),
             this.state.set == 0 
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement('div', {className: 'Text'}, React.createElement('img', {src: 'scot.png', style: {width:'350px', height: '320px','margin-left':'auto', 'margin-right':'auto', display: 'block'}}), React.createElement('h1', null, "Sandia Cyber Omni Tracker, v. 3.5"), React.createElement('h1', null, 'Official Use Only')))  
+        React.createElement(ExpandableNavPage, null, React.createElement('div', {className: 'Text'}, React.createElement('img', {src: '/images/scot-600h.png', style: {width:'350px', height: '320px','margin-left':'auto', 'margin-right':'auto', display: 'block'}}), React.createElement('h1', null, "Sandia Cyber Omni Tracker, v. 3.5"), React.createElement('h1', null, 'Official Use Only')))  
             :
         this.state.set == 1
         ?	
