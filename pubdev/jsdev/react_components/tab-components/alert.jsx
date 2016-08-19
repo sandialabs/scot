@@ -48,6 +48,10 @@ sortarray[colsort] = -1
 var columns = ['id', 'Status', 'Subject', 'Created', 'Source', 'Tags', 'Views']
 var toggle
 var scrolled = 48
+var listStartX;
+var listStartY;
+var listStartWidth;
+var listStartHeight;
 module.exports = React.createClass({
 
     getInitialState: function(){
@@ -72,8 +76,15 @@ module.exports = React.createClass({
         firstCol.width = firstSize
         this.setState({})
     },
+    componentWillMount: function() {
+        this.Landscap()
+    },
     componentDidMount: function(){
-        toggle  = $('#list-view').find('.tableview')
+        if ($('#list-view')[0] != undefined) {
+            toggle  = $('#list-view').find('.tableview')
+        } else {
+            toggle = $('#old-list-view').find('.tableview')
+        } 
         var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
             this.reloadItem()
@@ -226,8 +237,8 @@ module.exports = React.createClass({
             $('.container-fluid2').css('max-height', height)
             //$('.container-fluid2').css('max-width', '915px')
             if(e != null){
-                width = e.clientX
-                $('.container-fluid2').css('width', e.clientX)
+                //width = e.clientX
+                $('.container-fluid2').css('width', listStartWidth + e.clientX - listStartX)
             }
             if(width < size){
                 var array = []
@@ -252,7 +263,8 @@ module.exports = React.createClass({
         //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
               $('.container-fluid2').css('width', '100%')
               if(e != null){
-                $('.container-fluid2').css('height', e.clientY)
+                $('.container-fluid2').css('height', listStartHeight + e.clientY - listStartY)
+                this.forceUpdate();
             }
         }
     },
@@ -332,7 +344,7 @@ module.exports = React.createClass({
                 React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {/*'max-width': '915px',*//*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow': 'hidden','padding-left':'5px', display:'flex', flexFlow: 'column'}}, 
                     React.createElement("div", {className: "table-row header " + this.state.classname[0]},
                         React.createElement("div", {className: "wrapper attributes " + this.state.classname[1]}, 
-                        React.createElement('div', {className: 'wrapper status-owner-severity'},
+                        React.createElement('div', {className: 'wrapper'},
                         React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1]}, 
                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {ref: 'myPopOverid', trigger:['click','focus'], placement:'bottom', rootClose: true, overlay: React.createElement(Popover, null, 
                         React.createElement('div', {className: 'Filter and Sort', id: 'idheader'}, React.createElement('div',
@@ -409,7 +421,7 @@ module.exports = React.createClass({
                         this.state.createdarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.createdarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.createdarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.createdarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.createdarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '45px', position: 'relative'}}) : null)
                         ))),
                          React.createElement('div', {className:'wrapper module-reporter '+this.state.sizearray[2] + ' ' + this.state.classname[2]},
-                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOversource', rootClose: true, overlay: React.createElement(Popover, null, 
+                         React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}, className: 'list-source'}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOversource', rootClose: true, overlay: React.createElement(Popover, null, 
                         React.createElement('div', {className: 'Filter and Sort', id: 'sourceheader'}, React.createElement('div',
                         {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Source'), React.createElement('div', 
                         {style:{'padding-left': '100px'}}, 'Sort'), 
@@ -428,7 +440,7 @@ module.exports = React.createClass({
 
                             this.state.sourcearrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.sourcearrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.sourcearrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.sourcearrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.sourcearrow[1] == -1 ? null : '5px solid black', top: '9px', right: '55px', position: 'relative'}}) : null)
                         )),
-                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOvertags', rootClose: true, overlay: React.createElement(Popover, null, 
+                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}, className:'list-tag'}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOvertags', rootClose: true, overlay: React.createElement(Popover, null, 
                         React.createElement('div', {className: 'Filter and Sort', id: 'tagsheader'}, React.createElement('div',
                         {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Tags'), React.createElement('div', 
                         {style:{'padding-left': '100px'}}, 'Sort'), 
@@ -493,9 +505,9 @@ module.exports = React.createClass({
                         React.createElement('div', {style: {'font-weight': 'bold'}}, 'Views:  '), React.createElement('div', null, value.views))
                         ))},*/ 
                         React.createElement("div", {style: {background: this.state.idsarray[0] == value.id ? this.state.blue : null},onClick: this.clickable, className: value.classname + ' ' + this.state.classname[0], id: value.id}, 
-                        React.createElement("div", {className: "wrapper attributes " + this.state.classname[1]},
-                        React.createElement('div', {className: 'wrapper status-owner-severity'},
-                        React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]}, 
+                        React.createElement("div", {className: "wrapper attributes" + this.state.classname[1]},
+                        React.createElement('div', {className: 'wrapper'},
+                        React.createElement('div', {className: 'wrapper status-owner'+ this.state.sizearray[1] + ' ' + this.state.classname[3]}, 
                             React.createElement("div", {style: {width: '100px'}, className: 'column index'}, value.id),
                             React.createElement("div", {className: "column owner colorstatus"}, 
                             React.createElement(Button, {className: value.status == 'open' ? 'alertgroup_open' : value.status == 'closed' ? 'alertgroup_closed' : 'alertgroup_promoted', bsSize: "xsmall", bsStyle: value.status == 'open' ? 'danger' : value.status == 'closed' ? 'success' : 'default'}, 
@@ -512,8 +524,8 @@ module.exports = React.createClass({
                         React.createElement("div", {className: "wrapper dates "+ this.state.sizearray[0]}, 
                             React.createElement("div", {className: "column date"}, value.created)), 
                         React.createElement('div', {className:'wrapper module-reporter '+ this.state.sizearray[2] + ' ' + this.state.classname[2]},
-                        React.createElement("div", {className: "column module"}, value.sources.join(',')), 
-                        React.createElement("div", {className: "column reporter"}, value.tags.join(','))), 
+                        React.createElement("div", {className: "column module list-source"}, value.sources.join(',')), 
+                        React.createElement("div", {className: "column reporter list-tag"}, value.tags.join(','))), 
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                             React.createElement('div', {className: 'wrapper status-owner '+ this.state.sizearray[1] + ' ' + this.state.classname[3]},    
                             React.createElement("div", {className: "column owner"}, value.views == null ? 0 : value.views)
@@ -568,6 +580,11 @@ module.exports = React.createClass({
         }
     },
     dragdiv: function(e){
+        var elem = document.getElementById('fluid2');
+        listStartX = e.clientX;
+        listStartY = e.clientY;
+        listStartWidth = parseInt(document.defaultView.getComputedStyle(elem).width,10)
+        listStartHeight = parseInt(document.defaultView.getComputedStyle(elem).height,10) 
         document.onmousemove = this.reloadItem
         document.onmouseup  = this.stopdrag
     },
