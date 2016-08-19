@@ -119,6 +119,15 @@ sub check_for_csrf {
 
     $log->debug("CSRF Check...");
 
+    my $url = $self->req->url->to_abs;
+
+    $log->debug("URL is $url");
+
+    unless ( $url =~ /\/scot\/api\// ) {
+        $log->warn("Not a REST request, skipping CSRF check...");
+        return 1;
+    }
+
     if ( $reqwith eq "XMLHttpRequest" ) {
         $log->debug("Passed CSRF Check");
         return 1;
