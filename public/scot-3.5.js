@@ -3908,7 +3908,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                     newType = "Event"
                 } else if (type == "event") {
                     newType = "Incident"
-                } else if (type == "incident" || type == "guide") {
+                } else if (type == "incident" || type == "guide" || type == 'intel') {
                     showPromote = false;
                 } 
             } else {
