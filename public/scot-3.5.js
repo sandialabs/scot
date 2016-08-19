@@ -5720,7 +5720,13 @@ module.exports = React.createClass({displayName: "exports",
         this.setState({})
     },
     componentWillMount: function() {
-        this.Landscap()
+        if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
+            this.Landscap();
+        } else if (this.props.viewMode == 'landscape') {
+            this.Landscap();
+        } else if (this.props.viewMode == 'portrait') {
+            this.Portrait();
+        }
     },
     componentDidMount: function(){
         if ($('#list-view')[0] != undefined) {
@@ -6266,8 +6272,8 @@ module.exports = React.createClass({displayName: "exports",
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
+        setCookie('viewMode',"portrait",1000);
     },
-
     Landscap: function(){
         document.onmousemove = null
         document.onmousedown = null
@@ -6281,7 +6287,7 @@ module.exports = React.createClass({displayName: "exports",
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
-
+        setCookie('viewMode',"landscape",1000);
     },
     clearAll: function(){
         sortarray['id'] = -1
@@ -6736,7 +6742,13 @@ module.exports = React.createClass({displayName: "exports",
         this.setState({})
     },
     componentWillMount: function() {
-        this.Landscap()
+        if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
+            this.Landscap();
+        } else if (this.props.viewMode == 'landscape') {
+            this.Landscap();
+        } else if (this.props.viewMode == 'portrait') {
+            this.Portrait();
+        } 
     },
     componentDidMount: function(){
         if ($('#list-view')[0] != undefined) {
@@ -7360,6 +7372,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})            
+        setCookie('viewMode',"portrait",1000);    
     },
 
     Landscap: function(){
@@ -7375,7 +7388,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
-
+        setCookie('viewMode',"landscape",1000);
     },
     setItem: function(v){
     },
@@ -7925,7 +7938,13 @@ module.exports = React.createClass({displayName: "exports",
             viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: ''};
     },
     componentWillMount: function() {
-        this.Landscap()
+        if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
+            this.Landscap();
+        } else if (this.props.viewMode == 'landscape') {
+            this.Landscap();
+        } else if (this.props.viewMode == 'portrait') {
+            this.Portrait();
+        }
     },
     componentDidMount: function(){
         if ($('#list-view')[0] != undefined) {
@@ -8439,6 +8458,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
+        setCookie('viewMode',"portrait",1000);
     },
 
     Landscap: function(){
@@ -8454,7 +8474,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
-
+        setCookie('viewMode',"landscape",1000);
     },
     filterclear: function(v){
         if($($(v.currentTarget).find('.clear').context).attr('value') == 'id'){
@@ -8567,7 +8587,13 @@ module.exports = React.createClass({displayName: "exports",
         this.setState({})
     },
     componentWillMount: function() {
-        this.Landscap()
+        if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
+            this.Landscap();
+        } else if (this.props.viewMode == 'landscape') {
+            this.Landscap();
+        } else if (this.props.viewMode == 'portrait') {
+            this.Portrait();
+        } 
     },
     componentDidMount: function(){
         if ($('#list-view')[0] != undefined) {
@@ -8774,6 +8800,7 @@ module.exports = React.createClass({displayName: "exports",
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({splitter: true,display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
+        setCookie('viewMode',"portrait",1000);
     },
     stopdrag: function(e){
         $('iframe').each(function(index,ifr){
@@ -8812,7 +8839,7 @@ module.exports = React.createClass({displayName: "exports",
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({splitter: false, classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
-
+        setCookie('viewMode',"landscape",1000);
     },
     render: function() {
         var styles;
@@ -9564,7 +9591,7 @@ var App = React.createClass({displayName: "App",
             this.props.params.value = ''
             state = 0
         }
-	        return{ids: array,set: state, handler: "Scot"}	
+	        return{ids: array,set: state, handler: "Scot", viewMode:'default'}	
     },
    componentWillMount: function() {
 	    $.ajax({
@@ -9573,6 +9600,9 @@ var App = React.createClass({displayName: "App",
 	    }).success(function(response){
 	        this.setState({handler: response.records['username']})
 	        }.bind(this))
+        //Get landscape/portrait view if the cookie exists
+        var viewModeSetting = checkCookie('viewMode');
+        this.setState({viewMode:viewModeSetting})
     },
    render: function() {
 	    var array = []
@@ -9635,35 +9665,35 @@ var App = React.createClass({displayName: "App",
             :
         this.state.set == 1
         ?	
-        React.createElement(ExpandableNavPage, null, React.createElement(Alerts, {isalert: isalert ? 'isalert' : '', supertable: supertableid}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(Alerts, {isalert: isalert ? 'isalert' : '', supertable: supertableid, viewMode: this.state.viewMode}))	
         :
             this.state.set == 2
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(Events, {ids: this.state.ids}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(Events, {ids: this.state.ids, viewMode: this.state.viewMode}))	
         :
             this.state.set == 3
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(Incidents, {ids: this.state.ids}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(Incidents, {ids: this.state.ids, viewMode: this.state.viewMode}))	
         :
         this.state.set == 5
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(SelectedContainer, {ids: this.state.ids, type: statetype}))
+        React.createElement(ExpandableNavPage, null, React.createElement(SelectedContainer, {ids: this.state.ids, type: statetype, viewMode: this.state.viewMode}))
         :
         this.state.set == 4
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(Intel, {ids: this.state.ids}))
+        React.createElement(ExpandableNavPage, null, React.createElement(Intel, {ids: this.state.ids, viewMode: this.state.viewMode}))
         :
         this.state.set == 6
         ?	
-        React.createElement(ExpandableNavPage, null, React.createElement(Tasks, null))	
+        React.createElement(ExpandableNavPage, null, React.createElement(Tasks, {viewMode: this.state.viewMode}))	
         :
         this.state.set == 7
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(Guide, {ids: this.state.ids}))
+        React.createElement(ExpandableNavPage, null, React.createElement(Guide, {ids: this.state.ids, viewMode: this.state.viewMode}))
         :
         this.state.set == 8
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(EntityDetail, {entityid: this.state.ids[0], type: this.state.ids[1], id: this.state.ids[2]}))
+        React.createElement(ExpandableNavPage, null, React.createElement(EntityDetail, {entityid: this.state.ids[0], type: this.state.ids[1], id: this.state.ids[2], viewMode: this.state.viewMode}))
         :
         null
         )	
@@ -9805,7 +9835,13 @@ module.exports = React.createClass({displayName: "exports",
         this.setState({})
     },
     componentWillMount: function() {
-        this.Landscap()
+        if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
+            this.Landscap();
+        } else if (this.props.viewMode == 'landscape') {
+            this.Landscap();
+        } else if (this.props.viewMode == 'portrait') {
+            this.Portrait();
+        } 
     },
     componentDidMount: function(){
         if ($('#list-view')[0] != undefined) {
@@ -10425,9 +10461,11 @@ stage ?
         $('.paging').css('width', width)
         $('.splitter').css('width', '5px')
         $('.mainview').show()
+        var array = [];
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})            
+        setCookie('viewMode',"portrait",1000);
     },
 
     Landscap: function(){
@@ -10444,7 +10482,7 @@ stage ?
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
-
+        setCookie('viewMode',"landscape",1000);
     },
     setItem: function(v){
         console.log(v)
@@ -11000,7 +11038,13 @@ module.exports = React.createClass({displayName: "exports",
             objectarray:[], csv:true};
     },
     componentWillMount: function() {
-        this.Landscap()
+        if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
+            this.Landscap();
+        } else if (this.props.viewMode == 'landscape') {
+            this.Landscap();
+        } else if (this.props.viewMode == 'portrait') {
+            this.Portrait();
+        } 
     },
     componentDidMount: function(){
         if ($('#list-view')[0] != undefined) {
@@ -11508,6 +11552,7 @@ stage ?
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({splitter: true,display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
+        setCookie('viewMode',"portrait",1000);
     },
 
     Landscap: function(){
@@ -11523,7 +11568,7 @@ stage ?
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({classname: [' ', ' ', ' ', ' '],display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         splitter: false, scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
-
+        setCookie('viewMode',"landscape",1000);
     },
     getNewData: function(page){
         pageSize = page.limit

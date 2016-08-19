@@ -184,7 +184,7 @@ var App = React.createClass({
             this.props.params.value = ''
             state = 0
         }
-	        return{ids: array,set: state, handler: "Scot"}	
+	        return{ids: array,set: state, handler: "Scot", viewMode:'default'}	
     },
    componentWillMount: function() {
 	    $.ajax({
@@ -193,6 +193,9 @@ var App = React.createClass({
 	    }).success(function(response){
 	        this.setState({handler: response.records['username']})
 	        }.bind(this))
+        //Get landscape/portrait view if the cookie exists
+        var viewModeSetting = checkCookie('viewMode');
+        this.setState({viewMode:viewModeSetting})
     },
    render: function() {
 	    var array = []
@@ -255,35 +258,35 @@ var App = React.createClass({
             :
         this.state.set == 1
         ?	
-        React.createElement(ExpandableNavPage, null, React.createElement(Alerts, {isalert: isalert ? 'isalert' : '', supertable: supertableid}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(Alerts, {isalert: isalert ? 'isalert' : '', supertable: supertableid, viewMode: this.state.viewMode}))	
         :
             this.state.set == 2
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(Events, {ids: this.state.ids}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(Events, {ids: this.state.ids, viewMode: this.state.viewMode}))	
         :
             this.state.set == 3
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(Incidents, {ids: this.state.ids}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(Incidents, {ids: this.state.ids, viewMode: this.state.viewMode}))	
         :
         this.state.set == 5
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(SelectedContainer, {ids: this.state.ids, type: statetype}))
+        React.createElement(ExpandableNavPage, null, React.createElement(SelectedContainer, {ids: this.state.ids, type: statetype, viewMode: this.state.viewMode}))
         :
         this.state.set == 4
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(Intel, {ids: this.state.ids}))
+        React.createElement(ExpandableNavPage, null, React.createElement(Intel, {ids: this.state.ids, viewMode: this.state.viewMode}))
         :
         this.state.set == 6
         ?	
-        React.createElement(ExpandableNavPage, null, React.createElement(Tasks, null))	
+        React.createElement(ExpandableNavPage, null, React.createElement(Tasks, {viewMode: this.state.viewMode}))	
         :
         this.state.set == 7
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(Guide, {ids: this.state.ids}))
+        React.createElement(ExpandableNavPage, null, React.createElement(Guide, {ids: this.state.ids, viewMode: this.state.viewMode}))
         :
         this.state.set == 8
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(EntityDetail, {entityid: this.state.ids[0], type: this.state.ids[1], id: this.state.ids[2]}))
+        React.createElement(ExpandableNavPage, null, React.createElement(EntityDetail, {entityid: this.state.ids[0], type: this.state.ids[1], id: this.state.ids[2], viewMode: this.state.viewMode}))
         :
         null
         )	
