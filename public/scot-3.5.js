@@ -48860,7 +48860,7 @@ var ExpandableNavToggleButton = React.createClass({displayName: "ExpandableNavTo
   },
   getDefaultProps:function() {
     return {
-      small: React.createElement("img", {src: 'scot.png'}),
+      small: React.createElement('a', {href: '/'}, React.createElement("img", {src: 'scot.png', style:{'position':'fixed','top':'5px','left':'1px','font-size':'20px','width':'48px','color':'white','right':'3000px'}})),
       full: React.createElement("span", {className: "glyphicon glyphicon-chevron-left"}),
       smallStyle: {top: 5, left: 1,'font-size':20, width: 48, color: 'white', right:3000 },
       fullStyle: {top: 5, left:210, 'font-size':20,color:'white', right:3000}
