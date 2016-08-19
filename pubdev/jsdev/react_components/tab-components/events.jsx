@@ -81,7 +81,13 @@ module.exports = React.createClass({
         this.setState({})
     },
     componentWillMount: function() {
-        this.Landscap()
+        if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
+            this.Landscap();
+        } else if (this.props.viewMode == 'landscape') {
+            this.Landscap();
+        } else if (this.props.viewMode == 'portrait') {
+            this.Portrait();
+        } 
     },
     componentDidMount: function(){
         if ($('#list-view')[0] != undefined) {
@@ -705,6 +711,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
                         this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})            
+        setCookie('viewMode',"portrait",1000);    
     },
 
     Landscap: function(){
@@ -720,7 +727,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
         array = ['dates-wide', 'status-owner-wide', 'module-reporter-wide']
         this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
         scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', sizearray: array, resize: 'vertical'})
-
+        setCookie('viewMode',"landscape",1000);
     },
     setItem: function(v){
     },
