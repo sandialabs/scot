@@ -4962,12 +4962,15 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         }
         return (
             React.createElement(Draggable, {handle: "#handle", onMouseDown: this.moveDivInit}, 
-                React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth}}, 
-                    React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex'}}, 
-                        React.createElement("div", {id: "handle", style: {width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarOff})))), 
-                        React.createElement(Tabs, {className: "tab-content", defaultActiveKey: this.props.entityid, activeKey: this.state.currentKey, onSelect: this.handleSelectTab, bsStyle: "pills"}, 
-                            tabsArr
-                        )
+                React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth, display:'flex', flexFlow:'column'}}, 
+                    React.createElement("div", {id: "popup-flex-container", style: {height: '100%', display:'flex', flexFlow:'row'}}, 
+                        React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex', width:'100%'}}, 
+                            React.createElement("div", {id: "handle", style: {width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarOff})))), 
+                            React.createElement(Tabs, {className: "tab-content", defaultActiveKey: this.props.entityid, activeKey: this.state.currentKey, onSelect: this.handleSelectTab, bsStyle: "pills"}, 
+                                tabsArr
+                            )
+                        ), 
+                        React.createElement("div", {id: "sidebar", onMouseDown: this.initDrag, style: {flex:'0 1 auto', height: '100%', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}})
                     ), 
                     React.createElement("div", {id: "footer", onMouseDown: this.initDrag, style: {display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}
                     )
