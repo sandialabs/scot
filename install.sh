@@ -763,6 +763,21 @@ if [ ! -e /etc/init.d/scot ]; then
     sed -i 's=/instdir='$SCOTDIR'=g' /etc/init.d/scot
 fi
 
+if [ ! -e /etc/init.d/scad ]; then
+    echo -e "${red} Missing INIT for SCot Alert Daemon ${NC}"
+    echo -e "${yellow}+ adding /etc/init.d/scad...${NC}"
+    /opt/scot/bin/scad.pl get_init_file > /etc/init.d/scad
+    chmod +x /etc/init.d/scad
+    update-rc.d scad defaults
+fi
+if [ ! -e /etc/init.d/scfd ]; then
+    echo -e "${red} Missing INIT for SCot Flair Daemon ${NC}"
+    echo -e "${yellow}+ adding /etc/init.d/scfd...${NC}"
+    /opt/scot/bin/scfd.pl get_init_file > /etc/init.d/scfd
+    chmod +x /etc/init.d/scfd
+    update-rc.d scfd defaults
+fi
+
 echo "= restarting scot"
 /etc/init.d/scot restart
     
