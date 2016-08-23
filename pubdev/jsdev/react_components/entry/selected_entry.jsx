@@ -190,8 +190,8 @@ var SelectedEntry = React.createClass({
         }
         return (
             <div key={id} className={divClass} style={{height:height}}> 
-                {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : <AddEntryModal title={'Add Entry'} type={this.props.aType} targetid={this.props.aID} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> }</div> : null}
-                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp}/> : <span>Loading...</span>} 
+                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar}/> : <span>Loading...</span>} 
+                {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : null}</div> : null}
                 {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                 {this.state.errorDisplay ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} buttons="CLOSE MESSAGE" onDismiss={this.errorToggle}/> : null} 
@@ -215,10 +215,10 @@ var EntryIterator = React.createClass({
         } else {
             if (type != 'alertgroup') {
                 data.forEach(function(data) {
-                    rows.push(<EntryParent key={data.id} items={data} type={type} id={id} isPopUp={this.props.isPopUp}/>);
+                    rows.push(<EntryParent key={data.id} items={data} type={type} id={id} isPopUp={this.props.isPopUp} />);
                 }.bind(this));
             } else {
-                rows.push(<AlertParent items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} alertPreSelectedId={this.props.alertPreSelectedId}/>);
+                rows.push(<AlertParent items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} alertPreSelectedId={this.props.alertPreSelectedId} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} entryToggle={this.props.entryToggle} updated={this.props.updated}/>);
             }
             return (
                 <div>
@@ -348,7 +348,7 @@ var AlertParent = React.createClass({
                     dataFlair = items[z].data;
                 }
                 
-                body.push(<AlertBody index={z} data={items[z]} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected} alertPreSelectedId={this.props.alertPreSelectedId} activeId={this.state.activeId}/>)
+                body.push(<AlertBody index={z} data={items[z]} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected} alertPreSelectedId={this.props.alertPreSelectedId} activeId={this.state.activeId} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated}/>)
             }
             var search = null;
             if (items[0].data_with_flair != undefined) {
@@ -402,6 +402,7 @@ var AlertBody = React.createClass({
             promotedNumber: null,
             showEntry: false,
             promoteFetch:false,
+            showAddEntryToolbar: false,
         }
     },
     onClick: function(event) {
@@ -418,6 +419,17 @@ var AlertBody = React.createClass({
             this.setState({showEntry: true})
         } else {
             this.setState({showEntry: false})
+        }
+    },
+    toggleOnAddEntry: function() {
+        if (this.state.showAddEntryToolbar == false) {
+            this.setState({showAddEntryToolbar: true, showEntry:true})
+        } 
+    },
+    toggleOffAddEntry: function() {
+        if (this.state.showAddEntryToolbar == true) {
+            this.setState({showAddEntryToolbar: false});
+            this.props.entryToggle();
         }
     },
     navigateTo: function() {
@@ -440,7 +452,7 @@ var AlertBody = React.createClass({
             }
         }
     },
-    componentWillReceiveProps: function() {
+    componentWillReceiveProps: function(nextProps) {
         if (this.state.promoteFetch == false) {
             if (this.props.data.status == 'promoted') {
                 $.ajax({
@@ -451,6 +463,11 @@ var AlertBody = React.createClass({
                 }.bind(this))
                 this.setState({promoteFetch:true});
             }
+        }
+        if (this.props.data.id == this.props.aID && nextProps.entryToolbar == true && this.state.showAddEntryToolbar == false) {
+            this.toggleOnAddEntry();
+        } else if (this.props.data.id != nextProps.aID && nextProps.entryToolbar == true && this.state.showAddEntryToolbar == true) {
+            this.toggleOffAddEntry();
         }
     },
     render: function() {
@@ -500,7 +517,7 @@ var AlertBody = React.createClass({
                     {data.entry_count == 0 ? <td valign='top' style={{marginRight:'4px'}}>{data.entry_count}</td> : <td valign='top' style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onClick={this.toggleEntry}>{data.entry_count}</span></td>}
                     {rowReturn}
                 </tr>
-                <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} />
+                <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} showAddEntryToolbar={this.state.showAddEntryToolbar} toggleOffAddEntry={this.toggleOffAddEntry}/>
             </div>
         )
     }
@@ -524,18 +541,20 @@ var AlertRowBlank = React.createClass({
     render: function() {
         var id = this.props.id;
         var showEntry = this.props.showEntry;
+        var showAddEntryToolbar = this.props.showAddEntryToolbar;
         var DisplayValue = 'none';
         var arr = [];
         arr.push(<SelectedEntry type={this.props.type} id={this.props.id} />)
         if (showEntry == true) {
             DisplayValue = 'table-row';
-        }
+        } 
         return (
             <tr className='not_selectable' style={{display:DisplayValue}}>
                 <td style={{padding:'0'}}>
                 </td>
                 <td colSpan="50">
                     {showEntry ? <div>{<SelectedEntry type={this.props.type} id={this.props.id} />}</div> : null}
+                    {showAddEntryToolbar ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.toggleOffAddEntry} updated={this.props.updated}/> : null}
                 </td>
             </tr>
         )

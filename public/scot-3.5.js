@@ -2364,8 +2364,8 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         }
         return (
             React.createElement("div", {key: id, className: divClass, style: {height:height}}, 
-                this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.aType, targetid: this.props.aID, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB})) : null, 
-                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId, isPopUp: this.props.isPopUp}) : React.createElement("span", null, "Loading..."), 
+                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId, isPopUp: this.props.isPopUp, entryToggle: this.props.entryToggle, updated: this.updatedCB, aType: this.props.aType, aID: this.props.aID, entryToolbar: this.props.entryToolbar}) : React.createElement("span", null, "Loading..."), 
+                this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : null) : null, 
                 this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id}): null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null, 
                 this.state.errorDisplay ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage, buttons: "CLOSE MESSAGE", onDismiss: this.errorToggle}) : null
@@ -2392,7 +2392,7 @@ var EntryIterator = React.createClass({displayName: "EntryIterator",
                     rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id, isPopUp: this.props.isPopUp}));
                 }.bind(this));
             } else {
-                rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected, alertPreSelectedId: this.props.alertPreSelectedId}));
+                rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected, alertPreSelectedId: this.props.alertPreSelectedId, aType: this.props.aType, aID: this.props.aID, entryToolbar: this.props.entryToolbar, entryToggle: this.props.entryToggle, updated: this.props.updated}));
             }
             return (
                 React.createElement("div", null, 
@@ -2522,7 +2522,7 @@ var AlertParent = React.createClass({displayName: "AlertParent",
                     dataFlair = items[z].data;
                 }
                 
-                body.push(React.createElement(AlertBody, {index: z, data: items[z], dataFlair: dataFlair, activeIndex: this.state.activeIndex, rowClicked: this.rowClicked, alertSelected: this.props.alertSelected, allSelected: this.state.allSelected, alertPreSelectedId: this.props.alertPreSelectedId, activeId: this.state.activeId}))
+                body.push(React.createElement(AlertBody, {index: z, data: items[z], dataFlair: dataFlair, activeIndex: this.state.activeIndex, rowClicked: this.rowClicked, alertSelected: this.props.alertSelected, allSelected: this.state.allSelected, alertPreSelectedId: this.props.alertPreSelectedId, activeId: this.state.activeId, aID: this.props.aID, aType: this.props.aType, entryToggle: this.props.entryToggle, entryToolbar: this.props.entryToolbar, updated: this.props.updated}))
             }
             var search = null;
             if (items[0].data_with_flair != undefined) {
@@ -2576,6 +2576,7 @@ var AlertBody = React.createClass({displayName: "AlertBody",
             promotedNumber: null,
             showEntry: false,
             promoteFetch:false,
+            showAddEntryToolbar: false,
         }
     },
     onClick: function(event) {
@@ -2592,6 +2593,17 @@ var AlertBody = React.createClass({displayName: "AlertBody",
             this.setState({showEntry: true})
         } else {
             this.setState({showEntry: false})
+        }
+    },
+    toggleOnAddEntry: function() {
+        if (this.state.showAddEntryToolbar == false) {
+            this.setState({showAddEntryToolbar: true, showEntry:true})
+        } 
+    },
+    toggleOffAddEntry: function() {
+        if (this.state.showAddEntryToolbar == true) {
+            this.setState({showAddEntryToolbar: false});
+            this.props.entryToggle();
         }
     },
     navigateTo: function() {
@@ -2614,7 +2626,7 @@ var AlertBody = React.createClass({displayName: "AlertBody",
             }
         }
     },
-    componentWillReceiveProps: function() {
+    componentWillReceiveProps: function(nextProps) {
         if (this.state.promoteFetch == false) {
             if (this.props.data.status == 'promoted') {
                 $.ajax({
@@ -2625,6 +2637,11 @@ var AlertBody = React.createClass({displayName: "AlertBody",
                 }.bind(this))
                 this.setState({promoteFetch:true});
             }
+        }
+        if (this.props.data.id == this.props.aID && nextProps.entryToolbar == true && this.state.showAddEntryToolbar == false) {
+            this.toggleOnAddEntry();
+        } else if (this.props.data.id != nextProps.aID && nextProps.entryToolbar == true && this.state.showAddEntryToolbar == true) {
+            this.toggleOffAddEntry();
         }
     },
     render: function() {
@@ -2674,7 +2691,7 @@ var AlertBody = React.createClass({displayName: "AlertBody",
                     data.entry_count == 0 ? React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.entry_count) : React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, React.createElement("span", {style: {color: 'blue', textDecoration: 'underline', cursor: 'pointer'}, onClick: this.toggleEntry}, data.entry_count)), 
                     rowReturn
                 ), 
-                React.createElement(AlertRowBlank, {id: data.id, type: 'alert', showEntry: this.state.showEntry})
+                React.createElement(AlertRowBlank, {id: data.id, type: 'alert', showEntry: this.state.showEntry, aID: this.props.aID, aType: this.props.aType, entryToggle: this.props.entryToggle, entryToolbar: this.props.entryToolbar, updated: this.props.updated, showAddEntryToolbar: this.state.showAddEntryToolbar, toggleOffAddEntry: this.toggleOffAddEntry})
             )
         )
     }
@@ -2698,18 +2715,20 @@ var AlertRowBlank = React.createClass({displayName: "AlertRowBlank",
     render: function() {
         var id = this.props.id;
         var showEntry = this.props.showEntry;
+        var showAddEntryToolbar = this.props.showAddEntryToolbar;
         var DisplayValue = 'none';
         var arr = [];
         arr.push(React.createElement(SelectedEntry, {type: this.props.type, id: this.props.id}))
         if (showEntry == true) {
             DisplayValue = 'table-row';
-        }
+        } 
         return (
             React.createElement("tr", {className: "not_selectable", style: {display:DisplayValue}}, 
                 React.createElement("td", {style: {padding:'0'}}
                 ), 
                 React.createElement("td", {colSpan: "50"}, 
-                    showEntry ? React.createElement("div", null, React.createElement(SelectedEntry, {type: this.props.type, id: this.props.id})) : null
+                    showEntry ? React.createElement("div", null, React.createElement(SelectedEntry, {type: this.props.type, id: this.props.id})) : null, 
+                    showAddEntryToolbar ? React.createElement(AddEntryModal, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.toggleOffAddEntry, updated: this.props.updated}) : null
                 )
             )
         )
