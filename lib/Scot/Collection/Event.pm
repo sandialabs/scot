@@ -237,12 +237,14 @@ sub create_promotion {
     my $self    = shift;
     my $object  = shift;
     my $req     = shift;
+    my $user    = shift;
     my $subject =   $self->get_subject($object) //
                     $self->get_value_from_request($req, "subject");
 
     return $self->create({
         subject => $subject, 
         status  => 'open',
+        owner   => $user,
     });
 }
 
