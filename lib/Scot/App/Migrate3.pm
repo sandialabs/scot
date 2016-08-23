@@ -936,7 +936,7 @@ sub create_sources {
             $insertions++;
         }
         else {
-            $docid  = $doc->{$id};
+            $docid  = $doc->{id};
         }
 
         push @links, {
