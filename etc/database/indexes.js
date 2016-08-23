@@ -1,6 +1,7 @@
 db.alertgroup.ensureIndex(  { "id":          1}, {unique: true, dropDups:true} );
 db.alertgroup.ensureIndex(  { "message_id":  1} );
 db.alertgroup.ensureIndex(  { "updated":     1} );
+db.alertgroup.ensureIndex(  { "created":     1} );
 
 db.alert.ensureIndex(       { "id":         1}, {unique: true, dropDups:true}  );
 db.alert.ensureIndex(       { "alertgroup": 1}  );
