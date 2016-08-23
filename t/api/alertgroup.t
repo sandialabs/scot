@@ -7,6 +7,7 @@ use Test::Mojo;
 use Data::Dumper;
 use Scot::Collection;
 use Scot::Collection::Alertgroup;
+use Mojo::JSON qw(encode_json decode_json);
 
 $ENV{'scot_mode'}           = "testing";
 $ENV{'SCOT_AUTH_TYPE'}      = "Testing";
@@ -26,6 +27,13 @@ my $env = Scot::Env->instance;
 #    my ($self, $frame) = @_;
 #    print "AMQ received: ". Dumper($frame). "\n";
 #});
+
+# use this to set csrf protection 
+# though not really used due to testing auth 
+$t->ua->on(start => sub {
+    my ($ua, $tx) = @_;
+    $tx->req->headers->header('X-Requested-With' => 'XMLHttpRequest');
+});
 
 
 $t->post_ok(
@@ -160,6 +168,167 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
     ->json_is('/queryRecordCount'   => 2)
     ->json_is('/records/0/status'   => 'closed')
     ->json_is('/records/1/status'   => 'closed');
+
+# create a bunch of alertgroups to test sorting and filtering
+
+my @ags = (
+    {
+        message_id  => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        subject     => 'test message 3',
+        data        => [
+            { foo   => 1,   bar => 10, boom => "one" },
+        ],
+        tag     => [qw(test testing)],
+        source  => [qw(todd scot)],
+        columns  => [qw(foo bar boom) ],
+    },
+    {
+        message_id  => 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+        subject     => 'test message 4',
+        data        => [
+            { foo   => 2,   bar => 20, boom => "two" },
+        ],
+        tag     => [qw(test testing)],
+        source  => [qw(todd scot)],
+        columns  => [qw(foo bar boom) ],
+    },
+    {
+        message_id  => 'cccccccccccccccccccccccccccccc',
+        subject     => 'test message 5',
+        data        => [
+            { foo   => 3,   bar => 30, boom => "three" },
+        ],
+        tag     => [qw(test testing)],
+        source  => [qw(todd scot)],
+        columns  => [qw(foo bar boom) ],
+    },
+    {
+        message_id  => 'dddddddddddddddddddddddddddddd',
+        subject     => 'fest test message 6',
+        data        => [
+            { foo   => 4,   bar => 40, boom => "four" },
+        ],
+        tag     => [qw(test testing)],
+        source  => [qw(todd scot)],
+        columns  => [qw(foo bar boom) ],
+    },
+    {
+        message_id  => 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+        subject     => 'fest test message 7',
+        data        => [
+            { foo   => 5,   bar => 50, boom => "five" },
+        ],
+        tag     => [qw(test testing)],
+        source  => [qw(todd scot)],
+        columns  => [qw(foo bar boom) ],
+    },
+    {
+        message_id  => 'ffffffffffffffffffffffffffffff',
+        subject     => 'fest test message 8',
+        data        => [
+            { foo   => 6,   bar => 60, boom => "six" },
+        ],
+        tag     => [qw(test testing)],
+        source  => [qw(todd scot)],
+        columns  => [qw(foo bar boom) ],
+    },
+);
+
+foreach my $ag (@ags) {
+    $t->post_ok(
+        '/scot/api/v2/alertgroup'   => json => $ag
+    )->status_is(200);
+}
+
+my $json_sort   = encode_json {
+    id  => -1
+};
+
+$t->get_ok("/scot/api/v2/alertgroup" => 
+            {} => 
+            form => {
+                sort    => $json_sort
+            }, 
+    "Get alertgroup list")
+    ->status_is(200)
+    ->json_is('/records/0/id'   => 7)
+    ->json_is('/records/6/id'   => 1);
+
+$t->get_ok("/scot/api/v2/alertgroup" => 
+            {} => 
+            form => {
+                sort    => $json_sort,
+                limit   => 2,
+            })
+    ->status_is(200)
+    ->json_is('/queryRecordCount'   => 2)
+    ->json_is('/totalRecordCount'   => 7)
+    ->json_is('/records/0/id'   => 7)
+    ->json_is('/records/1/id'   => 6);
+
+$t->get_ok("/scot/api/v2/alertgroup" => 
+            {} => 
+            form => {
+                sort    => $json_sort,
+                limit   => 2,
+                offset  => 2,
+            }, 
+    )
+    ->status_is(200)
+    ->json_is('/queryRecordCount'   => 2)
+    ->json_is('/totalRecordCount'   => 7)
+    ->json_is('/records/0/id'       => 5)
+    ->json_is('/records/1/id'       => 4);
+
+my $json_match = encode_json { subject => "fest" };
+$t->get_ok("/scot/api/v2/alertgroup" => {},
+            form => {
+                sort    => $json_sort,
+                match   => $json_match,
+                limit   => 2,
+                offset  => 2,
+            }, 
+    )
+    ->status_is(200)
+    ->json_is('/queryRecordCount'   => 1)
+    ->json_is('/totalRecordCount'   => 3);
+
+$t->get_ok("/scot/api/v2/alertgroup/7")
+    ->status_is(200);
+$t->get_ok("/scot/api/v2/alertgroup/7")
+    ->status_is(200);
+$t->get_ok("/scot/api/v2/alertgroup/7")
+    ->status_is(200);
+$t->get_ok("/scot/api/v2/alertgroup/6")
+    ->status_is(200);
+$t->get_ok("/scot/api/v2/alertgroup/6")
+    ->status_is(200);
+$t->get_ok("/scot/api/v2/alertgroup/5")
+    ->status_is(200);
+
+$json_sort  = encode_json { views => -1 };
+$t->get_ok("/scot/api/v2/alertgroup" => {},
+            form => {
+                sort    => $json_sort,
+                limit   => 3,
+            }, 
+    )
+    ->status_is(200)
+    ->json_is('/queryRecordCount'   => 3)
+    ->json_is('/totalRecordCount'   => 7)
+    ->json_is('/records/0/views'    => 3)
+    ->json_is('/records/1/views'    => 2)
+    ->json_is('/records/2/views'    => 2);
+
+
+$json_match = encode_json { views   => 3 };
+$t->get_ok("/scot/api/v2/alertgroup" => {},
+            form => {
+                match => $json_match,
+            }, 
+    )
+    ->status_is(200);
+ print Dumper($t->tx->res->json), "\n";
     
 # print Dumper($t->tx->res->json), "\n";
 done_testing();
