@@ -614,7 +614,7 @@ module.exports = React.createClass({
                         React.createElement('div', {className: 'wrapper status-owner-severity'},
                             React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1] + ' ' + this.state.classname[3]},    
                             React.createElement("div", {className: "column status"}, value.owner), 
-                            React.createElement("div", {className: "column severity"}, value.entries),
+                            React.createElement("div", {className: "column severity"}, value.entry_count),
                             React.createElement("div", {className: "column owner"}, value.views == null ? 0 : value.views)
                             ) 
                         )
