@@ -38,7 +38,7 @@ var Owner = React.createClass({
         $.ajax({
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id,
-            data: json,
+            data: JSON.stringify(json),
             contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 var key = this.state.key;
