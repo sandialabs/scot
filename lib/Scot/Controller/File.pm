@@ -196,7 +196,6 @@ sub get_targets {
     my $log     = $env->log;
     my $mongo   = $env->mongo;
 
-
     my $entry_id   = $self->param('entry_id');
     my $target_id;
     my $target_type;

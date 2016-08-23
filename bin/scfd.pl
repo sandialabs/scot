@@ -6,7 +6,7 @@ use Daemon::Control;
 
 exit Daemon::Control->new(
     name    =>  "Scot Flair Daemon (scfd)",
-    lsb_start   => '$remove_fs',
+    lsb_start   => '$scot',
     lsb_stop    => "",
     lsb_sdesc   => "Scot Flair Daemon",
     lsb_desc    => "Scot Flair Daemon Flairs SCOT data",
