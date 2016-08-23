@@ -35,7 +35,7 @@ sub create {
     my $mongo   = $env->mongo;
     my $user    = $self->session('user');
 
-    $user = "DOOFUS" unless ($user);
+    $user = "unknown" unless ($user);
 
     $log->trace("------------");
     $log->trace("Handler is processing a POST (create) from $user");
@@ -156,23 +156,6 @@ sub create {
             what    => "created via api",
             when    => $env->now,
             targets => { id => $object->id, type => $thing },
-        });
-    }
-
-    if ( ref($object) eq "Scot::Model::Entry" ) {
-        my $target_id   = $object->target->{id};
-        my $target_type = $object->target->{type};
-        my $col         = $mongo->collection(ucfirst($target_type));
-        my $obj         = $col->find_iid($target_id);
-
-        $log->debug(uc("updating $target_type entry count"));
-        $obj->update({
-            '$set'  => {
-                updated => $env->now
-            },
-            '$inc'  => {
-                entry_count => 1,
-            },
         });
     }
 
@@ -1273,7 +1256,7 @@ sub get_promotion_obj {
     unless ( ref($promotion_obj) ) {
 
         $log->debug("promotion object does not exist, creating one...");
-        $promotion_obj = $procollection->create_promotion($object, $req);
+        $promotion_obj = $procollection->create_promotion($object, $req,$user);
 
     }
 
@@ -2264,7 +2247,7 @@ sub build_match_ref {
     my $match           = {};
     my $store;
     my @datefields      = qw(updated created occurred discovered reported);
-    my @numfields       = qw(views); 
+    my @numfields       = qw(views entry_count); 
 
     while (my ($k, $v)  = each %{$filter_ref}) {
         $log->debug("k = $k, v = $v");
@@ -2295,6 +2278,9 @@ sub build_match_ref {
         }
         elsif ( grep {/$k/}  @numfields) {
             $log->debug("numeric field");
+            if ( ref($v) ne "ARRAY") {
+                $v  = [ $v ];
+            }
             @$v = map {$_} @$v;
             if(grep(m/!/, @$v) || grep(m/Not/i, @$v)) {
                 for(@$v){
