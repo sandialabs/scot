@@ -31,7 +31,7 @@ var Summary = React.createClass({
         $.ajax({
             type: 'put',
             url: 'scot/api/v2/entry/' + this.props.entryid,
-            data: json,
+            data: JSON.stringify(json),
             contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success: ' + data);
