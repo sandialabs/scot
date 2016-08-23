@@ -183,7 +183,11 @@ my $new_updated = $t->tx->res->json->{updated};
 
 ok($new_updated > $orig_updated, "Updated was updated");
 
-  print Dumper($t->tx->res->json);
+
+
+
+
+#  print Dumper($t->tx->res->json);
  done_testing();
  exit 0;
 
