@@ -109,7 +109,9 @@ sub create {
                             ->find_iid($thref->{id});
         if ( $target->meta->does_role("Scot::Role::Entriable") ) {
             $target->update_inc( entry_count => 1 );
-            $target->update_set( updated => $env->now );
+            if ( $target->meta->does_role("Scot::Role::Times") ) {
+                $target->update_set( updated => $env->now );
+            }
         }
         $env->mq->send("scot", {
             action  => "updated",
