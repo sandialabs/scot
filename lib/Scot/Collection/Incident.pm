@@ -62,6 +62,7 @@ sub create_promotion {
     my $self    = shift;
     my $object  = shift;
     my $req     = shift;
+    my $user    = shift;
 
     my $reportable      = $self->get_value_from_request($req, "reportable");
     my $subject         = $object->subject // 
@@ -69,6 +70,7 @@ sub create_promotion {
     my $href    = {
         reportable  => $reportable ? 1 : 0,
         subject     => $subject,
+        owner       => $user,
     };
     my $category        = $self->get_value_from_request($req, "category");
     $href->{category}   = $category if (defined($category));
