@@ -159,23 +159,6 @@ sub create {
         });
     }
 
-    if ( ref($object) eq "Scot::Model::Entry" ) {
-        my $target_id   = $object->target->{id};
-        my $target_type = $object->target->{type};
-        my $col         = $mongo->collection(ucfirst($target_type));
-        my $obj         = $col->find_iid($target_id);
-
-        $log->debug(uc("updating $target_type entry count"));
-        $obj->update({
-            '$set'  => {
-                updated => $env->now
-            },
-            '$inc'  => {
-                entry_count => 1,
-            },
-        });
-    }
-
     $self->audit("create_thing", {
         thing   => $self->get_object_collection($object),
         id      => $object->id,
