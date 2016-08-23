@@ -6,7 +6,7 @@ use Daemon::Control;
 
 exit Daemon::Control->new(
     name    =>  "Scot Alert Daemon (scad)",
-    lsb_start   => '$remove_fs',
+    lsb_start   => '$scot',
     lsb_stop    => "",
     lsb_sdesc   => "Scot Alert Daemon",
     lsb_desc    => "Scot Alert Daemon inserts Alerts into SCOT",
