@@ -1876,7 +1876,7 @@ var Summary = React.createClass({displayName: "Summary",
         $.ajax({
             type: 'put',
             url: 'scot/api/v2/entry/' + this.props.entryid,
-            data: json,
+            data: JSON.stringify(json),
             contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success: ' + data);
@@ -5536,7 +5536,7 @@ var Owner = React.createClass({displayName: "Owner",
         $.ajax({
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id,
-            data: json,
+            data: JSON.stringify(json),
             contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 var key = this.state.key;
