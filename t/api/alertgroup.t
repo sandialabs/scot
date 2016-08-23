@@ -328,7 +328,26 @@ $t->get_ok("/scot/api/v2/alertgroup" => {},
             }, 
     )
     ->status_is(200);
+
+$t->get_ok("/scot/api/v2/alertgroup/7/alert")
+    ->status_is(200);
+
+my $alert_id    = $t->tx->res->json->{records}->[0]->{id};
+my $a_e_count   = $t->tx->res->json->{records}->[0]->{entry_count};
+
+$t->post_ok("/scot/api/v2/entry" => json => {
+        body    => "Test Entry on alert $alert_id",
+        target_id   => $alert_id,
+        target_type => "alert",
+    })->status_is(200)
+    ->json_is('/status' => 'ok');
+
+$t->get_ok("/scot/api/v2/alertgroup/7/alert")
+    ->status_is(200)
+    ->json_is('/records/0/entry_count' => $a_e_count +1);
+
  print Dumper($t->tx->res->json), "\n";
+
     
 # print Dumper($t->tx->res->json), "\n";
 done_testing();
