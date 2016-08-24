@@ -59,7 +59,7 @@ tr.spaceTop > td {
     padding-top: 1em;
 }
 
-input[type=text] {
+input[type=text]:not(.form-control) {
     background-color:#292929;
     border-color: #292929;
     border-style: solid;
@@ -867,6 +867,10 @@ html>body tbody.fixedContent {
             background-repeat:repeat-y;
 }
 
+.incidentTableWidth {
+    width: 200px;
+}
+
 .incidentTable {
   display: table;
   padding:3px;
@@ -879,7 +883,7 @@ html>body tbody.fixedContent {
 
 .incidentTable > div {
   display: table-row;
-  border-bottom: 1px solid #333;
+//  border-bottom: 1px solid #333;
 }
 
 .incidentTable div:nth-child(odd) {
@@ -890,10 +894,10 @@ html>body tbody.fixedContent {
   background-color: #FFF;
 }
 
-.incidentTable  span:first-child {
+.incidentTable span:first-child {
   font-weight: bold;
   padding-right:10px;
-  width:200px;
+  //width:200px;
   display: inline-block;
 }
 
