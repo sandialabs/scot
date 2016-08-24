@@ -18,6 +18,7 @@ var Watcher                 = require('../components/add_flair.jsx').Watcher;
 var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx'); 
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
+var IncidentTable           = require('../components/incident_table.jsx');
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
@@ -190,6 +191,7 @@ var SelectedEntry = React.createClass({
         }
         return (
             <div key={id} className={divClass} style={{height:height}}> 
+                {(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar}/> : <span>Loading...</span>} 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : null}</div> : null}
                 {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id}/>: null}
