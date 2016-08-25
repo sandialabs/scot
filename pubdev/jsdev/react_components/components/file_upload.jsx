@@ -15,6 +15,9 @@ var FileUpload = React.createClass({
 	return {
 	    files: [], edit: false, stagecolor: '#000',enable: true, addentry: true, saved: true, enablesave: true}
 	},
+    componentDidMount: function() {
+        $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top)
+    },
 	render: function() {
         var not_saved_entry_id = 'not_saved_entry_'+this.props.id
             return (

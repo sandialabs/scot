@@ -841,7 +841,6 @@ var AppActions  = require('../flux/actions.jsx');
 var Button      = require('react-bootstrap/lib/Button.js');
 var marksave = false
 var addentrydata = true
-var finalfiles = []
 
 var recently_updated = 0
 
@@ -853,48 +852,45 @@ output  = output + timestamp.toLocaleString()
 var AddEntryModal = React.createClass({displayName: "AddEntryModal",
 	getInitialState: function(){
 	return {
-	    files: [], edit: false, stagecolor: '#000',enable: true, addentry: true, saved: true, enablesave: true}
+	    edit: false, stagecolor: '#000',enable: true, addentry: true, saved: true, enablesave: true}
 	},
 	componentWillMount: function(){
-	if(this.props.stage == 'Edit'){
-	    finalfiles = []
-        reply = false;
-        $.ajax({
-	        type: 'GET',
-	        url:  '/scot/api/v2/entry/'+ this.props.id
-	        }).success(function(response){
-                recently_updated = response.updated
-                if(response.body_flair == ""){
-	                $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
+        if(this.props.stage == 'Edit'){
+            reply = false;
+            $.ajax({
+                type: 'GET',
+                url:  '/scot/api/v2/entry/'+ this.props.id
+                }).success(function(response){
+                    recently_updated = response.updated
+                    if(response.body_flair == ""){
+                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
+                    }
+                    else{
+                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_flair)
+                    }
+                }.bind(this))
+        }
+        else if (this.props.title == 'Add Entry'){
+            reply = false
+            $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text('')
+        }
+        else if(this.props.title == 'Reply Entry'){
+            reply = true
+            $.ajax({
+                type: 'GET',
+                url:  '/scot/api/v2/entry/'+ this.props.id
+        }).success(function(response){
+                if (response.body_flair == '') {
+                    this.setState({subitem: response.body});
+                } else {
+                    this.setState({subitem: response.body_flair});
                 }
-                else{
-	                $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_flair)
-                }
-	        }.bind(this))
-	}
-	else if (this.props.title == 'Add Entry'){
-	    finalfiles = []
-        reply = false
-	    $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text('')
-    }
-	else if(this.props.title == 'Reply Entry'){
-	    finalfiles = []
-        reply = true
-        $.ajax({
-	        type: 'GET',
-	        url:  '/scot/api/v2/entry/'+ this.props.id
-	   }).success(function(response){
-	        if (response.body_flair == '') {
-                this.setState({subitem: response.body});
-            } else {
-                this.setState({subitem: response.body_flair});
-            }
-	    }.bind(this))
-		var newheight;
-		newheight= document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-		newheight = newheight + 'px'
-		this.setState({height: newheight})
-	} 
+            }.bind(this))
+            var newheight;
+            newheight= document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+            newheight = newheight + 'px'
+            this.setState({height: newheight})
+        } 
     },
     componentDidMount: function() {
         $('#tiny_' + this.props.id + '_ifr').css('height', '200px')
@@ -904,312 +900,194 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
         }
     },
 	render: function() {
-	var item = this.state.subitem
-    var not_saved_entry_id = 'not_saved_entry_'+this.props.id
-    var tinyID = 'tiny_'+this.props.id
-        return (
-            React.createElement("div", {id: not_saved_entry_id}, 
-                React.createElement("div", {className: 'row-fluid entry-outer', style: {border: '3px solid blue',marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
-                    React.createElement("div", {className: 'row-fluid entry-header'}, 
-                        React.createElement("div", {className: "entry-header-inner"}, "[", React.createElement("a", {style: {color:'black'}, href: "#/not_saved_0"}, "Not_Saved_0"), "]by ", whoami, 
-                            React.createElement("span", {className: "pull-right", style: {display:'inline-flex',paddingRight:'3px'}}, 
-                                React.createElement(Button, {bsSize: 'xsmall', onClick: this.submit}, "Submit"), 
-                                React.createElement(Button, {bsSize: 'xsmall', onClick: this.onCancel}, "Cancel")
+        var item = this.state.subitem
+        var not_saved_entry_id = 'not_saved_entry_'+this.props.id
+        var tinyID = 'tiny_'+this.props.id
+            return (
+                React.createElement("div", {id: not_saved_entry_id}, 
+                    React.createElement("div", {className: 'row-fluid entry-outer', style: {border: '3px solid blue',marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
+                        React.createElement("div", {className: 'row-fluid entry-header'}, 
+                            React.createElement("div", {className: "entry-header-inner"}, "[", React.createElement("a", {style: {color:'black'}, href: "#/not_saved_0"}, "Not_Saved_0"), "]by ", whoami, 
+                                React.createElement("span", {className: "pull-right", style: {display:'inline-flex',paddingRight:'3px'}}, 
+                                    React.createElement(Button, {bsSize: 'xsmall', onClick: this.submit}, "Submit"), 
+                                    React.createElement(Button, {bsSize: 'xsmall', onClick: this.onCancel}, "Cancel")
+                                )
                             )
-                        )
-                    ), 
-                    React.createElement(TinyMCE, {id: tinyID, content: "", className: 'inputtext', config: {plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}, onChange: this.handleEditorChange}), 
-                    React.createElement(Dropzone, {onDrop: this.onDrop, style: {'border-width':'2px','border-color':'#000','border-radius':'4px','border-style': 'dashed', 'text-align' : 'center','background-color':'azure'}}, React.createElement("div", {style: {fontSize:'16px',color:'black',margin:'5px'}}, "Click or Drop files here to upload")), 
-                    this.state.files ? React.createElement("div", null, " ", this.state.files.map(function(file) { return  React.createElement("ul", {style: {'list-style-type' : 'none', margin:'0', padding:'0'}}, React.createElement("li", null, React.createElement("p", {style: {display:'inline'}}, file.name), React.createElement("button", {style: {'line-height':'1px'}, className: "btn btn-info", id: file.name, onClick: this.Close}, "x")))}.bind(this))) : null
+                        ), 
+                        React.createElement(TinyMCE, {id: tinyID, content: "", className: 'inputtext', config: {plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}, onChange: this.handleEditorChange})
+                    )
                 )
             )
-        )
-    },
-    clickable: function(){
-	this.setState({addentry: false})
-	},
-    Edit: function(){
-	$('#tiny_'+this.props.id+'_ifr').contents().find("#tinymce").attr('contenteditable', true)
-	this.setState({saved: false, edit: false, enablesave:true})    
     },
     onCancel: function(){
-	finalfiles = []
-    this.props.addedentry()
-	this.setState({change:false})
-	AppActions.updateItem(this.props.targetid, 'headerUpdate')
+        this.props.addedentry()
+        this.setState({change:false})
+        AppActions.updateItem(this.props.targetid, 'headerUpdate')
     },
-   	Close: function(i) {
-	for(var x = 0; x< finalfiles.length; x++){
-	    if(i.target.id == finalfiles[x].name){
-	        finalfiles.splice(x,1)
-	    }
-	  }
-	this.setState({files:finalfiles})
-	},
-    onDrop: function(files){
-	for(var i = 0; i<files.length; i++){
-		finalfiles.push(files[i])
-	   }	
-    this.setState({files: finalfiles})
-    },
-	Save: function() {
-	if($('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text() == ""){
-	    alert("Please fill in Text")
-	}
-	else {
-	    $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").attr('contenteditable', false)
-	    this.setState({saved: true, edit: true, enablesave: false})
-	}
-        },
 	submit: function(){
-	if($('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text() == "" && $('#' + this.props.id + '_ifr').contents().find("#tinymce").find('img').length == 0) {
-	    alert("Please Add Some Text")
-	}
-    else {    
-        if(this.props.stage == 'Reply')
-	    {
-    	    var data = new Object()
-	        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
-            $(y).find('p').each(function(r,s){
-                $(s).find('img').each(function(key, value){ 
-                    var canvas = document.createElement('canvas')
-                    var set = new Image()
-                    set = $(value)
-                    canvas.width =  set[0].width
-                    canvas.height = set[0].height
-                    var ctx = canvas.getContext('2d')
-                    ctx.drawImage(set[0], 0, 0)
-                    var dataURL = canvas.toDataURL("image/png")
-                    //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
-                    $(value).attr('src', dataURL)
-              })
-        })
-    })
-
-    data = JSON.stringify({parent: Number(this.props.id), body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
-
-	$.ajax({
-	    type: 'post',
-	    url: '/scot/api/v2/entry',
-	    data: data,
-        contentType: 'application/json; charset=UTF-8'
-	}).success(function(response){
-        if(finalfiles.length > 0){
-			for(var i = 0; i<finalfiles.length; i++){	
-			    var file = {file : finalfiles[i].name}
-                data  = new FormData()
-                data.append('upload', finalfiles[i])
-                data.append('target_type',this.props.type)
-                data.append('target_id',Number(this.props.targetid))
-                data.append('entry_id',response.id)
-			    $.ajax({
-			        type: 'POST',
-			        url: '/scot/api/v2/file',
-                    data: data,
-                    processData: false,
-                    contentType: 'application/json; charset=UTF-8',
-                    dataType: 'json',
-                    cache: false
-            }).success(function(response){
-			   }.bind(this))
-			}
-		}
-	}.bind(this))
-	this.props.addedentry()
-	AppActions.updateItem(this.props.targetid,'headerUpdate')
-	}
-	else if (this.props.stage == 'Edit'){
-
-    $.ajax({
-        type: 'GET',
-        url: '/scot/api/v2/entry/'+this.props.id
-    }).success(function(response){
-    if(recently_updated != response.updated){
-        this.forEdit(false)
-        var set = false
-        var Confirm = {
-            launch: function(set){
-            this.forEdit(set)
-        }.bind(this)
-    }
-        $.confirm({
-            icon: 'glyphicon glyphicon-warning',
-            confirmButtonClass: 'btn-info',
-            cancelButtonClass: 'btn-info',
-            confirmButton: 'Yes, override change?',
-            cancelButton: 'No, Keep change from ' + response.owner + '?',
-            content: response.owner+"'s edit:" +'\n\n'+response.body,
-            backgroundDismiss: false,
-            title: "Edit Conflict" + '\n\n',
-            confirm: function(){
-            Confirm.launch(true)
-            },
-            cancel: function(){
-            return 
-            }
-        })
+        if($('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text() == "" && $('#' + this.props.id + '_ifr').contents().find("#tinymce").find('img').length == 0) {
+            alert("Please Add Some Text")
         }
-        else {
-            this.forEdit(true)
-        }
-    }.bind(this))
-    }
-	else  if(this.props.type == 'alert'){ 
-     var data;
-	$('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
-        $(y).find('p').each(function(r,s){
-                $(s).find('img').each(function(key, value){ 
-                    var canvas = document.createElement('canvas')
-                    var set = new Image()
-                    set = $(value)
-                    canvas.width =  set[0].width
-                    canvas.height = set[0].height
-                    var ctx = canvas.getContext('2d')
-                    ctx.drawImage(set[0], 0, 0)
-                    var dataURL = canvas.toDataURL("image/png")
-                    //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
-                    $(value).attr('src', dataURL)
-              })
-        })
-    })
-    
-     
-	            data = JSON.stringify({body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid), target_type: 'alert',  parent: 0})
-	            $.ajax({
-		        type: 'post', 
-		        url: '/scot/api/v2/entry',
-		        data: data,
-                contentType: 'application/json; charset=UTF-8',
-		        }).success(function(response){
-                    if(finalfiles.length > 0){
-			            for(var i = 0; i<finalfiles.length; i++){	
-                            var file = {file : finalfiles[i].name}
-                            data  = new FormData()
-                            data.append('upload', finalfiles[i])
-                            data.append('target_type','alert')
-                            data.append('target_id',Number($(y).text()))
-                            data.append('entry_id',response.id)
-                                $.ajax({
-                                type: 'POST',
-                                url: '/scot/api/v2/file',
-                                data: data,
-                                processData: false,
-                                contentType: 'application/json; charset=UTF-8',
-                                dataType: 'json',
-                                cache: false
-                                }).success(function(response){
-                                })
-		}
-		}
-		})
-		this.props.addedentry()
-		AppActions.updateItem(this.props.targetid,'headerUpdate');
-	}	
-	else {
-    var data = new Object();
-	$('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
-        $(y).find('p').each(function(r,s){
-                $(s).find('img').each(function(key, value){ 
-                    var canvas = document.createElement('canvas')
-                    var set = new Image()
-                    set = $(value)
-                    canvas.width =  set[0].width
-                    canvas.height = set[0].height
-                    var ctx = canvas.getContext('2d')
-                    ctx.drawImage(set[0], 0, 0)
-                    var dataURL = canvas.toDataURL("image/png")
-                    //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
-                    $(value).attr('src', dataURL)
+        else {    
+            if(this.props.stage == 'Reply') {
+                var data = new Object()
+                $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+                    $(y).find('p').each(function(r,s){
+                        $(s).find('img').each(function(key, value){ 
+                            var canvas = document.createElement('canvas')
+                            var set = new Image()
+                            set = $(value)
+                            canvas.width =  set[0].width
+                            canvas.height = set[0].height
+                            var ctx = canvas.getContext('2d')
+                            ctx.drawImage(set[0], 0, 0)
+                            var dataURL = canvas.toDataURL("image/png")
+                            //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
+                            $(value).attr('src', dataURL)
+                        })
+                    })
                 })
-        })
-    })
-    data = {parent: 0, body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
-    $.ajax({
-	type: 'post',
-	url: '/scot/api/v2/entry',
-	data: JSON.stringify(data),
-	contentType: 'application/json; charset=UTF-8'
-    }).success(function(response){
-		   if(finalfiles.length > 0){
-		        for(var i = 0; i<finalfiles.length; i++){	
-                    data  = new FormData()
-                    data.append('upload', finalfiles[i])
-                    data.append('target_type',this.props.type)
-                    data.append('target_id',Number(this.props.targetid))
-                    data.append('entry_id',response.id)
-                        $.ajax({
-                        type: 'POST',
-                        url: '/scot/api/v2/file',
-                        data: data,
-                        processData: false,
-                        contentType: 'application/json; charset=UTF-8',
-                        dataType: 'json',
-                        cache: false
-                        }).success(function(response){
-                        }.bind(this))
-			}
-			}
-	}.bind(this))
-	this.props.addedentry()
-	AppActions.updateItem(this.props.targetid,'headerUpdate');
-    }
-	}
+                data = JSON.stringify({parent: Number(this.props.id), body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
+                $.ajax({
+                    type: 'post',
+                    url: '/scot/api/v2/entry',
+                    data: data,
+                    contentType: 'application/json; charset=UTF-8'
+                }).success(function(response){
+                }.bind(this))
+                this.props.addedentry()
+                AppActions.updateItem(this.props.targetid,'headerUpdate')
+            }
+            else if (this.props.stage == 'Edit'){
+                $.ajax({
+                    type: 'GET',
+                    url: '/scot/api/v2/entry/'+this.props.id
+                }).success(function(response){
+                    if(recently_updated != response.updated){
+                        this.forEdit(false)
+                        var set = false
+                        var Confirm = {
+                            launch: function(set){
+                                this.forEdit(set)
+                            }.bind(this)
+                        }
+                        $.confirm({
+                            icon: 'glyphicon glyphicon-warning',
+                            confirmButtonClass: 'btn-info',
+                            cancelButtonClass: 'btn-info',
+                            confirmButton: 'Yes, override change?',
+                            cancelButton: 'No, Keep change from ' + response.owner + '?',
+                            content: response.owner+"'s edit:" +'\n\n'+response.body,
+                            backgroundDismiss: false,
+                            title: "Edit Conflict" + '\n\n',
+                            confirm: function(){
+                                Confirm.launch(true)
+                            },
+                            cancel: function(){
+                                return 
+                            }
+                        })
+                    } else {
+                        this.forEdit(true)
+                    }
+                }.bind(this))
+            }
+            else if(this.props.type == 'alert'){ 
+                var data;
+                $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+                    $(y).find('p').each(function(r,s){
+                        $(s).find('img').each(function(key, value){ 
+                            var canvas = document.createElement('canvas')
+                            var set = new Image()
+                            set = $(value)
+                            canvas.width =  set[0].width
+                            canvas.height = set[0].height
+                            var ctx = canvas.getContext('2d')
+                            ctx.drawImage(set[0], 0, 0)
+                            var dataURL = canvas.toDataURL("image/png")
+                            //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
+                            $(value).attr('src', dataURL)
+                        })
+                    })
+                })
+                data = JSON.stringify({body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid), target_type: 'alert',  parent: 0})
+                $.ajax({
+                    type: 'post', 
+                    url: '/scot/api/v2/entry',
+                    data: data,
+                    contentType: 'application/json; charset=UTF-8',
+                }).success(function(response){
+                    
+                })
+                this.props.addedentry()
+                AppActions.updateItem(this.props.targetid,'headerUpdate');
+            }	
+            else {
+                var data = new Object();
+                $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+                    $(y).find('p').each(function(r,s){
+                            $(s).find('img').each(function(key, value){ 
+                                var canvas = document.createElement('canvas')
+                                var set = new Image()
+                                set = $(value)
+                                canvas.width =  set[0].width
+                                canvas.height = set[0].height
+                                var ctx = canvas.getContext('2d')
+                                ctx.drawImage(set[0], 0, 0)
+                                var dataURL = canvas.toDataURL("image/png")
+                                //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
+                                $(value).attr('src', dataURL)
+                            })
+                    })
+                })
+                data = {parent: 0, body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
+                $.ajax({
+                    type: 'post',
+                    url: '/scot/api/v2/entry',
+                    data: JSON.stringify(data),
+                    contentType: 'application/json; charset=UTF-8'
+                }).success(function(response){
+                }.bind(this))
+                this.props.addedentry()
+                AppActions.updateItem(this.props.targetid,'headerUpdate');
+            }
+        }
     },
     forEdit: function(set){
-    if(set){
-	$('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
-        $(y).find('p').each(function(r,s){
-                $(s).find('img').each(function(key, value){ 
-                    var canvas = document.createElement('canvas')
-                    var set = new Image()
-                    set = $(value)
-                    canvas.width =  set[0].width
-                    canvas.height = set[0].height
-                    var ctx = canvas.getContext('2d')
-                    ctx.drawImage(set[0], 0, 0)
-                    var dataURL = canvas.toDataURL("image/png")
-                    //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
-                    $(value).attr('src', dataURL)
+        if(set){
+            $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+                $(y).find('p').each(function(r,s){
+                        $(s).find('img').each(function(key, value){ 
+                            var canvas = document.createElement('canvas')
+                            var set = new Image()
+                            set = $(value)
+                            canvas.width =  set[0].width
+                            canvas.height = set[0].height
+                            var ctx = canvas.getContext('2d')
+                            ctx.drawImage(set[0], 0, 0)
+                            var dataURL = canvas.toDataURL("image/png")
+                            //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
+                            $(value).attr('src', dataURL)
+                        })
                 })
-        })
-    })
-
-    var data = {
-        parent: Number(this.props.parent), 
-        body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), 
-        target_id: Number(this.props.targetid) , 
-        target_type: this.props.type
-    }
-	$.ajax({
-        type: 'put',
-        url: '/scot/api/v2/entry/'+this.props.id,
-        data: data,
-        contentType: 'application/json; charset=UTF-8'
-        }).success(function(response){
-            if(finalfiles.length > 0){
-                for(var i = 0; i<finalfiles.length; i++){	
-                    var file = {file : finalfiles[i].name}
-                    data  = new FormData()
-                    data.append('upload', finalfiles[i])
-                    data.append('target_type',this.props.type)
-                    data.append('target_id',Number(this.props.targetid))
-                    data.append('entry_id',response.id)
-                    $.ajax({
-                        type: 'POST',
-                        url: '/scot/api/v2/file',
-                        data: data,
-                        processData: false,
-                        contentType: 'application/json; charset=UTF-8',
-                        dataType: 'json',
-                        cache: false
-                    }).success(function(response){
-                        }.bind(this))
-                }
+            })
+            var data = {
+                parent: Number(this.props.parent), 
+                body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), 
+                target_id: Number(this.props.targetid) , 
+                target_type: this.props.type
             }
-	}.bind(this))
-	this.props.addedentry()
-	AppActions.updateItem(this.props.targetid, 'headerUpdate')
-    }
+            $.ajax({
+                type: 'put',
+                url: '/scot/api/v2/entry/'+this.props.id,
+                data: JSON.stringify(data),
+                contentType: 'application/json; charset=UTF-8'
+            }).success(function(response){
+                    
+            }.bind(this))
+            this.props.addedentry()
+            AppActions.updateItem(this.props.targetid, 'headerUpdate')
+        }
     }
 });
 
@@ -1670,6 +1548,9 @@ var FileUpload = React.createClass({displayName: "FileUpload",
 	return {
 	    files: [], edit: false, stagecolor: '#000',enable: true, addentry: true, saved: true, enablesave: true}
 	},
+    componentDidMount: function() {
+        $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top)
+    },
 	render: function() {
         var not_saved_entry_id = 'not_saved_entry_'+this.props.id
             return (
@@ -3034,7 +2915,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         return (
             React.createElement("div", {key: id, className: divClass, style: {height:height}}, 
                 (type == 'incident' && this.props.headerData != null) ? React.createElement(IncidentTable, {type: type, id: id, headerData: this.props.headerData, errorToggle: this.props.errorToggle}) : null, 
-                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId, isPopUp: this.props.isPopUp, entryToggle: this.props.entryToggle, updated: this.updatedCB, aType: this.props.aType, aID: this.props.aID, entryToolbar: this.props.entryToolbar, errorToggle: this.props.errorToggle}) : React.createElement("span", null, "Loading..."), 
+                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId, isPopUp: this.props.isPopUp, entryToggle: this.props.entryToggle, updated: this.updatedCB, aType: this.props.aType, aID: this.props.aID, entryToolbar: this.props.entryToolbar, errorToggle: this.props.errorToggle, fileUploadToggle: this.props.fileUploadToggle, fileUploadToolbar: this.props.fileUploadToolbar}) : React.createElement("span", null, "Loading..."), 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntry, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : null) : null, 
                 this.props.fileUploadToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(FileUpload, {type: this.props.type, targetid: this.props.id, id: 'file_upload', fileUploadToggle: this.props.fileUploadToggle, updated: this.updatedCB, errorToggle: this.props.errorToggle}) : null) : null, 
                 this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id}): null, 
@@ -3063,7 +2944,7 @@ var EntryIterator = React.createClass({displayName: "EntryIterator",
                     rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id, isPopUp: this.props.isPopUp, errorToggle: this.props.errorToggle}));
                 }.bind(this));
             } else {
-                rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected, alertPreSelectedId: this.props.alertPreSelectedId, aType: this.props.aType, aID: this.props.aID, entryToolbar: this.props.entryToolbar, entryToggle: this.props.entryToggle, updated: this.props.updated}));
+                rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected, alertPreSelectedId: this.props.alertPreSelectedId, aType: this.props.aType, aID: this.props.aID, entryToolbar: this.props.entryToolbar, entryToggle: this.props.entryToggle, updated: this.props.updated, fileUploadToggle: this.props.fileUploadToggle, fileUploadToolbar: this.props.fileUploadToolbar, errorToggle: this.props.errorToggle}));
             }
             return (
                 React.createElement("div", null, 
@@ -3193,7 +3074,7 @@ var AlertParent = React.createClass({displayName: "AlertParent",
                     dataFlair = items[z].data;
                 }
                 
-                body.push(React.createElement(AlertBody, {index: z, data: items[z], dataFlair: dataFlair, activeIndex: this.state.activeIndex, rowClicked: this.rowClicked, alertSelected: this.props.alertSelected, allSelected: this.state.allSelected, alertPreSelectedId: this.props.alertPreSelectedId, activeId: this.state.activeId, aID: this.props.aID, aType: this.props.aType, entryToggle: this.props.entryToggle, entryToolbar: this.props.entryToolbar, updated: this.props.updated}))
+                body.push(React.createElement(AlertBody, {index: z, data: items[z], dataFlair: dataFlair, activeIndex: this.state.activeIndex, rowClicked: this.rowClicked, alertSelected: this.props.alertSelected, allSelected: this.state.allSelected, alertPreSelectedId: this.props.alertPreSelectedId, activeId: this.state.activeId, aID: this.props.aID, aType: this.props.aType, entryToggle: this.props.entryToggle, entryToolbar: this.props.entryToolbar, updated: this.props.updated, fileUploadToggle: this.props.fileUploadToggle, fileUploadToolbar: this.props.fileUploadToolbar, errorToggle: this.props.errorToggle}))
             }
             var search = null;
             if (items[0].data_with_flair != undefined) {
@@ -3248,6 +3129,8 @@ var AlertBody = React.createClass({displayName: "AlertBody",
             showEntry: false,
             promoteFetch:false,
             showAddEntryToolbar: false,
+            showFileUpload: false,
+            showFileUploadToolbar: false,
         }
     },
     onClick: function(event) {
@@ -3275,6 +3158,24 @@ var AlertBody = React.createClass({displayName: "AlertBody",
         if (this.state.showAddEntryToolbar == true) {
             this.setState({showAddEntryToolbar: false});
             this.props.entryToggle();
+        }
+    },
+    toggleFileUpload: function() {
+        if (this.state.showFileUpload == false) {
+            this.setState({showFileUpload: true})
+        } else {
+            this.setState({showFileUpload: false})
+        }
+    },
+    toggleOnFileUpload: function() {
+        if (this.state.showFileUploadToolbar == false) {
+            this.setState({showFileUploadToolbar: true, showEntry:true})
+        }
+    },
+    toggleOffFileUpload: function() {
+        if (this.state.showFileUploadToolbar == true) {
+            this.setState({showFileUploadToolbar: false});
+            this.props.fileUploadToggle();
         }
     },
     navigateTo: function() {
@@ -3313,6 +3214,11 @@ var AlertBody = React.createClass({displayName: "AlertBody",
             this.toggleOnAddEntry();
         } else if (this.props.data.id != nextProps.aID && nextProps.entryToolbar == true && this.state.showAddEntryToolbar == true) {
             this.toggleOffAddEntry();
+        }
+        if (this.props.data.id == this.props.aID && nextProps.fileUploadToolbar == true && this.state.showFileUploadToolbar == false) {
+            this.toggleOnFileUpload();
+        } else if (this.props.data.id != nextProps.aID && nextProps.fileUploadToolbar == true && this.state.showFileUploadToolbar == true) {
+            this.toggleOffFileUpload();
         }
     },
     render: function() {
@@ -3362,7 +3268,7 @@ var AlertBody = React.createClass({displayName: "AlertBody",
                     data.entry_count == 0 ? React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, data.entry_count) : React.createElement("td", {valign: "top", style: {marginRight:'4px'}}, React.createElement("span", {style: {color: 'blue', textDecoration: 'underline', cursor: 'pointer'}, onClick: this.toggleEntry}, data.entry_count)), 
                     rowReturn
                 ), 
-                React.createElement(AlertRowBlank, {id: data.id, type: 'alert', showEntry: this.state.showEntry, aID: this.props.aID, aType: this.props.aType, entryToggle: this.props.entryToggle, entryToolbar: this.props.entryToolbar, updated: this.props.updated, showAddEntryToolbar: this.state.showAddEntryToolbar, toggleOffAddEntry: this.toggleOffAddEntry})
+                React.createElement(AlertRowBlank, {id: data.id, type: 'alert', showEntry: this.state.showEntry, aID: this.props.aID, aType: this.props.aType, entryToggle: this.props.entryToggle, entryToolbar: this.props.entryToolbar, updated: this.props.updated, showAddEntryToolbar: this.state.showAddEntryToolbar, toggleOffAddEntry: this.toggleOffAddEntry, showFileUploadToolbar: this.state.showFileUploadToolbar, toggleOffFileUpload: this.toggleOffFileUpload, errorToggle: this.props.errorToggle})
             )
         )
     }
@@ -3387,6 +3293,7 @@ var AlertRowBlank = React.createClass({displayName: "AlertRowBlank",
         var id = this.props.id;
         var showEntry = this.props.showEntry;
         var showAddEntryToolbar = this.props.showAddEntryToolbar;
+        var showFileUploadToolbar = this.props.showFileUploadToolbar;
         var DisplayValue = 'none';
         var arr = [];
         arr.push(React.createElement(SelectedEntry, {type: this.props.type, id: this.props.id}))
@@ -3399,7 +3306,8 @@ var AlertRowBlank = React.createClass({displayName: "AlertRowBlank",
                 ), 
                 React.createElement("td", {colSpan: "50"}, 
                     showEntry ? React.createElement("div", null, React.createElement(SelectedEntry, {type: this.props.type, id: this.props.id})) : null, 
-                    showAddEntryToolbar ? React.createElement(AddEntry, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.toggleOffAddEntry, updated: this.props.updated}) : null
+                    showAddEntryToolbar ? React.createElement(AddEntry, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.toggleOffAddEntry, updated: this.props.updated}) : null, 
+                    showFileUploadToolbar ? React.createElement(FileUpload, {type: this.props.aType, targetid: this.props.id, errorToggle: this.props.errorToggle, fileUploadToggle: this.props.toggleOffFileUpload}) : null
                 )
             )
         )
@@ -3517,7 +3425,7 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                             React.createElement("span", {className: "pull-right", style: {display:'inline-flex',paddingRight:'3px'}}, 
                                 this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: items.id, type: 'entry', permissionData: items, permissionsToggle: this.permissionsToggle}) : null, 
                                 React.createElement(SplitButton, {bsSize: "xsmall", title: "Reply", key: items.id, id: 'Reply '+items.id, onClick: this.replyEntryToggle, pullRight: true}, 
-                                    React.createElement(MenuItem, {eventKey: "1", onClick: this.fileUploadToggle}, "Upload File"), 
+                                     type != 'entity' ? React.createElement(MenuItem, {eventKey: "1", onClick: this.fileUploadToggle}, "Upload File") : null, 
                                     React.createElement(MenuItem, {eventKey: "3"}, React.createElement(Summary, {type: type, id: id, entryid: items.id, summary: summary})), 
                                     React.createElement(MenuItem, {eventKey: "4"}, React.createElement(Task, {type: type, id: id, entryid: items.id, taskData: items.task})), 
                                     React.createElement(MenuItem, {onClick: this.permissionsToggle}, "Permissions"), 
@@ -4652,7 +4560,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
             return (
                 React.createElement("div", {className: "entry-header"}, 
                     React.createElement(Button, {eventKey: "1", bsStyle: "success", onClick: this.props.entryToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-plus-circle", "aria-hidden": "true"}), " Add Entry"), 
-                    React.createElement(Button, {eventKey: "2", bsStyle: "success", onClick: this.props.fileUploadToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-upload", "aria-hidden": "true"}), " Upload File"), 
+                    React.createElement(Button, {eventKey: "2", onClick: this.props.fileUploadToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-upload", "aria-hidden": "true"}), " Upload File"), 
                     React.createElement(Button, {eventKey: "3", onClick: this.toggleFlair, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-eye-slash", "aria-hidden": "true"}), " Toggle Flair"), 
                     React.createElement(Button, {eventKey: "4", onClick: this.props.viewedByHistoryToggle, bsSize: "xsmall"}, React.createElement("img", {src: "/images/clock.png"}), " Viewed By History"), 
                     React.createElement(Button, {eventKey: "5", onClick: this.props.changeHistoryToggle, bsSize: "xsmall"}, React.createElement("img", {src: "/images/clock.png"}), " ", subjectType, " History"), 
@@ -4679,7 +4587,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                         React.createElement(Button, {eventKey: "10", onClick: this.alertPromoteSelected, bsSize: "xsmall", bsStyle: "warning"}, React.createElement("img", {src: "/images/megaphone.png"}), " Promote Selected"), 
                         React.createElement(Button, {eventKey: "11", onClick: this.alertSelectExisting, bsSize: "xsmall"}, React.createElement("img", {src: "/images/megaphone_plus.png"}), " Add Selected to ", React.createElement("b", null, "Existing Event")), 
                         React.createElement(Button, {eventKey: "12", onClick: this.props.entryToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-plus-circle", "aria-hidden": "true"}), " Add Entry"), 
-                        React.createElement(Button, {eventKey: "13", bsStyle: "success", onClick: this.props.uploadFile, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-upload", "aria-hidden": "true"}), " Upload File"), 
+                        React.createElement(Button, {eventKey: "13", onClick: this.props.fileUploadToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-upload", "aria-hidden": "true"}), " Upload File"), 
                         React.createElement(Button, {eventKey: "14", onClick: this.alertExportCSV, bsSize: "xsmall"}, React.createElement("img", {src: "/images/csv_text.png"}), " Export to CSV"), 
                         React.createElement(Button, {eventKey: "15", onClick: this.alertDeleteSelected, bsSize: "xsmall", bsStyle: "danger"}, React.createElement("i", {className: "fa fa-trash", "aria-hidden": "true"}), " Delete Selected"), 
                         React.createElement(Button, {bsStyle: "info", eventKey: "16", onClick: this.manualUpdate, bsSize: "xsmall", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
