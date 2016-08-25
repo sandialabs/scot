@@ -3637,6 +3637,9 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                                     React.createElement("td", null, React.createElement("span", null, this.state.showEventData ? React.createElement(Owner, {key: id, data: this.state.headerData.owner, type: type, id: id, updated: this.updated}): null)), 
                                     React.createElement("th", null, "Updated: "), 
                                     React.createElement("td", null, React.createElement("span", {id: "event_updated", style: {color: 'white',lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px'}}, this.state.showEventData ? React.createElement(EntryDataUpdated, {data: this.state.headerData.updated}) : null)), 
+                                    (type == 'event' || type == 'incident') && this.state.showEventData ? React.createElement("th", null, "Promoted From:") : null, 
+                                    (type == 'event' || type == 'incident') && this.state.showEventData ? React.createElement(PromotedData, {data: this.state.headerData.promoted_from, type: type, id: id}) : null, 
+                                    
                                     React.createElement("th", null, "Tags: "), 
                                     React.createElement("td", null, this.state.showTag ? React.createElement(Tag, {data: this.state.tagData, id: id, type: type, updated: this.updated}) : null), 
                                     React.createElement("th", null, "Source: "), 
@@ -3805,6 +3808,7 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
         }
     },
     render: function() {
+        //if this is rewritten you can built it from scratch by using an input box with onBlur={handleChange}
         if (this.state.value != undefined) {
             var subjectLength = this.state.value.length;
             var subjectWidth = subjectLength * 14;
@@ -3818,6 +3822,26 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
             React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement(DebounceInput, {debounceTimeout: 1000, forceNotifyOnBlur: true, type: "text", value: this.state.value, onChange: this.handleChange, style: {width:subjectWidth+'px',lineHeight:'normal'}}))
         )
     }
+});
+
+var PromotedData = React.createClass({displayName: "PromotedData",
+    render: function() {
+        var promotedFromType = null;
+        if (this.props.type == 'event') {
+            promotedFromType = 'alert'
+        } else if (this.props.type == 'incident') {
+            promotedFromType = 'event'
+        }
+        var arr = [];
+        for (i=0; i < this.props.data.length; i++) {
+            if (i > 0) {arr.push(React.createElement("div", null, " , "))}
+            var link = '/#/' + promotedFromType + '/' + this.props.data[i];
+            arr.push(React.createElement("div", null, React.createElement("a", {href: link}, this.props.data[i])))
+        }
+        return (
+           React.createElement("td", null, React.createElement("span", {id: "promoted_from", style: {color: 'white', lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px', display:'flex'}}, arr)) 
+        )
+    }   
 });
 
 module.exports = SelectedHeader;
