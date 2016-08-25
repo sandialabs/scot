@@ -520,6 +520,9 @@ var SelectedHeader = React.createClass({
                                     <td><span>{this.state.showEventData ? <Owner key={id} data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
                                     <th>Updated: </th>
                                     <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
+                                    {(type == 'event' || type == 'incident') && this.state.showEventData ? <th>Promoted From:</th> : null}
+                                    {(type == 'event' || type == 'incident') && this.state.showEventData ? <PromotedData data={this.state.headerData.promoted_from} type={type} id={id} /> : null}
+                                    
                                     <th>Tags: </th>
                                     <td>{this.state.showTag ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}</td>
                                     <th>Source: </th>
@@ -688,6 +691,7 @@ var EntryDataSubject = React.createClass({
         }
     },
     render: function() {
+        //if this is rewritten you can built it from scratch by using an input box with onBlur={handleChange}
         if (this.state.value != undefined) {
             var subjectLength = this.state.value.length;
             var subjectWidth = subjectLength * 14;
@@ -701,6 +705,26 @@ var EntryDataSubject = React.createClass({
             <div>{this.props.subjectType} {this.props.id}: <DebounceInput debounceTimeout={1000} forceNotifyOnBlur={true} type='text' value={this.state.value} onChange={this.handleChange} style={{width:subjectWidth+'px',lineHeight:'normal'}} /></div>
         )
     }
+});
+
+var PromotedData = React.createClass({
+    render: function() {
+        var promotedFromType = null;
+        if (this.props.type == 'event') {
+            promotedFromType = 'alert'
+        } else if (this.props.type == 'incident') {
+            promotedFromType = 'event'
+        }
+        var arr = [];
+        for (i=0; i < this.props.data.length; i++) {
+            if (i > 0) {arr.push(<div> , </div>)}
+            var link = '/#/' + promotedFromType + '/' + this.props.data[i];
+            arr.push(<div><a href={link}>{this.props.data[i]}</a></div>)
+        }
+        return (
+           <td><span id='promoted_from' style={{color: 'white', lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px', display:'flex'}}>{arr}</span></td> 
+        )
+    }   
 });
 
 module.exports = SelectedHeader;
