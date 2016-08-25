@@ -6,7 +6,7 @@ var Tabs                    = require('react-bootstrap/lib/Tabs');
 var Tab                     = require('react-bootstrap/lib/Tab');
 var Inspector               = require('react-inspector');
 var SelectedEntry           = require('../entry/selected_entry.jsx');
-var AddEntryModal           = require('./add_entry.jsx');
+var AddEntry                = require('../components/add_entry.jsx');
 var Draggable               = require('react-draggable');
 
 
@@ -329,7 +329,7 @@ var EntityBody = React.createClass({
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='tabs'>
                 <Tab eventKey={1} style={{overflow:'auto'}} title={this.state.appearances}>{entityEnrichmentLinkArr}<span><br/><b>Appears: {this.state.appearances} times</b></span><br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances}/><br/></Tab>
                 <Tab eventKey={2} style={{overflow:'auto'}} title="Entry"><Button bsSize='small' onClick={this.entryToggle}>Add Entry</Button><br/>
-                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} /> : null} <SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
+                {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} /> : null} <SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
                 {entityEnrichmentGeoArr}
                 {entityEnrichmentDataArr}
             </Tabs>
@@ -375,8 +375,8 @@ var GeoView = React.createClass({
             <div>
                 <Button bsSize='small' onClick={this.copyToEntity}>Copy to <b>{"entity"}</b> entry</Button>
                 <Button bsSize='small' onClick={this.copyToEntry}>Copy to <b>{this.props.type} {this.props.id}</b> entry</Button>
-                {this.state.copyToEntryToolbar ? <AddEntryModal title='CopyToEntry' type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.copyToEntry} content={copy}/> : null}
-                {this.state.copyToEntityToolbar ? <AddEntryModal title='CopyToEntry' type={'entity'} targetid={this.props.entityData.id} id={this.props.entityData.id} addedentry={this.copyToEntity} content={copy}/> : null}
+                {this.state.copyToEntryToolbar ? <AddEntry title='CopyToEntry' type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.copyToEntry} content={copy}/> : null}
+                {this.state.copyToEntityToolbar ? <AddEntry title='CopyToEntry' type={'entity'} targetid={this.props.entityData.id} id={this.props.entityData.id} addedentry={this.copyToEntity} content={copy}/> : null}
                 <div className="entityTableWrapper">
                     <table className="tablesorter entityTableHorizontal" id={'sortableentitytable'} width='100%'>
                         {trArr}    
@@ -641,7 +641,7 @@ var GuideBody = React.createClass ({
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='pills'>
                 <Tab eventKey={1} style={{overflow:'auto'}}><Button bsSize='small' onClick={this.entryToggle}>Add Entry</Button><br/>
-                {this.state.entryToolbar ? <AddEntryModal title={'Add Entry'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} /> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} /></Tab>
+                {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} /> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} /></Tab>
             </Tabs>
         )
     }
