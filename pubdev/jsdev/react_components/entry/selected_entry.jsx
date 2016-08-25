@@ -193,9 +193,9 @@ var SelectedEntry = React.createClass({
         return (
             <div key={id} className={divClass} style={{height:height}}> 
                 {(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
-                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar}/> : <span>Loading...</span>} 
+                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle}/> : <span>Loading...</span>} 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : null}</div> : null}
-                {this.props.fileUploadToolbar ? <div>{this.props.isAlertSelected == false ? <FileUpload title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} fileUploadToggle={this.props.fileUploadToggle} updated={this.updatedCB}/> : null}</div> : null}
+                {this.props.fileUploadToolbar ? <div>{this.props.isAlertSelected == false ? <FileUpload type={this.props.type} targetid={this.props.id} id={'file_upload'} fileUploadToggle={this.props.fileUploadToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
                 {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                 {this.state.errorDisplay ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} buttons="CLOSE MESSAGE" onDismiss={this.errorToggle}/> : null} 
@@ -219,7 +219,7 @@ var EntryIterator = React.createClass({
         } else {
             if (type != 'alertgroup') {
                 data.forEach(function(data) {
-                    rows.push(<EntryParent key={data.id} items={data} type={type} id={id} isPopUp={this.props.isPopUp} />);
+                    rows.push(<EntryParent key={data.id} items={data} type={type} id={id} isPopUp={this.props.isPopUp} errorToggle={this.props.errorToggle}/>);
                 }.bind(this));
             } else {
                 rows.push(<AlertParent items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} alertPreSelectedId={this.props.alertPreSelectedId} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} entryToggle={this.props.entryToggle} updated={this.props.updated}/>);
@@ -572,6 +572,7 @@ var EntryParent = React.createClass({
             replyEntryToolbar:false,
             deleteToolbar:false,
             permissionsToolbar:false,
+            fileUploadToolbar: false,
         }
     }, 
     editEntryToggle: function() {
@@ -612,6 +613,13 @@ var EntryParent = React.createClass({
             console.log('reparsing started');
         }.bind(this))
     },
+    fileUploadToggle: function() {
+        if (this.state.fileUploadToolbar == false) {
+            this.setState({fileUploadToolbar:true});
+        } else {
+            this.setState({fileUploadToolbar:false});
+        }
+    },
     render: function() {
         var itemarr = [];
         var subitemarr = [];
@@ -622,6 +630,7 @@ var EntryParent = React.createClass({
         var summary = items.summary;
         var editEntryToolbar = this.state.editEntryToolbar;
         var editEntryToggle = this.editEntryToggle;
+        var errorToggle=this.props.errorToggle;
         var outerClassName = 'row-fluid entry-outer';
         var innerClassName = 'row-fluid entry-header';
         var taskOwner = '';
@@ -640,13 +649,13 @@ var EntryParent = React.createClass({
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
-        itemarr.push(<EntryData id={items.id} key={items.id} subitem = {items} type={type} targetid={id} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={isPopUp}/>);
+        itemarr.push(<EntryData id={items.id} key={items.id} subitem = {items} type={type} targetid={id} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={isPopUp} errorToggle={this.props.errorToggle} />);
         for (var prop in items) {
             function childfunc(prop){
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(<EntryParent  items = {childobj} id={id} type={type} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={isPopUp}/>));  
+                        subitemarr.push(new Array(<EntryParent  items = {childobj} id={id} type={type} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={isPopUp} errorToggle={errorToggle}/>));  
                     });
                 }
             }
@@ -667,11 +676,13 @@ var EntryParent = React.createClass({
                             <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
                                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
-                                    <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
+                                    <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem>
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} /></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items.task} /></MenuItem>
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
                                     <MenuItem onClick={this.reparseFlair}>Reparse Flair</MenuItem>
+                                    <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
+
                                 </SplitButton>
                                 <Button bsSize='xsmall' onClick={this.editEntryToggle}>Edit</Button>
                             </span>
@@ -679,6 +690,7 @@ var EntryParent = React.createClass({
                     </div>
                 {itemarr}
                 {this.state.replyEntryToolbar ? <AddEntry title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid={id} id={items.id} addedentry={this.replyEntryToggle} /> : null}
+                {this.state.fileUploadToolbar ? <FileUpload type={this.props.type} targetid={this.props.id} entryid={this.props.items.id} fileUploadToggle={this.fileUploadToggle} errorToggle={this.props.errorToggle}/> : null}
                 </div> 
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} /> : null}     
             </div>

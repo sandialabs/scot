@@ -62,8 +62,10 @@ var FileUpload = React.createClass({
                 data.append('target_id',Number(this.props.targetid))
                 if (this.props.entryid != null) {data.append('entry_id',this.props.entryid)}
 			    var xhr = new XMLHttpRequest();
-                xhr.addEventListener("load", this.uploadComplete, false);
-                xhr.addEventListener("error", this.uploadFailed, false);
+                xhr.addEventListener("progress", this.uploadProgress)
+                xhr.addEventListener("load", this.uploadComplete);
+                xhr.addEventListener("error", this.uploadFailed);
+                xhr.addEventListener("abord", this.uploadCancelled);
                 xhr.open("POST", "/scot/api/v2/file");
                 xhr.send(data); 
             }
@@ -73,12 +75,17 @@ var FileUpload = React.createClass({
 	    
 	},
     uploadComplete: function() {
-        this.props.fileUploadToggle();
+        this.onCancel();
     },
     uploadFailed: function() {
-        alert('file upload failed');
-    }   
-    
+        this.props.errorToggle('An error occured. Upload failed.')
+    },
+    uploadProgress: function() {
+        //TODO add progress bar
+    },
+    uploadCancelled: function() {
+        //this.props.errorToggle('Upload Cancelled');
+    }
 });
 
 module.exports = FileUpload
