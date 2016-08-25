@@ -1,13 +1,8 @@
 'use strict';
 var React       = require('react')
-var Dropdown    = require('../../../node_modules/react-dropdown')
-var Frame       = require('../../../node_modules/react-frame')
-var Modal       = require('../../../node_modules/react-modal')
 var TinyMCE     = require('react-tinymce')
 var Dropzone    = require('../../../node_modules/react-dropzone')
-var ReactTime   = require('react-time')
 var AppActions  = require('../flux/actions.jsx');
-var Activekey   = require('../activemq/handleupdate.jsx')
 var Button      = require('react-bootstrap/lib/Button.js');
 var marksave = false
 var addentrydata = true
