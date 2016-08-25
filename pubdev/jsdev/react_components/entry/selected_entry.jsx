@@ -5,7 +5,8 @@ var SplitButton             = require('react-bootstrap/lib/SplitButton.js');
 var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var Button                  = require('react-bootstrap/lib/Button.js');
-var AddEntryModal           = require('../modal/add_entry.jsx');
+var AddEntry                = require('../components/add_entry.jsx');
+var FileUpload              = require('../components/file_upload.jsx');
 var DeleteEntry             = require('../modal/delete.jsx').DeleteEntry;
 var Summary                 = require('../components/summary.jsx');
 var Task                    = require('../components/task.jsx');
@@ -193,7 +194,8 @@ var SelectedEntry = React.createClass({
             <div key={id} className={divClass} style={{height:height}}> 
                 {(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar}/> : <span>Loading...</span>} 
-                {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : null}</div> : null}
+                {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : null}</div> : null}
+                {this.props.fileUploadToolbar ? <div>{this.props.isAlertSelected == false ? <FileUpload title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} fileUploadToggle={this.props.fileUploadToggle} updated={this.updatedCB}/> : null}</div> : null}
                 {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                 {this.state.errorDisplay ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} buttons="CLOSE MESSAGE" onDismiss={this.errorToggle}/> : null} 
@@ -556,7 +558,7 @@ var AlertRowBlank = React.createClass({
                 </td>
                 <td colSpan="50">
                     {showEntry ? <div>{<SelectedEntry type={this.props.type} id={this.props.id} />}</div> : null}
-                    {showAddEntryToolbar ? <AddEntryModal title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.toggleOffAddEntry} updated={this.props.updated}/> : null}
+                    {showAddEntryToolbar ? <AddEntry title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.toggleOffAddEntry} updated={this.props.updated}/> : null}
                 </td>
             </tr>
         )
@@ -676,7 +678,7 @@ var EntryParent = React.createClass({
                         </div>
                     </div>
                 {itemarr}
-                {this.state.replyEntryToolbar ? <AddEntryModal title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid={id} id={items.id} addedentry={this.replyEntryToggle} /> : null}
+                {this.state.replyEntryToolbar ? <AddEntry title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid={id} id={items.id} addedentry={this.replyEntryToggle} /> : null}
                 </div> 
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} /> : null}     
             </div>
@@ -735,7 +737,7 @@ var EntryData = React.createClass({
         return (
             <div key={this.props.id} className={'row-fluid entry-body'}>
                 <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
-                    {this.props.editEntryToolbar ? <AddEntryModal title='Edit Entry' stage={'Edit'} type={this.props.type} targetid={this.props.targetid} id={id} addedentry={this.props.editEntryToggle} parent={this.props.subitem.parent}/> : 
+                    {this.props.editEntryToolbar ? <AddEntry title='Edit Entry' stage={'Edit'} type={this.props.type} targetid={this.props.targetid} id={id} addedentry={this.props.editEntryToggle} parent={this.props.subitem.parent}/> : 
                     <Frame frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}> 
                         <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
                     </Frame>}
