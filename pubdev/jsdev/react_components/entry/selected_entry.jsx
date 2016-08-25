@@ -193,7 +193,7 @@ var SelectedEntry = React.createClass({
         return (
             <div key={id} className={divClass} style={{height:height}}> 
                 {(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
-                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle}/> : <span>Loading...</span>} 
+                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar}/> : <span>Loading...</span>} 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB}/> : null}</div> : null}
                 {this.props.fileUploadToolbar ? <div>{this.props.isAlertSelected == false ? <FileUpload type={this.props.type} targetid={this.props.id} id={'file_upload'} fileUploadToggle={this.props.fileUploadToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
                 {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id}/>: null}
@@ -222,7 +222,7 @@ var EntryIterator = React.createClass({
                     rows.push(<EntryParent key={data.id} items={data} type={type} id={id} isPopUp={this.props.isPopUp} errorToggle={this.props.errorToggle}/>);
                 }.bind(this));
             } else {
-                rows.push(<AlertParent items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} alertPreSelectedId={this.props.alertPreSelectedId} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} entryToggle={this.props.entryToggle} updated={this.props.updated}/>);
+                rows.push(<AlertParent items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} alertPreSelectedId={this.props.alertPreSelectedId} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} entryToggle={this.props.entryToggle} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle}/>);
             }
             return (
                 <div>
@@ -352,7 +352,7 @@ var AlertParent = React.createClass({
                     dataFlair = items[z].data;
                 }
                 
-                body.push(<AlertBody index={z} data={items[z]} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected} alertPreSelectedId={this.props.alertPreSelectedId} activeId={this.state.activeId} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated}/>)
+                body.push(<AlertBody index={z} data={items[z]} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected} alertPreSelectedId={this.props.alertPreSelectedId} activeId={this.state.activeId} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle}/>)
             }
             var search = null;
             if (items[0].data_with_flair != undefined) {
@@ -407,6 +407,8 @@ var AlertBody = React.createClass({
             showEntry: false,
             promoteFetch:false,
             showAddEntryToolbar: false,
+            showFileUpload: false,
+            showFileUploadToolbar: false,
         }
     },
     onClick: function(event) {
@@ -434,6 +436,24 @@ var AlertBody = React.createClass({
         if (this.state.showAddEntryToolbar == true) {
             this.setState({showAddEntryToolbar: false});
             this.props.entryToggle();
+        }
+    },
+    toggleFileUpload: function() {
+        if (this.state.showFileUpload == false) {
+            this.setState({showFileUpload: true})
+        } else {
+            this.setState({showFileUpload: false})
+        }
+    },
+    toggleOnFileUpload: function() {
+        if (this.state.showFileUploadToolbar == false) {
+            this.setState({showFileUploadToolbar: true, showEntry:true})
+        }
+    },
+    toggleOffFileUpload: function() {
+        if (this.state.showFileUploadToolbar == true) {
+            this.setState({showFileUploadToolbar: false});
+            this.props.fileUploadToggle();
         }
     },
     navigateTo: function() {
@@ -472,6 +492,11 @@ var AlertBody = React.createClass({
             this.toggleOnAddEntry();
         } else if (this.props.data.id != nextProps.aID && nextProps.entryToolbar == true && this.state.showAddEntryToolbar == true) {
             this.toggleOffAddEntry();
+        }
+        if (this.props.data.id == this.props.aID && nextProps.fileUploadToolbar == true && this.state.showFileUploadToolbar == false) {
+            this.toggleOnFileUpload();
+        } else if (this.props.data.id != nextProps.aID && nextProps.fileUploadToolbar == true && this.state.showFileUploadToolbar == true) {
+            this.toggleOffFileUpload();
         }
     },
     render: function() {
@@ -521,7 +546,7 @@ var AlertBody = React.createClass({
                     {data.entry_count == 0 ? <td valign='top' style={{marginRight:'4px'}}>{data.entry_count}</td> : <td valign='top' style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onClick={this.toggleEntry}>{data.entry_count}</span></td>}
                     {rowReturn}
                 </tr>
-                <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} showAddEntryToolbar={this.state.showAddEntryToolbar} toggleOffAddEntry={this.toggleOffAddEntry}/>
+                <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} showAddEntryToolbar={this.state.showAddEntryToolbar} toggleOffAddEntry={this.toggleOffAddEntry} showFileUploadToolbar={this.state.showFileUploadToolbar} toggleOffFileUpload={this.toggleOffFileUpload} errorToggle={this.props.errorToggle}/>
             </div>
         )
     }
@@ -546,6 +571,7 @@ var AlertRowBlank = React.createClass({
         var id = this.props.id;
         var showEntry = this.props.showEntry;
         var showAddEntryToolbar = this.props.showAddEntryToolbar;
+        var showFileUploadToolbar = this.props.showFileUploadToolbar;
         var DisplayValue = 'none';
         var arr = [];
         arr.push(<SelectedEntry type={this.props.type} id={this.props.id} />)
@@ -559,6 +585,7 @@ var AlertRowBlank = React.createClass({
                 <td colSpan="50">
                     {showEntry ? <div>{<SelectedEntry type={this.props.type} id={this.props.id} />}</div> : null}
                     {showAddEntryToolbar ? <AddEntry title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.toggleOffAddEntry} updated={this.props.updated}/> : null}
+                    {showFileUploadToolbar ? <FileUpload type={this.props.aType} targetid={this.props.id} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.toggleOffFileUpload}/> : null} 
                 </td>
             </tr>
         )
@@ -676,7 +703,7 @@ var EntryParent = React.createClass({
                             <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
                                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
-                                    <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem>
+                                    { type != 'entity' ? <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem> : null}
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} /></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items.task} /></MenuItem>
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
