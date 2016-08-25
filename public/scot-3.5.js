@@ -1716,8 +1716,10 @@ var FileUpload = React.createClass({displayName: "FileUpload",
                 data.append('target_id',Number(this.props.targetid))
                 if (this.props.entryid != null) {data.append('entry_id',this.props.entryid)}
 			    var xhr = new XMLHttpRequest();
-                xhr.addEventListener("load", this.uploadComplete, false);
-                xhr.addEventListener("error", this.uploadFailed, false);
+                xhr.addEventListener("progress", this.uploadProgress)
+                xhr.addEventListener("load", this.uploadComplete);
+                xhr.addEventListener("error", this.uploadFailed);
+                xhr.addEventListener("abord", this.uploadCancelled);
                 xhr.open("POST", "/scot/api/v2/file");
                 xhr.send(data); 
             }
@@ -1727,12 +1729,17 @@ var FileUpload = React.createClass({displayName: "FileUpload",
 	    
 	},
     uploadComplete: function() {
-        this.props.fileUploadToggle();
+        this.onCancel();
     },
     uploadFailed: function() {
-        alert('file upload failed');
-    }   
-    
+        this.props.errorToggle('An error occured. Upload failed.')
+    },
+    uploadProgress: function() {
+        //TODO add progress bar
+    },
+    uploadCancelled: function() {
+        //this.props.errorToggle('Upload Cancelled');
+    }
 });
 
 module.exports = FileUpload
@@ -3027,9 +3034,9 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         return (
             React.createElement("div", {key: id, className: divClass, style: {height:height}}, 
                 (type == 'incident' && this.props.headerData != null) ? React.createElement(IncidentTable, {type: type, id: id, headerData: this.props.headerData, errorToggle: this.props.errorToggle}) : null, 
-                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId, isPopUp: this.props.isPopUp, entryToggle: this.props.entryToggle, updated: this.updatedCB, aType: this.props.aType, aID: this.props.aID, entryToolbar: this.props.entryToolbar}) : React.createElement("span", null, "Loading..."), 
+                showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId, isPopUp: this.props.isPopUp, entryToggle: this.props.entryToggle, updated: this.updatedCB, aType: this.props.aType, aID: this.props.aID, entryToolbar: this.props.entryToolbar, errorToggle: this.props.errorToggle}) : React.createElement("span", null, "Loading..."), 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntry, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : null) : null, 
-                this.props.fileUploadToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(FileUpload, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', fileUploadToggle: this.props.fileUploadToggle, updated: this.updatedCB}) : null) : null, 
+                this.props.fileUploadToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(FileUpload, {type: this.props.type, targetid: this.props.id, id: 'file_upload', fileUploadToggle: this.props.fileUploadToggle, updated: this.updatedCB, errorToggle: this.props.errorToggle}) : null) : null, 
                 this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id}): null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null, 
                 this.state.errorDisplay ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage, buttons: "CLOSE MESSAGE", onDismiss: this.errorToggle}) : null
@@ -3053,7 +3060,7 @@ var EntryIterator = React.createClass({displayName: "EntryIterator",
         } else {
             if (type != 'alertgroup') {
                 data.forEach(function(data) {
-                    rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id, isPopUp: this.props.isPopUp}));
+                    rows.push(React.createElement(EntryParent, {key: data.id, items: data, type: type, id: id, isPopUp: this.props.isPopUp, errorToggle: this.props.errorToggle}));
                 }.bind(this));
             } else {
                 rows.push(React.createElement(AlertParent, {items: data, type: type, id: id, headerData: this.props.headerData, alertSelected: this.props.alertSelected, alertPreSelectedId: this.props.alertPreSelectedId, aType: this.props.aType, aID: this.props.aID, entryToolbar: this.props.entryToolbar, entryToggle: this.props.entryToggle, updated: this.props.updated}));
@@ -3406,6 +3413,7 @@ var EntryParent = React.createClass({displayName: "EntryParent",
             replyEntryToolbar:false,
             deleteToolbar:false,
             permissionsToolbar:false,
+            fileUploadToolbar: false,
         }
     }, 
     editEntryToggle: function() {
@@ -3446,6 +3454,13 @@ var EntryParent = React.createClass({displayName: "EntryParent",
             console.log('reparsing started');
         }.bind(this))
     },
+    fileUploadToggle: function() {
+        if (this.state.fileUploadToolbar == false) {
+            this.setState({fileUploadToolbar:true});
+        } else {
+            this.setState({fileUploadToolbar:false});
+        }
+    },
     render: function() {
         var itemarr = [];
         var subitemarr = [];
@@ -3456,6 +3471,7 @@ var EntryParent = React.createClass({displayName: "EntryParent",
         var summary = items.summary;
         var editEntryToolbar = this.state.editEntryToolbar;
         var editEntryToggle = this.editEntryToggle;
+        var errorToggle=this.props.errorToggle;
         var outerClassName = 'row-fluid entry-outer';
         var innerClassName = 'row-fluid entry-header';
         var taskOwner = '';
@@ -3474,13 +3490,13 @@ var EntryParent = React.createClass({displayName: "EntryParent",
             outerClassName += ' todo_undefined_outer';
             innerClassName += ' todo_undefined';
         }
-        itemarr.push(React.createElement(EntryData, {id: items.id, key: items.id, subitem: items, type: type, targetid: id, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle, isPopUp: isPopUp}));
+        itemarr.push(React.createElement(EntryData, {id: items.id, key: items.id, subitem: items, type: type, targetid: id, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle, isPopUp: isPopUp, errorToggle: this.props.errorToggle}));
         for (var prop in items) {
             function childfunc(prop){
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(React.createElement(EntryParent, {items: childobj, id: id, type: type, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle, isPopUp: isPopUp})));  
+                        subitemarr.push(new Array(React.createElement(EntryParent, {items: childobj, id: id, type: type, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle, isPopUp: isPopUp, errorToggle: errorToggle})));  
                     });
                 }
             }
@@ -3501,18 +3517,21 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                             React.createElement("span", {className: "pull-right", style: {display:'inline-flex',paddingRight:'3px'}}, 
                                 this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: items.id, type: 'entry', permissionData: items, permissionsToggle: this.permissionsToggle}) : null, 
                                 React.createElement(SplitButton, {bsSize: "xsmall", title: "Reply", key: items.id, id: 'Reply '+items.id, onClick: this.replyEntryToggle, pullRight: true}, 
-                                    React.createElement(MenuItem, {eventKey: "2", onClick: this.deleteToggle}, "Delete"), 
+                                    React.createElement(MenuItem, {eventKey: "1", onClick: this.fileUploadToggle}, "Upload File"), 
                                     React.createElement(MenuItem, {eventKey: "3"}, React.createElement(Summary, {type: type, id: id, entryid: items.id, summary: summary})), 
                                     React.createElement(MenuItem, {eventKey: "4"}, React.createElement(Task, {type: type, id: id, entryid: items.id, taskData: items.task})), 
                                     React.createElement(MenuItem, {onClick: this.permissionsToggle}, "Permissions"), 
-                                    React.createElement(MenuItem, {onClick: this.reparseFlair}, "Reparse Flair")
+                                    React.createElement(MenuItem, {onClick: this.reparseFlair}, "Reparse Flair"), 
+                                    React.createElement(MenuItem, {eventKey: "2", onClick: this.deleteToggle}, "Delete")
+
                                 ), 
                                 React.createElement(Button, {bsSize: "xsmall", onClick: this.editEntryToggle}, "Edit")
                             )
                         )
                     ), 
                 itemarr, 
-                this.state.replyEntryToolbar ? React.createElement(AddEntry, {title: "Reply Entry", stage: 'Reply', type: type, header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, targetid: id, id: items.id, addedentry: this.replyEntryToggle}) : null
+                this.state.replyEntryToolbar ? React.createElement(AddEntry, {title: "Reply Entry", stage: 'Reply', type: type, header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, targetid: id, id: items.id, addedentry: this.replyEntryToggle}) : null, 
+                this.state.fileUploadToolbar ? React.createElement(FileUpload, {type: this.props.type, targetid: this.props.id, entryid: this.props.items.id, fileUploadToggle: this.fileUploadToggle, errorToggle: this.props.errorToggle}) : null
                 ), 
                 this.state.deleteToolbar ? React.createElement(DeleteEntry, {type: type, id: id, deleteToggle: this.deleteToggle, entryid: items.id}) : null
             )
