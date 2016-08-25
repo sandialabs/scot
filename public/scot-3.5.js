@@ -1230,18 +1230,19 @@ var AddFlair = {
                             if (entityResult == undefined) {
                                 //pentry(ifr,flairToolbarToggle,type,linkWarningToggle,id);
                             }
+                            //This makes all href point to blank so they don't reload the iframe
+                            $(ifr.contentDocument.body).find('a').attr('target','_blank');
+                            //Copies href to a new attribute, url, before we make href an anchor (so it doesn't go anywhere when clicked)
+                            ifrContents.find('a').each(function(index,a) {
+                                var url = $(a).attr('href');
+                                $(a).attr('url',url);
+                            }.bind(this))
+                            //Make href an anchor so it doesn't go anywhere when clicked and instead opens up the modal in linkWarningPopup
+                            $(ifr.contentDocument.body).find('a').attr('href','#');
+                            $(ifr.contentDocument.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
+                            $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
                             if($(ifr.contentDocument.body).find('.extras')[0] == null) {
-                                //This makes all href point to blank so they don't reload the iframe
-                                $(ifr.contentDocument.body).find('a').attr('target','_blank');
-                                //Copies href to a new attribute, url, before we make href an anchor (so it doesn't go anywhere when clicked)
-                                ifrContents.find('a').each(function(index,a) {
-                                    var url = $(a).attr('href');
-                                    $(a).attr('url',url);
-                                }.bind(this))
-                                //Make href an anchor so it doesn't go anywhere when clicked and instead opens up the modal in linkWarningPopup
-                                $(ifr.contentDocument.body).find('a').attr('href','#');
-                                $(ifr.contentDocument.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
-                                $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
+                                
                                 ifrContents.find('.entity').each(function(index,entity){
                                     var currentEntityValue = $(entity).attr('data-entity-value');
                                     if (currentEntityValue != undefined && entityResult != undefined) {
