@@ -84,7 +84,6 @@ var IncidentTable = React.createClass({
                 this.props.errorToggle('Failed to updated incident data') 
             }.bind(this)
         })
-        console.log(event);
     },
     render: function() {
         var incidentData = this.props.headerData;
