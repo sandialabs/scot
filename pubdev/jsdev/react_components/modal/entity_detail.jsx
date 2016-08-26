@@ -177,7 +177,7 @@ var EntityDetail = React.createClass({
             } else {
                 title = this.state.tabs[i].data.value.slice(0,8);
             }
-            tabsArr.push(<Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} i={z} key={z}/></Tab>)
+            tabsArr.push(<Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} i={z} key={z} errorToggle={this.props.errorToggle}/></Tab>)
         }
         return (
             <Draggable handle="#handle" onMouseDown={this.moveDivInit}>
@@ -247,7 +247,7 @@ var TabContents = React.createClass({
                         <h3 id="myModalLabel">Entity: {this.props.data != null ? <EntityValue value={this.props.data.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
                     </div>
                     <div style={{height:'100%',display:'flex', flex:'1 1 auto', margin:'10px', flexFlow:'inherit', minHeight:'1px'}}>
-                    {this.props.data != null ? <EntityBody data={this.props.data} entityid={this.props.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
+                    {this.props.data != null ? <EntityBody data={this.props.data} entityid={this.props.entityid} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/> : <div>Loading...</div>}
                     </div>
                 </div>
             )
@@ -309,10 +309,10 @@ var EntityBody = React.createClass({
             for (var prop in entityData) {
                 if (entityData[prop] != undefined) {
                     if (prop == 'geoip') {
-                        entityEnrichmentGeoArr.push(<Tab eventKey={enrichmentEventKey} style={{overflow:'auto'}} title={prop}><GeoView data={entityData[prop].data} type={this.props.type} id={this.props.id} entityData={this.props.data}/></Tab>);
+                        entityEnrichmentGeoArr.push(<Tab eventKey={enrichmentEventKey} style={{overflow:'auto'}} title={prop}><GeoView data={entityData[prop].data} type={this.props.type} id={this.props.id} entityData={this.props.data} errorToggle={this.props.errorToggle}/></Tab>);
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'data') {
-                        entityEnrichmentDataArr.push(<Tab eventKey={enrichmentEventKey} style={{overflow:'auto'}} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} type={this.props.type} id={this.props.id} /></Tab>);
+                        entityEnrichmentDataArr.push(<Tab eventKey={enrichmentEventKey} style={{overflow:'auto'}} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/></Tab>);
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'link') {
                         entityEnrichmentLinkArr.push(<Button bsSize='small' target='_blank' href={entityData[prop].data.url}>{entityData[prop].data.title}</Button>)
@@ -329,7 +329,7 @@ var EntityBody = React.createClass({
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='tabs'>
                 <Tab eventKey={1} style={{overflow:'auto'}} title={this.state.appearances}>{entityEnrichmentLinkArr}<span><br/><b>Appears: {this.state.appearances} times</b></span><br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances}/><br/></Tab>
                 <Tab eventKey={2} style={{overflow:'auto'}} title="Entry"><Button bsSize='small' onClick={this.entryToggle}>Add Entry</Button><br/>
-                {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} /> : null} <SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
+                {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
                 {entityEnrichmentGeoArr}
                 {entityEnrichmentDataArr}
             </Tabs>
@@ -375,8 +375,8 @@ var GeoView = React.createClass({
             <div>
                 <Button bsSize='small' onClick={this.copyToEntity}>Copy to <b>{"entity"}</b> entry</Button>
                 <Button bsSize='small' onClick={this.copyToEntry}>Copy to <b>{this.props.type} {this.props.id}</b> entry</Button>
-                {this.state.copyToEntryToolbar ? <AddEntry title='CopyToEntry' type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.copyToEntry} content={copy}/> : null}
-                {this.state.copyToEntityToolbar ? <AddEntry title='CopyToEntry' type={'entity'} targetid={this.props.entityData.id} id={this.props.entityData.id} addedentry={this.copyToEntity} content={copy}/> : null}
+                {this.state.copyToEntryToolbar ? <AddEntry title='CopyToEntry' type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.copyToEntry} content={copy} errorToggle={this.props.errorToggle}/> : null}
+                {this.state.copyToEntityToolbar ? <AddEntry title='CopyToEntry' type={'entity'} targetid={this.props.entityData.id} id={this.props.entityData.id} addedentry={this.copyToEntity} content={copy} errorToggle={this.props.errorToggle}/> : null}
                 <div className="entityTableWrapper">
                     <table className="tablesorter entityTableHorizontal" id={'sortableentitytable'} width='100%'>
                         {trArr}    
@@ -641,7 +641,7 @@ var GuideBody = React.createClass ({
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='pills'>
                 <Tab eventKey={1} style={{overflow:'auto'}}><Button bsSize='small' onClick={this.entryToggle}>Add Entry</Button><br/>
-                {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} /> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} /></Tab>
+                {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} /></Tab>
             </Tabs>
         )
     }
