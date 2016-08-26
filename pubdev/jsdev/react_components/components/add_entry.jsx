@@ -117,9 +117,13 @@ var AddEntryModal = React.createClass({
                     type: 'post',
                     url: '/scot/api/v2/entry',
                     data: data,
-                    contentType: 'application/json; charset=UTF-8'
-                }).success(function(response){
-                }.bind(this))
+                    contentType: 'application/json; charset=UTF-8',
+                    success: function(response){
+                    }.bind(this),
+                    error: function(response) {
+                        this.props.errorToggle("Failed to add entry.")
+                    }.bind(this) 
+                })               
                 this.props.addedentry()
                 AppActions.updateItem(this.props.targetid,'headerUpdate')
             }
@@ -181,8 +185,11 @@ var AddEntryModal = React.createClass({
                     url: '/scot/api/v2/entry',
                     data: data,
                     contentType: 'application/json; charset=UTF-8',
-                }).success(function(response){
-                    
+                    success: function(response){
+                    }.bind(this),
+                    error: function(response) {
+                        this.props.errorToggle("Failed to add entry.")
+                    }.bind(this) 
                 })
                 this.props.addedentry()
                 AppActions.updateItem(this.props.targetid,'headerUpdate');
@@ -210,9 +217,13 @@ var AddEntryModal = React.createClass({
                     type: 'post',
                     url: '/scot/api/v2/entry',
                     data: JSON.stringify(data),
-                    contentType: 'application/json; charset=UTF-8'
-                }).success(function(response){
-                }.bind(this))
+                    contentType: 'application/json; charset=UTF-8',
+                    success: function(response){
+                    }.bind(this),
+                    error: function(response) {
+                        this.props.errorToggle("Failed to add entry.")
+                    }.bind(this)
+                })
                 this.props.addedentry()
                 AppActions.updateItem(this.props.targetid,'headerUpdate');
             }
@@ -246,10 +257,15 @@ var AddEntryModal = React.createClass({
                 type: 'put',
                 url: '/scot/api/v2/entry/'+this.props.id,
                 data: JSON.stringify(data),
-                contentType: 'application/json; charset=UTF-8'
-            }).success(function(response){
+                contentType: 'application/json; charset=UTF-8',
+                success: function(response){
                     
-            }.bind(this))
+                }.bind(this),
+                error: function(response) {
+                    this.props.errorToggle("Failed to edit entry.")
+                }.bind(this)
+            })
+
             this.props.addedentry()
             AppActions.updateItem(this.props.targetid, 'headerUpdate')
         }
