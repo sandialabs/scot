@@ -240,15 +240,23 @@ sub get_many {
     # }
     # where params or json is
     #  {
-    #    match : { 
-    #           col_name_1: condition,
-    #           col_name_2: condition,
-    #    },
+    #    col_name_1: condition,
+    #    col_name_2: condition,
     #    sort  : { mongo sorting },
     #    columns: [ col1, ... ], # display only these columns
     #    limit: x,
     #    offset: y
     #  }
+
+    # where condition is one of the following:
+    # 1. simple string get's put into a /string/ regex search
+    # 2. (tag,source)comma seperated strings, do AND (string may be prepended with ! (not)
+    # 3. (tag,source)| seperated strings, do OR (string may be prepended with ! for not
+    # 4. if field is datetime, a string of form begin=epoch,end=epoch
+    # 5. if field is a numeric, a string of form
+    #    >=x,<=y  (greater than or equal to x AND less than or equal to y)
+    #    <x|>y    (less than x or greater than y)
+    #   =x|=y|=z  (equal to x, y, OR z)
 
     $log->debug("Request = ", {filter=>\&Dumper, value=>$req_href});
 
@@ -280,33 +288,34 @@ sub get_many {
         return;
     }
 
-    if ( $col_name eq "handler"  and defined $req_href->{request}->{params}->{current}) {
-        my $handler_obj = $collection->get_handler($req_href->{request}->{params}->{current});
-        if ( $handler_obj ) {
-            my $hash    = $handler_obj->as_hash;
-            $self->do_render({
-                records             => $hash,
-                queryRecordCount    => 1,
-                totalRecordCount    => 1,
-            });
+    my $current = $req_href->{request}->{params}->{current};
+
+    if ( $col_name eq "handler"  and defined $current ) {
+
+        my $handler_cursor  = $collection->get_handler($current);
+
+        my @handler_records;
+        while ( my $handler = $handler_cursor->next ) {
+            push @handler_records, $handler->as_hash;
         }
-        else {
-            $self->do_render({
-                records         => {
-                    username    => 'unassigned',
-                },
-                queryRecordCount    => 1,
-                totalRecordCount    => 1,
-            });
+
+        if ( scalar(@handler_records) < 1 ) {
+            push @handler_records, { username => 'unassigned' };
         }
+
+        $self->do_render({
+            records             => \@handler_records,
+            queryRecordCount    => 1,
+            totalRecordCount    => 1,
+        });
         $self->audit("get_current_handler", $req_href);
         return;
     }
 
-    $match_ref   = $req_href->{request}->{params}->{match} // 
-                   $req_href->{request}->{json}->{match};
+    #$match_ref   = $req_href->{request}->{params}->{match} // 
+    #               $req_href->{request}->{json}->{match};
 
-    $match_ref  = $self->build_match_ref($match_ref);    
+    $match_ref  = $self->build_match_ref($req_href->{request});    
 
     $log->debug("match_ref is ",{filter=>\&Dumper, value=>$match_ref});
 
@@ -1916,7 +1925,10 @@ sub get_request_params  {
     if ( $params ) {
         $log->trace("Checking Params for JSON values");
         foreach my $key (keys %{$params}) {
-            $log->trace("param ". Dumper($key) ." = ", {filter=>\&Dumper, value => $params->{$key}});
+
+            $log->trace("param ". Dumper($key) ." = ", 
+                        {filter=>\&Dumper, value => $params->{$key}});
+
             my $parsedjson;
             eval {
                 $parsedjson = decode_json($params->{$key});
@@ -1941,7 +1953,7 @@ sub get_request_params  {
             json    => $json,
         },
     );
-    # $log->debug("Request is ",{ filter => \&Dumper, value => \%request } );
+    $log->debug("Request is ",{ filter => \&Dumper, value => \%request } );
     return wantarray ? %request : \%request;
 }
 
@@ -2235,11 +2247,17 @@ sub supertable {
     });
 }
 
-## TODO:  This will change:  We are going to allow client to pass in mongo query json
-## This function will then untaint the data for safety
-## benefit:  removing much brittleness from code below
-
 sub build_match_ref {
+    my $self    = shift;
+    my $req     = shift;
+    my $params  = $req->{params};
+
+    my $match   = $self->env->mongoquerymaker->build_match_ref($params);
+    return $match;
+}
+
+
+sub build_match_ref_old {
     my $self	        = shift;
     my $filter_ref      = shift;     
     my $env   	        = $self->env;
