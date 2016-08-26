@@ -65,7 +65,7 @@ module.exports = React.createClass({
             subjecttext:'', idsarray: [], scrollheight: scrollHeight, 
             display: 'flex',scrollwidth: scrollWidth, reload: false, 
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight, containerdisplay: 'none',alldetail: true, minwidth: '650px',classname: [' ', ' ',' ', ' '],
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: ''};
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '',handler:null};
     },
     componentWillMount: function() {
         if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
@@ -162,6 +162,14 @@ module.exports = React.createClass({
         })
         this.setState({idsarray: array, objectarray: finalarray,scrollheight: height, totalcount: response.totalRecordCount})
         }.bind(this))
+        //get incident handler
+        $.ajax({
+            type: 'get',
+            url: '/scot/api/v2/handler?current=1'
+        }).success(function(response){
+            this.setState({handler: response.records['username']})
+        }.bind(this))
+
     },
 
     reloadactive: function(){     
@@ -279,13 +287,18 @@ module.exports = React.createClass({
             React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement('div', null, 
                     !this.state.mute ? React.createElement(Notificationactivemq, {ref: 'notificationSystem'}):null), 
-                        React.createElement("div", {className: 'entry-header-info-null', style: {'padding-bottom': '55px',width:'100%'}}, 
-                        React.createElement("div", {style: {top: '1px', 'margin-left': '10px', float:'left', 'text-align':'center', position: 'absolute'}}, 
-                        React.createElement('h2', {style: {'font-size': '30px'}}, 'Guide')), 
-                        React.createElement("div", {style: {float: 'right', right: '100px', left: '50px','text-align': 'center', position: 'absolute', top: '9px'}}, 
-                        React.createElement('h2', {style: {'font-size': '19px'}}, 'OUO')), 
-                        React.createElement(Search, null)),   
-
+                        <div className='main-header-info-null'>
+                            <div className='main-header-info-child'>
+                                <h2 style={{'font-size': '30px'}}>Guide</h2>
+                            </div>
+                            <div className='main-header-info-child-centered'>
+                                <div>Incident Handler: {this.state.handler}</div>
+                                <h2 style={{'font-size': '19px'}}>OUO</h2>
+                            </div>
+                            <div className='main-header-info-child'>
+                                <Search />
+                            </div>
+                        </div>,
                        React.createElement('div', {className: 'mainview', style: {display: this.state.display == 'block' ? 'block' : 'flex'}},
                         React.createElement('div', {style:{display: 'block'}},
                         React.createElement('div', {style: {display: 'inline-flex'}},
@@ -489,6 +502,13 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
                 }
 	        })
                 this.setState({totalcount: response.totalRecordCount, activepage: page, objectarray: newarray})
+        }.bind(this))
+        //get incident handler
+        $.ajax({
+            type: 'get',
+            url: '/scot/api/v2/handler?current=1'
+        }).success(function(response){
+            this.setState({handler: response.records['username']})
         }.bind(this))
     },
     reloadCSS: function(){
