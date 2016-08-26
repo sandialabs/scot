@@ -952,9 +952,13 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                     type: 'post',
                     url: '/scot/api/v2/entry',
                     data: data,
-                    contentType: 'application/json; charset=UTF-8'
-                }).success(function(response){
-                }.bind(this))
+                    contentType: 'application/json; charset=UTF-8',
+                    success: function(response){
+                    }.bind(this),
+                    error: function(response) {
+                        this.props.errorToggle("Failed to add entry.")
+                    }.bind(this) 
+                })               
                 this.props.addedentry()
                 AppActions.updateItem(this.props.targetid,'headerUpdate')
             }
@@ -1016,8 +1020,11 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                     url: '/scot/api/v2/entry',
                     data: data,
                     contentType: 'application/json; charset=UTF-8',
-                }).success(function(response){
-                    
+                    success: function(response){
+                    }.bind(this),
+                    error: function(response) {
+                        this.props.errorToggle("Failed to add entry.")
+                    }.bind(this) 
                 })
                 this.props.addedentry()
                 AppActions.updateItem(this.props.targetid,'headerUpdate');
@@ -1045,9 +1052,13 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                     type: 'post',
                     url: '/scot/api/v2/entry',
                     data: JSON.stringify(data),
-                    contentType: 'application/json; charset=UTF-8'
-                }).success(function(response){
-                }.bind(this))
+                    contentType: 'application/json; charset=UTF-8',
+                    success: function(response){
+                    }.bind(this),
+                    error: function(response) {
+                        this.props.errorToggle("Failed to add entry.")
+                    }.bind(this)
+                })
                 this.props.addedentry()
                 AppActions.updateItem(this.props.targetid,'headerUpdate');
             }
@@ -1081,10 +1092,15 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                 type: 'put',
                 url: '/scot/api/v2/entry/'+this.props.id,
                 data: JSON.stringify(data),
-                contentType: 'application/json; charset=UTF-8'
-            }).success(function(response){
+                contentType: 'application/json; charset=UTF-8',
+                success: function(response){
                     
-            }.bind(this))
+                }.bind(this),
+                error: function(response) {
+                    this.props.errorToggle("Failed to edit entry.")
+                }.bind(this)
+            })
+
             this.props.addedentry()
             AppActions.updateItem(this.props.targetid, 'headerUpdate')
         }
@@ -2916,7 +2932,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             React.createElement("div", {key: id, className: divClass, style: {height:height}}, 
                 (type == 'incident' && this.props.headerData != null) ? React.createElement(IncidentTable, {type: type, id: id, headerData: this.props.headerData, errorToggle: this.props.errorToggle}) : null, 
                 showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId, isPopUp: this.props.isPopUp, entryToggle: this.props.entryToggle, updated: this.updatedCB, aType: this.props.aType, aID: this.props.aID, entryToolbar: this.props.entryToolbar, errorToggle: this.props.errorToggle, fileUploadToggle: this.props.fileUploadToggle, fileUploadToolbar: this.props.fileUploadToolbar}) : React.createElement("span", null, "Loading..."), 
-                this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntry, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB}) : null) : null, 
+                this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntry, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB, errorToggle: this.props.errorToggle}) : null) : null, 
                 this.props.fileUploadToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(FileUpload, {type: this.props.type, targetid: this.props.id, id: 'file_upload', fileUploadToggle: this.props.fileUploadToggle, updated: this.updatedCB, errorToggle: this.props.errorToggle}) : null) : null, 
                 this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id}): null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null, 
@@ -3306,7 +3322,7 @@ var AlertRowBlank = React.createClass({displayName: "AlertRowBlank",
                 ), 
                 React.createElement("td", {colSpan: "50"}, 
                     showEntry ? React.createElement("div", null, React.createElement(SelectedEntry, {type: this.props.type, id: this.props.id})) : null, 
-                    showAddEntryToolbar ? React.createElement(AddEntry, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.toggleOffAddEntry, updated: this.props.updated}) : null, 
+                    showAddEntryToolbar ? React.createElement(AddEntry, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.toggleOffAddEntry, updated: this.props.updated, errorToggle: this.props.errorToggle}) : null, 
                     showFileUploadToolbar ? React.createElement(FileUpload, {type: this.props.aType, targetid: this.props.id, errorToggle: this.props.errorToggle, fileUploadToggle: this.props.toggleOffFileUpload}) : null
                 )
             )
@@ -3438,7 +3454,7 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                         )
                     ), 
                 itemarr, 
-                this.state.replyEntryToolbar ? React.createElement(AddEntry, {title: "Reply Entry", stage: 'Reply', type: type, header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, targetid: id, id: items.id, addedentry: this.replyEntryToggle}) : null, 
+                this.state.replyEntryToolbar ? React.createElement(AddEntry, {title: "Reply Entry", stage: 'Reply', type: type, header1: header1, header2: header2, header3: header3, createdTime: createdTime, updatedTime: updatedTime, targetid: id, id: items.id, addedentry: this.replyEntryToggle, errorToggle: this.props.errorToggle}) : null, 
                 this.state.fileUploadToolbar ? React.createElement(FileUpload, {type: this.props.type, targetid: this.props.id, entryid: this.props.items.id, fileUploadToggle: this.fileUploadToggle, errorToggle: this.props.errorToggle}) : null
                 ), 
                 this.state.deleteToolbar ? React.createElement(DeleteEntry, {type: type, id: id, deleteToggle: this.deleteToggle, entryid: items.id}) : null
@@ -3498,7 +3514,7 @@ var EntryData = React.createClass({displayName: "EntryData",
         return (
             React.createElement("div", {key: this.props.id, className: 'row-fluid entry-body'}, 
                 React.createElement("div", {className: 'row-fluid entry-body-inner', style: {marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
-                    this.props.editEntryToolbar ? React.createElement(AddEntry, {title: "Edit Entry", stage: 'Edit', type: this.props.type, targetid: this.props.targetid, id: id, addedentry: this.props.editEntryToggle, parent: this.props.subitem.parent}) : 
+                    this.props.editEntryToolbar ? React.createElement(AddEntry, {title: "Edit Entry", stage: 'Edit', type: this.props.type, targetid: this.props.targetid, id: id, addedentry: this.props.editEntryToggle, parent: this.props.subitem.parent, errorToggle: this.props.errorToggle}) : 
                     React.createElement(Frame, {frameBorder: '0', id: 'iframe_' + id, sandbox: 'allow-same-origin', styleSheets: ['/css/sandbox.css'], style: {width:'100%',height:this.state.height}}, 
                         React.createElement("div", {dangerouslySetInnerHTML: { __html: rawMarkup}})
                     )
@@ -4057,7 +4073,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 ), 
                 React.createElement(Notification, {ref: "notificationSystem"}), 
                 this.state.errorDisplay ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage, buttons: "CLOSE MESSAGE", onDismiss: this.errorToggle}) : null, 
-                this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id}) : null, 
+                this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id, errorToggle: this.errorToggle}) : null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null, 
                 this.state.viewedByHistoryToolbar ? React.createElement(ViewedByHistory, {viewedByHistoryToggle: this.viewedByHistoryToggle, id: id, type: type, subjectType: subjectType, viewedby: viewedby}) : null, 
                 this.state.changeHistoryToolbar ? React.createElement(ChangeHistory, {changeHistoryToggle: this.changeHistoryToggle, id: id, type: type, subjectType: subjectType}) : null, 
@@ -5214,7 +5230,7 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
             } else {
                 title = this.state.tabs[i].data.value.slice(0,8);
             }
-            tabsArr.push(React.createElement(Tab, {className: "tab-content", eventKey: this.state.tabs[i].entityid, title: title}, React.createElement(TabContents, {data: this.state.tabs[i].data, type: this.props.type, id: this.props.id, entityid: this.state.tabs[i].entityid, entitytype: this.state.tabs[i].entitytype, i: z, key: z})))
+            tabsArr.push(React.createElement(Tab, {className: "tab-content", eventKey: this.state.tabs[i].entityid, title: title}, React.createElement(TabContents, {data: this.state.tabs[i].data, type: this.props.type, id: this.props.id, entityid: this.state.tabs[i].entityid, entitytype: this.state.tabs[i].entitytype, i: z, key: z, errorToggle: this.props.errorToggle})))
         }
         return (
             React.createElement(Draggable, {handle: "#handle", onMouseDown: this.moveDivInit}, 
@@ -5284,7 +5300,7 @@ var TabContents = React.createClass({displayName: "TabContents",
                         React.createElement("h3", {id: "myModalLabel"}, "Entity: ", this.props.data != null ? React.createElement(EntityValue, {value: this.props.data.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
                     ), 
                     React.createElement("div", {style: {height:'100%',display:'flex', flex:'1 1 auto', margin:'10px', flexFlow:'inherit', minHeight:'1px'}}, 
-                    this.props.data != null ? React.createElement(EntityBody, {data: this.props.data, entityid: this.props.entityid, type: this.props.type, id: this.props.id}) : React.createElement("div", null, "Loading...")
+                    this.props.data != null ? React.createElement(EntityBody, {data: this.props.data, entityid: this.props.entityid, type: this.props.type, id: this.props.id, errorToggle: this.props.errorToggle}) : React.createElement("div", null, "Loading...")
                     )
                 )
             )
@@ -5346,10 +5362,10 @@ var EntityBody = React.createClass({displayName: "EntityBody",
             for (var prop in entityData) {
                 if (entityData[prop] != undefined) {
                     if (prop == 'geoip') {
-                        entityEnrichmentGeoArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, style: {overflow:'auto'}, title: prop}, React.createElement(GeoView, {data: entityData[prop].data, type: this.props.type, id: this.props.id, entityData: this.props.data})));
+                        entityEnrichmentGeoArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, style: {overflow:'auto'}, title: prop}, React.createElement(GeoView, {data: entityData[prop].data, type: this.props.type, id: this.props.id, entityData: this.props.data, errorToggle: this.props.errorToggle})));
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'data') {
-                        entityEnrichmentDataArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, style: {overflow:'auto'}, title: prop}, React.createElement(EntityEnrichmentButtons, {dataSource: entityData[prop], type: this.props.type, id: this.props.id})));
+                        entityEnrichmentDataArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, style: {overflow:'auto'}, title: prop}, React.createElement(EntityEnrichmentButtons, {dataSource: entityData[prop], type: this.props.type, id: this.props.id, errorToggle: this.props.errorToggle})));
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'link') {
                         entityEnrichmentLinkArr.push(React.createElement(Button, {bsSize: "small", target: "_blank", href: entityData[prop].data.url}, entityData[prop].data.title))
@@ -5366,7 +5382,7 @@ var EntityBody = React.createClass({displayName: "EntityBody",
             React.createElement(Tabs, {className: "tab-content", defaultActiveKey: 1, bsStyle: "tabs"}, 
                 React.createElement(Tab, {eventKey: 1, style: {overflow:'auto'}, title: this.state.appearances}, entityEnrichmentLinkArr, React.createElement("span", null, React.createElement("br", null), React.createElement("b", null, "Appears: ", this.state.appearances, " times")), React.createElement("br", null), React.createElement(EntityReferences, {entityid: this.props.entityid, updateAppearances: this.updateAppearances}), React.createElement("br", null)), 
                 React.createElement(Tab, {eventKey: 2, style: {overflow:'auto'}, title: "Entry"}, React.createElement(Button, {bsSize: "small", onClick: this.entryToggle}, "Add Entry"), React.createElement("br", null), 
-                this.state.entryToolbar ? React.createElement(AddEntry, {title: 'Add Entry', type: "entity", targetid: this.props.entityid, id: 'add_entry', addedentry: this.entryToggle}) : null, " ", React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid})), 
+                this.state.entryToolbar ? React.createElement(AddEntry, {title: 'Add Entry', type: "entity", targetid: this.props.entityid, id: 'add_entry', addedentry: this.entryToggle, errorToggle: this.props.errorToggle}) : null, " ", React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid})), 
                 entityEnrichmentGeoArr, 
                 entityEnrichmentDataArr
             )
@@ -5412,8 +5428,8 @@ var GeoView = React.createClass({displayName: "GeoView",
             React.createElement("div", null, 
                 React.createElement(Button, {bsSize: "small", onClick: this.copyToEntity}, "Copy to ", React.createElement("b", null, "entity"), " entry"), 
                 React.createElement(Button, {bsSize: "small", onClick: this.copyToEntry}, "Copy to ", React.createElement("b", null, this.props.type, " ", this.props.id), " entry"), 
-                this.state.copyToEntryToolbar ? React.createElement(AddEntry, {title: "CopyToEntry", type: this.props.type, targetid: this.props.id, id: this.props.id, addedentry: this.copyToEntry, content: copy}) : null, 
-                this.state.copyToEntityToolbar ? React.createElement(AddEntry, {title: "CopyToEntry", type: 'entity', targetid: this.props.entityData.id, id: this.props.entityData.id, addedentry: this.copyToEntity, content: copy}) : null, 
+                this.state.copyToEntryToolbar ? React.createElement(AddEntry, {title: "CopyToEntry", type: this.props.type, targetid: this.props.id, id: this.props.id, addedentry: this.copyToEntry, content: copy, errorToggle: this.props.errorToggle}) : null, 
+                this.state.copyToEntityToolbar ? React.createElement(AddEntry, {title: "CopyToEntry", type: 'entity', targetid: this.props.entityData.id, id: this.props.entityData.id, addedentry: this.copyToEntity, content: copy, errorToggle: this.props.errorToggle}) : null, 
                 React.createElement("div", {className: "entityTableWrapper"}, 
                     React.createElement("table", {className: "tablesorter entityTableHorizontal", id: 'sortableentitytable', width: "100%"}, 
                         trArr
@@ -5678,7 +5694,7 @@ var GuideBody = React.createClass ({displayName: "GuideBody",
         return (
             React.createElement(Tabs, {className: "tab-content", defaultActiveKey: 1, bsStyle: "pills"}, 
                 React.createElement(Tab, {eventKey: 1, style: {overflow:'auto'}}, React.createElement(Button, {bsSize: "small", onClick: this.entryToggle}, "Add Entry"), React.createElement("br", null), 
-                this.state.entryToolbar ? React.createElement(AddEntry, {title: 'Add Entry', type: "guide", targetid: this.props.entityid, id: 'add_entry', addedentry: this.entryToggle}) : null, " ", React.createElement(SelectedEntry, {type: 'guide', id: this.props.entityid, isPopUp: 1}))
+                this.state.entryToolbar ? React.createElement(AddEntry, {title: 'Add Entry', type: "guide", targetid: this.props.entityid, id: 'add_entry', addedentry: this.entryToggle, errorToggle: this.props.errorToggle}) : null, " ", React.createElement(SelectedEntry, {type: 'guide', id: this.props.entityid, isPopUp: 1}))
             )
         )
     }
