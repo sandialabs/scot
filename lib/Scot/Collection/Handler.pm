@@ -56,9 +56,9 @@ sub get_handler {
         end     => { '$gte' => $when },
     };
 
-    my $handler = $self->find_one($match);
+    my $cursor = $self->find($match);
 
-    return $handler;
+    return $cursor;
 }
 
 
