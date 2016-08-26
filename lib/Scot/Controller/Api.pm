@@ -296,7 +296,8 @@ sub get_many {
 
         my @handler_records;
         while ( my $handler = $handler_cursor->next ) {
-            push @handler_records, $handler->as_hash;
+            my $hhref = $handler->as_hash;
+            push @handler_records, $hhref;
         }
 
         if ( scalar(@handler_records) < 1 ) {
