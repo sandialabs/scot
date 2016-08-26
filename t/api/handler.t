@@ -34,7 +34,7 @@ my $handler1 = $t->tx->res->json->{id};
 
 $t  ->post_ok  ('/scot/api/v2/handler'  => json => {
         username => "foobar",
-        start    => $toddtime + 10,
+        start    => $toddtime + 9,
         end      => $toddtime + 20,
     })
     ->status_is(200)
@@ -42,9 +42,8 @@ $t  ->post_ok  ('/scot/api/v2/handler'  => json => {
 
 $t  ->get_ok("/scot/api/v2/handler?current=1")
     ->status_is(200)
-    ->json_is('/records/username' => 'tbruner');
+    ->json_is('/records/0/username' => 'tbruner');
 
-# print Dumper($t->tx->res->json);
 
 print "Current Epoch is : ". $env->now()."\n";
 print "\n Sleeping for 11 secods\n";
@@ -54,12 +53,18 @@ print "Current Epoch is : ". $env->now()."\n";
 
 $t  ->get_ok("/scot/api/v2/handler?current=1")
     ->status_is(200)
-    ->json_is('/records/username' => 'foobar');
+    ->json_is('/records/0/username' => 'foobar');
 
 
 $t  ->get_ok("/scot/api/v2/handler?current=$toddtime")
     ->status_is(200)
-    ->json_is('/records/username' => 'tbruner');
+    ->json_is('/records/0/username' => 'tbruner');
+
+my $tt = $toddtime +9;
+$t  ->get_ok("/scot/api/v2/handler?current=$tt")
+    ->status_is(200)
+    ->json_is('/records/0/username' => 'tbruner')
+    ->json_is('/records/1/username' => 'foobar');
 
 # print Dumper($t->tx->res->json);
  done_testing();
