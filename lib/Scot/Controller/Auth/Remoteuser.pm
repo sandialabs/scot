@@ -53,10 +53,16 @@ sub check {
     my $user    = $self->session('user');
     $log->debug("Session user is ", {filter =>\&Dumper, value =>$user});
     my $groups  = $self->session('groups');
-    # $log->debug("Session groups is ", {filter =>\&Dumper, value =>$groups});
+
+    unless (ref($groups) eq "ARRAY") {
+	my $garef	= $self->get_groups($user);
+	$self->session('groups'	=> $garef);
+	$groups	= $garef;
+    }
+    $log->debug("Session groups is ", {filter =>\&Dumper, value =>$groups});
 
     if ( defined $user ) {
-        if ( scalar( @{$groups} )>0 ) {
+        if ( scalar( @{$groups} ) >0 ) {
             return 1;
         }
         # sometimes, rarely, groups session gets lost
