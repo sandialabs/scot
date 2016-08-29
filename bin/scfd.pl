@@ -12,7 +12,7 @@ exit Daemon::Control->new(
     lsb_desc    => "Scot Flair Daemon Flairs SCOT data",
     user        => "scot",
     group       => "scot",
-    program     => '/opt/scot/bin/flair.pl',
+    program     => '/opt/scot/bin/flairer.pl',
     program_args    => [],
     pid_file    => "/var/run/scfd.pid",
     stderr_file => "/var/log/scot/scfd.stderr",

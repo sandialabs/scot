@@ -323,12 +323,17 @@ EOF
         echo "+ adding/refreshing scot activemq config"
         echo "- removing $AMQDIR/webapps/scot"
         rm -rf $AMQDIR/webapps/scot
+
         echo "- removing $AMQDIR/webapps/scotaq"
         rm -rf $AMQDIR/webapps/scotaq
+
+        echo "+ copying scot xml files into $AMQDIR/conf"
         cp $DEVDIR/etc/scotamq.xml     $AMQDIR/conf
         cp $DEVDIR/etc/jetty.xml       $AMQDIR/conf
+
         echo "+ copying $DEVDIR/etc/scotaq to $AMQDIR/webapps"
         cp -R $DEVDIR/etc/scotaq       $AMQDIR/webapps
+
         echo "+ renaming $AMQDIR/webapps/scotaq to $AMQDIR/webapps/scot"
         mv $AMQDIR/webapps/scotaq      $AMQDIR/webapps/scot
         cp $DEVDIR/etc/activemq-init   /etc/init.d/activemq
@@ -337,9 +342,11 @@ EOF
     fi
 
     if [ ! -e "/etc/init.d/activemq" ]; then
+        echo "+ copying activemq init file to /etc/init.d"
         cp $DEVDIR/etc/activemq-init   /etc/init.d/activemq
     fi
     if [ ! -e "$AMQDIR/conf/scotamq.xml" ]; then
+        echo "+ ensuring scotamq.xml is present"
         cp $DEVDIR/etc/scotamq.xml     $AMQDIR/conf
     fi
 
@@ -516,6 +523,7 @@ EOF
         SSLDIR="/etc/apache2/ssl"
 
         if [[ ! -f $SSLDIR/scot.key ]]; then
+            echo "+ creating temporary SSL certs, ${RED} REPLACE WITH REAL CERTS ASAP! ${NC}"
             mkdir -p $SSLDIR/ssl/
             openssl genrsa 2048 > $SSLDIR/scot.key
             openssl req -new -key $SSLDIR/scot.key \
@@ -589,7 +597,12 @@ echo -e "${yellow} Checking SCOT filestore $FILESTORE ${NC}"
 
 if [ "$SFILESDEL" == "yes" ]; then
     echo -e "${red}- removing existing filestore${NC}"
-    rm -rf  $FILESTORE
+    if [ "$FILESTORE" != "/" ];
+        # try to prevent major catastrophe!
+        rm -rf  $FILESTORE
+    else
+        echo -e "${RED} Someone set filestore to /, so deletion skipped.${NC}"
+    fi
 fi
 
 if [ -d $FILESTORE ]; then
@@ -640,7 +653,14 @@ if [ ! -d $SCOTDIR ]; then
     chmod 754 $SCOTDIR
 fi
 
-usermod -a -G scot www-data
+if [ "$OS"  == "Ubuntu" ];
+then
+    echo "+ adding user scot to the www-data group"
+    usermod -a -G scot www-data
+else 
+    echo "+ adding user scot to the apache group"
+    usermod -a -G scot apache
+fi
 
 echo -e "${yellow} installing SCOT files ${NC}"
 cp -r $DEVDIR/* $SCOTDIR/
