@@ -329,7 +329,8 @@ sub get_many {
         $match_ref  = {};
     }
     else {
-        $log->debug("Looking for $col_name matching ",{filter=>\&Dumper, value=>$match_ref});
+        $log->debug("Looking for $col_name matching ",
+                    {filter=>\&Dumper, value=>$match_ref});
     }
 
     my $cursor      = $collection->find($match_ref);
@@ -1788,6 +1789,24 @@ sub nothing_matching_error {
         error_msg       => "Nothing Matches",
         match_condition => $match,
     });
+}
+
+=item B< build_sort_opts($href)>
+
+expect param sort (possibly multiple values)
+expect a prepended + for ascending
+expect a prepended - for descending
+default, nothing prepended will mean ascending
+
+=cut
+
+sub build_sort_ops_new {
+    my $self        = shift;
+    my $href        = shift;
+    my $request     = $href->{request};
+    my $params      = $href->{params};
+    my $sortaref    = $params->{sort};
+
 }
 
 
