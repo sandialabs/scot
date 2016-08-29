@@ -1153,6 +1153,11 @@ sub flair_alert_data {
             # $log->warn("[Alert $id] ERROR Key $key with no Value!");
             next TUPLE;
         }
+        if ( $key eq "columns" ) {
+            # columns are not flaired 
+            $flair{$key} = $value;
+            next TUPLE;
+        }
         my $encoded = '<html>' . encode_entities($value) . '</html>';
         if ( $key =~ /^message_id$/i ) {
             push @entities, { 
@@ -1163,6 +1168,9 @@ sub flair_alert_data {
                     {   type => 'alertgroup', id => $alert->{alertgroup} },
                 ],
             };
+            $flair{$key} = qq|<span class="entity message_id" |.
+                             qq| data-entity-value="$value" |.
+                             qq| data-entity-type="message_id">$value</span>|;
             next TUPLE;
         }
 
