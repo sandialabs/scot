@@ -305,6 +305,7 @@ sub BUILD {
     $self->log($log);
 
     $log->debug("Starting Env.pm");
+    $log->debug("Config is ",{ filter=>\&Dumper, value=> $conf});
 
     my %cacheconfs;
 
@@ -339,6 +340,9 @@ sub get_config {
     my $file    = shift;
     my $conf    = $self->config;
     my $paths   = $conf->{config_path};
+
+    # say "looking for $file in ".join(',',@$paths);
+
     my $fqname;
     find(sub {
         if ( $_ eq $file ) {
@@ -346,6 +350,8 @@ sub get_config {
             return;
         }
     }, @$paths);
+
+    # say "found $fqname";
 
     no strict 'refs'; # I know, but...
     my $cont    = new Safe 'MCONFIG';
