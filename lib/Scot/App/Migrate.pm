@@ -15,11 +15,15 @@ to a SCOT 3.5 database
 
 use Scot::Env;
 use Scot::Util::EntityExtractor;
+use Scot::Util::ElasticSearch;
 use MongoDB;
 use Data::Dumper;
 use Try::Tiny;
 use HTML::Entities;
 use Time::HiRes qw(gettimeofday tv_interval);
+use Safe::Isa;
+use Storable;
+use HTML::TreeBuilder;
 use v5.18;
 use strict;
 use warnings;
@@ -28,22 +32,42 @@ use warnings;
 use Moose;
 
 has env => (
-    is          => 'rw',
-    isa         => 'Scot::Env',
-    required    => 1,
-    builder     => '_get_env',
+    is       => 'rw',
+    isa      => 'Scot::Env',
+    required => 1,
+    builder  => '_get_env',
 );
 
 sub _get_env {
     return Scot::Env->instance;
 }
 
+has es => (
+    is       => 'ro',
+    isa      => 'Scot::Util::ElasticSearch',
+    required => 1,
+    lazy     => 1,
+    builder  => '_get_es',
+);
+
+sub _get_es {
+    my $self = shift;
+    my $log  = $self->env->log;
+    return Scot::Util::ElasticSearch->new({
+        log     => $log,
+        config  => {
+            nodes   => [ qw(localhost:9200 127.0.0.1:9200) ],
+        },
+    });
+}
+
+
 has extractor   => (
-    is          => 'ro',
-    isa         => 'Scot::Util::EntityExtractor',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_get_ee',
+    is       => 'ro',
+    isa      => 'Scot::Util::EntityExtractor',
+    required => 1,
+    lazy     => 1,
+    builder  => '_get_ee',
 );
 
 sub _get_ee {
@@ -53,11 +77,11 @@ sub _get_ee {
 }
 
 has legacy_client   => (
-    is          => 'rw',
-    isa         => 'MongoDB::MongoClient',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_get_connection',
+    is       => 'rw',
+    isa      => 'MongoDB::MongoClient',
+    required => 1,
+    lazy     => 1,
+    builder  => '_get_connection',
 );
 
 sub _get_connection {
@@ -72,6 +96,19 @@ has legacydb    => (
     lazy        => 1,
     builder     => '_get_legacy_db',
 );
+
+has legacy_db_name  => (
+    is          => 'rw',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'scotng-prod',
+);
+
+sub _get_legacy_db {
+    my $self    = shift;
+    # return $self->legacy_client->get_database('scotng-prod');
+    return MongoDB->connect->db('scotng-prod');
+}
 
 has default_read    => (
     is          => 'rw',
@@ -88,234 +125,1000 @@ has default_modify    => (
     default     => sub { [ 'wg-scot-ir' ] },
 );
 
-has legacy_db_name  => (
+has client  => (
+    is          => 'rw',
+    isa         => 'MongoDB::MongoClient',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_get_connection',
+);
+
+has db    => (
+    is          => 'rw',
+    isa         => 'MongoDB::Database',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_get_db',
+);
+
+has db_name  => (
     is          => 'rw',
     isa         => 'Str',
     required    => 1,
-    default     => 'scotng-prod',
+    default     => 'scot-prod',
 );
 
-sub _get_legacy_db {
+sub _get_db {
     my $self    = shift;
     # return $self->legacy_client->get_database('scotng-prod');
-    return MongoDB->connect->db('scotng-prod');
+    return MongoDB->connect->db($self->db_name);
 }
 
+sub migrate {
+    my $self            = shift;
+    my $new_col_type    = shift;                    # ... the collection name for the new collection
+    my $new_col_name    = ucfirst($new_col_type);   # ... meerkat ucfirst version of $new_col_type
+    my $opts            = shift;
 
-sub handle_huge_entry {
-    my $self    = shift;
-    my $id      = shift;
-    open my $out, ">>", "/tmp/huge.entries.txt";
-    print $out $id."\n";
-    close $out;
-}
-    
+    my $env = $self->env;
+    my $log = $env->log;
 
-sub get_pct {
-    my $self    = shift;
-    my $remain  = shift;
-    my $total   = shift;
+    my $idfield = $self->lookup_idfield($new_col_type); # ... the old style integer id field in the old SCOT
 
-    my $numerator   = $total - $remain;
-    if ( $total > 0 ) {
-        return int(($numerator/$total)*10000)/100;
+    my $max_already_converted_id    = $self->get_max_id('new',$new_col_type);
+
+    print "Max already converted id === $max_already_converted_id\n";
+
+    my $legacy_colname      = $self->lookup_legacy_colname($new_col_type);
+    my $legacy_collection   = $self->legacydb->get_collection($legacy_colname);
+    my $legacy_cursor       = $legacy_collection->find({
+        $idfield => { '$gt' => $max_already_converted_id }
+    });
+    $legacy_cursor->immortal(1);
+
+    my $remaining_docs  = $legacy_cursor->count();
+    my $migrated_docs   = 0;
+    my $total_docs      = $remaining_docs;
+    my $total_time      = 0;
+    my $running_timer   = $env->get_timer("running timer");
+
+    print "$remaining_docs Remain to convert\n";
+
+    ITEM:
+    while ( my $item = $self->get_next_item($legacy_cursor) ) {
+
+        if ( $item eq "skip" ) {
+            $migrated_docs++;
+            next ITEM;
+        }
+
+        my $timer   = $env->get_timer("[$new_col_name ". $item->{$idfield}."] Migration");
+
+        if ( $opts->{verbose} ) {
+            $self->output_pre_status($new_col_type, $idfield, $item);
+        }
+
+        unless ( $self->transform($new_col_type, $item) ) {
+            $log->error("Error: $new_col_type Transform Failed! ", { filter => \&Dumper, value => $item } );
+        }
+        $remaining_docs--;
+        my $elapsed = &$timer;
+        $total_time += $elapsed;
+        
+        if ( $opts->{verbose} ) {
+            my $stats   = $self->calculate_stats($new_col_type, $item, $elapsed, $remaining_docs);
+            $self->output_post_status($new_col_type, $item, $stats,$running_timer,$migrated_docs);
+        }
     }
-    return "";
+    $self->update_last_id($new_col_type);
 }
 
-sub get_starting_id {
+sub output_pre_status {
     my $self    = shift;
     my $type    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
+    my $idfield = shift;
+    my $item    = shift;
 
-    my $cursor  = $mongo->collection(ucfirst($type))->find({});
-    $cursor->sort({id => -1});
-    my $object  = $cursor->next;
-    unless ($object) {
+    print "[$type ".$item->{$idfield}."] ";
+
+    if ( $type eq "alertgroup" ) {
+        my $alert_count = scalar(@{$item->{alert_ids}}) // 0;
+        my $formatted   = sprintf("%15s", $alert_count);
+        print "$formatted alerts to process\r";
+    }
+    if ( $type eq "entry" ) {
+        my $formatted   = sprintf("%15s", length($item->{body}));
+        print "$formatted characters in entry to convert\r";
+    }
+}
+
+sub output_post_status {
+    my $self    = shift;
+    my $type    = shift;
+    my $item    = shift;
+    my $stats   = shift;
+    my $rtimer  = shift;
+    my $mdocs   = shift;
+
+    print "[$type ";
+    print $item->{id};
+    print "] ";
+    print $stats->{elapsed}. "secs - ";
+
+    if ( $type eq "alertgroup" ) {
+        my $format = sprintf("%5s", $stats->{alertcount});
+        print "$format alerts - ";
+    }
+    if ( $type eq "entry" ) {
+        my $format = sprintf("%7s", $stats->{length});
+        print "$format characters - ";
+    }
+    print join(' ',$stats->{rate}, $stats->{eta}, $stats->{remain});
+
+    my $time_so_far         = &$rtimer;
+    if ( $time_so_far != 0 ) {
+        my $avg_docs_per_sec    = $mdocs / $time_so_far;
+        my $better_eta          = $stats->{remain} / $avg_docs_per_sec;
+
+        printf " [Avg rate: %5.3f] {ETA: %5.3f hours}",
+                 $avg_docs_per_sec, $better_eta;
+    }
+    print "\n";
+}
+
+sub calculate_stats {
+    my $self        = shift;
+    my $type        = shift;
+    my $item        = shift;
+    my $etime       = shift;
+    my $docsremain  = shift;
+
+    my $rate    = 0;
+    my $eta     = 9999999999;
+
+    if ( $etime > 0 ) {
+        $rate = ( 1 / $etime );
+    }
+    if ( $rate > 0 ) {
+        $eta    = ( $docsremain / $rate )/3600;
+    }
+
+    my $href = {
+        rate    => sprintf("%16s", sprintf("%5.3f docs/sec",$rate)),
+        eta     => sprintf("%16s", sprintf("%5.3f hours", $eta)),
+        remain  => $self->commify($docsremain),
+        elapsed => sprintf("%5.2f", $etime),
+    };
+
+    if ( $type eq "alertgroup" ) {
+        $href->{alertcount} = scalar(@{$item->{alert_ids}});
+    }
+    if ( $type eq "entry" ) {
+        $href->{length} = length($item->{body});
+    }
+    return $href;
+}
+
+sub get_next_item {
+    my $self    = shift;
+    my $cursor  = shift;
+    my $log     = $self->env->log;
+
+    $log->trace("Fetching Next Item");
+    my $item;
+    try {
+        $item   = $cursor->next;
+    }
+    catch {
+        $log->error("Error fetching next item: $_");
+        say "Error retrieving item: $_, skipping...";
+        return "skip";
+    };
+    return $item;
+}
+
+sub get_max_id {
+    my $self    = shift;
+    my $type    = shift;    # new or legacy
+    my $col     = shift;
+    my $db      = ($type eq "legacy") ? 'legacydb' : 'db';
+    my $nc      = $self->$db->get_collection($col);
+    my $idfield = ($type eq "legacy") ? $self->lookup_idfield($col) : 'id';
+    my $cursor  = $nc->find();
+    $cursor->sort({$idfield => -1});
+    my $doc     = $cursor->next;
+    unless ($doc) {
+        $self->env->log->error("Unable to find max $idfield in $col");
         return 0;
     }
-    return $object->id + 1;
+    return $doc->{$idfield};
 }
 
-sub get_starting_id_in_range {
+sub update_last_id {
     my $self    = shift;
     my $type    = shift;
-    my $aref    = shift;
+    my $next_id_col = $self->db->get_collection('nextid');
+    my $target_col  = $self->db->get_collection($type);
 
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
+    my $max_id  = $self->get_max_id('new',$type);
 
-    my $cursor  = $mongo->collection(ucfirst($type))->find({
-        id  => { 
-            '$gt' => $aref->[0], 
-            '$lt' => $aref->[1],
-        },
-    });
-    $cursor->sort({id => -1});
-    my $object  = $cursor->next;
-    unless ($object) {
-        return $aref->[0];
-    }
-    return $object->id;
+    $next_id_col->update_one(
+        { for_collection => $type }, 
+        { '$set'  => { last_id => $max_id } }
+    );
 }
 
-sub do_linkables {
+sub has_been_migrated {
     my $self    = shift;
-    my $object  = shift;
+    my $type    = shift;
+    my $id      = shift;
+    my $log     = $self->env->log;
+    my $newcol  = $self->db->get_collection($type);
+    my $newitem = $newcol->find_one({id => $id});
+
+    if ( $newitem ) {
+        $log->debug("[$type $id] Already migrated...");
+        return 1;
+    }
+    return undef;
+}
+
+
+sub transform {
+    my $self    = shift;
+    my $type    = shift;    # ... the type of the new scot collection
+    my $item    = shift;    # ... the href of the thing to convert
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    my $method  = "xform_". $type;  # ... call this sub to do the transform
+    my $idfield = delete $item->{idfield} // $self->lookup_idfield($type); # ... where is the int id
+    my $id      = delete $item->{$idfield};
+    $item->{id} = $id // '';    # ... stuff the id into the id field
+
+    if ( $self->has_been_migrated($type, $id) ) {
+        return 1;
+    }
+
+    $self->xform_permissions($item);
+    $self->remove_unneeded($type, $item);
+    return $self->$method($item);
+}
+
+sub xform_permissions {
+    my $self    = shift;
+    my $href    = shift;
+
+    if ( $href->{readgroups} ) {
+        $href->{groups} = {
+            read    => delete $href->{readgroups} // $self->default_read,
+            modify  => delete $href->{modifygroups} // $self->defautl_modify,
+        };
+    }
+}
+
+sub remove_unneeded {
+    my $self    = shift;
+    my $type    = shift;
+    my $href    = shift;
+    my $log     = $self->env->log;
+
+    $log->trace("[$type ".$href->{id}."] removing un-needed fields");
+    foreach my $attr ( @{ $self->get_unneeded_fields($type) } ) {
+        delete $href->{$attr};
+    }
+}
+
+sub xform_alertgroup {
+    my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $mongo   = $env->mongo;
-    my $timer   = $env->get_timer("[".$object->get_collection_name.
-                                  " ".$object->id."] creating linkables");
+    my $id      = $href->{id};  # ... set in transform
 
-    my $entitycol   = $mongo->collection('Entity');
-    my $linkcol     = $mongo->collection('Link');
+    $log->trace("[Alertgroup $id] Transformation");
 
-    my $entity_total_timer = $env->get_timer("[".$object->get_collection_name.
-                                        " ".$object->id."] {Entity Processing}");
+    my $new_ag_col      = $self->db->get_collection('alertgroup');
+    my $new_alert_col   = $self->db->get_collection('alert');
+    my $leg_alert_col   = $self->legacydb->get_collection('alerts');
 
-    foreach my $entity (@{ $href->{entity} }) {
-        # entity = { value => , type => }
-        next unless $entity;
+    my @links;
+    my @history = map { 
+            {alertgroup => $id, history => $_ }
+        } @{ delete $href->{history} // [] }; # ... history is in new collection
+    my @tags    = map {
+            {alertgroup => $id, tag => { value => $_ }}
+        } @{ $href->{tags} // [] };  # ... tags are in new collection
+    my @sources = map {
+            {alertgroup => $id, source => { value => $_ }}
+        } @{ delete $href->{sources} // [] };   # ... sources are pulled to new collection
+    if ( $href->{source} ) {
+        # some confusion over source vs. sources in various iteration of database
+        push @sources, {alertgroup => $id, source => { value => $href->{source} } };
+    }
 
-        my $entity_timer = $env->get_timer("[".$object->get_collection_name.
-                                           " ".$object->id."] {Entity ".
-                                           $entity->{value}."} timer");
+    # force the new source array
+    my @newsources = map { $_->{source}->{value} } @sources;
+    $href->{source} = \@newsources;
+    $href->{tag}    = delete $href->{tags};
+    $href->{body}   = delete $href->{body_html};    # ...renaming
 
-        $log->debug("working on entity {".$entity->{value}.
-                    ",".$entity->{type}."}");
 
-        my $when    = $object->when // $object->created;
+    my $legacy_alert_cursor = $leg_alert_col->find({alertgroup => $id});
+    $legacy_alert_cursor->immortal(1);
+    $href->{alert_count} = $legacy_alert_cursor->count;
 
-        my $eobj    = $entitycol->find_one({
-            value => $entity->{value}, 
-            type => $entity->{type}
-        });
+    my $entities;           # ... keep track of entities found
+    my @alert_promotions;   # ... and promoted alerts
+    my %status;             # ... keep track of status counts for alertgroup
+    my @allentities;        # ... all entities found in alertgroup
+    my $es  = $self->es;    # ... pump it into elastic
 
-        unless ( $eobj ) {
-            $log->debug("Entity is new, creating...");
-            $eobj   = $entitycol->create($entity);
+    ALERT:
+    while ( my $alert = $legacy_alert_cursor->next ) {
+        my $alertid = delete $alert->{alert_id};
+        $alert->{id} = $alertid;
+        die "No AlertID!" unless (defined $alertid);
+
+        $status{ $alert->{status} }++;
+
+        $self->remove_unneeded('alert', $alert);
+
+        if ( $alert->{updated} ) {
+            $alert->{updated}   = int($alert->{updated});
+        }
+
+        $self->xform_permissions($alert);
+
+        my @alerthistory = map { 
+                { alert => $alertid, history => $_ } 
+            } @{ delete $alert->{history} // [] };
+        push @history, @alerthistory;
+
+        ( $alert->{data_with_flair}, $entities ) = $self->flair_alert_data($alert);
+
+        if ( defined($entities) and ref($entities) eq "ARRAY" ) {
+            push @allentities, @{$entities};
+        }
+
+        unless ( $alert->{data_with_flair} ) {
+            $alert->{data_with_flair} = $alert->{data}; # punt
         }
         
-        $log->debug("creating links...");
-        my $la  = $linkcol->create_link(
-            { type => "entity",                     id => $eobj->id, },
-            { type => $object->get_collection_name, id   => $object->id, },
-            $when,
-        );
-
-        if ( defined $entity->{ltype} ) {
-            # we have an entry object and we are going to create links
-            # to the object that the entry is associated with
-            my $hla = $linkcol->create_link(
-                {type => "entity",          id   => $eobj->id, },
-                {type => $entity->{ltype},  id   => $entity->{lid}, },
-                $entity->{when},
-            );
+        my @events = @{ delete $alert->{events} // [] };
+        if ( scalar(@events) > 0 ) {
+            $alert->{promotion_id} = pop @events;
         }
-        my $entity_elapsed = &$entity_timer;
+        else {
+            $alert->{promotion_id} = 0;
+        }
+
+        $new_alert_col->insert_one($alert);
+        # $es->index("alert", $alert);
     }
 
-    my $entity_total_elapsed = &$entity_total_timer; 
+    $self->get_ag_status($href, \%status);
 
-    my $history_total_timer = $env->get_timer("[".$object->get_collection_name.
-                                        " ".$object->id."] {History Processing}");
-    my $historycol  = $mongo->collection('History');
-    foreach my $history (@{ $href->{history} }) {
-        next unless $history;
-        $history->{when} = int($history->{when});
-        try {
-            my $hobj = $historycol->create($history);
-            $self->link($object, $hobj);
-        }
-        catch {
-            $log->error("[".$object->get_collection_name.
-                        " ".$object->id."] Failed History create ",
-                        { filter => \&Dumper, value => $history } );
-        };
+    $new_ag_col->insert_one($href);
+
+    push @links, $self->create_history(@history);
+    push @links, $self->create_sources(@sources);
+    push @links, $self->create_tags(@tags);
+    push @links, $self->create_entities(\@allentities);
+    $self->create_links(@links);
+    return 1;
+}
+
+sub get_ag_status {
+    my $self    = shift;
+    my $ag      = shift;
+    my $shref   = shift;
+
+    no warnings qw(uninitialized);
+
+    $ag->{open_count}   = $shref->{open} // 0;
+    $ag->{closed_count} = $shref->{closed} // 0;
+    $ag->{promoted_count} = $shref->{promoted} // 0;
+
+    if ( $shref->{promoteod} > 0 ) {
+        $ag->{status} = "promoted";
     }
-    my $history_total_elapsed = &$history_total_timer; 
-    my $source_total_timer = $env->get_timer("[".$object->get_collection_name.
-                                        " ".$object->id."] {Source Processing}");
-
-    my $srccol  = $mongo->collection('Source');
-    foreach my $source  (@{ $href->{sources}} ) {
-        if ( ref($source) eq "ARRAY" ) {
-            $source = pop $source;
-        }
-        my $sobj    = $srccol->find_one({ value => $source });
-        unless ($sobj) {
-            $sobj   = $srccol->create({ value   => $source });
-        }
-        $self->link($object, $sobj);
+    elsif ( $shref->{open} > 0 ) {
+        $ag->{status} = "open";
     }
-    my $source_total_elapsed = &$source_total_timer; 
-    my $tag_total_timer = $env->get_timer("[".$object->get_collection_name.
-                                        " ".$object->id."] {Tag Processing}");
-
-    my $tagcol  = $mongo->collection('Tag');
-    foreach my $tag     (@{ $href->{tags}} ) {
-        my $tobj    = $tagcol->find_one({value => $tag});
-        unless ($tobj) {
-            $tobj   = $tagcol->create({value=> $tag});
-        }
-        $self->link($object, $tobj);
+    else {
+        $ag->{status} = "closed";
     }
-    my $tag_total_elapsed = &$tag_total_timer; 
-    my $link_total_timer = $env->get_timer("[".$object->get_collection_name.
-                                        " ".$object->id."] {Link Processing}");
+    use warnings qw(uninitialized);
+}
 
-    foreach my $link   (@{ $href->{links}}) {
+sub xform_entry {
+    my $self    = shift;
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $id      = $href->{id};
 
-        my $type    = $link->{type};
-        my $id      = $link->{id};
-        my $when    = $link->{when} // $env->now;
+    $log->trace("[Entry $id] Transformation");
 
-        if  (ref($id) eq "MongoDB::OID") {
-            my $icol    = $self->legacydb->get_collection('incidents');
-            my $href    = $icol->find_one({events   => $object->id});
+    if ( length($href->{body}) > 2000000 ) {
+        $log->warn("[Entry $id] HUGE body! Skipping...");
+        $self->handle_huge_entry($href);
+        return undef;
+    }
 
-            $log->debug("Weird OID incident ref in event detected. Now using ",
-                        {filter=>\&Dumper,value=>$href});
+    if ( ref($href->{body}) eq "MongoDB::BSON::Binary" ) {
+        $href->{body} = '<html>'.$href->{plaintext}.'</html>';
+    }
 
-            $id     = $href->{incident_id};
-            unless ( $id ) {
-                $log->error("unable to find matching oid to id, skipping");
-                next;
+    my $entities;
+
+    ( $href->{body_flair},
+      $href->{body_plain},
+      $entities )   = $self->flair_entry_data($href);
+
+    $href->{parent}     = 0 unless ($href->{parent});
+    $href->{owner}      = 'unknown' unless ($href->{owner});
+    # this must be after the flairing bc flairing looks for target_type/id
+    $href->{target}     = {
+        type        => delete $href->{target_type},
+        id          => delete $href->{target_id},
+    };
+
+    my @history = map {
+        { entry => $id, history => $_ }
+    } @{ delete $href->{history} //[] };
+
+    my $ttype   = $href->{target}->{type};
+
+    $href->{summary} = $self->is_summary($href);
+
+    my $col = $self->db->get_collection('entry');
+    $col->insert_one($href);
+    # $self->es->index("entry", $href);
+    my   @links;
+    push @links, $self->create_history(@history);
+    push @links, $self->create_entities($entities);
+    $self->create_links(@links);
+    $self->update_target_entry_count($href->{target});
+    return 1;
+}
+
+sub update_target_entry_count {
+    my $self    = shift;
+    my $t       = shift;
+    my $id      = $t->{id};
+    my $type    = $t->{type};
+    my $tcol    = $self->db->get_collection($type);
+    $tcol->update_one( { id  => $id },
+            {
+                '$inc'  => {
+                    entry_count => 1,
+                },
+            },
+    );
+}
+
+sub is_summary {
+    my $self    = shift;
+    my $href    = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("Checking if Entry $href->{id} is a Summary");
+
+    my $target_type = $href->{target}->{type};
+    my $target_id   = $href->{target}->{id};
+
+    if ( $target_type ne "event" ) {
+        $log->debug("Target of entry is not an event.");
+        return 0;
+    }
+
+    my $col = $self->legacydb->get_collection('events');
+    my $obj = $col->find_one({ event_id => $target_id });
+
+    if ( $obj ) {
+        $log->debug("Found the target event");
+        if ( $obj->{summary_entry_id} ) {
+            $log->debug("summary entry id is ".$obj->{summary_entry_id});
+            if ( $obj->{summary_entry_id} == $href->{id} ) {
+                $log->debug("yes this is a summary");
+                return 1;
+            }
+            $log->debug("not a summary");
+        }
+        $log->debug("no summary_entry_id!");
+    }
+    $log->debug("target event not found!");
+    return 0;
+}
+
+sub xform_event {
+    my $self    = shift;
+    my $col     = $self->db->get_collection('event');
+    my $href    = shift;
+    my $verbose = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $id      = $href->{id};
+
+    $log->debug("[Event $id] transformation");
+
+    my @links;
+
+    $href->{promoted_from} = delete $href->{alerts} // [];
+    if ( defined $href->{incident}) {
+        $href->{promotion_id}  = pop @{delete $href->{incident}} // 0;
+    }
+    else {
+        $href->{promotion_id}   = 0;
+    }
+
+    my @history = map {
+        { event => $id, history => $_ }
+    } @{ delete $href->{history} //[] };
+    my @tags    = map {
+        { event => $id, tag => { value => $_ } }   
+    } @{ $href->{tags} //[] };
+    my @sources = map {
+        { event => $id, source => { value => $_, } }
+    } @{ $href->{sources} //[] };
+
+    $href->{source} = delete $href->{sources};
+    $href->{views}  = delete $href->{view_count};
+    $href->{tag}    = delete $href->{tags};
+
+    $col->insert_one($href);
+
+    push @links, $self->create_history(@history);
+    push @links, $self->create_sources(@sources);
+    push @links, $self->create_tags(@tags);
+    $self->create_links(@links);
+
+    return 1;
+
+}
+
+sub xform_incident {
+    my $self    = shift;
+    my $col     = $self->db->get_collection('incident');
+    my $href    = shift;
+    my $verbose = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $id      = $href->{id};
+
+    $log->debug("[Incident $id] transformation ");
+
+    my @links;
+    $href->{promoted_from} = delete $href->{events} // [];
+
+    unless ( defined $href->{owner} ) {
+        $href->{owner} = "unknown";
+    }
+
+    my @history = map {
+        { incident => $id, history => $_ }
+    } @{ delete $href->{history} //[] };
+
+    my @tags    = map {
+        { incident => $id, tag => { value => $_ } }   
+    } @{ $href->{tags} //[] };
+
+    my @sources = map {
+        { incident => $id, source => { value => $_, } }
+    } @{ $href->{sources} //[] };
+
+    $href->{source} = delete $href->{sources};
+    $href->{tag} = delete $href->{tags};
+    $col->insert_one($href);
+
+    push @links, $self->create_history(@history);
+    push @links, $self->create_sources(@sources);
+    push @links, $self->create_tags(@tags);
+    $self->create_links(@links);
+
+    return 1;
+}
+
+sub xform_handler {
+    my $self    = shift;
+    my $col     = $self->db->get_collection('handler');
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $start   = delete $href->{date};
+    my $end     = DateTime->new(
+        year    => $start->year,
+        month   => $start->month,
+        day     => $start->day,
+        hour    => 23,
+        minute  => 59,
+        second  => 59,
+        time_zone => "Etc/UTC",
+    );
+
+    my $name            = delete $href->{user};
+    $href->{start}      = $start->epoch;
+    $href->{end}        = $end->epoch;
+    $href->{username}   = $name;
+    delete $href->{groups};
+
+    $col->insert_one($href);
+    return 1;
+}
+
+sub xform_file {
+    my $self    = shift;
+    my $col     = $self->db->get_collection('file');
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my @links   = ();
+
+    $href->{directory} = delete $href->{dir};
+    $href->{target}     = {
+        type    => delete $href->{target_type},
+        id      => delete $href->{target_id},
+    };
+    $href->{entry}  = delete $href->{entry_id};
+
+    $col->insert_one($href);
+    return 1;
+}
+
+sub xform_user {
+    my $self    = shift;
+    my $col     = $self->db->get_collection('user');
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    delete $href->{groups};
+    if ( $href->{hash} ) {
+        $href->{pwhash} = delete $href->{hash};
+    }
+    $href->{last_login_attempt} = $href->{lastvisit};
+
+    $col->insert_one($href);
+    return 1;
+}
+
+sub xform_guide {
+    my $self    = shift;
+    my $col     = $self->db->get_collection('guide');
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    my $guide   = delete $href->{guide};
+    $href->{applies_to} = [ $guide ];
+
+    $col->insert_one($href);
+    return 1;
+}
+
+sub create_links {
+    my $self      = shift;
+    my @links     = @_;
+    my $linkcol   = $self->db->get_collection('link');
+    my $appearcol = $self->db->get_collection('appearance');
+    my $env       = $self->env;
+    my $log       = $env->log;
+
+    return if (scalar(@links) < 1);
+
+    my $timer   = $env->get_timer("[Links] Bulk created ");
+
+    my $bulklink    = $linkcol->initialize_unordered_bulk_op;
+    my $bulkappear  = $appearcol->initialize_unordered_bulk_op;
+
+    my @l_links = ();
+    my @a_links = ();
+
+    foreach my $href (@links) {
+        my ($k,$data)   = each %$href;
+        if ( $k eq "link" ) {
+            push @l_links, $data;
+        }
+        elsif ( $k eq "appearance" ) {
+            push @a_links, $data;
+        }
+        else {
+            $log->error("ERROR: unknown link type!");
+        }
+    }
+
+    foreach my $d (@l_links) {
+        $d->{id} = $self->get_next_id('link');
+        $bulklink->insert_one($d);
+    }
+
+    my $result = try {
+        $bulklink->execute;
+    }
+    catch {
+        if ( $_->isa("MongoDB::WriteConcernError") ) {
+            warn "Write concern failed";
+        }
+        else {
+            $log->error("Error: (link) $_");
+        }
+    };
+    
+    foreach my $d (@a_links) {
+        $d->{id}    = $self->get_next_id('appearance');
+        $bulkappear->insert_one($d);
+    }
+
+    $result = try {
+        $bulkappear->execute;
+    }
+    catch {
+        if ( $_->isa("MongoDB::WriteConcernError") ) {
+            warn "Write concern failed";
+        }
+        else {
+            $log->error("Error: (appearance) $_");
+        }
+    };
+    &$timer;
+}
+
+sub create_history {
+    my $self    = shift;
+    my @history = @_;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $col     = $self->db->get_collection('history');
+    my $timer   = $env->get_timer("[history] Bulk created ");
+    my $bulk    = $col->initialize_unordered_bulk_op;
+    my @links   = ();
+
+    return () if (scalar(@history) < 1);
+
+    foreach my $h (@history) {
+        my $data;
+        my $type;
+        my $id;
+        foreach my $k (keys %$h) {
+            if ($k eq "history") {
+                $data = $h->{$k};
+            }
+            else {
+                $type   = $k;
+                $id     = $h->{$k};
             }
         }
 
-        my $la  = $linkcol->create_link(
-            {type => $type,                         id   => $id, },
-            {type => $object->get_collection_name,  id   => $object->id,},
-            $when,
-        );
+        $data->{id}     = $self->get_next_id('history');
+        $data->{when}   = int($data->{when});
+        $data->{target} = { type    => $type, id => $id };
+        $bulk->insert_one($data);
     }
-    my $link_total_elapsed = &$link_total_timer;
-    my $elapsed = &$timer;
+    my $result = try {
+        $bulk->execute;
+    }
+    catch {
+        if ( $_->isa("MongoDB::WriteConcernError") ) {
+            warn "Write concern failed";
+        }
+        else {
+            $log->error("Error: $_");
+        }
+    };
+    &$timer;
+    return @links;
 }
 
-sub link {
+sub create_sources {
     my $self    = shift;
-    my $obja    = shift;
-    my $objb    = shift;
-    my $env     = $self->env;
-    my $when    = shift // $env->now;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
+    my @sources = @_;
+    my $env         = $self->env;
+    my $log         = $env->log;
+    my $col         = $self->db->get_collection('source');
+    my $timer       = $env->get_timer("[source] Bulk create");
+    my $bulk        = $col->initialize_unordered_bulk_op;
+    my @links       = ();
 
-    my $linkcol = $mongo->collection('Link');
+    return () if (scalar(@sources) < 1);
+    my $insertions  = 0;
 
-    my $la  = $linkcol->create_link(
-        { type  => $obja->get_collection_name, id => $obja->id, },
-        { type  => $objb->get_collection_name, id => $objb->id, },
-        $when
-    );
+    foreach my $h (@sources) {
+        my ($data, $type, $id );
+        foreach my $k (keys %$h) {
+            if ( $k eq "source" ) {
+                $data = $h->{$k};
+            }
+            else {
+                $type   = $k;
+                $id     = $h->{$k};
+            }
+        }
+        if ( ref($data) eq "ARRAY" ) {
+            $data = pop $data;
+        }
+        
+        my $doc = $col->find_one({ value => $data->{value} });
+        my $docid;
+        unless ($doc) {
+            $docid  = $self->get_next_id('source');
+            $data->{id} = $docid;
+            $bulk->insert_one($data);
+            $insertions++;
+        }
+        else {
+            $docid  = $doc->{id};
+        }
+
+        push @links, {
+            appearance  => {
+                type    => 'source',
+                apid    => $docid,
+                value   => $data->{value},
+                when    => 1,
+                target  => { type => $type, id => $id },
+            },
+        };
+    }
+
+    if ( $insertions > 0 ) {
+        my $result = try {
+            $bulk->execute;
+        }
+        catch {
+            if ( $_->isa("MongoDB::WriteConcernError") ) {
+                warn "Write concern failed";
+            }
+            else {
+                $log->error("Error Inserting Bulk Sources: $_.  Data =", 
+                            {filter=>\&Dumper,value=>\@sources});
+            }
+        };
+    }
+    &$timer;
+    return @links;
 }
+
+sub create_tags {
+    my $self    = shift;
+    my @tags    = @_;
+    my $env         = $self->env;
+    my $log         = $env->log;
+    my $col         = $self->db->get_collection('tag');
+    my $timer       = $env->get_timer("[tag] Bulk create");
+    my $bulk        = $col->initialize_unordered_bulk_op;
+    my @links       = ();
+    my $insertions  = 0;
+
+    return () if (scalar(@tags) < 1);
+
+    foreach my $h (@tags) {
+        my ($data, $type, $id );
+        foreach my $k (keys %$h) {
+            if ( $k eq "tag" ) {
+                $data = $h->{$k};
+            }
+            else {
+                $type   = $k;
+                $id     = $h->{$k};
+            }
+        }
+        if ( ref($data) eq "ARRAY" ) {
+            $data = pop $data;
+        }
+
+        my $docid;
+        my $doc = $col->find_one({ value => $data->{value} });
+        unless ( $doc ) {
+            $docid  = $self->get_next_id('tag');
+            $data->{id} = $docid;
+            $bulk->insert_one($data);
+            $insertions++;
+        }
+        else {
+            $docid  = $doc->{id};
+        }
+        push @links, {
+            appearance  => {
+                type    => 'tag',
+                apid    => $docid,
+                value   => $data->{value},
+                when    => 1,
+                target  => { type => $type, id => $id },
+            },
+        };
+    }
+    if ( $insertions > 0) {
+        my $result = try {
+            $bulk->execute;
+        }
+        catch {
+            if ( $_->isa("MongoDB::WriteConcernError") ) {
+                warn "Write concern failed";
+            }
+            else {
+                $log->error("Error: $_");
+            }
+        };
+    }
+    &$timer;
+    return @links;
+
+}
+
+sub create_entities {
+    my $self        = shift;
+    my $entities    = shift; # should be array ref
+    my $env         = $self->env;
+    my $log         = $env->log;
+    my @links       = ();
+    my $insertions  = 0;
+
+    # $log->debug("entities are ",{filter=>\&Dumper, value=>$entities});
+
+    return () unless ( defined $entities );
+    return () if ( scalar(@$entities) < 1 );
+
+
+    my $timer   = $env->get_timer("[Entities] Create Time");
+
+    my $col     = $self->db->get_collection('entity');
+    my $bulk    = $col->initialize_unordered_bulk_op;
+
+    foreach my $entity (@{ $entities }) {
+        my $id;
+        my $existing = $col->find_one({
+            value   => $entity->{value},
+            type    => $entity->{type},
+        });
+        unless ( $existing ) {
+            $entity->{id}   = $self->get_next_id('entity');
+            my $res = $bulk->insert_one($entity);
+            $id = $entity->{id};
+            $insertions++;
+        }
+        else {
+            $id = $existing->{id};
+        }
+
+        my @targets = @{delete $entity->{targets} };
+
+        foreach my $href ( @targets ) {
+            my $tid     = $href->{id};
+            my $ttype   = $href->{type};
+
+            my $link    = {
+                link    => {
+                    when    => $entity->{when},
+                    value   => $entity->{value},
+                    entity_id   => $id,
+                    target  => {
+                        type    => $ttype,
+                        id      => $tid,
+                    }
+                }
+            };
+            push @links, $link;
+        }
+    }
+    if ( $insertions > 0 ) {
+        my $result = try {
+            $bulk->execute;
+        }
+        catch {
+            if ( $_->isa("MongoDB::WriteConcernError") ) {
+                warn "Write concern failed";
+            }
+            else {
+                $log->error("Error: $_");
+            }
+        };
+    }
+    my $elapsed = &$timer;
+    return @links;
+}
+
 
 sub commify {
     my $self    = shift;
@@ -328,19 +1131,38 @@ sub commify {
 sub flair_alert_data {
     my $self    = shift;
     my $alert   = shift;
-    my $id      = $alert->{id};
+    my $id      = $alert->{id} // $alert->{alert_id};
     my $data    = $alert->{data};
     my @entities    = ();
     my %flair;
     my %seen;
+    my $when    = $alert->{when} // $alert->{create};
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    die "unknown alert id! ".Dumper($alert) unless ($id);
+
+    # $log->debug("flairing: ",{filter=>\&Dumper, value=>$alert});
+    $log->debug("[Alert $id] Flairing: ");
 
     my $timer = $self->env->get_timer("[Alert $id] Flair");
 
     TUPLE:
     while ( my ($key, $value) = each %{$data} ) {
+        unless ( $value ) {
+            # $log->warn("[Alert $id] ERROR Key $key with no Value!");
+            next TUPLE;
+        }
         my $encoded = '<html>' . encode_entities($value) . '</html>';
         if ( $key =~ /^message_id$/i ) {
-            push @entities, { value => $value, type => "message_id" };
+            push @entities, { 
+                value   => $self->strip_flair($value), 
+                type    => "message_id" ,
+                targets    => [
+                    {   type => 'alert', id => $id },
+                    {   type => 'alertgroup', id => $alert->{alertgroup} },
+                ],
+            };
             next TUPLE;
         }
 
@@ -350,6 +1172,11 @@ sub flair_alert_data {
         foreach my $entityhref ( @{$href->{entities}} ) {
             my $v   = $entityhref->{value};
             my $t   = $entityhref->{type};
+            $entityhref->{when} = $when;
+            $entityhref->{targets} = [
+                { type => 'alert', id => $id },
+                { type => 'alertgroup', id => $alert->{alertgroup} },
+            ];
             unless ( defined $seen{$v} ) {
                 push @entities, $entityhref;
                 $seen{$v}++;
@@ -362,391 +1189,69 @@ sub flair_alert_data {
         $self->env->log->error("[Alert $id] ERROR flair command is too large");
         return;
     }
+    # $log->debug("Found ".scalar(@entities). " entities", {filter=>\&Dumper, value=>\@entities});
+    # $log->debug("Flair is ",{filter=>\&Dumper, value=>\%flair});
     return \%flair, \@entities;
 }
 
 sub flair_entry_data {
     my $self    = shift;
     my $href    = shift;
-    my $env     = $self->env;
-    my $id      = $href->{id};
-    my $timer   = $env->get_timer("[Entry $id] Flairing");
-    my $flair   = $self->extractor->process_html($href->{body});
-    my $elapsed = &$timer;
-    return $flair->{flair}, $flair->{text}, $flair->{entities};
-}
-
-sub calc_rate_eta {
-    my $self    = shift;
-    my $elapsed = shift;
-    my $remain  = shift;
-    my $rate    = 0;
-    my $eta     = "999999999999";
-
-    if ( $elapsed > 0 ) {
-        $rate = ( 1 / $elapsed );
-    }
-    if ( $rate >  0 ) {
-        $eta    = ( $remain / $rate )/3600;
-    }
-    return $rate, $eta;
-}
-
-sub get_id_r2 {
-    my $self    = shift;
-    my $mtype   = shift;
-    my $numproc = shift;
-    my $opts    = shift;
+    my $id      = $href->{id} // $href->{entry_id};
     my $env     = $self->env;
     my $log     = $env->log;
-
-    my $starting_id = $self->get_starting_id($mtype);
-    my $idfield     = $self->lookup_idfield($mtype);
-    my $colname     = $self->lookup_legacy_colname($mtype);
-    my $collection  = $self->legacydb->get_collection($colname);
-
-    my @ids     = ();
-    my @range   = ();
-
-    my $cursor      = $collection->find();
-    my $tomigrate   = $cursor->count();
-
-    my $chunksize   = int ($tomigrate / $numproc);
-
-    say "$tomigrate docs to migrate";
-    say "$chunksize docs per process";
-
-    my $startid = 0;
-    my $endid   = 0;
-    my $skip     = 0;
-
-    while ( $endid < $tomigrate ) {
-        my $skip += $chunksize;
-        my $cursor = $collection->find();
-        say "skipping $skip";
-        $cursor->skip($skip);
-        my $obj = $cursor->next;
-        last unless $obj;
-        $endid = $obj->{$idfield};
-        say "start = $startid end = $endid";
-        push @range, [ $startid, $endid ];
-        $startid = $endid + 1;
-    }
-    say "Found these ranges ".Dumper(@range);
-    die;
-}
-
-
-sub get_id_ranges{
-    my $self    = shift;
-    my $mtype   = shift;
-    my $numproc = shift;
-    my $opts    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-
-    my $starting_id = $self->get_starting_id($mtype);
-    my $idfield     = $self->lookup_idfield($mtype);
-    my $colname     = $self->lookup_legacy_colname($mtype);
-    my $collection  = $self->legacydb->get_collection($colname);
-
-    my @ids     = ();
-    my @range   = ();
-
+    my @entities    = ();
+    my %flair       = ();
+    my %seen        = ();
+    my $when        = $href->{when} // $href->{create};
     
-    if ( $numproc == 0 ) {
-        my $match;
+    my $timer   = $env->get_timer("[Entry $id] Flair");
+    my $flair   = $self->extractor->process_html($href->{body});
 
-        if ( $mtype eq "handler" ) {
-            $match  = {};
-        }
-        else {
-            $match   = { $idfield => {'$gte'=> $starting_id} };
-        }
-
-        $log->debug("numproc 0 so looking for ",{filter=>\&Dumper, value=>$match});
-
-        my $cursor  = $collection->find($match);
-        unless ($cursor) {
-            $log->error("invalid cursor!");
-        }
-        if ( $mtype ne "handler" ) {
-            $cursor->sort({$idfield => -1});
-        }
-        my $obj     = $cursor->next;
-        unless ($obj) {
-            $log->error("undefined object");
-        }
-        my $max     = $obj->{$idfield};
-        push @ids, [ $starting_id, $max ];
-        if ( $opts->{verbose} ) {
-            say "...Normal single process migration of $mtype from $starting_id to $max";
-        }
-        return wantarray ? @ids : \@ids;
-    }
-
-    if ( $opts->{idranges} ) {
-
-        my @startingids = ();
-
-        foreach my $aref (@$opts->{idranges}) {
-            # XXX
-            my $startid = $self->get_starting_id_in_range($mtype, $aref);
-            push @startingids, $startid;
-        }
-        die Dumper(\@startingids);
-    }
-
-    my $cursor  = $collection->find({ $idfield => { '$gte' => $starting_id}});
-    $cursor->immortal(1);
-    my $remain  = $cursor->count();
-    my $dpp     = int($remain/$numproc);
-    if ( $opts->{verbose} ) {
-        say "Scanning ". $self->commify($remain). " $colname documents ".
-            "for id ranges"; 
-    }
-
-    my $count   = 0;
-
-
-    while ( my $item = $cursor->next ) {
-        if ( $count % 100 == 0  and $opts->{verbose}) {
-            printf "%20s\r", $self->commify(scalar(@range));
-        }
-        $count++;
-        push @range, $item->{$idfield};
-        if ( scalar(@range) >= $dpp ) {
-            if ( $opts->{verbose} ) {
-                say "";
-                say "... reached   ".$self->commify($dpp)." limit";
-                say "... contains  ".$self->commify(scalar(@range))." ids";
-                say "... start_id = " . $range[0];
-                say "... end_id   = " . $range[-1];
-            }
-            push @ids, [ $range[0], $range[-1] ];
-            @range = ();
-        }
-    }
-    return wantarray ? @ids : \@ids;
-}
-
-sub get_unfinished {
-    my $self    = shift;
-    my $mtype   = shift;
-    my $numproc = shift;
-    my $opts    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my @ranges  = ();
-
-    my $idfield     = $self->lookup_idfield($mtype);
-    my $colname     = $self->lookup_legacy_colname($mtype);
-    my $collection  = $self->legacydb->get_collection($colname);
-
-    my $cursor  = $collection->find();
-    my $total_to_migrate    = $cursor->count();
-
-    my $mongo   = $env->mongo();
-    my $col     = $mongo->collection($mtype);
-    my $mcursor = $col->find();
-    my $total_migrated      = $cursor->count();
-
-    my $count_needing_migration = $total_to_migrate - $total_migrated;
-    my $batch_size              = int( $count_needing_migration /$numproc )+1;
-
-    my $batch_count = 0;
-    my @batch       = ();
-
-    while ( my $href = $cursor->next ) {
-        my $id  = $href->{$idfield};
-        my $obj = $col->find_iid($id);
-        unless ( $obj ) {
-            push @batch, $id;
+    foreach my $entityhref (@{$flair->{entities}}) {
+        $entityhref->{when}     = $when;
+        $entityhref->{targets}  = [
+            { type => 'entry', id => $id },
+            { type => $href->{target_type}, id => $href->{target_id} },
+        ];
+        unless ( defined $seen{$entityhref->{value}} ) {
+            push @entities, $entityhref;
+            $seen{$entityhref->{value}}++;
         }
     }
 
-
+    my $elapsed = &$timer;
+    return $flair->{flair}, $flair->{text}, \@entities;
 }
 
 
-sub migrate {
+sub strip_flair {
     my $self    = shift;
-    my $mtype   = shift;
-    my $mname   = ucfirst($mtype);
-    my $opts    = shift;
+    my $flaired = shift;
+    my $tree    = HTML::TreeBuilder->new();
+       $tree->parse_content($flaired);
 
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
-
-    my $num_proc    = $opts->{num_proc}    // 0;
-    my $forkmgr     = Parallel::ForkManager->new($num_proc);
-
-    my @idranges    = ();
-    if ( $opts->{idranges} ) {
-        @idranges = @{$opts->{idranges}};
-        say "Old Ranges: ".Dumper(\@idranges);
-        for (my $i = 0; $i < scalar(@idranges); $i++ ) {
-            my $aref    = $idranges[$i];
-            say "looking for starting point in range ".
-                $aref->[0]. " -- " .$aref->[1];
-            my $startingpt = $self->get_starting_id_in_range($mtype,$aref);
-            say "New starting point is $startingpt";
-            $aref->[0]  = $startingpt;
-            $idranges[$i] = $aref;
-        }
-        say "New Ranges: ".Dumper(\@idranges);
-    }
-    else {
-        if ( $mtype ne "handler" and $mtype ne "guide" ) {
-            @idranges   = $self->get_id_ranges($mtype, $num_proc, $opts);
-
-        }
-        else {
-            say "skipping idrange check because we are converting $mtype";
-            @idranges   = ( [1,100000] );
-        }
-    }
-
-    my $procindex   = 0;
-    my $idfield     = $self->lookup_idfield($mtype);
-
-    PROCGROUP:
-    foreach my $id_range ( @idranges ) {
-        $forkmgr->start($procindex++) and next PROCGROUP;
-
-            $self->legacy_client->reconnect();
-            my $legcol  = $self->legacydb->get_collection(
-                $self->lookup_legacy_colname($mtype)
-            );
-
-            my $legcursor;
-
-            if ( $mtype ne "guide" and $mtype ne "handler" ) {
-                my $start_id    = $id_range->[0];
-                my $end_id      = $id_range->[1];
-
-                $legcursor   = $legcol->find({
-                    $idfield    => {
-                        '$gte'  => $start_id,
-                        '$lte'  => $end_id,
-                    }
-                });
-            }
-            else {
-                $legcursor  = $legcol->find();
-            }
-            $legcursor->immortal(1);
-
-            my $remaining_docs  = $legcursor->count();
-            my $migrated_docs   = 0;
-            my $total_docs      = $remaining_docs;
-
-            say "Starting Migration of $remaining_docs docs";
-
-            my $maxid   = 0;
-            ITEM:
-            # while ( my $item = $legcursor->next ) {
-            while ( my $item = $self->get_next_item($legcursor) ) {
-                
-                if ( $item eq "skip" ) {
-                    $log->error("Potential error in retrieving next item.");
-                    next;
-                }
-
-                my $timer   = $env->get_timer(
-                    "[$mname ". $item->{$idfield}."] Migration"
-                ); # if ($mtype ne "handler" and $mtype ne "guide");
-                my $pct     = $self->get_pct($remaining_docs, $total_docs);
-                my $href    = $self->transform($mtype, $item);
-                next unless ($href);
-                my $object;
-                my $collection  = $mongo->collection($mname);
-
-                unless ( $collection ) {
-                    $log->error("Weird not a valid collection!");
-                    die "invalid colllection\n";
-                }
-
-                try {
-                    if ( $mtype eq "handler" or $mtype eq "guide" ) {
-                        $object = $collection->create($href->{$mtype});
-                    }
-                    else {
-                        $object = $collection->exact_create($href->{$mtype});
-                    }
-                }
-                catch {
-                    $log->error("[$mname $href->{id}] Error: failed migration");
-                    if ( $opts->{verbose} ) {
-                        say "[$mname $href->{id}] ERROR: Failed Create! $_";
-                    }
-                    next ITEM;
-                };
-                
-                unless ($object) {
-                    die "didn't create object!\n";
-                }
-
-
-                $self->do_linkables($object, $href);
-                my $elapsed = &$timer;
-                $remaining_docs--;
-                $migrated_docs++;
-                my ($rate, $eta)    = $self->calc_rate_eta($elapsed, 
-                                                           $remaining_docs);
-                my $ratestr = sprintf("%5.3f docs/sec", $rate);
-                my $etastr  = sprintf("%5.3f hours", $eta);
-                my $elapstr = sprintf("%5.2f", $elapsed);
-                if ($opts->{verbose} ) {
-                    my $postspace   = 4 - $procindex;
-                    say " "x$procindex .$procindex.
-                        " "x$postspace.": [ $mname ". $object->id.
-                        "] $elapstr secs -- $ratestr $etastr ".
-                        $self->commify($remaining_docs). " remain";
-                }
-                if ( $object->id > $maxid ) {
-                    $maxid = $object->id;
-                    $collection->set_next_id($maxid);
-                }
-            }
-        $forkmgr->finish;
-    }
-    $forkmgr->wait_all_children;
+    my $element = $tree->look_down( _tag => 'span' );
+    return '' unless (defined $element);
+    return $element->as_trimmed_text;
 }
 
-sub get_next_item {
-    my $self    = shift;
-    my $cursor  = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $item;
-    try {
-        $item = $cursor->next;
-    }
-    catch {
-        $log->error("ERROR fetching next item: $_");
-        say "Error retrieving item: $_";
-        return "skip";
-    };
-    return $item;
-}
-
-sub lookup_legacy_colname {
-    my $self    = shift;
-    my $type    = shift;
-    my %map     = (
-        alert       => "alerts",
-        alertgroup  => "alertgroups",
-        event       => "events",
-        entry       => "entries",
-        incident    => "incidents",
-        handler     => "incident_handler",
-        guide       => "guides",
-        user        => "users",
-        file        => "files",
+sub get_next_id {
+    my $self        = shift;
+    my $collection  = shift;
+    my %command;
+    my $tie         = tie(%command, "Tie::IxHash");
+    %command        = (
+        findAndModify   => "nextid",
+        query           => { for_collection => $collection },
+        update          => { '$inc' => { last_id => 1 } },
+        'new'           => 1,
+        upsert          => 1,
     );
-    return $map{$type};
+
+    my $output  = $self->db->run_command(\%command);
+    my $id      = $output->{value}->{last_id};
+    return $id;
 }
 
 sub lookup_idfield {
@@ -766,363 +1271,66 @@ sub lookup_idfield {
     return $map{$collection};
 }
 
+sub lookup_legacy_colname {
+    my $self    = shift;
+    my $type    = shift;
+    my %map     = (
+        alert       => "alerts",
+        alertgroup  => "alertgroups",
+        event       => "events",
+        entry       => "entries",
+        incident    => "incidents",
+        handler     => "incident_handler",
+        guide       => "guides",
+        user        => "users",
+        file        => "files",
+    );
+    return $map{$type};
+}
+
+sub get_pct {
+    my $self    = shift;
+    my $remain  = shift;
+    my $total   = shift;
+
+    my $numerator   = $total - $remain;
+    if ( $total > 0 ) {
+        return int(($numerator/$total)*10000)/100;
+    }
+    return "";
+}
+
 sub get_unneeded_fields {
     my $self        = shift;
     my $collection  = shift;
     my %unneeded    = (
-        alert   => [ qw( _id    collection 
-                        data_with_flair     searchtext 
-                        entities scot2_id   triage_ranking 
-                        triage_feedback     triage_probs 
-                        disposition downvotes upvotes) ],
-        alertgroup  => [ qw( _id collection closed ) ],
-        event       => [ qw( _id collection ) ],
-        incident    => [ qw( _id collection ) ],
-        entry       => [ qw( _id collection body_flaired body_plaintext) ],
-        handler     => [ qw( _id parsed )],
-        guide       => [ qw( _id history )],
-        user        => [ qw( _id display_orientation theme tzpref flair last_activity_check) ],
-        file        => [ qw( _id scot2_id fullname )],
+        alert      => [ 
+            qw(_id collection data_with_flair searchtext entities scot2_id 
+            triage_ranking triage_feedback triage_probs
+            disposition downvotes upvotes) 
+        ],
+        alertgroup => [ 
+            qw( _id collection closed searchtext files 
+                scot2_id downvotes upvotes open promoted) 
+        ],
+        event      => [ qw( _id collection ) ],
+        incident   => [ qw( _id collection ) ],
+        entry      => [ qw( _id collection body_flaired body_plaintext) ],
+        handler    => [ qw( _id parsed )],
+        guide      => [ qw( _id history )],
+        user       => [ qw( _id display_orientation theme tzpref 
+                            flair last_activity_check) ],
+        file       => [ qw( _id scot2_id fullname )],
     );
     return $unneeded{$collection};
 }
 
-sub transform {
+sub handle_huge_entry {
     my $self    = shift;
-    my $type    = shift;
-    my $href    = shift;
-    
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;  # meerkat;
-
-    if ( $href->{updated} ) {
-        $href->{updated}    = int($href->{updated});
-    }
-    
-    if ( $type eq "handler" ) {
-        return $self->xform_handler($href);
-    }
-
-    my $idfield = delete $href->{idfield} // $self->lookup_idfield($type);
-    my $id      = delete $href->{$idfield};
-
-    $log->debug("[$type $id] transformation");
-
-    my $timer   = $env->get_timer("[$type $id] Transform");
-
-
-    $href->{id} = $id // '';
-
-    $log->trace("[$type $id] removing unneeded fields");
-    foreach my $attribute ( @{ $self->get_unneeded_fields($type) }) {
-        delete $href->{$attribute};
-    }
-
-    my @history;
-    if ( $href->{history} ) {
-        @history = @{ delete $href->{history}};
-    }
-    my @tags;
-    if ( $href->{tags} ) {
-        @tags = @{ delete $href->{tags}};
-    }
-    my @sources;
-    if ( $href->{sources} ) {
-        @sources = @{ delete $href->{sources}};
-    }
-
-    if ( $href->{readgroups} ) {
-        $href->{groups}     = {
-            read    => delete $href->{readgroups} // $self->default_read,
-            modify  => delete $href->{modifygroups} // $self->default_modify,
-        };
-    }
-
-    my $links;
-    my $entities;
-
-    if ( $type eq "alert" ) {
-        ($links, $entities) = $self->xform_alert($href);
-    }
-
-    if ( $type eq "alertgroup" ) {
-        $links  = $self->xform_alertgroup($href);
-    }
-
-    if ( $type  eq "event" ) {
-        $links = $self->xform_event($href);
-    }
-
-    if ( $type eq "incident" ) {
-        $links  = $self->xform_incident($href);
-    }
-
-    if ( $type eq "entry" ) {
-        ($links, $entities)  = $self->xform_entry($href);
-    }
-
-    if ( $type eq "guide" ) {
-        $links  = $self->xform_guide($href);
-    }
-
-    if ( $type eq "user" ) {
-       $self->xform_user($href);
-    }
-
-    if ( $type eq "file" ) {
-        $links  = $self->xform_file($href);
-    }
-
-    my $xform   = {
-        $type   => $href,
-        history => \@history,
-        tags    => \@tags,
-        sources => \@sources,
-        links   => $links,
-        entity  => $entities,
-    };
-
-    my $elapsed = &$timer;
-    return $xform;
-}
-
-sub xform_handler {
-    my $self    = shift;
-    my $href    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;  # meerkat;
-    my $start   = delete $href->{date}; # DataTime object
-    my $end     = DateTime->new(
-        year    => $start->year,
-        month   => $start->month,
-        day     => $start->day,
-        hour    => 23,
-        minute  => 59,
-        second  => 59,
-        time_zone => "Etc/UTC",
-    );
-
-    my $name            = delete $href->{user};
-    $href->{start}      = $start->epoch;
-    $href->{end}        = $end->epoch;
-    $href->{username}   = $name;
-    delete $href->{groups};
-}
-
-sub xform_alert {
-    my $self    = shift;
-    my $href    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;  # meerkat;
-    my $entities;
-    my @links;
-
-    ($href->{data_with_flair},
-     $entities               ) = $self->flair_alert_data($href);
-
-    unless ( $href->{data_with_flair} ) {
-        $href->{data_with_flair} = $href->{data};
-    }
-
-    @links = map { 
-        { type => "event", 
-            id => $_, 
-            when => $href->{created} // $href->{updated} } 
-    } @{ delete $href->{events} // [] };
-    return \@links, $entities;
-}
-
-sub xform_alertgroup {
-    my $self    = shift;
-    my $href    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;  # meerkat;
-
-    $log->debug("[Alertgroup $href->{id}] xforming ",
-                { filter=>\&Dumper, value => $href});
-
-    my @promos = map { 
-        { type  => "event", 
-            id    => $_, 
-            when  => $href->{created}//$href->{updated} } 
-    } @{ delete $href->{events} // [] };
-
-    if ( $href->{status} =~ /\// ) {
-        if ( defined $href->{promoted_count} and 
-                $href->{promoted_count} > 0 ) {
-            $href->{status}   = "promoted";
-        }
-        elsif ( defined $href->{open_count} and 
-                $href->{open_count} > 0 ) {
-            $href->{status}   = "open";
-        }
-        else {
-            $href->{status}   = "closed";
-        }
-    }
-    if ( $href->{status} eq "revisit" ) {
-        $href->{status} = "closed";
-    }
-    delete $href->{total};
-
-    my $athref  = $self->get_alert_counts($href->{id});
-    $log->debug("alert counts ",{ filter => \&Dumper, value=> $athref});
-    $href->{alert_count}    = $athref->{alert_count}// 0;
-    $href->{open_count}     = $athref->{open} // 0;
-    $href->{closed_count}   = $athref->{closed} // 0;
-    $href->{promoted_count} = $athref->{promoted} // 0;
-
-    $href->{body}             = delete $href->{body_html};
-    $href->{body_plain}       = delete $href->{body_plain};
-
-    return \@promos;
-}
-
-sub get_alert_counts {
-    my $self    = shift;
-    my $agid    = shift;
-    my %totals;
-    my $env     = $self->env;
-    my $col     = $self->legacydb->get_collection('alerts');
-    my $cursor  = $col->find({alertgroup   => $agid});
-    while ( my $alert = $cursor->next ) {
-        $totals{alert_count}++;
-        $totals{$alert->{status}}++;
-    }
-    return \%totals;
-}
-
-sub xform_event {
-    my $self    = shift;
-    my $href    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;  # meerkat;
-    my @promos;
-    push @promos, map { {type=>"alert", id=>$_, when=>$href->{created} } } 
-        @{ delete $href->{alerts} };
-    push @promos, map { {type=>"incident", id=>$_, when=>$href->{created}} }
-        @{ delete $href->{incidents} };
-
-    $href->{views}      = delete $href->{view_count};
-    $href->{viewed_by}  = delete $href->{viewed_by};
-    return \@promos;
-}
-
-sub xform_incident {
-    my $self    = shift;
-    my $href    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;  # meerkat;
-    my @promos;
-    push @promos, map { 
-        { type => "event", 
-            id => $_, 
-            when => $href->{created}//$href->{updated} } 
-    } @{ delete $href->{events} // [] };
-    
-    unless ( defined $href->{owner} ) {
-        $href->{owner} = "unknown";
-    }
-    return \@promos;
-}
-
-sub xform_entry {
-    my $self    = shift;
-    my $href    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;  # meerkat;
-    my @promos; 
-    my $entities;
-    my $id  = $href->{id};
-
-    $log->trace("[entry $id] xforming entry");
-
-    if ( length($href->{body} ) > 2000000 ) {
-        $log->warn("[entry $id] HUGE BODY! Saving for later splitting");
-        $self->handle_huge_entry($id);
-        return undef;
-    }
-
-    if ( ref($href->{body}) eq "MongoDB::BSON::Binary" ) {
-        $href->{body} = "<html>".$href->{plaintext}."</html>";
-    }
-
-    $log->trace("[entry $id] flairing");
-
-    ( $href->{body_flair},
-        $href->{body_plain},
-        $entities  )   = $self->flair_entry_data($href);
-
-    $href->{parent} = 0 unless ($href->{parent});
-    $href->{owner}  = "unknown" unless($href->{owner});
-
-    my $target_type = delete $href->{target_type};
-    my $target_id   = delete $href->{target_id};
-
-    $href->{target} = {
-        type    => $target_type,
-        id      => $target_id,
-    };
-
-    # need something here because entities are not linking to the higher
-    # object
-    foreach my $entity (@{$entities}) {
-        $entity->{ltype} = $target_type;
-        $entity->{lid}   = $target_id;
-        $entity->{when}  = $href->{created};
-    }
-    $log->debug("Entry $id had these Entities: ",
-                { filter=>\&Dumper, value=>$entities});
-    return \@promos, $entities;
-}
-
-sub xform_file {
-    my $self    = shift;
-    my $href    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;  # meerkat;
-    my @links;
-
-    $href->{directory}  = delete $href->{dir};
-    push @links, (
-        { type  => "entry", id  => delete $href->{entry_id} },
-        { type  => delete $href->{target_type}, id => delete $href->{target_id}}
-    );
-    return \@links;
-}
-
-sub xform_guide {
-    my $self    = shift;
-    my $href    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;  # meerkat;
-
-    my $guide   = delete $href->{guide};
-    $href->{applies_to} = [ $guide ];
-    return [];
-}
- 
-sub xform_user {
-    my $self    = shift;
-    my $href    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;  # meerkat;
-
-    delete $href->{groups};
-    if ( $href->{hash} ) {
-        $href->{pwhash}             = delete $href->{hash};
-    }
-    $href->{last_login_attempt}  = $href->{lastvisit};
+    my $id      = shift;
+    open my $out, ">>", "/tmp/huge.entries.txt";
+    print $out $id."\n";
+    close $out;
 }
 
 
