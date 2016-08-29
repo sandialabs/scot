@@ -329,7 +329,8 @@ sub get_many {
         $match_ref  = {};
     }
     else {
-        $log->debug("Looking for $col_name matching ",{filter=>\&Dumper, value=>$match_ref});
+        $log->debug("Looking for $col_name matching ",
+                    {filter=>\&Dumper, value=>$match_ref});
     }
 
     my $cursor      = $collection->find($match_ref);
@@ -343,7 +344,9 @@ sub get_many {
     }
     
         
+    $log->debug("starting sort stuff");
     if ( my $sort_opts = $self->build_sort_opts($req_href) ) {
+        $log->debug("got sort opts of: ",{filter=>\&Dumper, value=>$sort_opts});
         $cursor->sort($sort_opts);
         # $cursor->sort({name=>1});
     }
@@ -1790,6 +1793,54 @@ sub nothing_matching_error {
     });
 }
 
+=item B< build_sort_opts($href)>
+
+expect param sort (possibly multiple values)
+expect a prepended + for ascending
+expect a prepended - for descending
+default, nothing prepended will mean ascending
+
+=cut
+
+sub build_sort_opts {
+    my $self        = shift;
+    my $href        = shift;
+    my $request     = $href->{request};
+    my $params      = $request->{params};
+    my $sortaref    = $params->{sort};
+    my %sort        = ();
+    my $log         = $self->env->log;
+
+    $log->debug("Sorting based on ",{filter=>\&Dumper, value=>$sortaref});
+
+    if ( defined $sortaref ) {
+
+        if ( ref($sortaref) ne "ARRAY" ) {
+            #if ( $sortaref =~ /\{.+\}/ ) {
+            #    $log->debug("old style sort detected");
+            #    # to support either way
+            #    return $self->build_sort_opts_json($href);
+            #}
+            if ( ref($sortaref) eq "HASH" ) {
+                return $sortaref;
+            }
+            $sortaref = [ $sortaref ];
+        }
+        foreach my $sterm (@$sortaref) {
+            if ( $sterm =~ /^\-(\S+)$/ ) {
+                $sort{$1} = -1;
+            }
+            elsif ( $sterm =~ /^\+(\S+)$/ ) {
+                $sort{$1} = 1;
+            }
+            else {
+                $sort{$sterm} = 1;
+            }
+        }
+    }
+    return \%sort;
+}
+
 
 =item B<build_sort_opts($href)>
 
@@ -1801,14 +1852,21 @@ $href->{sorts} = [
 
 =cut
 
-sub build_sort_opts {
+sub build_sort_opts_json {
     my $self    = shift;
     my $href    = shift;
     my $request = $href->{request};
     my $params  = $request->{params};
     my $json    = $request->{json};
-
-    my $sorthref    = $params->{sort} // $json->{sort};
+    my $sorthref	= {};
+    try {
+        $sorthref    = decode_json($params->{sort} // $json->{sort});
+    }
+    catch {
+        $self->env->log->error("Invalid SORT json! $sorthref");
+        return {};
+    };
+    $self->env->log->debug(" sorthref is ",{ filter=>\&Dumper, value=> $sorthref});
     return $sorthref;
 
 }
@@ -1862,7 +1920,7 @@ sub build_fields {
     my $log         = $self->env->log;
     my %fields;
 
-    $log->debug("Looking for field limit",{filter=>\&Dumper, value=>$params});
+    $log->debug("Looking for field limit ",{filter=>\&Dumper, value=>$params});
 
     foreach my $f (@$aref) {
         $log->debug("Limit field to $f");

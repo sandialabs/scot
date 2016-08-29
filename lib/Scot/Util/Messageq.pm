@@ -47,6 +47,16 @@ has stomp_port  => (
     default     => 61613,
 );
 
+# this is the part after /topic
+# having this as a "variable" allows us to set a different queue
+# for running tests and won't pollute any listeners to the topic
+has destination => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'scot',
+);
+
 sub _build_stomp {
     my $self    = shift;
     my $log     = $self->env->log;
@@ -86,6 +96,10 @@ sub send {
     my $href    = shift;
     my $log     = $self->env->log;
     my $stomp   = $self->stomp;
+
+    # TODO: refactor to remove $dest as parameter
+    # but since time is tight just over write it and be happy
+    $dest = $self->destination;
 
     unless ($stomp) {
         $self->_clear_stomp
