@@ -66,6 +66,7 @@ Test::Mojo
 Log::Log4perl
 File::Slurp
 AnyEvent::STOMP::Client
+AnyEvent::ForkManager;
 Meerkat
 MooseX::Singleton
 Mozilla::PublicSuffix

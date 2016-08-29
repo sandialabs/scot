@@ -284,7 +284,7 @@ my $json_match = encode_json { subject => "fest" };
 $t->get_ok("/scot/api/v2/alertgroup" => {},
             form => {
                 sort    => $json_sort,
-                match   => $json_match,
+                subject => "fest",
                 limit   => 2,
                 offset  => 2,
             }, 
@@ -324,7 +324,7 @@ $t->get_ok("/scot/api/v2/alertgroup" => {},
 $json_match = encode_json { views   => 3 };
 $t->get_ok("/scot/api/v2/alertgroup" => {},
             form => {
-                match => $json_match,
+                views => 3
             }, 
     )
     ->status_is(200);

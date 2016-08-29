@@ -189,6 +189,10 @@ sub _get_useragent {
         my $user    = $self->username;
 
         $ua = Mojo::UserAgent->new();
+        $ua->on(start => sub {
+            my ($ua, $tx) = @_;
+            $tx->req->headers->header('X-Requested-With' => 'XMLHttpRequest');
+        });
         my $url = sprintf "https://%s:%s@%s/scot/api/v2/whoami",
                     $self->username,
                     $self->password,
