@@ -374,7 +374,7 @@ var GeoView = React.createClass({
         return(
             <div>
                 <Button bsSize='small' onClick={this.copyToEntity}>Copy to <b>{"entity"}</b> entry</Button>
-                <Button bsSize='small' onClick={this.copyToEntry}>Copy to <b>{this.props.type} {this.props.id}</b> entry</Button>
+                {this.props.type != 'alertgroup' ? <Button bsSize='small' onClick={this.copyToEntry}>Copy to <b>{this.props.type} {this.props.id}</b> entry</Button> : null}
                 {this.state.copyToEntryToolbar ? <AddEntry title='CopyToEntry' type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.copyToEntry} content={copy} errorToggle={this.props.errorToggle}/> : null}
                 {this.state.copyToEntityToolbar ? <AddEntry title='CopyToEntry' type={'entity'} targetid={this.props.entityData.id} id={this.props.entityData.id} addedentry={this.copyToEntity} content={copy} errorToggle={this.props.errorToggle}/> : null}
                 <div className="entityTableWrapper">
