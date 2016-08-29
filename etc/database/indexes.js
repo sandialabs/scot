@@ -64,3 +64,6 @@ db.appearance.ensureIndex(  { "when":       1} );
 db.appearance.ensureIndex(  { "type":       1} );
 db.appearance.ensureIndex(  { "value":       1} );
 db.appearance.ensureIndex(  { "target":       1} );
+
+db.guide.ensureIndex    (   { "id":         1}, {unique: true, dropDups:true});
+db.guide.ensureIndex    (   { "applies_to": 1} );

@@ -191,6 +191,7 @@ sub ngram_search {
     my $query   = lc($self->param('query'));
     my $ngutil  = $self->ngutil;
     my %results = ();
+    my $env     = $self->env;
     my $total_search_timer = $env->get_timer("total search time");
 
     my @qngrams = $ngutil->get_query_ngrams($query);
@@ -199,7 +200,6 @@ sub ngram_search {
     my $col = $self->env->mongo->collection('Ngram');
     my $cur = $col->find({ngram => {'$in' => \@qngrams} });
     &$mongo_time;
-    my $env = $self->env;
 
 
     my %seen;
@@ -212,7 +212,7 @@ sub ngram_search {
             $max{$_->{type}}++;
         } @$target_aref;
     }
-    &$build_tests_time;
+    &$build_sets_time;
 
     my $intersection_time = $env->get_timer("find set intersection");
     # foreach alert, entry, (possibly others?)
