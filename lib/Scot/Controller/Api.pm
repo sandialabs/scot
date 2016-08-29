@@ -1807,8 +1807,15 @@ sub build_sort_opts {
     my $request = $href->{request};
     my $params  = $request->{params};
     my $json    = $request->{json};
-
-    my $sorthref    = $params->{sort} // $json->{sort};
+    my $sorthref	= {};
+    try {
+        $sorthref    = decode_json($params->{sort} // $json->{sort});
+    }
+    catch {
+        $self->env->log->error("Invalid SORT json! $sorthref");
+        return {};
+    };
+    $self->env->log->debug(" sorthref is ",{ filter=>\&Dumper, value=> $sorthref});
     return $sorthref;
 
 }
