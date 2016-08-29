@@ -177,6 +177,12 @@ my @ags = (
         subject     => 'test message 3',
         data        => [
             { foo   => 1,   bar => 10, boom => "one" },
+            { foo   => 1,   bar => 10, boom => "one" },
+            { foo   => 1,   bar => 10, boom => "one" },
+            { foo   => 1,   bar => 10, boom => "one" },
+            { foo   => 1,   bar => 10, boom => "one" },
+            { foo   => 1,   bar => 10, boom => "one" },
+            { foo   => 1,   bar => 10, boom => "one" },
         ],
         tag     => [qw(test testing)],
         source  => [qw(todd scot)],
@@ -187,6 +193,11 @@ my @ags = (
         subject     => 'test message 4',
         data        => [
             { foo   => 2,   bar => 20, boom => "two" },
+            { foo   => 2,   bar => 20, boom => "two" },
+            { foo   => 1,   bar => 10, boom => "one" },
+            { foo   => 1,   bar => 10, boom => "one" },
+            { foo   => 1,   bar => 10, boom => "one" },
+            { foo   => 1,   bar => 10, boom => "one" },
         ],
         tag     => [qw(test testing)],
         source  => [qw(todd scot)],
@@ -197,6 +208,9 @@ my @ags = (
         subject     => 'test message 5',
         data        => [
             { foo   => 3,   bar => 30, boom => "three" },
+            { foo   => 3,   bar => 30, boom => "three" },
+            { foo   => 3,   bar => 30, boom => "three" },
+            { foo   => 3,   bar => 30, boom => "three" },
         ],
         tag     => [qw(test testing)],
         source  => [qw(todd scot)],
@@ -206,6 +220,7 @@ my @ags = (
         message_id  => 'dddddddddddddddddddddddddddddd',
         subject     => 'fest test message 6',
         data        => [
+            { foo   => 4,   bar => 40, boom => "four" },
             { foo   => 4,   bar => 40, boom => "four" },
         ],
         tag     => [qw(test testing)],
@@ -254,6 +269,19 @@ $t->get_ok("/scot/api/v2/alertgroup" =>
     ->json_is('/records/0/id'   => 7)
     ->json_is('/records/6/id'   => 1);
 
+$t->get_ok("/scot/api/v2/alertgroup" => 
+            {} => 
+            form => {
+                sort    => "-id",
+            }, 
+    "Get alertgroup list")
+    ->status_is(200)
+    ->json_is('/records/0/id'   => 7)
+    ->json_is('/records/6/id'   => 1);
+#XXX
+#print Dumper($t->tx->res->json), "\n";
+#done_testing();
+#exit 0;
 $t->get_ok("/scot/api/v2/alertgroup" => 
             {} => 
             form => {
@@ -346,10 +374,17 @@ $t->get_ok("/scot/api/v2/alertgroup/7/alert")
     ->status_is(200)
     ->json_is('/records/0/entry_count' => $a_e_count +1);
 
- print Dumper($t->tx->res->json), "\n";
+# new style multi column sorting
+$t->get_ok("/scot/api/v2/alertgroup" => {} ,
+            form => { 
+                sort    => [qw(-alert_count +view_count)],
+                limit   => 3,
+            },
+        )->status_is(200);
+
 
     
-# print Dumper($t->tx->res->json), "\n";
+ print Dumper($t->tx->res->json), "\n";
 done_testing();
 exit 0;
 
