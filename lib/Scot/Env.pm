@@ -12,6 +12,7 @@ use Data::Dumper;
 use File::Find;
 use Safe;
 use namespace::autoclean;
+use Scot::Util::MongoQueryMaker;
 
 use Moose;
 use MooseX::Singleton;
@@ -263,6 +264,19 @@ has 'filestorage'   => (
 sub _get_filestorage {
     my $self    = shift;
     return $self->config->{file_store_root};
+}
+
+has 'mongoquerymaker'   => (
+    is          => 'ro',
+    isa         => 'Scot::Util::MongoQueryMaker',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_get_mqm',
+);
+
+sub _get_mqm {
+    my $self    = shift;
+    return Scot::Util::MongoQueryMaker->new();
 }
 
 sub BUILD {

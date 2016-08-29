@@ -20,6 +20,7 @@ my $t   = Test::Mojo->new('Scot');
 $t  ->post_ok  ('/scot/api/v2/event'  => json => {
         subject => "Test Event 1",
         source  => ["firetest"],
+        tag     => ['test'],
         status  => 'open',
 #        readgroups  => $defgroups,
 #        modifygroups=> $defgroups,
@@ -29,12 +30,16 @@ $t  ->post_ok  ('/scot/api/v2/event'  => json => {
 
 my $event_id = $t->tx->res->json->{id};
 
-$t  ->get_ok("/scot/api/v2/event/$event_id")
+$t  ->get_ok("/scot/api/v2/event/$event_id?tag=test,foo")
     ->status_is(200)
     ->json_is('/id'     => $event_id)
     ->json_is('/owner'  => 'scot-admin')
     ->json_is('/status'  => 'open')
     ->json_is('/subject' => 'Test Event 1');
+
+print Dumper($t->tx->res->json);
+done_testing();
+exit 0;
 
 my $orig_updated    = $t->tx->res->json->{updated};
 
