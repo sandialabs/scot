@@ -597,7 +597,7 @@ echo -e "${yellow} Checking SCOT filestore $FILESTORE ${NC}"
 
 if [ "$SFILESDEL" == "yes" ]; then
     echo -e "${red}- removing existing filestore${NC}"
-    if [ "$FILESTORE" != "/" ];
+    if [ "$FILESTORE" != "/" ]; then
         # try to prevent major catastrophe!
         rm -rf  $FILESTORE
     else
