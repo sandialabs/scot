@@ -797,6 +797,13 @@ if [ ! -e /etc/init.d/scfd ]; then
     chmod +x /etc/init.d/scfd
     update-rc.d scfd defaults
 fi
+if [ ! -e /etc/init.d/scepd ]; then
+    echo -e "${red} Missing INIT for SCot ES Push Daemon ${NC}"
+    echo -e "${yellow}+ adding /etc/init.d/scepd...${NC}"
+    /opt/scot/bin/scepd.pl get_init_file > /etc/init.d/scepd
+    chmod +x /etc/init.d/scepd
+    update-rc.d scepd defaults
+fi
 
 echo "= restarting scot"
 /etc/init.d/scot restart
