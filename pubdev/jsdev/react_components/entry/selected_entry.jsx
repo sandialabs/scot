@@ -158,7 +158,7 @@ var SelectedEntry = React.createClass({
     containerHeightAdjust: function() {
         var scrollHeight = this.state.height;
         if ($('#old-list-view')[0]) {
-            scrollHeight = $(window).height() - $('#old-list-view').height() - $('#header').height() - 77
+            scrollHeight = $(window).height() - $('#old-list-view').height() - $('#header').height() - 92 
             scrollHeight = scrollHeight + 'px'
         } else {
             scrollHeight = $(window).height() - $('#header').height() - 55 
