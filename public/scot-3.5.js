@@ -6279,48 +6279,84 @@ module.exports = React.createClass({displayName: "exports",
             React.createElement('div', {style: {width: this.state.differentviews},id:this.state.display == 'block' ? 'old-list-view' : 'list-view'},  
             React.createElement('div', {className: 'tableview',style:{display: 'flex'}},
                 React.createElement("div", {id: 'fluid2', className: "container-fluid2", style: {/*'max-width': '915px',*//*'min-width': '650px',*/ width:this.state.scrollwidth, 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow': 'hidden','padding-left':'5px', display:'flex', flexFlow: 'column'}}, 
-                        React.createElement("div", {className: "table-row header " + this.state.classname[0]},
-                            React.createElement("div", {className: "wrapper attributes " + this.state.classname[1]}, 
-                                React.createElement("div", {className: "wrapper status-owner"}, 
-                                    React.createElement("div", {className: 'wrapper ' + this.state.sizearray[1]}, 
-                                        React.createElement("div", null, 
-                                            React.createElement("div", {style: {display: 'flex'}}, 
-                                                React.createElement("div", {className: "column index"}, "ID"), 
-                                                this.state.idarrow[0] != 0 ? React.createElement("div", {className: "arrow-up", style: {width: 0, height: 0, 'border-left': '5px solid transparent', 'border-right': '5px solid transparent', 'border-bottom': this.state.idarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.idarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '30px', position: 'relative'}}) : null
-                                            ), 
-                                            React.createElement("input", {style: {width:'100px'}})
-                                        )
-                                    ), 
-                                    React.createElement("div", {className: 'wrapper ' + this.state.sizearray[1]}, 
-                                        React.createElement("div", null, 
-                                            React.createElement("div", {style: {display: 'flex'}}, 
-                                                React.createElement("div", {className: "column owner"}, "Status"), 
-                                                this.state.statusarrow[0] != 0 ? React.createElement("div", {className: "arrow-up", style: { width: 0, height: 0, 'border-left': '5px solid transparent', 'border-right':'5px solid transparent', 'border-bottom': this.state.statusarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.statusarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '40px', position: 'relative'}}) : null
-                                            ), 
-                                            React.createElement("input", {style: {width:'95px'}})
-                                        )
-                                    )
-                                ),
-                                React.createElement("div", {className: "wrapper title-comment-module-reporter"}, 
-                                    React.createElement("div", {className: "wrapper title-comment"}, 
-                                        React.createElement("div", {style: {width:'100%'}}, 
-                                            React.createElement("div", {style: {display: 'flex'}}, 
-                                                React.createElement("div", {className: "column title"}, " Subject"), 
-                                                this.state.subjectarrow[0] != 0 ? React.createElement("div", {className: "arrow-up", style: {width: 0, height: 0, 'border-left': '5px solid transparent', 'border-right': '5px solid transparent', 'border-bottom': this.state.subjectarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.subjectarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '120px', position: 'relative'}}) : null
-                                            ), 
-                                            React.createElement("input", {style: {width:'100%'}})
-                                        )
-                                    )
-                                ),
-                                React.createElement("div", {className: "wrapper dates " + this.state.sizearray[0]}, 
-                                    React.createElement("div", {style: {width:'100%'}}, 
-                                        React.createElement("div", {style: {display: 'flex'}}, 
-                                            React.createElement("div", {className: "column date"}, "Created"), 
-                                            this.state.createdarrow[0] != 0 ? React.createElement("div", {className: "arrow-up", style: { width: 0, height: 0, 'border-left': '5px solid transparent', 'border-right':'5px solid transparent', 'border-bottom': this.state.createdarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.createdarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '45px', position: 'relative'}}) : null
-                                        ), 
-                                        React.createElement("input", {style: {width:'100%'}})
-                                    )
-                                ),
+                    React.createElement("div", {className: "table-row header " + this.state.classname[0]},
+                        React.createElement("div", {className: "wrapper attributes " + this.state.classname[1]}, 
+                        React.createElement('div', {className: 'wrapper'},
+                        React.createElement('div', {className: 'wrapper status-owner ' + this.state.sizearray[1]}, 
+                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {ref: 'myPopOverid', trigger:['click','focus'], placement:'bottom', rootClose: true, overlay: React.createElement(Popover, null, 
+                        React.createElement('div', {className: 'Filter and Sort', id: 'idheader'}, React.createElement('div',
+                        {style: {display: 'inline-flex'}}, React.createElement('div', null, 'ID'), React.createElement('div', 
+                        {style:{'padding-left': '100px'}}, 'Sort'), 
+                        React.createElement('btn-group', null, 
+                        React.createElement('button', {style: {height:'5px'},value: 'id', id: -1, onClick: this.handlesort, className: 'sort glyphicon glyphicon-triangle-top'}),
+                        React.createElement('button', {className: 'sort glyphicon glyphicon-triangle-bottom', value: 'id', onClick: this.handlesort, id: 1, style:{height:'5px'}}))),
+                        React.createElement('input',  {autoFocus: true, id:'id',onKeyUp: this.filterUp, defaultValue: this.state.idtext, placeholder: 'Search', style: {background: 'white', width: '200px'}, type:'text', className:'idinput'}), 
+                        React.createElement('btn-group', null, 
+                        React.createElement('button', {className:'btn btn-default clear', value: 'id', onClick: this.filterclear}, 'Clear'),
+                        React.createElement('button', {value: 'id',className:'filter btn btn-default', onClick: this.handlefilter}, 'Filter')))
+                        )},
+                        React.createElement('div', {style: {display: 'flex'}},
+                        React.createElement('div',{style: {width: '87px'},className: 'column index'}, 'ID'), this.state.idarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.idarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.idarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.idarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '30px', position: 'relative'}}) : null))), 
+                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOverstatus', rootClose: true, overlay: React.createElement(Popover, null, 
+                        React.createElement('div', {className: 'Filter and Sort', id: 'statusheader'}, React.createElement('div',
+                        {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Status'), React.createElement('div', 
+                        {style:{'padding-left': '100px'}}, 'Sort'), 
+                        React.createElement('btn-group', null, 
+                        React.createElement('button', {style: {height:'5px'}, onClick: this.handlesort, value: 'status', id: -1, className: 'sort glyphicon glyphicon-triangle-top'}),
+                        React.createElement('button', {onClick: this.handlesort, value: 'status', id: 1, className: 'sort glyphicon glyphicon-triangle-bottom', style:{height:'5px'}}))),
+                        React.createElement('input', {autoFocus: true,id: 'status', onKeyUp: this.filterUp, defaultValue: this.state.statustext, placeholder: 'Search', style: {background: 'white', width: '200px'}, type:'text', className:'statusinput'}), 
+                        React.createElement('btn-group', null, 
+                        React.createElement('button', {className:'btn btn-default clear',  value: 'status', onClick: this.filterclear}, 'Clear'),
+                        React.createElement('button', {className:'btn btn-default filter', value: 'status', onClick: this.handlefilter}, 'Filter')))
+                        )},
+                         React.createElement('div', {style: {display: 'flex'}},
+                         React.createElement("div", {className: "column owner"}, "Status"),
+                        this.state.statusarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.statusarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.statusarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.statusarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.statusarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '40px', position: 'relative'}}) : null)
+                         ))
+                         )),
+
+                        React.createElement("div", {className: "wrapper title-comment-module-reporter"}, 
+                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, 
+                        React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOversubject', rootClose: true, overlay: React.createElement(Popover, null, 
+                        React.createElement('div', {className: 'Filter and Sort', id: 'subjectheader'}, React.createElement('div',
+                        {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Subject'), React.createElement('div', 
+                        {style:{'padding-left': '80px'}}, 'Sort'), 
+                        React.createElement('btn-group', null, 
+                        React.createElement('button', {style: {height:'5px'},value: 'subject', id: -1, onClick: this.handlesort, className: 'sort glyphicon glyphicon-triangle-top'}),
+                        React.createElement('button', {className: 'glyphicon glyphicon-triangle-bottom sort', value: 'subject', id: 1, onClick: this.handlesort, style:{height:'5px'}}))),
+                        React.createElement('input', {autoFocus: true, id: 'subject',onKeyUp: this.filterUp, defaultValue:this.state.subjecttext, placeholder: 'Search', style: {background: 'white', width: '200px'}, type:'text', className:'subjectinput'}), 
+                        React.createElement('btn-group', null, 
+                        React.createElement('button', {className:'btn btn-default clear', value: 'subject', onClick: this.filterclear}, 'Clear'),
+                        React.createElement('button', {className:'btn btn-default filter', value: 'subject', onClick: this.handlefilter}, 'Filter')))
+                        )},
+                            React.createElement("div", {className: "wrapper title-comment"},
+
+                            React.createElement('div', {style: {display: 'flex'}},
+                            React.createElement("div", {className: "column title"}, "Subject"),
+                            this.state.subjectarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.subjectarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.subjectarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.subjectarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.subjectarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '120px', position: 'relative'}}) : null)))
+
+                            )),
+
+                        React.createElement("div", {className: "wrapper dates " + this.state.sizearray[0]}, 
+                        React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOvercreated',rootClose: true, overlay: React.createElement(Popover, null, 
+                        React.createElement('div', {className: 'Filter and Sort', id: 'createdheader'}, React.createElement('div',
+                        {style: {display: 'inline-flex'}}, React.createElement('div', null, 'Created'), React.createElement('div', 
+                        {style:{'padding-left': '80px'}}, 'Sort'), 
+                        React.createElement('btn-group', null, 
+                        React.createElement('button', {style: {height:'5px'}, onClick: this.handlesort, className: 'sort glyphicon glyphicon-triangle-top', value: 'created', id: -1}),
+                        React.createElement('button', {value: 'created', id: 1, onClick: this.handlesort, className: 'sort glyphicon glyphicon-triangle-bottom', style:{height:'5px'}}))),                        
+                        React.createElement('div', {onKeyUp: this.filterUp, id: 'created', className: 'Dates'},  
+                        React.createElement(DateRangePicker, {numberOfCalendars: 2, selectionType:"range", showLegend: true, onSelect:this.handleSelect ,singleDateRange: true}),
+                        React.createElement("div",{className: 'dates'}, React.createElement('input', {className: "StartDate",placeholder: 'Start Date', value: this.state.startepoch, readOnly:true}), 
+                          React.createElement('input', {className: "EndDate",placeholder:'End Date', value: this.state.endepoch, readOnly:true}))),
+                        React.createElement('btn-group', null, 
+                        React.createElement('button', {className:'btn btn-default clear',  value: 'created',onClick: this.filterclear}, 'Clear'),
+                        React.createElement('button', {className:'btn btn-default filter', value: 'created', onClick: this.handlefilter}, 'Filter')))
+                        )},
+                        React.createElement('div', {style: {display: 'flex'}},
+                        React.createElement("div", {className: "column date"}, "Created"),
+                        this.state.createdarrow[0] != 0 ? React.createElement('div', {className:'arrow-up', style:{ width: 0, height: 0, 'border-left': this.state.createdarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-right': this.state.createdarrow[1] == -1 ? '5px solid transparent' : '5px solid transparent', 'border-bottom': this.state.createdarrow[1] == -1 ? '5px solid black' : null, 'border-top': this.state.createdarrow[1] == -1 ? null : '5px solid black', top: '9px', right: '45px', position: 'relative'}}) : null)
+                        ))),
                          React.createElement('div', {className:'wrapper module-reporter '+this.state.sizearray[2] + ' ' + this.state.classname[2]},
                          React.createElement(ButtonToolbar, {style: {'padding-left': '5px'}, className: 'list-source'}, React.createElement(OverlayTrigger, {trigger:['click','focus'], placement:'bottom', ref: 'myPopOversource', rootClose: true, overlay: React.createElement(Popover, null, 
                         React.createElement('div', {className: 'Filter and Sort', id: 'sourceheader'}, React.createElement('div',
@@ -6409,8 +6445,7 @@ module.exports = React.createClass({displayName: "exports",
                         React.createElement("div", {className: "wrapper attributes" + this.state.classname[1]},
                         React.createElement('div', {className: 'wrapper'},
                         React.createElement('div', {className: 'wrapper status-owner'+ this.state.sizearray[1] + ' ' + this.state.classname[3]}, 
-                            React.createElement('div', null,
-                            React.createElement("div", {style: {width: '100px'}, className: 'column index'}, value.id)),
+                            React.createElement("div", {style: {width: '100px'}, className: 'column index'}, value.id),
                             React.createElement("div", {className: "column owner colorstatus"}, 
                             React.createElement(Button, {className: value.status == 'open' ? 'alertgroup_open' : value.status == 'closed' ? 'alertgroup_closed' : 'alertgroup_promoted', bsSize: "xsmall", bsStyle: value.status == 'open' ? 'danger' : value.status == 'closed' ? 'success' : 'default'}, 
                             React.createElement("span", null, 
@@ -7103,7 +7138,7 @@ module.exports = React.createClass({displayName: "exports",
 	            limit: 50,
 	            offset: 0,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -7882,7 +7917,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
 	            limit:  page.limit,
 	            offset: newPage,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -8286,7 +8321,7 @@ module.exports = React.createClass({displayName: "exports",
 	            limit: 50,
 	            offset: 0,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -8627,7 +8662,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
 	            limit:  page.limit,
 	            offset: newPage,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -8957,7 +8992,7 @@ module.exports = React.createClass({displayName: "exports",
 	            limit: 50,
 	            offset: 0,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -9538,7 +9573,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
 	            limit:  page.limit,
 	            offset: newPage,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -10255,7 +10290,7 @@ module.exports = React.createClass({displayName: "exports",
 	            limit: 50,
 	            offset: 0,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -11036,7 +11071,7 @@ stage ?
 	            limit:  page.limit,
 	            offset: newPage,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -11450,7 +11485,7 @@ module.exports = React.createClass({displayName: "exports",
                 limit: 50,
                 offset: 0,
                 sort:  JSON.stringify(sortarray),
-                match: JSON.stringify(filter)
+                //match: JSON.stringify(filter)
             }
         }).then(function(response){
             datasource = response
@@ -11939,7 +11974,7 @@ stage ?
                 limit:  page.limit,
                 offset: newPage,
                 sort:  JSON.stringify(sortarray),
-                match: JSON.stringify(filter)
+                //match: JSON.stringify(filter)
             }
         }).then(function(response){
             datasource = response
