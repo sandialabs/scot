@@ -147,7 +147,7 @@ module.exports = React.createClass({
 	            limit: 50,
 	            offset: 0,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -841,7 +841,7 @@ module.exports = React.createClass({
 	            limit:  page.limit,
 	            offset: newPage,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	

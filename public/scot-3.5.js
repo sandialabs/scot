@@ -2896,7 +2896,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
     containerHeightAdjust: function() {
         var scrollHeight = this.state.height;
         if ($('#old-list-view')[0]) {
-            scrollHeight = $(window).height() - $('#old-list-view').height() - $('#header').height() - 77
+            scrollHeight = $(window).height() - $('#old-list-view').height() - $('#header').height() - 92 
             scrollHeight = scrollHeight + 'px'
         } else {
             scrollHeight = $(window).height() - $('#header').height() - 55 
@@ -6065,7 +6065,7 @@ module.exports = React.createClass({displayName: "exports",
 	            limit: 50,
 	            offset: 0,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -6759,7 +6759,7 @@ module.exports = React.createClass({displayName: "exports",
 	            limit:  page.limit,
 	            offset: newPage,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -7138,7 +7138,7 @@ module.exports = React.createClass({displayName: "exports",
 	            limit: 50,
 	            offset: 0,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -7917,7 +7917,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
 	            limit:  page.limit,
 	            offset: newPage,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -8321,7 +8321,7 @@ module.exports = React.createClass({displayName: "exports",
 	            limit: 50,
 	            offset: 0,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -8662,7 +8662,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
 	            limit:  page.limit,
 	            offset: newPage,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -8992,7 +8992,7 @@ module.exports = React.createClass({displayName: "exports",
 	            limit: 50,
 	            offset: 0,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -9573,7 +9573,7 @@ React.createElement('div', {onMouseDown: this.dragdiv, className: 'splitter', st
 	            limit:  page.limit,
 	            offset: newPage,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -10290,7 +10290,7 @@ module.exports = React.createClass({displayName: "exports",
 	            limit: 50,
 	            offset: 0,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -11071,7 +11071,7 @@ stage ?
 	            limit:  page.limit,
 	            offset: newPage,
 	            sort:  JSON.stringify(sortarray),
-	            match: JSON.stringify(filter)
+	            //match: JSON.stringify(filter)
 	        }
 	    }).then(function(response){
   	        datasource = response	
@@ -11485,7 +11485,7 @@ module.exports = React.createClass({displayName: "exports",
                 limit: 50,
                 offset: 0,
                 sort:  JSON.stringify(sortarray),
-                match: JSON.stringify(filter)
+                //match: JSON.stringify(filter)
             }
         }).then(function(response){
             datasource = response
@@ -11974,7 +11974,7 @@ stage ?
                 limit:  page.limit,
                 offset: newPage,
                 sort:  JSON.stringify(sortarray),
-                match: JSON.stringify(filter)
+                //match: JSON.stringify(filter)
             }
         }).then(function(response){
             datasource = response
