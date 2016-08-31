@@ -1,6 +1,7 @@
 package Scot::App::Flair;
 
 use lib '../../../lib';
+use lib '/opt/scot/lib';
 
 =head1 Name
 
