@@ -74,6 +74,72 @@ sub search {
 
 }
 
+sub newsearch {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $user    = $self->session('user');
+    my $esua    = $env->es;
+
+    $log->trace("----NEW-----");
+    $log->trace("Handler is processing a POST (search) from $user");
+    $log->trace("------------");
+
+    my $request = $self->req;
+    my $qstring = $request->params('qstring');
+
+    $log->debug("Search String: $qstring");
+
+    my $response = $esua->do_request_new(  # ... href of json returned.
+        {
+            query       => {
+                query => {
+                    simpe_query_string   => {
+                        query   => $qstring,
+                    },
+                },
+            },
+            sort        => [ "_score" ],
+            min_score   => 0.9,
+            size        => 20
+        },
+    ); 
+
+    my $hits    = $response->{hits};
+    my $total   = $hits->{total};
+    my $records = $hits->{hits};
+
+    my @results;
+    foreach my $record (@$records) {
+        if ( $record->{_type} eq "entry" ) {
+            push @results, {
+                id      => $record->{_source}->{target}->{id},
+                type    => $record->{_source}->{target}->{type},
+                score   => $record->{_score},
+                snippet => $record->{_source}->{body_plain},
+            };
+        }
+        else {
+            push @results, {
+                id      => $record->{_source}->{alertgroup},
+                type    => "alertgroup",
+                score   => $record->{_score},
+                snippet => $record->{_source}->{_raw},
+            };
+        }
+    }
+
+    $log->debug("Got Response: ", {filter=>\&Dumper, value=>$response});
+
+    $self->do_render({
+        totalRecordCount    => $total,
+        queryRecordCount    => scalar(@results),
+        records             => \@results,
+    });
+
+}
+
 sub do_render {
     my $self    = shift;
     my $code    = 200;

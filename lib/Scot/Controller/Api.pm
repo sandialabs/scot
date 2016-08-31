@@ -1806,7 +1806,7 @@ sub build_sort_opts {
     my $self        = shift;
     my $href        = shift;
     my $request     = $href->{request};
-    my $params      = $request->{params};
+    my $params      = $request->{params} // $request->{json};;
     my $sortaref    = $params->{sort};
     my %sort        = ();
     my $log         = $self->env->log;
