@@ -177,8 +177,8 @@ sub do_request_mojo {
     my $verb    = lc(shift); 	    # get, put, post, delete
     my $suffix  = shift; 	        # stuff after /scot/api/v2/
     my $data    = shift;            # json or params or both being sent with request
-    my $log     = $self->log;
     my $ua      = $self->ua;
+    my $log     = $self->log;
     my $url     = $self->ua_base_url ;#. $suffix;
 
     $log->trace("ESUA performing $verb $url request");
@@ -214,6 +214,48 @@ sub do_request_mojo {
         }
     }
     return undef;
+}
+
+# this new do_request is for ditching searchkit.js
+# we'll create our own query and return
+
+sub do_request_new {
+    my $self    = shift;
+    my $eshref  = shift;            # href that corresponds to elastic search query
+    my $ua      = $self->ua;
+    my $log     = $self->log;
+    my $url     = $self->ua_base_url ;#. $suffix;
+
+    unless ( defined($eshref) ) {
+        $log->error("FAILED to provide query HREF");
+        return undef;
+    }
+
+    $eshref->{size}  = undef unless ($eshref->{size});
+
+    my $json    = encode_json($eshref);
+    $log->debug("POSTing to ES: ", { filter=>\&Dumper, value => $eshref });
+
+    my $tx      = $ua->post($url => json => $json);
+    if ( my $res    = $tx->success ) {
+        $log->debug("Successful POST to ES");
+        return $res->json;
+    }
+    else {
+        my $err = $tx->error;
+        if ( $err->{code} ) {
+            $log->error("ERROR ".$err->{code}." response: ". $err->{message});
+            if ( $err->{code} eq "403" ) {
+                die "SCOT returned 403 Forbidden";
+            }
+        }
+        else {
+            $log->error("ERROR: ". $err->{message} );
+            die $err->{mesage};
+        }
+    }
+    $log->error("TX is ",{filter=>\&Dumper, value=>$tx});
+    die "Request utterly failed";
 }
 
 sub extract_pj {

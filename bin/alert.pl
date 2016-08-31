@@ -6,6 +6,7 @@ use v5.18;
 
 use lib '../lib';
 use lib '../../Scot-Internal-Modules/lib';
+use lib '/opt/scot/lib';
 use Scot::App::Mail;
 use Scot::Env;
 use Data::Dumper;

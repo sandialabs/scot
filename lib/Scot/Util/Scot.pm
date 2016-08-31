@@ -252,6 +252,30 @@ sub check_if_forked {
     }
 }
 
+sub param_string_to_hash {
+    my $self    = shift;
+    my $params  = shift;
+    my @pieces  = split(/\&/, $params);
+    my $nparams = {};
+    foreach my $p (@pieces) {
+        my ( $attr, $value ) = split(/\=/,$p);
+        if ( defined $nparams->{$attr} ) {
+            if ( ref($nparams->{$attr}) eq "ARRAY" ) {
+                push @{ $nparams->{$attr} }, $value;
+            }
+            else {
+                my $temp = delete $nparams->{$attr};
+                push @{ $nparams->{$attr} }, $temp, $value;
+            }
+        }
+        else {
+            $nparams->{$attr}   = $value;
+        }
+    }
+    return $nparams;
+}
+
+
 sub do_request {
     my $self    = shift;
     my $verb    = shift; # get, put, post, delete
@@ -265,15 +289,28 @@ sub do_request {
 
     my ($params, $json) = $self->extract_pj($data);
 
-    $log->debug("Params = $params") if ($params);
-    # $log->debug("Json   = ",{filter=>\&Dumper, value => $json}) if ($json);
-
-    if ( $params ) {
-        $url    = $url . "?" . $params;
+    if ( defined($params) ) {
+        if ( ref($params) ne "HASH" ) {
+            $log->warn("Expect Params in form of HREF!");
+            if ( $params =~ /\=/ ) {
+                $log->debug("attempting to convert param str to hash");
+                $params = $self->param_string_to_hash($params);
+            }
+            else {
+                $log->error("Invalid Params! $params");
+            }
+            die "Invalid Params in SCOT request";
+        }
     }
 
+    $log->debug("Params = ", {filter=>\&Dumper, value=>$params}) if ($params);
+    $log->debug("Json   = ", {filter=>\&Dumper, value => $json}) if ($json);
+
     my $tx;
-    if ( $json ) {
+    if ( $params ) {
+       $tx      = $ua->$verb($url => form => $params); 
+    }
+    elsif ( $json ) {
         $tx     = $ua->$verb($url => json => $json);
     }
     else {
@@ -304,8 +341,11 @@ sub do_request {
 sub extract_pj {
     my $self    = shift;
     my $data    = shift;
+    my $log     = $self->log;
     my $params;
     my $json;
+
+    $log->debug("Extracting Params and JSON from ",{filter=>\&Dumper, value=>$data});
 
     if ( $data->{params} ) {
         $params = $data->{params};
@@ -316,13 +356,56 @@ sub extract_pj {
     return $params, $json;
 }
 
+sub get2 {
+    my $self    = shift;
+    my $type    = shift;
+    my $id      = shift;
+    my $params  = shift;    # get's sending json is frowned upon, i think.
+    my $log     = $self->log;
+
+    if ( $id ) {
+        $log->debug("getting $type $id");
+        return $self->do_request("get", "$type/$id");
+    }
+    else {
+        $log->debug("Get Many Type Request");
+
+        unless ( $params ) {
+            $log->debug("straight get_many");
+            return $self->do_request("get", $type);
+        }
+        else {
+            $log->debug("get_many with sorting/filtering");
+            if ( ref($params) ne "HASH" ) {
+                $log->debug("sent as url string");
+                # assume string like id=2&limit=20&sort=-id
+                $params     = $self->param_string_to_hash($params);
+            }
+            else {
+                $log->debug("sent as href",{filter=>\&Dumper, value=>$params});
+            }
+
+            my $return =  retry {
+                $self->do_request("get", $type, { params => $params });
+            }
+            delay_exp { 3, 1e5 }
+            on_retry {
+                $self->clear_ua;
+            }
+            catch {
+                $log->error("GET ERROR: $_");
+            };
+            return $return;
+        } # else params
+    } # else id
+}
+
 sub get {
     my $self    = shift;
     my $type    = shift;
     my $id      = shift;
     my $json    = shift;    # {sorting, filtering}
     my $log     = $self->log;
-
 
     unless ($id) {
         $log->debug("no id so doing a get many");
@@ -378,7 +461,6 @@ sub post {
     on_retry { $self->clear_ua; }
     catch { $log->error("POST ERROR: $_"); };
     return $return;
-
 }
 
 sub delete {
@@ -412,6 +494,5 @@ sub get_alertgroup_by_msgid {
         return undef;
     };
 }
-
 
 1;
