@@ -1,6 +1,7 @@
 package Scot::App::Stretch;
 
 use lib '../../../lib';
+use lib '/opt/scot/lib';
 
 =head1 NAME
 
@@ -104,8 +105,7 @@ pull them in, and then submit them for indexing to ES
 
 sub run {
     my $self    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $scot    = $self->scot;
 
     $log->debug("Starting STOMP watcher");
@@ -181,12 +181,18 @@ sub process_all {
             last;
         }
 
-        say "looking for id > $last_completed";
-        my $json = $scot->get($collection, undef,{
-            match => { id => {'$gt' => $last_completed} },
-            limit => $limit,
-            sort  => { id => 1 },
-        });
+#        my $m   = {
+#            id    => "x>$last_completed",
+#            limit => $limit,
+#            sort  => { id => 1 },
+#        };
+        my $m = {
+            id  => "x>$last_completed",
+            limit   => $limit,
+            sort    => "+id",
+        };
+        say "looking for ".Dumper($m);
+        my $json = $scot->get2($collection, undef,$m);
         my $count = 1;
 
         $cleanser->clean_in_place($json);
@@ -244,8 +250,7 @@ sub process_message {
     my $action  = shift;
     my $type    = shift;
     my $id      = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
+    my $log     = $self->log;
     my $es      = $self->es;
 
     if ($action eq "deleted") {
@@ -270,12 +275,14 @@ sub get_scot {
 # this should only be used when migrating database
 # 
 sub import_range {
+
+    die "Not fully implemented...";
+
     my $self    = shift;
     my $type    = shift;
     my $range   = shift;    # aref [start, finish] ids
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
-    my $log     = $env->log;
+    my $mongo   = $self->mongo;
+    my $log     = $self->log;
     my $match   = {};
     my $es      = $self->es;
 

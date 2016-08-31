@@ -1,0 +1,84 @@
+ SCOT get API
+
+Retrieve one "thing" when you know the id
+
+    /scot/api/v2/event/123
+
+    output:
+
+    JSON object representing event 123
+
+Retrieve list of "things"
+
+    /scot/api/v2/event
+
+    output
+
+    {
+        queryRecordCount: 50,
+        totalRecordCount: 10060,
+        records: [
+            { event json object 1 },
+            ...
+        ]
+    }
+
+Retrieve list of "things" based on time range
+
+    /scot/api/v2/event?created=1472244135&created=1472244137
+
+Retrieve list of "things" based on string match
+
+   /scot/api/v2/event?subject=Symnatic
+
+Retrieve list of "things" base on Numerical conditions
+
+  matching a single number:
+
+    /scot/api/v2/event?views=2      
+
+    output: events with two views
+
+  matching a set of numbers:
+
+    /scot/api/v2/event?entry_count=2&entry_count=4&entry_count=6
+
+    output: events with entry_count's of 2, 4, or 6
+
+  matching everything but a number:
+  
+    /scot/api/v2/event?views=!1
+
+    output: events with views not equal to 1
+
+  matching everyting but a set of numbers:
+
+    /scot/api/v2/event?views=!1&views=!2&views=!3
+
+    output: events with views not equal to 1,2, or 3.  
+    (note:  if ! appears in any element, all are treated as if they are !
+
+  matching an expression:
+
+    /scot/api/v2/event?views=4<x<8
+    /scot/api/v2/event?views=4<=x<8
+    /scot/api/v2/event?views=4<=x<=8
+    /scot/api/v2/event?views=4<x<=8
+    /scot/api/v2/event?views=9>x>=2
+
+    output: events with views (represented by x) matching the expression
+    syntax notes: the expression must be of the form some number of digit,
+     followed immediately by one of the following operands: < <= > >=, the
+     letter lower case x (which represents the column name) followed immediately
+     by the comparison operands, and finally followed immediately by some numbe
+     of digits.
+
+Retrieve list of "things" based on Set Fields like "tag" or "source"
+
+    /scot/api/v2/event?tag=email&tag=malware&tag=!false_positive
+
+    output:  list of evens with tags email and malware but not containing
+     the tag false_positive
+
+
+
