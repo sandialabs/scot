@@ -920,9 +920,9 @@ sub create_sources {
     my $timer       = $env->get_timer("[source] Bulk create");
     my $bulk        = $col->initialize_unordered_bulk_op;
     my @links       = ();
+    my $insertions  = 0;
 
     return () if (scalar(@sources) < 1);
-    my $insertions  = 0;
 
     foreach my $h (@sources) {
         my ($data, $type, $id );
@@ -939,8 +939,9 @@ sub create_sources {
             $data = pop $data;
         }
         
+        my $docid = 0;  # keeps moose from blowing up
         my $doc = $col->find_one({ value => $data->{value} });
-        my $docid;
+
         unless ($doc) {
             $docid  = $self->get_next_id('source');
             $data->{id} = $docid;
@@ -948,7 +949,9 @@ sub create_sources {
             $insertions++;
         }
         else {
-            $docid  = $doc->{id};
+            if ( $doc->{id} > 0 ) {
+                $docid  = $doc->{id};
+            }
         }
 
         push @links, {

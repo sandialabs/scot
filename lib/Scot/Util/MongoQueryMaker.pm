@@ -1,6 +1,7 @@
 package Scot::Util::MongoQueryMaker;
 
 use Moose;
+use Data::Dumper;
 use v5.18;
 
 sub parse_datefield_match {
@@ -102,8 +103,17 @@ sub parse_numericfield_match {
             # notice I do not check for nonsensical matches
             $value =~ /(\d+)([<=>]+)x([<=>]+)(\d+)/;
             unless (defined($1)) {
-                return { error => "invalid numeric match expression" };
+                # might be x>=123
+                $value =~ /^x([<=>]+)(\d+)$/;
+                unless (defined($1) and defined($2) ) {
+                    return { error => "invalid numeric match expression" };
+                }
+                my $op  = $self->get_mongo_op($1);
+                my $rv  = $2 + 0;
+                $match  = { $op => $rv };
+                return $match;
             }
+
             my $lv = $1 + 0;    # left value
             my $lo = $self->get_mongo_op($2);    # left op
             my $ro = $self->get_mongo_op($3);    # right op
@@ -250,6 +260,7 @@ sub build_match_ref {
             $mquery{$key} = $self->parse_stringfield_match($value);
         }
     }
+    say "Mathing: ", Dumper(\%mquery);
     return wantarray ? %mquery : \%mquery;
 }
 

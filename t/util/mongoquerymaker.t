@@ -124,6 +124,17 @@ my @tests   = (
         params  => { "views"    => '40<<x<=1' },
         match   => { views => { error => 'invalid numeric match expression' } },
     },
+    {
+        name    => "straight up greater than match",
+        params  => { "views"    => 'x>2' },
+        match   => { views  => { '$gt' => 2 } },
+    },
+    {
+        name    => "straight up less than match",
+        params  => { "views"    => 'x<2' },
+        match   => { views  => { '$lt' => 2 } },
+    },
+
 
 );
 

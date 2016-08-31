@@ -1,6 +1,7 @@
 package Scot::App::Mail;
 
 use lib '../../../lib';
+use lib '/opt/scot/lib';
 use Data::Dumper;
 use DateTime;
 use Try::Tiny;
