@@ -156,6 +156,7 @@ sub update_alert_status {
     my $self    = shift;
     my $id      = shift;
     my $status  = shift;
+    my $targets = shift;
     my $env     = $self->env;
     my $log     = $env->log;
     my @ids     = ();
@@ -174,9 +175,21 @@ sub update_alert_status {
         return;
     }
 
+    my @aidlist = ();
+    if ( defined($targets) ) {
+        @aidlist = map { $_ + 0 } @$targets;
+    }
+
     $log->debug("updating alert status");
 
+    ALERT:
     while ( my $alert = $cur->next ) {
+        my $aid = $alert->id + 0;
+        if ( defined($targets) ) {
+            unless ( grep { $_ == $aid } @aidlist ) {
+                next ALERT;
+            }
+        }
         $alert->update_set( status => $status );
         push @ids, $alert->id +0;
     }
@@ -186,6 +199,7 @@ sub update_alert_parsed {
     my $self    = shift;
     my $id      = shift;
     my $status  = shift;
+    my $targets = shift;
     my $env     = $self->env;
     my $log     = $env->log;
     $status     += 0;
@@ -204,14 +218,51 @@ sub update_alert_parsed {
         $log->error("failed to find any alerts for alertgroup $id");
         return;
     }
+
+    my @aidlist = ();
+    if ( defined($targets) ) {
+        @aidlist = map { $_ + 0 } @$targets;
+    }
+
     $log->debug("updating alert parsed status");
 
+    ALERT:
     while ( my $alert = $cur->next ) {
+        my $aid = $alert->id + 0;
+        if ( defined($targets) ) {
+            unless ( grep { $_ == $aid } @aidlist ) {
+                next ALERT;
+            }
+        }
         $alert->update_set( parsed => $status );
-        $log->debug("reset parsed on alert ".$alert->id);
-        push @ids, $alert->id +0;
+        $log->debug("reset parsed on alert $aid");
+        push @ids, $aid;
     }
     return wantarray ? @ids : \@ids;
 }
+
+# override get_subthing => sub {
+#     my $self    = shift;
+#     my $thing   = shift;
+#     my $id      = shift;
+#     my $subthing    = shift;
+#     my $env     = $self->env;
+#     my $mongo   = $env->mongo;
+#     my $log     = $env->log;
+# 
+#     $id += 0;
+# 
+#     if ( $subthing eq "alertgroup" ) {
+#         my $col   = $mongo->collection('Alert');
+#         my $alert = $col->find_iid($id);
+#         my $agid  = $alert->alertgroup;
+#         $col      = $mongo->collection('Alertgroup');
+#         my $cur   = $col->find({id => $agid});
+#         return $cur;
+#     }
+#     else {
+#         $log->error("unsupported subthing $subthing!");
+#     }
+# };
 
 1;

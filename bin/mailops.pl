@@ -22,4 +22,4 @@ my $processor   = Scot::App::Mail->new({
 
 
 
-$processor->mark_some_unread({'day', 1});
+$processor->mark_some_unread({'day', 4});
