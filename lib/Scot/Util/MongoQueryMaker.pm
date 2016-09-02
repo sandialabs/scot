@@ -196,17 +196,19 @@ sub parse_source_tag_match {
         if ( scalar(@nin) > 0 ) {
             $match->{'$nin'}  = \@nin;
         }
+        return $match;
     }
-    else {
-        # single value 
+
+    # single value 
+    unless  ( $value =~ /,/ ) {
         if ( $value =~ /^\!(.+)/ ) {
             $match = { '$ne'    => $1 };
         }
         else {
             $match = $value;
         }
+        return $match;
     }
-
 
     my @items   = split(/,/, $value);
 

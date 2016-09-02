@@ -245,16 +245,16 @@ sub run {
 
 
             if ( $who eq $myusername ) {
-                $log->trace("Message was result of this program, ignoring.");
+                $log->debug("Message was result of this program, ignoring.");
                 return;
             }
 
             if ( $action ne "created" and $action ne "updated" ) {
-                $log->trace("not a created or updated action");
+                $log->debug("not a created or updated action");
                 return;
             }
             if ( $type ne "alertgroup" and $type ne "entry" ) {
-                $log->trace("non flairable creation/update");
+                $log->debug("non flairable creation/update");
                 return;
             }
 
@@ -293,7 +293,7 @@ sub process_one {
     });
     $log->debug("GET Response: ", 
                 { filter => \&Dumper, value => $record });
-    if ( defined($record) ) {
+    if ( defined($record) and ref($record) ne "HASH" ) {
         if ( $self->interactive ) {
             say "+++ got record from scot";
         }
@@ -417,7 +417,7 @@ sub process_entry {
 
     my $id  = $record->{id};
 
-    $log->trace("Processing Entry $id");
+    $log->debug("Processing Entry $id");
 
     my $data    = $record->{body};
     $data       = $imgmunger->process_html($data, $id);
