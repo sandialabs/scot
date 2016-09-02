@@ -31,10 +31,10 @@ var SelectedEntry = React.createClass({
             entitytype:null,
             key:this.props.id,
             flairToolbar:false,
-            height: null,
             errorDisplay:false,
             notificationType:null,
             notificationMessage: '',
+            height: null,
         }
     },
     componentDidMount: function() {
@@ -83,7 +83,7 @@ var SelectedEntry = React.createClass({
         } 
     this.containerHeightAdjust();
     window.addEventListener('resize',this.containerHeightAdjust);
-    $("#fluid2").bind('resize', function() {this.containerHeightAdjust}.bind(this));
+    $("#fluid2").resize(function(){ this.containerHeightAdjust}.bind(this));
     },
     componentWillReceiveProps: function() {
         this.containerHeightAdjust();
@@ -156,17 +156,20 @@ var SelectedEntry = React.createClass({
         }
     },
     containerHeightAdjust: function() {
-        var scrollHeight = this.state.height;
-        if ($('#old-list-view')[0]) {
-            scrollHeight = $(window).height() - $('#old-list-view').height() - $('#header').height() - 92 
+        var scrollHeight;
+        if ($('#list-view-container')[0]) {
+            scrollHeight = $(window).height() - $('#list-view-container').height() - $('#header').height() - 90 
             scrollHeight = scrollHeight + 'px'
         } else {
-            scrollHeight = $(window).height() - $('#header').height() - 55 
+            scrollHeight = $(window).height() - $('#header').height() - 90 
             scrollHeight = scrollHeight + 'px'
         }
+        //$('#detail-container').css('height',scrollHeight);
         this.setState({height:scrollHeight});
     },
     render: function() { 
+        var divid = 'detail-container';
+        var height = this.state.height;
         var data = this.props.entryData;
         var type = this.props.type;
         var id = this.props.id;
@@ -187,11 +190,12 @@ var SelectedEntry = React.createClass({
         }
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
         var EntityDetail = require('../modal/entity_detail.jsx');
-        if (type != 'entity' && type != 'alert' && this.props.isPopUp != 1) {
-            var height = this.state.height;
+        if (type == 'entity' || type == 'alert' || this.props.isPopUp == 1) {
+            divid = 'other-detail-container';
+            height = null;
         }
         return (
-            <div key={id} className={divClass} style={{height:height}}> 
+            <div id={divid} key={id} className={divClass} style={{height:height}}> 
                 {(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar}/> : <span>Loading...</span>} 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
@@ -727,11 +731,11 @@ var EntryParent = React.createClass({
 
 var EntryData = React.createClass({ 
     getInitialState: function() {
-        if (this.props.type == 'entity' || this.props.isPopUp == 1) {
+        /*if (this.props.type == 'entity' || this.props.isPopUp == 1) {
             return {
                 height: '250px',
             }
-        }
+        }*/
         return {
             height:'1px',
         }
@@ -747,7 +751,7 @@ var EntryData = React.createClass({
                         ifrContentsHead.append($("<link/>", {rel: "stylesheet", href: 'css/sandbox.css', type: "text/css"}))
                     }
                 }
-                if (this.props.type != 'entity') {
+                //if (this.props.type != 'entity') {
                     setTimeout(function() {
                         document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
                             var newheight; 
@@ -758,7 +762,7 @@ var EntryData = React.createClass({
                             }
                         }.bind(this))
                     }.bind(this),250); 
-                }
+                //}
             } else {
                 setTimeout(this.onLoad,0);
             }

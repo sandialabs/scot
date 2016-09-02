@@ -2,18 +2,19 @@
 var ReactDOM	    = require('react-dom')
 var React           = require('react')
 var ExpandableNav   = require('../../../node_modules/react-expandable-nav')
-var Alerts          = require('./alert.jsx')
-var Events          = require('./events.jsx')
-var Incidents       = require('./incidents.jsx')
-var Tasks           = require('./tasks.jsx')
-var Intel           = require('./intel.jsx')
+//var Alerts          = require('./alert.jsx')
+//var Events          = require('./events.jsx')
+//var Incidents       = require('./incidents.jsx')
+//var Tasks           = require('./tasks.jsx')
+//var Intel           = require('./intel.jsx')
+var ListView        = require('./list-view.jsx');
 var Router	        = require('../../../node_modules/react-router').Router
 var Route	        = require('../../../node_modules/react-router').Route
 var Link	        = require('../../../node_modules/react-router').Link
 var browserHistory  = require('../../../node_modules/react-router/').hashHistory
 var Listener        = require('../activemq/listener.jsx')
 var Store           = require('../flux/store.jsx')
-var Guide           = require('./guide.jsx')
+//var Guide           = require('./guide.jsx')
 var ExpandableNavContainer = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavContainer.js')
 var ExpandableNavbar = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavbar.js')
 var ExpandableNavHeader = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavHeader.js')
@@ -44,7 +45,8 @@ var App = React.createClass({
 
     getInitialState: function(){
 	    var state;
-	    var array = []
+	    var id;
+        var id2;
         if(this.props.params.value  != null){
             if(this.props.params.value.toLowerCase() == "home"){
                 state = 0;
@@ -66,9 +68,10 @@ var App = React.createClass({
             settask = false
             if(this.props.params.id != null) {
 	            state = 8
-	            array = this.props.params.id.split('+')
-	            array.push(this.props.params.type)
-                array.push(this.props.params.typeid)
+	            //array = this.props.params.id.split('+')
+	            //array.push(this.props.params.type)
+                //array.push(this.props.params.typeid)
+                id = this.props.params.id
             }
         }
         else if(this.props.params.value.toLowerCase() == 'guide'){
@@ -83,13 +86,16 @@ var App = React.createClass({
             if(this.props.params.id != null) {
 	            state = 7
 	            statetype = 'guide'	
-	            array = this.props.params.id.split('+')
-	        }
+	            //array = this.props.params.id.split('+')
+	            id = this.props.params.id
+            }
         }
 	    else if( this.props.params.value.toLowerCase() == "alert"){
 	        if(this.props.params.id != null){
-	            supertableid = this.props.params.id.split('+')
-	        }
+	            id = this.props.params.id
+                //array = this.props.params.id.split('+')
+            }
+            statetype = 'alert'
 	        state = 1
             isalert = true
 	        setalerts = true
@@ -99,11 +105,19 @@ var App = React.createClass({
 	        setevents = false
 	        settask = false
             setguide = false
+            //if the url is just /alert/ with no id - default to alertgroup
+            if (this.props.params.id == null) {
+                id = null;
+                statetype = 'alertgroup'
+                isalert = false
+            }
 	    }
 	    else if( this.props.params.value.toLowerCase() == "alertgroup"){
 	        if(this.props.params.id != null){
-	            supertableid = this.props.params.id.split('+')
-	        }
+	            //array = this.props.params.id.split('+')
+	            id = this.props.params.id.split('+');
+            }
+            statetype='alertgroup'
             isalert = false
 	        state = 1
 	        setalerts = true
@@ -119,8 +133,10 @@ var App = React.createClass({
 	        if(this.props.params.id != null) {
 	            state = 2
 	            statetype = 'event'	
-	            array = this.props.params.id.split('+')
-	        }
+	            //array = this.props.params.id.split('+')
+	            id = this.props.params.id
+                id2 = this.props.params.id2
+            }
 	        setevents = true	
 	        setintel = false
 	        sethome = false
@@ -134,8 +150,10 @@ var App = React.createClass({
 	        if(this.props.params.id != null) {
 	            state = 3
 	            statetype = 'incident'	
-	            array = this.props.params.id.split('+')
-	        }
+	            //array = this.props.params.id.split('+')
+                id = this.props.params.id
+                id2 = this.props.params.id2
+            }
             setguide = false
             setincidents = true
             setintel = false
@@ -149,8 +167,10 @@ var App = React.createClass({
 	        if(this.props.params.id != null) {
 	            state = 4
 	            statetype = 'intel'	
-	            array = this.props.params.id.split('+')
-	        }
+	            //array = this.props.params.id.split('+')
+	            id = this.props.params.id
+                id2 = this.props.params.id2
+            }
             setguide = false
             setintel = true
             sethome = false
@@ -184,7 +204,7 @@ var App = React.createClass({
             this.props.params.value = ''
             state = 0
         }
-	        return{ids: array,set: state, handler: "Scot", viewMode:'default'}	
+	        return{id: id, id2: id2, set: state, handler: "Scot", viewMode:'default'}	
     },
    componentWillMount: function() {
 	    $.ajax({
@@ -202,7 +222,7 @@ var App = React.createClass({
 	    var id = window.location.hash
 	    array = id.split('/')	
 	    $('.active').on('click', function(){
-	        window.location.hash = '#/' + array[1] + '/'
+	        window.location.hash = '#/' + statetype + '/'
 	        window.location.href = window.location.hash
 	    })
 	    var headerFull = <a href='/'>Scot3</a>
@@ -259,35 +279,35 @@ var App = React.createClass({
             :
         this.state.set == 1
         ?	
-        React.createElement(ExpandableNavPage, null, React.createElement(Alerts, {isalert: isalert ? 'isalert' : '', supertable: supertableid, viewMode: this.state.viewMode}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {isalert: isalert ? 'isalert' : '', id: this.state.id, viewMode: this.state.viewMode, type:statetype}))	
         :
             this.state.set == 2
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(Events, {ids: this.state.ids, viewMode: this.state.viewMode}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type:'event'}))	
         :
             this.state.set == 3
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(Incidents, {ids: this.state.ids, viewMode: this.state.viewMode}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type:'incident'}))	
         :
         this.state.set == 5
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(SelectedContainer, {ids: this.state.ids, type: statetype, viewMode: this.state.viewMode}))
+        React.createElement(ExpandableNavPage, null, React.createElement(SelectedContainer, {id: this.state.id, type: statetype, viewMode: this.state.viewMode}))
         :
         this.state.set == 4
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(Intel, {ids: this.state.ids, viewMode: this.state.viewMode}))
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type: 'intel'}))
         :
         this.state.set == 6
         ?	
-        React.createElement(ExpandableNavPage, null, React.createElement(Tasks, {viewMode: this.state.viewMode}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {viewMode: this.state.viewMode, type:'task'}))	
         :
         this.state.set == 7
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(Guide, {ids: this.state.ids, viewMode: this.state.viewMode}))
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, viewMode: this.state.viewMode, type:'guide'}))
         :
         this.state.set == 8
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(EntityDetail, {entityid: this.state.ids[0], type: this.state.ids[1], id: this.state.ids[2], viewMode: this.state.viewMode}))
+        React.createElement(ExpandableNavPage, null, React.createElement(EntityDetail, {entityid: this.state.id, entitytype: 'entity', id: this.state.id, type: 'entity', viewMode: this.state.viewMode}))
         :
         null
         )	
