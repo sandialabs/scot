@@ -55,11 +55,11 @@ sub check {
     my $groups  = $self->session('groups');
 
     unless (ref($groups) eq "ARRAY") {
-	my $garef	= $self->get_groups($user);
-	$self->session('groups'	=> $garef);
-	$groups	= $garef;
+        my $garef	= $self->get_groups($user);
+        $self->session('groups'	=> $garef);
+        $groups	= $garef;
     }
-    $log->debug("Session groups is ", {filter =>\&Dumper, value =>$groups});
+    # $log->debug("Session groups is ", {filter =>\&Dumper, value =>$groups});
 
     if ( defined $user ) {
         if ( scalar( @{$groups} ) >0 ) {
@@ -134,7 +134,7 @@ sub get_groups {
         }
         
         $log->debug("got ". join(',', grep {/scot/i} @$results));
-        push @groups, @$results;
+        push @groups, grep {/scot/i} @$results;
         return wantarray ? @groups : \@groups;
     }
 
