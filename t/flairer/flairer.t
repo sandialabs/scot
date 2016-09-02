@@ -27,5 +27,5 @@ my $flair   = Scot::App::Flair->new(
 #    $flair->process_one("alert", $id);
 #}
 
-my $alertgroup_id = 40578426;
+my $alertgroup_id = 1495989;
 $flair->process_alertgroup($alertgroup_id);
