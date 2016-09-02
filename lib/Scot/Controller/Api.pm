@@ -540,6 +540,7 @@ sub get_one {
     }
 
 
+
     my $data_href   = {};
     if ( $req_href->{fields} and 
          $object->meta->does_role("Scot::Role::Hashable")) {
@@ -557,6 +558,17 @@ sub get_one {
             $data_href->{subject} = $o->subject;
         }
     }
+
+    if ( ref($object) eq "Scot::Model::Alertgroup" ) {
+        $log->debug("Alertgroup asked for, bundling Alerts");
+        my $col = $mongo->collection('Alert');
+        my $cur = $col->find({alertgroup => $object->id});
+        while ( my $alert = $cur->next ) {
+            my $ahref = $alert->as_hash;
+            push @{$data_href->{alerts}}, $ahref;
+        }
+    }
+
 
     $self->do_render($data_href);
 
@@ -793,6 +805,7 @@ sub update {
     my $mongo   = $env->mongo;
     my $log     = $env->log;
     my $user    = $self->session('user');
+    my $what    = "";
 
     $log->debug("User $user trying to update something");
 
@@ -813,6 +826,12 @@ sub update {
 
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
         $log->debug("ALERTGROUP ALERTGROUP ALERTGROUP !!!!!!!!!!!!!!!!!!!");
+        if ( $req_href->{request}->{json}->{parsed} ) {
+            $what   = "reparsed";
+        }
+        if ( $req_href->{request}->{json}->{status} ) {
+            $what  .= ",status";
+        }
         my @updated_alert_ids = $self->update_alertgroup($req_href, $object);
         foreach my $aid (@updated_alert_ids) {
             $log->debug("Alert $aid was updated");
@@ -825,14 +844,14 @@ sub update {
                 }
             });
         }
-        $env->mq->send("scot", {
-            action  => "updated",
-            data    => {
-                who     => $user,
-                type    => "alertgroup",
-                id      => $object->id,
-            }
-        });
+        #$env->mq->send("scot", {
+        #    action  => "updated",
+        #    data    => {
+        #        who     => $user,
+        #        type    => "alertgroup",
+        #        id      => $object->id,
+        #    }
+        #});
     }
     if ( ref($object) eq "Scot::Model::Entry" ) {
         $self->do_task_checks($req_href);
@@ -885,7 +904,8 @@ sub update {
         data    => {
             who  => $user,
             type => $col_name,
-            id   => $id
+            id   => $id,
+            what => $what,
         }
     });
     if ( ref($object) eq "Scot::Model::Entry" ) {
@@ -894,7 +914,8 @@ sub update {
             data    => {
                 who  => $user,
                 type => $object->target->{type},
-                id   => $object->target->{id}
+                id   => $object->target->{id},
+                what => "Entry Update",
             }
         });
     }
@@ -1003,16 +1024,17 @@ sub update_alertgroup {
 
     $log->debug("json request: ", {filter=>\&Dumper, value=>$json});
 
+    my $targets = $json->{ids}; # only apply to these alerts
     my $status = $json->{status};
     my $parsed = $json->{parsed};
     my $col    = $mongo->collection('Alert');
     my @ids    = ();
 
     if ( defined $status ) {
-        push @ids, @{$col->update_alert_status($obj->id, $status)};
+        push @ids, @{$col->update_alert_status($obj->id, $status, $targets)};
     }
     if ( defined $parsed ) {
-        push @ids, @{$col->update_alert_parsed($obj->id, $status)};
+        push @ids, @{$col->update_alert_parsed($obj->id, $status, $targets)};
     }
     return wantarray ? @ids : \@ids;
 }

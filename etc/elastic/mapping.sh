@@ -6,6 +6,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
 {
     "mappings": {
         "alert": {
+            "_all": { "store": true },
             "properties": {
                 "id":               { "type": "integer" },
                 "owner":            { "type": "string" },
@@ -29,6 +30,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
             }
         },
         "alertgroup": {
+            "_all": { "store": true },
             "properties": {
                 "id":               { "type": "integer" },
                 "owner":            { "type": "string" },
@@ -59,6 +61,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
             }
         },
         "appearance": {
+            "_all": { "store": true },
             "properties": {
                 "id":   { "type": "integer" },
                 "target":   { 
@@ -74,6 +77,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
             }
         },
         "checklist": {
+            "_all": { "store": true },
             "properties": {
                 "id":               { "type": "integer" },
                 "updated":          { "type": "date", "format": "strict_date_optional_time||epoch_second" },
@@ -84,6 +88,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
             }
         },
         "entity": {
+            "_all": { "store": true },
             "properties": {
                 "id":           { "type": "integer" },
                 "entry_count":  { "type": "integer" },
@@ -93,6 +98,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
             }
         },
         "entry": {
+            "_all": { "store": true },
             "properties": {
                 "id":   { "type": "integer" },
                 "owner":            { "type": "string" },
@@ -126,6 +132,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
             }
         },
         "event": {
+            "_all": { "store": true },
             "properties": {
                 "id":   { "type": "integer" },
                 "entry_count":  { "type": "integer" },
@@ -150,6 +157,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
             }
         },
         "file": {
+            "_all": { "store": true },
             "properties": {
                 "id":   { "type": "integer" },
                 "owner":            { "type": "string" },
@@ -185,6 +193,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
             }
         },
         "guide": {
+            "_all": { "store": true },
             "properties": {
                 "id":   { "type": "integer" },
                 "owner":            { "type": "string" },
@@ -200,6 +209,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
             }
         },
         "history": {
+            "_all": { "store": true },
             "properties": {
                 "id":   { "type": "integer" },
                 "target":   { 
@@ -214,6 +224,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
             }
         },
         "incident": {
+            "_all": { "store": true },
             "properties": {
                 "id":   { "type": "integer" },
                 "entry_count":      { "type": "integer" },
@@ -244,6 +255,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
             }
         },
         "intel": {
+            "_all": { "store": true },
             "properties": {
                 "id":   { "type": "integer" },
                 "entry_count":      { "type": "integer" },
@@ -265,6 +277,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
             }
         },
         "link": {
+            "_all": { "store": true },
             "properties": {
                 "id":   { "type": "integer" },
                 "target":   { 
@@ -279,6 +292,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
             }
         },
         "source": {
+            "_all": { "store": true },
             "properties": {
                 "id":   { "type": "integer" },
                 "value":    { "type": "string", "index": "not_analyzed" },
@@ -286,6 +300,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
             }
         },
         "tag": {
+            "_all": { "store": true },
             "properties": {
                 "id":   { "type": "integer" },
                 "value":    { "type": "string", "index": "not_analyzed" },

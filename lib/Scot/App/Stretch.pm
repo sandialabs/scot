@@ -22,7 +22,7 @@ use JSON;
 use Try::Tiny;
 
 use Scot::Env;
-use Scot::Util::Scot;
+use Scot::Util::Scot2;
 use Scot::Util::ElasticSearch;
 use AnyEvent::STOMP::Client;
 use AnyEvent::ForkManager;
@@ -46,7 +46,7 @@ has thishostname    => (
 
 has scot    => (
     is          => 'ro',
-    isa         => 'Scot::Util::Scot',
+    isa         => 'Scot::Util::Scot2',
     required    => 1,
     lazy        => 1,
     builder     => '_build_scot_scot',
@@ -56,7 +56,7 @@ sub _build_scot_scot {
     my $self    = shift;
     my $log     = $self->log;
     $log->debug("Config is : ",{filter=>\&Dumper,value=>$self->config});
-    return Scot::Util::Scot->new({
+    return Scot::Util::Scot2->new({
         log         => $self->log,
         servername  => $self->config->{scot}->{servername},
         username    => $self->config->{scot}->{username},
@@ -163,10 +163,9 @@ sub process_all {
     my $limit       = 100;
     my $last_completed = 0;
 
-    my $resp = $scot->do_request(
-        'get',
-        "$collection/maxid",
-    );
+    my $resp = $scot->get({
+        type    => "$collection/maxid",
+    });
     my $maxid   = $resp->{max_id} // 500;
 
     say "Max ID = $maxid";
@@ -192,7 +191,10 @@ sub process_all {
             sort    => "+id",
         };
         say "looking for ".Dumper($m);
-        my $json = $scot->get2($collection, undef,$m);
+        my $json = $scot->get({
+            type    => $collection, 
+            params  => $m
+        });
         my $count = 1;
 
         $cleanser->clean_in_place($json);
@@ -226,22 +228,17 @@ sub process_by_date {
     $limit  = 0 unless $limit;
     my $scot        = $self->scot;
     my $es          = $self->es;
-    my $json        = $scot->get(
-        $collection,
-        undef,
-        {
-            match   => {
-                created => { begin => $start, end => $end },
-            },
+    # TODO change this to new style
+    my $json        = $scot->get({
+        type    => $collection,
+        params  => {
+            created => [ $start, $end ],
             limit   => $limit,
-            columns => [ 'id' ],
         },
-    );
+    });
 
     foreach my $href (@{$json->{records}}) {
-        my $id      = $href->{id};
-        my $record  = $scot->get($collection, $id);
-        $es->index($collection, $record, 'scot');
+        $es->index($collection, $href, 'scot');
     }
 }
 
@@ -259,19 +256,15 @@ sub process_message {
     }
     my $cleanser = Data::Clean::FromJSON->get_cleanser;
     my $scot    = $self->scot;
-    my $record  = $scot->get($type, $id);
+    my $record  = $scot->get({
+        type    => $type, 
+        id      => $id
+    });
     $cleanser->clean_in_place($record);
     $es->index($type, $record, 'scot');
 }
 
-sub get_scot {
-    my $self    = shift;
-    my $type    = shift;
-    my $id      = shift;
-    my $scot    = $self->scot;
-    return $scot->get($type, $id);
-}
-
+#
 # this should only be used when migrating database
 # 
 sub import_range {
