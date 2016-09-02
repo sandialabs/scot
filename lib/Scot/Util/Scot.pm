@@ -298,8 +298,8 @@ sub do_request {
             }
             else {
                 $log->error("Invalid Params! $params");
+                die "Invalid Params in SCOT request";
             }
-            die "Invalid Params in SCOT request";
         }
     }
 
@@ -325,17 +325,16 @@ sub do_request {
         my $err = $tx->error;
         if ( $err->{code} ) {
             $log->error("Error ".$err->{code}." response: ".$err->{message});
-            if ( $err->{code} eq "403" ) {
-                die "SCOT returned 403 Forrbidden";
-            }
+            die "SCOT returned error code ". $err->{code}. " ".$err->{message};
         }
         else {
             $log->error("Error: ".$err->{message} );
             die $err->{message};
         }
     }
+
     $log->error("TX is ",{filter=>\&Dumper, value=>$tx});
-    die "Request FUBAR";
+    die "!!!! Request FUBAR". Dumper($tx);
 }
 
 sub extract_pj {
@@ -385,6 +384,8 @@ sub get2 {
                 $log->debug("sent as href",{filter=>\&Dumper, value=>$params});
             }
 
+            # OK I think dying in do_request is doing what we want
+            # need to return an error, and look for it in retry_if
             my $return =  retry {
                 $self->do_request("get", $type, { params => $params });
             }
@@ -485,7 +486,8 @@ sub get_alertgroup_by_msgid {
     my $log     = $self->log;
 
     return retry {
-        $self->do_request("get", "alertgroup", {json => {match=>$json}});
+        # $self->do_request("get", "alertgroup", {json => {match=>$json}});
+        $self->get2("alertgroup",undef, { message_id => $id });
     }
     delay_exp { 3, 1e5 }
     on_retry { $self->clear_ua; }

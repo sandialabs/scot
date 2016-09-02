@@ -8,7 +8,7 @@ use Try::Tiny;
 use Mojo::UserAgent;
 use Scot::Env;
 use Scot::Util::Imap;
-use Scot::Util::Scot;
+use Scot::Util::Scot2;
 use HTML::TreeBuilder;
 use Parallel::ForkManager;
 use strict;
@@ -112,7 +112,7 @@ sub _get_approved_alert_domains {
 
 has scot => (
     is          => 'ro',
-    isa         => 'Scot::Util::Scot',
+    isa         => 'Scot::Util::Scot2',
     required    => 1,
     lazy        => 1,
     builder     => '_build_scot_scot',
@@ -120,7 +120,7 @@ has scot => (
 
 sub _build_scot_scot {
     my $self    = shift;
-    return Scot::Util::Scot->new({
+    return Scot::Util::Scot2->new({
         log         => $self->log,
         servername  => $self->config->{scot}->{servername},
         username    => $self->config->{scot}->{username},
@@ -358,7 +358,10 @@ sub process_message {
     $log->debug("Json to Post = ", {filter=>\&Dumper, value=>$json_to_post});
     $log->debug("posting to $path");
 
-    my $json_returned = $scot->post( $path, $json_to_post );
+    my $json_returned = $scot->post({
+        type    => $path, 
+        data    => $json_to_post
+    });
 
     unless (defined $json_returned) {
         $log->error("ERROR! Undefined transaction object $path ",

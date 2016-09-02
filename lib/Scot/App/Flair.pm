@@ -25,7 +25,7 @@ use Try::Tiny;
 use Mojo::UserAgent;
 use Scot::Env;
 use Scot::App;
-use Scot::Util::Scot;
+use Scot::Util::Scot2;
 use Scot::Util::EntityExtractor;
 use Scot::Util::ImgMunger;
 use Scot::Util::Enrichments;
@@ -81,7 +81,7 @@ sub _get_img_munger {
 
 has scot        => (
     is          => 'ro',
-    isa         => 'Scot::Util::Scot',
+    isa         => 'Scot::Util::Scot2',
     required    => 1,
     lazy        => 1,
     builder     => '_build_scot_scot',
@@ -90,7 +90,7 @@ has scot        => (
 sub _build_scot_scot {
     my $self    = shift;
     # say Dumper($self->config);
-    return Scot::Util::Scot->new({
+    return Scot::Util::Scot2->new({
         log         => $self->log,
         servername  => $self->config->{scot}->{servername},
         username    => $self->config->{scot}->{username},
@@ -129,18 +129,24 @@ sub reprocess {
     $time += 0; # ensure number treatment not string
     my $log     = $self->log;
     my $scot    = $self->scot;
-    my $req     = {
-        match   => {
-            created    => { begin => $time, end => time() },
+    #my $req     = {
+    #    match   => {
+    #        created    => { begin => $time, end => time() },
+    #    }
+    #};
+    my $req = {
+        type    => "alert",
+        params  => {
+            created => [ $time, time() ]
         }
     };
     unless ( $reparse ) {
-        $req->{match}->{parsed} = 0;
+        $req->{params}->{parsed} = 0;
     }
 
     $log->debug("match request is ",{filter=>\&Dumper, value=>$req});
 
-    my $json    = $scot->get( 'alert', undef, $req);
+    my $json    = $scot->get($req);
 
     foreach my $record (@{$json->{records}}) {
         $self->process_alert($record);
@@ -148,7 +154,6 @@ sub reprocess {
             say "Processed Alert ".$record->{id};
         }
     }
-
 }
 
 
@@ -159,20 +164,24 @@ sub run {
     $log->debug("Starting STOMP watcher");
     # $log->debug("Config is ",{filter=>\&Dumper,value=>$self->config});
 
-    my $pm  = AnyEvent::ForkManager->new(max_workers => 10);
+    my $pm  = AnyEvent::ForkManager->new(max_workers => 20);
 
     $pm->on_start( sub {
         my ($pm, $pid, $action, $type, $id) = @_;
         $log->debug("Starting worker $pid to handle $action on $type $id");
+        say "~~~ Starting working $pid to handle $action on $type $id";
     });
 
     $pm->on_finish( sub {
         my ($pm, $pid, $status, $action, $type, $id) = @_;
         $log->debug("Ending worker $pid to handle $action on $type $id");
+        say "~~~ Ending working $pid to handle $action on $type $id";
     });
 
     $pm->on_error( sub {
         $log->error("Error encountered", {filter=>\&Dumper, value=>\@_});
+        say "!!!!!!! ERROR encountered !!!!!!";
+        say Dumper(\@_);
     });
 
     my $stomp   = new AnyEvent::STOMP::Client();
@@ -198,8 +207,14 @@ sub run {
         }
     );
 
-    my $scot        = $self->scot;
     my $myusername  = $self->config->{scot}->{username};
+
+    $stomp->on_error(
+        sub {
+            $log->debug("STOMP Error: ", { filter =>\&Dumper, value => \@_ });
+            say "STOMP ERROR: ".Dumper(\@_);
+        }
+    );
 
     $stomp->on_message(
         sub {
@@ -238,7 +253,7 @@ sub run {
                 $log->trace("not a created or updated action");
                 return;
             }
-            if ( $type ne "alert" and $type ne "entry" ) {
+            if ( $type ne "alertgroup" and $type ne "entry" ) {
                 $log->trace("non flairable creation/update");
                 return;
             }
@@ -246,40 +261,11 @@ sub run {
             $pm->start(
                 cb  => sub {
                     my ($pm, $action, $type, $id) = @_;
-
-                    $log->debug("Getting $type $id from SCOT");
-
-                    my $record = $scot->get($type,$id);
-
-                    if ( $self->interactive ) {
-                        say "+ got $type $id from scot: "; # .
-                            Dumper($record);
+                    if ( $type eq "alertgroup") {
+                        $self->process_alertgroup($id);
                     }
-
-                    # leaving until tested above line
-                    #my $url     = $self->base_url . "/$type/$id";
-                    #$log->debug("Getting $url");
-                    # do a REST GET of that thing
-                    #my $tx  = $scot->get($url);
-                    # process through Entity Extractor
-                    #my $record  = $tx->res->json;
-
-                    $log->debug("GET Response: ", 
-                                { filter => \&Dumper, value => $record });
-
-                    if ( defined($record->{parsed}) 
-                         and $record->{parsed} != 0 ) {
-                        $log->debug("Already flaired!");
-                        return;
-                    }
-
-                    if ( $type eq "alert" ) {
-                        $self->process_alert($record);
-                        return;
-                    }
-                    $self->process_entry($record);
-                    if ( $self->interactive ) {
-                        say "   --- processed $type $id";
+                    else {
+                        $self->process_one($type, $id);
                     }
                 },
                 args    => [ $action, $type, $id ],
@@ -287,16 +273,68 @@ sub run {
             $log->debug("-"x50);
         }
     );
-
     my $cv  = AnyEvent->condvar;
-
-    #$pm->wait_all_children(
-    #    cb  => sub {
-    #        my ($pm) = @_;
-    #        $cv->send;
-    #    },
-    #);
     $cv->recv;
+}
+
+sub process_one {
+    my $self    = shift;
+    my $type    = shift;
+    my $id      = shift;
+    my $scot    = $self->scot;
+    my $log     = $self->log;
+
+    $log->debug("Getting $type $id from SCOT");
+    say "=== Retrieving $type $id from SCOT";
+
+    my $record = $scot->get({
+        type    => $type,
+        id      => $id
+    });
+    $log->debug("GET Response: ", 
+                { filter => \&Dumper, value => $record });
+    if ( defined($record) ) {
+        if ( $self->interactive ) {
+            say "+++ got record from scot";
+        }
+        #if ( $record->{parsed} != 0 ) {
+        #    $log->debug("Already flaired!");
+        #    if ( $self->interactive ) {
+        #        say "@@@ already flaired";
+        #    }
+        #    return;
+        #}
+    }
+    else {
+        if ( $self->interactive ) {
+            say "failed to get a record!";
+        }
+        $log->error("failed to get a record from scot");
+    }
+
+    if ( $type eq "alert" ) {
+        $self->process_alert($record);
+        return;
+    }
+    $self->process_entry($record);
+    if ( $self->interactive ) {
+        say "--- processed $type $id";
+        say "-"x80;
+    }
+}
+
+sub process_alertgroup {
+    my $self    = shift;
+    my $agid    = shift;
+    my $scot    = $self->scot;
+
+    my $href    = $scot->get({
+        type    => "alertgroup/$agid/alert"
+    });
+    my $alerts  = $href->{records};
+    foreach my $alert (@$alerts) {
+        $self->process_one("alert", $alert->{id});
+    }
 }
 
 sub process_alert  {
@@ -306,12 +344,7 @@ sub process_alert  {
     my $log         = $self->log;
     my $scot        = $self->scot;
 
-    $log->trace("Processing Alert");
-
-    if ( $self->interactive ) {
-        $log->debug(" #### RECEIVED record ",{filter=>\&Dumper, value => $record});
-        say "+ Received Record ".Dumper($record);
-    }
+    $log->debug("Processing Alert", {filter=>\&Dumper, value => $record});
 
     my $data    = $record->{data};
     my $flair;
@@ -319,7 +352,8 @@ sub process_alert  {
     my %seen;
 
     TUPLE:
-    while ( my ( $key, $value ) = each %{$data} ) {
+    foreach my $key (keys %{$data}) {
+        my $value   = $data->{$key};
 
         my $encoded = encode_entities($value);
         $encoded = '<html>'.$encoded.'</html>';
@@ -343,7 +377,6 @@ sub process_alert  {
             next TUPLE;
         }
 
-        # note self on monday.  this isn't working find out why.
         my $eehref  = $extractor->process_html($encoded);
         $log->debug("HEY DUFUS: eehref = ",{filter=>\&Dumper, value=>$eehref});
 
@@ -362,11 +395,14 @@ sub process_alert  {
     $log->debug(" #### record is ",{filter=>\&Dumper, value => $record});
 
     # save via REST PUT
-    my $url = $self->base_url."/alert/".$record->{id};
-    my $tx  = $scot->put('alert', $record->{id}, {
-        data_with_flair => $flair,
-        entities        => \@entities,
-        parsed          => 1,
+    my $json_result = $scot->put({
+        id      => $record->{id},
+        type    => 'alert',
+        data    => {
+            data_with_flair => $flair,
+            entities        => \@entities,
+            parsed          => 1,
+        },
     });
     # my $enriched = $self->enrich_entities(\@entities);
 }
@@ -397,9 +433,11 @@ sub process_entry {
         entities    => $eehref->{entities},
     };
 
-    $log->debug("Putting: ", { filter => \&Dumper, value => $json});
-
-    my $tx  = $scot->put('entry', $record->{id}, $json);
+    my $json_result = $scot->put({
+        id      => $record->{id}, 
+        type    => "entry",
+        data    => $json,
+    });
     # my $enriched = $self->enrich_entities($eehref->{entities});
     
 }
