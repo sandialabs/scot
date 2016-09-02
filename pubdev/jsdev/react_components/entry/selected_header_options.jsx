@@ -240,8 +240,9 @@ var SelectedHeaderOptions = React.createClass({
         }
     },
     componentDidMount: function() {
+        //disabled because this works on a global scale in selected_header
         //open, close, and promote alerts
-        $(document.body).keydown(function(event){
+        /*$(document.body).keydown(function(event){
             if($('input').is(':focus')) {return}
             switch (event.keyCode) {
                 case 79:
@@ -254,7 +255,7 @@ var SelectedHeaderOptions = React.createClass({
                     this.alertPromoteSelected();
                     break;
             }
-        }.bind(this))
+        }.bind(this))*/
     },
     guideToggle: function() {
         this.props.flairToolbarToggle(this.props.guideID,null,'guide')
