@@ -382,6 +382,11 @@ $t->get_ok("/scot/api/v2/alertgroup" => {} ,
             },
         )->status_is(200);
 
+$t->get_ok("/scot/api/v2/alertgroup" => {},
+            form    => {
+                id  => [1,3,5],
+            }
+        )->status_is(200);
 
     
  print Dumper($t->tx->res->json), "\n";
