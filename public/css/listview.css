@@ -1,376 +1,133 @@
-/*
- * D
- * to get a best fit.
- */
-/*
- t
- * Basic styles, good for a large display. Everything fits in
- * one row, no wrapping. All text based cells grow equally.
- */
-.search_results {
-    z-index : 1;
+.list-header-column-container {
+    display:flex;
+    flex-flow: column;
+}
 
+.list-header-column {
+    display: flex;
+    flex-flow: row;
 }
-.table-row {
-  display: flex;
-  display: -webkit-flex;
-  flex-direction: row;
-  -webkit-flex-direction: row;
-  flex-wrap: no-wrap;
-  -webkit-flex-wrap: no-wrap;
-  width: 100%;
-  padding-left: 0px;
-  padding-right: 15px;
+
+.list-data-pane {
+    overflow-y:auto;
 }
+
+.list-view-data-row {
+    display:flex;
+    flex-flow: row;
+    width:100%;
+}
+
 .wrapper {
-  display: flex;
-  display: -webkit-flex;
-  flex-direction: row;
-  -webkit-flex-direction: row;
-  /*padding-bottom:10px;*/
-}
-.column {
-  flex-grow: 0;
-  -webkit-flex-grow: 0;
-  flex-shrink: 0;
-  -webkit-flex-shrink: 0;
-  vertical-align: top;
-}
-.index {
-  width: 65px;
-}
-.title {
-  width: 220px;
-  padding-left: 30px;
-}
-.module {
-  width: 110px;
-  text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex-grow: 1;
-}
-.reporter {
-  width: 85px;
-  text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex-grow: 1;
-}
-.status {
-  width: 95px;
-  text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex-grow: 1;
-}
-.owner {
-  width: 95px;
-  text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex-grow: 1;
-}
-.severity {
-  width: 80px;
-  flex-grow: 1;
-}
-.watch,
-.add-comment {
-  width: 18px;
-}
-.date {
-  width: 110px;
-}
-.index {
-  text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.title {
-  /*color: #337AB5;*/
-  text-align: left;
-}
-.comment {
-  width: 120px;
-}
-.title,
-.comment {
-  flex-grow: 1;
-  -webkit-flex-grow: 1;
-  overflow: hidden;
-  /*white-space: nowrap;*/
-  text-overflow: ellipsis;
-  padding-right: 4px;
-}
-.date {
-  width: 110px;
-  text-align: left;
-  padding-right: 4px;
-}
-.allevents > .rowodd:nth-child(odd){
-    background: #E6E6E6;
+    display:flex;
+    flex-flow:row;
 }
 
-
-/* growable wrappers */
-.title-comment,
-.title-comment-module-reporter,
-.attributes {
-  flex-grow: 1;
-  -webkit-flex-grow: 1;
-}
-/*
- * Media queries: optimize for different screen widths.
- */
-/*
- * Media breaks.
- */
-@media all and (width: 500px) {
-  .title-comment {
-    flex-direction: column;
-    -webkit-flex-direction: column;
-    width: 220px;
-  }
-  .title-comment div {
+.id-list-header-column {
     flex-grow: 0;
-    -webkit-flex-grow: 0;
-  }
-  .title-comment > div {
-    width: 100%;
-  }
-  .module-reporter,
-  .status-owner {
-    flex-direction: column;
-    -webkit-flex-direction: column;
-  }
-  .module-reporter div,
-  .status-owner div {
-    flex-grow: 0;
-    -webkit-flex-grow: 0;
-  }
+    min-width:100px;
 }
 
-
-@media all and (min-width: 500px){
-  
-  .dates-small {
-    flex-direction: column;
-    -webkit-flex-direction: column;
-  }
-  .dates-small div {
+.status-list-header-column {
     flex-grow: 0;
-    -webkit-flex-grow: 0;
-  }
-   .status-owner-small {
-    flex-direction: column;
-    -webkit-flex-direction: column;
-  }
-  .status-owner-small div {
-    flex-grow: 0;
-    -webkit-flex-grow: 0;
-  }
-  .module-reporter-small {
-    flex-direction: column;
-    -webkit-flex-direction: column;
-  }
-  .module-reporter-small div {
-    flex-grow: 0;
-    -webkit-flex-grow: 0;
-  }
+    min-width:100px;
 }
 
-
-
-@media all and (max-width: 1045px){
-  
-  .dates-wide {
-    flex-direction: column;
-    -webkit-flex-direction: column;
-    
-  }
-  .dates-wide div {
-    flex-grow: 0;
-    -webkit-flex-grow: 0;
-  }
-   .status-owner-wide {
-    flex-direction: column;
-    -webkit-flex-direction: column;
-  }
-  .status-owner-wide div {
-    flex-grow: 0;
-    -webkit-flex-grow: 0;
-  }
-  .module-reporter-wide {
-    flex-direction: column;
-    -webkit-flex-direction: column;
-  }
-  .module-reporter-wide div {
-    flex-grow: 0;
-    -webkit-flex-grow: 0;
-  }
-
+.subject-list-header-column {
+    flex-grow: 1;
+    min-width:200px;
 }
 
-@media all and (width:300px) {
-  .module-reporter {
-    flex-direction: row;
-    -webkit-flex-direction: row;
-  }
-  .title-comment-module-reporter {
-    flex-direction: column;
-    -webkit-flex-direction: column;
-    width: 220px;
-  }
-  .title-comment-module-reporter div {
-    flex-grow: 0;
-    -webkit-flex-grow: 0;
-  }
-  .title-comment-module-reporter > div {
-    width: 100%;
-  }  
+.created-list-header-column {
+    flex-grow: 1;
+    min-width:100px;
 }
-  .dates-orgclass {
-    flex-direction: column;
-    -webkit-flex-direction: column;
-  }
-  .dates-orglcass div {
-    flex-grow: 0;
-    -webkit-flex-grow: 0;
-  }
-   .status-owner-orgclass {
-    flex-direction: column;
-    -webkit-flex-direction: column;
-  }
-  .status-owner-orgclass div {
-    flex-grow: 0;
-    -webkit-flex-grow: 0;
-  }
-  .module-reporter-orgclass {
-    flex-direction: column;
-    -webkit-flex-direction: column;
-  }
-  .module-reporter-orgclass div {
-    flex-grow: 0;
-    -webkit-flex-grow: 0;
-  }
-  .table-row-smallclass {
-    padding-left: 4px;
-    padding-right: 4px;
-  }
-  .attributes-smallclass {
-    flex-direction: column;
-    -webkit-flex-direction: column;
-    width: 10px;
-  }
-  .attributes-smallclass div {
-    flex-grow: 0;
-    -webkit-flex-grow: 0;
-  }
-  .attributes-smallclass > div {
-    width: 100%;
-  }
-  .module-reporter-smallclass,
-  .status-owner-smallclass {
-    flex-direction: row;
-    -webkit-flex-direction: row;
-  }
 
+.updated-list-header-column {
+    flex-grow: 1;
+    min-width:100px;
+}
 
-/*
- * General good-look styles
- */
+.source-list-header-column {
+    flex-grow: 1;
+    min-width:100px; 
+}
+
+.tag-list-header-column {
+    flex-grow: 1;
+    min-width:100px;
+}
+
+.views-list-header-column {
+    flex-grow: 1;
+    min-width:100px;
+}
+
+.owner-list-header-column {
+    flex-grow: 1;
+    min-width:100px;
+}
+
+.entry_count-list-header-column {
+    flex-grow: 1;
+    min-width:100px;
+}
+
+.doe_report_id-list-header-column {
+    flex-grow: 0;
+    min-width: 100px;
+}
+
+.type-list-header-column {
+    flex-grow: 1;
+    min-width:100px;
+}
+
+.target\.type-list-header-column {
+    flex-grow: 0;
+    min-width: 100px;
+}
+
+.target\.id-list-header-column {
+    flex-grow: 0;
+    min-width: 100px;
+}
+
+.task\.status-list-header-column {
+    flex-grow: 0;
+    min-width: 100px;
+}
+
+.applies_to-list-header-column {
+    flex-grow: 1;
+    min-width:100px;
+}
+
+.occurred-list-header-column {
+    flex-grow: 1;
+    min-width:100px;
+}
+
 .table-row {
   border-bottom: 1px solid #e0e0e0;
   border-collapse: collapse;
   padding-top: 2px;
 }
-.table-row.header {
+
+.list-view-table-header {
   background-color: #ECECEC;
   font-weight: bold;
   padding-top: 6px;
-  padding-bottom: 15px;
+  padding-bottom: 10px;
   display:block;
 }
-.glyphicon {
-  color: #DDDDDD;
-}
-.header .glyphicon {
-  color: #333;
-}
-.glyphicon-eye-open.active {
-  color: blue;
-}
-.glyphicon-comment.active {
-  color: #3EBB0D;
+
+.list-view-rowodd{
+    background: #E6E6E6;
 }
 
-.reporter {
-  color: #000000;
+.list-view-overflow {
+    overflow-x:hidden;
+    overflow-y:auto;
+    opacity:1;
 }
-.comment {
-  font-style: italic;
-}
-.severity.high {
-  color: red;
-}
-.severity.medium {
-  color: blue;
-}
-.severity.low {
-  color: green;
-}
-
-.dates {
-    flex-grow:1 !important;
-}
-
-.date {
-    flex-grow:1 !important;
-}
-
-.title-comment-module-reporter {
-    flex-grow: 2 !important;
-}
-
-.module-reporter {
-    flex-grow: 1 !important;
-}
-
-.list-source {
-    flex-grow: 1 !important;
-}
-
-.list-tag {
-    flex-grow: 1 !important;
-}
-
-.list-owner {
-    flex-grow: 1 !important;
-}
-
-.list-entry {
-    flex-grow: 1 !important;
-}
-
-.list-view {
-    flex-grow: 1 !important;
-}
-
-.status-owner-severity {
-    flex-grow: 1 !important;
-}
-
-.status-owner {
-    flex-grow: 1 !important;
-}
-
-.otype {
-    flex-grow: 1 !important;
-}
-
