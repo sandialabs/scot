@@ -85,8 +85,9 @@ sub parse_numericfield_match {
             }
             if ( $v =~ /^\!(\d+)/ ) {
                 $negation++;
-                $v = $1 + 0; # pull digits off
+                $v = $1; # pull digits off
             }
+            $v += 0;
             push @set, $v;
         }
         if ( $negation > 0 ) {
