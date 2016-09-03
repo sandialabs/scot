@@ -6287,7 +6287,347 @@ var App = React.createClass({displayName: "App",
     ), document.getElementById('content'))
 
 
-},{"../../../node_modules/react-expandable-nav":381,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavContainer.js":373,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavHeader.js":374,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavMenu.js":376,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavMenuItem.js":377,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavPage.js":378,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavToggleButton.js":379,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavbar.js":380,"../../../node_modules/react-router":500,"../../../node_modules/react-router/":500,"../activemq/listener.jsx":4,"../entry/selected_container.jsx":18,"../flux/store.jsx":24,"../modal/entity_detail.jsx":28,"./list-view.jsx":33,"react":1107,"react-dom":370}],33:[function(require,module,exports){
+},{"../../../node_modules/react-expandable-nav":381,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavContainer.js":373,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavHeader.js":374,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavMenu.js":376,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavMenuItem.js":377,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavPage.js":378,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavToggleButton.js":379,"../../../node_modules/react-expandable-nav/build/components/ExpandableNavbar.js":380,"../../../node_modules/react-router":500,"../../../node_modules/react-router/":500,"../activemq/listener.jsx":4,"../entry/selected_container.jsx":18,"../flux/store.jsx":24,"../modal/entity_detail.jsx":28,"./list-view.jsx":35,"react":1107,"react-dom":370}],33:[function(require,module,exports){
+var React           = require('react');
+var Button          = require('react-bootstrap/lib/Button');
+
+var ListViewData = React.createClass({displayName: "ListViewData",
+    getInitialState: function() {
+        return {
+
+        }
+    },
+    render: function() {
+        var columns = this.props.columns;
+        var data = this.props.data;
+        var arr = [];
+        var className = 'list-data-pane';
+            for (z=0; z < data.length; z++) {
+                arr.push(React.createElement(ListViewDataEach, {columns: columns, dataOneRow: data[z], z: z, type: this.props.type, selected: this.props.selected, selectedId: this.props.selectedId}))
+            }
+        return (
+            React.createElement("tbody", {className: "list-view-table-data"}, 
+                arr
+            )
+        )
+    },
+    
+});
+
+var ListViewDataEach = React.createClass({displayName: "ListViewDataEach",
+    clicked: function() {
+        //process id, type, and taskid
+        var mainid;
+        var type = this.props.type;
+        var rowid;
+        var taskid;
+        for (i=0; i < this.props.columns.length; i++) {
+            if (this.props.columns[i] == 'id') {
+                mainid = parseInt(this.props.dataOneRow[this.props.columns[i]])
+                rowid = mainid;
+            }
+            if (this.props.columns[i].indexOf('.') !== -1) {
+                var subthing  = this.props.columns[i].split('.')[1]; 
+                if (subthing  == 'type') {
+                    var rowType = this.props.columns[i].split('.').reduce(this.obj, this.props.dataOneRow)
+                    type=rowType;
+                }
+                //This is for a target:{id} which references the id for a task
+                if (subthing == 'id') {
+                    var id = this.props.columns[i].split('.').reduce(this.obj, this.props.dataOneRow)
+                    taskid= id;
+                }
+            }
+        }
+        this.props.selected(type,rowid,taskid)
+        //scroll to
+        var cParentTop =  $('.list-view-table-data').offset().top;
+        var cTop = $('#'+rowid).offset().top - cParentTop;
+        var cHeight = $('#'+rowid).outerHeight(true);
+        var windowTop = $('#list-view-data-div').offset().top;
+        var visibleHeight = $('#list-view-data-div').height();
+        
+        var scrolled = $('#list-view-data-div').scrollTop();
+        if (cTop < (scrolled)) {
+            $('#list-view-data-div').animate({'scrollTop': cTop-(visibleHeight/2)}, 'fast', '');
+        } else if (cTop + cHeight + cParentTop> windowTop + visibleHeight) {
+            $('#list-view-data-div').animate({'scrollTop': (cTop + cParentTop) - visibleHeight + scrolled + cHeight}, 'fast', 'swing');
+        }
+    },
+    render: function() {
+        var rowid;
+        var mainid;
+        var arr = [];
+        var columns = this.props.columns;
+        var dataOneRow = this.props.dataOneRow;
+        var evenOdd = 'even';
+        var backgroundColor;
+        if (!isEven(this.props.z)) { evenOdd = 'odd' };
+        var subClassName = 'table-row list-view-row'+evenOdd;
+        for (i=0; i < columns.length; i++) {
+            arr.push(React.createElement(ListViewDataEachColumn, {dataOneRow: dataOneRow, columnsOne: columns[i], type: this.props.type}))
+        }
+        //process id for the row
+        for (i=0; i < this.props.columns.length; i++) {
+            if (this.props.columns[i] == 'id') {
+                mainid = parseInt(this.props.dataOneRow[this.props.columns[i]])
+                rowid=mainid;
+            }
+        }
+        if (this.props.selectedId == rowid) {
+            backgroundColor = '#AEDAFF';
+        }
+        return (
+            React.createElement("tr", {className: subClassName, id: rowid, onClick: this.clicked, style: {backgroundColor:backgroundColor}}, 
+                arr
+            )
+        )
+    },
+    componentDidMount: function() {
+        var mainid;
+        
+        this.resizeTable();
+        window.addEventListener('resize',this.resizeTable);
+    },
+    resizeTable: function() {
+        for (i=0; i < this.props.columns.length; i++) {
+            var className = '.' + this.props.columns[i] + '-list-header-column';
+            var width = $('.list-view-table-data').find(className).width();
+            $('.list-view-table-header').find(className).css('width',width);
+        }
+    },
+    obj: function(obj, i) {
+        return obj[i];
+    }
+});
+
+var ListViewDataEachColumn = React.createClass({displayName: "ListViewDataEachColumn",
+    render: function() {
+        var dataOneRow = this.props.dataOneRow;
+        var columnsOne = this.props.columnsOne;
+        var className = columnsOne + '-list-header-column' 
+        var dataRender = dataOneRow[columnsOne];
+        //break apart columns with a . because both are needed to get data reference
+        if (columnsOne.indexOf('.') !== -1) {
+            dataRender= columnsOne.split('.').reduce(this.obj, dataOneRow);
+        }
+        if (this.props.columnsOne == 'status') {
+            dataRender = React.createElement(ListViewStatus, {dataOneRow: dataOneRow, status: dataRender, type: this.props.type})       
+        }
+        return (
+            React.createElement("td", {className: className}, 
+                dataRender
+            )
+        )
+    },
+    obj: function(obj, i) {
+        return obj[i];
+    }
+
+})
+
+var ListViewStatus = React.createClass({displayName: "ListViewStatus",
+    render: function() {
+        var buttonStyle = '';
+        var open = '';
+        var closed = '';
+        var promoted = '';
+        var title = '';
+        var classStatus = '';
+        var color = '';
+        if (this.props.status == 'open') {
+            buttonStyle = 'danger';
+            classStatus = 'alertgroup_open'
+            color = 'red'
+        } else if (this.props.status == 'closed') {
+            buttonStyle = 'success';
+            classStatus = 'alertgroup_closed'
+            color = 'green'
+        } else if (this.props.status == 'promoted') {
+            buttonStyle = 'default'
+            classStatus = 'alertgroup_promoted'
+            color = 'orange'
+        };
+        if (this.props.type == 'alertgroup') {
+            open = this.props.dataOneRow.open_count;
+            closed = this.props.dataOneRow.closed_count;
+            promoted = this.props.dataOneRow.promoted_count;
+            title = open + ' / ' + closed + ' / ' + promoted;
+        }
+        if (this.props.type != 'alertgroup' && this.props.type != 'alert') { 
+            return (
+                React.createElement("span", {style: {color:color}}, this.props.status)
+            )
+        } else {
+            return (
+                React.createElement(Button, {bsSize: "xsmall", bsStyle: buttonStyle, title: title, id: "dropdown", className: classStatus, style: {width:'100%'}}, 
+                    React.createElement("span", null, title)
+                )
+            )
+        }
+    } 
+})
+
+function isEven(n) {
+    return n % 2 == 0;
+}
+
+module.exports = ListViewData;
+
+},{"react":1107,"react-bootstrap/lib/Button":297}],34:[function(require,module,exports){
+var React               = require('react');
+var DateRangePicker     = require('react-daterange-picker');
+var Popover             = require('react-bootstrap/lib/Popover')
+var OverlayTrigger      = require('react-bootstrap/lib/OverlayTrigger')
+var Button              = require('react-bootstrap/lib/Button');
+'use strict';
+
+var ListViewHeader = React.createClass({displayName: "ListViewHeader",
+    getInitialState: function() {
+        return {
+
+        }
+    },
+    render: function() {
+        var columns = this.props.columns;
+        var columnsDisplay = this.props.columnsDisplay;
+        var data = this.props.data;
+        var sort = this.props.sort;
+        var handleSort = this.props.handleSort;
+        var handleFilter = this.props.handleFilter;
+        var arr = [];
+        var className = 'wrapper table-row header';
+        for (i=0; i < columns.length; i++) {
+            arr.push(React.createElement(ListViewHeaderEach, {columnsOne: columns[i], columnsDisplayOne: columnsDisplay[i], sort: sort, handleSort: handleSort, handleFilter: handleFilter}))
+        }
+        return (
+            React.createElement("tbody", {className: "list-view-table-header"}, 
+                React.createElement("tr", null, 
+                    arr
+                )
+            )
+        )
+    }
+});
+
+var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
+    getInitialState: function() {
+        return {
+            startepoch:'',endepoch:'',
+        }
+    },
+    handleSort: function() {
+        this.props.handleSort(this.props.columnsOne);  
+    },
+    handleFilter: function(v) {
+        this.props.handleFilter(this.props.columnsOne,v.target.value);
+    },
+    handleEnterKey: function(e) {
+        if (e.key == 'Enter') {
+            this.handleFilter(e);
+        }
+    },
+    handleFilterDate: function(range, pick){
+        /*var start = range['start']
+        var month = start['_i'].getMonth()+1
+        var day   = start['_i'].getDate()
+        var StartDate = month+"/"+day+"/"+start['_i'].getFullYear()
+        var end = range['end']
+        var month = end['_i'].getMonth()+1
+        var day   = end['_i'].getDate()
+        var EndDate = month+"/"+day+"/"+end['_i'].getFullYear()
+
+        start = StartDate.split('/')
+        start = new Date(start[2], start[0] - 1, start[1])
+        end   = EndDate.split('/')
+        end   = new Date(end[2],end[0]-1, end[1], 23,59,59,99);
+
+        start = Math.round(start.getTime()/1000)
+        end   = Math.round(end.getTime()/1000)
+        this.setState({startepoch: StartDate, endepoch: EndDate})*/
+        this.setState({startepoch: Math.round(range['start'])/1000, endepoch: Math.round(range['end'])/1000})
+    },
+    handleFilterDateSubmit: function(v) {
+        var ref = 'popOverRef'+this.props.columnsOne;
+        if (this.state.startepoch != '' && this.state.endepoch != '') { //check if blank, and if so send the request but as a blank string so it is stripped out
+            this.props.handleFilter(this.props.columnsOne, this.state.startepoch + ',' + this.state.endepoch);
+        } else {
+            this.props.handleFilter(this.props.columnsOne, '');
+        }
+        this.refs[ref].hide();
+        //if($($(v.currentTarget).find('.filter').context).attr('value') == this.props.columnsOne {
+            
+        //}
+    },
+    clearFilter: function(v) {
+        var ref = 'popOverRef'+this.props.columnsOne;
+        this.props.handleFilter(this.props.columnsOne, '');
+        this.setState({startepoch: '', endepoch: ''})
+        this.refs[ref].hide(); 
+    },
+    render: function() {
+        var columnsOne = this.props.columnsOne;
+        var popOverRef = 'popOverRef'+columnsOne
+        var columnsDisplayOne = this.props.columnsDisplayOne;
+        var dataOne = this.props.dataOne;
+        var sortDirection;
+        var sort = this.props.sort;
+        var handleSort = this.props.handleSort;
+        var handleFilter = this.props.handleFilter;
+        var className = columnsOne + '-list-header-column'
+        var showSort = false;
+        var epochInputValue = '';
+        $.each(sort, function(key, value) {
+            if (key == columnsOne) {
+                showSort = true;
+                if (value == -1) {
+                    sortDirection = 'down'
+                } else {
+                    sortDirection = 'up'
+                }
+            }
+        })
+        if (columnsOne =='created' || columnsOne == 'updated' || columnsOne == 'occurred') {
+            
+            if (this.state.startepoch != '' || this.state.endepoch != '') {
+                epochInputValue = this.state.startepoch + ',' + this.state.endepoch;
+            }
+            return (
+                React.createElement("th", {className: className}, 
+                    React.createElement("div", {onClick: this.handleSort}, 
+                        columnsDisplayOne, 
+                        showSort ? 
+                        React.createElement("span", null, sortDirection == 'up' ? React.createElement("span", {className: "glyphicon glyphicon-triangle-top"}) : null, " ", sortDirection == 'down' ? React.createElement("span", {className: "glyphicon glyphicon-triangle-bottom"}) : null) 
+                        : 
+                        null
+                    ), 
+                    React.createElement(OverlayTrigger, {trigger: "click", placement: "bottom", ref: popOverRef, overlay: React.createElement(Popover, {id: "dateRangePicker"}, React.createElement(DateRangePicker, {numberOfCalendars: 2, selectionType: 'range', showLegend: true, onSelect: this.handleFilterDate, singleDateRange: true}), React.createElement(Button, {eventKey: '1', onClick: this.handleFilterDateSubmit, bsSize: 'xsmall', value: columnsOne}, "Filter"), React.createElement(Button, {eventKey: '2', onClick: this.clearFilter, bsSize: 'xsmall', value: columnsOne}, "Clear"))}, 
+                        React.createElement("input", {style: {width:'inherit'}, onKeyPress: this.handleEnterKey, value: epochInputValue})
+                    )
+                )
+            )
+        } else {
+            return (
+                React.createElement("th", {className: className}, 
+                    React.createElement("div", {onClick: this.handleSort}, 
+                        columnsDisplayOne, 
+                        showSort ? 
+                        React.createElement("span", null, sortDirection == 'up' ? React.createElement("span", {className: "glyphicon glyphicon-triangle-top"}) : null, " ", sortDirection == 'down' ? React.createElement("span", {className: "glyphicon glyphicon-triangle-bottom"}) : null) 
+                        : 
+                        null
+                    ), 
+                    React.createElement("input", {style: {width:'inherit'}, onKeyPress: this.handleEnterKey})
+                )
+            )
+        }
+    }
+});
+
+
+
+module.exports = ListViewHeader;
+
+},{"react":1107,"react-bootstrap/lib/Button":297,"react-bootstrap/lib/OverlayTrigger":311,"react-bootstrap/lib/Popover":312,"react-daterange-picker":339}],35:[function(require,module,exports){
 'use strict';
 
 
@@ -6307,8 +6647,8 @@ var Button                  = require('react-bootstrap/lib/Button')
 var SplitButton             = require('react-bootstrap/lib/SplitButton.js');
 var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
-var ListViewHeader          = require('./list_view_header.jsx');
-var ListViewData            = require('./list_view_data.jsx');
+var ListViewHeader          = require('./list-view-header.jsx');
+var ListViewData            = require('./list-view-data.jsx');
 var colsort = "id"
 var start;
 var end;
@@ -6321,7 +6661,6 @@ var tab;
 var highlight = false
 var datasource
 var ids = []
-var stage = false
 var savedsearch = false
 var savedfsearch;
 var fluidheight;
@@ -6381,14 +6720,14 @@ module.exports = React.createClass({displayName: "exports",
         return {
             splitter: true, 
             mute: false, selectedColor: '#AEDAFF',
-            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: {page:0, limit:50},
+            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: this.props.defaultActivePage,
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             alldetail : true, viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
             resize: 'horizontal',createdarrow: [0, 0], sourcearrow:[0, 0],tagsarrow: [0, 0],
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: null, listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.defaultSort, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2 };
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: null, listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.defaultSort, filter: this.props.defaultFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1};
     },
     componentWillMount: function() {
         if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
@@ -6401,6 +6740,12 @@ module.exports = React.createClass({displayName: "exports",
         if (this.state.sort == null) {
             this.setState({sort:{'id':-1}})
         }
+        if (this.state.activepage == null) {
+            this.setState({activepage: {page:0, limit:50}});
+        }
+        if (this.state.filter == null) {
+           this.handleFilter(null,null,true);
+        }
     },
     componentDidMount: function(){
         /*var t2 = document.getElementById('fluid2')
@@ -6412,7 +6757,6 @@ module.exports = React.createClass({displayName: "exports",
         if(this.props.id != undefined){
             if(this.props.id.length > 0){
                 array = this.props.id
-                stage = true
                 //scrolled = $('.container-fluid2').scrollTop()    
                 if(this.state.viewMode == 'landscape'){
                     height = '300px'
@@ -6613,7 +6957,6 @@ module.exports = React.createClass({displayName: "exports",
         //}
     },
     launchEvent: function(type,rowid,entryid){
-        stage = true
         if(this.state.display == 'block'){
             this.state.scrollheight = '300px'
         }
@@ -6629,7 +6972,7 @@ module.exports = React.createClass({displayName: "exports",
             listViewContainerHeight = '0px'
         }
         return (
-            React.createElement("div", {className: "allComponents", style: {'margin-left': '17px'}}, 
+            React.createElement("div", {key: this.state.listViewKey, className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement("div", null, 
                     !this.state.mute ? React.createElement(Notificationactivemq, {ref: "notificationSystem"}) : null, 
                     React.createElement("div", {className: "main-header-info-null"}, 
@@ -6660,7 +7003,7 @@ module.exports = React.createClass({displayName: "exports",
                                         React.createElement("div", {className: "tableview", style: {display: 'flex'}}, 
                                             React.createElement("div", {id: "fluid2", className: "container-fluid2", style: {width:'100%', 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow': 'hidden','padding-left':'5px', display:'flex', flexFlow: 'column'}}, 
                                                 React.createElement("table", {style: {width:'100%'}}, 
-                                                    React.createElement(ListViewHeader, {data: this.state.objectarray, columns: this.state.columns, columnsDisplay: this.state.columnsDisplay, handleSort: this.handleSort, sort: this.state.sort, handleFilter: this.handleFilter, handleFilterDate: this.handleFilterDate, startepoch: this.state.startepoch, endepoch: this.state.endepoch})
+                                                    React.createElement(ListViewHeader, {data: this.state.objectarray, columns: this.state.columns, columnsDisplay: this.state.columnsDisplay, handleSort: this.handleSort, sort: this.state.sort, handleFilter: this.handleFilter, startepoch: this.state.startepoch, endepoch: this.state.endepoch})
                                                 ), 
                                                 React.createElement("div", {id: "list-view-data-div", style: {height:this.state.scrollheight}, className: "list-view-overflow"}, 
                                                     React.createElement("div", {className: "list-view-data-div", style: {display:'block'}}, 
@@ -6727,7 +7070,6 @@ module.exports = React.createClass({displayName: "exports",
         document.onmousemove = null
         document.onmousedown = null
         document.onmouseup = null
-        stage = true
         $('.container-fluid2').css('width', '650px')
         width = 650
         $('.paging').css('width', width)
@@ -6744,7 +7086,6 @@ module.exports = React.createClass({displayName: "exports",
         document.onmousemove = null
         document.onmousedown = null
         document.onmouseup = null
-        stage = true
         width = 650
         $('.paging').css('width', '100%')
         $('.splitter').css('width', '100%')
@@ -6755,144 +7096,16 @@ module.exports = React.createClass({displayName: "exports",
         setCookie('viewMode',"landscape",1000);
     },
     clearAll: function(){
-        sortarray['id'] = -1
+        /*sortarray['id'] = -1
         filter = {}
         this.setState({tags: [], sourcetags: [], startepoch: '', endepoch: '', idtext: '',
             upstartepoch: '', upendepoch: '', statustext: '', subjecttext: '', entriestext: '', ownertext: '',
             viewstext: ''})
-            this.getNewData({page: 0, limit: pageSize})
-    },
-    getTags:  function(getColumn){
-        var array = []
-        var values;
-        if(getColumn == "Sources"){
-            for(var i = 0; i<this.state.sourcetags.length; i++){
-                array.push(this.state.sourcetags[i].text)
-            }
-        }
-        else
-        {
-            for(var i = 0; i<this.state.tags.length; i++){
-                array.push(this.state.tags[i].text)
-            }
-        }
-        values = array.join(',');
-        values = values.replace("+", "");
-        return values.split(',')
-
-    }, 
-    handleInputChangefortag: function(input){
-         var array = []
-         $.ajax({
-               type: 'GET',
-               url: '/scot/api/v2/ac/tag/'+input
-           }).success(function(response){
-               $.each(response.records, function(key,value){
-                    array.push(value.value)
-            })
-             this.setState({suggestiontags: array})
-         }.bind(this))
-    },
-    handleAdditionfortag: function(tag){
-        var tags = []
-        tags = this.state.tags;
-        tags.push({
-            id: tags.length +1,
-            text: tag
-         });
-        this.setState({tags:tags})
-    },
-    handleDeletefortag: function(i) {
-        var tags;
-        tags = this.state.tags
-        tags.splice(i,1)
-        this.setState({tags: tags})
-    },  
-
-    handleInputChange: function(input){
-         var array = []
-         $.ajax({
-               type: 'GET',
-               url: '/scot/api/v2/ac/source/'+input
-           }).success(function(response){
-               $.each(response.records, function(key,value){
-                    array.push(value.value)
-            })
-             this.setState({suggestionssource: array})
-         }.bind(this))
-    },
-    handleAddition: function(tag){
-        var tags = []
-        tags = this.state.sourcetags;
-        tags.push({
-            id: tags.length +1,
-            text: tag
-         });
-        this.setState({sourcetags:tags})
-    },
-    handleDelete: function(i) {
-        var tags;
-        tags = this.state.sourcetags
-        tags.splice(i,1)
-        this.setState({sourcetags: tags})
-    }, 
-    handleFilterDate: function(range, pick){
-        start = range['start']
-        var month = start['_i'].getMonth()+1
-        var day   = start['_i'].getDate()
-        var StartDate = month+"/"+day+"/"+start['_i'].getFullYear()
-        end = range['end']
-        var month = end['_i'].getMonth()+1
-        var day   = end['_i'].getDate()
-        var EndDate = month+"/"+day+"/"+end['_i'].getFullYear()
-
-        start = StartDate.split('/')
-        start = new Date(start[2], start[0] - 1, start[1])
-        end   = EndDate.split('/')
-        end   = new Date(end[2],end[0]-1, end[1], 23,59,59,99);
-
-        start = Math.round(start.getTime()/1000)
-        end   = Math.round(end.getTime()/1000)
-        this.setState({startepoch: StartDate, endepoch: EndDate})
-    
-    },
-    filterUp: function(v){
-        if(v.keyCode == 13){
-            if($($(v.currentTarget).find('.idinput').context).attr('id') == 'id'){
-                filter['id'] = [$('.idinput').val()]
-                this.refs.myPopOverid.hide()
-                this.setState({idtext: $('.idinput').val()})
-            }
-            else if($($(v.currentTarget).find('.statusinput').context).attr('id') == 'status'){
-                filter['status'] = $('.statusinput').val()
-                this.refs.myPopOverstatus.hide()
-                this.setState({statustext: $('.statusinput').val()})
-            }
-            else if($($(v.currentTarget).find('.subjectinput').context).attr('id') == 'subject'){
-                filter['subject'] = $('.subjectinput').val()
-                this.refs.myPopOversubject.hide()
-                this.setState({subjecttext: $('.subjectinput').val()})
-            }
-            else if($($(v.currentTarget).find('.createdinput').context).attr('id') == 'created'){
-                filter['created'] = {begin:start, end:end}
-            }
-            else if($($(v.currentTarget).find('.tagsinput').context).attr('id') == 'tags'){
-   
-                //             filter['tags'] = $('.tagsinput').val()
-                //             this.setState({tagstext: $('.tagsinput').val()})
-            }
-            else if($($(v.currentTarget).find('.sourceinput').context).attr('id') == 'source'){
-                //              filter['source'] = $('.sourceinput').val()
-                //              this.setState({sourcetext: $('.sourceinput').val()})
-            }
-            else if($($(v.currentTarget).find('.viewsinput').context).attr('id') == 'views'){
-                filter['views'] = [$('.viewsinput').val()]
-                this.refs.myPopOverviews.hide()
-                this.setState({viewstext: $('.viewsinput').val()})
-            }
-
-            this.getNewData({page: 0, limit: pageSize})
-        }
+            this.getNewData({page: 0, limit: pageSize})*/
+        var newListViewKey = this.state.listViewKey + 1;
+        this.setState({listViewKey:newListViewKey, activePage: {page:0, limit:50}, sort:{'id':-1}});  
+        this.handleFilter(null,null,true); //clear filters
+        this.getNewData({page:0, limit:50}, {'id':-1}, {})
     },
     clearNote: function(){
         if(this.state.mute){
@@ -6912,10 +7125,6 @@ module.exports = React.createClass({displayName: "exports",
             this.launchEvent(type, taskid, rowid);
         }
         //scrolled = $('.list-view-data-div').scrollTop() 
-    },
-
-    handlePageChange: function(pageNumber){
-        this.getNewData(pageNumber)
     },
     getNewData: function(page, sort, filter){
         var sortBy = sort;
@@ -7049,93 +7258,51 @@ module.exports = React.createClass({displayName: "exports",
         this.getNewData(null, currentSort, null)   
 	},
 
-    filterclear: function(v){
-        if($($(v.currentTarget).find('.clear').context).attr('value') == 'id'){
-            delete filter.id
-            this.refs.myPopOverid.hide()
-            this.setState({idtext: ''})
-        }
-        else if($($(v.currentTarget).find('.clear').context).attr('value') == 'status'){
-            delete filter.status
-            this.refs.myPopOverstatus.hide()
-            this.setState({statustext: ''})
-        }
-        else if($($(v.currentTarget).find('.clear').context).attr('value') == 'subject'){
-            delete filter.subject
-            this.refs.myPopOversubject.hide()
-            this.setState({subjecttext: ''})
-        }
-        else if($($(v.currentTarget).find('.clear').context).attr('value') == 'created'){
-            delete filter.created
-            this.refs.myPopOvercreated.hide()
-            this.setState({startepoch: '', endepoch: ''})
-        }
-       else if($($(v.currentTarget).find('.clear').context).attr('value') == 'tags'){
-            delete filter.tags
-            this.refs.myPopOvertags.hide()
-            this.setState({tags: []})
-        }
-       else if($($(v.currentTarget).find('.clear').context).attr('value') == 'source'){
-            delete filter.source
-            this.refs.myPopOversource.hide()
-            this.setState({sourcetags: []})
-        }
-       else if($($(v.currentTarget).find('.clear').context).attr('value') == 'updated'){
-            delete filter.updated
-            this.refs.myPopOvercreated.hide()
-            this.setState({upstartepoch: '', upendepoch: ''})
-        }
-       else if($($(v.currentTarget).find('.clear').context).attr('value') == 'views'){
-            delete filter.views
-            this.refs.myPopOverviews.hide()
-            this.setState({viewstext: ''})
-        }
- 
-        this.getNewData({page:0, limit: pageSize})
-    },
 
-    handleFilter: function(column,string){
+    handleFilter: function(column,string,clearall){
         var currentFilter = this.state.filter;
         var newFilterObj = {};
-        if (string.length == 0 || string.length == null) { //check if string is blank
-            if (currentFilter != null) {
-                if (currentFilter[column]) {
-                    delete currentFilter[column];
-                }
-            }
-            for (var prop in currentFilter) { newFilterObj[prop] = currentFilter[prop]}; // combine current filter with new one
-        } else {
-            var inProgressFilter = [];
-            var newFilter = [];
-            var array = string.split(',');
-            //if no filter applied
-            if (currentFilter == undefined) {
-                for (i=0; i < array.length; i++) {
-                    inProgressFilter.push(array[i]);
-                }
-                newFilterObj[column] = inProgressFilter;
-            //filter is applied
-            } else {
-                //already filtered column being modified
-                if (currentFilter[column] != undefined) {
-                    for (i=0; i < array.length; i++) {
-                        inProgressFilter.push(array[i]);
+        if (clearall == true) {
+            this.setState({filter:newFilterObj})
+        } else { 
+            if (string.length == 0 || string.length == null) { //check if string is blank
+                if (currentFilter != null) {
+                    if (currentFilter[column]) {
+                        delete currentFilter[column];
                     }
-                    delete currentFilter[column]
-                    newFilterObj[column] = inProgressFilter;
-                } else {  //column not yet filtered, so append it to the existing filters
-                    for (i=0; i < array.length; i++) {
-                        inProgressFilter.push(array[i]);
-                    }
-                    newFilterObj[column] = inProgressFilter;
                 }
                 for (var prop in currentFilter) { newFilterObj[prop] = currentFilter[prop]}; // combine current filter with new one
+            } else {
+                var inProgressFilter = [];
+                var newFilter = [];
+                var array = string.split(',');
+                //if no filter applied
+                if (currentFilter == undefined) {
+                    for (i=0; i < array.length; i++) {
+                        inProgressFilter.push(array[i]);
+                    }
+                    newFilterObj[column] = inProgressFilter;
+                //filter is applied
+                } else {
+                    //already filtered column being modified
+                    if (currentFilter[column] != undefined) {
+                        for (i=0; i < array.length; i++) {
+                            inProgressFilter.push(array[i]);
+                        }
+                        delete currentFilter[column]
+                        newFilterObj[column] = inProgressFilter;
+                    } else {  //column not yet filtered, so append it to the existing filters
+                        for (i=0; i < array.length; i++) {
+                            inProgressFilter.push(array[i]);
+                        }
+                        newFilterObj[column] = inProgressFilter;
+                    }
+                    for (var prop in currentFilter) { newFilterObj[prop] = currentFilter[prop]}; // combine current filter with new one
+                }
             }
+            this.setState({filter:newFilterObj});
+            this.getNewData(null,null,newFilterObj)
         }
-        
-         
-        this.setState({filter:newFilterObj});
-        this.getNewData(null,null,newFilterObj)
     },
     titleCase: function(string) {
         var newstring = string.charAt(0).toUpperCase() + string.slice(1)
@@ -7147,300 +7314,7 @@ module.exports = React.createClass({displayName: "exports",
 });
 
 
-},{"../../../node_modules/react-daterange-picker":339,"../../../node_modules/react-notification-system":418,"../activemq/store.jsx":5,"../components/esearch.jsx":8,"../components/paging.jsx":11,"../entry/selected_container.jsx":18,"./list_view_data.jsx":34,"./list_view_header.jsx":35,"react":1107,"react-bootstrap/lib/Button":297,"react-bootstrap/lib/ButtonToolbar":299,"react-bootstrap/lib/DropdownButton.js":303,"react-bootstrap/lib/MenuItem.js":307,"react-bootstrap/lib/OverlayTrigger":311,"react-bootstrap/lib/Popover":312,"react-bootstrap/lib/SplitButton.js":314,"react-tag-input":764,"react-tag-input-tags/react-tag-input":639}],34:[function(require,module,exports){
-var React           = require('react');
-var Button          = require('react-bootstrap/lib/Button');
-
-var ListViewData = React.createClass({displayName: "ListViewData",
-    getInitialState: function() {
-        return {
-
-        }
-    },
-    render: function() {
-        var columns = this.props.columns;
-        var data = this.props.data;
-        var arr = [];
-        var className = 'list-data-pane';
-            for (z=0; z < data.length; z++) {
-                arr.push(React.createElement(ListViewDataEach, {columns: columns, dataOneRow: data[z], z: z, type: this.props.type, selected: this.props.selected, selectedId: this.props.selectedId}))
-            }
-        return (
-            React.createElement("tbody", {className: "list-view-table-data"}, 
-                arr
-            )
-        )
-    },
-    
-});
-
-var ListViewDataEach = React.createClass({displayName: "ListViewDataEach",
-    getInitialState: function() {
-        return {rowid:null,type:this.props.type,taskid:null}
-    },
-    clicked: function() {
-        this.props.selected(this.state.type,this.state.rowid,this.state.taskid)
-        //scroll to
-        var cParentTop =  $('.list-view-table-data').offset().top;
-        var cTop = $('#'+this.state.rowid).offset().top - cParentTop;
-        var cHeight = $('#'+this.state.rowid).outerHeight(true);
-        var windowTop = $('#list-view-data-div').offset().top;
-        var visibleHeight = $('#list-view-data-div').height();
-        
-        var scrolled = $('#list-view-data-div').scrollTop();
-        if (cTop < (scrolled)) {
-            $('#list-view-data-div').animate({'scrollTop': cTop-(visibleHeight/2)}, 'fast', '');
-        } else if (cTop + cHeight + cParentTop> windowTop + visibleHeight) {
-            $('#list-view-data-div').animate({'scrollTop': (cTop + cParentTop) - visibleHeight + scrolled + cHeight}, 'fast', 'swing');
-        }
-    },
-    render: function() {
-        var arr = [];
-        var columns = this.props.columns;
-        var dataOneRow = this.props.dataOneRow;
-        var evenOdd = 'even';
-        var backgroundColor;
-        if (!isEven(this.props.z)) { evenOdd = 'odd' };
-        var subClassName = 'table-row list-view-row'+evenOdd;
-        for (i=0; i < columns.length; i++) {
-            arr.push(React.createElement(ListViewDataEachColumn, {dataOneRow: dataOneRow, columnsOne: columns[i], type: this.props.type}))
-        }
-        if (this.props.selectedId == this.state.rowid) {
-            backgroundColor = '#AEDAFF';
-        }
-        return (
-            React.createElement("tr", {className: subClassName, id: this.state.rowid, onClick: this.clicked, style: {backgroundColor:backgroundColor}}, 
-                arr
-            )
-        )
-    },
-    componentDidMount: function() {
-        var mainid;
-        for (i=0; i < this.props.columns.length; i++) {
-            if (this.props.columns[i] == 'id') {
-                mainid = parseInt(this.props.dataOneRow[this.props.columns[i]])
-                this.setState({rowid:mainid}) 
-            }
-            if (this.props.columns[i].indexOf('.') !== -1) {
-                var subthing  = this.props.columns[i].split('.')[1]; 
-                if (subthing  == 'type') {
-                    var type = this.props.columns[i].split('.').reduce(this.obj, this.props.dataOneRow)
-                    this.setState({type:type});
-                }
-                //This is for a target:{id} which references the id for a task
-                if (subthing == 'id') {
-                    var id = this.props.columns[i].split('.').reduce(this.obj, this.props.dataOneRow)
-                    this.setState({taskid:id})
-                }
-            }
-        }
-        this.resizeTable();
-        window.addEventListener('resize',this.resizeTable);
-    },
-    resizeTable: function() {
-        for (i=0; i < this.props.columns.length; i++) {
-            var className = '.' + this.props.columns[i] + '-list-header-column';
-            var width = $('.list-view-table-data').find(className).width();
-            $('.list-view-table-header').find(className).css('width',width);
-        }
-    },
-    obj: function(obj, i) {
-        return obj[i];
-    }
-});
-
-var ListViewDataEachColumn = React.createClass({displayName: "ListViewDataEachColumn",
-    render: function() {
-        var dataOneRow = this.props.dataOneRow;
-        var columnsOne = this.props.columnsOne;
-        var className = columnsOne + '-list-header-column' 
-        var dataRender = dataOneRow[columnsOne];
-        //break apart columns with a . because both are needed to get data reference
-        if (columnsOne.indexOf('.') !== -1) {
-            dataRender= columnsOne.split('.').reduce(this.obj, dataOneRow);
-        }
-        if (this.props.columnsOne == 'status') {
-            dataRender = React.createElement(ListViewStatus, {dataOneRow: dataOneRow, status: dataRender, type: this.props.type})       
-        }
-        return (
-            React.createElement("td", {className: className}, 
-                dataRender
-            )
-        )
-    },
-    obj: function(obj, i) {
-        return obj[i];
-    }
-
-})
-
-var ListViewStatus = React.createClass({displayName: "ListViewStatus",
-    render: function() {
-        var buttonStyle = '';
-        var open = '';
-        var closed = '';
-        var promoted = '';
-        var title = '';
-        var classStatus = '';
-        var color = '';
-        if (this.props.status == 'open') {
-            buttonStyle = 'danger';
-            classStatus = 'alertgroup_open'
-            color = 'red'
-        } else if (this.props.status == 'closed') {
-            buttonStyle = 'success';
-            classStatus = 'alertgroup_closed'
-            color = 'green'
-        } else if (this.props.status == 'promoted') {
-            buttonStyle = 'default'
-            classStatus = 'alertgroup_promoted'
-            color = 'orange'
-        };
-        if (this.props.type == 'alertgroup') {
-            open = this.props.dataOneRow.open_count;
-            closed = this.props.dataOneRow.closed_count;
-            promoted = this.props.dataOneRow.promoted_count;
-            title = open + ' / ' + closed + ' / ' + promoted;
-        }
-        if (this.props.type != 'alertgroup' && this.props.type != 'alert') { 
-            return (
-                React.createElement("span", {style: {color:color}}, this.props.status)
-            )
-        } else {
-            return (
-                React.createElement(Button, {bsSize: "xsmall", bsStyle: buttonStyle, title: title, id: "dropdown", className: classStatus, style: {width:'100%'}}, 
-                    React.createElement("span", null, title)
-                )
-            )
-        }
-    } 
-})
-
-function isEven(n) {
-    return n % 2 == 0;
-}
-
-module.exports = ListViewData;
-
-},{"react":1107,"react-bootstrap/lib/Button":297}],35:[function(require,module,exports){
-var React               = require('react');
-var DateRangePicker     = require('react-daterange-picker');
-var Popover             = require('react-bootstrap/lib/Popover')
-var OverlayTrigger      = require('react-bootstrap/lib/OverlayTrigger')
-
-'use strict';
-
-var ListViewHeader = React.createClass({displayName: "ListViewHeader",
-    getInitialState: function() {
-        return {
-
-        }
-    },
-    render: function() {
-        var columns = this.props.columns;
-        var columnsDisplay = this.props.columnsDisplay;
-        var data = this.props.data;
-        var sort = this.props.sort;
-        var handleSort = this.props.handleSort;
-        var handleFilter = this.props.handleFilter;
-        var handleFilterDate = this.props.handleFilterDate;
-        var arr = [];
-        var className = 'wrapper table-row header';
-        for (i=0; i < columns.length; i++) {
-            arr.push(React.createElement(ListViewHeaderEach, {columnsOne: columns[i], columnsDisplayOne: columnsDisplay[i], sort: sort, handleSort: handleSort, handleFilter: handleFilter, handleFilterDate: handleFilterDate}))
-        }
-        return (
-            React.createElement("tbody", {className: "list-view-table-header"}, 
-                React.createElement("tr", null, 
-                    arr
-                )
-            )
-        )
-    }
-});
-
-var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
-    getInitialState: function() {
-        return {
-            dateRange:false
-        }
-    },
-    handleSort: function() {
-        this.props.handleSort(this.props.columnsOne);  
-    },
-    handleFilter: function(v) {
-        this.props.handleFilter(this.props.columnsOne,v.target.value);
-    },
-    handleEnterKey: function(e) {
-        if (e.key == 'Enter') {
-            this.handleFilter(e);
-        }
-    },
-    handleFilterDateEnterKey: function(e) {
-        if (e.key == 'Enter') {
-            this.handleFilterDateEnter(e);
-        }
-    },
-    handleFilterDate: function(range, pick) {
-        this.props.handleFilterDate(range,pick);
-    },
-    render: function() {
-        var columnsOne = this.props.columnsOne;
-        var columnsDisplayOne = this.props.columnsDisplayOne;
-        var dataOne = this.props.dataOne;
-        var sortDirection;
-        var sort = this.props.sort;
-        var handleSort = this.props.handleSort;
-        var handleFilter = this.props.handleFilter;
-        var className = columnsOne + '-list-header-column'
-        var showSort = false;
-        $.each(sort, function(key, value) {
-            if (key == columnsOne) {
-                showSort = true;
-                if (value == -1) {
-                    sortDirection = 'down'
-                } else {
-                    sortDirection = 'up'
-                }
-            }
-        })
-        if (columnsOne =='created' || columnsOne == 'updated' || columnsOne == 'occurred') {
-            return (
-                React.createElement("th", {className: className}, 
-                    React.createElement("div", {onClick: this.handleSort}, 
-                        columnsDisplayOne, 
-                        showSort ? 
-                        React.createElement("span", null, sortDirection == 'up' ? React.createElement("span", {className: "glyphicon glyphicon-triangle-top"}) : null, " ", sortDirection == 'down' ? React.createElement("span", {className: "glyphicon glyphicon-triangle-bottom"}) : null) 
-                        : 
-                        null
-                    ), 
-                    React.createElement(OverlayTrigger, {trigger: "click", placement: "bottom", overlay: React.createElement(Popover, {id: "dateRangePicker"}, React.createElement(DateRangePicker, {numberOfCalendars: 2, selectionType: 'range', showLegend: true, onSelect: this.handleFilterDate, singleDateRange: true}))}, 
-                        React.createElement("input", {style: {width:'inherit'}, onKeyPress: this.handleFilterDateEnterKey})
-                    )
-                )
-            )
-        } else {
-            return (
-                React.createElement("th", {className: className}, 
-                    React.createElement("div", {onClick: this.handleSort}, 
-                        columnsDisplayOne, 
-                        showSort ? 
-                        React.createElement("span", null, sortDirection == 'up' ? React.createElement("span", {className: "glyphicon glyphicon-triangle-top"}) : null, " ", sortDirection == 'down' ? React.createElement("span", {className: "glyphicon glyphicon-triangle-bottom"}) : null) 
-                        : 
-                        null
-                    ), 
-                    React.createElement("input", {style: {width:'inherit'}, onKeyPress: this.handleEnterKey})
-                )
-            )
-        }
-    }
-});
-
-
-
-module.exports = ListViewHeader;
-
-},{"react":1107,"react-bootstrap/lib/OverlayTrigger":311,"react-bootstrap/lib/Popover":312,"react-daterange-picker":339}],36:[function(require,module,exports){
+},{"../../../node_modules/react-daterange-picker":339,"../../../node_modules/react-notification-system":418,"../activemq/store.jsx":5,"../components/esearch.jsx":8,"../components/paging.jsx":11,"../entry/selected_container.jsx":18,"./list-view-data.jsx":33,"./list-view-header.jsx":34,"react":1107,"react-bootstrap/lib/Button":297,"react-bootstrap/lib/ButtonToolbar":299,"react-bootstrap/lib/DropdownButton.js":303,"react-bootstrap/lib/MenuItem.js":307,"react-bootstrap/lib/OverlayTrigger":311,"react-bootstrap/lib/Popover":312,"react-bootstrap/lib/SplitButton.js":314,"react-tag-input":764,"react-tag-input-tags/react-tag-input":639}],36:[function(require,module,exports){
 /**
  * @ignore
  * base event object for custom and dom event.
