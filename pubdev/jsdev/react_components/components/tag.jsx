@@ -1,7 +1,6 @@
 var React               = require('react');
 var Button              = require('react-bootstrap/lib/Button');
 var ReactTags           = require('react-tag-input').WithContext;
-var AppActions          = require('../flux/actions.jsx');
 
 var Tag = React.createClass({
     getInitialState: function() {
@@ -47,7 +46,6 @@ var TagDataIterator = React.createClass({
             success: function(data) {
                 console.log('deleted tag success: ' + data);
                 var key = this.state.key;
-                AppActions.updateItem(key,'headerUpdate');
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to delete tag');
@@ -86,7 +84,6 @@ var NewTag = React.createClass({
                 console.log('success: tag added');
                 this.props.toggleTagEntry();
                 var key = this.state.key;
-                AppActions.updateItem(key,'headerUpdate');
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to add tag');
