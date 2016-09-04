@@ -58,48 +58,44 @@ var SelectedHeaderOptions = React.createClass({
     //All methods containing alert are only used by selected_entry when viewing an alertgroupand interacting with an alert.
     alertOpenSelected: function() {
         var array = []
-        var data = JSON.stringify({status:'open'})
         $('tr.selected').each(function(index,tr) {
             var id = $(tr).attr('id');
             array.push(id);
         }.bind(this));
-        for (i=0; i < array.length; i++) {
-            $.ajax({
-                type:'put',
-                url: '/scot/api/v2/alert/'+array[i],
-                data: data,
-                contentType: 'application/json; charset=UTF-8',
-                success: function(response){
-                    console.log('success');
-                }.bind(this),
-                error: function() {
-                    console.log('failure');
-                }.bind(this)
-            })
-        }
+        var data = JSON.stringify({status:'open', ids:array})    
+        $.ajax({
+            type:'put',
+            url: '/scot/api/v2/'+this.props.type + '/' +this.props.id,
+            data: data,
+            contentType: 'application/json; charset=UTF-8',
+            success: function(response){
+                console.log('success');
+            }.bind(this),
+            error: function() {
+                console.log('failure');
+            }.bind(this)
+        })
     },
     alertCloseSelected: function() {
         var time = Math.round(new Date().getTime() / 1000)
-        var data = JSON.stringify({status:'closed', closed: time})
         var array = [];
         $('tr.selected').each(function(index,tr) {
             var id = $(tr).attr('id');
             array.push(id);
         }.bind(this)); 
-        for (i=0; i < array.length; i++) {
-            $.ajax({
-                type:'put',
-                url: '/scot/api/v2/alert/'+array[i],
-                data: data,
-                contentType: 'application/json; charset=UTF-8',
-                success: function(response){
-                    console.log('success');
-                }.bind(this),
-                error: function() {
-                    console.log('failure');
-                }.bind(this)
-            })
-        }    
+        var data = JSON.stringify({status:'closed', closed: time, ids:array})
+        $.ajax({
+            type:'put',
+            url: '/scot/api/v2/'+this.props.type + '/'+ this.props.id,
+            data: data,
+            contentType: 'application/json; charset=UTF-8',
+            success: function(response){
+                console.log('success');
+            }.bind(this),
+            error: function() {
+                console.log('failure');
+            }.bind(this)
+        })
     },
     alertPromoteSelected: function() {
         var data = JSON.stringify({promote:'new'})

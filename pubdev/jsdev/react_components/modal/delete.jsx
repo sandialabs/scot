@@ -1,7 +1,6 @@
 var React               = require('react');
 var Modal               = require('react-modal');
 var Button              = require('react-bootstrap/lib/Button');
-var AppActions          = require('../flux/actions.jsx');
 const customStyles = {
     content : {
         top     : '50%',
@@ -28,8 +27,7 @@ var DeleteEvent = React.createClass({
             url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id,
             success: function(data) {
                 console.log('success: ' + data);
-                var key = this.state.key;
-                AppActions.updateItem(key,'deleteEvent', null, this.props.type);
+                this.props.deleteToggle();
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to delete');  
@@ -68,7 +66,6 @@ var DeleteEntry = React.createClass({
            success: function(data) {
                console.log('success: ' + data);
                var key = this.state.key;
-               AppActions.updateItem(key,'headerUpdate');
            }.bind(this),
            error: function() {
                this.props.updated('error','Failed to delete entry');

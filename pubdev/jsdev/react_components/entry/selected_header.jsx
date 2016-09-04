@@ -7,28 +7,22 @@ var Entities                = require('../modal/entities.jsx');
 var ChangeHistory           = require('../modal/change_history.jsx');
 var ViewedByHistory         = require('../modal/viewed_by_history.jsx');
 var SelectedPermission      = require('../components/permission.jsx');
-var AutoAffix               = require('react-overlays/lib/AutoAffix.js');
-var Affix                   = require('react-overlays/lib/Affix.js');
-var Sticky                  = require('react-sticky');
 var Button                  = require('react-bootstrap/lib/Button');
 var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar');
 var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger');
 var Popover                 = require('react-bootstrap/lib/Popover');
 var DropdownButton          = require('react-bootstrap/lib/DropdownButton');
 var MenuItem                = require('react-bootstrap/lib/MenuItem');
-var Modal                   = require('react-modal');
 var DebounceInput           = require('react-debounce-input');
 var SelectedEntry           = require('./selected_entry.jsx');
 var Tag                     = require('../components/tag.jsx');
 var Source                  = require('../components/source.jsx');
 var Crouton                 = require('react-crouton');
 var Store                   = require('../activemq/store.jsx');
-var AppActions              = require('../flux/actions.jsx');
 var Notification            = require('react-notification-system');
 var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var Watcher                 = require('../components/add_flair.jsx').Watcher;
 var EntityDetail            = require('../modal/entity_detail.jsx');
-var ESearch                 = require('../components/esearch.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx');
 
 var SelectedHeader = React.createClass({
@@ -73,6 +67,7 @@ var SelectedHeader = React.createClass({
             guideID: null,
             errorDisplay: false,
             fileUploadToolbar: false,
+            isNotFound: false,
         }
     },
     componentWillMount: function() {
@@ -107,13 +102,13 @@ var SelectedHeader = React.createClass({
             url:'scot/api/v2/' + this.props.type + '/' + this.props.id,
             success:function(result) {
                 var eventResult = result;
-                this.setState({headerData:eventResult,showEventData:true})
+                this.setState({headerData:eventResult,showEventData:true, isNotFound:false})
                 if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                     this.setState({loading:false})
                 }
             }.bind(this),
             error: function(result) {
-                this.setState({showEventData:true})
+                this.setState({showEventData:true, isNotFound:true})
                 if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                     this.setState({loading:false})
                 }
@@ -208,9 +203,9 @@ var SelectedHeader = React.createClass({
                 }.bind(this)
             });     
         }
-        Store.storeKey(this.state.key);
+        Store.storeKey(this.props.id);
         Store.addChangeListener(this.updated); 
-        Store.storeKey('entryNotification')
+        //Store.storeKey('entryNotification')
     }, 
     updated: function(_type,_message) { 
         this.setState({refreshing:true, sourceLoaded:false,eventLoaded:false,tagLoaded:false,entryLoaded:false,entityLoaded:false});
@@ -242,13 +237,13 @@ var SelectedHeader = React.createClass({
                 url:'scot/api/v2/' + this.props.type + '/' + this.props.id,
                 success:function(result) {
                     var eventResult = result;
-                    this.setState({headerData:eventResult,showEventData:true, eventLoaded:true})
+                    this.setState({headerData:eventResult,showEventData:true, eventLoaded:true, isNotFound:false})
                     if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                         this.setState({refreshing:false})
                     }
                 }.bind(this),
                 error: function(result) {
-                    this.setState({showEventData:true, eventLoaded:true})
+                    this.setState({showEventData:true, eventLoaded:true, isNotFound:true})
                     if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                         this.setState({refreshing:false})
                     }
@@ -509,48 +504,52 @@ var SelectedHeader = React.createClass({
         var subjectType = this.titleCase(this.props.type);
         var id = this.props.id; 
         return (
+            <div> {this.state.isNotFound ? <h1>No record found.</h1> :
             <div>
                 <div id="header">
-                <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%'}}>
-                    <div className='details-subject' style={{display: 'inline-flex',paddingLeft:'5px'}}>
-                        {this.state.showEventData ? <EntryDataSubject data={this.state.headerData} subjectType={subjectType} type={type} id={this.props.id} updated={this.updated} />: null}
-                        {this.state.refreshing ? <span style={{color:'lightblue'}}>Refreshing Data...</span> :null }
-                        {this.state.loading ? <span style={{color:'lightblue'}}>Loading...</span> :null}    
-                    </div> 
-                    <div className='details-table toolbar'>
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <th></th>
-                                    <td><div style={{marginLeft:'5px'}}>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData} id={id} type={type} updated={this.updated} />: null}</div></td>
-                                    <th>Owner: </th>
-                                    <td><span>{this.state.showEventData ? <Owner key={id} data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
-                                    <th>Updated: </th>
-                                    <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
-                                    {(type == 'event' || type == 'incident') && this.state.showEventData ? <th>Promoted From:</th> : null}
-                                    {(type == 'event' || type == 'incident') && this.state.showEventData ? <PromotedData data={this.state.headerData.promoted_from} type={type} id={id} /> : null}
-                                    
-                                    <th>Tags: </th>
-                                    <td>{this.state.showTag ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}</td>
-                                    <th>Source: </th>
-                                    <td>{this.state.showSource ? <Source data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%'}}>
+                        <div className='details-subject' style={{display: 'inline-flex',paddingLeft:'5px'}}>
+                            {this.state.showEventData ? <EntryDataSubject data={this.state.headerData} subjectType={subjectType} type={type} id={this.props.id} updated={this.updated} />: null}
+                            {this.state.refreshing ? <span style={{color:'lightblue'}}>Refreshing Data...</span> :null }
+                            {this.state.loading ? <span style={{color:'lightblue'}}>Loading...</span> :null}    
+                        </div> 
+                        <div className='details-table toolbar'>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <th></th>
+                                        <td><div style={{marginLeft:'5px'}}>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData} id={id} type={type} updated={this.updated} />: null}</div></td>
+                                        <th>Owner: </th>
+                                        <td><span>{this.state.showEventData ? <Owner key={id} data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
+                                        <th>Updated: </th>
+                                        <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
+                                        {(type == 'event' || type == 'incident') && this.state.showEventData ? <th>Promoted From:</th> : null}
+                                        {(type == 'event' || type == 'incident') && this.state.showEventData ? <PromotedData data={this.state.headerData.promoted_from} type={type} id={id} /> : null}
+                                        
+                                        <th>Tags: </th>
+                                        <td>{this.state.showTag ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}</td>
+                                        <th>Source: </th>
+                                        <td>{this.state.showSource ? <Source data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+                    <Notification ref="notificationSystem" /> 
+                    {this.state.errorDisplay ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} buttons="CLOSE MESSAGE" onDismiss={this.errorToggle}/> : null}
+                    {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} errorToggle={this.errorToggle}/> : null}
+                    {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
+                    {this.state.viewedByHistoryToolbar ? <ViewedByHistory viewedByHistoryToggle={this.viewedByHistoryToggle} id={id} type={type} subjectType={subjectType} viewedby={viewedby}/> : null}
+                    {this.state.changeHistoryToolbar ? <ChangeHistory changeHistoryToggle={this.changeHistoryToggle} id={id} type={type} subjectType={subjectType}/> : null} 
+                    {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} /> : null}
+                    {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
+                    {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar}/> : null} 
+                    {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
+                    </div>
+                    {this.state.showEventData ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar}/> : null}
+                
                 </div>
-                <Notification ref="notificationSystem" /> 
-                {this.state.errorDisplay ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} buttons="CLOSE MESSAGE" onDismiss={this.errorToggle}/> : null}
-                {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} errorToggle={this.errorToggle}/> : null}
-                {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
-                {this.state.viewedByHistoryToolbar ? <ViewedByHistory viewedByHistoryToggle={this.viewedByHistoryToggle} id={id} type={type} subjectType={subjectType} viewedby={viewedby}/> : null}
-                {this.state.changeHistoryToolbar ? <ChangeHistory changeHistoryToggle={this.changeHistoryToggle} id={id} type={type} subjectType={subjectType}/> : null} 
-                {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} /> : null}
-                {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
-                {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar}/> : null} 
-                {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
-                </div>
-                {this.state.showEventData ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar}/> : null}
+            }
             </div>
         )
     }
@@ -689,7 +688,6 @@ var EntryDataSubject = React.createClass({
                 success: function(data) {
                     console.log('success: ' + data);
                     this.setState({updatedSubject: true});
-                    AppActions.updateItem(this.props.id,'headerUpdate'); 
                 }.bind(this),
                 error: function() { 
                     this.props.updated('error','Failed to update the subject');
