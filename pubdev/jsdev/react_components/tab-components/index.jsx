@@ -13,7 +13,6 @@ var Route	        = require('../../../node_modules/react-router').Route
 var Link	        = require('../../../node_modules/react-router').Link
 var browserHistory  = require('../../../node_modules/react-router/').hashHistory
 var Listener        = require('../activemq/listener.jsx')
-var Store           = require('../flux/store.jsx')
 //var Guide           = require('./guide.jsx')
 var ExpandableNavContainer = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavContainer.js')
 var ExpandableNavbar = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavbar.js')
@@ -58,153 +57,154 @@ var App = React.createClass({
                 settask = false
                 setguide = false
             }
-        else if(this.props.params.value.toLowerCase() == 'entity'){
-            setguide = false
-            setevents = false	
-            setintel = false
-            sethome = false
-            setalerts = false
-            setincidents = false
-            settask = false
-            if(this.props.params.id != null) {
-	            state = 8
-	            //array = this.props.params.id.split('+')
-	            //array.push(this.props.params.type)
-                //array.push(this.props.params.typeid)
-                id = this.props.params.id
+            else if(this.props.params.value.toLowerCase() == 'entity'){
+                setguide = false
+                setevents = false	
+                setintel = false
+                sethome = false
+                setalerts = false
+                setincidents = false
+                settask = false
+                if(this.props.params.id != null) {
+                    state = 8
+                    //array = this.props.params.id.split('+')
+                    //array.push(this.props.params.type)
+                    //array.push(this.props.params.typeid)
+                    id = this.props.params.id
+                }
             }
-        }
-        else if(this.props.params.value.toLowerCase() == 'guide'){
-            setguide = true
-            setevents = false	
-            setintel = false
-            sethome = false
-            setalerts = false
-            setincidents = false
-            settask = false
-            state = 7
-            if(this.props.params.id != null) {
-	            state = 7
-	            statetype = 'guide'	
-	            //array = this.props.params.id.split('+')
-	            id = this.props.params.id
+            else if(this.props.params.value.toLowerCase() == 'guide'){
+                setguide = true
+                setevents = false	
+                setintel = false
+                sethome = false
+                setalerts = false
+                setincidents = false
+                settask = false
+                state = 7
+                if(this.props.params.id != null) {
+                    state = 7
+                    statetype = 'guide'	
+                    //array = this.props.params.id.split('+')
+                    id = this.props.params.id
+                }
             }
-        }
-	    else if( this.props.params.value.toLowerCase() == "alert"){
-	        if(this.props.params.id != null){
-	            id = this.props.params.id
-                //array = this.props.params.id.split('+')
+            else if( this.props.params.value.toLowerCase() == "alert"){
+                if(this.props.params.id != null){
+                    id = this.props.params.id
+                    //array = this.props.params.id.split('+')
+                }
+                statetype = 'alert'
+                state = 1
+                isalert = true
+                setalerts = true
+                setintel = false
+                sethome = false
+                setincidents = false
+                setevents = false
+                settask = false
+                setguide = false
+                //if the url is just /alert/ with no id - default to alertgroup
+                if (this.props.params.id == null) {
+                    id = null;
+                    statetype = 'alertgroup'
+                    isalert = false
+                }
             }
-            statetype = 'alert'
-	        state = 1
-            isalert = true
-	        setalerts = true
-	        setintel = false
-	        sethome = false
-	        setincidents = false
-	        setevents = false
-	        settask = false
-            setguide = false
-            //if the url is just /alert/ with no id - default to alertgroup
-            if (this.props.params.id == null) {
-                id = null;
-                statetype = 'alertgroup'
+            else if( this.props.params.value.toLowerCase() == "alertgroup"){
+                if(this.props.params.id != null){
+                    //array = this.props.params.id.split('+')
+                    id = this.props.params.id.split('+');
+                }
+                statetype='alertgroup'
                 isalert = false
+                state = 1
+                setalerts = true
+                setintel = false
+                sethome = false
+                setincidents = false
+                setevents = false
+                settask = false
+                setguide = false
             }
-	    }
-	    else if( this.props.params.value.toLowerCase() == "alertgroup"){
-	        if(this.props.params.id != null){
-	            //array = this.props.params.id.split('+')
-	            id = this.props.params.id.split('+');
+            else if(this.props.params.value.toLowerCase() == "event"){
+                state = 2
+                if(this.props.params.id != null) {
+                    state = 2
+                    statetype = 'event'	
+                    //array = this.props.params.id.split('+')
+                    id = this.props.params.id
+                    id2 = this.props.params.id2
+                }
+                setevents = true	
+                setintel = false
+                sethome = false
+                setalerts = false
+                setincidents = false
+                settask = false
+                setguide = false
             }
-            statetype='alertgroup'
-            isalert = false
-	        state = 1
-	        setalerts = true
-	        setintel = false
-	        sethome = false
-	        setincidents = false
-	        setevents = false
-	        settask = false
-            setguide = false
-	    }
-	    else if(this.props.params.value.toLowerCase() == "event"){
-	        state = 2
-	        if(this.props.params.id != null) {
-	            state = 2
-	            statetype = 'event'	
-	            //array = this.props.params.id.split('+')
-	            id = this.props.params.id
-                id2 = this.props.params.id2
+            else if (this.props.params.value.toLowerCase() == "incident"){
+                state = 3
+                if(this.props.params.id != null) {
+                    state = 3
+                    statetype = 'incident'	
+                    //array = this.props.params.id.split('+')
+                    id = this.props.params.id
+                    id2 = this.props.params.id2
+                }
+                setguide = false
+                setincidents = true
+                setintel = false
+                sethome = false
+                setalerts = false
+                setevents = false
+                settask = false
             }
-	        setevents = true	
-	        setintel = false
-	        sethome = false
-	        setalerts = false
-	        setincidents = false
-	        settask = false
-	        setguide = false
+            else if(this.props.params.value.toLowerCase() == "intel") {
+                state = 4
+                if(this.props.params.id != null) {
+                    state = 4
+                    statetype = 'intel'	
+                    //array = this.props.params.id.split('+')
+                    id = this.props.params.id
+                    id2 = this.props.params.id2
+                }
+                setguide = false
+                setintel = true
+                sethome = false
+                setalerts = false
+                setincidents = false
+                setevents = false
+                settask = false
+            }
+            else if(this.props.params.value.toLowerCase() == "task")  {
+                state = 6
+                setguide = false
+                sethome = false
+                setalerts = false
+                setevents = false
+                setincidents = false
+                setintel = false
+                settask = true
+            }
+            else {
+                state = 0
+                sethome = true
+                setalerts = false
+                setevents = false
+                setincidents = false
+                setintel = false
+                settask = false
+                setguide = false
+            }
         }
-	    else if (this.props.params.value.toLowerCase() == "incident"){
-	        state = 3
-	        if(this.props.params.id != null) {
-	            state = 3
-	            statetype = 'incident'	
-	            //array = this.props.params.id.split('+')
-                id = this.props.params.id
-                id2 = this.props.params.id2
-            }
-            setguide = false
-            setincidents = true
-            setintel = false
-            sethome = false
-            setalerts = false
-            setevents = false
-            settask = false
-	    }
-	    else if(this.props.params.value.toLowerCase() == "intel") {
-	        state = 4
-	        if(this.props.params.id != null) {
-	            state = 4
-	            statetype = 'intel'	
-	            //array = this.props.params.id.split('+')
-	            id = this.props.params.id
-                id2 = this.props.params.id2
-            }
-            setguide = false
-            setintel = true
-            sethome = false
-            setalerts = false
-            setincidents = false
-            setevents = false
-            settask = false
-	    }
-	    else if(this.props.params.value.toLowerCase() == "task")  {
-            state = 6
-            setguide = false
-            sethome = false
-            setalerts = false
-            setevents = false
-            setincidents = false
-            setintel = false
-            settask = true
-	    }
-	    else {
-            state = 0
-            sethome = true
-            setalerts = false
-            setevents = false
-            setincidents = false
-            setintel = false
-            settask = false
-            setguide = false
-        }
-    }
         else {
             this.props.params.value = ''
             state = 0
         }
-	        return{id: id, id2: id2, set: state, handler: "Scot", viewMode:'default'}	
+        setTimeout(function(){Listener.activeMq()}, 3000)
+        return{id: id, id2: id2, set: state, handler: "Scot", viewMode:'default'}	
     },
    componentWillMount: function() {
 	    $.ajax({
@@ -253,8 +253,7 @@ var App = React.createClass({
         var headerStyle = { paddingLeft: 5 };
         var fullStyle   = { paddingLeft: 50};
         
-        setTimeout(function(){Listener.activeMq()}, 3000)
-
+        
     return (
         React.createElement(ExpandableNavContainer, {expanded: false}, React.createElement(ExpandableNavToggleButton, {smallClass: "s", className: "shared"}),
                 React.createElement(ExpandableNavbar, {fullClass: "full", smallClass: "small"}, 

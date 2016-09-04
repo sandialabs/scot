@@ -19,34 +19,9 @@ var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var ListViewHeader          = require('./list-view-header.jsx');
 var ListViewData            = require('./list-view-data.jsx');
-var colsort = "id"
-var start;
-var end;
-var valuesort = -1
-var SELECTED_ID = {}
-var filter = {}
-var sortarray = {}
-var getColumn;
-var tab;
-var highlight = false
 var datasource
-var ids = []
-var savedsearch = false
-var savedfsearch;
-var fluidheight;
-var setfilter = false
-var savedid;
 var height;
 var width;
-var size = 645
-var defaultpage = 1;
-var pageSize = 50;
-var readonly = []
-var colorrow = [];
-sortarray[colsort] = -1
-var columns = ['id', 'Status', 'Subject', 'Created', 'Source', 'Tags', 'Views']
-var toggle
-//var scrolled = 48
 var listStartX;
 var listStartY;
 var listStartWidth;
@@ -64,7 +39,6 @@ module.exports = React.createClass({
         var columns = [];
         var showSelectedContainer = false;
         width = 650
-        fluidheight = $(window).height() - 108
         
         if (this.props.type == 'alertgroup' || this.props.type == 'alert') {
             columnsDisplay = ['ID', 'Status', 'Subject', 'Created', 'Sources', 'Tags', 'Views']
@@ -144,11 +118,9 @@ module.exports = React.createClass({
         };
         var array = []
         var finalarray = [];
-	    var sortarray = {}
-	    sortarray[colsort] = -1
-        var StoreKeyName = this.props.type + 'group';
-        if (this.props.type == 'alertgroup' || this.props.type == 'alert') {StoreKeyName = 'activealertgroup'};
-        Store.storeKey(StoreKeyName)
+        //register for creation
+        var storeKey = this.props.type + 'listview';
+        Store.storeKey(storeKey)
         Store.addChangeListener(this.reloadactive)
         //List View code
         var  url = '/scot/api/v2/' + this.state.type;
@@ -185,14 +157,18 @@ module.exports = React.createClass({
 	                else{
 	                    finalarray[key][num] = item
 	                }
-                })
+                    if (num == 'id') {
+                        Store.storeKey(item)
+                        Store.addChangeListener(this.reloadactive)
+                    }
+                }.bind(this))
                 if(key %2 == 0){
                     finalarray[key]["classname"] = 'table-row roweven'
                 }
                 else {
                     finalarray[key]["classname"] = 'table-row rowodd'
                 }
-            })
+            }.bind(this))
             this.setState({scrollheight:height, objectarray: finalarray, totalcount: response.totalRecordCount});
             if (this.props.type == 'alert' && this.state.showSelectedContainer == false) {
                 this.setState({showSelectedContainer:false})
@@ -269,9 +245,8 @@ module.exports = React.createClass({
                     }
                 } : null
             })
-            savedid = activemqid
         }  
-        this.getNewData({page: defaultpage, limit: pageSize}) 
+        this.getNewData() 
     },
 
     //This is used for the dragging portrait and landscape views
@@ -364,6 +339,7 @@ module.exports = React.createClass({
                                     <Button eventKey='1' onClick={this.clearNote} bsSize='xsmall'>Mute Notifications</Button> :
                                     <Button eventKey='2' onClick={this.clearNote} bsSize='xsmall'>Turn On Notifications</Button>
                                 }
+                                {this.props.type == 'event' || this.props.type == 'intel' ? <Button onClick={this.createNewThing} eventKey='6' bsSize='xsmall'>Create {this.state.typeCapitalized}</Button> : null}
                                 <Button onClick={this.clearAll} eventKey='3' bsSize='xsmall'>Clear All Filters</Button>
                                 <Button eventKey='5' bsSize='xsmall' onClick={this.exportCSV}>Export to CSV</Button> 
                                 <Button bsSize='xsmall' onClick={this.toggleView}>Full Screen Toggle (f)</Button>
@@ -586,6 +562,7 @@ module.exports = React.createClass({
 
     exportCSV: function(){
         var keys = []
+        var columns = this.state.columns;
 	    $.each(columns, function(key, value){
             keys.push(value);
 	    });
@@ -680,6 +657,15 @@ module.exports = React.createClass({
             newstring
         )
     },
-    
+    createNewThing: function(){
+    var data = JSON.stringify({subject: 'No Subject', source: ['No Source']})
+        $.ajax({
+            type: 'POST',
+            url: '/scot/api/v2/'+this.props.type,
+            data: data
+        }).success(function(response){
+            this.launchEvent(this.props.type,response.id)
+        }.bind(this))
+    }, 
 });
 
