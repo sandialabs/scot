@@ -805,7 +805,7 @@ sub update {
     my $mongo   = $env->mongo;
     my $log     = $env->log;
     my $user    = $self->session('user');
-    my $what    = "";
+    my @what    = ();
 
     $log->debug("User $user trying to update something");
 
@@ -827,10 +827,10 @@ sub update {
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
         $log->debug("ALERTGROUP ALERTGROUP ALERTGROUP !!!!!!!!!!!!!!!!!!!");
         if ( $req_href->{request}->{json}->{parsed} ) {
-            $what   = "reparsed";
+            push @what,"reparsed";
         }
         if ( $req_href->{request}->{json}->{status} ) {
-            $what  .= ",status";
+            push @what,"status";
         }
         my @updated_alert_ids = $self->update_alertgroup($req_href, $object);
         foreach my $aid (@updated_alert_ids) {
@@ -844,30 +844,27 @@ sub update {
                 }
             });
         }
-        #$env->mq->send("scot", {
-        #    action  => "updated",
-        #    data    => {
-        #        who     => $user,
-        #        type    => "alertgroup",
-        #        id      => $object->id,
-        #    }
-        #});
     }
+
     if ( ref($object) eq "Scot::Model::Entry" ) {
         $self->do_task_checks($req_href);
         if ( $req_href->{target} ) {
             $self->move_entry($req_href,$object);
+            push @what,"entry_moved";
         }
     }
 
     if ( $object->meta->does_role("Scot::Role::Entitiable") ) {
         $self->process_entities($req_href, $object);
+        push @what,"process_entities";
     }
     if ( $object->meta->does_role("Scot::Role::Tags") ) {
         $self->apply_tags($req_href, $col_name, $id);
+        push @what , "tag";
     }
     if ( $object->meta->does_role("Scot::Role::Sources") ) {
         $self->apply_sources($req_href, $col_name, $id);
+        push @what , "source";
     }
 
     if ( $object->meta->does_role("Scot::Role::Promotable") ) {
@@ -881,6 +878,8 @@ sub update {
 
     $log->debug("Updating ". ref($object). " id = $id with ",
                 { filter => \&Dumper, value => \%update });
+
+    push @what, keys %update;
 
     unless ( $object->update({ '$set' => \%update }) ) {
         $log->error("Error applying Update!");
@@ -905,7 +904,7 @@ sub update {
             who  => $user,
             type => $col_name,
             id   => $id,
-            what => $what,
+            what => \@what,
         }
     });
     if ( ref($object) eq "Scot::Model::Entry" ) {
