@@ -177,152 +177,72 @@ function creation(state, callback, payload){
         activemqmessage = " created " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange(payload.action.activemq.data.id) 
-        callback.emitChange('taskgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('intelgroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('eventgroup') 
-        callback.emitChange('activealertgroup')
-        callback.emitChange('incidentgroup') 
-        callback.emitChange('alertgroupnotification')
+        changeKey = payload.action.activemq.data.type+'listview';
+        callback.emitChange(changeKey)
     }
    else if(state == 'task'){
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " updated " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('intelgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('taskgroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('alertgroupnotification')
-        callback.emitChange('incidentgroup')
-        callback.emitChange("activealertgroup")
-        callback.emitChange('eventgroup')
-        callback.emitChange(payload.action.activemq.data.id)
+        changeKey = payload.action.activemq.data.type+'listview';
+        callback.emitChange(changeKey)
     }
    else if(state == 'guide'){
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " updated " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('intelgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('taskgroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('alertgroupnotification')
-        callback.emitChange('incidentgroup')
-        callback.emitChange("activealertgroup")
-        callback.emitChange('eventgroup')
-        callback.emitChange(payload.action.activemq.data.id)
+        changeKey = payload.action.activemq.data.type+'listview';
+        callback.emitChange(changeKey) 
     }
     else if (state == 'event') {
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " created " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('taskgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('intelgroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('incidentgroup') 
-        callback.emitChange('eventgroup')  
-        callback.emitChange('activealertgroup')
-        callback.emitChange('alertgroupnotification')
-        callback.emitChange(payload.action.activemq.data.id)
-    /*    setTimeout(function(){$('.z-row').each(function(key, value){
-            $(value).find('.z-cell').each(function(r,s){
-            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
-                $(value).css('background', '#FFFF76')
-                setTimeout(function(){$(value).css('background', "")}, 10000)
-                }
-        })
-        }) }, 1000) */
+        changeKey = payload.action.activemq.data.type+'listview';
+        callback.emitChange(changeKey)
     }
     else if (state == 'intel'){
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " created " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('intelgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('taskgroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('incidentgroup') 
-        callback.emitChange('eventgroup')  
-        callback.emitChange('activealertgroup')
-        callback.emitChange('alertgroupnotification')
-        callback.emitChange(payload.action.activemq.data.id)
-    }
+        changeKey = payload.action.activemq.data.type+'listview';
+        callback.emitChange(changeKey)
+   }
    else if(state == 'incident'){
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " created " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('intelgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('taskgroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('incidentgroup') 
-        callback.emitChange('eventgroup')  
-        callback.emitChange('activealertgroup')
-        callback.emitChange('alertgroupnotification')
-        callback.emitChange(payload.action.activemq.data.id)
-   }
+        changeKey = payload.action.activemq.data.type+'listview';
+        callback.emitChange(changeKey)
+    }
    else if(state == 'alertgroup'){
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " created " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('intelgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('taskgroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('activealertgroup')
-        callback.emitChange('eventgroup')
-        callback.emitChange('incidentgroup')
-        callback.emitChange('alertgroupnotification')
-        callback.emitChange(payload.action.activemq.data.id)
+        changeKey = payload.action.activemq.data.type+'listview';
+        callback.emitChange(changeKey)
    }
    else if(state == 'entity'){
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " created " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('intelgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('taskgroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('activealertgroup')
-        callback.emitChange('eventgroup')
-        callback.emitChange('incidentgroup')
-        callback.emitChange('alertgroupnotification')
-        callback.emitChange(payload.action.activemq.data.id)
+        changeKey = payload.action.activemq.data.type+'listview';
+        callback.emitChange(changeKey) 
    }
    else if(state == 'guide'){
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " created " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('intelgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('taskgroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('activealertgroup')
-        callback.emitChange('eventgroup')
-        callback.emitChange('incidentgroup')
-        callback.emitChange('alertgroupnotification')
-        callback.emitChange(payload.action.activemq.data.id)
+        changeKey = payload.action.activemq.data.type+'listview';
+        callback.emitChange(changeKey)
    }
 }
 
@@ -332,28 +252,8 @@ function deletion(state, callback, payload){
         activemqwho = payload.action.activemq.data.who
         activemqmessage = " deleted " + state + " : " 
         activemqid = payload.action.activemq.data.id
-        activemqtype = 'alertgroup'
-        callback.emitChange('intelgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('activealertgroup')
-        callback.emitChange('incidentgroup') 
-        callback.emitChange('eventgroup') 
-        callback.emitChange('alertgroupnotification')
-        callback.emitChange('taskgroup')
-        callback.emitChange('selectedHeaderEntry')
-        $('.z-table').each(function(key, value){
-            $(value).find('.z-row').each(function(x,y){
-                $(y).find('.z-cell').each(function(r,s){
-                    if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
-                        $(y).find('.z-cell').each(function(p,o){
-                            if($(o).attr('name') == 'alertgroup'){
-                                callback.emitChange($(o).text())
-                        }
-                    })
-                }
-            })
-        })
-        })
+        activemqtype = 'alert'
+        callback.emitChange(payload.action.activemq.data.id) 
     }
     else if (state == 'entry'){
          callback.emitChange(payload.action.activemq.data.id) 
@@ -363,15 +263,6 @@ function deletion(state, callback, payload){
         activemqmessage = " deleted " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('intelgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('taskgroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('activealertgroup') 
-        callback.emitChange('incidentgroup') 
-        callback.emitChange('eventgroup') 
-        callback.emitChange('alertgroupnotification')
         callback.emitChange(payload.action.activemq.data.id)
     }
     else if (state == 'tag') {
@@ -379,15 +270,6 @@ function deletion(state, callback, payload){
         activemqmessage = " deleted " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('intelgroup')
-        callback.emitChange('taskgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('activealertgroup') 
-        callback.emitChange('incidentgroup') 
-        callback.emitChange('eventgroup') 
-        callback.emitChange('alertgroupnotification')
         callback.emitChange(payload.action.activemq.data.id)
     }
     else if (state == 'source') {
@@ -395,15 +277,6 @@ function deletion(state, callback, payload){
         activemqmessage = " deleted " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('intelgroup')
-        callback.emitChange('taskgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('activealertgroup') 
-        callback.emitChange('incidentgroup') 
-        callback.emitChange('eventgroup') 
-        callback.emitChange('alertgroupnotification')
         callback.emitChange(payload.action.activemq.data.id)
     }
 
@@ -412,15 +285,6 @@ function deletion(state, callback, payload){
         activemqmessage = " deleted " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('intelgroup')
-        callback.emitChange('taskgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('activealertgroup') 
-        callback.emitChange('incidentgroup') 
-        callback.emitChange('eventgroup') 
-        callback.emitChange('alertgroupnotification')
         callback.emitChange(payload.action.activemq.data.id)
     }
     else if (state == 'task'){
@@ -428,15 +292,6 @@ function deletion(state, callback, payload){
         activemqmessage = " deleted " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('intelgroup') 
-        callback.emitChange('taskgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('incidentgroup')
-        callback.emitChange('activealertgroup') 
-        callback.emitChange('eventgroup') 
-        callback.emitChange('alertgroupnotification')
         callback.emitChange(payload.action.activemq.data.id)
 }
 
@@ -445,15 +300,6 @@ function deletion(state, callback, payload){
         activemqmessage = " deleted " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('intelgroup') 
-        callback.emitChange('taskgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('incidentgroup')
-        callback.emitChange('activealertgroup') 
-        callback.emitChange('eventgroup') 
-        callback.emitChange('alertgroupnotification')
         callback.emitChange(payload.action.activemq.data.id)
 }
    else if(state == 'incident'){
@@ -461,15 +307,6 @@ function deletion(state, callback, payload){
         activemqmessage = " deleted " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('guidegroup')
-        callback.emitChange('intelgroup')
-        callback.emitChange('taskgroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('incidentgroup')
-        callback.emitChange('activealertgroup') 
-        callback.emitChange('eventgroup') 
-        callback.emitChange('alertgroupnotification')
         callback.emitChange(payload.action.activemq.data.id)
    }
    else if(state == 'alertgroup'){
@@ -477,15 +314,6 @@ function deletion(state, callback, payload){
         activemqmessage = " deleted " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('intelgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('taskgroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('incidentgroup')
-        callback.emitChange('eventgroup') 
-        callback.emitChange('activealertgroup') 
-        callback.emitChange('alertgroupnotification')
         callback.emitChange(payload.action.activemq.data.id)
    }
    else if(state == 'guide'){
@@ -493,15 +321,6 @@ function deletion(state, callback, payload){
         activemqmessage = " deleted " + state + " : " 
         activemqid = payload.action.activemq.data.id
         activemqtype = state
-        callback.emitChange('intelgroup')
-        callback.emitChange('guidegroup')
-        callback.emitChange('taskgroup')
-        callback.emitChange('selectedHeaderEntry');
-        callback.emitChange('entryNotification');
-        callback.emitChange('incidentgroup')
-        callback.emitChange('eventgroup') 
-        callback.emitChange('activealertgroup') 
-        callback.emitChange('alertgroupnotification')
         callback.emitChange(payload.action.activemq.data.id)
    }
 }
