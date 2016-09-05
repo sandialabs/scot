@@ -293,5 +293,79 @@ override get_subthing => sub {
     }
 };
 
+sub update_alerts_in_alertgroup {
+    my $self     = shift;
+    my $agobj    = shift;
+    my $href     = shift;
+    my $env      = $self->env;
+    my $mongo    = $env->mongo;
+    my $log      = $env->log;
+    my $mq       = $env->mq;
+    my $status   = { updated => [] };
+    my $alertcol = $mongo->collection('Alert');
+        
+        # side effect in update_alet_in_group is the deletion of the keys
+        # req_href->{request}->{data} and req_href->{request}->{alerts}
+
+    $log->trace("Updating Alerts in Alertgroup");
+
+    my $request = $href->{request}->{json};
+    my $data    = delete $request->{data};
+    unless ($data) {
+        # might come in as $request->{alerts}
+        $data   = delete $request->{alerts};
+    }
+    unless ($data) {
+        $log->error("no alert updates in request");
+        # check for a bulk status update, eg. closing all alerts
+        # which comes in as /alertgroup/123 -d{status:"closed"}
+        unless ( defined($request->{status}) or  defined($request->{parsed})) {
+            return $status;
+        }
+        # yes, this means in this case two database calls, 
+        # one here and then again to update, but
+        # optimize later if this proves to be a slow down
+        my $cursor = $alertcol->find({alertgroup => $agobj->id});
+        while (my $alert = $cursor->next ) {
+            my $update  = {
+                id  => $alert->id,
+            };
+            if ( $request->{status} ) {
+                $update->{status} = $request->{status};
+            }
+            if ( $request->{parsed} ) {
+                $update->{parsed} = $request->{parsed};
+            }
+            push @{$data}, $update;
+        }
+    }
+    $log->debug("Update with ", {filter=>\&Dumper, value=>$data});
+
+    ALERT:
+    foreach my $alert_href (@$data) {
+        my $alert_id    = delete $alert_href->{id};
+        unless ($alert_id) {
+            $log->error("can not update alert in alertgroup without alert id");
+            push @{$status->{no_id}}, $alert_id;
+            next ALERT;
+        }
+        $log->debug("Updating Alert $alert_id in Alertgroup ".$agobj->id);
+        my $alertobj    = $alertcol->find_iid($alert_id);
+        unless ($alertobj) {
+            $log->error("Alert $alert_id not found!");
+            push @{$status->{not_found}}, $alert_id;
+            next ALERT;
+        }
+        unless ($alertobj->update({ '$set' => $alert_href })) {
+            $log->error("Error applying update to ". $alertobj->id);
+            push @{$status->{error}}, $alertobj->id;
+        }
+        else {
+            push @{$status->{updated}}, $alertobj->id;
+        }
+    }
+    return $status;
+}
+            
 
 1;

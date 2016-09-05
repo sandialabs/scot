@@ -184,7 +184,7 @@ sub run {
         say Dumper(\@_);
     });
 
-    my $stomp   = new AnyEvent::STOMP::Client();
+    my $stomp   = AnyEvent::STOMP::Client->new();
 
     my $subscribe_headers   = {
         id                          => $self->thishostname,
