@@ -20,7 +20,7 @@ var AddFlair = {
                             }.bind(this))
                             //Make href an anchor so it doesn't go anywhere when clicked and instead opens up the modal in linkWarningPopup
                             $(ifr.contentDocument.body).find('a').attr('href','#');
-                            $(ifr.contentDocument.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
+                            //$(ifr.contentDocument.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
                             $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
                             if($(ifr.contentDocument.body).find('.extras')[0] == null) {
                                 
@@ -96,7 +96,7 @@ var AddFlair = {
                 }
                 if(subtable.find('.extras')[0] == null) {
                     subtable.find('a').attr('target','_blank');
-                    subtable.append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
+                    //subtable.append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
                     subtable.find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
                     subtable.find('.entity').each(function(index,entity){
                         var currentEntityValue = $(entity).attr('data-entity-value');
