@@ -110,7 +110,10 @@ sub run {
 
     $log->debug("Starting STOMP watcher");
 
-    my $pm  = AnyEvent::ForkManager->new( max_workers => $self->max_workers );
+    my $stomp   = AnyEvent::STOMP::Client->new();
+    my $pm      = AnyEvent::ForkManager->new( 
+        max_workers => $self->max_workers 
+    );
 
     $pm->on_start( sub {
         my ( $pm, $pid, $action, $type, $id ) = @_;
@@ -122,7 +125,12 @@ sub run {
         $log->debug("Ending worker $pid to handle $action on $type $id");
     });
 
-    my $stomp   = AnyEvent::STOMP::Client->new();
+    $pm->on_error( sub {
+        my ( $pm, @anyargs ) = @_;
+        say Dumper(@anyargs);
+        $log->error("Worker ERROR: ",{filter=>\&Dumper, value=>\@_});
+    });
+
 
     $stomp->connect();
     $stomp->on_connected(sub {
@@ -152,7 +160,30 @@ sub run {
             );
         }
     );
-    AnyEvent->condvar->recv;
+    my $cv = AnyEvent->condvar;
+    $cv->recv;
+}
+
+sub process_message {
+    my $self    = shift;
+    my $action  = shift;
+    my $type    = shift;
+    my $id      = shift;
+    my $log     = $self->log;
+    my $es      = $self->es;
+
+    if ($action eq "deleted") {
+        $es->delete($type, $id, 'scot');
+        return;
+    }
+    my $cleanser = Data::Clean::FromJSON->get_cleanser;
+    my $scot    = $self->scot;
+    my $record  = $scot->get({
+        type    => $type, 
+        id      => $id
+    });
+    $cleanser->clean_in_place($record);
+    $es->index($type, $record, 'scot');
 }
 
 sub process_all {
@@ -240,28 +271,6 @@ sub process_by_date {
     foreach my $href (@{$json->{records}}) {
         $es->index($collection, $href, 'scot');
     }
-}
-
-sub process_message {
-    my $self    = shift;
-    my $action  = shift;
-    my $type    = shift;
-    my $id      = shift;
-    my $log     = $self->log;
-    my $es      = $self->es;
-
-    if ($action eq "deleted") {
-        $es->delete($type, $id, 'scot');
-        return;
-    }
-    my $cleanser = Data::Clean::FromJSON->get_cleanser;
-    my $scot    = $self->scot;
-    my $record  = $scot->get({
-        type    => $type, 
-        id      => $id
-    });
-    $cleanser->clean_in_place($record);
-    $es->index($type, $record, 'scot');
 }
 
 #
