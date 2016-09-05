@@ -34,7 +34,7 @@ var Actions = {
     },
     updateView: function(){
         var now = new Date();
-        setTimeout(function(){$.ajax({
+        $.ajax({
             type: 'GET',
             url:  '/scotaq/amq',
             data: {
@@ -53,18 +53,16 @@ var Actions = {
             $.each(messages, function(key,message){
                 if(message != ""){
                     var json = JSON.parse(message);
-                        console.log(json)
-                            Dispatcher.handleActivemq({
-                            activemq: json
-                        })
+                    console.log(json)
+                    Dispatcher.handleActivemq({
+                        activemq: json
+                    })
                 }
             });       
         }).fail(function(){
-            setTimeout(Actions.updateView(), 20)
+            setTimeout(Actions.updateView(), 2000)
         })
-        }, 2)
     }
-
 }
 
 

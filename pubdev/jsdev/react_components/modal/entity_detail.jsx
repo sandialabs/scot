@@ -17,7 +17,7 @@ var EntityDetail = React.createClass({
             entityData:null,
             entityid: this.props.entityid,
             entityHeight: '500px',
-            entityWidth: '500px',
+            entityWidth: '700px',
             tabs: tabs,
             initialLoad:false,
         }
