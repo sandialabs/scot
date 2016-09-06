@@ -15,6 +15,6 @@ say "--- Starting Mail Ingester ---";
 
 my $processor   = Scot::App::Mail->new({
     configuration_file         => "mail.app.cfg",
-    interactive                 => "no",
+    interactive                 => "yes",
 });
 $processor->run();
