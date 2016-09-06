@@ -201,16 +201,15 @@ sub refresh_data {
         }
     });
 
-    $log->trace("[Alertgroup $id] sending activemq update message");
-
-    $env->mq->send("scot", {
-        action  => "updated", 
-        data    => {
-            type    => "alertgroup",
-            id      => $id, 
-            who     => $user
-        }
-    });
+#    $log->trace("[Alertgroup $id] sending activemq update message");
+#    $env->mq->send("scot", {
+#        action  => "updated", 
+#        data    => {
+#            type    => "alertgroup",
+#            id      => $id, 
+#            who     => $user
+#        }
+#    });
 }
 
 override get_subthing => sub {
@@ -390,7 +389,7 @@ sub update_alertgroup_with_bundled_alert {
     my $mongo    = $env->mongo;
     my $log      = $env->log;
 
-    my $alertgroup_id = $putdata->{id};
+    my $alertgroup_id = delete $putdata->{id};
     my $alertgroup    = $self->find_iid($alertgroup_id);
 
     unless ( $alertgroup ) {
@@ -405,7 +404,7 @@ sub update_alertgroup_with_bundled_alert {
 
     my $alertcol    = $mongo->collection('Alert');
     foreach my $alert (@$alerts) {
-        my $alert_id    = $alert->{id};
+        my $alert_id    = $alert->{id} + 0;
         my $alert_obj   = $alertcol->find_iid($alert_id);
         my $entities    = delete $alert->{entities};
         if ( $alert_obj->update({'$set' => $alert}) ) {
@@ -417,12 +416,11 @@ sub update_alertgroup_with_bundled_alert {
         else {
             $log->error("failed to update alert $alert_id");
         }
-
     }
 
-    
-
-    if ( $alertgroup->update({'$set' => $putdata}) ) {
+    my $cmd = { '$set' => $putdata };
+    $log->debug("updating alertgroup with : ",{filter=>\&Dumper, value=>$cmd});
+    if ( $alertgroup->update($cmd) ) {
         $log->debug("updated alertgroup");
     }
     else {
