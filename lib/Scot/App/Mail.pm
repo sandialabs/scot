@@ -19,6 +19,20 @@ use Log::Log4perl::Level;
 use Moose;
 extends 'Scot::App';
 
+has env         => (
+    is          => 'ro',
+    isa         => 'Scot::Env',
+    required    => 1,
+    default     => sub { Scot::Env->instance },
+);
+
+has get_method  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'mongo',
+);
+
 has imap    => (
     is          => 'ro',
     isa         => 'Scot::Util::Imap',
@@ -354,14 +368,12 @@ sub process_message {
         $json_to_post->{subject}    = $msghref->{subject};
     }
     $json_to_post->{sources}    = [ $parser->get_sourcename ];
+    $json_to_post->{created}    = $received->epoch;
 
     $log->debug("Json to Post = ", {filter=>\&Dumper, value=>$json_to_post});
     $log->debug("posting to $path");
 
-    my $json_returned = $scot->post({
-        type    => $path, 
-        data    => $json_to_post
-    });
+    my $json_returned = $self->post_alertgroup($json_to_post);
 
     unless (defined $json_returned) {
         $log->error("ERROR! Undefined transaction object $path ",
@@ -383,6 +395,42 @@ sub process_message {
     return 1;
 }
 
+sub post_alertgroup {
+    my $self    = shift;
+    my $data    = shift;
+    my $response;
+
+    if ( $self->get_method eq "scot_api" ) {
+        $response = $self->scot->post({
+            type    => "alertgroup",
+            data    => $data
+        });
+    }
+    else {
+        my $mongo   = $self->env->mongo;
+        my $agcol   = $mongo->collection('Alertgroup');
+        my $agobj   = $agcol->create_from_api({
+            request => { json   => $data }
+        });
+        $self->env->mq->send("scot", {
+            action  => "created",
+            data    => {
+                type    => "alertgroup",
+                id      => $agobj->id,
+                who     => "scot-alerts",
+            }
+        });
+        $response = { 
+            status  => 'ok',
+            thing   => 'alertgroup',
+            id      => $agobj->id,
+        };
+    }
+    return $response;
+}
+
+
+
 sub output {
     my $self    = shift;
     my $msg     = shift;
@@ -395,7 +443,7 @@ sub already_processed {
     my $self        = shift;
     my $message_id  = shift;
     my $scot        = $self->scot;
-    my $return      = $scot->get_alertgroup_by_msgid($message_id);
+    my $return      = $self->get_alertgroup_by_msgid($message_id);
     my $log         = $self->log;
 
     $log->debug("Got ag processed ", {filter=>\&Dumper,value=>$return});
@@ -404,6 +452,24 @@ sub already_processed {
         return 1;
     }
     return undef;
+}
+
+sub get_alertgroup_by_msgid {
+    my $self    = shift;
+    my $msgid   = shift;
+
+    if ( $self->get_method  eq "scot_api" ) {
+        return $self->scot->get_alertgroup_by_mesgid($msgid);
+    }
+    else {
+        my $mongo   = $self->env->mongo;
+        my $col     = $mongo->collection('Alertgroup');
+        my $obj     = $col->find_one({message_id => $msgid});
+        if ( $obj ) {
+            return { queryRecordCount => 1 };
+        }
+    }
+    return { error => 1 };
 }
 
 sub approved_sender {
