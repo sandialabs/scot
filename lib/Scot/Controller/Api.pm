@@ -790,11 +790,11 @@ sub move_entry {
     my $new_target      = $mongo->collection(ucfirst($new->{type}))
                           ->find_iid($new->{id});
 
-    $current_target->upate({
+    $current_target->update({
         '$set' => { updated     => $env->now },
         '$inc' => { entry_count => -1 },
     });
-    $new_target->upate({
+    $new_target->update({
         '$set' => { updated     => $env->now },
         '$inc' => { entry_count => 1 },
     });
@@ -900,7 +900,7 @@ sub update {
     my %update  = $self->build_update_doc($req_href);
 
     $log->debug("Updating ". ref($object). " id = $id with ",
-                { filter => \&Dumper, value => \%update });
+                { filter => \&Dumper, value => {'$set' => \%update }});
 
     push @what, keys %update;
 
@@ -1133,6 +1133,8 @@ sub process_promotion {
 
 
     if ( ref($object) eq "Scot::Model::Alert" ) {
+
+        $log->debug("refreshing alertgroup data");
         $mongo->collection('Alertgroup')
                 ->refresh_data($object->alertgroup, $user);
 
