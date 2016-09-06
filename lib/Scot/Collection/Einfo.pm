@@ -32,13 +32,13 @@ sub create_from_api {
         return undef;
     }
 
-    $env->mq->send("scot", {
-        action  => "created",
-        data    => {
-            type    => 'einfo',
-            id      => $einfo->id,
-        }
-    });
+    #$env->mq->send("scot", {
+    #    action  => "created",
+    #    data    => {
+    #        type    => 'einfo',
+    #        id      => $einfo->id,
+    #    }
+    #});
 
     return $einfo;
 }

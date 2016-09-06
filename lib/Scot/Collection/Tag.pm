@@ -63,6 +63,8 @@ sub get_tag_completion {
     return wantarray ? @results : \@results;
 }
 
+# TODO:  this handles the adding of a tag, but what about tag removal?
+
 sub add_tag_to {
     my $self    = shift;
     my $thing   = shift;
@@ -102,6 +104,31 @@ sub add_tag_to {
     }
     return 1;
 }
+
+# TODO: finish is needed
+sub syncro_tags {
+    my $self        = shift;
+    my $target_type = lc(shift);
+    my $id          = shift;
+    my $tag_aref    = shift;
+    my $env         = $self->env;
+    my $log         = $env->log;
+
+    $log->debug("syncronizing tags");
+
+    my $current_cur = $env->mongo->collection("Appearance")->find({
+        target  => {
+            type    => $target_type,
+            id      => $id+0,
+        },
+        type    => "tag"
+    });
+    
+}
+
+
+
+
 
 
 1;
