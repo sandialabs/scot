@@ -26,13 +26,14 @@ sub create_from_api {
                     { filter => \&Dumper, value => $request } );
         return undef;
     }
-    $env->mq->send("scot", {
-        action  => "created",
-        data    => {
-            type    => "entity",
-            id      => $entity->id,
-        }
-    });
+    # Api.pm should do this
+    #$env->mq->send("scot", {
+    #    action  => "created",
+    #    data    => {
+    #        type    => "entity",
+    #        id      => $entity->id,
+    #    }
+    #});
     return $entity;
 }
 

@@ -561,12 +561,13 @@ sub get_one {
 
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
         $log->debug("Alertgroup asked for, bundling Alerts");
-        my $col = $mongo->collection('Alert');
-        my $cur = $col->find({alertgroup => $object->id});
-        while ( my $alert = $cur->next ) {
-            my $ahref = $alert->as_hash;
-            push @{$data_href->{alerts}}, $ahref;
-        }
+        my $col = $mongo->collection('Alertgroup');
+        $data_href = $col->get_bundled_alertgroup($object->id);
+        #my $cur = $col->find({alertgroup => $object->id});
+        #while ( my $alert = $cur->next ) {
+        #    my $ahref = $alert->as_hash;
+        #    push @{$data_href->{alerts}}, $ahref;
+        #}
     }
 
 
@@ -825,25 +826,47 @@ sub update {
     return undef unless ( $self->check_update_permission($req_href, $object));
 
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
-        $log->debug("ALERTGROUP ALERTGROUP ALERTGROUP !!!!!!!!!!!!!!!!!!!");
-        if ( $req_href->{request}->{json}->{parsed} ) {
-            push @what,"reparsed";
+        # this updates any alerts in request, doing it this way instead
+        # of PUT /scot/api/v2/alert/123...  because that action causes
+        # the alertgroup to be updated, wich generates an AMQ message
+        # that causes a reload and reparse of all alerts in alertgroup
+        # on big alerts or when a large number of alerts are updated
+        # this can cause a storm of refreshes.  
+        my $status = 
+            $collection->update_alerts_in_alertgroup($object,$req_href);
+        # side effect in update_alet_in_group is the deletion of the keys
+        # req_href->{request}->{data} and req_href->{request}->{alerts}
+
+        if ( scalar(@{$status->{updated}}) > 0 ) {
+            push @what, "alerts_updated";
+            foreach my $aid (@{$status->{updated}}) {
+                $env->mq->send("scot", {
+                    action  => "updated",
+                    data    => { who => $user, type => "alert", id => $aid },
+                });
+            }
         }
-        if ( $req_href->{request}->{json}->{status} ) {
-            push @what,"status";
-        }
-        my @updated_alert_ids = $self->update_alertgroup($req_href, $object);
-        foreach my $aid (@updated_alert_ids) {
-            $log->debug("Alert $aid was updated");
-            $env->mq->send("scot", {
-                action  => "updated",
-                data    => {
-                    who     => $user,
-                    type    => "alert",
-                    id      => $aid,
-                }
-            });
-        }
+
+#        OLD WAY
+#        $log->debug("ALERTGROUP ALERTGROUP ALERTGROUP !!!!!!!!!!!!!!!!!!!");
+#        if ( $req_href->{request}->{json}->{parsed} ) {
+#            push @what,"reparsed";
+#        }
+#        if ( $req_href->{request}->{json}->{status} ) {
+#            push @what,"status";
+#        }
+#        my @updated_alert_ids = $self->update_alertgroup($req_href, $object);
+#        foreach my $aid (@updated_alert_ids) {
+#            $log->debug("Alert $aid was updated");
+#            $env->mq->send("scot", {
+#                action  => "updated",
+#                data    => {
+#                    who     => $user,
+#                    type    => "alert",
+#                    id      => $aid,
+#                }
+#            });
+#        }
     }
 
     if ( ref($object) eq "Scot::Model::Entry" ) {
