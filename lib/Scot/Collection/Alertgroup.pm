@@ -109,14 +109,15 @@ sub create_from_api {
             next;
         }
 
-        $mq->send("scot", {
-            action  => "created", 
-            data    => {
-                type        => "alert",
-                id          => $alert->id,
-                who         => $request->{user},
-            }
-        });
+        # amq stuff should originate out of Api.pm
+        #$mq->send("scot", {
+        #    action  => "created", 
+        #    data    => {
+        #        type        => "alert",
+        #        id          => $alert->id,
+        #        who         => $request->{user},
+        #    }
+        #});
 
         # not sure we need a notification for every alert, maybe just alertgroup
         # alert triage may want this at some point though
@@ -136,13 +137,14 @@ sub create_from_api {
             alert_count     => $alert_count,
         }
     });
-    $self->env->mq->send("scot",{
-        action  => "created", 
-        data    => {
-            type    => "alertgroup",
-            id      => $alertgroup->id
-        }
-    });
+    # amq stuff should originate out of Api.pm
+    #$self->env->mq->send("scot",{
+    #    action  => "created", 
+    #    data    => {
+    #        type    => "alertgroup",
+    #        id      => $alertgroup->id
+    #    }
+    #});
     return $alertgroup;
 }
 
@@ -293,5 +295,140 @@ override get_subthing => sub {
     }
 };
 
+sub update_alerts_in_alertgroup {
+    my $self     = shift;
+    my $agobj    = shift;
+    my $href     = shift;
+    my $env      = $self->env;
+    my $mongo    = $env->mongo;
+    my $log      = $env->log;
+    my $mq       = $env->mq;
+    my $status   = { updated => [] };
+    my $alertcol = $mongo->collection('Alert');
+        
+        # side effect in update_alet_in_group is the deletion of the keys
+        # req_href->{request}->{data} and req_href->{request}->{alerts}
+
+    $log->trace("Updating Alerts in Alertgroup");
+
+    my $request = $href->{request}->{json};
+    my $data    = delete $request->{data};
+    unless ($data) {
+        # might come in as $request->{alerts}
+        $data   = delete $request->{alerts};
+    }
+    unless ($data) {
+        $log->error("no alert updates in request");
+        # check for a bulk status update, eg. closing all alerts
+        # which comes in as /alertgroup/123 -d{status:"closed"}
+        unless ( defined($request->{status}) or  defined($request->{parsed})) {
+            return $status;
+        }
+        # yes, this means in this case two database calls, 
+        # one here and then again to update, but
+        # optimize later if this proves to be a slow down
+        my $cursor = $alertcol->find({alertgroup => $agobj->id});
+        while (my $alert = $cursor->next ) {
+            my $update  = {
+                id  => $alert->id,
+            };
+            if ( $request->{status} ) {
+                $update->{status} = $request->{status};
+            }
+            if ( $request->{parsed} ) {
+                $update->{parsed} = $request->{parsed};
+            }
+            push @{$data}, $update;
+        }
+    }
+    $log->debug("Update with ", {filter=>\&Dumper, value=>$data});
+
+    ALERT:
+    foreach my $alert_href (@$data) {
+        my $alert_id    = delete $alert_href->{id};
+        unless ($alert_id) {
+            $log->error("can not update alert in alertgroup without alert id");
+            push @{$status->{no_id}}, $alert_id;
+            next ALERT;
+        }
+        $log->debug("Updating Alert $alert_id in Alertgroup ".$agobj->id);
+        my $alertobj    = $alertcol->find_iid($alert_id);
+        unless ($alertobj) {
+            $log->error("Alert $alert_id not found!");
+            push @{$status->{not_found}}, $alert_id;
+            next ALERT;
+        }
+        unless ($alertobj->update({ '$set' => $alert_href })) {
+            $log->error("Error applying update to ". $alertobj->id);
+            push @{$status->{error}}, $alertobj->id;
+        }
+        else {
+            push @{$status->{updated}}, $alertobj->id;
+        }
+    }
+    return $status;
+}
+
+sub get_bundled_alertgroup {
+    my $self    = shift;
+    my $id      = shift;
+    my $agobj   = $self->find_iid($id);
+    my $href    = $agobj->as_hash;
+    my $col     = $self->env->mongo->collection('Alert');
+    my $cur     = $col->find({alertgroup => $id});
+    while (my $alert = $cur->next) {
+        my $ahref   = $alert->as_hash;
+        push @{ $href->{alerts} }, $ahref;
+    }
+    return $href;
+}
+
+sub update_alertgroup_with_bundled_alert {
+    my $self    = shift;
+    my $putdata = shift;
+    my $env      = $self->env;
+    my $mongo    = $env->mongo;
+    my $log      = $env->log;
+
+    my $alertgroup_id = $putdata->{id};
+    my $alertgroup    = $self->find_iid($alertgroup_id);
+
+    unless ( $alertgroup ) {
+        $log->error("Unable to find alertgroup $alertgroup_id");
+        return undef;
+    }
+
+    my $alerts  = delete $putdata->{alerts};
+    unless ($alerts) {
+        $log->warn("No Alerts in Alertgroup!");
+    }
+
+    my $alertcol    = $mongo->collection('Alert');
+    foreach my $alert (@$alerts) {
+        my $alert_id    = $alert->{id};
+        my $alert_obj   = $alertcol->find_iid($alert_id);
+        my $entities    = delete $alert->{entities};
+        if ( $alert_obj->update({'$set' => $alert}) ) {
+            $log->debug("updated alert $alert_id");
+            if ( defined $entities and scalar(@$entities) > 0 ) {
+                $mongo->collection('Entity')->update_entities($alert_obj, $entities);
+            }
+        }
+        else {
+            $log->error("failed to update alert $alert_id");
+        }
+
+    }
+
+    
+
+    if ( $alertgroup->update({'$set' => $putdata}) ) {
+        $log->debug("updated alertgroup");
+    }
+    else {
+        $log->error("failed to update alertgroup");
+    }
+}
 
 1;
+
