@@ -533,22 +533,28 @@ module.exports = React.createClass({
 	                    newarray[key][num] = date.toLocaleString()
 	                }
                     else if (num == 'sources' || num == 'source'){
-                        newarray[key]["sources"] = item
+                        var sourcearr = item.join(', ')
+                        newarray[key]["source"] = sourcearr;
                     }
                     else if (num == 'tags' || num == 'tag'){
-                        newarray[key]["tags"] = item
-                    }
+                        var tagarr = item.join(', ')
+                        newarray[key]["tag"] = tagarr;
+                    } 
 	                else{
 	                    newarray[key][num] = item
 	                }
-	            })
+                    if (num == 'id') {
+                        //Store.storeKey(item)
+                        //Store.addChangeListener(this.reloadactive)
+                    }
+	            }.bind(this))
                 if(key %2 == 0){
                     newarray[key]['classname'] = 'table-row roweven'
                 }
                 else {
                     newarray[key]['classname'] = 'table-row rowodd'
                 }
-	        })
+	        }.bind(this))
                 this.setState({totalcount: response.totalRecordCount, activepage: {page:pageNumber, limit:pageLimit}, objectarray: newarray})
         }.bind(this))
         //get incident handler
@@ -658,7 +664,7 @@ module.exports = React.createClass({
         )
     },
     createNewThing: function(){
-    var data = JSON.stringify({subject: 'No Subject', source: ['No Source']})
+    var data = JSON.stringify({subject: 'No Subject'})
         $.ajax({
             type: 'POST',
             url: '/scot/api/v2/'+this.props.type,
