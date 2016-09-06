@@ -20,7 +20,7 @@ var Source = React.createClass({
         var type = this.props.type;
         var data = this.props.data;
         for (i=0; i < data.length; i++) {
-            rows.push(<SourceDataIterator key={data[i].id} data={data[i]} id={id} type={type} updated={this.props.updated} />);
+            rows.push(<SourceDataIterator data={data} dataOne={data[i]} id={id} type={type} updated={this.props.updated} />);
         }
         return (
             <div>
@@ -33,31 +33,46 @@ var Source = React.createClass({
 });
 
 var SourceDataIterator = React.createClass({
-    getInitialState: function() {
-        return {
-            source:true,
-            key:this.props.id,
-        }
-    },
     sourceDelete: function() {
+        var data = this.props.data;
+        var newSourceArr = [];
+        for (i=0; i < data.length; i++) {
+            if (data[i] != undefined) {
+                if (typeof(data[i]) == 'string') {
+                    if (data[i] != this.props.dataOne) {
+                        newSourceArr.push(data[i]);
+                    }
+                } else {
+                    if (data[i].value != this.props.dataOne.value) {
+                        newSourceArr.push(data[i].value);
+                    }
+                }
+            }
+        }
         $.ajax({
-            type: 'delete',
-            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/source/' + this.props.data.id, 
+            type: 'put',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id, 
+            data: JSON.stringify({'source':newSourceArr}),
             success: function(data) {
                 console.log('deleted source success: ' + data);
-                var key = this.state.key;
-                AppActions.updateItem(key,'headerUpdate');
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to delete the source');
             }.bind(this)
         });
-        this.setState({source:false});
     },
     render: function() {
-        data = this.props.data;
+        dataOne = this.props.dataOne;
+        var value;
+        if (typeof(dataOne) == 'string') {
+            value = dataOne;
+        } else if (typeof(dataOne) == 'object') {
+            if (dataOne != undefined) {
+                value = dataOne.value;
+            }
+        }
         return (
-            <Button id="event_source" bsSize={'xsmall'} onClick={this.sourceDelete}>{data.value} <span style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></Button>
+            <Button id="event_source" bsSize={'xsmall'} onClick={this.sourceDelete}>{value} <span style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></Button>
         )
     }
 });
@@ -66,16 +81,21 @@ var NewSource = React.createClass({
     getInitialState: function() {
         return {
             suggestions: this.props.options,
-            key:this.props.id,
         }
     },
-    handleAddition: function(tag) {
+    handleAddition: function(source) {
         var newSourceArr = [];
         var data = this.props.data;
         for (i=0; i < data.length; i++) {
-            newSourceArr.push(data[i].value);
+            if (data[i] != undefined) {
+                if(typeof(data[i]) == 'string') {
+                    newSourceArr.push(data[i]);
+                } else {
+                    newSourceArr.push(data[i].value);
+                }
+            }
         }
-        newSourceArr.push(tag);
+        newSourceArr.push(source);
         $.ajax({
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
@@ -84,8 +104,6 @@ var NewSource = React.createClass({
             success: function(data) {
                 console.log('success: source added');
                 this.props.toggleSourceEntry();
-                var key = this.state.key;
-                AppActions.updateItem(key,'headerUpdate');    
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to add source');

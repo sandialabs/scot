@@ -11,7 +11,7 @@ var SelectedContainer = React.createClass({
             width = 'calc(100% ' + '- ' + $('#list-view').width() + 'px)';
         }
         return (
-            <div className="entry-container" style={{width: width,position: 'relative'}}> 
+            <div className="entry-container" style={{width: width,position: 'relative'}} tabIndex='1'> 
                 {datarows}
             </div>
         );
