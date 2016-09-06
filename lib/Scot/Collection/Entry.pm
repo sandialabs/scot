@@ -121,15 +121,16 @@ EOF
 
     # TODO: need to actually update the updated time in the target
 
-    my $mq      = $env->mq;
-    $mq->send("scot", {
-        action  => 'updated',
-        data    => {
-            type    => $target_type,
-            id      => $target_id,
-            who     => 'fileupload',
-        }
-    });
+    # Api.pm should do this
+    #my $mq      = $env->mq;
+    #$mq->send("scot", {
+    #    action  => 'updated',
+    #    data    => {
+    #        type    => $target_type,
+    #        id      => $target_id,
+    #        who     => 'fileupload',
+    #    }
+    #});
 
     return $entry_obj;
 

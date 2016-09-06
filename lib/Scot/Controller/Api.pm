@@ -561,12 +561,13 @@ sub get_one {
 
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
         $log->debug("Alertgroup asked for, bundling Alerts");
-        my $col = $mongo->collection('Alert');
-        my $cur = $col->find({alertgroup => $object->id});
-        while ( my $alert = $cur->next ) {
-            my $ahref = $alert->as_hash;
-            push @{$data_href->{alerts}}, $ahref;
-        }
+        my $col = $mongo->collection('Alertgroup');
+        $data_href = $col->get_bundled_alertgroup($object->id);
+        #my $cur = $col->find({alertgroup => $object->id});
+        #while ( my $alert = $cur->next ) {
+        #    my $ahref = $alert->as_hash;
+        #    push @{$data_href->{alerts}}, $ahref;
+        #}
     }
 
 
