@@ -19,7 +19,7 @@ var Tag = React.createClass({
         var type = this.props.type;
         var data = this.props.data;
         for (i=0; i < data.length; i++) {
-            rows.push(<TagDataIterator key={data[i].id} data={data[i]} id={id} type={type} updated={this.props.updated} />);
+            rows.push(<TagDataIterator data={data} dataOne={data[i]} id={id} type={type} updated={this.props.updated} />);
         }
         return (
             <div>
@@ -33,30 +33,46 @@ var Tag = React.createClass({
 });
 
 var TagDataIterator = React.createClass({
-    getInitialState: function() {
-        return {
-            tag:true,
-            key: this.props.id,
-        }
-    },
     tagDelete: function() {
+        var data = this.props.data;
+        var newTagArr = [];
+        for (i=0; i < data.length; i++) {
+            if (data[i] != undefined) {
+                if (typeof(data[i]) == 'string') {
+                    if (data[i] != this.props.dataOne) {
+                        newTagArr.push(data[i]); 
+                    }
+                } else {
+                    if (data[i].value != this.props.dataOne.value) {
+                        newTagArr.push(data[i].value);
+                    }
+                }
+            }
+        }
         $.ajax({
-            type: 'delete',
-            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag/' + this.props.data.id,
+            type: 'put',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
+            data: JSON.stringify({'tag':newTagArr}),
             success: function(data) {
                 console.log('deleted tag success: ' + data);
-                var key = this.state.key;
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to delete tag');
             }.bind(this)
         });
-        this.setState({tag:false});
-        },
+    },
     render: function() {
-        data = this.props.data;
+        dataOne = this.props.dataOne;
+        var value;
+        if (typeof(dataOne) == 'string') {
+            value = dataOne;
+        } else if (typeof(dataOne) == 'object') {
+            if (dataOne != undefined) {
+                value = dataOne.value;
+            }
+        }
         return (
-            <Button id="event_tag" bsSize={'xsmall'} onClick={this.tagDelete}>{data.value} <span style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></Button>
+            <Button id="event_tag" bsSize={'xsmall'} onClick={this.tagDelete}>{value} <span style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></Button>
         )
     }
 });
@@ -65,14 +81,19 @@ var NewTag = React.createClass({
     getInitialState: function() {
         return {
             suggestions: this.props.options,
-            key:this.props.id
         }
     },
     handleAddition: function(tag) {
         var newTagArr = [];
         var data = this.props.data;
         for (i=0; i < data.length; i++) {
-            newTagArr.push(data[i].value);
+            if (data[i] != undefined) {
+                if (typeof(data[i]) == 'string') {
+                    newTagArr.push(data[i]);
+                } else {
+                    newTagArr.push(data[i].value);
+                }
+            }
         }
         newTagArr.push(tag);
         $.ajax({
@@ -83,7 +104,6 @@ var NewTag = React.createClass({
             success: function(data) {
                 console.log('success: tag added');
                 this.props.toggleTagEntry();
-                var key = this.state.key;
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to add tag');

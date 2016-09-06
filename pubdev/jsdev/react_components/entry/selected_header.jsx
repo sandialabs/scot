@@ -30,10 +30,8 @@ var SelectedHeader = React.createClass({
         return {
             showEventData:false,
             headerData:null,
-            showSource:false,
             sourceData:'',
             tagData:'',
-            showTag:false,
             permissionsToolbar:false,
             entitiesToolbar:false,
             changeHistoryToolbar:false,
@@ -54,9 +52,7 @@ var SelectedHeader = React.createClass({
             linkWarningToolbar:false,
             refreshing:false,
             loading: false,
-            sourceLoaded:false,
             eventLoaded:false,
-            tagLoaded:false,
             entryLoaded:false,
             entityLoaded:false,
             alertSelected:false,
@@ -74,64 +70,25 @@ var SelectedHeader = React.createClass({
         this.setState({loading:true});
     },
     componentDidMount: function() {
-        //this.setState({loading:true});
         var entryType = 'entry';
         if (this.props.type == 'alertgroup') { entryType = 'alert' };
-        //source load 
-        $.ajax({
-            type: 'get',
-            url:'scot/api/v2/' + this.props.type + '/' + this.props.id + '/source',
-            success:function(result) {
-                var sourceResult = result.records;
-                this.setState({showSource:true, sourceData:sourceResult})
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                    this.setState({loading:false});        
-                }
-            }.bind(this),
-            error: function(result) {
-                this.setState({showSource:true})
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                    this.setState({loading:false});        
-                }
-                this.errorToggle("No data returned for source lookup (404 or another network error) Error: " + result.responseText);
-            }.bind(this),
-        });
         //Main Type Load
         $.ajax({
             type:'get',
             url:'scot/api/v2/' + this.props.type + '/' + this.props.id,
             success:function(result) {
                 var eventResult = result;
-                this.setState({headerData:eventResult,showEventData:true, isNotFound:false})
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                this.setState({headerData:eventResult,showEventData:true, isNotFound:false, tagData:eventResult.tag, sourceData:eventResult.source})
+                if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                     this.setState({loading:false})
                 }
             }.bind(this),
             error: function(result) {
                 this.setState({showEventData:true, isNotFound:true})
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                     this.setState({loading:false})
                 }
                 this.errorToggle("No data returned for main lookup (404 or another network error) Error: " + result.responseText);
-            }.bind(this),
-        });
-        //tag load
-        $.ajax({
-            type: 'get',
-            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag',
-            success: function(result) {
-                var tagResult = result.records;
-                this.setState({showTag:true, tagData:tagResult});
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                    this.setState({loading:false});
-                }
-            }.bind(this),
-            error: function(result) {
-                this.setState({showTag:true});
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                    this.setState({loading:false});
-                } 
-                this.errorToggle("No data returned for tag lookup (404 or another network error) Error: " + result.responseText);
             }.bind(this),
         });
         //entry load
@@ -142,13 +99,13 @@ var SelectedHeader = React.createClass({
                 var entryResult = result.records;
                 this.setState({showEntryData:true, entryData:entryResult})
                 Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                     this.setState({loading:false});
                 }
             }.bind(this),
             error: function(result) {
                 this.setState({showEntryData:true})
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                     this.setState({loading:false});
                 }
                 this.errorToggle("No data returned for entry lookup (404 or another network error) Error: " + result.responseText);
@@ -168,7 +125,7 @@ var SelectedHeader = React.createClass({
                         } else {
                             alertgroupforentity = false;
                             setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,this.scrollTo)}.bind(this));
-                            if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                            if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                                 this.setState({loading:false});        
                             }
                         }
@@ -178,7 +135,7 @@ var SelectedHeader = React.createClass({
             }.bind(this),
             error: function(result) {
                 this.setState({showEntityData:true})
-                if (this.state.showSource == true && this.state.showEventData == true && this.state.showTag == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                     this.setState({loading:false});
                 }
                 this.errorToggle("No data returned for entity lookup (404 or another network error) Error: " + result.responseText);
@@ -205,121 +162,80 @@ var SelectedHeader = React.createClass({
         }
         Store.storeKey(this.props.id);
         Store.addChangeListener(this.updated); 
-        //Store.storeKey('entryNotification')
     }, 
     updated: function(_type,_message) { 
-        this.setState({refreshing:true, sourceLoaded:false,eventLoaded:false,tagLoaded:false,entryLoaded:false,entityLoaded:false});
+        this.setState({refreshing:true, eventLoaded:false,entryLoaded:false,entityLoaded:false});
         var entryType = 'entry';
         if (this.props.type == 'alertgroup') {entryType = 'alert'};
-        setTimeout(function(){
-            //source load
-            $.ajax({
-                type: 'get',
-                url:'scot/api/v2/' + this.props.type + '/' + this.props.id + '/source',
-                success:function(result) {
-                    var sourceResult = result.records;
-                    this.setState({showSource:true, sourceLoaded:true, sourceData:sourceResult})
-                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                        this.setState({refreshing:false});
-                    } 
-                }.bind(this),
-                error: function(result) {
-                    this.setState({showSource:true, sourceLoaded:true})
-                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                        this.setState({refreshing:false});
-                    } 
-                    this.errorToggle("No data returned for source lookup (404 or another network error) Error: " + result.responseText);
-                }.bind(this),
-            });
-            //main type load
-            $.ajax({
-                type:'get',
-                url:'scot/api/v2/' + this.props.type + '/' + this.props.id,
-                success:function(result) {
-                    var eventResult = result;
-                    this.setState({headerData:eventResult,showEventData:true, eventLoaded:true, isNotFound:false})
-                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                        this.setState({refreshing:false})
-                    }
-                }.bind(this),
-                error: function(result) {
-                    this.setState({showEventData:true, eventLoaded:true, isNotFound:true})
-                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                        this.setState({refreshing:false})
-                    }
-                    this.errorToggle("No Data Returned (404 or another network error) Error: " + result.responseText);
-                }.bind(this),
-            });    
-            //tag load
-            $.ajax({
-                type: 'get',
-                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag',
-                success: function(result) {
-                    var tagResult = result.records;
-                    this.setState({showTag:true, tagLoaded:true, tagData:tagResult});
-                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                        this.setState({refreshing:false});
-                    }
-                }.bind(this),
-                error: function(result) {
-                    this.setState({showTag:true, tagLoaded:true});
-                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                        this.setState({refreshing:false});
-                    } 
-                    this.errorToggle("No data returned for tag lookup (404 or another network error) Error: " + result.responseText);
-                }.bind(this),
-            });
-            //entry load
-            $.ajax({
-                type: 'get',
-                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType,
-                success: function(result) {
-                    var entryResult = result.records;
-                    this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult})
-                    Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
-                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                        this.setState({refreshing:false});
-                    } 
-                }.bind(this),
-                error: function(result) {
-                    this.setState({showEntryData:true, entryLoaded:true})
-                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                        this.setState({refreshing:false});
-                    } 
-                    this.errorToggle("No data returned for entry lookup (404 or another network error) Error: " + result.responseText);
+        //main type load
+        $.ajax({
+            type:'get',
+            url:'scot/api/v2/' + this.props.type + '/' + this.props.id,
+            success:function(result) {
+                var eventResult = result;
+                this.setState({headerData:eventResult,showEventData:true, eventLoaded:true, isNotFound:false, tagData:eventResult.tag, sourceData:eventResult.source})
+                if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                    this.setState({refreshing:false})
                 }
-            });
-            //entity load
-            $.ajax({
-                type: 'get',
-                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
-                success: function(result) {
-                    var entityResult = result.records;
-                    this.setState({showEntityData:true, entityLoaded:true, entityData:entityResult})
-                    var waitForEntry = {
-                        waitEntry: function() {
-                            if(this.state.entryLoaded == false && alertgroupforentity === false){
-                                setTimeout(waitForEntry.waitEntry,50);
-                            } else {
-                                alertgroupforentity = false;
-                                setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
-                                if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                                    this.setState({refreshing:false});
-                                }
+            }.bind(this),
+            error: function(result) {
+                this.setState({showEventData:true, eventLoaded:true, isNotFound:true})
+                if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                    this.setState({refreshing:false})
+                }
+                this.errorToggle("No Data Returned (404 or another network error) Error: " + result.responseText);
+            }.bind(this),
+        });    
+        //entry load
+        $.ajax({
+            type: 'get',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType,
+            success: function(result) {
+                var entryResult = result.records;
+                this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult})
+                Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
+                if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                    this.setState({refreshing:false});
+                } 
+            }.bind(this),
+            error: function(result) {
+                this.setState({showEntryData:true, entryLoaded:true})
+                if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                    this.setState({refreshing:false});
+                } 
+                this.errorToggle("No data returned for entry lookup (404 or another network error) Error: " + result.responseText);
+            }
+        });
+        //entity load
+        $.ajax({
+            type: 'get',
+            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
+            success: function(result) {
+                var entityResult = result.records;
+                this.setState({showEntityData:true, entityLoaded:true, entityData:entityResult})
+                var waitForEntry = {
+                    waitEntry: function() {
+                        if(this.state.entryLoaded == false && alertgroupforentity === false){
+                            setTimeout(waitForEntry.waitEntry,50);
+                        } else {
+                            alertgroupforentity = false;
+                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+                            if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                                this.setState({refreshing:false});
                             }
-                        }.bind(this)
-                    };
-                    waitForEntry.waitEntry();                    
-                }.bind(this),
-                error: function(result) {
-                    this.setState({showEntityData:true})
-                    if (this.state.sourceLoaded == true && this.state.eventLoaded == true && this.state.tagLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                        this.setState({refreshing:false});
-                    } 
-                    this.errorToggle("No data returned for entity lookup (404 or another network error) Error: " + result.responseText);
-                }.bind(this)
-            });
-        }.bind(this),0)
+                        }
+                    }.bind(this)
+                };
+                waitForEntry.waitEntry();                    
+            }.bind(this),
+            error: function(result) {
+                this.setState({showEntityData:true})
+                if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                    this.setState({refreshing:false});
+                } 
+                this.errorToggle("No data returned for entity lookup (404 or another network error) Error: " + result.responseText);
+            }.bind(this)
+        });
         //error popup if an error occurs
         if (_type!= undefined && _message != undefined) {
             this.errorToggle(_message);
@@ -527,9 +443,9 @@ var SelectedHeader = React.createClass({
                                         {(type == 'event' || type == 'incident') && this.state.showEventData ? <PromotedData data={this.state.headerData.promoted_from} type={type} id={id} /> : null}
                                         
                                         <th>Tags: </th>
-                                        <td>{this.state.showTag ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}</td>
+                                        <td>{this.state.showEventData ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}</td>
                                         <th>Source: </th>
-                                        <td>{this.state.showSource ? <Source data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }</td>
+                                        <td>{this.state.showEventData ? <Source data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -574,19 +490,22 @@ var EntryDataStatus = React.createClass({
     componentDidMount: function() {
         //Adds open/close hot keys for alertgroup
         if (this.props.type == 'alertgroup') {
-            $(document.body).keydown(function(event){
+            $('.entry-container').keydown(function(event){
                 //prevent from working when in input
                 if ($('input').is(':focus')) {return};
                 //check for character "o" for 79 or "c" for 67
                 if (this.state.buttonStatus != 'promoted') {
-                    if (event.keyCode == 79) {
+                    if (event.keyCode == 79 && (event.ctrlKey != true && event.metaKey != true)) {
                         this.statusAjax('open');
-                    } else if (event.keyCode == 67) {
+                    } else if (event.keyCode == 67 && (event.ctrlKey != true && event.metaKey != true)) {
                         this.statusAjax('closed');
                     }
                 }
             }.bind(this))
         }
+    },
+    componentWillUnmount: function() {
+        $('.entry-container').unbind('keydown');
     },
     componentWillReceiveProps: function() {
         this.setState({buttonStatus:this.props.data.status});
