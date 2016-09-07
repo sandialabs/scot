@@ -64,14 +64,14 @@ module.exports = React.createClass({
         return {
             splitter: true, 
             mute: false, selectedColor: '#AEDAFF',
-            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: this.props.defaultActivePage,
+            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: this.props.listViewPage,
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             alldetail : true, viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
             resize: 'horizontal',createdarrow: [0, 0], sourcearrow:[0, 0],tagsarrow: [0, 0],
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: null, listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.defaultSort, filter: this.props.defaultFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1};
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: null, listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.listViewSort, filter: this.props.listViewFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true};
     },
     componentWillMount: function() {
         if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
@@ -81,23 +81,30 @@ module.exports = React.createClass({
         } else if (this.props.viewMode == 'portrait') {
             this.Portrait();
         }
-        if (this.state.sort == null) {
-            this.setState({sort:{'id':-1}})
+        if (this.state.sort != null) {
+            var sort = JSON.parse(this.state.sort)
+            this.setState({sort:sort}); 
+        } else {
+            this.setState({sort:{'id':-1}});
         }
-        if (this.state.activepage == null) {
+        if (this.state.activepage != null) {
+            var activepage = JSON.parse(this.state.activepage);
+            this.setState({activepage:activepage});
+        } else{
             this.setState({activepage: {page:0, limit:50}});
         }
-        if (this.state.filter == null) {
-           this.handleFilter(null,null,true);
+        if (this.state.filter != null) {
+            var filter = JSON.parse(this.state.filter);
+            this.setState({filter:filter}); 
         }
     },
     componentDidMount: function(){
-        /*var t2 = document.getElementById('fluid2')
-        $(t2).resize(function(){
-            this.reloadItem()
-        }.bind(this))
-        window.addEventListener('resize',this.reloadItem);*/
         var height = this.state.scrollheight
+        var sortBy = this.state.sort;
+        var filterBy = this.state.filter;
+        var pageLimit = this.state.activepage.limit;
+        var pageNumber = this.state.activepage.page;
+        var newPage;
         if(this.props.id != undefined){
             if(this.props.id.length > 0){
                 array = this.props.id
@@ -107,6 +114,7 @@ module.exports = React.createClass({
                 }
             }
         }
+
         if (this.props.type == 'alert') {
             $.ajax({
                 type: 'get',
@@ -116,6 +124,7 @@ module.exports = React.createClass({
                 this.setState({id: newresponse.alertgroup, showSelectedContainer:true})
             }.bind(this))
         };
+
         var array = []
         var finalarray = [];
         //register for creation
@@ -127,15 +136,19 @@ module.exports = React.createClass({
         if (this.props.type == 'alert') {
             url = '/scot/api/v2/alertgroup'
         }
+        //get page number
+        if  (pageNumber != 0){
+            newPage = (pageNumber - 1) * pageLimit
+        } else {
+            newPage = 0;
+        } 
+        var data = {limit:pageLimit, offset: newPage, sort: JSON.stringify(sortBy)}
+
         $.ajax({
 	        type: 'GET',
 	        url: url,
-	        data: {
-	            limit: this.state.activepage.limit,
-	            offset: this.state.offset,
-	            sort:  JSON.stringify(this.state.sort),
-	            //match: JSON.stringify(filter)
-	        }
+	        data: data,
+            traditional:true,
 	    }).then(function(response){
   	        datasource = response	
 	        $.each(datasource.records, function(key, value){
@@ -169,7 +182,7 @@ module.exports = React.createClass({
                     finalarray[key]["classname"] = 'table-row rowodd'
                 }
             }.bind(this))
-            this.setState({scrollheight:height, objectarray: finalarray, totalcount: response.totalRecordCount});
+            this.setState({scrollheight:height, objectarray: finalarray, totalcount: response.totalRecordCount, loading:false});
             if (this.props.type == 'alert' && this.state.showSelectedContainer == false) {
                 this.setState({showSelectedContainer:false})
             } else if (this.state.id == undefined) {
@@ -344,7 +357,7 @@ module.exports = React.createClass({
                                 <Button eventKey='5' bsSize='xsmall' onClick={this.exportCSV}>Export to CSV</Button> 
                                 <Button bsSize='xsmall' onClick={this.toggleView}>Full Screen Toggle (f)</Button>
                             </div>
-                                <div id='list-view-container' style={{display:this.state.listViewContainerDisplay, height:listViewContainerHeight}}>
+                                <div id='list-view-container' style={{display:this.state.listViewContainerDisplay, height:listViewContainerHeight, opacity:this.state.loading ? '.2' : '1'}}>
                                     <div id={this.state.listViewOrientation}>
                                         <div className='tableview' style={{display: 'flex'}}>
                                             <div id='fluid2' className="container-fluid2" style={{width:'100%', 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow': 'hidden','padding-left':'5px', display:'flex', flexFlow: 'column'}}>                 
@@ -361,7 +374,7 @@ module.exports = React.createClass({
                                             </div>
                                         </div>
                                     </div>
-                                    <Page pagefunction={this.getNewData} defaultPageSize={50} count={this.state.totalcount} pagination={true} />
+                                    <Page pagefunction={this.getNewData} defaultPageSize={50} count={this.state.totalcount} pagination={true} type={this.props.type} defaultpage={this.state.activepage.page}/>
                                     <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
                                 </div>
                             {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid}/> : null}
@@ -452,6 +465,9 @@ module.exports = React.createClass({
         this.setState({listViewKey:newListViewKey, activePage: {page:0, limit:50}, sort:{'id':-1}});  
         this.handleFilter(null,null,true); //clear filters
         this.getNewData({page:0, limit:50}, {'id':-1}, {})
+        deleteCookie('listViewFilter'+this.props.type) //clear filter cookie
+        deleteCookie('listViewSort'+this.props.type) //clear sort cookie
+        deleteCookie('listViewPage'+this.props.type) //clear page cookie
     },
     clearNote: function(){
         if(this.state.mute){
@@ -473,6 +489,7 @@ module.exports = React.createClass({
         //scrolled = $('.list-view-data-div').scrollTop() 
     },
     getNewData: function(page, sort, filter){
+        this.setState({loading:true}); //display loading opacity
         var sortBy = sort;
         var filterBy = filter;
         var pageLimit;
@@ -505,7 +522,7 @@ module.exports = React.createClass({
             sortBy = this.state.sort;
         } 
         //filter check
-        if (filterBy == undefined) {
+        if (filterBy == undefined){
             filterBy = this.state.filter;
         }
         var data = {limit: pageLimit, offset: newPage, sort: JSON.stringify(sortBy)}
@@ -555,7 +572,7 @@ module.exports = React.createClass({
                     newarray[key]['classname'] = 'table-row rowodd'
                 }
 	        }.bind(this))
-                this.setState({totalcount: response.totalRecordCount, activepage: {page:pageNumber, limit:pageLimit}, objectarray: newarray})
+                this.setState({totalcount: response.totalRecordCount, activepage: {page:pageNumber, limit:pageLimit}, objectarray: newarray, loading:false})
         }.bind(this))
         //get incident handler
         $.ajax({
@@ -587,29 +604,35 @@ module.exports = React.createClass({
 	    var data_uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
 	    window.open(data_uri)		
     },
-    handleSort : function(column){
+    handleSort : function(column, clearall){
         var currentSort = this.state.sort;
         var intDirection;
-        if(Object.keys(currentSort).length === 0 && currentSort.constructor === Object) {
-            currentSort[column] = direction;
-        } else {
-            var obj = Object.keys(currentSort);
-            if (obj[0] == column) {
-                var direction = currentSort[obj];
-                if (direction == -1) { 
-                    intDirection = 1;
-                } else {
-                    intDirection = -1;
-                }
-                currentSort[column] = intDirection;
+        if (clearall == true) {
+            this.setState({sort:{'id':-1}});
+        } else{
+            if(Object.keys(currentSort).length === 0 && currentSort.constructor === Object) {
+                currentSort[column] = direction;
             } else {
-                currentSort = {};
-                currentSort[column] = 1;
+                var obj = Object.keys(currentSort);
+                if (obj[0] == column) {
+                    var direction = currentSort[obj];
+                    if (direction == -1) { 
+                        intDirection = 1;
+                    } else {
+                        intDirection = -1;
+                    }
+                    currentSort[column] = intDirection;
+                } else {
+                    currentSort = {};
+                    currentSort[column] = 1;
+                }
             }
+            this.setState({sort:currentSort}); 
+            this.getNewData(null, currentSort, null)   
+	        var cookieName = 'listViewSort' + this.props.type;
+            setCookie(cookieName,JSON.stringify(currentSort),1000);
         }
-        this.setState({sort:currentSort}); 
-        this.getNewData(null, currentSort, null)   
-	},
+    },
 
 
     handleFilter: function(column,string,clearall){
@@ -655,6 +678,8 @@ module.exports = React.createClass({
             }
             this.setState({filter:newFilterObj});
             this.getNewData({page:0},null,newFilterObj)
+            var cookieName = 'listViewFilter' + this.props.type;
+            setCookie(cookieName,JSON.stringify(newFilterObj),1000);
         }
     },
     titleCase: function(string) {

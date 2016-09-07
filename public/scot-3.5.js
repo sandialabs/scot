@@ -1661,7 +1661,12 @@ var Page = React.createClass({displayName: "Page",
    
 
     getInitialState: function(){
-        return {defaultpage: 1, defaultPageSize: this.props.defaultPageSize}
+        var defaultpage = 1; 
+        if (this.props.defaultpage != undefined) {
+            defaultpage = this.props.defaultpage
+        }
+        if (defaultpage == 0) { defaultpage = 1}
+        return {defaultpage: defaultpage, defaultPageSize: this.props.defaultPageSize}
 
     },
     preparePaging: function preparePaging(props) {
@@ -1747,7 +1752,9 @@ var Page = React.createClass({displayName: "Page",
                 scrollTop: 0
             });
             
-            this.props.pagefunction({page: page, limit: this.state.defaultPageSize})
+            this.props.pagefunction({page: page, limit: this.state.defaultPageSize});
+            var cookieName = 'listViewPage'+this.props.type;
+            setCookie(cookieName,JSON.stringify({page:page, limit: this.state.defaultPageSize}),1000); 
         }
     },
     render: function(){
@@ -5829,7 +5836,10 @@ var App = React.createClass({displayName: "App",
     componentWillMount: function() {
         //Get landscape/portrait view if the cookie exists
         var viewModeSetting = checkCookie('viewMode');
-        this.setState({viewMode:viewModeSetting})
+        var listViewFilterSetting = checkCookie('listViewFilter'+this.props.params.value.toLowerCase());
+        var listViewSortSetting = checkCookie('listViewSort'+this.props.params.value.toLowerCase());
+        var listViewPageSetting = checkCookie('listViewPage'+this.props.params.value.toLowerCase());
+        this.setState({viewMode:viewModeSetting,listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting})
     },
    render: function() {
 	    var array = []
@@ -5892,35 +5902,35 @@ var App = React.createClass({displayName: "App",
             :
         this.state.set == 1
         ?	
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {isalert: isalert ? 'isalert' : '', id: this.state.id, viewMode: this.state.viewMode, type:statetype}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {isalert: isalert ? 'isalert' : '', id: this.state.id, viewMode: this.state.viewMode, type:statetype, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
         :
             this.state.set == 2
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type:'event'}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type:'event', listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
         :
             this.state.set == 3
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type:'incident'}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type:'incident', listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
         :
         this.state.set == 5
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(SelectedContainer, {id: this.state.id, type: statetype, viewMode: this.state.viewMode}))
+        React.createElement(ExpandableNavPage, null, React.createElement(SelectedContainer, {id: this.state.id, type: statetype, viewMode: this.state.viewMode, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))
         :
         this.state.set == 4
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type: 'intel'}))
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type: 'intel', listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))
         :
         this.state.set == 6
         ?	
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {viewMode: this.state.viewMode, type:'task'}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {viewMode: this.state.viewMode, type:'task', listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
         :
         this.state.set == 7
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, viewMode: this.state.viewMode, type:'guide'}))
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, viewMode: this.state.viewMode, type:'guide', listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))
         :
         this.state.set == 8
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(EntityDetail, {entityid: this.state.id, entitytype: 'entity', id: this.state.id, type: 'entity', viewMode: this.state.viewMode}))
+        React.createElement(ExpandableNavPage, null, React.createElement(EntityDetail, {entityid: this.state.id, entitytype: 'entity', id: this.state.id, type: 'entity', viewMode: this.state.viewMode, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))
         :
         null
         )	
@@ -6386,14 +6396,14 @@ module.exports = React.createClass({displayName: "exports",
         return {
             splitter: true, 
             mute: false, selectedColor: '#AEDAFF',
-            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: this.props.defaultActivePage,
+            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: this.props.listViewPage,
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             alldetail : true, viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
             resize: 'horizontal',createdarrow: [0, 0], sourcearrow:[0, 0],tagsarrow: [0, 0],
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: null, listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.defaultSort, filter: this.props.defaultFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1};
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: null, listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.listViewSort, filter: this.props.listViewFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true};
     },
     componentWillMount: function() {
         if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
@@ -6403,23 +6413,30 @@ module.exports = React.createClass({displayName: "exports",
         } else if (this.props.viewMode == 'portrait') {
             this.Portrait();
         }
-        if (this.state.sort == null) {
-            this.setState({sort:{'id':-1}})
+        if (this.state.sort != null) {
+            var sort = JSON.parse(this.state.sort)
+            this.setState({sort:sort}); 
+        } else {
+            this.setState({sort:{'id':-1}});
         }
-        if (this.state.activepage == null) {
+        if (this.state.activepage != null) {
+            var activepage = JSON.parse(this.state.activepage);
+            this.setState({activepage:activepage});
+        } else{
             this.setState({activepage: {page:0, limit:50}});
         }
-        if (this.state.filter == null) {
-           this.handleFilter(null,null,true);
+        if (this.state.filter != null) {
+            var filter = JSON.parse(this.state.filter);
+            this.setState({filter:filter}); 
         }
     },
     componentDidMount: function(){
-        /*var t2 = document.getElementById('fluid2')
-        $(t2).resize(function(){
-            this.reloadItem()
-        }.bind(this))
-        window.addEventListener('resize',this.reloadItem);*/
         var height = this.state.scrollheight
+        var sortBy = this.state.sort;
+        var filterBy = this.state.filter;
+        var pageLimit = this.state.activepage.limit;
+        var pageNumber = this.state.activepage.page;
+        var newPage;
         if(this.props.id != undefined){
             if(this.props.id.length > 0){
                 array = this.props.id
@@ -6429,6 +6446,7 @@ module.exports = React.createClass({displayName: "exports",
                 }
             }
         }
+
         if (this.props.type == 'alert') {
             $.ajax({
                 type: 'get',
@@ -6438,6 +6456,7 @@ module.exports = React.createClass({displayName: "exports",
                 this.setState({id: newresponse.alertgroup, showSelectedContainer:true})
             }.bind(this))
         };
+
         var array = []
         var finalarray = [];
         //register for creation
@@ -6449,15 +6468,19 @@ module.exports = React.createClass({displayName: "exports",
         if (this.props.type == 'alert') {
             url = '/scot/api/v2/alertgroup'
         }
+        //get page number
+        if  (pageNumber != 0){
+            newPage = (pageNumber - 1) * pageLimit
+        } else {
+            newPage = 0;
+        } 
+        var data = {limit:pageLimit, offset: newPage, sort: JSON.stringify(sortBy)}
+
         $.ajax({
 	        type: 'GET',
 	        url: url,
-	        data: {
-	            limit: this.state.activepage.limit,
-	            offset: this.state.offset,
-	            sort:  JSON.stringify(this.state.sort),
-	            //match: JSON.stringify(filter)
-	        }
+	        data: data,
+            traditional:true,
 	    }).then(function(response){
   	        datasource = response	
 	        $.each(datasource.records, function(key, value){
@@ -6491,7 +6514,7 @@ module.exports = React.createClass({displayName: "exports",
                     finalarray[key]["classname"] = 'table-row rowodd'
                 }
             }.bind(this))
-            this.setState({scrollheight:height, objectarray: finalarray, totalcount: response.totalRecordCount});
+            this.setState({scrollheight:height, objectarray: finalarray, totalcount: response.totalRecordCount, loading:false});
             if (this.props.type == 'alert' && this.state.showSelectedContainer == false) {
                 this.setState({showSelectedContainer:false})
             } else if (this.state.id == undefined) {
@@ -6666,7 +6689,7 @@ module.exports = React.createClass({displayName: "exports",
                                 React.createElement(Button, {eventKey: "5", bsSize: "xsmall", onClick: this.exportCSV}, "Export to CSV"), 
                                 React.createElement(Button, {bsSize: "xsmall", onClick: this.toggleView}, "Full Screen Toggle (f)")
                             ), 
-                                React.createElement("div", {id: "list-view-container", style: {display:this.state.listViewContainerDisplay, height:listViewContainerHeight}}, 
+                                React.createElement("div", {id: "list-view-container", style: {display:this.state.listViewContainerDisplay, height:listViewContainerHeight, opacity:this.state.loading ? '.2' : '1'}}, 
                                     React.createElement("div", {id: this.state.listViewOrientation}, 
                                         React.createElement("div", {className: "tableview", style: {display: 'flex'}}, 
                                             React.createElement("div", {id: "fluid2", className: "container-fluid2", style: {width:'100%', 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow': 'hidden','padding-left':'5px', display:'flex', flexFlow: 'column'}}, 
@@ -6683,7 +6706,7 @@ module.exports = React.createClass({displayName: "exports",
                                             )
                                         )
                                     ), 
-                                    React.createElement(Page, {pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true}), 
+                                    React.createElement(Page, {pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true, type: this.props.type, defaultpage: this.state.activepage.page}), 
                                     React.createElement("div", {onMouseDown: this.dragdiv, className: "splitter", style: {display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}})
                                 ), 
                             this.state.showSelectedContainer ? React.createElement(SelectedContainer, {id: this.state.id, type: this.state.queryType, alertPreSelectedId: this.state.alertPreSelectedId, taskid: this.state.entryid}) : null
@@ -6774,6 +6797,9 @@ module.exports = React.createClass({displayName: "exports",
         this.setState({listViewKey:newListViewKey, activePage: {page:0, limit:50}, sort:{'id':-1}});  
         this.handleFilter(null,null,true); //clear filters
         this.getNewData({page:0, limit:50}, {'id':-1}, {})
+        deleteCookie('listViewFilter'+this.props.type) //clear filter cookie
+        deleteCookie('listViewSort'+this.props.type) //clear sort cookie
+        deleteCookie('listViewPage'+this.props.type) //clear page cookie
     },
     clearNote: function(){
         if(this.state.mute){
@@ -6795,6 +6821,7 @@ module.exports = React.createClass({displayName: "exports",
         //scrolled = $('.list-view-data-div').scrollTop() 
     },
     getNewData: function(page, sort, filter){
+        this.setState({loading:true}); //display loading opacity
         var sortBy = sort;
         var filterBy = filter;
         var pageLimit;
@@ -6827,7 +6854,7 @@ module.exports = React.createClass({displayName: "exports",
             sortBy = this.state.sort;
         } 
         //filter check
-        if (filterBy == undefined) {
+        if (filterBy == undefined){
             filterBy = this.state.filter;
         }
         var data = {limit: pageLimit, offset: newPage, sort: JSON.stringify(sortBy)}
@@ -6877,7 +6904,7 @@ module.exports = React.createClass({displayName: "exports",
                     newarray[key]['classname'] = 'table-row rowodd'
                 }
 	        }.bind(this))
-                this.setState({totalcount: response.totalRecordCount, activepage: {page:pageNumber, limit:pageLimit}, objectarray: newarray})
+                this.setState({totalcount: response.totalRecordCount, activepage: {page:pageNumber, limit:pageLimit}, objectarray: newarray, loading:false})
         }.bind(this))
         //get incident handler
         $.ajax({
@@ -6909,29 +6936,35 @@ module.exports = React.createClass({displayName: "exports",
 	    var data_uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
 	    window.open(data_uri)		
     },
-    handleSort : function(column){
+    handleSort : function(column, clearall){
         var currentSort = this.state.sort;
         var intDirection;
-        if(Object.keys(currentSort).length === 0 && currentSort.constructor === Object) {
-            currentSort[column] = direction;
-        } else {
-            var obj = Object.keys(currentSort);
-            if (obj[0] == column) {
-                var direction = currentSort[obj];
-                if (direction == -1) { 
-                    intDirection = 1;
-                } else {
-                    intDirection = -1;
-                }
-                currentSort[column] = intDirection;
+        if (clearall == true) {
+            this.setState({sort:{'id':-1}});
+        } else{
+            if(Object.keys(currentSort).length === 0 && currentSort.constructor === Object) {
+                currentSort[column] = direction;
             } else {
-                currentSort = {};
-                currentSort[column] = 1;
+                var obj = Object.keys(currentSort);
+                if (obj[0] == column) {
+                    var direction = currentSort[obj];
+                    if (direction == -1) { 
+                        intDirection = 1;
+                    } else {
+                        intDirection = -1;
+                    }
+                    currentSort[column] = intDirection;
+                } else {
+                    currentSort = {};
+                    currentSort[column] = 1;
+                }
             }
+            this.setState({sort:currentSort}); 
+            this.getNewData(null, currentSort, null)   
+	        var cookieName = 'listViewSort' + this.props.type;
+            setCookie(cookieName,JSON.stringify(currentSort),1000);
         }
-        this.setState({sort:currentSort}); 
-        this.getNewData(null, currentSort, null)   
-	},
+    },
 
 
     handleFilter: function(column,string,clearall){
@@ -6977,6 +7010,8 @@ module.exports = React.createClass({displayName: "exports",
             }
             this.setState({filter:newFilterObj});
             this.getNewData({page:0},null,newFilterObj)
+            var cookieName = 'listViewFilter' + this.props.type;
+            setCookie(cookieName,JSON.stringify(newFilterObj),1000);
         }
     },
     titleCase: function(string) {
