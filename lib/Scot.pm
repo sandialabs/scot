@@ -132,6 +132,10 @@ get JSON that was submitted with the web request
             ->to    ('controller-search#search')
             ->name  ('search');
 
+    $scot   ->route ('/api/v2/esearch')
+            ->to    ('controller-search#newsearch')
+            ->name  ('esearch');
+
     $scot   ->route ('/api/v2/command/:action')
             ->via   ('put')
             ->to    ('controller-api#do_command')

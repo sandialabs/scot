@@ -304,6 +304,7 @@ sub update_alertgroup {
     }
     else {
         $self->log->debug("doing mongo update");
+        my $agid       = $putdata->{id}; # this get blown away in agcol->
         my $mongo      = $self->env->mongo;
         my $agcol      = $mongo->collection("Alertgroup");
         $agcol->update_alertgroup_with_bundled_alert($putdata);
@@ -311,7 +312,7 @@ sub update_alertgroup {
             action  => "updated",
             data    => {
                 type    => "alertgroup",
-                id      => $putdata->{id},
+                id      => $agid,
                 who     => 'scot-flair',
             }
         });
@@ -440,7 +441,7 @@ sub update_entry {
             action  => "updated",
             data    => {
                 type    => "entry",
-                id      => $putdata->{id},
+                id      => $obj->id,
                 who     => 'scot-flair',
             }
         });
