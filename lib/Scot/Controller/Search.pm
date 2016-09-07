@@ -87,22 +87,42 @@ sub newsearch {
     $log->trace("------------");
 
     my $request = $self->req;
-    my $qstring = $request->params('qstring');
+    my $qstring = $request->param('qstring');
 
     $log->debug("Search String: $qstring");
 
     my $response = $esua->do_request_new(  # ... href of json returned.
         {
             query       => {
-                query => {
-                    simpe_query_string   => {
-                        query   => $qstring,
+                filtered    => {
+                    filter  => {
+                        or  => [
+                            { term  => { _type  => { value => "alert" } } },
+                            { term  => { _type  => { value => "entry" } } },
+                        ]
+                    },
+                    query   => {
+                        query_string    => {
+                            query   => $qstring
+                        }
+                    }
+                }
+            },
+            highlight   => {
+                #pre_tags    => [ qq|<div class="search_highlight">| ],
+                #post_tags   => [ qq|</div>| ],
+                require_field_match => \0, # encode will conver to json false
+                fields  => {
+                    '*' => {
+                        fragment_size   => 10,
+                        number_of_fragments => 1,
                     },
                 },
             },
-            sort        => [ "_score" ],
-            min_score   => 0.9,
-            size        => 20
+            _source => [ qw(id target body_plain alertgroup data) ],
+            sort    => [ qw(_score) ],
+            min_score   => 0.8,
+            size => 50,
         },
     ); 
 
