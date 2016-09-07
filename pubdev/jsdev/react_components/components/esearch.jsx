@@ -239,7 +239,7 @@ var SearchDataEachRows = React.createClass({
         var id = this.props.dataOne.id;
         var score = this.props.dataOne.score;
         var snippet = this.props.dataOne.snippet;
-        var href = '/'+type+'/'+id;
+        var href = '/#/'+type+'/'+id;
         return (
             <div style={{display:'inline-flex'}}>
                 <div style={{display:'flex'}}>
