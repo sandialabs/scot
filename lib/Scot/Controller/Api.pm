@@ -847,6 +847,9 @@ sub update {
             }
         }
 
+        # if we refactor some day, this may not be necessary
+        delete $req_href->{request}->{json}->{status}; # this should be set by the refresh of alertgroup
+
 #        OLD WAY
 #        $log->debug("ALERTGROUP ALERTGROUP ALERTGROUP !!!!!!!!!!!!!!!!!!!");
 #        if ( $req_href->{request}->{json}->{parsed} ) {
