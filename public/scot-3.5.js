@@ -1278,6 +1278,8 @@ var Search = React.createClass({displayName: "Search",
         return {
             showSearchToolbar: false,
             searchResults: null,
+            entityHeight: '60%',
+            entityWidth: '75%',
         }
     },	
     doSearch: function(string) {
@@ -1304,13 +1306,15 @@ var Search = React.createClass({displayName: "Search",
                         React.createElement("div", {id: "dragme1", className: "box react-draggable searchPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth, display:'flex', flexFlow:'column'}}, 
                             React.createElement("div", {id: "search_container", style: {height: '100%', display:'flex', flexFlow:'column'}}, 
                                 React.createElement("div", {id: "handle1", style: {width:'100%',background:'#7a8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.close})))), 
-                            React.createElement("div", {id: "container1"}, 
-                                React.createElement(SearchDataEachHeader, null), 
-                                React.createElement("div", {style: {display:'flex',flexFlow:'column'}}, 
-                                    tableRows
+                                React.createElement("div", {style: {display:'flex', flexFlow:'row'}}, 
+                                    React.createElement("div", {id: "container1", style: {overflowY:'auto'}}, 
+                                        React.createElement(SearchDataEachHeader, null), 
+                                        React.createElement("div", {style: {display:'flex',flexFlow:'column'}}, 
+                                            tableRows
+                                        )
+                                    ), 
+                                    React.createElement("div", {id: "sidebar", onMouseDown: this.initDrag, style: {flex:'0 1 auto', height: '100%', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}})
                                 )
-                            ), 
-                            React.createElement("div", {id: "sidebar", onMouseDown: this.initDrag, style: {flex:'0 1 auto', height: '100%', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}})
                             ), 
                             React.createElement("div", {id: "footer", onMouseDown: this.initDrag, style: {display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}
                             )
@@ -1452,7 +1456,7 @@ var SearchDataEachRows = React.createClass({displayName: "SearchDataEachRows",
                     React.createElement("a", {href: href, style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, score)
                 ), 
                 React.createElement("div", {style: {display:'flex'}}, 
-                    React.createElement("a", {href: href, style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, snippet)
+                    React.createElement("a", {href: href, style: {textAlign:'left', overflow:'hidden', textOverflow:'ellipsis'}}, snippet)
                 )
             )
         )
