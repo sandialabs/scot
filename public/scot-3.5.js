@@ -1212,7 +1212,11 @@ var BoolShould          = require('../../../node_modules/searchkit').BoolShould;
 var LayoutBody          = require('../../../node_modules/searchkit').LayoutBody;
 var LayoutResults       = require('../../../node_modules/searchkit').LayoutResults;
 var Pagination          = require('../../../node_modules/searchkit').Pagination;
-const searchkit         = new SearchkitManager("/scot/api/v2/search/")
+//var ImmutableQuery      = require('../../../node_modules/searchkit').ImmutableQuery;
+//var SimpleQueryString   = require('../../../node_modules/searchkit').SimpleQueryString;
+//const searchkit         = new SearchkitManager("/scot/api/v2/esearch/")
+//let searchkit = new ImmutableQuery('/scot/api/v2/esearch/');
+//let newQuery = query.addQuery(SimpleQueryString('searchstring'))
 var Draggable           = require('react-draggable');
 var type = ''
 var id = 0
@@ -1220,6 +1224,7 @@ var sourceid = ''
 var body = ''
 var owner = ''
 var typeid = ''
+
 class Results extends React.Component{
     render() {
         if(this.props.result._type == 'entry'){
@@ -1269,47 +1274,88 @@ class Results extends React.Component{
 }
 
 var Search = React.createClass({displayName: "Search",
-	render: function(){
+    getInitialState: function() {
+        return {
+            showSearchToolbar: false,
+            searchResults: null,
+        }
+    },	
+    doSearch: function(string) {
+        $.ajax({
+            type: 'get',
+            url: '/scot/api/v2/esearch',
+            data: {qstring:string.target.value},
+        }).success(function(response){
+            this.setState({results:response, showSearchToolbar:true})
+        }.bind(this))
+    },
+    render: function(){
+        if (this.state.results != undefined) {
+            for (i=0; i < this.state.results; i++) {
+                
+            }
+        }
+
+        return (
+            React.createElement("div", null, 
+                React.createElement("input", {style: {marginTop:'10px',padding:'10px 20px', backgroundColor: 'white', color:'black', float:'right', width:'30%', borderRadius:'50px',position:'relative'}, onChange: this.doSearch}), 
+                this.state.showSearchToolbar ? 
+                    React.createElement(Draggable, {handle: "#handle1", onMouseDown: this.moveDivInit}, 
+                        React.createElement("div", {id: "dragme1", className: "box react-draggable searchPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth, display:'flex', flexFlow:'column'}}, 
+                            React.createElement("div", {id: "search_container", style: {height: '100%', display:'flex', flexFlow:'column'}}, 
+                                React.createElement("div", {id: "handle1", style: {width:'100%',background:'#7a8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.close})))), 
+                            React.createElement(SearchDataEachHeader, null), 
+                            tableRows, 
+                            React.createElement("div", {id: "sidebar", onMouseDown: this.initDrag, style: {flex:'0 1 auto', height: '100%', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}})
+                            ), 
+                            React.createElement("div", {id: "footer", onMouseDown: this.initDrag, style: {display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}
+                            )
+                        )
+                    )
+                :
+                null
+            )
+        )/*
         return (
                 React.createElement(SearchkitProvider, {searchkit: searchkit},
                     React.createElement('div', {className: 'search'},
                     React.createElement('div', {className: 'search_query'},
                         React.createElement(SearchBox, {autofocus: false, searchOnChange: true})
-                            ),
-                React.createElement(Draggable, {handle: '#handle1' ,onMouseDown:this.moveDivInit},
-                React.createElement("div", {style: {transform: 'translate(117px, 49px)', 'background-color': '#FFF', overflow: 'hidden'},id: "dragme1", className: "box react-draggable searchPopUp"},
-                    React.createElement("div", {className: 'search_results', id: "search_container", style: {height: '100%', flexFlow: 'column', display: 'none'}},
-                        React.createElement("div", {id: "handle1", style: {width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.close})))),
-                        React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}},
-                            React.createElement("h3", {id: "myModalLabel", style: {color: 'black'}}, "Search Results")
-                        ),
-                        React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto'}},
-                        React.createElement("div", {className: "container-fluid2", id: 'container1', style: {/*'max-width': '915px',*//*'min-width': '650px',*/ width: '100%', 'max-height': '100%', 'margin-left': '0px',height: '100%', 'overflow-y': 'auto', 'overflow-x' : 'hidden','padding-left':'5px'}},
-                    React.createElement("div", {className: "table-row header ", style: {color: 'black'}},
-                        React.createElement("div", {className: "wrapper attributes "},                        
-                        React.createElement('div', {className: 'wrapper status-owner-severity'},
-                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
-                        React.createElement('div', {className: 'column owner'}, 'ID'))),
+                    ),
+                    React.createElement(Draggable, {handle: '#handle1' ,onMouseDown:this.moveDivInit},
+                        React.createElement("div", {style: {transform: 'translate(117px, 49px)', 'background-color': '#FFF', overflow: 'hidden'},id: "dragme1", className: "box react-draggable searchPopUp"},
+                            React.createElement("div", {className: 'search_results', id: "search_container", style: {height: '100%', flexFlow: 'column', display: 'none'}},
+                                React.createElement("div", {id: "handle1", style: {width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.close})))),
+                                React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}},
+                                    React.createElement("h3", {id: "myModalLabel", style: {color: 'black'}}, "Search Results")
+                                ),
+                                React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto'}},
+                                React.createElement("div", {className: "container-fluid2", id: 'container1', style: {/*'max-width': '915px',*//*'min-width': '650px',*/ /*width: '100%', 'max-height': '100%', 'margin-left': '0px',height: '100%', 'overflow-y': 'auto', 'overflow-x' : 'hidden','padding-left':'5px'}},
+                                    React.createElement("div", {className: "table-row header ", style: {color: 'black'}},
+                                    React.createElement("div", {className: "wrapper attributes "},                        
+                                    React.createElement('div', {className: 'wrapper status-owner-severity'},
+                                    React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                                    React.createElement('div', {className: 'column owner'}, 'ID'))),
 
-                        React.createElement('div', {className: 'wrapper status-owner-severity'},
-                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
-                        React.createElement('div', {className: 'column owner'}, 'Type'))),
+                                    React.createElement('div', {className: 'wrapper status-owner-severity'},
+                                    React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                                    React.createElement('div', {className: 'column owner'}, 'Type'))),
 
-                        React.createElement('div', {className: 'wrapper title-comment-module-reporter'},
-                        React.createElement('div', {className: 'wrapper title-comment'},
-                        React.createElement('div', {className: 'column title'}, 'Snippet(s)')))
-                            )), 
-                            React.createElement(Hits, {hitsPerPage: 10, itemComponent: Results, mod: 'sk-hits-list', highlightFields:['id']})),
+                                    React.createElement('div', {className: 'wrapper title-comment-module-reporter'},
+                                    React.createElement('div', {className: 'wrapper title-comment'},
+                                    React.createElement('div', {className: 'column title'}, 'Snippet(s)')))
+                                    )
+                                ), 
+                                React.createElement(Hits, {hitsPerPage: 10, itemComponent: Results, mod: 'sk-hits-list', highlightFields:['id']})),
                             
                             React.createElement(Pagination, {showNumbers: true})),
                         React.createElement("div", {onMouseDown: this.initDrag, id: "footer", style: {display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}
                         )
                     )
-                )))))
+                )))))*/
 	},
     close: function(){
-        $('.search_results').css('display', 'none')
-        $('#dragme1').css('display', 'none') 
+        this.setState({showSearchToolbar:false});    
     },
     moveDivInit: function(e) {
         document.documentElement.addEventListener('mouseup', this.moveDivStop,false);
@@ -1360,6 +1406,30 @@ var Search = React.createClass({displayName: "Search",
     }
 })
 
+var SearchDataEachHeader = React.createClass({displayName: "SearchDataEachHeader",
+    render: function() {
+        return (
+            React.createElement("div", {id: "container1"}, 
+                React.createElement("div", {className: "table-row header", style: {color:'black'}}, 
+                    React.createElement("div", {style: {flexGrow:1, display:'flex'}}, 
+                        React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
+                            "ID"
+                        ), 
+                        React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
+                            "Score"
+                        ), 
+                        React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
+                            "Type"
+                        ), 
+                        React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
+                            "Snippit"
+                        )
+                    )
+                )
+            )
+        )
+    }
+});
 
 module.exports = Search
 
@@ -2617,6 +2687,7 @@ var IncidentTable           = require('../components/incident_table.jsx');
 
 var SelectedEntry = React.createClass({displayName: "SelectedEntry",
     getInitialState: function() {
+        var entityDetailKey = Math.floor(Math.random()*1000);
         return {
             showEntryData:this.props.showEntryData,
             showEntityData:this.props.showEntityData,
@@ -2629,6 +2700,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             notificationType:null,
             notificationMessage: '',
             height: null,
+            entityDetailKey:entityDetailKey
         }
     },
     componentDidMount: function() {
@@ -2638,16 +2710,20 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', 
                 success: function(result) {
                     var entryResult = result.records;
-                    this.setState({showEntryData:true, entryData:entryResult})
-                    for (i=0; i < result.records.length; i++) {
-                        Store.storeKey(result.records[i].id)
-                        Store.addChangeListener(this.updatedCB);
+                    if (this.isMounted()) {
+                        this.setState({showEntryData:true, entryData:entryResult})
+                        for (i=0; i < result.records.length; i++) {
+                            Store.storeKey(result.records[i].id)
+                            Store.addChangeListener(this.updatedCB);
+                        }
+                        this.Watcher();
                     }
-                    this.Watcher();
                 }.bind(this),
                 error: function(result) {
-                    this.setState({showEntryData:true});
-                    this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    if (this.isMounted()) {
+                        this.setState({showEntryData:true});
+                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    }
                 }.bind(this)
             });
             $.ajax({
@@ -2655,21 +2731,25 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
                 success: function(result) {
                     var entityResult = result.records;
-                    this.setState({showEntityData:true, entityData:entityResult})
-                    var waitForEntry = {
-                        waitEntry: function() {
-                            if(this.state.showEntryData == false){
-                                setTimeout(waitForEntry.waitEntry,50);
-                            } else {
-                                setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
-                            }
-                        }.bind(this)
-                    };
-                    waitForEntry.waitEntry();
+                    if (this.isMounted()) {
+                        this.setState({showEntityData:true, entityData:entityResult})
+                        var waitForEntry = {
+                            waitEntry: function() {
+                                if(this.state.showEntryData == false){
+                                    setTimeout(waitForEntry.waitEntry,50);
+                                } else {
+                                    setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+                                }
+                            }.bind(this)
+                        };
+                        waitForEntry.waitEntry();
+                    }
                 }.bind(this),
                 error: function(result) {
-                    this.setState({showEntityData: true})
-                    this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    if (this.isMounted()) {
+                        this.setState({showEntityData: true})
+                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    }
                 }.bind(this)
             });
             Store.storeKey(this.props.id);
@@ -2689,16 +2769,20 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry',
                 success: function(result) {
                     var entryResult = result.records;
-                    this.setState({showEntryData:true, entryData:entryResult})
-                    for (i=0; i < result.records.length; i++) {
-                        Store.storeKey(result.records[i].id)
-                        Store.addChangeListener(this.updatedCB);
+                    if (this.isMounted()) {
+                        this.setState({showEntryData:true, entryData:entryResult})
+                        for (i=0; i < result.records.length; i++) {
+                            Store.storeKey(result.records[i].id)
+                            Store.addChangeListener(this.updatedCB);
+                        }
+                        this.Watcher()
                     }
-                    this.Watcher()
                 }.bind(this),
                 error: function(result) {
-                    this.setState({showEntryData:true});
-                    this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    if (this.isMounted()) {
+                        this.setState({showEntryData:true});
+                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    }
                 }.bind(this)
             }); 
             $.ajax({
@@ -2706,52 +2790,66 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
                 success: function(result) {
                     var entityResult = result.records;
-                    this.setState({showEntityData:true, entityData:entityResult})
-                    var waitForEntry = {
-                        waitEntry: function() {
-                            if(this.state.showEntryData == false){
-                                setTimeout(waitForEntry.waitEntry,50);
-                            } else {
-                                setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
-                            }
-                        }.bind(this)
-                    };
-                    waitForEntry.waitEntry();
+                    if (this.isMounted()) {
+                        this.setState({showEntityData:true, entityData:entityResult})
+                        var waitForEntry = {
+                            waitEntry: function() {
+                                if(this.state.showEntryData == false){
+                                    setTimeout(waitForEntry.waitEntry,50);
+                                } else {
+                                    setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+                                }
+                            }.bind(this)
+                        };
+                        waitForEntry.waitEntry();
+                    }
                 }.bind(this),
                 error: function(result) {
-                    this.setState({showEntityData: true})
-                    this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    if (this.isMounted()) {
+                        this.setState({showEntityData: true})
+                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    }
                 }.bind(this)
             }); 
         }
     },
     flairToolbarToggle: function(id,value,type) {
         //if (this.state.flairToolbar == false) {
-            this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
+            if (this.isMounted()) {
+                this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
+            }
         //} else {
         //    this.setState({flairToolbar:false})
         //}
     },
     flairToolbarOff: function() {
-        this.setState({flairToolbar:false});
+        if (this.isMounted()) {
+            var newEntityDetailKey = this.state.entityDetailKey + 1;
+            this.setState({flairToolbar:false,entityDetailKey:newEntityDetailKey});
+        }
     },
     linkWarningToggle: function(href) {
-        if (this.state.linkWarningToolbar == false) {
-            this.setState({linkWarningToolbar:true,link:href})
-        } else {
-            this.setState({linkWarningToolbar:false})
+        if (this.isMounted()) {
+            if (this.state.linkWarningToolbar == false) {
+                this.setState({linkWarningToolbar:true,link:href})
+            } else {
+                this.setState({linkWarningToolbar:false})
+            }
         }
     },
     errorToggle: function(string) {
-        if (this.state.errorDisplay == false) {
-            this.setState({notificationMessage:string,notificationType:'error',errorDisplay:true})
-        } else {
-            this.setState({errorDisplay:false})
+        if (this.isMounted()) {
+            if (this.state.errorDisplay == false) {
+                this.setState({notificationMessage:string,notificationType:'error',errorDisplay:true})
+            } else {
+                this.setState({errorDisplay:false})
+            }
         }
     },
     Watcher: function() {
         if(this.props.type != 'alertgroup') {
-            $('iframe').each(function(index,ifr) {
+            
+            $('#other-detail-container').find('iframe').each(function(index,ifr) {
             //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
                 ifr.contentWindow.requestAnimationFrame( function() {
                     if(ifr.contentDocument != null) {
@@ -2774,7 +2872,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 }.bind(this));
             }.bind(this))
         } else {
-            $('#detail-container').find('a, .entity').not('.not_selectable').each(function(index,tr) {
+            $('#other-detail-container').find('a, .entity').not('.not_selectable').each(function(index,tr) {
                 $(tr).off('mousedown');
                 $(tr).on('mousedown', function() {
                     this.checkFlairHover();
@@ -2808,7 +2906,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 }.bind(this));
             }
         } else if (this.props.type == 'alertgroup') {
-            var subtable = $(document.body).find('.alertTableHorizontal');
+            var subtable = $(document.body).find('#other-detail-container');
             subtable.find('.entity').each(function(index, entity) {
                 if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
                     $(entity).data('state', 'down');
@@ -2837,7 +2935,9 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             scrollHeight = scrollHeight + 'px'
         }
         //$('#detail-container').css('height',scrollHeight);
-        this.setState({height:scrollHeight});
+        if (this.isMounted()) {
+            this.setState({height:scrollHeight});
+        }
     },
     render: function() { 
         var divid = 'detail-container';
@@ -2872,7 +2972,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId, isPopUp: this.props.isPopUp, entryToggle: this.props.entryToggle, updated: this.updatedCB, aType: this.props.aType, aID: this.props.aID, entryToolbar: this.props.entryToolbar, errorToggle: this.props.errorToggle, fileUploadToggle: this.props.fileUploadToggle, fileUploadToolbar: this.props.fileUploadToolbar}) : React.createElement("span", null, "Loading..."), 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntry, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB, errorToggle: this.props.errorToggle}) : null) : null, 
                 this.props.fileUploadToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(FileUpload, {type: this.props.type, targetid: this.props.id, id: 'file_upload', fileUploadToggle: this.props.fileUploadToggle, updated: this.updatedCB, errorToggle: this.props.errorToggle}) : null) : null, 
-                this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id, aID: this.props.aID, aType: this.props.aType}): null, 
+                this.state.flairToolbar ? React.createElement(EntityDetail, {key: this.state.entityDetailKey, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id, aID: this.props.aID, aType: this.props.aType}): null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null, 
                 this.state.errorDisplay ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage, buttons: "CLOSE MESSAGE", onDismiss: this.errorToggle}) : null
             )       
@@ -3141,9 +3241,13 @@ var AlertBody = React.createClass({displayName: "AlertBody",
                 type: 'GET',
                 url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
             }).success(function(response){
-                this.setState({promotedNumber:response.records[0].id});             
+                if (this.isMounted()) {
+                    this.setState({promotedNumber:response.records[0].id});
+                }
             }.bind(this))
-            this.setState({promoteFetch:true})
+            if (this.isMounted()) {
+                this.setState({promoteFetch:true})
+            }
         }
         //Pre Selects the alert in an alertgroup if alertPreSelectedId is passed to the component
         if (this.props.alertPreSelectedId != null) {
@@ -3159,9 +3263,13 @@ var AlertBody = React.createClass({displayName: "AlertBody",
                     type: 'GET',
                     url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
                 }).success(function(response){
-                    this.setState({promotedNumber:response.records[0].id});             
+                    if (this.isMounted()) {
+                        this.setState({promotedNumber:response.records[0].id});             
+                    }
                 }.bind(this))
-                this.setState({promoteFetch:true});
+                if (this.isMounted()) {    
+                    this.setState({promoteFetch:true});
+                }
             }
         }
         if (this.props.data.id == this.props.aID && nextProps.entryToolbar == true && this.state.showAddEntryToolbar == false) {
@@ -3496,6 +3604,7 @@ var LinkWarning             = require('../modal/link_warning.jsx');
 
 var SelectedHeader = React.createClass({displayName: "SelectedHeader",
     getInitialState: function() {
+        var entityDetailKey = Math.floor(Math.random()*1000);
         return {
             showEventData:false,
             headerData:null,
@@ -3534,6 +3643,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             fileUploadToolbar: false,
             isNotFound: false,
             runWatcher: false,
+            entityDetailKey: entityDetailKey,
         }
     },
     componentWillMount: function() {
@@ -3778,7 +3888,10 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         //}
     },
     flairToolbarOff: function() {
-        this.setState({flairToolbar:false})
+        if (this.isMounted()) {
+            var newEntityDetailKey = this.state.entityDetailKey + 1;
+            this.setState({flairToolbar:false, entityDetailKey:newEntityDetailKey})
+        }
     },
     linkWarningToggle: function(href) {
         if (this.state.linkWarningToolbar == false) {
@@ -4011,7 +4124,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                     ), 
                     React.createElement(Notification, {ref: "notificationSystem"}), 
                     this.state.errorDisplay ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage, buttons: "CLOSE MESSAGE", onDismiss: this.errorToggle}) : null, 
-                    this.state.flairToolbar ? React.createElement(EntityDetail, {flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id, errorToggle: this.errorToggle}) : null, 
+                    this.state.flairToolbar ? React.createElement(EntityDetail, {key: this.state.entityDetailKey, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id, errorToggle: this.errorToggle}) : null, 
                     this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null, 
                     this.state.viewedByHistoryToolbar ? React.createElement(ViewedByHistory, {viewedByHistoryToggle: this.viewedByHistoryToggle, id: id, type: type, subjectType: subjectType, viewedby: viewedby}) : null, 
                     this.state.changeHistoryToolbar ? React.createElement(ChangeHistory, {changeHistoryToggle: this.changeHistoryToggle, id: id, type: type, subjectType: subjectType}) : null, 
@@ -4938,16 +5051,20 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
                 url: 'scot/api/v2/' + this.props.entitytype + '/' +this.props.entityvalue.toLowerCase()
             }).success(function(result) {
                 var entityid = result.id;
-                this.setState({entityid:entityid});
-                $.ajax({
-                    type: 'GET',
-                    url: 'scot/api/v2/' + this.props.entitytype + '/' + entityid 
-                }).success(function(result) {
-                    //this.setState({entityData:result})
-                    var newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype}
-                    currentTabArray.push(newTab);
-                    this.setState({tabs:currentTabArray,currentKey:entityid,initialLoad:true});
-                }.bind(this));
+                if (this.isMounted()) {
+                    this.setState({entityid:entityid});
+                    $.ajax({
+                        type: 'GET',
+                        url: 'scot/api/v2/' + this.props.entitytype + '/' + entityid 
+                    }).success(function(result) {
+                        //this.setState({entityData:result})
+                        var newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype}
+                        currentTabArray.push(newTab);
+                        if (this.isMounted()) {
+                            this.setState({tabs:currentTabArray,currentKey:entityid,initialLoad:true});
+                        }
+                    }.bind(this));
+                }
             }.bind(this))
         } else {
             $.ajax({
@@ -4957,7 +5074,9 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
                 //this.setState({entityData:result})
                 var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype}
                 currentTabArray.push(newTab);
-                this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true});
+                if (this.isMounted()) {
+                    this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true});
+                }
             }.bind(this));
         }
         //Esc key closes popup
@@ -4992,7 +5111,9 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
                         if (nextProps.entitytype != null && (nextProps.entityid != undefined)) {
                             for (var i=0; i < this.state.tabs.length; i++) {
                                 if (nextProps.entityid == this.state.tabs[i].entityid || (this.state.tabs[i].entitytype == 'guide' && nextProps.entitytype == 'guide')) {
-                                    this.setState({currentKey:nextProps.entityid})
+                                    if (this.isMounted()){
+                                        this.setState({currentKey:nextProps.entityid})
+                                    }
                                     return    
                                 }
                             }
@@ -5003,15 +5124,19 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
                                     url: 'scot/api/v2/' + nextProps.entitytype + '/' + nextProps.entityvalue.toLowerCase()
                                 }).success(function(result) {
                                     var entityid = result.id;
-                                    this.setState({entityid:entityid});
-                                    $.ajax({
-                                        type: 'GET',
-                                        url: 'scot/api/v2/' + nextProps.entitytype + '/' + entityid
-                                    }).success(function(result) {
-                                        var newTab = {data:result, entityid:entityid, entitytype:nextProps.entitytype}
-                                        currentTabArray.push(newTab);
-                                        this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
-                                    }.bind(this));
+                                    if (this.isMounted()) {
+                                        this.setState({entityid:entityid});
+                                        $.ajax({
+                                            type: 'GET',
+                                            url: 'scot/api/v2/' + nextProps.entitytype + '/' + entityid
+                                        }).success(function(result) {
+                                            var newTab = {data:result, entityid:entityid, entitytype:nextProps.entitytype}
+                                            currentTabArray.push(newTab);
+                                            if (this.isMounted()) {
+                                                this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
+                                            }
+                                        }.bind(this));
+                                    }
                                 }.bind(this))
                             } else {
                                 $.ajax({
@@ -5020,7 +5145,9 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
                                 }).success(function(result) {
                                     var newTab = {data:result, entityid:nextProps.entityid, entitytype:nextProps.entitytype}
                                     currentTabArray.push(newTab);
-                                    this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
+                                    if (this.isMounted()) {
+                                        this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
+                                    }
                                 }.bind(this));
                             } 
                         }       
@@ -5088,7 +5215,7 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
             tabsArr.push(React.createElement(Tab, {className: "tab-content", eventKey: this.state.tabs[i].entityid, title: title}, React.createElement(TabContents, {data: this.state.tabs[i].data, type: this.props.type, id: this.props.id, entityid: this.state.tabs[i].entityid, entitytype: this.state.tabs[i].entitytype, i: z, key: z, errorToggle: this.props.errorToggle})))
         }
         return (
-            React.createElement(Draggable, {handle: "#handle", onMouseDown: this.moveDivInit}, 
+            React.createElement(Draggable, {handle: "#handle", onMouseDown: this.moveDivInit, key: this.props.key}, 
                 React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth, display:'flex', flexFlow:'column'}}, 
                     React.createElement("div", {id: "popup-flex-container", style: {height: '100%', display:'flex', flexFlow:'row'}}, 
                         React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex', width:'100%'}}, 
@@ -5195,7 +5322,9 @@ var EntityBody = React.createClass({displayName: "EntityBody",
         if (appearancesNumber != null) {
             if (appearancesNumber != 0) {
                 var newAppearancesNumber = this.state.appearances + appearancesNumber;
-                this.setState({appearances:newAppearancesNumber});
+                if (this.isMounted()) {
+                    this.setState({appearances:newAppearancesNumber});
+                }
             }
         }
     },
@@ -5345,8 +5474,10 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
             arr.push(arrPromoted);
             arr.push(arrClosed);
             arr.push(arrOpen);
-            this.props.updateAppearances(result.length);
-            this.setState({entityDataAlertGroup:arr})
+            if (this.isMounted()) {
+                this.props.updateAppearances(result.length);
+                this.setState({entityDataAlertGroup:arr})
+            }
         }.bind(this));
         this.eventRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/event', function(result) {
             var result = result.records
@@ -5368,8 +5499,10 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
             arr.push(arrPromoted);
             arr.push(arrClosed);
             arr.push(arrOpen);
-            this.props.updateAppearances(result.length);
-            this.setState({entityDataEvent:arr})
+            if (this.isMounted()) {
+                this.props.updateAppearances(result.length);
+                this.setState({entityDataEvent:arr})
+            }
         }.bind(this));   
         this.incidentRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/incident', function(result) {
             var result = result.records
@@ -5391,8 +5524,10 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
             arr.push(arrPromoted);
             arr.push(arrClosed);
             arr.push(arrOpen);
-            this.props.updateAppearances(result.length);
-            this.setState({entityDataIncident:arr})
+            if (this.isMounted()) {
+                this.props.updateAppearances(result.length);
+                this.setState({entityDataIncident:arr})
+            }
         }.bind(this));  
         this.intelRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/intel', function(result) {
             var result = result.records
@@ -5414,8 +5549,10 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
             arr.push(arrPromoted);
             arr.push(arrClosed);
             arr.push(arrOpen);
-            this.props.updateAppearances(result.length);
-            this.setState({entityDataIntel:arr})
+            if (this.isMounted()) {
+                this.props.updateAppearances(result.length);
+                this.setState({entityDataIntel:arr})
+            }
         }.bind(this));   
         $('#sortableentitytable').tablesorter();
     },
@@ -5465,15 +5602,17 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
                 for (i=0; i < entryResult.length; i++) {
                     if (entryResult[i].summary == 1) {
                         summary = true;
-                        this.setState({showSummary:true,summaryData:entryResult[i].body_flair})
-                        $('#entityTable' + this.props.data.id).qtip({ 
-                            content: {text: $(entryResult[i].body_flair)}, 
-                            style: { classes: 'qtip-scot' }, 
-                            hide: 'unfocus', 
-                            position: { my: 'top right', at: 'left', target: $('#entityTable'+this.props.data.id)},//[position.left,position.top] }, 
-                            show: { ready: true, event: 'click' } 
-                        });
-                        break;
+                        if (this.isMounted) {
+                            this.setState({showSummary:true,summaryData:entryResult[i].body_flair})
+                            $('#entityTable' + this.props.data.id).qtip({ 
+                                content: {text: $(entryResult[i].body_flair)}, 
+                                style: { classes: 'qtip-scot' }, 
+                                hide: 'unfocus', 
+                                position: { my: 'top right', at: 'left', target: $('#entityTable'+this.props.data.id)},//[position.left,position.top] }, 
+                                show: { ready: true, event: 'click' } 
+                            });
+                            break;
+                        }
                     }
                 }
                 if (summary == false) {
@@ -6875,15 +7014,6 @@ module.exports = React.createClass({displayName: "exports",
         $(ifr).removeClass('pointerEventsOff')
         }) 
         document.onmousemove = null
-        $('.container-fluid2').css('width', width)
-        $('.paging').css('width', width)
-        $('.splitter').css('width', '5px')
-        if(this.state.resize == 'vertical'){
-            width = 650
-            $('.container-fluid2').css('width', '100%')
-            $('.paging').css('width', '100%')
-            $('.splitter').css('width', '100%')
-        }
     },
     dragdiv: function(e){
         var elem = document.getElementById('fluid2');

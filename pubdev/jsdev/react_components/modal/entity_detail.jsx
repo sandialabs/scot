@@ -30,16 +30,20 @@ var EntityDetail = React.createClass({
                 url: 'scot/api/v2/' + this.props.entitytype + '/' +this.props.entityvalue.toLowerCase()
             }).success(function(result) {
                 var entityid = result.id;
-                this.setState({entityid:entityid});
-                $.ajax({
-                    type: 'GET',
-                    url: 'scot/api/v2/' + this.props.entitytype + '/' + entityid 
-                }).success(function(result) {
-                    //this.setState({entityData:result})
-                    var newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype}
-                    currentTabArray.push(newTab);
-                    this.setState({tabs:currentTabArray,currentKey:entityid,initialLoad:true});
-                }.bind(this));
+                if (this.isMounted()) {
+                    this.setState({entityid:entityid});
+                    $.ajax({
+                        type: 'GET',
+                        url: 'scot/api/v2/' + this.props.entitytype + '/' + entityid 
+                    }).success(function(result) {
+                        //this.setState({entityData:result})
+                        var newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype}
+                        currentTabArray.push(newTab);
+                        if (this.isMounted()) {
+                            this.setState({tabs:currentTabArray,currentKey:entityid,initialLoad:true});
+                        }
+                    }.bind(this));
+                }
             }.bind(this))
         } else {
             $.ajax({
@@ -49,7 +53,9 @@ var EntityDetail = React.createClass({
                 //this.setState({entityData:result})
                 var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype}
                 currentTabArray.push(newTab);
-                this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true});
+                if (this.isMounted()) {
+                    this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true});
+                }
             }.bind(this));
         }
         //Esc key closes popup
@@ -84,7 +90,9 @@ var EntityDetail = React.createClass({
                         if (nextProps.entitytype != null && (nextProps.entityid != undefined)) {
                             for (var i=0; i < this.state.tabs.length; i++) {
                                 if (nextProps.entityid == this.state.tabs[i].entityid || (this.state.tabs[i].entitytype == 'guide' && nextProps.entitytype == 'guide')) {
-                                    this.setState({currentKey:nextProps.entityid})
+                                    if (this.isMounted()){
+                                        this.setState({currentKey:nextProps.entityid})
+                                    }
                                     return    
                                 }
                             }
@@ -95,15 +103,19 @@ var EntityDetail = React.createClass({
                                     url: 'scot/api/v2/' + nextProps.entitytype + '/' + nextProps.entityvalue.toLowerCase()
                                 }).success(function(result) {
                                     var entityid = result.id;
-                                    this.setState({entityid:entityid});
-                                    $.ajax({
-                                        type: 'GET',
-                                        url: 'scot/api/v2/' + nextProps.entitytype + '/' + entityid
-                                    }).success(function(result) {
-                                        var newTab = {data:result, entityid:entityid, entitytype:nextProps.entitytype}
-                                        currentTabArray.push(newTab);
-                                        this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
-                                    }.bind(this));
+                                    if (this.isMounted()) {
+                                        this.setState({entityid:entityid});
+                                        $.ajax({
+                                            type: 'GET',
+                                            url: 'scot/api/v2/' + nextProps.entitytype + '/' + entityid
+                                        }).success(function(result) {
+                                            var newTab = {data:result, entityid:entityid, entitytype:nextProps.entitytype}
+                                            currentTabArray.push(newTab);
+                                            if (this.isMounted()) {
+                                                this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
+                                            }
+                                        }.bind(this));
+                                    }
                                 }.bind(this))
                             } else {
                                 $.ajax({
@@ -112,7 +124,9 @@ var EntityDetail = React.createClass({
                                 }).success(function(result) {
                                     var newTab = {data:result, entityid:nextProps.entityid, entitytype:nextProps.entitytype}
                                     currentTabArray.push(newTab);
-                                    this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
+                                    if (this.isMounted()) {
+                                        this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
+                                    }
                                 }.bind(this));
                             } 
                         }       
@@ -180,7 +194,7 @@ var EntityDetail = React.createClass({
             tabsArr.push(<Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} i={z} key={z} errorToggle={this.props.errorToggle}/></Tab>)
         }
         return (
-            <Draggable handle="#handle" onMouseDown={this.moveDivInit}>
+            <Draggable handle="#handle" onMouseDown={this.moveDivInit} key={this.props.key}>
                 <div id="dragme" className='box react-draggable entityPopUp' style={{height:this.state.entityHeight,width:this.state.entityWidth, display:'flex', flexFlow:'column'}}>
                     <div id='popup-flex-container' style={{height: '100%', display:'flex', flexFlow:'row'}}>
                         <div id="entity_detail_container" style={{height: '100%', flexFlow: 'column', display: 'flex', width:'100%'}}>
@@ -287,7 +301,9 @@ var EntityBody = React.createClass({
         if (appearancesNumber != null) {
             if (appearancesNumber != 0) {
                 var newAppearancesNumber = this.state.appearances + appearancesNumber;
-                this.setState({appearances:newAppearancesNumber});
+                if (this.isMounted()) {
+                    this.setState({appearances:newAppearancesNumber});
+                }
             }
         }
     },
@@ -437,8 +453,10 @@ var EntityReferences = React.createClass({
             arr.push(arrPromoted);
             arr.push(arrClosed);
             arr.push(arrOpen);
-            this.props.updateAppearances(result.length);
-            this.setState({entityDataAlertGroup:arr})
+            if (this.isMounted()) {
+                this.props.updateAppearances(result.length);
+                this.setState({entityDataAlertGroup:arr})
+            }
         }.bind(this));
         this.eventRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/event', function(result) {
             var result = result.records
@@ -460,8 +478,10 @@ var EntityReferences = React.createClass({
             arr.push(arrPromoted);
             arr.push(arrClosed);
             arr.push(arrOpen);
-            this.props.updateAppearances(result.length);
-            this.setState({entityDataEvent:arr})
+            if (this.isMounted()) {
+                this.props.updateAppearances(result.length);
+                this.setState({entityDataEvent:arr})
+            }
         }.bind(this));   
         this.incidentRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/incident', function(result) {
             var result = result.records
@@ -483,8 +503,10 @@ var EntityReferences = React.createClass({
             arr.push(arrPromoted);
             arr.push(arrClosed);
             arr.push(arrOpen);
-            this.props.updateAppearances(result.length);
-            this.setState({entityDataIncident:arr})
+            if (this.isMounted()) {
+                this.props.updateAppearances(result.length);
+                this.setState({entityDataIncident:arr})
+            }
         }.bind(this));  
         this.intelRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/intel', function(result) {
             var result = result.records
@@ -506,8 +528,10 @@ var EntityReferences = React.createClass({
             arr.push(arrPromoted);
             arr.push(arrClosed);
             arr.push(arrOpen);
-            this.props.updateAppearances(result.length);
-            this.setState({entityDataIntel:arr})
+            if (this.isMounted()) {
+                this.props.updateAppearances(result.length);
+                this.setState({entityDataIntel:arr})
+            }
         }.bind(this));   
         $('#sortableentitytable').tablesorter();
     },
@@ -557,15 +581,17 @@ var ReferencesBody = React.createClass({
                 for (i=0; i < entryResult.length; i++) {
                     if (entryResult[i].summary == 1) {
                         summary = true;
-                        this.setState({showSummary:true,summaryData:entryResult[i].body_flair})
-                        $('#entityTable' + this.props.data.id).qtip({ 
-                            content: {text: $(entryResult[i].body_flair)}, 
-                            style: { classes: 'qtip-scot' }, 
-                            hide: 'unfocus', 
-                            position: { my: 'top right', at: 'left', target: $('#entityTable'+this.props.data.id)},//[position.left,position.top] }, 
-                            show: { ready: true, event: 'click' } 
-                        });
-                        break;
+                        if (this.isMounted) {
+                            this.setState({showSummary:true,summaryData:entryResult[i].body_flair})
+                            $('#entityTable' + this.props.data.id).qtip({ 
+                                content: {text: $(entryResult[i].body_flair)}, 
+                                style: { classes: 'qtip-scot' }, 
+                                hide: 'unfocus', 
+                                position: { my: 'top right', at: 'left', target: $('#entityTable'+this.props.data.id)},//[position.left,position.top] }, 
+                                show: { ready: true, event: 'click' } 
+                            });
+                            break;
+                        }
                     }
                 }
                 if (summary == false) {

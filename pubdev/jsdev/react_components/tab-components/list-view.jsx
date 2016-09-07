@@ -389,15 +389,6 @@ module.exports = React.createClass({
         $(ifr).removeClass('pointerEventsOff')
         }) 
         document.onmousemove = null
-        $('.container-fluid2').css('width', width)
-        $('.paging').css('width', width)
-        $('.splitter').css('width', '5px')
-        if(this.state.resize == 'vertical'){
-            width = 650
-            $('.container-fluid2').css('width', '100%')
-            $('.paging').css('width', '100%')
-            $('.splitter').css('width', '100%')
-        }
     },
     dragdiv: function(e){
         var elem = document.getElementById('fluid2');

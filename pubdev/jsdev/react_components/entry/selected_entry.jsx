@@ -22,6 +22,7 @@ var IncidentTable           = require('../components/incident_table.jsx');
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
+        var entityDetailKey = Math.floor(Math.random()*1000);
         return {
             showEntryData:this.props.showEntryData,
             showEntityData:this.props.showEntityData,
@@ -34,6 +35,7 @@ var SelectedEntry = React.createClass({
             notificationType:null,
             notificationMessage: '',
             height: null,
+            entityDetailKey:entityDetailKey
         }
     },
     componentDidMount: function() {
@@ -43,16 +45,20 @@ var SelectedEntry = React.createClass({
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry', 
                 success: function(result) {
                     var entryResult = result.records;
-                    this.setState({showEntryData:true, entryData:entryResult})
-                    for (i=0; i < result.records.length; i++) {
-                        Store.storeKey(result.records[i].id)
-                        Store.addChangeListener(this.updatedCB);
+                    if (this.isMounted()) {
+                        this.setState({showEntryData:true, entryData:entryResult})
+                        for (i=0; i < result.records.length; i++) {
+                            Store.storeKey(result.records[i].id)
+                            Store.addChangeListener(this.updatedCB);
+                        }
+                        this.Watcher();
                     }
-                    this.Watcher();
                 }.bind(this),
                 error: function(result) {
-                    this.setState({showEntryData:true});
-                    this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    if (this.isMounted()) {
+                        this.setState({showEntryData:true});
+                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    }
                 }.bind(this)
             });
             $.ajax({
@@ -60,21 +66,25 @@ var SelectedEntry = React.createClass({
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
                 success: function(result) {
                     var entityResult = result.records;
-                    this.setState({showEntityData:true, entityData:entityResult})
-                    var waitForEntry = {
-                        waitEntry: function() {
-                            if(this.state.showEntryData == false){
-                                setTimeout(waitForEntry.waitEntry,50);
-                            } else {
-                                setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
-                            }
-                        }.bind(this)
-                    };
-                    waitForEntry.waitEntry();
+                    if (this.isMounted()) {
+                        this.setState({showEntityData:true, entityData:entityResult})
+                        var waitForEntry = {
+                            waitEntry: function() {
+                                if(this.state.showEntryData == false){
+                                    setTimeout(waitForEntry.waitEntry,50);
+                                } else {
+                                    setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+                                }
+                            }.bind(this)
+                        };
+                        waitForEntry.waitEntry();
+                    }
                 }.bind(this),
                 error: function(result) {
-                    this.setState({showEntityData: true})
-                    this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    if (this.isMounted()) {
+                        this.setState({showEntityData: true})
+                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    }
                 }.bind(this)
             });
             Store.storeKey(this.props.id);
@@ -94,16 +104,20 @@ var SelectedEntry = React.createClass({
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entry',
                 success: function(result) {
                     var entryResult = result.records;
-                    this.setState({showEntryData:true, entryData:entryResult})
-                    for (i=0; i < result.records.length; i++) {
-                        Store.storeKey(result.records[i].id)
-                        Store.addChangeListener(this.updatedCB);
+                    if (this.isMounted()) {
+                        this.setState({showEntryData:true, entryData:entryResult})
+                        for (i=0; i < result.records.length; i++) {
+                            Store.storeKey(result.records[i].id)
+                            Store.addChangeListener(this.updatedCB);
+                        }
+                        this.Watcher()
                     }
-                    this.Watcher()
                 }.bind(this),
                 error: function(result) {
-                    this.setState({showEntryData:true});
-                    this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    if (this.isMounted()) {
+                        this.setState({showEntryData:true});
+                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    }
                 }.bind(this)
             }); 
             $.ajax({
@@ -111,52 +125,66 @@ var SelectedEntry = React.createClass({
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
                 success: function(result) {
                     var entityResult = result.records;
-                    this.setState({showEntityData:true, entityData:entityResult})
-                    var waitForEntry = {
-                        waitEntry: function() {
-                            if(this.state.showEntryData == false){
-                                setTimeout(waitForEntry.waitEntry,50);
-                            } else {
-                                setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
-                            }
-                        }.bind(this)
-                    };
-                    waitForEntry.waitEntry();
+                    if (this.isMounted()) {
+                        this.setState({showEntityData:true, entityData:entityResult})
+                        var waitForEntry = {
+                            waitEntry: function() {
+                                if(this.state.showEntryData == false){
+                                    setTimeout(waitForEntry.waitEntry,50);
+                                } else {
+                                    setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+                                }
+                            }.bind(this)
+                        };
+                        waitForEntry.waitEntry();
+                    }
                 }.bind(this),
                 error: function(result) {
-                    this.setState({showEntityData: true})
-                    this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    if (this.isMounted()) {
+                        this.setState({showEntityData: true})
+                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                    }
                 }.bind(this)
             }); 
         }
     },
     flairToolbarToggle: function(id,value,type) {
         //if (this.state.flairToolbar == false) {
-            this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
+            if (this.isMounted()) {
+                this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
+            }
         //} else {
         //    this.setState({flairToolbar:false})
         //}
     },
     flairToolbarOff: function() {
-        this.setState({flairToolbar:false});
+        if (this.isMounted()) {
+            var newEntityDetailKey = this.state.entityDetailKey + 1;
+            this.setState({flairToolbar:false,entityDetailKey:newEntityDetailKey});
+        }
     },
     linkWarningToggle: function(href) {
-        if (this.state.linkWarningToolbar == false) {
-            this.setState({linkWarningToolbar:true,link:href})
-        } else {
-            this.setState({linkWarningToolbar:false})
+        if (this.isMounted()) {
+            if (this.state.linkWarningToolbar == false) {
+                this.setState({linkWarningToolbar:true,link:href})
+            } else {
+                this.setState({linkWarningToolbar:false})
+            }
         }
     },
     errorToggle: function(string) {
-        if (this.state.errorDisplay == false) {
-            this.setState({notificationMessage:string,notificationType:'error',errorDisplay:true})
-        } else {
-            this.setState({errorDisplay:false})
+        if (this.isMounted()) {
+            if (this.state.errorDisplay == false) {
+                this.setState({notificationMessage:string,notificationType:'error',errorDisplay:true})
+            } else {
+                this.setState({errorDisplay:false})
+            }
         }
     },
     Watcher: function() {
         if(this.props.type != 'alertgroup') {
-            $('iframe').each(function(index,ifr) {
+            
+            $('#other-detail-container').find('iframe').each(function(index,ifr) {
             //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
                 ifr.contentWindow.requestAnimationFrame( function() {
                     if(ifr.contentDocument != null) {
@@ -179,7 +207,7 @@ var SelectedEntry = React.createClass({
                 }.bind(this));
             }.bind(this))
         } else {
-            $('#detail-container').find('a, .entity').not('.not_selectable').each(function(index,tr) {
+            $('#other-detail-container').find('a, .entity').not('.not_selectable').each(function(index,tr) {
                 $(tr).off('mousedown');
                 $(tr).on('mousedown', function() {
                     this.checkFlairHover();
@@ -213,7 +241,7 @@ var SelectedEntry = React.createClass({
                 }.bind(this));
             }
         } else if (this.props.type == 'alertgroup') {
-            var subtable = $(document.body).find('.alertTableHorizontal');
+            var subtable = $(document.body).find('#other-detail-container');
             subtable.find('.entity').each(function(index, entity) {
                 if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
                     $(entity).data('state', 'down');
@@ -242,7 +270,9 @@ var SelectedEntry = React.createClass({
             scrollHeight = scrollHeight + 'px'
         }
         //$('#detail-container').css('height',scrollHeight);
-        this.setState({height:scrollHeight});
+        if (this.isMounted()) {
+            this.setState({height:scrollHeight});
+        }
     },
     render: function() { 
         var divid = 'detail-container';
@@ -277,7 +307,7 @@ var SelectedEntry = React.createClass({
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar}/> : <span>Loading...</span>} 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
                 {this.props.fileUploadToolbar ? <div>{this.props.isAlertSelected == false ? <FileUpload type={this.props.type} targetid={this.props.id} id={'file_upload'} fileUploadToggle={this.props.fileUploadToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
-                {this.state.flairToolbar ? <EntityDetail flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} aID={this.props.aID} aType={this.props.aType}/>: null}
+                {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} aID={this.props.aID} aType={this.props.aType}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                 {this.state.errorDisplay ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} buttons="CLOSE MESSAGE" onDismiss={this.errorToggle}/> : null} 
             </div>       
@@ -546,9 +576,13 @@ var AlertBody = React.createClass({
                 type: 'GET',
                 url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
             }).success(function(response){
-                this.setState({promotedNumber:response.records[0].id});             
+                if (this.isMounted()) {
+                    this.setState({promotedNumber:response.records[0].id});
+                }
             }.bind(this))
-            this.setState({promoteFetch:true})
+            if (this.isMounted()) {
+                this.setState({promoteFetch:true})
+            }
         }
         //Pre Selects the alert in an alertgroup if alertPreSelectedId is passed to the component
         if (this.props.alertPreSelectedId != null) {
@@ -564,9 +598,13 @@ var AlertBody = React.createClass({
                     type: 'GET',
                     url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
                 }).success(function(response){
-                    this.setState({promotedNumber:response.records[0].id});             
+                    if (this.isMounted()) {
+                        this.setState({promotedNumber:response.records[0].id});             
+                    }
                 }.bind(this))
-                this.setState({promoteFetch:true});
+                if (this.isMounted()) {    
+                    this.setState({promoteFetch:true});
+                }
             }
         }
         if (this.props.data.id == this.props.aID && nextProps.entryToolbar == true && this.state.showAddEntryToolbar == false) {
