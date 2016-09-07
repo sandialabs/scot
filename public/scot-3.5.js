@@ -3450,6 +3450,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             errorDisplay: false,
             fileUploadToolbar: false,
             isNotFound: false,
+            runWatcher: false,
         }
     },
     componentWillMount: function() {
@@ -3483,8 +3484,8 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, 
             success: function(result) {
                 var entryResult = result.records;
-                this.setState({showEntryData:true, entryData:entryResult})
-                Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
+                this.setState({showEntryData:true, entryData:entryResult, runWatcher:true})
+                //Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
                 if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                     this.setState({loading:false});
                 }
@@ -3542,13 +3543,23 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 }.bind(this),
                 error: function(result) {
                     this.setState({guideID: null})
-                    this.errorToggle("No data returned for guide lookup (404 or another network error) Error: " + reuslt.responseText);
+                    this.errorToggle("No data returned for guide lookup (404 or another network error) Error: " + result.responseText);
                 }.bind(this)
             });     
         }
         Store.storeKey(this.props.id);
         Store.addChangeListener(this.updated); 
     }, 
+    componentDidUpdate: function() {
+        //This runs the watcher which handles the entity popup and link warning.
+        if(this.state.runWatcher == true) {
+            Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null);
+        }
+    },
+    componentWillReceiveProps: function() {
+        //resets the watcher flag to false. This will only get set to true if a call for entries is made.
+        this.setState({runWatcher:false});
+    },
     updated: function(_type,_message) { 
         this.setState({refreshing:true, eventLoaded:false,entryLoaded:false,entityLoaded:false});
         var entryType = 'entry';
@@ -3578,8 +3589,8 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType,
             success: function(result) {
                 var entryResult = result.records;
-                this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult})
-                Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
+                this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult, runWatcher:true})
+                //Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
                 if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 } 
@@ -5807,13 +5818,15 @@ var App = React.createClass({displayName: "App",
         setTimeout(function(){Listener.activeMq()}, 3000)
         return{id: id, id2: id2, set: state, handler: "Scot", viewMode:'default'}	
     },
-   componentWillMount: function() {
+    componentDidMount: function() {
 	    $.ajax({
 	        type: 'get',
 	        url: '/scot/api/v2/handler?current=1'
 	    }).success(function(response){
 	        this.setState({handler: response.records['username']})
 	        }.bind(this))
+    },
+    componentWillMount: function() {
         //Get landscape/portrait view if the cookie exists
         var viewModeSetting = checkCookie('viewMode');
         this.setState({viewMode:viewModeSetting})
@@ -5869,7 +5882,7 @@ var App = React.createClass({displayName: "App",
             React.createElement(ExpandableNavMenuItem, {active: setguide, small: menuItemsSmall[6], full: menuItemsFull[6], tooltip: "Guide", jquery: window.$, onClick: this.handleGuide}),
         //            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Admin", jquery: window.$, onClick:this.handlePad}),
             React.createElement(ExpandableNavMenuItem, {active: setintel,small: menuItemsSmall[1], full: menuItemsFull[1], tooltip: "Intel", jquery: window.$, onClick: this.handleIntel}),
-            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Incident Handler:  " + this.state.handler, jquery: window.$, onClick: this.handleHandler}) 
+            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Incident Handler Calendar", jquery: window.$, onClick: this.handleHandler}) 
                 )
 
             ),
@@ -6963,7 +6976,7 @@ module.exports = React.createClass({displayName: "exports",
                 }
             }
             this.setState({filter:newFilterObj});
-            this.getNewData(null,null,newFilterObj)
+            this.getNewData({page:0},null,newFilterObj)
         }
     },
     titleCase: function(string) {
