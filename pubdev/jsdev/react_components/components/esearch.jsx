@@ -75,6 +75,8 @@ var Search = React.createClass({
         return {
             showSearchToolbar: false,
             searchResults: null,
+            entityHeight: '60%',
+            entityWidth: '75%',
         }
     },	
     doSearch: function(string) {
@@ -101,13 +103,15 @@ var Search = React.createClass({
                         <div id="dragme1" className='box react-draggable searchPopUp' style={{height:this.state.entityHeight,width:this.state.entityWidth, display:'flex', flexFlow:'column'}}>
                             <div id='search_container' style={{height: '100%', display:'flex', flexFlow:'column'}}>
                                 <div id='handle1' style={{width:'100%',background:'#7a8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.close}/></span></div></div>
-                            <div id='container1'>
-                                <SearchDataEachHeader />
-                                <div style={{display:'flex',flexFlow:'column'}}>
-                                    {tableRows}
+                                <div style={{display:'flex', flexFlow:'row'}}>
+                                    <div id='container1' style={{overflowY:'auto'}}>
+                                        <SearchDataEachHeader />
+                                        <div style={{display:'flex',flexFlow:'column'}}>
+                                            {tableRows}
+                                        </div>
+                                    </div>
+                                    <div id='sidebar' onMouseDown={this.initDrag} style={{flex:'0 1 auto', height: '100%', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}}/>
                                 </div>
-                            </div>
-                            <div id='sidebar' onMouseDown={this.initDrag} style={{flex:'0 1 auto', height: '100%', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}}/>
                             </div>
                             <div id='footer' onMouseDown={this.initDrag} style={{display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}>
                             </div>
@@ -249,7 +253,7 @@ var SearchDataEachRows = React.createClass({
                     <a href={href} style={{width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{score}</a>
                 </div>
                 <div style={{display:'flex'}}>
-                    <a href={href} style={{width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{snippet}</a>
+                    <a href={href} style={{textAlign:'left', overflow:'hidden', textOverflow:'ellipsis'}}>{snippet}</a>
                 </div>
             </div>
         )
