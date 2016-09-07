@@ -451,12 +451,12 @@ sub update_entry {
 sub flair_entry {
     my $self     = shift;
     my $entry_id = shift;
-    my $href     = shift;
     my $extract  = $self->extractor;
     my $munger   = $self->imgmunger;
 
     $self->log->debug("flairing entry");
 
+    my $href     = $self->get_entry($entry_id);
     my $body     = $href->{body};
     my $newbody  = $munger->process_html($body, $entry_id);
     my $flair    = $extract->process_html($newbody);
