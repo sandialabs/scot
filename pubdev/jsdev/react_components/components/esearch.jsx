@@ -90,7 +90,7 @@ var Search = React.createClass({
         var tableRows = [] ;
         if (this.state.results != undefined) {
             for (i=0; i < this.state.results.length; i++) {
-                tableRows.push(<SearchDataEachRows dataOne={results[i]} />);
+                tableRows.push(<SearchDataEachRows dataOne={this.state.results[i]} />);
             }
         }
         return (
