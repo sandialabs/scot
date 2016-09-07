@@ -21,7 +21,6 @@ var Crouton                 = require('react-crouton');
 var Store                   = require('../activemq/store.jsx');
 var Notification            = require('react-notification-system');
 var AddFlair                = require('../components/add_flair.jsx').AddFlair;
-var Watcher                 = require('../components/add_flair.jsx').Watcher;
 var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx');
 
@@ -99,7 +98,7 @@ var SelectedHeader = React.createClass({
             success: function(result) {
                 var entryResult = result.records;
                 this.setState({showEntryData:true, entryData:entryResult, runWatcher:true})
-                //Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
+                this.Watcher();
                 if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                     this.setState({loading:false});
                 }
@@ -167,7 +166,7 @@ var SelectedHeader = React.createClass({
     componentDidUpdate: function() {
         //This runs the watcher which handles the entity popup and link warning.
         if(this.state.runWatcher == true) {
-            Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null);
+            this.Watcher();
         }
     },
     componentWillReceiveProps: function() {
@@ -204,7 +203,7 @@ var SelectedHeader = React.createClass({
             success: function(result) {
                 var entryResult = result.records;
                 this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult, runWatcher:true})
-                //Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
+                this.Watcher();
                 if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 } 
@@ -416,6 +415,84 @@ var SelectedHeader = React.createClass({
             }
         })
     },
+    Watcher: function() {
+        if(this.props.type != 'alertgroup') {
+            $('iframe').each(function(index,ifr) {
+            //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!! 
+                ifr.contentWindow.requestAnimationFrame( function() {
+                    if(ifr.contentDocument != null) {
+                        var arr = [];
+                        //arr.push(this.props.type);
+                        arr.push(this.checkFlairHover);
+                        $(ifr).off('mouseenter');
+                        $(ifr).off('mouseleave');
+                        $(ifr).on('mouseenter', function(v,type) {
+                            var intervalID = setInterval(this[0], 50, ifr);// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
+                            $(ifr).data('intervalID', intervalID);
+                            console.log('Now watching iframe ' + intervalID);
+                        }.bind(arr));
+                        $(ifr).on('mouseleave', function() {
+                            var intervalID = $(ifr).data('intervalID');
+                            window.clearInterval(intervalID);
+                            console.log('No longer watching iframe ' + intervalID);
+                        }); 
+                    }
+                }.bind(this));
+            }.bind(this))
+        } else {
+            $('#detail-container').find('a, .entity').not('.not_selectable').each(function(index,tr) {
+                $(tr).off('mousedown');
+                $(tr).on('mousedown', function() {
+                    this.checkFlairHover();
+                }.bind(this))
+            }.bind(this));
+        }
+    },
+    checkFlairHover: function(ifr) {
+        if(this.props.type != 'alertgroup') {
+            if(ifr.contentDocument != null) {
+                $(ifr).contents().find('.entity').each(function(index, entity) {
+                    if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
+                        $(entity).data('state', 'down');
+                    } else if ($(entity).data('state') == 'down') {
+                        $(entity).data('state', 'up');
+                        var entityid = $(entity).attr('data-entity-id');
+                        var entityvalue = $(entity).attr('data-entity-value');
+                        this.flairToolbarToggle(entityid,entityvalue,'entity')
+                    }
+                }.bind(this));
+            }
+            if(ifr.contentDocument != null) {
+                $(ifr).contents().find('a').each(function(index,a) {
+                    if($(a).css('color') == 'rgb(255, 0, 0)') {
+                        $(a).data('state','down');
+                    } else if ($(a).data('state') == 'down') {
+                        $(a).data('state','up');
+                        var url = $(a).attr('url');
+                        this.linkWarningToggle(url);
+                    }
+                }.bind(this));
+            }
+        } else if (this.props.type == 'alertgroup') {
+            var subtable = $(document.body).find('.alertTableHorizontal');
+            subtable.find('.entity').each(function(index, entity) {
+                if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
+                    $(entity).data('state', 'down');
+                    var entityid = $(entity).attr('data-entity-id');
+                    var entityvalue = $(entity).attr('data-entity-value');
+                    this.flairToolbarToggle(entityid, entityvalue, 'entity');
+
+                } 
+            }.bind(this));
+            subtable.find('a').each(function(index,a) {
+                if($(a).css('color') == 'rgb(255, 0, 0)') {
+                    $(a).data('state','down');
+                    var url = $(a).attr('url');
+                    this.linkWarningToggle(url);
+                } 
+            }.bind(this));
+        }
+    },
     summaryUpdate: function() {
         this.forceUpdate();
     },
@@ -579,7 +656,7 @@ var EntryDataStatus = React.createClass({
             return (
                 <div>
                     {this.props.type == 'alertgroup' ? <ButtonToolbar>
-                        <OverlayTrigger trigger='hover' placement='top' overlay={<Popover id={this.props.id}>open/closed/promoted alerts</Popover>}>
+                        <OverlayTrigger placement='top' overlay={<Popover id={this.props.id}>open/closed/promoted alerts</Popover>}>
                             <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} title={title} id="dropdown" className={classStatus}>
                                 <MenuItem eventKey='1' onClick={this.openAll} bsSize='xsmall'><b>Open</b> All Alerts</MenuItem>
                                 <MenuItem eventKey='2' onClick={this.closeAll}><b>Close</b> All Alerts</MenuItem>
