@@ -1455,7 +1455,7 @@ var SearchDataEachRows = React.createClass({displayName: "SearchDataEachRows",
                 React.createElement("div", {style: {display:'flex'}}, 
                     React.createElement("a", {href: href, style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, score)
                 ), 
-                React.createElement("div", {style: {display:'flex'}}, 
+                React.createElement("div", {style: {display:'flex', overflowX:'hidden',wordWrap:'break-word'}}, 
                     React.createElement("a", {href: href, style: {textAlign:'left', overflow:'hidden', textOverflow:'ellipsis'}}, snippet)
                 )
             )
