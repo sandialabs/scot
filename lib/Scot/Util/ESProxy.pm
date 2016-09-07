@@ -234,11 +234,11 @@ sub do_request_new {
     $eshref->{size}  = undef unless ($eshref->{size});
 
     my $json    = encode_json($eshref);
-    $log->debug("POSTing to ES: ", { filter=>\&Dumper, value => $eshref });
+    $log->debug("GET to ES: ", { filter=>\&Dumper, value => $json });
 
-    my $tx      = $ua->post($url => json => $json);
+    my $tx      = $ua->get($url => json => $eshref);
     if ( my $res    = $tx->success ) {
-        $log->debug("Successful POST to ES");
+        $log->debug("Successful GET to ES");
         return $res->json;
     }
     else {
