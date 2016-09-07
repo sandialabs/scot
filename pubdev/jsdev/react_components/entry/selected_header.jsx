@@ -579,7 +579,7 @@ var EntryDataStatus = React.createClass({
             return (
                 <div>
                     {this.props.type == 'alertgroup' ? <ButtonToolbar>
-                        <OverlayTrigger trigger='hover' placement='top' overlay={<Popover id={this.props.id}>open/closed/promoted alerts</Popover>}>
+                        <OverlayTrigger placement='top' overlay={<Popover id={this.props.id}>open/closed/promoted alerts</Popover>}>
                             <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} title={title} id="dropdown" className={classStatus}>
                                 <MenuItem eventKey='1' onClick={this.openAll} bsSize='xsmall'><b>Open</b> All Alerts</MenuItem>
                                 <MenuItem eventKey='2' onClick={this.closeAll}><b>Close</b> All Alerts</MenuItem>
