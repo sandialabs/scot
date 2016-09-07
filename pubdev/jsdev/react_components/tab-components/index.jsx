@@ -206,13 +206,15 @@ var App = React.createClass({
         setTimeout(function(){Listener.activeMq()}, 3000)
         return{id: id, id2: id2, set: state, handler: "Scot", viewMode:'default'}	
     },
-   componentWillMount: function() {
+    componentDidMount: function() {
 	    $.ajax({
 	        type: 'get',
 	        url: '/scot/api/v2/handler?current=1'
 	    }).success(function(response){
 	        this.setState({handler: response.records['username']})
 	        }.bind(this))
+    },
+    componentWillMount: function() {
         //Get landscape/portrait view if the cookie exists
         var viewModeSetting = checkCookie('viewMode');
         this.setState({viewMode:viewModeSetting})
@@ -268,7 +270,7 @@ var App = React.createClass({
             React.createElement(ExpandableNavMenuItem, {active: setguide, small: menuItemsSmall[6], full: menuItemsFull[6], tooltip: "Guide", jquery: window.$, onClick: this.handleGuide}),
         //            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Admin", jquery: window.$, onClick:this.handlePad}),
             React.createElement(ExpandableNavMenuItem, {active: setintel,small: menuItemsSmall[1], full: menuItemsFull[1], tooltip: "Intel", jquery: window.$, onClick: this.handleIntel}),
-            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Incident Handler:  " + this.state.handler, jquery: window.$, onClick: this.handleHandler}) 
+            React.createElement(ExpandableNavMenuItem, {small: menuItemsSmall[7], full: menuItemsFull[7], tooltip: "Incident Handler Calendar", jquery: window.$, onClick: this.handleHandler}) 
                 )
 
             ),
