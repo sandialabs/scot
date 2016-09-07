@@ -1293,7 +1293,7 @@ var Search = React.createClass({displayName: "Search",
         var tableRows = [] ;
         if (this.state.results != undefined) {
             for (i=0; i < this.state.results; i++) {
-                
+                tableRows.push(React.createElement(SearchDataEachRows, {dataOne: results[i]}));
             }
         }
         return (
@@ -1305,7 +1305,9 @@ var Search = React.createClass({displayName: "Search",
                             React.createElement("div", {id: "search_container", style: {height: '100%', display:'flex', flexFlow:'column'}}, 
                                 React.createElement("div", {id: "handle1", style: {width:'100%',background:'#7a8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.close})))), 
                             React.createElement(SearchDataEachHeader, null), 
-                            tableRows, 
+                            React.createElement("div", null, 
+                                tableRows
+                            ), 
                             React.createElement("div", {id: "sidebar", onMouseDown: this.initDrag, style: {flex:'0 1 auto', height: '100%', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}})
                             ), 
                             React.createElement("div", {id: "footer", onMouseDown: this.initDrag, style: {display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}
@@ -1416,13 +1418,13 @@ var SearchDataEachHeader = React.createClass({displayName: "SearchDataEachHeader
                             "ID"
                         ), 
                         React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
-                            "Score"
-                        ), 
-                        React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
                             "Type"
                         ), 
                         React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
-                            "Snippit"
+                            "Score"
+                        ), 
+                        React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
+                            "Snippet"
                         )
                     )
                 )
@@ -1430,6 +1432,32 @@ var SearchDataEachHeader = React.createClass({displayName: "SearchDataEachHeader
         )
     }
 });
+
+var SearchDataEachRows = React.createClass({displayName: "SearchDataEachRows",
+    render: function() {
+        var type = this.props.dataOne.type;
+        var id = this.props.dataOne.id;
+        var score = this.props.dataOne.score;
+        var snippet = this.props.dataOne.snippet;
+        var href = '/'+type+'/'+id;
+        return (
+            React.createElement("div", {style: {display:'inline-flex'}}, 
+                React.createElement("div", {style: {display:'flex'}}, 
+                    React.createElement("a", {href: href, style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, id)
+                ), 
+                React.createElement("div", {style: {display:'flex'}}, 
+                    React.createElement("a", {href: href, style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, type)
+                ), 
+                React.createElement("div", {style: {display:'flex'}}, 
+                    React.createElement("a", {href: href, style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, score)
+                ), 
+                React.createElement("div", {style: {display:'flex'}}, 
+                    React.createElement("a", {href: href, style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, snippet)
+                )
+            )
+        )
+    }
+})
 
 module.exports = Search
 

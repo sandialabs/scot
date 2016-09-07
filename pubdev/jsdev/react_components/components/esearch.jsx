@@ -90,7 +90,7 @@ var Search = React.createClass({
         var tableRows = [] ;
         if (this.state.results != undefined) {
             for (i=0; i < this.state.results; i++) {
-                
+                tableRows.push(<SearchDataEachRows dataOne={results[i]} />);
             }
         }
         return (
@@ -102,7 +102,9 @@ var Search = React.createClass({
                             <div id='search_container' style={{height: '100%', display:'flex', flexFlow:'column'}}>
                                 <div id='handle1' style={{width:'100%',background:'#7a8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.close}/></span></div></div>
                             <SearchDataEachHeader />
-                            {tableRows}
+                            <div>
+                                {tableRows}
+                            </div>
                             <div id='sidebar' onMouseDown={this.initDrag} style={{flex:'0 1 auto', height: '100%', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}}/>
                             </div>
                             <div id='footer' onMouseDown={this.initDrag} style={{display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}>
@@ -213,13 +215,13 @@ var SearchDataEachHeader = React.createClass({
                             ID
                         </div>
                         <div style={{width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
-                            Score
-                        </div>
-                        <div style={{width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
                             Type
                         </div>
                         <div style={{width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
-                            Snippit
+                            Score
+                        </div>
+                        <div style={{width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+                            Snippet
                         </div>
                     </div>
                 </div>
@@ -227,5 +229,31 @@ var SearchDataEachHeader = React.createClass({
         )
     }
 });
+
+var SearchDataEachRows = React.createClass({
+    render: function() {
+        var type = this.props.dataOne.type;
+        var id = this.props.dataOne.id;
+        var score = this.props.dataOne.score;
+        var snippet = this.props.dataOne.snippet;
+        var href = '/'+type+'/'+id;
+        return (
+            <div style={{display:'inline-flex'}}>
+                <div style={{display:'flex'}}>
+                    <a href={href} style={{width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{id}</a>
+                </div>
+                <div style={{display:'flex'}}>
+                    <a href={href} style={{width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{type}</a>
+                </div>
+                <div style={{display:'flex'}}>
+                    <a href={href} style={{width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{score}</a>
+                </div>
+                <div style={{display:'flex'}}>
+                    <a href={href} style={{width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{snippet}</a>
+                </div>
+            </div>
+        )
+    }
+})
 
 module.exports = Search
