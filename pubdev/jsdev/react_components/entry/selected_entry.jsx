@@ -15,7 +15,6 @@ var Frame                   = require('react-frame');
 var Store                   = require('../activemq/store.jsx');
 var AppActions              = require('../flux/actions.jsx');
 var AddFlair                = require('../components/add_flair.jsx').AddFlair;
-var Watcher                 = require('../components/add_flair.jsx').Watcher;
 var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx'); 
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
@@ -49,7 +48,7 @@ var SelectedEntry = React.createClass({
                         Store.storeKey(result.records[i].id)
                         Store.addChangeListener(this.updatedCB);
                     }
-                    Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
+                    this.Watcher();
                 }.bind(this),
                 error: function(result) {
                     this.setState({showEntryData:true});
@@ -100,7 +99,7 @@ var SelectedEntry = React.createClass({
                         Store.storeKey(result.records[i].id)
                         Store.addChangeListener(this.updatedCB);
                     }
-                    Watcher.pentry(null,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,null)
+                    this.Watcher()
                 }.bind(this),
                 error: function(result) {
                     this.setState({showEntryData:true});
@@ -155,6 +154,84 @@ var SelectedEntry = React.createClass({
             this.setState({errorDisplay:false})
         }
     },
+    Watcher: function() {
+        if(this.props.type != 'alertgroup') {
+            $('iframe').each(function(index,ifr) {
+            //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
+                ifr.contentWindow.requestAnimationFrame( function() {
+                    if(ifr.contentDocument != null) {
+                        var arr = [];
+                        //arr.push(this.props.type);
+                        arr.push(this.checkFlairHover);
+                        $(ifr).off('mouseenter');
+                        $(ifr).off('mouseleave');
+                        $(ifr).on('mouseenter', function(v,type) {
+                            var intervalID = setInterval(this[0], 50, ifr);// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
+                            $(ifr).data('intervalID', intervalID);
+                            console.log('Now watching iframe ' + intervalID);
+                        }.bind(arr));
+                        $(ifr).on('mouseleave', function() {
+                            var intervalID = $(ifr).data('intervalID');
+                            window.clearInterval(intervalID);
+                            console.log('No longer watching iframe ' + intervalID);
+                        });
+                    }
+                }.bind(this));
+            }.bind(this))
+        } else {
+            $('#detail-container').find('a, .entity').not('.not_selectable').each(function(index,tr) {
+                $(tr).off('mousedown');
+                $(tr).on('mousedown', function() {
+                    this.checkFlairHover();
+                }.bind(this))
+            }.bind(this));
+        }
+    },
+    checkFlairHover: function(ifr) {
+        if(this.props.type != 'alertgroup') {
+            if(ifr.contentDocument != null) {
+                $(ifr).contents().find('.entity').each(function(index, entity) {
+                    if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
+                        $(entity).data('state', 'down');
+                    } else if ($(entity).data('state') == 'down') {
+                        $(entity).data('state', 'up');
+                        var entityid = $(entity).attr('data-entity-id');
+                        var entityvalue = $(entity).attr('data-entity-value');
+                        this.flairToolbarToggle(entityid,entityvalue,'entity')
+                    }
+                }.bind(this));
+            }
+            if(ifr.contentDocument != null) {
+                $(ifr).contents().find('a').each(function(index,a) {
+                    if($(a).css('color') == 'rgb(255, 0, 0)') {
+                        $(a).data('state','down');
+                    } else if ($(a).data('state') == 'down') {
+                        $(a).data('state','up');
+                        var url = $(a).attr('url');
+                        this.linkWarningToggle(url);
+                    }
+                }.bind(this));
+            }
+        } else if (this.props.type == 'alertgroup') {
+            var subtable = $(document.body).find('.alertTableHorizontal');
+            subtable.find('.entity').each(function(index, entity) {
+                if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
+                    $(entity).data('state', 'down');
+                    var entityid = $(entity).attr('data-entity-id');
+                    var entityvalue = $(entity).attr('data-entity-value');
+                    this.flairToolbarToggle(entityid, entityvalue, 'entity');
+
+                }
+            }.bind(this));
+            subtable.find('a').each(function(index,a) {
+                if($(a).css('color') == 'rgb(255, 0, 0)') {
+                    $(a).data('state','down');
+                    var url = $(a).attr('url');
+                    this.linkWarningToggle(url);
+                }
+            }.bind(this));
+        }
+    },  
     containerHeightAdjust: function() {
         var scrollHeight;
         if ($('#list-view-container')[0]) {
