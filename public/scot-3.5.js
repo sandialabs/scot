@@ -3972,7 +3972,7 @@ var EntryDataStatus = React.createClass({displayName: "EntryDataStatus",
             return (
                 React.createElement("div", null, 
                     this.props.type == 'alertgroup' ? React.createElement(ButtonToolbar, null, 
-                        React.createElement(OverlayTrigger, {trigger: "hover", placement: "top", overlay: React.createElement(Popover, {id: this.props.id}, "open/closed/promoted alerts")}, 
+                        React.createElement(OverlayTrigger, {placement: "top", overlay: React.createElement(Popover, {id: this.props.id}, "open/closed/promoted alerts")}, 
                             React.createElement(DropdownButton, {bsSize: "xsmall", bsStyle: buttonStyle, title: title, id: "dropdown", className: classStatus}, 
                                 React.createElement(MenuItem, {eventKey: "1", onClick: this.openAll, bsSize: "xsmall"}, React.createElement("b", null, "Open"), " All Alerts"), 
                                 React.createElement(MenuItem, {eventKey: "2", onClick: this.closeAll}, React.createElement("b", null, "Close"), " All Alerts")
@@ -5733,7 +5733,7 @@ var App = React.createClass({displayName: "App",
             else if( this.props.params.value.toLowerCase() == "alertgroup"){
                 if(this.props.params.id != null){
                     //array = this.props.params.id.split('+')
-                    id = this.props.params.id.split('+');
+                    id = this.props.params.id;
                 }
                 statetype='alertgroup'
                 isalert = false
@@ -5842,9 +5842,9 @@ var App = React.createClass({displayName: "App",
         this.setState({viewMode:viewModeSetting,listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting})
     },
    render: function() {
-	    var array = []
+	    //var array = []
 	    var id = window.location.hash
-	    array = id.split('/')	
+	    //array = id.split('/')	
 	    $('.active').on('click', function(){
 	        window.location.hash = '#/' + statetype + '/'
 	        window.location.href = window.location.hash
