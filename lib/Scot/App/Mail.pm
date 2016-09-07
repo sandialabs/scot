@@ -448,7 +448,8 @@ sub already_processed {
 
     $log->debug("Got ag processed ", {filter=>\&Dumper,value=>$return});
 
-    if ($return->{queryRecordCount} > 0) {
+    if (defined($return->{queryRecordCount}) and 
+        $return->{queryRecordCount} > 0) {
         return 1;
     }
     return undef;
