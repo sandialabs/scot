@@ -114,7 +114,7 @@ var App = React.createClass({
             else if( this.props.params.value.toLowerCase() == "alertgroup"){
                 if(this.props.params.id != null){
                     //array = this.props.params.id.split('+')
-                    id = this.props.params.id.split('+');
+                    id = this.props.params.id;
                 }
                 statetype='alertgroup'
                 isalert = false
@@ -223,9 +223,9 @@ var App = React.createClass({
         this.setState({viewMode:viewModeSetting,listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting})
     },
    render: function() {
-	    var array = []
+	    //var array = []
 	    var id = window.location.hash
-	    array = id.split('/')	
+	    //array = id.split('/')	
 	    $('.active').on('click', function(){
 	        window.location.hash = '#/' + statetype + '/'
 	        window.location.href = window.location.hash
