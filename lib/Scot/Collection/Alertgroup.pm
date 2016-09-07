@@ -316,6 +316,7 @@ sub update_alerts_in_alertgroup {
         # might come in as $request->{alerts}
         $data   = delete $request->{alerts};
     }
+
     unless ($data) {
         $log->error("no alert updates in request");
         # check for a bulk status update, eg. closing all alerts
