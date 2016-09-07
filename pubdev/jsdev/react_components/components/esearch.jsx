@@ -87,12 +87,12 @@ var Search = React.createClass({
         }.bind(this))
     },
     render: function(){
+        var tableRows = [] ;
         if (this.state.results != undefined) {
             for (i=0; i < this.state.results; i++) {
                 
             }
         }
-
         return (
             <div>
                 <input style={{marginTop:'10px',padding:'10px 20px', backgroundColor: 'white', color:'black', float:'right', width:'30%', borderRadius:'50px',position:'relative'}} onChange={this.doSearch}/>
