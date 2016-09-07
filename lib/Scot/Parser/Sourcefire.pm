@@ -66,7 +66,7 @@ sub parse_message {
     $json{data}{srcport}     = $srcport;
     $json{data}{dstip}       = $dstip;
     $json{data}{dstport}     = $dstport;
-    $json{columns}  = keys %{$json{data}};
+    $json{columns}           = [ keys %{$json{data}} ];
     return wantarray ? %json : \%json;
 }
 
