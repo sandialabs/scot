@@ -113,7 +113,7 @@ Readonly my $FILE_REGEX => qr{
 	\b
     (
         [a-zA-Z0-9\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\%\.\+\~\_]+\.
-        (exe|pdf|txt|scr|doc|docx|ppt|pptx|pl|py|html|htm|php|jsp|jar|rar|zip|cfm|png|mvi|mp4|gif|jpg|asp)
+        (exe|pdf|txt|scr|doc|docx|ppt|pptx|pl|py|html|htm|php|jsp|jar|rar|zip|cfm|png|mvi|mp4|gif|jpg|asp|bin|xls)
     )
     \b
 }xims;
