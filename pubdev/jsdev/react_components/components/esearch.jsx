@@ -100,7 +100,7 @@ var Search = React.createClass({
                 <input style={{marginTop:'10px',padding:'10px 20px', backgroundColor: 'white', color:'black', float:'right', width:'30%', borderRadius:'50px',position:'relative'}} onChange={this.doSearch}/>
                 {this.state.showSearchToolbar ? 
                     <Draggable handle="#handle1" onMouseDown={this.moveDivInit}>
-                        <div id="dragme1" className='box react-draggable searchPopUp' style={{height:this.state.entityHeight,width:this.state.entityWidth, display:'flex', flexFlow:'column'}}>
+                        <div id="dragme1" className='box react-draggable searchPopUp' style={{height:this.state.entityHeight,width:this.state.entityWidth, display:'flex', flexFlow:'column', right:'0px',top:'70px'}}>
                             <div id='search_container' style={{height: '100%', display:'flex', flexFlow:'column'}}>
                                 <div id='handle1' style={{width:'100%',background:'#7a8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.close}/></span></div></div>
                                 <div style={{display:'flex', flexFlow:'row'}}>
