@@ -114,7 +114,7 @@ var App = React.createClass({
             else if( this.props.params.value.toLowerCase() == "alertgroup"){
                 if(this.props.params.id != null){
                     //array = this.props.params.id.split('+')
-                    id = this.props.params.id.split('+');
+                    id = this.props.params.id;
                 }
                 statetype='alertgroup'
                 isalert = false
@@ -217,12 +217,15 @@ var App = React.createClass({
     componentWillMount: function() {
         //Get landscape/portrait view if the cookie exists
         var viewModeSetting = checkCookie('viewMode');
-        this.setState({viewMode:viewModeSetting})
+        var listViewFilterSetting = checkCookie('listViewFilter'+this.props.params.value.toLowerCase());
+        var listViewSortSetting = checkCookie('listViewSort'+this.props.params.value.toLowerCase());
+        var listViewPageSetting = checkCookie('listViewPage'+this.props.params.value.toLowerCase());
+        this.setState({viewMode:viewModeSetting,listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting})
     },
    render: function() {
-	    var array = []
+	    //var array = []
 	    var id = window.location.hash
-	    array = id.split('/')	
+	    //array = id.split('/')	
 	    $('.active').on('click', function(){
 	        window.location.hash = '#/' + statetype + '/'
 	        window.location.href = window.location.hash
@@ -280,35 +283,35 @@ var App = React.createClass({
             :
         this.state.set == 1
         ?	
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {isalert: isalert ? 'isalert' : '', id: this.state.id, viewMode: this.state.viewMode, type:statetype}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {isalert: isalert ? 'isalert' : '', id: this.state.id, viewMode: this.state.viewMode, type:statetype, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
         :
             this.state.set == 2
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type:'event'}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type:'event', listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
         :
             this.state.set == 3
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type:'incident'}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type:'incident', listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
         :
         this.state.set == 5
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(SelectedContainer, {id: this.state.id, type: statetype, viewMode: this.state.viewMode}))
+        React.createElement(ExpandableNavPage, null, React.createElement(SelectedContainer, {id: this.state.id, type: statetype, viewMode: this.state.viewMode, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))
         :
         this.state.set == 4
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type: 'intel'}))
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type: 'intel', listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))
         :
         this.state.set == 6
         ?	
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {viewMode: this.state.viewMode, type:'task'}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {viewMode: this.state.viewMode, type:'task', listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
         :
         this.state.set == 7
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, viewMode: this.state.viewMode, type:'guide'}))
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, viewMode: this.state.viewMode, type:'guide', listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))
         :
         this.state.set == 8
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(EntityDetail, {entityid: this.state.id, entitytype: 'entity', id: this.state.id, type: 'entity', viewMode: this.state.viewMode}))
+        React.createElement(ExpandableNavPage, null, React.createElement(EntityDetail, {entityid: this.state.id, entitytype: 'entity', id: this.state.id, type: 'entity', viewMode: this.state.viewMode, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))
         :
         null
         )	
