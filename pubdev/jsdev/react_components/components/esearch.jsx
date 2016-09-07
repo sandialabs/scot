@@ -9,7 +9,11 @@ var BoolShould          = require('../../../node_modules/searchkit').BoolShould;
 var LayoutBody          = require('../../../node_modules/searchkit').LayoutBody;
 var LayoutResults       = require('../../../node_modules/searchkit').LayoutResults;
 var Pagination          = require('../../../node_modules/searchkit').Pagination;
-const searchkit         = new SearchkitManager("/scot/api/v2/search/")
+//var ImmutableQuery      = require('../../../node_modules/searchkit').ImmutableQuery;
+//var SimpleQueryString   = require('../../../node_modules/searchkit').SimpleQueryString;
+//const searchkit         = new SearchkitManager("/scot/api/v2/esearch/")
+//let searchkit = new ImmutableQuery('/scot/api/v2/esearch/');
+//let newQuery = query.addQuery(SimpleQueryString('searchstring'))
 var Draggable           = require('react-draggable');
 var type = ''
 var id = 0
@@ -17,6 +21,7 @@ var sourceid = ''
 var body = ''
 var owner = ''
 var typeid = ''
+
 class Results extends React.Component{
     render() {
         if(this.props.result._type == 'entry'){
@@ -66,47 +71,88 @@ class Results extends React.Component{
 }
 
 var Search = React.createClass({
-	render: function(){
+    getInitialState: function() {
+        return {
+            showSearchToolbar: false,
+            searchResults: null,
+        }
+    },	
+    doSearch: function(string) {
+        $.ajax({
+            type: 'get',
+            url: '/scot/api/v2/esearch',
+            data: {qstring:string.target.value},
+        }).success(function(response){
+            this.setState({results:response, showSearchToolbar:true})
+        }.bind(this))
+    },
+    render: function(){
+        if (this.state.results != undefined) {
+            for (i=0; i < this.state.results; i++) {
+                
+            }
+        }
+
+        return (
+            <div>
+                <input style={{marginTop:'10px',padding:'10px 20px', backgroundColor: 'white', color:'black', float:'right', width:'30%', borderRadius:'50px',position:'relative'}} onChange={this.doSearch}/>
+                {this.state.showSearchToolbar ? 
+                    <Draggable handle="#handle1" onMouseDown={this.moveDivInit}>
+                        <div id="dragme1" className='box react-draggable searchPopUp' style={{height:this.state.entityHeight,width:this.state.entityWidth, display:'flex', flexFlow:'column'}}>
+                            <div id='search_container' style={{height: '100%', display:'flex', flexFlow:'column'}}>
+                                <div id='handle1' style={{width:'100%',background:'#7a8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.close}/></span></div></div>
+                            <SearchDataEachHeader />
+                            {tableRows}
+                            <div id='sidebar' onMouseDown={this.initDrag} style={{flex:'0 1 auto', height: '100%', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}}/>
+                            </div>
+                            <div id='footer' onMouseDown={this.initDrag} style={{display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}>
+                            </div>
+                        </div>
+                    </Draggable>
+                :
+                null} 
+            </div>
+        )/*
         return (
                 React.createElement(SearchkitProvider, {searchkit: searchkit},
                     React.createElement('div', {className: 'search'},
                     React.createElement('div', {className: 'search_query'},
                         React.createElement(SearchBox, {autofocus: false, searchOnChange: true})
-                            ),
-                React.createElement(Draggable, {handle: '#handle1' ,onMouseDown:this.moveDivInit},
-                React.createElement("div", {style: {transform: 'translate(117px, 49px)', 'background-color': '#FFF', overflow: 'hidden'},id: "dragme1", className: "box react-draggable searchPopUp"},
-                    React.createElement("div", {className: 'search_results', id: "search_container", style: {height: '100%', flexFlow: 'column', display: 'none'}},
-                        React.createElement("div", {id: "handle1", style: {width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.close})))),
-                        React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}},
-                            React.createElement("h3", {id: "myModalLabel", style: {color: 'black'}}, "Search Results")
-                        ),
-                        React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto'}},
-                        React.createElement("div", {className: "container-fluid2", id: 'container1', style: {/*'max-width': '915px',*//*'min-width': '650px',*/ width: '100%', 'max-height': '100%', 'margin-left': '0px',height: '100%', 'overflow-y': 'auto', 'overflow-x' : 'hidden','padding-left':'5px'}},
-                    React.createElement("div", {className: "table-row header ", style: {color: 'black'}},
-                        React.createElement("div", {className: "wrapper attributes "},                        
-                        React.createElement('div', {className: 'wrapper status-owner-severity'},
-                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
-                        React.createElement('div', {className: 'column owner'}, 'ID'))),
+                    ),
+                    React.createElement(Draggable, {handle: '#handle1' ,onMouseDown:this.moveDivInit},
+                        React.createElement("div", {style: {transform: 'translate(117px, 49px)', 'background-color': '#FFF', overflow: 'hidden'},id: "dragme1", className: "box react-draggable searchPopUp"},
+                            React.createElement("div", {className: 'search_results', id: "search_container", style: {height: '100%', flexFlow: 'column', display: 'none'}},
+                                React.createElement("div", {id: "handle1", style: {width:'100%',background:'#7A8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.close})))),
+                                React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}},
+                                    React.createElement("h3", {id: "myModalLabel", style: {color: 'black'}}, "Search Results")
+                                ),
+                                React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto'}},
+                                React.createElement("div", {className: "container-fluid2", id: 'container1', style: {/*'max-width': '915px',*//*'min-width': '650px',*/ /*width: '100%', 'max-height': '100%', 'margin-left': '0px',height: '100%', 'overflow-y': 'auto', 'overflow-x' : 'hidden','padding-left':'5px'}},
+                                    React.createElement("div", {className: "table-row header ", style: {color: 'black'}},
+                                    React.createElement("div", {className: "wrapper attributes "},                        
+                                    React.createElement('div', {className: 'wrapper status-owner-severity'},
+                                    React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                                    React.createElement('div', {className: 'column owner'}, 'ID'))),
 
-                        React.createElement('div', {className: 'wrapper status-owner-severity'},
-                        React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
-                        React.createElement('div', {className: 'column owner'}, 'Type'))),
+                                    React.createElement('div', {className: 'wrapper status-owner-severity'},
+                                    React.createElement('div', {className: 'wrapper status-owner status-owner-wide'},
+                                    React.createElement('div', {className: 'column owner'}, 'Type'))),
 
-                        React.createElement('div', {className: 'wrapper title-comment-module-reporter'},
-                        React.createElement('div', {className: 'wrapper title-comment'},
-                        React.createElement('div', {className: 'column title'}, 'Snippet(s)')))
-                            )), 
-                            React.createElement(Hits, {hitsPerPage: 10, itemComponent: Results, mod: 'sk-hits-list', highlightFields:['id']})),
+                                    React.createElement('div', {className: 'wrapper title-comment-module-reporter'},
+                                    React.createElement('div', {className: 'wrapper title-comment'},
+                                    React.createElement('div', {className: 'column title'}, 'Snippet(s)')))
+                                    )
+                                ), 
+                                React.createElement(Hits, {hitsPerPage: 10, itemComponent: Results, mod: 'sk-hits-list', highlightFields:['id']})),
                             
                             React.createElement(Pagination, {showNumbers: true})),
                         React.createElement("div", {onMouseDown: this.initDrag, id: "footer", style: {display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}
                         )
                     )
-                )))))
+                )))))*/
 	},
     close: function(){
-        $('.search_results').css('display', 'none')
-        $('#dragme1').css('display', 'none') 
+        this.setState({showSearchToolbar:false});    
     },
     moveDivInit: function(e) {
         document.documentElement.addEventListener('mouseup', this.moveDivStop,false);
@@ -157,5 +203,29 @@ var Search = React.createClass({
     }
 })
 
+var SearchDataEachHeader = React.createClass({
+    render: function() {
+        return (
+            <div id='container1'>
+                <div className="table-row header" style={{color:'black'}}>
+                    <div style={{flexGrow:1, display:'flex'}}>
+                        <div style={{width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+                            ID
+                        </div>
+                        <div style={{width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+                            Score
+                        </div>
+                        <div style={{width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+                            Type
+                        </div>
+                        <div style={{width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+                            Snippit
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+});
 
 module.exports = Search
