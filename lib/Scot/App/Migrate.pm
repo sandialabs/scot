@@ -258,7 +258,10 @@ sub output_post_status {
     my $time_so_far         = &$rtimer;
     if ( $time_so_far != 0 ) {
         my $avg_docs_per_sec    = $mdocs / $time_so_far;
-        my $better_eta          = $stats->{remain} / $avg_docs_per_sec;
+        my $better_eta = 0;
+        if ($avg_docs_per_sec != 0) {
+            $better_eta = $stats->{remain} / $avg_docs_per_sec;
+        }
 
         printf " [Avg rate: %5.3f] {ETA: %5.3f hours}",
                  $avg_docs_per_sec, $better_eta;
