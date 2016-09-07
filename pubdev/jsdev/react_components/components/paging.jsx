@@ -10,7 +10,12 @@ var Page = React.createClass({
    
 
     getInitialState: function(){
-        return {defaultpage: 1, defaultPageSize: this.props.defaultPageSize}
+        var defaultpage = 1; 
+        if (this.props.defaultpage != undefined) {
+            defaultpage = this.props.defaultpage
+        }
+        if (defaultpage == 0) { defaultpage = 1}
+        return {defaultpage: defaultpage, defaultPageSize: this.props.defaultPageSize}
 
     },
     preparePaging: function preparePaging(props) {
@@ -96,7 +101,9 @@ var Page = React.createClass({
                 scrollTop: 0
             });
             
-            this.props.pagefunction({page: page, limit: this.state.defaultPageSize})
+            this.props.pagefunction({page: page, limit: this.state.defaultPageSize});
+            var cookieName = 'listViewPage'+this.props.type;
+            setCookie(cookieName,JSON.stringify({page:page, limit: this.state.defaultPageSize}),1000); 
         }
     },
     render: function(){
