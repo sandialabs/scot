@@ -1279,7 +1279,6 @@ var Search = React.createClass({displayName: "Search",
             showSearchToolbar: false,
             searchResults: null,
             entityHeight: '60%',
-            entityWidth: '75%',
         }
     },	
     doSearch: function(string) {
@@ -1303,7 +1302,7 @@ var Search = React.createClass({displayName: "Search",
                 React.createElement("input", {style: {marginTop:'10px',padding:'10px 20px', backgroundColor: 'white', color:'black', float:'right', width:'30%', borderRadius:'50px',position:'relative'}, onChange: this.doSearch}), 
                 this.state.showSearchToolbar ? 
                     React.createElement(Draggable, {handle: "#handle1", onMouseDown: this.moveDivInit}, 
-                        React.createElement("div", {id: "dragme1", className: "box react-draggable searchPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth, display:'flex', flexFlow:'column', right:'0px',top:'70px'}}, 
+                        React.createElement("div", {id: "dragme1", className: "box react-draggable searchPopUp", style: {height:this.state.entityHeight,maxWidth:'80%', maxHeight:'75%', display:'flex', flexFlow:'column', right:'0px',top:'70px'}}, 
                             React.createElement("div", {id: "search_container", style: {height: '100%', display:'flex', flexFlow:'column'}}, 
                                 React.createElement("div", {id: "handle1", style: {width:'100%',background:'#7a8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.close})))), 
                                 React.createElement("div", {style: {display:'flex', flexFlow:'row'}}, 
