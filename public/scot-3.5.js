@@ -1394,10 +1394,10 @@ var Search = React.createClass({displayName: "Search",
         this.blockiFrameMouseEvent();
     },
     doDrag: function(e) {
-    var elem = document.getElementById('dragme1')
-    elem.style.width = (startWidth + e.clientX - startX) + 'px';
-    elem.style.height = (startHeight + e.clientY - startY) + 'px';
-     var elem1 = document.getElementById('handle1')
+        var elem = document.getElementById('dragme1')
+        elem.style.width = (startWidth + e.clientX - startX) + 'px';
+        elem.style.height = (startHeight + e.clientY - startY) + 'px';
+    /* var elem1 = document.getElementById('handle1')
     elem1.style.width = (startWidth + e.clientX - startX) + 'px';
     var elem2 = document.getElementById('container1')
     elem2.style.width = (startWidth + e.clientX - startX) + 'px';
@@ -1406,7 +1406,7 @@ var Search = React.createClass({displayName: "Search",
         var height = elem.style.height.replace('px', '')
         $(y).find('.is-numbered').css('width', elem.style.width)
         $(y).find('.sk-hits-list').css({'overflow': 'auto', 'height': height - 185 + 'px'}) 
-    })
+    })*/
     },
     stopDrag: function(e) {
         document.documentElement.removeEventListener('mousemove', this.doDrag, false);    document.documentElement.removeEventListener('mouseup', this.stopDrag, false);
