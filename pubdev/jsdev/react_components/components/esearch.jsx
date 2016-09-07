@@ -252,7 +252,7 @@ var SearchDataEachRows = React.createClass({
                 <div style={{display:'flex'}}>
                     <a href={href} style={{width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{score}</a>
                 </div>
-                <div style={{display:'flex'}}>
+                <div style={{display:'flex', overflowX:'hidden',wordWrap:'break-word'}}>
                     <a href={href} style={{textAlign:'left', overflow:'hidden', textOverflow:'ellipsis'}}>{snippet}</a>
                 </div>
             </div>
