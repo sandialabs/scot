@@ -1442,7 +1442,7 @@ var SearchDataEachRows = React.createClass({displayName: "SearchDataEachRows",
         var id = this.props.dataOne.id;
         var score = this.props.dataOne.score;
         var snippet = this.props.dataOne.snippet;
-        var href = '/'+type+'/'+id;
+        var href = '/#/'+type+'/'+id;
         return (
             React.createElement("div", {style: {display:'inline-flex'}}, 
                 React.createElement("div", {style: {display:'flex'}}, 
