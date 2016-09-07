@@ -83,13 +83,13 @@ var Search = React.createClass({
             url: '/scot/api/v2/esearch',
             data: {qstring:string.target.value},
         }).success(function(response){
-            this.setState({results:response, showSearchToolbar:true})
+            this.setState({results:response.records, showSearchToolbar:true})
         }.bind(this))
     },
     render: function(){
         var tableRows = [] ;
         if (this.state.results != undefined) {
-            for (i=0; i < this.state.results; i++) {
+            for (i=0; i < this.state.results.length; i++) {
                 tableRows.push(<SearchDataEachRows dataOne={results[i]} />);
             }
         }
