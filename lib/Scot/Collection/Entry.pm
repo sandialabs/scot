@@ -147,6 +147,8 @@ sub create_from_api {
 
     $log->trace("Custom create in Scot::Collection::Entry");
 
+    my $user    = $request->{user};
+
     my $json    = $request->{request}->{json};
 
     my $target_type = delete $json->{target_type};
@@ -179,6 +181,8 @@ sub create_from_api {
         type    => $target_type,
         id      => $target_id,
     };
+
+    $json->{owner}  = $user;
 
     $log->debug("Creating entry with: ", { filter=>\&Dumper, value => $json});
 
