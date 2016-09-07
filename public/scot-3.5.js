@@ -1304,9 +1304,11 @@ var Search = React.createClass({displayName: "Search",
                         React.createElement("div", {id: "dragme1", className: "box react-draggable searchPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth, display:'flex', flexFlow:'column'}}, 
                             React.createElement("div", {id: "search_container", style: {height: '100%', display:'flex', flexFlow:'column'}}, 
                                 React.createElement("div", {id: "handle1", style: {width:'100%',background:'#7a8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.close})))), 
-                            React.createElement(SearchDataEachHeader, null), 
-                            React.createElement("div", null, 
-                                tableRows
+                            React.createElement("div", {id: "container1"}, 
+                                React.createElement(SearchDataEachHeader, null), 
+                                React.createElement("div", {style: {display:'flex',flexFlow:'column'}}, 
+                                    tableRows
+                                )
                             ), 
                             React.createElement("div", {id: "sidebar", onMouseDown: this.initDrag, style: {flex:'0 1 auto', height: '100%', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}})
                             ), 
@@ -1411,21 +1413,19 @@ var Search = React.createClass({displayName: "Search",
 var SearchDataEachHeader = React.createClass({displayName: "SearchDataEachHeader",
     render: function() {
         return (
-            React.createElement("div", {id: "container1"}, 
-                React.createElement("div", {className: "table-row header", style: {color:'black'}}, 
-                    React.createElement("div", {style: {flexGrow:1, display:'flex'}}, 
-                        React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
-                            "ID"
-                        ), 
-                        React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
-                            "Type"
-                        ), 
-                        React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
-                            "Score"
-                        ), 
-                        React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
-                            "Snippet"
-                        )
+            React.createElement("div", {className: "table-row header", style: {color:'black'}}, 
+                React.createElement("div", {style: {flexGrow:1, display:'flex'}}, 
+                    React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
+                        "ID"
+                    ), 
+                    React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
+                        "Type"
+                    ), 
+                    React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
+                        "Score"
+                    ), 
+                    React.createElement("div", {style: {width:'95px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}, 
+                        "Snippet"
                     )
                 )
             )
