@@ -1293,7 +1293,7 @@ var Search = React.createClass({displayName: "Search",
         var tableRows = [] ;
         if (this.state.results != undefined) {
             for (i=0; i < this.state.results.length; i++) {
-                tableRows.push(React.createElement(SearchDataEachRows, {dataOne: results[i]}));
+                tableRows.push(React.createElement(SearchDataEachRows, {dataOne: this.state.results[i]}));
             }
         }
         return (
