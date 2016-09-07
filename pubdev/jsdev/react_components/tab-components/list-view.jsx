@@ -654,7 +654,7 @@ module.exports = React.createClass({
                 }
             }
             this.setState({filter:newFilterObj});
-            this.getNewData(null,null,newFilterObj)
+            this.getNewData({page:0},null,newFilterObj)
         }
     },
     titleCase: function(string) {
