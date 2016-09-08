@@ -33,6 +33,14 @@ sub parse_datefield_match {
     return $match;
 }
 
+sub parse_handler_match {
+    my $self    = shift;
+    my $value   = shift;
+    my $match   = {};
+}
+
+
+
 sub get_op_val {
     my $self    = shift;
     my $item    = shift;
@@ -241,6 +249,7 @@ sub build_match_ref {
     my @numfields    = qw(id views entry_count);
     my @tagsrcfields = qw(tag source);
     my @skipfields   = qw(sort columns limit offset);
+    my @handler      = qw(start end);
 
     foreach my $key (keys %$params) {
 
@@ -250,6 +259,14 @@ sub build_match_ref {
 
         if ( grep {/$key/} @datefields ) {
             $mquery{$key} = $self->parse_datefield_match($value);
+        }
+        if ( grep {/$key/} @handler ) {
+            if ($key eq "start" ) {
+                $mquery{$key} = { '$gte' => $value };
+            }
+            else {
+                $mquery{$key} = { '$lte' => $value };
+            }
         }
         elsif ( grep {/$key/} @numfields ) {
             $mquery{$key} = $self->parse_numericfield_match($value);

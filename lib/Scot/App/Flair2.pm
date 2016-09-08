@@ -385,6 +385,9 @@ sub get_entry {
     my $self    = shift;
     my $id      = shift;
     my $href;
+    $id  += 0;
+
+    $self->log->debug("Getting entry $id");
 
     if ( $self->get_method eq "scot_api" ) {
         my $scot    = $self->scot;
@@ -394,6 +397,7 @@ sub get_entry {
         my $mongo       = $self->env->mongo;
         my $collection  = $mongo->collection("Entry");
         my $entryobj    = $collection->find_iid($id);
+        $self->log->debug("Entry OBJ = ", {filter=>\&Dumper, value=>$entryobj});
         $href           = $entryobj->as_hash;
     }
     return $href;
@@ -404,20 +408,24 @@ sub process_entry {
     my $id      = shift;
     my $scot    = $self->scot;
     my $update;
+    my $log     = $self->log;
 
+    $log->debug("initial grab of entry $id");
     my $entry   = $self->get_entry($id);
+    $log->debug("flairing entry $id");
     $update     = $self->flair_entry($entry, $id);
 
     my $putdata = {
-        id      => 1,
+        id      => $id,
         type    => 'entry',
         data    => {
             parsed      => 1,
             body_plain  => $update->{text},
             body_flair  => $update->{flair},
-            entities    => $update->{entites},
+            entities    => $update->{entities},
         },
     };
+    $log->debug("updating entry");
     $self->update_entry($putdata);
     $self->out("-------- done processing entry $id");
 }
@@ -433,15 +441,33 @@ sub update_entry {
         my $response = $self->scot->put($putdata);
     }
     else {
+        my $id    = delete $putdata->{id};
         my $mongo = $self->env->mongo;
         my $col   = $mongo->collection('Entry');
-        my $obj   = $col->find_iid($putdata->{id});
-        $obj->update({ '$set' => $putdata->{data} });
+        my $obj   = $col->find_iid($id);
+        my $newdata = $putdata->{data};
+
+        unless ($obj) {
+            $self->log->error("failed to get object with id ".$id);
+        }
+
+        $self->log->debug("got object with id of ". $obj->id);
+        $self->log->debug("putting entry: ",{filter=>\&Dumper,value=>$newdata});
+
+        if ( $obj->update({ '$set' => $newdata }) ){
+            $self->log->debug("success updating");
+            my $ohash = $obj->as_hash;
+            $self->log->debug("hash is now: ",{filter=>\&Dumper, value=>$ohash});
+        }
+        else {
+            $self->log->error("failed update, I think");
+        }
+
         $self->env->mq->send("scot", {
             action  => "updated",
             data    => {
                 type    => "entry",
-                id      => $obj->id,
+                id      => $id,
                 who     => 'scot-flair',
             }
         });
@@ -449,17 +475,19 @@ sub update_entry {
 }
 
 sub flair_entry {
-    my $self     = shift;
-    my $entry_id = shift;
-    my $extract  = $self->extractor;
-    my $munger   = $self->imgmunger;
+    my $self       = shift;
+    my $entry_href = shift;
+    my $entry_id   = shift;
+    my $extract    = $self->extractor;
+    my $munger     = $self->imgmunger;
 
-    $self->log->debug("flairing entry");
+    $self->log->debug("flairing entry $entry_id");
 
     my $href     = $self->get_entry($entry_id);
     my $body     = $href->{body};
     my $newbody  = $munger->process_html($body, $entry_id);
     my $flair    = $extract->process_html($newbody);
+    $self->log->debug("flairing returned ",{filter=>\&Dumper, value=>$flair});
     return $flair;
 }
 
