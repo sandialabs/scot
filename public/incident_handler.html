@@ -686,7 +686,7 @@ $('#calendar').fullCalendar({
                             {
                                 events: function(start, end, timezone, callback) {
                                    $.ajax({
-                                        url: '/scot/api/v2/handler?start='+start+'&end='+end,
+                                        url: '/scot/api/v2/handler?start='+start/1000+'&end='+end/1000,
                                         type: 'GET',
                                         success: function(data) {
                                             var events = [];
