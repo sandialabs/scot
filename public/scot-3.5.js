@@ -2222,8 +2222,10 @@ var Source = React.createClass({displayName: "Source",
         var id = this.props.id;
         var type = this.props.type;
         var data = this.props.data;
-        for (i=0; i < data.length; i++) {
-            rows.push(React.createElement(SourceDataIterator, {data: data, dataOne: data[i], id: id, type: type, updated: this.props.updated}));
+        if (data != undefined) {
+            for (i=0; i < data.length; i++) {
+                rows.push(React.createElement(SourceDataIterator, {data: data, dataOne: data[i], id: id, type: type, updated: this.props.updated}));
+            }
         }
         return (
             React.createElement("div", null, 
@@ -2433,8 +2435,10 @@ var Tag = React.createClass({displayName: "Tag",
         var id = this.props.id;
         var type = this.props.type;
         var data = this.props.data;
-        for (i=0; i < data.length; i++) {
-            rows.push(React.createElement(TagDataIterator, {data: data, dataOne: data[i], id: id, type: type, updated: this.props.updated}));
+        if (data != undefined) {
+            for (i=0; i < data.length; i++) {
+                rows.push(React.createElement(TagDataIterator, {data: data, dataOne: data[i], id: id, type: type, updated: this.props.updated}));
+            }
         }
         return (
             React.createElement("div", null, 
@@ -2684,7 +2688,7 @@ var SelectedContainer = React.createClass({displayName: "SelectedContainer",
             width = 'calc(100% ' + '- ' + $('#list-view').width() + 'px)';
         }
         return (
-            React.createElement("div", {className: "entry-container", style: {width: width,position: 'relative'}, tabIndex: "1"}, 
+            React.createElement("div", {id: "main-detail-container", className: "entry-container", style: {width: width,position: 'relative'}, tabIndex: "3"}, 
                 datarows
             )
         );
@@ -3055,7 +3059,7 @@ var AlertParent = React.createClass({displayName: "AlertParent",
         $('#sortabletable').tablesorter();
         
         //Ctrl + A to select all alerts
-        $(document.body).keydown(function(event){
+        $('#main-detail-container').keydown(function(event){
             //prevent from working when in input
             if ($('input').is(':focus')) {return};
             //check for ctrl + a with keyCode 
@@ -3064,6 +3068,9 @@ var AlertParent = React.createClass({displayName: "AlertParent",
                 event.preventDefault()
             }
         }.bind(this))
+    },
+    componentWillUnmount: function() {
+        $('#main-detail-container').unbind('keydown');
     },
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();
@@ -4192,7 +4199,7 @@ var EntryDataStatus = React.createClass({displayName: "EntryDataStatus",
     componentDidMount: function() {
         //Adds open/close hot keys for alertgroup
         if (this.props.type == 'alertgroup') {
-            $('.entry-container').keydown(function(event){
+            $('#landscape-list-view').keydown(function(event){
                 //prevent from working when in input
                 if ($('input').is(':focus')) {return};
                 //check for character "o" for 79 or "c" for 67
@@ -4207,7 +4214,7 @@ var EntryDataStatus = React.createClass({displayName: "EntryDataStatus",
         }
     },
     componentWillUnmount: function() {
-        $('.entry-container').unbind('keydown');
+        $('#landscape-list-view').unbind('keydown');
     },
     componentWillReceiveProps: function() {
         this.setState({buttonStatus:this.props.data.status});
@@ -4264,9 +4271,15 @@ var EntryDataStatus = React.createClass({displayName: "EntryDataStatus",
             promoted = this.props.data.promoted_count;
             title = open + ' / ' + closed + ' / ' + promoted;
         }
-        if (this.props.type == 'guide') {
+        if (this.props.type == 'guide' || this.props.type == 'intel') {
             return(React.createElement("div", null))
         } else {
+            var href;
+            if (this.props.type == 'event') {
+                href = '/#/incident/' + this.props.data.promotion_id;
+            } else if (this.props.type == 'intel') {
+                href = '/#/event/' + this.props.data.promotion_id;
+            }
             return (
                 React.createElement("div", null, 
                     this.props.type == 'alertgroup' ? React.createElement(ButtonToolbar, null, 
@@ -4275,10 +4288,16 @@ var EntryDataStatus = React.createClass({displayName: "EntryDataStatus",
                                 React.createElement(MenuItem, {eventKey: "1", onClick: this.openAll, bsSize: "xsmall"}, React.createElement("b", null, "Open"), " All Alerts"), 
                                 React.createElement(MenuItem, {eventKey: "2", onClick: this.closeAll}, React.createElement("b", null, "Close"), " All Alerts")
                             )
-                        )) : React.createElement(DropdownButton, {bsSize: "xsmall", bsStyle: buttonStyle, id: "event_status", className: classStatus, style: {fontSize: '14px'}, title: this.state.buttonStatus}, 
-                            React.createElement(MenuItem, {eventKey: "1", onClick: this.openAll}, "Open Event"), 
-                            React.createElement(MenuItem, {eventKey: "2", onClick: this.closeAll}, "Close Event")
-                        )
+                        )) : 
+                        React.createElement("span", null, this.props.type == 'incident' ? React.createElement(DropdownButton, {bsSize: "xsmall", bsStyle: buttonStyle, id: "event_status", className: classStatus, style: {fontSize: '14px'}, title: this.state.buttonStatus}, 
+                            React.createElement(MenuItem, {eventKey: "1", onClick: this.openAll}, "Open Incident"), 
+                            React.createElement(MenuItem, {eventKey: "2", onClick: this.closeAll}, "Close Incident")
+                        ) : 
+                        React.createElement("span", null, this.state.buttonStatus == 'promoted' ? React.createElement("a", {href: href, role: "button", className: "btn btn-warning"}, this.state.buttonStatus):
+                        React.createElement(DropdownButton, {bsSize: "xsmall", bsStyle: buttonStyle, id: "event_status", className: classStatus, style: {fontSize: '14px'}, title: this.state.buttonStatus}, 
+                            React.createElement(MenuItem, {eventKey: "1", onClick: this.openAll}, "Open"), 
+                            React.createElement(MenuItem, {eventKey: "2", onClick: this.closeAll}, "Close")
+                        )))
                 )
             )
         }
@@ -4418,9 +4437,9 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
         var array = []
         $('tr.selected').each(function(index,tr) {
             var id = $(tr).attr('id');
-            array.push(id);
+            array.push({id:id,status:'open'});
         }.bind(this));
-        var data = JSON.stringify({status:'open', ids:array})    
+        var data = JSON.stringify({alerts:array})    
         $.ajax({
             type:'put',
             url: '/scot/api/v2/'+this.props.type + '/' +this.props.id,
@@ -4439,9 +4458,9 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
         var array = [];
         $('tr.selected').each(function(index,tr) {
             var id = $(tr).attr('id');
-            array.push(id);
+            array.push({id:id,status:'closed', closed:time});
         }.bind(this)); 
-        var data = JSON.stringify({status:'closed', closed: time, ids:array})
+        var data = JSON.stringify({alerts:array})
         $.ajax({
             type:'put',
             url: '/scot/api/v2/'+this.props.type + '/'+ this.props.id,
@@ -4594,22 +4613,19 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
         }
     },
     componentDidMount: function() {
-        //disabled because this works on a global scale in selected_header
-        //open, close, and promote alerts
-        /*$(document.body).keydown(function(event){
+        //open, close SELECTED alerts
+        $('#main-detail-container').keydown(function(event){
             if($('input').is(':focus')) {return}
-            switch (event.keyCode) {
-                case 79:
-                    this.alertOpenSelected();
-                    break;
-                case 67:
-                    this.alertCloseSelected();
-                    break;
-                case 80:
-                    this.alertPromoteSelected();
-                    break;
+            if (event.keyCode == 79 && (event.ctrlKey != true && event.metaKey != true)) {
+                this.alertOpenSelected();
             }
-        }.bind(this))*/
+            if (event.keyCode == 67 && (event.ctrlKey != true && event.metaKey != true)) {
+                this.alertCloseSelected();
+            }
+        }.bind(this))
+    },
+    componentWillUnmount: function() {
+        $('#main-detail-container').unbind('keydown');
     },
     guideToggle: function() {
         this.props.flairToolbarToggle(this.props.guideID,null,'guide')
@@ -4689,7 +4705,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                         React.createElement(Button, {eventKey: "12", onClick: this.props.entryToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-plus-circle", "aria-hidden": "true"}), " Add Entry"), 
                         React.createElement(Button, {eventKey: "13", onClick: this.props.fileUploadToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-upload", "aria-hidden": "true"}), " Upload File"), 
                         React.createElement(Button, {eventKey: "14", onClick: this.alertExportCSV, bsSize: "xsmall"}, React.createElement("img", {src: "/images/csv_text.png"}), " Export to CSV"), 
-                        React.createElement(Button, {eventKey: "15", onClick: this.alertDeleteSelected, bsSize: "xsmall", bsStyle: "danger"}, React.createElement("i", {className: "fa fa-trash", "aria-hidden": "true"}), " Delete Selected"), 
+                        /*<Button eventKey='15' onClick={this.alertDeleteSelected} bsSize='xsmall' bsStyle='danger'><i className="fa fa-trash" aria-hidden="true"></i> Delete Selected</Button>*/
                         React.createElement(Button, {bsStyle: "info", eventKey: "16", onClick: this.manualUpdate, bsSize: "xsmall", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
                     )
                 )
@@ -6857,7 +6873,7 @@ module.exports = React.createClass({displayName: "exports",
             this.setState({handler: response.records['username']})
         }.bind(this))
         
-        $(document.body).keydown(function(e){
+        $('#list-view-container').keydown(function(e){
             if ($('input').is(':focus')) {return};
             if (e.ctrlKey != true && e.metaKey != true) {
                 var up = $('#list-view-data-div').find('.list-view-data-div').find('#'+this.state.id).prevAll('.table-row')
@@ -6888,11 +6904,14 @@ module.exports = React.createClass({displayName: "exports",
                     //scrolled = scrolled -  $('#list-view-data-div').find('.list-view-data-div').find('#'+this.state.id).height()
                     //this.setState({idsarray: array})
                 } 
-            }
+            }    
+        }.bind(this))
+        $(document.body).keydown(function(e) {
+            if ($('input').is(':focus')) {return};
             if (e.keyCode == 70 && (e.ctrlKey != true && e.metaKey != true)) {
                 this.toggleView();
             }
-        }.bind(this))
+        }.bind(this));
     },
     
     //Callback for AMQ updates
@@ -7013,8 +7032,8 @@ module.exports = React.createClass({displayName: "exports",
                                 React.createElement(Button, {eventKey: "5", bsSize: "xsmall", onClick: this.exportCSV}, "Export to CSV"), 
                                 React.createElement(Button, {bsSize: "xsmall", onClick: this.toggleView}, "Full Screen Toggle (f)")
                             ), 
-                                React.createElement("div", {id: "list-view-container", style: {display:this.state.listViewContainerDisplay, height:listViewContainerHeight, opacity:this.state.loading ? '.2' : '1'}}, 
-                                    React.createElement("div", {id: this.state.listViewOrientation}, 
+                                React.createElement("div", {id: "list-view-container", style: {display:this.state.listViewContainerDisplay, height:listViewContainerHeight, opacity:this.state.loading ? '.2' : '1'}, tabIndex: "1"}, 
+                                    React.createElement("div", {id: this.state.listViewOrientation, tabIndex: "2"}, 
                                         React.createElement("div", {className: "tableview", style: {display: 'flex'}}, 
                                             React.createElement("div", {id: "fluid2", className: "container-fluid2", style: {width:'100%', 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow': 'hidden','padding-left':'5px', display:'flex', flexFlow: 'column'}}, 
                                                 React.createElement("table", {style: {width:'100%'}}, 

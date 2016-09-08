@@ -583,7 +583,7 @@ var EntryDataStatus = React.createClass({
     componentDidMount: function() {
         //Adds open/close hot keys for alertgroup
         if (this.props.type == 'alertgroup') {
-            $('.entry-container').keydown(function(event){
+            $('#landscape-list-view').keydown(function(event){
                 //prevent from working when in input
                 if ($('input').is(':focus')) {return};
                 //check for character "o" for 79 or "c" for 67
@@ -598,7 +598,7 @@ var EntryDataStatus = React.createClass({
         }
     },
     componentWillUnmount: function() {
-        $('.entry-container').unbind('keydown');
+        $('#landscape-list-view').unbind('keydown');
     },
     componentWillReceiveProps: function() {
         this.setState({buttonStatus:this.props.data.status});
@@ -655,9 +655,15 @@ var EntryDataStatus = React.createClass({
             promoted = this.props.data.promoted_count;
             title = open + ' / ' + closed + ' / ' + promoted;
         }
-        if (this.props.type == 'guide') {
+        if (this.props.type == 'guide' || this.props.type == 'intel') {
             return(<div/>)
         } else {
+            var href;
+            if (this.props.type == 'event') {
+                href = '/#/incident/' + this.props.data.promotion_id;
+            } else if (this.props.type == 'intel') {
+                href = '/#/event/' + this.props.data.promotion_id;
+            }
             return (
                 <div>
                     {this.props.type == 'alertgroup' ? <ButtonToolbar>
@@ -666,10 +672,16 @@ var EntryDataStatus = React.createClass({
                                 <MenuItem eventKey='1' onClick={this.openAll} bsSize='xsmall'><b>Open</b> All Alerts</MenuItem>
                                 <MenuItem eventKey='2' onClick={this.closeAll}><b>Close</b> All Alerts</MenuItem>
                             </DropdownButton>
-                        </OverlayTrigger></ButtonToolbar> : <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.state.buttonStatus}>
-                            <MenuItem eventKey='1' onClick={this.openAll}>Open Event</MenuItem>
-                            <MenuItem eventKey='2' onClick={this.closeAll}>Close Event</MenuItem>
-                        </DropdownButton> }
+                        </OverlayTrigger></ButtonToolbar> : 
+                        <span>{this.props.type == 'incident' ? <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.state.buttonStatus}>
+                            <MenuItem eventKey='1' onClick={this.openAll}>Open Incident</MenuItem>
+                            <MenuItem eventKey='2' onClick={this.closeAll}>Close Incident</MenuItem>
+                        </DropdownButton> : 
+                        <span>{this.state.buttonStatus == 'promoted' ? <a href={href} role='button' className='btn btn-warning'>{this.state.buttonStatus}</a>:
+                        <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.state.buttonStatus}>
+                            <MenuItem eventKey='1' onClick={this.openAll}>Open</MenuItem>
+                            <MenuItem eventKey='2' onClick={this.closeAll}>Close</MenuItem>
+                        </DropdownButton>}</span>}</span>}
                 </div>
             )
         }
