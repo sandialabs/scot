@@ -13,13 +13,21 @@ var Draggable               = require('react-draggable');
 var EntityDetail = React.createClass({
     getInitialState: function() {
         var tabs = [];
+        var processedIdsArray = [];
+        var entityHeight = '500px';
+        var entityWidth = '700px';
+        if (this.props.fullScreen == true) {
+            entityHeight = '100vh'
+            entityWidth = '95%'
+        }
         return {
             entityData:null,
             entityid: this.props.entityid,
-            entityHeight: '500px',
-            entityWidth: '700px',
+            entityHeight: entityHeight,
+            entityWidth: entityWidth,
             tabs: tabs,
             initialLoad:false,
+            processedIds:processedIdsArray,
         }
     },
     componentDidMount: function () {
@@ -40,7 +48,9 @@ var EntityDetail = React.createClass({
                         var newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype}
                         currentTabArray.push(newTab);
                         if (this.isMounted()) {
-                            this.setState({tabs:currentTabArray,currentKey:entityid,initialLoad:true});
+                            var entityidsarray = [];
+                            entityidsarray.push(entityid);
+                            this.setState({tabs:currentTabArray,currentKey:entityid,initialLoad:true,processedIds:entityidsarray});
                         }
                     }.bind(this));
                 }
@@ -54,7 +64,9 @@ var EntityDetail = React.createClass({
                 var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype}
                 currentTabArray.push(newTab);
                 if (this.isMounted()) {
-                    this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true});
+                    var entityidsarray = [];
+                    entityidsarray.push(result.id);
+                    this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true, processedIds:entityidsarray});
                 }
             }.bind(this));
         }
@@ -82,53 +94,71 @@ var EntityDetail = React.createClass({
     componentWillReceiveProps: function(nextProps) {
         var checkForInitialLoadComplete = {
             checkForInitialLoadComplete: function() {
+                var addNewEntity = { //Initializing Function for adding an entry to be used later.
+                    addNewEntity: function() {
+                        var currentTabArray = this.state.tabs;
+                        if (nextProps.entityid == undefined) {
+                            $.ajax({
+                                type: 'GET',
+                                url: 'scot/api/v2/' + nextProps.entitytype + '/' + nextProps.entityvalue.toLowerCase()
+                            }).success(function(result) {
+                                var entityid = result.id;
+                                if (this.isMounted()) {
+                                    this.setState({entityid:entityid});
+                                    $.ajax({
+                                        type: 'GET',
+                                        url: 'scot/api/v2/' + nextProps.entitytype + '/' + entityid
+                                    }).success(function(result) {
+                                        var newTab = {data:result, entityid:entityid, entitytype:nextProps.entitytype}
+                                        currentTabArray.push(newTab);
+                                        if (this.isMounted()) {
+                                            this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
+                                        }
+                                    }.bind(this));
+                                }
+                            }.bind(this))
+                        } else {
+                            $.ajax({
+                                type: 'GET',
+                                url: 'scot/api/v2/' + nextProps.entitytype + '/' + nextProps.entityid
+                            }).success(function(result) {
+                                var newTab = {data:result, entityid:nextProps.entityid, entitytype:nextProps.entitytype}
+                                currentTabArray.push(newTab);
+                                if (this.isMounted()) {
+                                    this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
+                                }
+                            }.bind(this));
+                        }
+                    }.bind(this)
+                }
                 if (this.state.initialLoad == false) {
                     setTimeout(checkForInitialLoadComplete.checkForInitialLoadComplete,50);
                 } else {
                     if (nextProps != undefined) {
                         //TODO Fix next conditional for undefined that prevents multiple calls for the same ID at load time on a nested entity
                         if (nextProps.entitytype != null && (nextProps.entityid != undefined)) {
+                            var nextPropsEntityIdInt = parseInt(nextProps.entityid);
                             for (var i=0; i < this.state.tabs.length; i++) {
-                                if (nextProps.entityid == this.state.tabs[i].entityid || (this.state.tabs[i].entitytype == 'guide' && nextProps.entitytype == 'guide')) {
+                                if (nextPropsEntityIdInt == this.state.tabs[i].entityid || (this.state.tabs[i].entitytype == 'guide' && nextProps.entitytype == 'guide')) {
                                     if (this.isMounted()){
-                                        this.setState({currentKey:nextProps.entityid})
+                                        this.setState({currentKey:nextPropsEntityIdInt})
                                     }
                                     return    
+                                } else {
+                                    var array = this.state.processedIds;
+                                    var addEntity = true;
+                                    for (i=0; i < array.length; i++) {
+                                        if (array[i] == nextPropsEntityIdInt) { // Check if entity is already being processed so we don't show it twice
+                                            addEntity = false;
+                                        } 
+                                    }
+                                    if (addEntity) {
+                                        addNewEntity.addNewEntity();
+                                        array.push(nextPropsEntityIdInt)
+                                        this.setState({processedIDs:array});
+                                    }
                                 }
                             }
-                            var currentTabArray = this.state.tabs;
-                            if (nextProps.entityid == undefined) {
-                                $.ajax({
-                                    type: 'GET',
-                                    url: 'scot/api/v2/' + nextProps.entitytype + '/' + nextProps.entityvalue.toLowerCase()
-                                }).success(function(result) {
-                                    var entityid = result.id;
-                                    if (this.isMounted()) {
-                                        this.setState({entityid:entityid});
-                                        $.ajax({
-                                            type: 'GET',
-                                            url: 'scot/api/v2/' + nextProps.entitytype + '/' + entityid
-                                        }).success(function(result) {
-                                            var newTab = {data:result, entityid:entityid, entitytype:nextProps.entitytype}
-                                            currentTabArray.push(newTab);
-                                            if (this.isMounted()) {
-                                                this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
-                                            }
-                                        }.bind(this));
-                                    }
-                                }.bind(this))
-                            } else {
-                                $.ajax({
-                                    type: 'GET',
-                                    url: 'scot/api/v2/' + nextProps.entitytype + '/' + nextProps.entityid
-                                }).success(function(result) {
-                                    var newTab = {data:result, entityid:nextProps.entityid, entitytype:nextProps.entitytype}
-                                    currentTabArray.push(newTab);
-                                    if (this.isMounted()) {
-                                        this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
-                                    }
-                                }.bind(this));
-                            } 
                         }       
                     }
                 }
@@ -210,44 +240,6 @@ var EntityDetail = React.createClass({
                 </div>
             </Draggable>  
         )
-        /*if (this.props.entitytype == 'entity') {
-            return (
-                <Draggable handle="#handle" onMouseDown={this.moveDivInit}>
-                    <div id="dragme" className='box react-draggable entityPopUp' style={{height:this.state.entityHeight,width:this.state.entityWidth}}> 
-                        <div id="entity_detail_container" style={{height: '100%', flexFlow: 'column', display: 'flex'}}>
-                            <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarOff}/></span></div></div>
-                            <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
-                                <h3 id="myModalLabel">Entity {this.state.entityData != null ? <EntityValue value={this.state.entityData.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
-                            </div>
-                            <div style={{overflow:'auto',flex:'1 1 auto', margin:'10px'}}>
-                            {this.state.entityData != null ? <EntityBody data={this.state.entityData} entityid={this.state.entityid} type={this.props.type} id={this.props.id}/> : <div>Loading...</div>}
-                            </div>
-                            <div id='footer' onMouseDown={this.initDrag} style={{display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}>
-                            </div>
-                        </div>
-                    </div>
-                </Draggable>
-            )
-        } else if (this.props.entitytype == 'guide') {
-            var guideurl = '/#/guide/' + this.state.entityid;
-            return (
-                <Draggable handle="#handle" onMouseDown={this.moveDivInit}>
-                    <div id="dragme" className='box react-draggable entityPopUp' style={{height:this.state.entityHeight,width:this.state.entityWidth}}> 
-                        <div id="entity_detail_container" style={{height: '100%', flexFlow: 'column', display: 'flex'}}>
-                            <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarOff}/></span></div></div>
-                            <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
-                                <a href={guideurl} target="_blank"><h3 id="myModalLabel">Guide {this.state.entityData != null ? <span><span><EntityValue value={this.state.entityid} /></span><div><EntityValue value={this.state.entityData.applies_to} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3></a>
-                            </div>
-                            <div style={{overflow:'auto',flex:'1 1 auto', margin:'10px'}}>
-                            {this.state.entityData != null ? <GuideBody entityid={this.state.entityid} entitytype={this.props.entitytype}/> : <div>Loading...</div>}
-                            </div>
-                            <div id='footer' onMouseDown={this.initDrag} style={{display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}>
-                            </div>
-                        </div>
-                    </div>
-                </Draggable>
-            )
-        }*/
     },
     
 });
@@ -295,6 +287,7 @@ var EntityBody = React.createClass({
             loading:"Loading Entries",
             entryToolbar:false,
             appearances:0,
+            showFullEntityButton:false,
         }
     },
     updateAppearances: function(appearancesNumber) {
@@ -314,7 +307,12 @@ var EntityBody = React.createClass({
             this.setState({entryToolbar:false})
         }
     },
-
+    showFullEntityButton: function() {
+        //don't show the button if in full screen entity view.
+        if (this.props.type != 'entity') { 
+            this.setState({showFullEntityButton:true});
+        }
+    },
     render: function() {
         var entityEnrichmentDataArr = [];
         var entityEnrichmentLinkArr = [];
@@ -341,9 +339,10 @@ var EntityBody = React.createClass({
         var SelectedEntry = require('../entry/selected_entry.jsx');
         //PopOut available
         //var href = '/#/entity/' + this.props.entityid + '/' + this.props.type + '/' + this.props.id;
+        var href = '/#/entity/'+this.props.entityid;
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='tabs'>
-                <Tab eventKey={1} style={{overflow:'auto'}} title={this.state.appearances}>{entityEnrichmentLinkArr}<span><br/><b>Appears: {this.state.appearances} times</b></span><br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances}/><br/></Tab>
+                <Tab eventKey={1} style={{overflow:'auto'}} title={this.state.appearances}>{entityEnrichmentLinkArr}<span><br/><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><a href={href} style={{color:'#c400ff'}} target='_blank'>Large amount of references. Click to view the whole entity</a></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton}/><br/></Tab>
                 <Tab eventKey={2} style={{overflow:'auto'}} title="Entry"><Button bsSize='small' onClick={this.entryToggle}>Add Entry</Button><br/>
                 {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
                 {entityEnrichmentGeoArr}
@@ -418,6 +417,11 @@ var EntityEnrichmentButtons = React.createClass({
 
 var EntityReferences = React.createClass({
     getInitialState: function() {
+        var maxRecords = 100;
+        //if type == entity then the url is looking for a full screen entity view with all records.
+        if (this.props.type == 'entity') {
+            maxRecords = 'result.length'
+        }
         return {
             entityDataAlertGroup:null,
             entityDataEvent:null,
@@ -430,6 +434,12 @@ var EntityReferences = React.createClass({
             navigateType: '',
             navigateId: null,
             selected:{},
+            maxRecords: maxRecords,
+            loadingAlerts: true,
+            loadingEvents: true,
+            loadingIncidents: true,
+            loadingIntel: true,
+            loading: true,
         }
     },
     componentDidMount: function() {
@@ -439,7 +449,9 @@ var EntityReferences = React.createClass({
             var arrPromoted = [];
             var arrClosed = [];
             var arrOpen = [];
-            for(var i=0; i < result.length; i++) {
+            var recordNumber = this.state.maxRecords;
+            if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+            for(var i=0; i < recordNumber; i++) {
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(<ReferencesBody type={'alert'} data={result[i]} index={i}/>)
@@ -454,8 +466,14 @@ var EntityReferences = React.createClass({
             arr.push(arrClosed);
             arr.push(arrOpen);
             if (this.isMounted()) {
+                if (result.length >= 100) {
+                    this.props.showFullEntityButton();
+                }
                 this.props.updateAppearances(result.length);
-                this.setState({entityDataAlertGroup:arr})
+                this.setState({entityDataAlertGroup:arr,loadingAlerts:false})
+                if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                    this.setState({loading:false});
+                }
             }
         }.bind(this));
         this.eventRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/event', function(result) {
@@ -464,7 +482,9 @@ var EntityReferences = React.createClass({
             var arrPromoted = [];
             var arrClosed = [];
             var arrOpen = [];
-            for(var i=0; i < result.length; i++) {
+            var recordNumber = this.state.maxRecords;
+            if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+            for(var i=0; i < recordNumber; i++) {
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(<ReferencesBody type={'event'} data={result[i]} index={i}/>)
@@ -479,8 +499,14 @@ var EntityReferences = React.createClass({
             arr.push(arrClosed);
             arr.push(arrOpen);
             if (this.isMounted()) {
+                if (result.length >= 100) {
+                    this.props.showFullEntityButton();
+                }
                 this.props.updateAppearances(result.length);
-                this.setState({entityDataEvent:arr})
+                this.setState({entityDataEvent:arr,loadingEvents:false})
+                if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                    this.setState({loading:false});
+                }
             }
         }.bind(this));   
         this.incidentRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/incident', function(result) {
@@ -489,7 +515,9 @@ var EntityReferences = React.createClass({
             var arrPromoted = [];
             var arrClosed = [];
             var arrOpen = [];
-            for(var i=0; i < result.length; i++) {
+            var recordNumber = this.state.maxRecords;
+            if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+            for(var i=0; i < recordNumber; i++) {
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(<ReferencesBody type={'incident'} data={result[i]} index={i}/>)
@@ -504,8 +532,14 @@ var EntityReferences = React.createClass({
             arr.push(arrClosed);
             arr.push(arrOpen);
             if (this.isMounted()) {
+                if (result.length >= 100) {
+                    this.props.showFullEntityButton();
+                }
                 this.props.updateAppearances(result.length);
-                this.setState({entityDataIncident:arr})
+                this.setState({entityDataIncident:arr, loadingIncidents:false})
+                if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                    this.setState({loading:false});
+                }
             }
         }.bind(this));  
         this.intelRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/intel', function(result) {
@@ -514,7 +548,9 @@ var EntityReferences = React.createClass({
             var arrPromoted = [];
             var arrClosed = [];
             var arrOpen = [];
-            for(var i=0; i < result.length; i++) {
+            var recordNumber = this.state.maxRecords;
+            if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+            for(var i=0; i < recordNumber; i++) {
                 if (result[i] != null) {
                     if (result[i].status == 'promoted'){
                         arrPromoted.push(<ReferencesBody type={'intel'} data={result[i]} index={i}/>)
@@ -529,8 +565,14 @@ var EntityReferences = React.createClass({
             arr.push(arrClosed);
             arr.push(arrOpen);
             if (this.isMounted()) {
+                if (result.length >= 100) {
+                    this.props.showFullEntityButton();
+                }
                 this.props.updateAppearances(result.length);
-                this.setState({entityDataIntel:arr})
+                this.setState({entityDataIntel:arr, loadingIntel:false})
+                if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                    this.setState({loading:false});
+                }
             }
         }.bind(this));   
         $('#sortableentitytable').tablesorter();
@@ -541,6 +583,7 @@ var EntityReferences = React.createClass({
     render: function() {
         return (
             <div className='entityTableWrapper'>
+            {this.state.loading ? <span>Loading: {this.state.loadingAlerts ? <span>Alerts </span> : null}{this.state.loadingEvents ? <span>Events </span> : null}{this.state.loadingIncidents ? <span>Incidents </span> : null}{this.state.loadingIntel ? <span>Intel </span> : null}</span>: null}
             <table className="tablesorter entityTableHorizontal" id={'sortableentitytable'} width='100%'>
                 <thead>
                     <tr>
@@ -587,7 +630,7 @@ var ReferencesBody = React.createClass({
                                 content: {text: $(entryResult[i].body_flair)}, 
                                 style: { classes: 'qtip-scot' }, 
                                 hide: 'unfocus', 
-                                position: { my: 'top right', at: 'left', target: $('#entityTable'+this.props.data.id)},//[position.left,position.top] }, 
+                                position: { my: 'top left', at: 'right', target: $('#entitySummaryRow'+this.props.data.id)},//[position.left,position.top] }, 
                                 show: { ready: true, event: 'click' } 
                             });
                             break;
@@ -599,7 +642,7 @@ var ReferencesBody = React.createClass({
                         content: {text: 'No Summary Found'},
                         style: { classes: 'qtip-scot' },
                         hide: 'unfocus',
-                        position: { my: 'top right', at: 'left', target: $('#entityTable'+this.props.data.id)},
+                        position: { my: 'top left', at: 'right', target: $('#entitySummaryRow'+this.props.data.id)},
                         show: { ready: true, event: 'click' }
                     });
                 } 
@@ -612,6 +655,7 @@ var ReferencesBody = React.createClass({
     render: function() {
         var id = this.props.data.id;
         var trId = 'entityTable' + this.props.data.id;
+        var tdId = 'entitySummaryRow' + this.props.data.id;
         var aHref = null;
         var promotedHref = null;
         var statusColor = null
@@ -637,7 +681,7 @@ var ReferencesBody = React.createClass({
         }
         return (
             <tr id={trId} index={this.props.index}>
-                <td valign='top' style={{textAlign:'center',cursor: 'pointer'}} onClick={this.onClick}><i className="fa fa-eye fa-1" aria-hidden="true"></i></td>
+                <td valign='top' style={{textAlign:'center',cursor: 'pointer'}} onClick={this.onClick} id={tdId}><i className="fa fa-eye fa-1" aria-hidden="true"></i></td>
                 {this.props.data.status == 'promoted' ? <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}><Button bsSize='xsmall' bsStyle={'warning'} id={this.props.data.id} href={promotedHref} target="_blank" style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{this.props.data.status}</Button></td> : <td valign='top' style={{color: statusColor, paddingRight:'4px', paddingLeft:'4px'}}>{this.props.data.status}</td>}
                 <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}><a href={aHref} target="_blank">{this.props.data.id}</a></td>
                 <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}>{this.props.type}</td>
