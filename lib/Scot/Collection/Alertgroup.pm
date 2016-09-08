@@ -329,15 +329,16 @@ sub update_alerts_in_alertgroup {
         # optimize later if this proves to be a slow down
         my $cursor = $alertcol->find({alertgroup => $agobj->id});
         while (my $alert = $cursor->next ) {
-            my $update  = {
-                id  => $alert->id,
-            };
-            if ( $request->{status} ) {
+            my $update;
+            $log->debug("request is ",{filter=>\&Dumper, value=>$request});
+            $update->{id}  = $alert->id;
+            if ( defined($request->{status}) ) {
                 $update->{status} = $request->{status};
             }
-            if ( $request->{parsed} ) {
+            if ( defined($request->{parsed}) ) {
                 $update->{parsed} = $request->{parsed};
             }
+            $log->debug("adding to update: ",{filter=>\&Dumper, value=>$update});
             push @{$data}, $update;
         }
     }
@@ -352,6 +353,7 @@ sub update_alerts_in_alertgroup {
             next ALERT;
         }
         $log->debug("Updating Alert $alert_id in Alertgroup ".$agobj->id);
+
         my $alertobj    = $alertcol->find_iid($alert_id);
         unless ($alertobj) {
             $log->error("Alert $alert_id not found!");
