@@ -486,8 +486,9 @@ sub get_one {
             $object  = $collection->find_iid($id);
         }
         else {
-            $log->debug("id is no numeric and = $id");
-            $object = $collection->find_one({value => $id});
+            $log->debug("id is no numerical");
+            my $name = $self->param('name');
+            $object = $collection->find_one({value => $name});
         }
     }
     else {
