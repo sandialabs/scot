@@ -189,7 +189,7 @@ var EntityDetail = React.createClass({
             if (this.state.tabs[i].entitytype == 'guide') {
                 title = 'guide'
             } else {
-                title = this.state.tabs[i].data.value.slice(0,8);
+                title = this.state.tabs[i].data.value.slice(0,15);
             }
             tabsArr.push(<Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} i={z} key={z} errorToggle={this.props.errorToggle}/></Tab>)
         }
