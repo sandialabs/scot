@@ -1,5 +1,6 @@
 package Scot::Collection::Handler;
 use lib '../../../lib';
+use Data::Dumper;
 use Moose 2;
 extends 'Scot::Collection';
 with    qw(
@@ -38,6 +39,8 @@ sub create_from_api {
     my $params  = $href->{request}->{params};
 
     my $build_href  = $json // $params;
+
+    $log->debug("creating handler with ",{filter=>\&Dumper, value=>$build_href});
 
     my $handler   = $self->create($build_href);
 
