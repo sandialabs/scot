@@ -5103,7 +5103,8 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         if (this.props.entityid == undefined) {
             $.ajax({
                 type: 'GET',
-                url: 'scot/api/v2/' + this.props.entitytype + '/' +this.props.entityvalue.toLowerCase()
+                url: 'scot/api/v2/' + this.props.entitytype + '/byname',
+                data: {name:this.props.entityvalue.toLowerCase()}
             }).success(function(result) {
                 var entityid = result.id;
                 if (this.isMounted()) {
@@ -5168,7 +5169,8 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
                         if (nextProps.entityid == undefined) {
                             $.ajax({
                                 type: 'GET',
-                                url: 'scot/api/v2/' + nextProps.entitytype + '/' + nextProps.entityvalue.toLowerCase()
+                                url: 'scot/api/v2/' + nextProps.entitytype + '/byname',
+                                data: {name:nextProps.entityvalue.toLowerCase()}
                             }).success(function(result) {
                                 var entityid = result.id;
                                 if (this.isMounted()) {
