@@ -41,7 +41,7 @@ var Actions = {
             data: {
                 /*loc: location.hash, */
                 clientId: client,
-                timeout: 2000,
+                timeout: 20000,
                 d: now.getTime(),
                 r: Math.random(),
                 json:'true',
@@ -61,7 +61,7 @@ var Actions = {
                 }
             });       
         }).fail(function(){
-            setTimeout(Actions.updateView(), 2000)
+            setTimeout(Actions.updateView(), 20000)
         })
     }
 }
