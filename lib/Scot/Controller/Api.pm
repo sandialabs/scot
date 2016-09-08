@@ -492,7 +492,12 @@ sub get_one {
     }
     else {
         $id += 0;
-        $object = $collection->find_iid($id);
+        try { 
+            $object = $collection->find_iid($id);
+        }
+        catch {
+            $log->error("Error getting one: $_");
+        };
     }
 
     unless ( defined $object ) {

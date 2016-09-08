@@ -89,7 +89,7 @@ sub create_from_file_upload {
             <th align="left">notes</th>   <td>%s</td>
         </tr>
     </table>
-    <a href="/scot/file/%d?download=1">
+    <a href="/scot/api/v2/file/%d?download=1">
         Download
     </a>
 </div>
