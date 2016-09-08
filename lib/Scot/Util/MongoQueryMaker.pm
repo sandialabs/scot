@@ -172,7 +172,7 @@ sub parse_stringfield_match {
     my $match   = {};
 
     # we expect a regex friendly string to match, that's it.
-    $match  =  qr/$value/ ;
+    $match  =  qr/$value/i ;
     return $match;
 }
 
