@@ -359,7 +359,7 @@ var AlertParent = React.createClass({
         $('#sortabletable').tablesorter();
         
         //Ctrl + A to select all alerts
-        $(document.body).keydown(function(event){
+        $('#main-detail-container').keydown(function(event){
             //prevent from working when in input
             if ($('input').is(':focus')) {return};
             //check for ctrl + a with keyCode 
@@ -368,6 +368,9 @@ var AlertParent = React.createClass({
                 event.preventDefault()
             }
         }.bind(this))
+    },
+    componentWillUnmount: function() {
+        $('#main-detail-container').unbind('keydown');
     },
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();

@@ -60,9 +60,9 @@ var SelectedHeaderOptions = React.createClass({
         var array = []
         $('tr.selected').each(function(index,tr) {
             var id = $(tr).attr('id');
-            array.push(id);
+            array.push({id:id,status:'open'});
         }.bind(this));
-        var data = JSON.stringify({status:'open', ids:array})    
+        var data = JSON.stringify({alerts:array})    
         $.ajax({
             type:'put',
             url: '/scot/api/v2/'+this.props.type + '/' +this.props.id,
@@ -81,9 +81,9 @@ var SelectedHeaderOptions = React.createClass({
         var array = [];
         $('tr.selected').each(function(index,tr) {
             var id = $(tr).attr('id');
-            array.push(id);
+            array.push({id:id,status:'closed', closed:time});
         }.bind(this)); 
-        var data = JSON.stringify({status:'closed', closed: time, ids:array})
+        var data = JSON.stringify({alerts:array})
         $.ajax({
             type:'put',
             url: '/scot/api/v2/'+this.props.type + '/'+ this.props.id,
@@ -236,22 +236,19 @@ var SelectedHeaderOptions = React.createClass({
         }
     },
     componentDidMount: function() {
-        //disabled because this works on a global scale in selected_header
-        //open, close, and promote alerts
-        /*$(document.body).keydown(function(event){
+        //open, close SELECTED alerts
+        $('#main-detail-container').keydown(function(event){
             if($('input').is(':focus')) {return}
-            switch (event.keyCode) {
-                case 79:
-                    this.alertOpenSelected();
-                    break;
-                case 67:
-                    this.alertCloseSelected();
-                    break;
-                case 80:
-                    this.alertPromoteSelected();
-                    break;
+            if (event.keyCode == 79 && (event.ctrlKey != true && event.metaKey != true)) {
+                this.alertOpenSelected();
             }
-        }.bind(this))*/
+            if (event.keyCode == 67 && (event.ctrlKey != true && event.metaKey != true)) {
+                this.alertCloseSelected();
+            }
+        }.bind(this))
+    },
+    componentWillUnmount: function() {
+        $('#main-detail-container').unbind('keydown');
     },
     guideToggle: function() {
         this.props.flairToolbarToggle(this.props.guideID,null,'guide')
@@ -331,7 +328,7 @@ var SelectedHeaderOptions = React.createClass({
                         <Button eventKey='12' onClick={this.props.entryToggle} bsSize='xsmall'><i className="fa fa-plus-circle" aria-hidden="true"></i> Add Entry</Button>
                         <Button eventKey="13" onClick={this.props.fileUploadToggle} bsSize='xsmall'><i className="fa fa-upload" aria-hidden="true"></i> Upload File</Button>
                         <Button eventKey='14' onClick={this.alertExportCSV} bsSize='xsmall'><img src='/images/csv_text.png'/> Export to CSV</Button>
-                        <Button eventKey='15' onClick={this.alertDeleteSelected} bsSize='xsmall' bsStyle='danger'><i className="fa fa-trash" aria-hidden="true"></i> Delete Selected</Button> 
+                        {/*<Button eventKey='15' onClick={this.alertDeleteSelected} bsSize='xsmall' bsStyle='danger'><i className="fa fa-trash" aria-hidden="true"></i> Delete Selected</Button>*/} 
                         <Button bsStyle='info' eventKey="16" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                     </div>
                 )
