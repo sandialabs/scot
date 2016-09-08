@@ -25,6 +25,7 @@ use strict;
 use warnings;
 use base 'Mojolicious::Controller';
 
+
 sub upload {
     my $self    = shift;
     my $env     = $self->env;
@@ -145,6 +146,24 @@ sub create_file_upload_entry {
                                                     $entry_id,
                                                     $target_type,
                                                     $target_id);
+    $env->mq->send("scot", {
+        action  => "created",
+        data    => {
+            type    => "entry",
+            id      => $entry_id,
+            who     => $self->sesion('user'),
+            what    => "file_uploaded",
+        }
+    });
+    $env->mq->send("scot", {
+        action  => "updated",
+        data    => {
+            type    => $target_type,
+            id      => $target_id,
+            who     => $self->session('user'),
+            what    => "file_uploaded",
+        }
+    });
 }
 
 sub get_groups_and_year {
