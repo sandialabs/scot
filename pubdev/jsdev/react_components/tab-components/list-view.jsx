@@ -160,12 +160,16 @@ module.exports = React.createClass({
 	                    finalarray[key][num] = date.toLocaleString()
 	                }
                     else if (num == 'sources' || num == 'source'){
-                        var sourcearr = item.join(', ')
-                        finalarray[key]["source"] = sourcearr;
+                        if (item != undefined) {
+                            var sourcearr = item.join(', ')
+                            finalarray[key]["source"] = sourcearr;
+                        }
                     }
                     else if (num == 'tags' || num == 'tag'){
-                        var tagarr = item.join(', ')
-                        finalarray[key]["tag"] = tagarr;
+                        if (item != undefined) {
+                            var tagarr = item.join(', ')
+                            finalarray[key]["tag"] = tagarr;
+                        }
                     }
 	                else{
 	                    finalarray[key][num] = item
@@ -544,12 +548,16 @@ module.exports = React.createClass({
 	                    newarray[key][num] = date.toLocaleString()
 	                }
                     else if (num == 'sources' || num == 'source'){
-                        var sourcearr = item.join(', ')
-                        newarray[key]["source"] = sourcearr;
+                        if (item != undefined) {
+                            var sourcearr = item.join(', ')
+                            newarray[key]["source"] = sourcearr;
+                        }
                     }
                     else if (num == 'tags' || num == 'tag'){
-                        var tagarr = item.join(', ')
-                        newarray[key]["tag"] = tagarr;
+                        if (item != undefined) {
+                            var tagarr = item.join(', ')
+                            newarray[key]["tag"] = tagarr;
+                        }
                     } 
 	                else{
 	                    newarray[key][num] = item
