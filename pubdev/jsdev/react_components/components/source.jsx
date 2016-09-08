@@ -19,8 +19,10 @@ var Source = React.createClass({
         var id = this.props.id;
         var type = this.props.type;
         var data = this.props.data;
-        for (i=0; i < data.length; i++) {
-            rows.push(<SourceDataIterator data={data} dataOne={data[i]} id={id} type={type} updated={this.props.updated} />);
+        if (data != undefined) {
+            for (i=0; i < data.length; i++) {
+                rows.push(<SourceDataIterator data={data} dataOne={data[i]} id={id} type={type} updated={this.props.updated} />);
+            }
         }
         return (
             <div>

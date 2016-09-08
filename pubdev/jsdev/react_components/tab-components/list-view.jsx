@@ -201,7 +201,7 @@ module.exports = React.createClass({
             this.setState({handler: response.records['username']})
         }.bind(this))
         
-        $(document.body).keydown(function(e){
+        $('#list-view-container').keydown(function(e){
             if ($('input').is(':focus')) {return};
             if (e.ctrlKey != true && e.metaKey != true) {
                 var up = $('#list-view-data-div').find('.list-view-data-div').find('#'+this.state.id).prevAll('.table-row')
@@ -232,11 +232,14 @@ module.exports = React.createClass({
                     //scrolled = scrolled -  $('#list-view-data-div').find('.list-view-data-div').find('#'+this.state.id).height()
                     //this.setState({idsarray: array})
                 } 
-            }
+            }    
+        }.bind(this))
+        $(document.body).keydown(function(e) {
+            if ($('input').is(':focus')) {return};
             if (e.keyCode == 70 && (e.ctrlKey != true && e.metaKey != true)) {
                 this.toggleView();
             }
-        }.bind(this))
+        }.bind(this));
     },
     
     //Callback for AMQ updates
@@ -357,8 +360,8 @@ module.exports = React.createClass({
                                 <Button eventKey='5' bsSize='xsmall' onClick={this.exportCSV}>Export to CSV</Button> 
                                 <Button bsSize='xsmall' onClick={this.toggleView}>Full Screen Toggle (f)</Button>
                             </div>
-                                <div id='list-view-container' style={{display:this.state.listViewContainerDisplay, height:listViewContainerHeight, opacity:this.state.loading ? '.2' : '1'}}>
-                                    <div id={this.state.listViewOrientation}>
+                                <div id='list-view-container' style={{display:this.state.listViewContainerDisplay, height:listViewContainerHeight, opacity:this.state.loading ? '.2' : '1'}} tabIndex='1'>
+                                    <div id={this.state.listViewOrientation} tabIndex='2'>
                                         <div className='tableview' style={{display: 'flex'}}>
                                             <div id='fluid2' className="container-fluid2" style={{width:'100%', 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow': 'hidden','padding-left':'5px', display:'flex', flexFlow: 'column'}}>                 
                                                 <table style={{width:'100%'}}>

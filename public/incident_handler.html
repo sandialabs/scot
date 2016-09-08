@@ -632,7 +632,8 @@ $(function() {
         $.ajax({
             type: "POST",
             url: '/scot/api/v2/handler',
-            data: data,
+            data: JSON.stringify(data),
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 do_refresh();
             },
