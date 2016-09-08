@@ -249,7 +249,7 @@ module.exports = React.createClass({
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
-                autoDismiss: 15,
+                autoDismiss: 5,
                 action: activemqstate != 'delete' ? {
                     label: 'View',
                     callback: function(){
