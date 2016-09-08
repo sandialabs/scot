@@ -425,6 +425,15 @@ sub post_alertgroup {
             thing   => 'alertgroup',
             id      => $agobj->id,
         };
+        $mongo->collection('History')->add_history_entry({
+            who     => "scot-alerts",
+            what    => "created alertgroup",
+            when    => time(),
+            targets => {
+                id      => $agobj->id,
+                type    => 'alertgroup',
+            },
+        });
     }
     return $response;
 }
