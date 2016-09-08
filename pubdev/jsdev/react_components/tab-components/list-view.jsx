@@ -71,7 +71,7 @@ module.exports = React.createClass({
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: null, listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.listViewSort, filter: this.props.listViewFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true};
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: [], listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.listViewSort, filter: this.props.listViewFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true};
     },
     componentWillMount: function() {
         if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
@@ -202,7 +202,7 @@ module.exports = React.createClass({
             type: 'get',
             url: '/scot/api/v2/handler?current=1'
         }).success(function(response){
-            this.setState({handler: response.records['username']})
+            this.setState({handler: response.records})
         }.bind(this))
         
         $('#list-view-container').keydown(function(e){
@@ -330,11 +330,14 @@ module.exports = React.createClass({
     },
     render: function() {
         var listViewContainerHeight;
-        
+        var handler = []; 
         if (this.state.listViewContainerDisplay == null) {
             listViewContainerHeight = null;
         } else {
             listViewContainerHeight = '0px'
+        }
+        for (var i=0; i < this.state.handler.length; i++) {
+            handler.push(this.state.handler[i].username + ' ' )
         }
         return (
             <div key={this.state.listViewKey} className="allComponents" style={{'margin-left': '17px'}}>
@@ -345,7 +348,7 @@ module.exports = React.createClass({
                             <h2 style={{'font-size': '30px'}}>{this.state.typeCapitalized}</h2>
                         </div>
                         <div className='main-header-info-child-centered'>
-                            <div>Incident Handler: {this.state.handler}</div>
+                            <div>Incident Handler: {handler}</div>
                             <h2 style={{'font-size': '19px'}}>OUO</h2>
                         </div>
                         <div className='main-header-info-child'>
@@ -581,7 +584,7 @@ module.exports = React.createClass({
             type: 'get',
             url: '/scot/api/v2/handler?current=1'
         }).success(function(response){
-            this.setState({handler: response.records['username']})
+            this.setState({handler: response.records})
         }.bind(this))
     },
 
