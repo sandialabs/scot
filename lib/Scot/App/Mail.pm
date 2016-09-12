@@ -198,9 +198,9 @@ sub load_parsers  {
     };
     my %pmap    = ();
     while ( my $filename = readdir(DIR) ) {
-        $log->debug("filename is $filename");
         next if ( $filename =~ /^\.+$/ );
         next if ( $filename =~ /.*swp/ );
+        $log->debug("filename is $filename");
         $filename =~ m/^([A-Za-z0-9]+)\.pm$/;
         my $rootname = $1;
         my $attrname = lc($rootname);
@@ -349,6 +349,7 @@ sub process_message {
         next if ( $pname eq "generic" ); # always do this as last resort
         my $pclass = $self->parsermap->{$pname};
         if ( $pclass->will_parse($msghref) ) {
+            $log->debug("$pname will parse message");
             $parser = $pclass;
             last PCLASS;
         }
@@ -398,15 +399,18 @@ sub process_message {
 sub post_alertgroup {
     my $self    = shift;
     my $data    = shift;
+    my $log     = $self->log;
     my $response;
 
     if ( $self->get_method eq "scot_api" ) {
+        $log->debug("Posting via scot api webaccess");
         $response = $self->scot->post({
             type    => "alertgroup",
             data    => $data
         });
     }
     else {
+        $log->debug("Posting via direct mongo access");
         my $mongo   = $self->env->mongo;
         my $agcol   = $mongo->collection('Alertgroup');
         my $agobj   = $agcol->create_from_api({
@@ -429,7 +433,7 @@ sub post_alertgroup {
             who     => "scot-alerts",
             what    => "created alertgroup",
             when    => time(),
-            targets => {
+            target  => {
                 id      => $agobj->id,
                 type    => 'alertgroup',
             },
