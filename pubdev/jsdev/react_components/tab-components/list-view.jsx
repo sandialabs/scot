@@ -339,6 +339,9 @@ module.exports = React.createClass({
         for (var i=0; i < this.state.handler.length; i++) {
             handler.push(this.state.handler[i].username + ' ' )
         }
+        if (this.state.id != null && this.state.typeCapitalized != null) {
+            document.title = this.state.typeCapitalized.charAt(0) + '-' + this.state.id
+        }
         return (
             <div key={this.state.listViewKey} className="allComponents" style={{'margin-left': '17px'}}>
                 <div>
