@@ -151,13 +151,13 @@ sub run {
 
             return if ($action eq "viewed");
 
-            $pm->start(
-                cb  => sub {
-                    my ( $pm, $action, $type, $id ) = @_;
+        #    $pm->start(
+        #        cb  => sub {
+        #            my ( $pm, $action, $type, $id ) = @_;
                     $self->process_message($action, $type, $id);
-                },
-                args    => [ $action, $type, $id ],
-            );
+        #        },
+        #        args    => [ $action, $type, $id ],
+        #    );
         }
     );
     my $cv = AnyEvent->condvar;
