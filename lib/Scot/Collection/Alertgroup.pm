@@ -53,6 +53,10 @@ sub create_from_api {
     my $data    = $request->{data};
     delete $request->{data};
 
+    if ( ref($data) ne "ARRAY" ) {
+        push @$data, $data;
+    }
+
     my $tags    = $request->{tags};
     # delete $request->{tags};  # store a copy here and there
 

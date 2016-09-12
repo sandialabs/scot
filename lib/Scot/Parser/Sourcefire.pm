@@ -11,9 +11,13 @@ sub will_parse {
     my $from    = $href->{from};
     my $subject = $href->{subject};
 
+    $self->log->debug("checking for sourcefire email");
+
     if ( $subject =~ /auto generated email/i ) {
+        $self->log->debug("it is!");
         return 1;
     }
+    $self->log->debug("NOPE");
     return undef;
 }
 
