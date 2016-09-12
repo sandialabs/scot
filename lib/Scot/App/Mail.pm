@@ -300,7 +300,7 @@ sub run {
     $taskmgr->wait_all_children;
 }
 
-sub reprocess_message {
+sub reprocess_alertgroup {
     my $self    = shift;
     my $agid    = shift; # ... alertgroup id
     my $log     = $self->log;
