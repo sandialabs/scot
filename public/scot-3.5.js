@@ -41,7 +41,7 @@ var Actions = {
             data: {
                 /*loc: location.hash, */
                 clientId: client,
-                timeout: 2000,
+                timeout: 20000,
                 d: now.getTime(),
                 r: Math.random(),
                 json:'true',
@@ -61,7 +61,7 @@ var Actions = {
                 }
             });       
         }).fail(function(){
-            setTimeout(Actions.updateView(), 2000)
+            setTimeout(Actions.updateView(), 20000)
         })
     }
 }
@@ -7056,6 +7056,9 @@ module.exports = React.createClass({displayName: "exports",
         }
         for (var i=0; i < this.state.handler.length; i++) {
             handler.push(this.state.handler[i].username + ' ' )
+        }
+        if (this.state.id != null && this.state.typeCapitalized != null) {
+            document.title = this.state.typeCapitalized.charAt(0) + '-' + this.state.id
         }
         return (
             React.createElement("div", {key: this.state.listViewKey, className: "allComponents", style: {'margin-left': '17px'}}, 
