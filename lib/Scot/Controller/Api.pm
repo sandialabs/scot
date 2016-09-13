@@ -387,7 +387,7 @@ sub get_many {
         }
     }
 
-    $log->trace("submitting for render");
+    $log->debug("submitting for render");
 
     $self->do_render({
         records             => \@things,
@@ -1983,11 +1983,12 @@ sub build_fields {
     my $self        = shift;
     my $href        = shift;
     my $params      = $href->{request}->{params};
-    my $aref        = $params->{fields};
+    my $aref        = $params->{columns};
     my $log         = $self->env->log;
     my %fields;
 
-    $log->debug("Looking for field limit ",{filter=>\&Dumper, value=>$params});
+    $log->debug("Looking for field limit in params:",{filter=>\&Dumper, value=>$params});
+    $log->debug("column filter is ",{filter=>\&Dumper, value=>$aref});
 
     foreach my $f (@$aref) {
         $log->debug("Limit field to $f");
