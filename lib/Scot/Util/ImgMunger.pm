@@ -42,7 +42,7 @@ sub _get_conf {
     # }
     my $href = {
             html_root   => "/cached_images",
-            image_dir   => "/opt/scot/public/cached_images/",
+            image_dir   => "/opt/scot/public/cached_images",
             storage     => "local",
         };
     return $href;
@@ -53,6 +53,7 @@ sub process_html {
     my $self    = shift;
     my $entry   = shift;    # this is html string
     my $id      = shift;
+    my $log     = $self->log;
 
 
     return unless $entry;    # nothing to do
@@ -82,7 +83,7 @@ sub process_html {
         else {
             ($fqn,$fname) = $self->download_image($link);
         }
-
+        $log->debug("NOW UPDATING the HTML");
         $self->update_html($element, $fqn, $fname);
     }
 
@@ -181,8 +182,12 @@ sub update_html {
     my $element = shift;
     my $fqn     = shift;
     my $fname   = shift;
+    my $log     = $self->log;
 
-    my $source  = $self->conf->{html_root} . "/cached_images/" . $fname;
+    $log->debug("html root is ".$self->conf->{html_root});
+    $log->debug("fname is ".$fname);
+
+    my $source  = $self->conf->{html_root} . "/". $fname;
     my $alt     = $element->attr('alt');
     if ( $alt ) {
         $alt    = "ScotCopy of $alt";
