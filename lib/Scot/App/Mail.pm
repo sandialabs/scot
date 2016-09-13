@@ -198,9 +198,9 @@ sub load_parsers  {
     };
     my %pmap    = ();
     while ( my $filename = readdir(DIR) ) {
-        $log->debug("filename is $filename");
         next if ( $filename =~ /^\.+$/ );
         next if ( $filename =~ /.*swp/ );
+        $log->debug("filename is $filename");
         $filename =~ m/^([A-Za-z0-9]+)\.pm$/;
         my $rootname = $1;
         my $attrname = lc($rootname);
@@ -300,6 +300,81 @@ sub run {
     $taskmgr->wait_all_children;
 }
 
+sub reprocess_alertgroup {
+    my $self    = shift;
+    my $agid    = shift; # ... alertgroup id
+    my $log     = $self->log;
+    my $scot    = $self->scot;
+
+    my $alertgroup  = $self->get_alertgoup_by_id($agid); # ... returns href not obj
+    my $msghref    = {
+        subject     => $alertgroup->{subject},
+        message_id  => $alertgroup->{message_id},
+        body_plain  => $alertgroup->{body_plain},
+        body        => $alertgroup->{body},
+        source      => $alertgroup->{source},
+        when        => $alertgroup->{when},
+        data        => [],  # ... emptying it for reparse results
+    };
+
+    my $parser                  = $self->get_parser($msghref);
+    my $received                = DateTime->from_epoch(epoch=>$msghref->{when});
+    my $json_to_post            = $parser->parse_message($msghref);
+    my $path                    = "alertgroup";
+    $json_to_post->{message_id} = $msghref->{message_id};
+
+    unless ( $json_to_post->{subject} ) {
+        $json_to_post->{subject}    = $msghref->{subject};
+    }
+    $json_to_post->{sources}    = [ $parser->get_sourcename ];
+    $json_to_post->{created}    = $received->epoch;
+
+    $log->debug("Json to Post = ", {filter=>\&Dumper, value=>$json_to_post});
+    $log->debug("posting to $path");
+
+    my $json_returned = $self->post_alertgroup($json_to_post);
+
+    unless (defined $json_returned) {
+        $log->error("ERROR! Undefined transaction object $path ",
+                    {filter=>\&Dumper, value=>$json_to_post});
+        $self->output("Post to SCOT failed\n");
+        return;
+    }
+    
+    if ( $json_returned->{status} ne "ok" ) {
+        $log->error("Failed posting new alertgroup mgs_uid:", $msghref->{imap_uid});
+        $log->debug("tx->res is ",{filter=>\&Dumper, value=>$json_returned});
+        $self->imap->mark_uid_unseen($msghref->{imap_uid});
+        $self->output("Post to SCOT failed.\n");
+        return;
+    }
+    $self->output("---- posted to SCOT.\n");
+    $log->trace("Created alertgroup ". $json_returned->{id});
+    return 1;
+}
+
+sub get_parser {
+    my $self    = shift;
+    my $msg     = shift;
+    my $log     = $self->log;
+    my $parser;
+
+    PCLASS:
+    foreach my $pname (keys %{ $self->parsermap } ) {
+        next if ( $pname eq "generic" ); # always do this as last resort
+        my $pclass = $self->parsermap->{$pname};
+        if ( $pclass->will_parse($msg) ) {
+            $log->debug("$pname will parse message");
+            $parser = $pclass;
+            last PCLASS;
+        }
+    }
+    unless ($parser) {
+        $parser = $self->parsermap->{generic};
+    }
+    return $parser;
+}
+
 sub process_message {
     my $self    = shift;
     my $msghref = shift;
@@ -342,21 +417,7 @@ sub process_message {
         return;
     }
 
-    my $parser;
-
-    PCLASS:
-    foreach my $pname (keys %{ $self->parsermap } ) {
-        next if ( $pname eq "generic" ); # always do this as last resort
-        my $pclass = $self->parsermap->{$pname};
-        if ( $pclass->will_parse($msghref) ) {
-            $parser = $pclass;
-            last PCLASS;
-        }
-    }
-    unless ($parser) {
-        $parser = $self->parsermap->{generic};
-    }
-
+    my $parser = $self->get_parser($msghref);
     $self->output("---- parsing with ".ref($parser)."\n");
 
     my $json_to_post = $parser->parse_message($msghref);
@@ -398,15 +459,18 @@ sub process_message {
 sub post_alertgroup {
     my $self    = shift;
     my $data    = shift;
+    my $log     = $self->log;
     my $response;
 
     if ( $self->get_method eq "scot_api" ) {
+        $log->debug("Posting via scot api webaccess");
         $response = $self->scot->post({
             type    => "alertgroup",
             data    => $data
         });
     }
     else {
+        $log->debug("Posting via direct mongo access");
         my $mongo   = $self->env->mongo;
         my $agcol   = $mongo->collection('Alertgroup');
         my $agobj   = $agcol->create_from_api({
@@ -429,7 +493,7 @@ sub post_alertgroup {
             who     => "scot-alerts",
             what    => "created alertgroup",
             when    => time(),
-            targets => {
+            target  => {
                 id      => $agobj->id,
                 type    => 'alertgroup',
             },
@@ -481,6 +545,28 @@ sub get_alertgroup_by_msgid {
     }
     return { error => 1 };
 }
+
+sub get_alertgroup_by_id {
+    my $self    = shift;
+    my $id      = shift;
+
+    if ( $self->get_method eq "scot_api" ) {
+        return $self->scot->get({ 
+            id      => $id,
+            type    => "alertgroup",
+        });
+    }
+    else {
+        my $mongo   = $self->env->mongo;
+        my $col     = $mongo->collection('Alertgroup');
+        my $obj     = $col->find_iid($id);
+        if ( $obj ) {
+            return $obj->as_href;
+        }
+    }
+    return { error => 1};
+}
+
 
 sub approved_sender {
     my $self    = shift;

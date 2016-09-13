@@ -155,8 +155,16 @@ sub create {
             who     => $user,
             what    => "created via api",
             when    => $env->now,
-            targets => { id => $object->id, type => $thing },
+            target  => { id => $object->id, type => $thing },
         });
+        if ( ref($object) eq "Scot::Model::Entry" ) {
+            $mongo->collection('History')->add_history_entry({
+                who     => $user,
+                what    => "entry ".$object->id." added",
+                when    => $env->now,
+                target  => { id => $object->target->{id}, type => $object->target->{type} },
+            });
+        }
     }
 
     $self->audit("create_thing", {
@@ -379,7 +387,7 @@ sub get_many {
         }
     }
 
-    $log->trace("submitting for render");
+    $log->debug("submitting for render");
 
     $self->do_render({
         records             => \@things,
@@ -1185,7 +1193,7 @@ sub process_promotion {
             who     => $self->session('user'),
             what    => "$object_type promotion to $proname",
             when    => $env->now(),
-            targets => { id => $object->id, type => $object_type },
+            target => { id => $object->id, type => $object_type },
         });
     }
 
@@ -1212,7 +1220,7 @@ sub update_history {
         who     => $user,
         what    => "updated via api",
         when    => $self->env->now,
-        targets => { id => $obj->id, type => $colname },
+        target => { id => $obj->id, type => $colname },
     });
 }
 
@@ -1363,7 +1371,7 @@ sub write_promotion_history_notification {
             who     => $user,
             what    => $what,
             when    => $when,
-            targets => $targets ,
+            target => $targets ,
         });
     }
     # $self->env->amq->send_amq_notification($type, $object, $user);
@@ -1434,6 +1442,10 @@ sub ownership_change_permitted {
             return undef;
         }
     }
+    if ( $object->meta->does_role("Scot::Role::Permission") ) {
+        return 1
+    }
+    return undef;
 }
 
 =item B<DELETE /scot/api/v2/:thing/:id>
@@ -1971,11 +1983,12 @@ sub build_fields {
     my $self        = shift;
     my $href        = shift;
     my $params      = $href->{request}->{params};
-    my $aref        = $params->{fields};
+    my $aref        = $params->{columns};
     my $log         = $self->env->log;
     my %fields;
 
-    $log->debug("Looking for field limit ",{filter=>\&Dumper, value=>$params});
+    $log->debug("Looking for field limit in params:",{filter=>\&Dumper, value=>$params});
+    $log->debug("column filter is ",{filter=>\&Dumper, value=>$aref});
 
     foreach my $f (@$aref) {
         $log->debug("Limit field to $f");
