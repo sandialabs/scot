@@ -39,6 +39,7 @@ db.file.ensureIndex(        { "sha256":     1}  );
 db.history.ensureIndex(     { "id":         1}, {unique: true, dropDups:true}  );
 db.history.ensureIndex(     { "when":       1}  );
 db.history.ensureIndex(     { "who":        1}  );
+db.history.ensureIndex(     { "target.id":        1, "target.type": 1}  );
 
 db.incident.ensureIndex(    {"id":          1}, {unique: true, dropDups:true}  );
 db.incident.ensureIndex(    {"when":        1}  );
