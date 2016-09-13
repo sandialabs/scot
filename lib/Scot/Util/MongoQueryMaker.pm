@@ -245,7 +245,7 @@ sub build_match_ref {
     my %mquery  = ();       # ... the resulting mongo query
 
     # TODO: abstract this somewhere so these are known meta properties
-    my @datefields   = qw(updated created occurred discovered reported);
+    my @datefields   = qw(when updated created occurred discovered reported);
     my @numfields    = qw(id views entry_count);
     my @tagsrcfields = qw(tag source);
     my @skipfields   = qw(sort columns limit offset);
