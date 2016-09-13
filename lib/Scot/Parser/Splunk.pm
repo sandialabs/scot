@@ -15,7 +15,7 @@ sub will_parse {
     if ( $subject =~ /splunk alert/i ) {
         return 1;
     }
-    if ( $from eq 'splunk@sandia.gov' ) {
+    if ( $from =~ /splunk\@sandia.gov/i ) {
         return 1;
     }
     return undef;
