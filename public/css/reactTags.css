@@ -1,23 +1,26 @@
 /*Tags/Sources CSS */
+
 span > div.ReactTags__tags {
     position: relative;
-    width: 200px;
-    height: 25px;
+    width: 100%;
+    height: 26px;
     overflow-x: visible;
     overflow: visible;
 }
 
 span > div > div.ReactTags__selected {
     float: left;
+    width: 100%;
 }
 
 span > div > div > div > div.ReactTags__suggestions {
     position:absolute;
-    width:200px;
+    width:100%;
     overflow:auto;
     z-index:99;
     height:auto;
 }
+
 /* Example Styles for React Tags*/
 div.ReactTags__tags {
     position: relative;
@@ -29,17 +32,17 @@ div.ReactTags__tags {
 
 /* Styles for the input */
 div.ReactTags__tagInput {
-    width: 200px;
+    width: 100%;
     border-radius: 2px;
     display: inline-block;
-    height: 25px;
+    height: 26px;
 }
 div.ReactTags__tagInput input, 
 div.ReactTags__tagInput input:focus {
-    height: 25px;
+    height: 26px;
     margin: 0;
     font-size: 12px;
-    width: 200px;
+    width: 100%;
     border: 1px solid #eee; 
     color:white;
 }
@@ -67,7 +70,7 @@ div.ReactTags__selected a.ReactTags__remove {
 /* Styles for suggestions */
 div.ReactTags__suggestions {
     position: relative;
-    width: 200px;
+    width: 100%;
     height: 450px;
     /*overflow: auto;i*/
     z-index: 99;
@@ -76,7 +79,7 @@ div.ReactTags__suggestions ul {
     list-style-type: none;
     box-shadow: .05em .01em .5em rgba(0,0,0,.2);
     background: black;
-    width: 200px;
+    width: 100%;
     color: white;
     padding:0;
 }

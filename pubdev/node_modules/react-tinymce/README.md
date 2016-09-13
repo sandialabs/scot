@@ -49,6 +49,26 @@ This component depends on `tinymce` being globally accessible.
 <script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
 ```
 
+## Contributing
+
+install your dependencies:
+
+`npm install`
+
+rackt-cli depends on a version of babel-eslint that will not run successfully with
+the rest of this project.  Until an upgrade is available, after installing,
+edit "node_modules/rackt-cli/package.json"
+and update it's babel-eslint to at least 4.1.7. Then `npm install` in the rackt
+directory, and return to project root.  From here on you need to use the
+rackt version in node modules, so either alias "rackt" to it's bin, or
+just path each command into node_modules/.bin like below.
+
+To make sure the linter is happy and the functional tests run, execute:
+
+`./node_modules/.bin/rackt test`
+
+To release, use `./node_modules/.bin/rackt release`
+
 ## License
 
 MIT
