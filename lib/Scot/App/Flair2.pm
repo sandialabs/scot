@@ -425,7 +425,6 @@ sub process_entry {
             entities    => $update->{entities},
         },
     };
-    $log->debug("updating entry");
     $self->update_entry($putdata);
     $self->out("-------- done processing entry $id");
 }
@@ -454,6 +453,8 @@ sub update_entry {
         $self->log->debug("got object with id of ". $obj->id);
         $self->log->debug("putting entry: ",{filter=>\&Dumper,value=>$newdata});
 
+        my $entity_aref = delete $newdata->{entities};
+
         if ( $obj->update({ '$set' => $newdata }) ){
             $self->log->debug("success updating");
             my $ohash = $obj->as_hash;
@@ -461,6 +462,12 @@ sub update_entry {
         }
         else {
             $self->log->error("failed update, I think");
+        }
+
+        if ( defined($entity_aref) ) {
+            if ( scalar(@$entity_aref) > 0 ) {
+                $mongo->collection('Entity')->update_entities($obj, $entity_aref);
+            }
         }
 
         $self->env->mq->send("scot", {
