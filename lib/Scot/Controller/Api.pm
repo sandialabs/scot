@@ -1442,6 +1442,10 @@ sub ownership_change_permitted {
             return undef;
         }
     }
+    if ( $object->meta->does_role("Scot::Role::Permission") ) {
+        return 1
+    }
+    return undef;
 }
 
 =item B<DELETE /scot/api/v2/:thing/:id>

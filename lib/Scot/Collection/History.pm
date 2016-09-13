@@ -29,6 +29,7 @@ sub add_history_entry {
 
     my $target  = $href->{targets}; # { id => x, type => y }
 
+    $log->debug("history is ",{filter=>\&Dumper, value=>$href});
     $log->debug("adding history to ",{filter=>\&Dumper, value=>$target});
 
     my $obj     = $self->create($href);
