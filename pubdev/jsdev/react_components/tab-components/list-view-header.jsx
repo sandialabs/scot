@@ -3,6 +3,7 @@ var DateRangePicker     = require('react-daterange-picker');
 var Popover             = require('react-bootstrap/lib/Popover')
 var OverlayTrigger      = require('react-bootstrap/lib/OverlayTrigger')
 var Button              = require('react-bootstrap/lib/Button');
+var TagSourceFilter     = require('../components/list-view-filter-tag-source.jsx');
 'use strict';
 
 var ListViewHeader = React.createClass({
@@ -129,7 +130,20 @@ var ListViewHeaderEach = React.createClass({
                     </OverlayTrigger>
                 </th>
             )
-        } else {
+        } /*else if(columnsOne == 'tag' || columnsOne == 'source'){
+            return( 
+                <th className={className}>
+                    <div onClick={this.handleSort}>
+                        {columnsDisplayOne}
+                        {showSort ?
+                        <span>{sortDirection == 'up' ? <span className='glyphicon glyphicon-triangle-top'/> : null} {sortDirection == 'down' ? <span className='glyphicon glyphicon-triangle-bottom'/> : null}</span>
+                        :
+                        null}
+                    </div> 
+                    <TagSourceFilter />
+                </th>
+            )
+        }*/else {
             return (
                 <th className={className}>
                     <div onClick={this.handleSort}>
