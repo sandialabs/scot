@@ -79,7 +79,7 @@ var AddEntryModal = React.createClass({
                                 </span>
                             </div>
                         </div>
-                        <TinyMCE id={tinyID} content={""} className={'inputtext'} config={{plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright'}} onChange={this.handleEditorChange} /> 
+                        <TinyMCE id={tinyID} content={""} className={'inputtext'} config={{plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste textcolor', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | fontsizeselect | fontselect | forecolor backcolor | blockquote formatselect'}} onChange={this.handleEditorChange} /> 
                     </div>    
                 </div>
             )
