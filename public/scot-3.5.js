@@ -731,7 +731,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                                 )
                             )
                         ), 
-                        React.createElement(TinyMCE, {id: tinyID, content: "", className: 'inputtext', config: {plugins: 'autolink charmap media link image lists print preview insertdatetime code table spellchecker imagetools paste textcolor', paste_remove_styles: false, paste_word_valid_elements:'all', paste_retain_style_properties: 'all', paste_data_images:true, toolbar: 'spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | fontsizeselect | fontselect | forecolor backcolor | blockquote formatselect'}, onChange: this.handleEditorChange})
+                        React.createElement(TinyMCE, {id: tinyID, content: "", className: 'inputtext', config: {plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, toolbar1: 'full screen spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect | blockquote formatselect code', theme:'modern'}, onChange: this.handleEditorChange})
                     )
                 )
             )
@@ -1759,6 +1759,7 @@ var TagSourceFilter = React.createClass({displayName: "TagSourceFilter",
         return {
             suggestions: this.props.options,
             filterButtonArr: [],
+            filterButtonText: [],
         }
     },
     handleFilterSuggestions: function(textInputValue, possibleSuggestionsArray) {
@@ -1773,7 +1774,8 @@ var TagSourceFilter = React.createClass({displayName: "TagSourceFilter",
         this.setState({filterButtonArr:currentButtons});
     },
     handleDelete: function(e) {
-        var newTagArr = this.state.filterButtonArr;
+        var newFilterButtonArr = this.state.filterButtonArr;
+        var newFilterButtonText = this.state.filterButtonText;
         for (i=0; i < this.state.filterButtonArr.length; i++) {
             if ($(e.target.parentElement).text() == this.state.filterButtonArr[i]) {
                 newTagArr.splice(i,1);
