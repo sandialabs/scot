@@ -245,10 +245,10 @@ sub build_match_ref {
     my %mquery  = ();       # ... the resulting mongo query
 
     # TODO: abstract this somewhere so these are known meta properties
+    my @skipfields   = qw(sort columns limit offset);
     my @datefields   = qw(when updated created occurred discovered reported);
     my @numfields    = qw(id views entry_count);
     my @tagsrcfields = qw(tag source);
-    my @skipfields   = qw(sort columns limit offset);
     my @handler      = qw(start end);
 
     foreach my $key (keys %$params) {
@@ -260,7 +260,7 @@ sub build_match_ref {
         if ( grep {/$key/} @datefields ) {
             $mquery{$key} = $self->parse_datefield_match($value);
         }
-        if ( grep {/$key/} @handler ) {
+	elsif ( grep {/$key/} @handler ) {
             if ($key eq "start" ) {
                 $mquery{$key} = { '$gte' => $value };
             }
@@ -283,10 +283,5 @@ sub build_match_ref {
     say "Mathing: ", Dumper(\%mquery);
     return wantarray ? %mquery : \%mquery;
 }
-
-
-
-
-
 
 1;
