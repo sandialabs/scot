@@ -1756,10 +1756,17 @@ var ReactTags           = require('react-tag-input').WithContext;
 
 var TagSourceFilter = React.createClass({displayName: "TagSourceFilter",
     getInitialState: function() {
+        var filterButtonArr = [];
+        var filterButtonText = [];
+        if (this.props.defaultValue != undefined) {
+            filterButtonArr.push(React.createElement("div", {id: "filterButton", className: "btn btn-xs btn-default"}, this.props.defaultValue, React.createElement("span", {onClick: this.handleDelete, style: {paddingLeft:'3px'}, className: "glyphicon glyphicon-remove", ariaHidden: "true"})));
+            filterButtonText.push(this.props.defaultValue);
+            this.props.handleFilter(this.props.defaultValue);
+        }
         return {
             suggestions: this.props.options,
-            filterButtonArr: [],
-            filterButtonText: [],
+            filterButtonArr: filterButtonArr,
+            filterButtonText: filterButtonText,
         }
     },
     handleFilterSuggestions: function(textInputValue, possibleSuggestionsArray) {
@@ -1770,24 +1777,29 @@ var TagSourceFilter = React.createClass({displayName: "TagSourceFilter",
     },
     handleAddition: function(tag) {
         var currentButtons = this.state.filterButtonArr;
+        var currentText = this.state.filterButtonText;
         currentButtons.push(React.createElement("div", {id: "filterButton", className: "btn btn-xs btn-default"}, tag, React.createElement("span", {onClick: this.handleDelete, style: {paddingLeft:'3px'}, className: "glyphicon glyphicon-remove", ariaHidden: "true"})));
-        this.setState({filterButtonArr:currentButtons});
+        currentText.push(tag)
+        this.setState({filterButtonArr:currentButtons, filterButtonText:currentText});
+        this.props.handleFilter(currentText);
     },
     handleDelete: function(e) {
         var newFilterButtonArr = this.state.filterButtonArr;
         var newFilterButtonText = this.state.filterButtonText;
-        for (i=0; i < this.state.filterButtonArr.length; i++) {
-            if ($(e.target.parentElement).text() == this.state.filterButtonArr[i]) {
-                newTagArr.splice(i,1);
+        for (i=0; i < this.state.filterButtonText.length; i++) {
+            if ($(e.target.parentElement).text() == this.state.filterButtonText[i]) {
+                newFilterButtonArr.splice(i,1);
+                newFilterButtonText.splice(i,1);
             }
         }
-        this.setState({filterButtonArr:newTagArr});
+        this.setState({filterButtonArr:newFilterButtonArr, filterButtonText:newFilterButtonText});
+        this.props.handleFilter(newFilterButtonText);
     },
     handleInputChange: function(input) {
         var arr = [];
         var tagSplit = input.split(/,|\!/);
         var inputSearch = tagSplit.pop();
-        this.serverRequest = $.get('/scot/api/v2/ac/tag/' + inputSearch, function (result) {
+        this.serverRequest = $.get('/scot/api/v2/ac/'+ this.props.columnsOne  + '/' + inputSearch, function (result) {
             var result = result.records;
             for (i=0; i < result.length; i++) {
                 arr.push(result[i].value)
@@ -1817,7 +1829,7 @@ var TagSourceFilter = React.createClass({displayName: "TagSourceFilter",
                     placeholder: "", 
                     handleFilterSuggestions: this.handleFilterSuggestions, 
                     autofocus: false}), 
-                showFilterButtons ?this.state.filterButtonArr : null
+                showFilterButtons ? this.state.filterButtonArr : null
             )
         )
     }
@@ -6298,10 +6310,11 @@ var App = React.createClass({displayName: "App",
     componentWillMount: function() {
         //Get landscape/portrait view if the cookie exists
         var viewModeSetting = checkCookie('viewMode');
+        var NotificationSetting = checkCookie('Notification');
         var listViewFilterSetting = checkCookie('listViewFilter'+this.props.params.value.toLowerCase());
         var listViewSortSetting = checkCookie('listViewSort'+this.props.params.value.toLowerCase());
         var listViewPageSetting = checkCookie('listViewPage'+this.props.params.value.toLowerCase());
-        this.setState({viewMode:viewModeSetting,listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting})
+        this.setState({viewMode:viewModeSetting, Notification:NotificationSetting, listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting})
     },
    render: function() {
 	    //var array = []
@@ -6364,35 +6377,35 @@ var App = React.createClass({displayName: "App",
             :
         this.state.set == 1
         ?	
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {isalert: isalert ? 'isalert' : '', id: this.state.id, viewMode: this.state.viewMode, type:statetype, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {isalert: isalert ? 'isalert' : '', id: this.state.id, viewMode: this.state.viewMode, type:statetype, Notification:this.state.Notification, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
         :
             this.state.set == 2
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type:'event', listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type:'event',  Notification:this.state.Notification, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
         :
             this.state.set == 3
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type:'incident', listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type:'incident',  Notification:this.state.Notification, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
         :
         this.state.set == 5
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(SelectedContainer, {id: this.state.id, type: statetype, viewMode: this.state.viewMode, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))
+        React.createElement(ExpandableNavPage, null, React.createElement(SelectedContainer, {id: this.state.id, type: statetype, viewMode: this.state.viewMode,  Notification:this.state.Notification, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))
         :
         this.state.set == 4
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type: 'intel', listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type: 'intel',  Notification:this.state.Notification, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))
         :
         this.state.set == 6
         ?	
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {viewMode: this.state.viewMode, type:'task', listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {viewMode: this.state.viewMode, type:'task',  Notification:this.state.Notification, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))	
         :
         this.state.set == 7
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, viewMode: this.state.viewMode, type:'guide', listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))
+        React.createElement(ExpandableNavPage, null, React.createElement(ListView, {id: this.state.id, viewMode: this.state.viewMode, type:'guide',  Notification:this.state.Notification, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage}))
         :
         this.state.set == 8
         ?
-        React.createElement(ExpandableNavPage, null, React.createElement(EntityDetail, {entityid: this.state.id, entitytype: 'entity', id: this.state.id, type: 'entity', viewMode: this.state.viewMode, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage, fullScreen:true}))
+        React.createElement(ExpandableNavPage, null, React.createElement(EntityDetail, {entityid: this.state.id, entitytype: 'entity', id: this.state.id, type: 'entity', viewMode: this.state.viewMode,  Notification:this.state.Notification, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage, fullScreen:true}))
         :
         null
         )	
@@ -6658,12 +6671,13 @@ var ListViewHeader = React.createClass({displayName: "ListViewHeader",
         var columnsDisplay = this.props.columnsDisplay;
         var data = this.props.data;
         var sort = this.props.sort;
+        var filter = this.props.filter;
         var handleSort = this.props.handleSort;
         var handleFilter = this.props.handleFilter;
         var arr = [];
         var className = 'wrapper table-row header';
         for (i=0; i < columns.length; i++) {
-            arr.push(React.createElement(ListViewHeaderEach, {columnsOne: columns[i], columnsDisplayOne: columnsDisplay[i], sort: sort, handleSort: handleSort, handleFilter: handleFilter}))
+            arr.push(React.createElement(ListViewHeaderEach, {columnsOne: columns[i], columnsDisplayOne: columnsDisplay[i], sort: sort, filter: filter, handleSort: handleSort, handleFilter: handleFilter}))
         }
         return (
             React.createElement("tbody", {className: "list-view-table-header"}, 
@@ -6685,7 +6699,11 @@ var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
         this.props.handleSort(this.props.columnsOne);  
     },
     handleFilter: function(v) {
-        this.props.handleFilter(this.props.columnsOne,v.target.value);
+        if (v.target != undefined) {
+            this.props.handleFilter(this.props.columnsOne,v.target.value);
+        } else {
+            this.props.handleFilter(this.props.columnsOne,v)
+        }
     },
     handleEnterKey: function(e) {
         if (e.key == 'Enter') {
@@ -6736,26 +6754,40 @@ var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
         var columnsDisplayOne = this.props.columnsDisplayOne;
         var dataOne = this.props.dataOne;
         var sortDirection;
+        var filterValue;
         var sort = this.props.sort;
+        var filter = this.props.filter;
         var handleSort = this.props.handleSort;
         var handleFilter = this.props.handleFilter;
         var className = columnsOne + '-list-header-column'
         var showSort = false;
         var epochInputValue = '';
-        $.each(sort, function(key, value) {
-            if (key == columnsOne) {
-                showSort = true;
-                if (value == -1) {
-                    sortDirection = 'down'
-                } else {
-                    sortDirection = 'up'
+        if (sort != undefined) {
+            $.each(sort, function(key, value) {
+                if (key == columnsOne) {
+                    showSort = true;
+                    if (value == -1) {
+                        sortDirection = 'down'
+                    } else {
+                        sortDirection = 'up'
+                    }
                 }
-            }
-        })
+            })
+        }
+        if (filter != undefined) {
+            $.each(filter, function(key, value) {
+                if (key == columnsOne) {
+                    filterValue = value.toString();
+                }
+            })
+        }
         if (columnsOne =='created' || columnsOne == 'updated' || columnsOne == 'occurred') {
             
             if (this.state.startepoch != '' || this.state.endepoch != '') {
                 epochInputValue = this.state.startepoch + ',' + this.state.endepoch;
+            }
+            if (filterValue != undefined) {
+                epochInputValue = filterValue;
             }
             return (
                 React.createElement("th", {className: className}, 
@@ -6771,20 +6803,20 @@ var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
                     )
                 )
             )
-        } /*else if(columnsOne == 'tag' || columnsOne == 'source'){
+        } else if(columnsOne == 'tag' || columnsOne == 'source'){
             return( 
-                <th className={className}>
-                    <div onClick={this.handleSort}>
-                        {columnsDisplayOne}
-                        {showSort ?
-                        <span>{sortDirection == 'up' ? <span className='glyphicon glyphicon-triangle-top'/> : null} {sortDirection == 'down' ? <span className='glyphicon glyphicon-triangle-bottom'/> : null}</span>
+                React.createElement("th", {className: className}, 
+                    React.createElement("div", {onClick: this.handleSort}, 
+                        columnsDisplayOne, 
+                        showSort ?
+                        React.createElement("span", null, sortDirection == 'up' ? React.createElement("span", {className: "glyphicon glyphicon-triangle-top"}) : null, " ", sortDirection == 'down' ? React.createElement("span", {className: "glyphicon glyphicon-triangle-bottom"}) : null)
                         :
-                        null}
-                    </div> 
-                    <TagSourceFilter />
-                </th>
+                        null
+                    ), 
+                    React.createElement(TagSourceFilter, {columnsOne: columnsOne, handleFilter: this.handleFilter, defaultValue: filterValue})
+                )
             )
-        }*/else {
+        }else {
             return (
                 React.createElement("th", {className: className}, 
                     React.createElement("div", {onClick: this.handleSort}, 
@@ -6794,7 +6826,7 @@ var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
                         : 
                         null
                     ), 
-                    React.createElement("input", {style: {width:'inherit'}, onKeyPress: this.handleEnterKey})
+                    React.createElement("input", {style: {width:'inherit'}, onKeyPress: this.handleEnterKey, defaultValue: filterValue})
                 )
             )
         }
@@ -6871,7 +6903,7 @@ module.exports = React.createClass({displayName: "exports",
 
         return {
             splitter: true, 
-            mute: false, selectedColor: '#AEDAFF',
+            Notification: this.props.Notification, selectedColor: '#AEDAFF',
             sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: this.props.listViewPage,
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             alldetail : true, viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
@@ -6879,7 +6911,7 @@ module.exports = React.createClass({displayName: "exports",
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: [], listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.listViewSort, filter: this.props.listViewFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true};
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: [], listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.listViewSort, filter: this.props.listViewFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, };
     },
     componentWillMount: function() {
         if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
@@ -6904,6 +6936,9 @@ module.exports = React.createClass({displayName: "exports",
         if (this.state.filter != null) {
             var filter = JSON.parse(this.state.filter);
             this.setState({filter:filter}); 
+        }
+        if (this.state.Notification == undefined) {
+            this.setState({Notification:'off'});
         }
     },
     componentDidMount: function(){
@@ -6951,6 +6986,12 @@ module.exports = React.createClass({displayName: "exports",
             newPage = 0;
         } 
         var data = {limit:pageLimit, offset: newPage, sort: JSON.stringify(sortBy)}
+        //add filter to the data object
+        if (filterBy != undefined) {
+            $.each(filterBy, function(key,value) {
+                data[key] = value;
+            })
+        }
 
         $.ajax({
 	        type: 'GET',
@@ -7153,7 +7194,7 @@ module.exports = React.createClass({displayName: "exports",
         return (
             React.createElement("div", {key: this.state.listViewKey, className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement("div", null, 
-                    !this.state.mute ? React.createElement(Notificationactivemq, {ref: "notificationSystem"}) : null, 
+                    this.state.Notification == 'on' ? React.createElement(Notificationactivemq, {ref: "notificationSystem"}) : null, 
                     React.createElement("div", {className: "main-header-info-null"}, 
                         React.createElement("div", {className: "main-header-info-child"}, 
                             React.createElement("h2", {style: {'font-size': '30px'}}, this.state.typeCapitalized)
@@ -7169,9 +7210,9 @@ module.exports = React.createClass({displayName: "exports",
                     React.createElement("div", {className: "mainview"}, 
                         React.createElement("div", null, 
                            React.createElement("div", {style: {display: 'inline-flex'}}, 
-                                this.state.mute == false ?
-                                    React.createElement(Button, {eventKey: "1", onClick: this.clearNote, bsSize: "xsmall"}, "Mute Notifications") :
-                                    React.createElement(Button, {eventKey: "2", onClick: this.clearNote, bsSize: "xsmall"}, "Turn On Notifications"), 
+                                this.state.Notification == 'on'?
+                                    React.createElement(Button, {eventKey: "1", onClick: this.Notification, bsSize: "xsmall"}, "Mute Notifications") :
+                                    React.createElement(Button, {eventKey: "2", onClick: this.Notification, bsSize: "xsmall"}, "Turn On Notifications"), 
                                 
                                 this.props.type == 'event' || this.props.type == 'intel' ? React.createElement(Button, {onClick: this.createNewThing, eventKey: "6", bsSize: "xsmall"}, "Create ", this.state.typeCapitalized) : null, 
                                 React.createElement(Button, {onClick: this.clearAll, eventKey: "3", bsSize: "xsmall"}, "Clear All Filters"), 
@@ -7183,7 +7224,7 @@ module.exports = React.createClass({displayName: "exports",
                                         React.createElement("div", {className: "tableview", style: {display: 'flex'}}, 
                                             React.createElement("div", {id: "fluid2", className: "container-fluid2", style: {width:'100%', 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow': 'hidden','padding-left':'5px', display:'flex', flexFlow: 'column'}}, 
                                                 React.createElement("table", {style: {width:'100%'}}, 
-                                                    React.createElement(ListViewHeader, {data: this.state.objectarray, columns: this.state.columns, columnsDisplay: this.state.columnsDisplay, handleSort: this.handleSort, sort: this.state.sort, handleFilter: this.handleFilter, startepoch: this.state.startepoch, endepoch: this.state.endepoch})
+                                                    React.createElement(ListViewHeader, {data: this.state.objectarray, columns: this.state.columns, columnsDisplay: this.state.columnsDisplay, handleSort: this.handleSort, sort: this.state.sort, filter: this.state.filter, handleFilter: this.handleFilter, startepoch: this.state.startepoch, endepoch: this.state.endepoch})
                                                 ), 
                                                 React.createElement("div", {id: "list-view-data-div", style: {height:this.state.scrollheight}, className: "list-view-overflow"}, 
                                                     React.createElement("div", {className: "list-view-data-div", style: {display:'block'}}, 
@@ -7281,12 +7322,14 @@ module.exports = React.createClass({displayName: "exports",
         deleteCookie('listViewSort'+this.props.type) //clear sort cookie
         deleteCookie('listViewPage'+this.props.type) //clear page cookie
     },
-    clearNote: function(){
-        if(this.state.mute){
-            this.setState({mute: false})
+    Notification: function(){
+        if(this.state.Notification == 'off'){
+            this.setState({Notification: 'on'})
+            setCookie('Notification','on',1000);       
         }
         else {
-            this.setState({mute: true})
+            this.setState({Notification: 'off'})
+            setCookie('Notification','off',1000);
         }
     },
     selected: function(type,rowid,taskid){
@@ -7465,9 +7508,14 @@ module.exports = React.createClass({displayName: "exports",
                 }
                 for (var prop in currentFilter) { newFilterObj[prop] = currentFilter[prop]}; // combine current filter with new one
             } else {
+                var array;
+                if (typeof(string) == 'string') {
+                    array = string.split(',');
+                } else {
+                    array = string; //this is used if string is an array of strings to search (tags/source)
+                }
                 var inProgressFilter = [];
                 var newFilter = [];
-                var array = string.split(',');
                 //if no filter applied
                 if (currentFilter == undefined) {
                     for (i=0; i < array.length; i++) {
