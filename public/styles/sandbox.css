@@ -48,5 +48,4 @@ pre {
 }
 
 /** [contenteditable=true] {border: 1px dashed red;}*/
-* [contenteditable=true] { background-color: rgba(0, 200, 0, 0.1); }
-
+/** [contenteditable=true] { background-color: rgba(0, 200, 0, 0.1); }*/
