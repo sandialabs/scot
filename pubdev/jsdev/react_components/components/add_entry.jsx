@@ -27,11 +27,11 @@ var AddEntryModal = React.createClass({
                 url:  '/scot/api/v2/entry/'+ this.props.id
                 }).success(function(response){
                     recently_updated = response.updated
-                    if(response.body_flair == ""){
-                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
+                    if(response.body == ""){
+                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_plain)
                     }
                     else{
-                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_flair)
+                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
                     }
                 }.bind(this))
         }
@@ -79,7 +79,7 @@ var AddEntryModal = React.createClass({
                                 </span>
                             </div>
                         </div>
-                        <TinyMCE id={tinyID} content={""} className={'inputtext'} config={{plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, toolbar1: 'full screen spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect | blockquote formatselect code', theme:'modern', content_css:'/css/sandbox.css'}} onChange={this.handleEditorChange} /> 
+                        <TinyMCE id={tinyID} content={""} className={'inputtext'} config={{plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, toolbar1: 'full screen spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect | blockquote formatselect code', theme:'modern', content_css:'/css/entryeditor.css'}} onChange={this.handleEditorChange} /> 
                     </div>    
                 </div>
             )
