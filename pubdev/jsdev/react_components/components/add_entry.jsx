@@ -27,11 +27,11 @@ var AddEntryModal = React.createClass({
                 url:  '/scot/api/v2/entry/'+ this.props.id
                 }).success(function(response){
                     recently_updated = response.updated
-                    if(response.body_flair == ""){
-                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
+                    if(response.body == ""){
+                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_plain)
                     }
                     else{
-                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_flair)
+                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
                     }
                 }.bind(this))
         }
