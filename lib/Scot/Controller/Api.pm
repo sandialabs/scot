@@ -495,6 +495,7 @@ sub get_one {
         }
         else {
             $log->debug("id is no numerical");
+            # typically "byname"
             my $name = $self->param('name');
             $object = $collection->find_one({value => $name});
         }
