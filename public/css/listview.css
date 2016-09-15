@@ -117,8 +117,8 @@
 .list-view-table-header {
   background-color: #ECECEC;
   font-weight: bold;
-  padding-top: 6px;
-  padding-bottom: 10px;
+  padding-top: 2px;
+  padding-bottom: 2px;
   display:block;
 }
 
