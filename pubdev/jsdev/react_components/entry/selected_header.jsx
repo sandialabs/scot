@@ -446,8 +446,12 @@ var SelectedHeader = React.createClass({
             }.bind(this))
         } else {
             $('#detail-container').find('a, .entity').not('.not_selectable').each(function(index,tr) {
+                $(tr).off('mouseup');
                 $(tr).off('mousedown');
-                $(tr).on('mousedown', function() {
+                $(tr).on('mouseup', function() { //Firefox processes this function and then does this function
+                    this.checkFlairHover();
+                }.bind(this))
+                $(tr).on('mousedown', function() { //Chrome processes css changes and then does this function
                     this.checkFlairHover();
                 }.bind(this))
             }.bind(this));
@@ -479,8 +483,7 @@ var SelectedHeader = React.createClass({
                 }.bind(this));
             }
         } else if (this.props.type == 'alertgroup') {
-            var subtable = $(document.body).find('.alertTableHorizontal');
-            subtable.find('.entity').each(function(index, entity) {
+            $(document.body).find('.alertTableHorizontal').find('.entity').each(function(index, entity) {
                 if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
                     $(entity).data('state', 'down');
                     var entityid = $(entity).attr('data-entity-id');
@@ -489,7 +492,7 @@ var SelectedHeader = React.createClass({
 
                 } 
             }.bind(this));
-            subtable.find('a').each(function(index,a) {
+            $(document.body).find('.alertTableHorizontal').find('a').each(function(index,a) {
                 if($(a).css('color') == 'rgb(255, 0, 0)') {
                     $(a).data('state','down');
                     var url = $(a).attr('url');

@@ -12,7 +12,7 @@ use Crypt::PBKDF2;
 use v5.18;
 
 my $logfile     = "/var/log/scot/user_admin.log";
-my $server      = "127.0.0.1";  # domain names will work too
+my $server      = "as3002snllx";  # domain names will work too
 my $path        = "/scot/api/v2/user";
 my $jsonfile    = "";
 my $verb        = "";
@@ -108,7 +108,7 @@ sub create_user {
         type    => "user",
         data    => {
             username    => $newuser,
-            hash        => $hash,
+            pwhash        => $hash,
             local_acct  => 1,
             active      => 1,
             fullname    => $gecos,
@@ -152,21 +152,20 @@ sub reset_user {
 
     my $hash        = $pbkdf2->generate($password);
     my $json        = {
-        type    => "user",
-        data    => {
-            hash        => $hash,
-            active      => 1,
-        },
+        pwhash        => $hash,
+        active      => 1,
     };
 
-    say Dumper($json);
-
-    my $user_href   = $client->get({
+    my $response   = $client->get({
         type    => "user",
         params  => {
             username    => $user
         },
     });
+
+    say "user returned: ".Dumper($response);
+
+    my $user_href   = $response->{records}->[0];
 
     unless ( $user_href->{id} ) {
         say "ERROR: user doesnt exist or is missing unique id";
@@ -174,11 +173,15 @@ sub reset_user {
     }
     say "User $user exists with id $user_href->{id}";
 
-    if ( $client->put({
+    my $puthref    = {
         id  => $user_href->{id},
         type    => "user",
-        data    => $json
-    })) {
+        data    => $json,
+    };
+    
+    say Dumper($puthref);
+
+    if ( $client->put($puthref)) {
         say "updated user $user password";
     }
     else {
