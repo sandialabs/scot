@@ -679,11 +679,11 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                 url:  '/scot/api/v2/entry/'+ this.props.id
                 }).success(function(response){
                     recently_updated = response.updated
-                    if(response.body_flair == ""){
-                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
+                    if(response.body == ""){
+                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_plain)
                     }
                     else{
-                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_flair)
+                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
                     }
                 }.bind(this))
         }
@@ -731,7 +731,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                                 )
                             )
                         ), 
-                        React.createElement(TinyMCE, {id: tinyID, content: "", className: 'inputtext', config: {plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, toolbar1: 'full screen spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect | blockquote formatselect code', theme:'modern', content_css:'/css/sandbox.css'}, onChange: this.handleEditorChange})
+                        React.createElement(TinyMCE, {id: tinyID, content: "", className: 'inputtext', config: {plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, toolbar1: 'full screen spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect | blockquote formatselect code', theme:'modern', content_css:'/css/entryeditor.css'}, onChange: this.handleEditorChange})
                     )
                 )
             )
@@ -4150,8 +4150,12 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             }.bind(this))
         } else {
             $('#detail-container').find('a, .entity').not('.not_selectable').each(function(index,tr) {
+                $(tr).off('mouseup');
                 $(tr).off('mousedown');
-                $(tr).on('mousedown', function() {
+                $(tr).on('mouseup', function() { //Firefox processes this function and then does this function
+                    this.checkFlairHover();
+                }.bind(this))
+                $(tr).on('mousedown', function() { //Chrome processes css changes and then does this function
                     this.checkFlairHover();
                 }.bind(this))
             }.bind(this));
@@ -4183,8 +4187,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 }.bind(this));
             }
         } else if (this.props.type == 'alertgroup') {
-            var subtable = $(document.body).find('.alertTableHorizontal');
-            subtable.find('.entity').each(function(index, entity) {
+            $(document.body).find('.alertTableHorizontal').find('.entity').each(function(index, entity) {
                 if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
                     $(entity).data('state', 'down');
                     var entityid = $(entity).attr('data-entity-id');
@@ -4193,7 +4196,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
 
                 } 
             }.bind(this));
-            subtable.find('a').each(function(index,a) {
+            $(document.body).find('.alertTableHorizontal').find('a').each(function(index,a) {
                 if($(a).css('color') == 'rgb(255, 0, 0)') {
                     $(a).data('state','down');
                     var url = $(a).attr('url');
