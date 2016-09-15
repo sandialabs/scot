@@ -168,30 +168,8 @@ sub run {
                 say "---";
             }
 
-            $pm->start(
-                cb  => sub {
-                    my ($pm, $action, $type, $id) = @_;
+            $self->process_message($action, $type, $id);
 
-                    $log->debug("Getting $type $id from SCOT");
-
-                    my $record = $scot->get($type,$id);
-
-                    if ( $self->interactive ) {
-                        say "+ got $type $id from scot: "; # .
-                            # Dumper($record);
-                    }
-
-                    $log->debug("GET Response: ", 
-                                { filter => \&Dumper, value => $record });
-
-                    $self->process_record($action, $type, $id, $record);
-
-                    if ( $self->interactive ) {
-                        say "   --- processed $type $id";
-                    }
-                },
-                args    => [ $action, $type, $id ],
-            );
             $log->debug("-"x50);
         }
     );
@@ -206,32 +184,82 @@ sub process_record {
     my $action  = shift;
     my $type    = shift;
     my $id      = shift;
-    my $href    = shift; #... the record as a hash ref
+    my $log     = $self->log;
+    my $scot    = $self->thatscot;
+
+    if ( $action eq "deleted" ) {
+        $self->delete($type, $id);
+    }
+    else {
+        my $href    = $self->get_record($type, $id);
+        if ( $href ) {
+            if ( $action eq "created" ) {
+                $self->create($type,$href);
+            }
+            elsif ( $action eq "updated" ) {
+                $self->update($href);
+            }
+            else {
+                $log->debug("ERROR: unsupported action type $action");
+            }
+        }
+        else {
+            $log->error("couldn't get the record from this scot!");
+        }
+    }
+}
+
+sub delete {
+    my $self    = shift;
+    my $type    = shift;
+    my $id      = shift;
+    my $log     = $self->log;
+    my $scot    = $self->thatscot;
+
+    if ( $scot->delete({ id => $id, type => $type}) ) {
+        $log->debug("Deleted $type $id on that scot");
+    }
+    else {
+        $log->error("Failed to delete $type $id on that scot");
+    }
+}
+
+sub get_record {
+    my $self    = shift;
+    my $type    = shift;
+    my $id      = shift;
+    my $log     = $self->log;
+    my $scot    = $self->thisscot;
+
+    my $record  = $scot->get({
+        type    => $type,
+        id      => $id,
+    });
+    return $record;
+}
+
+sub create {
+    my $self    = shift;
+    my $type    = shift;
+    my $href    = shift;
     my $log     = $self->log;
     my $scot    = $self->thatscot;
 
     delete $href->{_id};
-    
-    if ( $action eq "created" ) {
-        delete $href->{id};
-        $log->debug("Creating $type");
-        $scot->post($type, $href);
-    }
-    elsif ( $action eq "updated" ) {
-        $log->debug("Updating $type $id");
-        $scot->put($type, $href->{id}, $href);
-    }
-    elsif ( $action eq "deleted" ) {
-        $log->debug("Deleting $type $id");
-        $scot->delete($type, $id);
+    delete $href->{id};
+
+    if ( $scot->post({ type => $type, data => $href, }) ) {
+        $log->debug("Created $type $id on that scot");
     }
     else {
-        if ( $self->interactive ) {
-            say " !!! unsupported action $action !!!";
-        }
-        $log->error("Unspported Action $action");
+        $log->error("Failed to create $type $id on that scot");
     }
 }
+
+
+
+
+    
 
 
 1;
