@@ -63,7 +63,7 @@ module.exports = React.createClass({
 
         return {
             splitter: true, 
-            mute: false, selectedColor: '#AEDAFF',
+            Notification: this.props.Notification, selectedColor: '#AEDAFF',
             sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: this.props.listViewPage,
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             alldetail : true, viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
@@ -71,7 +71,7 @@ module.exports = React.createClass({
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: [], listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.listViewSort, filter: this.props.listViewFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true};
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: [], listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.listViewSort, filter: this.props.listViewFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, };
     },
     componentWillMount: function() {
         if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
@@ -96,6 +96,9 @@ module.exports = React.createClass({
         if (this.state.filter != null) {
             var filter = JSON.parse(this.state.filter);
             this.setState({filter:filter}); 
+        }
+        if (this.state.Notification == undefined) {
+            this.setState({Notification:'off'});
         }
     },
     componentDidMount: function(){
@@ -143,6 +146,12 @@ module.exports = React.createClass({
             newPage = 0;
         } 
         var data = {limit:pageLimit, offset: newPage, sort: JSON.stringify(sortBy)}
+        //add filter to the data object
+        if (filterBy != undefined) {
+            $.each(filterBy, function(key,value) {
+                data[key] = value;
+            })
+        }
 
         $.ajax({
 	        type: 'GET',
@@ -345,7 +354,7 @@ module.exports = React.createClass({
         return (
             <div key={this.state.listViewKey} className="allComponents" style={{'margin-left': '17px'}}>
                 <div>
-                    {!this.state.mute ? <Notificationactivemq ref='notificationSystem' /> : null}
+                    {this.state.Notification == 'on' ? <Notificationactivemq ref='notificationSystem' /> : null}
                     <div className='main-header-info-null'>
                         <div className='main-header-info-child'>
                             <h2 style={{'font-size': '30px'}}>{this.state.typeCapitalized}</h2>
@@ -361,9 +370,9 @@ module.exports = React.createClass({
                     <div className='mainview'>
                         <div>
                            <div style={{display: 'inline-flex'}}>
-                                {this.state.mute == false ?
-                                    <Button eventKey='1' onClick={this.clearNote} bsSize='xsmall'>Mute Notifications</Button> :
-                                    <Button eventKey='2' onClick={this.clearNote} bsSize='xsmall'>Turn On Notifications</Button>
+                                {this.state.Notification == 'on'?
+                                    <Button eventKey='1' onClick={this.Notification} bsSize='xsmall'>Mute Notifications</Button> :
+                                    <Button eventKey='2' onClick={this.Notification} bsSize='xsmall'>Turn On Notifications</Button>
                                 }
                                 {this.props.type == 'event' || this.props.type == 'intel' ? <Button onClick={this.createNewThing} eventKey='6' bsSize='xsmall'>Create {this.state.typeCapitalized}</Button> : null}
                                 <Button onClick={this.clearAll} eventKey='3' bsSize='xsmall'>Clear All Filters</Button>
@@ -375,7 +384,7 @@ module.exports = React.createClass({
                                         <div className='tableview' style={{display: 'flex'}}>
                                             <div id='fluid2' className="container-fluid2" style={{width:'100%', 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow': 'hidden','padding-left':'5px', display:'flex', flexFlow: 'column'}}>                 
                                                 <table style={{width:'100%'}}>
-                                                    <ListViewHeader data={this.state.objectarray} columns={this.state.columns} columnsDisplay={this.state.columnsDisplay} handleSort={this.handleSort} sort={this.state.sort} handleFilter={this.handleFilter} startepoch={this.state.startepoch} endepoch={this.state.endepoch}/>
+                                                    <ListViewHeader data={this.state.objectarray} columns={this.state.columns} columnsDisplay={this.state.columnsDisplay} handleSort={this.handleSort} sort={this.state.sort} filter={this.state.filter} handleFilter={this.handleFilter} startepoch={this.state.startepoch} endepoch={this.state.endepoch}/>
                                                 </table>
                                                 <div id='list-view-data-div' style={{height:this.state.scrollheight}} className='list-view-overflow'>
                                                     <div className='list-view-data-div' style={{display:'block'}}>
@@ -473,12 +482,14 @@ module.exports = React.createClass({
         deleteCookie('listViewSort'+this.props.type) //clear sort cookie
         deleteCookie('listViewPage'+this.props.type) //clear page cookie
     },
-    clearNote: function(){
-        if(this.state.mute){
-            this.setState({mute: false})
+    Notification: function(){
+        if(this.state.Notification == 'off'){
+            this.setState({Notification: 'on'})
+            setCookie('Notification','on',1000);       
         }
         else {
-            this.setState({mute: true})
+            this.setState({Notification: 'off'})
+            setCookie('Notification','off',1000);
         }
     },
     selected: function(type,rowid,taskid){
@@ -657,9 +668,14 @@ module.exports = React.createClass({
                 }
                 for (var prop in currentFilter) { newFilterObj[prop] = currentFilter[prop]}; // combine current filter with new one
             } else {
+                var array;
+                if (typeof(string) == 'string') {
+                    array = string.split(',');
+                } else {
+                    array = string; //this is used if string is an array of strings to search (tags/source)
+                }
                 var inProgressFilter = [];
                 var newFilter = [];
-                var array = string.split(',');
                 //if no filter applied
                 if (currentFilter == undefined) {
                     for (i=0; i < array.length; i++) {
