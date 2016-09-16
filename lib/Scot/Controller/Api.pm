@@ -362,7 +362,8 @@ sub get_many {
         $cursor->sort({id => -1});
     }
 
-    if ( my $limit  = $self->build_limit($req_href) ) {
+    my $limit  = $self->build_limit($req_href);
+    if ( defined($limit) ) {
         $cursor->limit($limit);
     }
     else {
@@ -1955,7 +1956,7 @@ sub build_limit {
 
 
     my $limit   = $params->{limit} // $json->{limit};
-    # $log->debug("LIMIT of $limit detected");
+    $log->debug("LIMIT of $limit detected");
     return $limit;
 }
 
@@ -2333,7 +2334,8 @@ sub supertable {
     my $match_ref   = { alertgroup   => { '$in'  => \@alertgroup_ids } };
     my $cursor      = $alertcol->find($match_ref);
     
-    if ( my $limit  = $self->build_limit($req_params) ) {
+    my $limit  = $self->build_limit($req_params);
+    if ( defined($limit) ) {
         $cursor->limit($limit);
     }
     else {
