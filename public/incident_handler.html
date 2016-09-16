@@ -625,8 +625,8 @@ $(function() {
     modal : true,
     buttons : {
       "Create" : function() {
-        var startTime= (new Date($('#ih_form input[id=start]')[0].value).getTime()+(new Date($('#ih_form input[id=start]')[0].value).getTimezoneOffset()*60000))/1000;
-        var endTime =  (new Date($('#ih_form input[id=end]')[0].value).getTime() + (new Date($('#ih_form input[id=start]')[0].value).getTimezoneOffset()*60000))/1000;
+        var startTime= new Date($('#ih_form input[id=start]')[0].value).getTime()/1000;
+        var endTime =  new Date($('#ih_form input[id=end]')[0].value).getTime()/1000;
         var user = $('#ih_form select[id=user_select]')[0].value;
         var data = {
             start: startTime,
@@ -661,8 +661,8 @@ $(function() {
 }); 
 
 function create_incident_handler(start, end) {
-$("#start").val(start);
-$("#end").val(end);
+$("#start").val(new Date(new Date(start).getTime() + (new Date(start).getTimezoneOffset()*60000)));
+$("#end").val(new Date(new Date(end).getTime() + (new Date(end).getTimezoneOffset()*60000)));
 $("#ih_creator").dialog('open');
 } 
 
