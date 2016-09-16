@@ -695,18 +695,12 @@ var EntryDataSubject = React.createClass({
     getInitialState: function() {
         return {
             value:this.props.data.subject,
-            updatedSubject: false,
-        }
-    },
-    componentWillReceiveProps: function() {
-        if (this.state.updatedSubject != true) {
-            this.setState({value:this.props.data.subject});
         }
     },
     handleChange: function(event) {
-        this.setState({value:event.target.value});
-        if (this.state.value != this.props.data.subject) {
-            var json = {'subject':this.state.value}
+        if (event != null ) {
+            var json = {'subject':event.target.value};
+            var newValue = event.target.value;
             $.ajax({
                 type: 'put',
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
@@ -714,12 +708,17 @@ var EntryDataSubject = React.createClass({
                 contentType: 'application/json; charset=UTF-8',
                 success: function(data) {
                     console.log('success: ' + data);
-                    this.setState({updatedSubject: true});
+                    this.setState({value:newValue});
                 }.bind(this),
                 error: function() { 
                     this.props.updated('error','Failed to update the subject');
                 }.bind(this)
             });
+        }
+    },
+    handleEnterKey: function(e) {
+        if (e.key == 'Enter') {
+            this.handleChange(e);
         }
     },
     render: function() {
@@ -734,7 +733,7 @@ var EntryDataSubject = React.createClass({
             var subjectWidth = 1000;
         }
         return (
-            <div>{this.props.subjectType} {this.props.id}: <DebounceInput debounceTimeout={1000} forceNotifyOnBlur={true} type='text' value={this.state.value} onChange={this.handleChange} style={{width:subjectWidth+'px',lineHeight:'normal'}} /></div>
+            <div>{this.props.subjectType} {this.props.id}: <input type='text' defaultValue={this.state.value} onKeyPress={this.handleEnterKey} style={{width:subjectWidth+'px',lineHeight:'normal'}} /></div>
         )
     }
 });
