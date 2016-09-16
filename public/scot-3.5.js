@@ -4399,18 +4399,12 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
     getInitialState: function() {
         return {
             value:this.props.data.subject,
-            updatedSubject: false,
-        }
-    },
-    componentWillReceiveProps: function() {
-        if (this.state.updatedSubject != true) {
-            this.setState({value:this.props.data.subject});
         }
     },
     handleChange: function(event) {
-        this.setState({value:event.target.value});
-        if (this.state.value != this.props.data.subject) {
-            var json = {'subject':this.state.value}
+        if (event != null ) {
+            var json = {'subject':event.target.value};
+            var newValue = event.target.value;
             $.ajax({
                 type: 'put',
                 url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
@@ -4418,12 +4412,17 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
                 contentType: 'application/json; charset=UTF-8',
                 success: function(data) {
                     console.log('success: ' + data);
-                    this.setState({updatedSubject: true});
+                    this.setState({value:newValue});
                 }.bind(this),
                 error: function() { 
                     this.props.updated('error','Failed to update the subject');
                 }.bind(this)
             });
+        }
+    },
+    handleEnterKey: function(e) {
+        if (e.key == 'Enter') {
+            this.handleChange(e);
         }
     },
     render: function() {
@@ -4438,7 +4437,7 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
             var subjectWidth = 1000;
         }
         return (
-            React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement(DebounceInput, {debounceTimeout: 1000, forceNotifyOnBlur: true, type: "text", value: this.state.value, onChange: this.handleChange, style: {width:subjectWidth+'px',lineHeight:'normal'}}))
+            React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement("input", {type: "text", defaultValue: this.state.value, onKeyPress: this.handleEnterKey, style: {width:subjectWidth+'px',lineHeight:'normal'}}))
         )
     }
 });
@@ -6694,8 +6693,9 @@ var ListViewHeader = React.createClass({displayName: "ListViewHeader",
 
 var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
     getInitialState: function() {
+        var className = this.props.columnsOne + '-list-header-column';
         return {
-            startepoch:'',endepoch:'',
+            startepoch:'', endepoch:'', className:className,
         }
     },
     handleSort: function() {
@@ -6714,23 +6714,6 @@ var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
         }
     },
     handleFilterDate: function(range, pick){
-        /*var start = range['start']
-        var month = start['_i'].getMonth()+1
-        var day   = start['_i'].getDate()
-        var StartDate = month+"/"+day+"/"+start['_i'].getFullYear()
-        var end = range['end']
-        var month = end['_i'].getMonth()+1
-        var day   = end['_i'].getDate()
-        var EndDate = month+"/"+day+"/"+end['_i'].getFullYear()
-
-        start = StartDate.split('/')
-        start = new Date(start[2], start[0] - 1, start[1])
-        end   = EndDate.split('/')
-        end   = new Date(end[2],end[0]-1, end[1], 23,59,59,99);
-
-        start = Math.round(start.getTime()/1000)
-        end   = Math.round(end.getTime()/1000)
-        this.setState({startepoch: StartDate, endepoch: EndDate})*/
         this.setState({startepoch: Math.round(range['start'])/1000, endepoch: Math.round(range['end'])/1000})
     },
     handleFilterDateSubmit: function(v) {
@@ -6741,15 +6724,19 @@ var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
             this.props.handleFilter(this.props.columnsOne, '');
         }
         this.refs[ref].hide();
-        //if($($(v.currentTarget).find('.filter').context).attr('value') == this.props.columnsOne {
-            
-        //}
     },
     clearFilter: function(v) {
         var ref = 'popOverRef'+this.props.columnsOne;
         this.props.handleFilter(this.props.columnsOne, '');
         this.setState({startepoch: '', endepoch: ''})
         this.refs[ref].hide(); 
+    },
+    componentDidUpdate: function(prevProps, prevState) {
+        var widthValue;
+        if ($('#list-view-data-div').find('.'+this.state.className)[0]) {
+            widthValue = $('#list-view-data-div').find('.'+this.state.className).width();
+            $('.list-view-table-header').find('.'+this.state.className).css('width',widthValue);
+        }
     },
     render: function() {
         var columnsOne = this.props.columnsOne;
@@ -6762,7 +6749,6 @@ var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
         var filter = this.props.filter;
         var handleSort = this.props.handleSort;
         var handleFilter = this.props.handleFilter;
-        var className = columnsOne + '-list-header-column'
         var showSort = false;
         var epochInputValue = '';
         if (sort != undefined) {
@@ -6784,6 +6770,7 @@ var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
                 }
             })
         }
+
         if (columnsOne =='created' || columnsOne == 'updated' || columnsOne == 'occurred') {
             
             if (this.state.startepoch != '' || this.state.endepoch != '') {
@@ -6793,7 +6780,7 @@ var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
                 epochInputValue = filterValue;
             }
             return (
-                React.createElement("th", {className: className}, 
+                React.createElement("th", {className: this.state.className}, 
                     React.createElement("div", {onClick: this.handleSort}, 
                         columnsDisplayOne, 
                         showSort ? 
@@ -6808,7 +6795,7 @@ var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
             )
         } else if(columnsOne == 'tag' || columnsOne == 'source'){
             return( 
-                React.createElement("th", {className: className}, 
+                React.createElement("th", {className: this.state.className}, 
                     React.createElement("div", {onClick: this.handleSort}, 
                         columnsDisplayOne, 
                         showSort ?
@@ -6821,7 +6808,7 @@ var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
             )
         }else {
             return (
-                React.createElement("th", {className: className}, 
+                React.createElement("th", {className: this.state.className}, 
                     React.createElement("div", {onClick: this.handleSort}, 
                         columnsDisplayOne, 
                         showSort ? 
