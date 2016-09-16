@@ -601,7 +601,11 @@ function do_refresh() {
 $(document).ready(function() {
    $.ajax({
      type: 'GET',
-     url:  '/scot/api/v2/user'
+     url:  '/scot/api/v2/user',
+     data: {
+        limit: 0,
+        sort: "username"
+     }
    }).done(function(response) {
      $(response.records).each(function(index, userObj) {
         var option = $('<option></option>').attr('value', userObj.username).text(userObj.username);
