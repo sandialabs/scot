@@ -19,7 +19,7 @@ use Try::Tiny;
 use Mojo::UserAgent;
 use Scot::Env;
 use Scot::App;
-use Scot::Util::Scot;
+use Scot::Util::Scot2;
 use Scot::Util::EntityExtractor;
 use Scot::Util::ImgMunger;
 use Scot::Util::Enrichments;
@@ -46,7 +46,7 @@ has thishostname    =>  (
 
 has thisscot    => (
     is          => 'ro',
-    isa         => 'Scot::Util::Scot',
+    isa         => 'Scot::Util::Scot2',
     required    => 1,
     lazy        => 1,
     builder     => '_build_this_scot',
@@ -55,7 +55,7 @@ has thisscot    => (
 sub _build_this_scot {
     my $self    = shift;
     # say Dumper($self->config);
-    return Scot::Util::Scot->new({
+    return Scot::Util::Scot2->new({
         log         => $self->log,
         servername  => $self->config->{source}->{scot}->{servername},
         username    => $self->config->{source}->{scot}->{username},
@@ -66,7 +66,7 @@ sub _build_this_scot {
 
 has thatscot    => (
     is          => 'ro',
-    isa         => 'Scot::Util::Scot',
+    isa         => 'Scot::Util::Scot2',
     required    => 1,
     lazy        => 1,
     builder     => '_build_that_scot',
@@ -75,7 +75,7 @@ has thatscot    => (
 sub _build_that_scot {
     my $self    = shift;
     # say Dumper($self->config);
-    return Scot::Util::Scot->new({
+    return Scot::Util::Scot2->new({
         log         => $self->log,
         servername  => $self->config->{dest}->{scot}->{servername},
         username    => $self->config->{dest}->{scot}->{username},
@@ -151,7 +151,7 @@ sub run {
 
             # read $body to determine alert or entry number
             my $json    = decode_json $body;
-            # $log->debug("body   : ", { filter => \&Dumper, value => $json});
+            $log->debug("json   : ", { filter => \&Dumper, value => $json});
             say "----------------- JSON Message -------------";
             say Dumper($json);
             say "----------------- ------------ -------------";
@@ -179,13 +179,15 @@ sub run {
     $cv->recv;
 }
 
-sub process_record {
+sub process_message {
     my $self    = shift;
     my $action  = shift;
     my $type    = shift;
     my $id      = shift;
     my $log     = $self->log;
     my $scot    = $self->thatscot;
+
+    $log->debug("processing message $action $type $id");
 
     if ( $action eq "deleted" ) {
         $self->delete($type, $id);
@@ -197,7 +199,7 @@ sub process_record {
                 $self->create($type,$href);
             }
             elsif ( $action eq "updated" ) {
-                $self->update($href);
+                $self->update($type,$href);
             }
             else {
                 $log->debug("ERROR: unsupported action type $action");
@@ -246,7 +248,7 @@ sub create {
     my $scot    = $self->thatscot;
 
     delete $href->{_id};
-    delete $href->{id};
+    my $id = delete $href->{id};
 
     if ( $scot->post({ type => $type, data => $href, }) ) {
         $log->debug("Created $type $id on that scot");
@@ -256,10 +258,24 @@ sub create {
     }
 }
 
+sub update {
+    my $self    = shift;
+    my $type    = shift;
+    my $href    = shift;
+    my $log     = $self->log;
+    my $scot    = $self->thatscot;
 
+    $log->debug("attempting $type update with ",{filter=>\&Dumper, value=>$href});
 
+    my $id      = delete $href->{id};
+    delete $href->{_id};
 
-    
-
+    if ( $scot->put({ type => $type, id => $id, data => $href }) ) {
+        $log->debug("Updated $type $id on that scot");
+    }
+    else {
+        $log->error("Failed to update $type $id on that scot");
+    }
+}
 
 1;
