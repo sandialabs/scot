@@ -830,16 +830,26 @@ sub update {
     my $id          = $req_href->{id};
     my $col_name    = $req_href->{collection};
 
+    $log->debug("looks like $col_name $id is the target");
+
     # update requires a valid id
     return undef unless ( $self->invalid_id_check($req_href) );
+
+    $log->debug("id is valid");
 
     my $collection  = $self->get_update_collection($col_name);
     return undef unless ( $collection );
 
+    $log->debug("collection is ok");
+
     my $object      = $self->get_update_object($collection, $id);
     return undef unless ( $object );
 
+    $log->debug("got the target object");
+
     return undef unless ( $self->check_update_permission($req_href, $object));
+
+    $log->debug("user has update privs");
 
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
         # this updates any alerts in request, doing it this way instead
@@ -897,10 +907,12 @@ sub update {
     }
 
     if ( $object->meta->does_role("Scot::Role::Entitiable") ) {
+        $log->debug("entitieable thing this object");
         $self->process_entities($req_href, $object);
         push @what,"process_entities";
     }
     if ( $object->meta->does_role("Scot::Role::Tags") ) {
+        $log->debug("taggable thins this object");
         $self->apply_tags($req_href, $col_name, $id);
         push @what , "tag";
     }
