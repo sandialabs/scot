@@ -3230,14 +3230,30 @@ var AlertParent = React.createClass({displayName: "AlertParent",
         var items = this.props.items;
         var body = [];
         var header = [];
+        var columns = false;
+        var dataColumns = false;
         if (items[0] != undefined){
             var col_names;
             //checking two locations for columns. Will make this a single location in future revision
-            if (items[0].columns.length != 0) { 
-                col_names = items[0].columns.slice(0) //slices forces a copy of array
-            } else if (items[0].data.columns.length != 0) {
-                col_names = items[0].data.columns.slice(0)
-            } else {
+            
+            if (col_names == undefined) {
+                if (items[0].columns != undefined) {
+                    if (items[0].columns.length != 0) { 
+                        col_names = items[0].columns.slice(0) //slices forces a copy of array
+                    } 
+                }
+            }
+            
+            if (col_names == undefined) {
+                if (items[0].data != undefined) {
+                    if (items[0].data.columns != undefined) {
+                        if (items[0].data.columns.length != 0) {
+                            col_names = items[0].data.columns.slice(0)
+                        }
+                    }
+                }
+            }
+            if (col_names == undefined) {
                 console.log('Error finding columns in JSON');
             }
             col_names.unshift('entries'); //Add entries to 3rd column
