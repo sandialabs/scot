@@ -463,7 +463,13 @@ sub xform_alertgroup {
         $alert->{id} = $alertid;
         die "No AlertID!" unless (defined $alertid);
 
-        $status{ $alert->{status} }++;
+        if ( defined($alert->{promotion_id}) and $alert->{promotion_id} > 0 ) {
+            $status{promoted}++;
+            $alert->{status} = "promoted";
+        }
+        else {
+            $status{ $alert->{status} }++;
+        }
 
         $self->remove_unneeded('alert', $alert);
 
