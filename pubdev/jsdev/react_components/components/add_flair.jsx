@@ -19,7 +19,7 @@ var AddFlair = {
                                 $(a).attr('url',url);
                             }.bind(this))
                             //Make href an anchor so it doesn't go anywhere when clicked and instead opens up the modal in linkWarningPopup
-                            $(ifr.contentDocument.body).find('a').attr('href','#');
+                            //$(ifr.contentDocument.body).find('a').attr('href','#');
                             //$(ifr.contentDocument.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
                             $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
                             if($(ifr.contentDocument.body).find('.extras')[0] == null) {
