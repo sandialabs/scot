@@ -3889,7 +3889,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 Store.addChangeListener(this.updated); 
             }.bind(this)
         }
-        InitialAjaxLoad = setTimeout(delayFunction.delay,1000);
+        InitialAjaxLoad = setTimeout(delayFunction.delay,400);
     },
     componentWillUnmount: function() {
         clearTimeout(InitialAjaxLoad)
