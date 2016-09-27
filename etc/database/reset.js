@@ -14,6 +14,7 @@ db.nextid.drop();
 db.source.drop();
 db.tag.drop();
 db.users.drop();
+db.user.drop();
 db.link.drop();
 db.guide.drop();
 db.appearance.drop();
