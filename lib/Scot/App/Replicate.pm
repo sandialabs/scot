@@ -189,6 +189,11 @@ sub process_message {
 
     $log->debug("processing message $action $type $id");
 
+    unless ( $type eq "entity" ) {
+        $log->debug("Non Entity Event. Skipping...");
+        return;
+    }
+
     if ( $action eq "deleted" ) {
         $self->delete($type, $id);
     }
