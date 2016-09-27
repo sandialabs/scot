@@ -69,3 +69,6 @@ db.appearance.ensureIndex(  { "target":       1} );
 
 db.guide.ensureIndex    (   { "id":         1}, {unique: true, dropDups:true});
 db.guide.ensureIndex    (   { "applies_to": 1} );
+
+db.user.ensureIndex ( {"id": 1},{unique: true, dropDups:true} );
+db.user.ensureIndex ( {"username": 1} );
