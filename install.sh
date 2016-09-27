@@ -34,7 +34,7 @@ SCOTPORT=3000
 FILESTORE="/opt/scotfiles"
 INSTALL_LOG="/tmp/scot.install.log"
 TESTURL="http://getscot.sandia.gov"
-BACKUPDIR="/sdb/scotbackup"        #TODO: make this user update-able
+BACKUPDIR="/sdb/scotbackup"        
 GEOIPDIR="/usr/local/share/GeoIP"
 DBDIR="/var/lib/mongodb"
 CPANM="/usr/local/bin/cpanm"
@@ -67,11 +67,15 @@ SKIPNODE="no"               # skip the node/npm/grunt stuff
 
 echo -e "${yellow}Reading Commandline Args... ${NC}"
 
-while getopts "adigmsrflqA:F:J:wN" opt; do
+while getopts "adigmsrflqA:F:J:wNb:" opt; do
     case $opt in
         a)  
             echo -e "${red} --- do not refresh apt repositories ${NC}"
             REFRESHAPT="no"
+            ;;
+        b)
+            BACKUPDIR=$OPTARG
+            echo -e "${yellow} --- Setting Backup directory to $BACKUPDIR ${NC}"
             ;;
         d)
             echo -e "${red} --- do not delete installation directory $SCOTDIR";
@@ -754,7 +758,7 @@ if [ "$RESETDB" == "yes" ];then
     mongo scot-prod $DBCONFIGJS
 fi
 
-MONGOADMIN=$(mongo scot-prod --eval "printjson(db.users.count({username:'admin'}))" --quiet)
+MONGOADMIN=$(mongo scot-prod --eval "printjson(db.user.count({username:'admin'}))" --quiet)
 
 if [ "$MONGOADMIN" == "0" ] || [ "$RESETDB" == "yes" ]; then
     # PASSWORD=$(dialog --stdout --nocancel --title "Set SCOT Admin Password" --backtitle "SCOT Installer" --inputbox "Choose a SCOT Admin login password" 10 70)
@@ -767,7 +771,7 @@ if [ "$MONGOADMIN" == "0" ] || [ "$RESETDB" == "yes" ]; then
     HASH=`$DEVDIR/bin/passwd.pl`
 
     mongo scot-prod $DEVDIR/etc/admin_user.js
-    mongo scot-prod --eval "db.users.update({username:'admin'}, {$set:{hash:'$HASH'}})"
+    mongo scot-prod --eval "db.user.update({username:'admin'}, {$set:{hash:'$HASH'}})"
 
 fi
 

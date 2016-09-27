@@ -1,4 +1,4 @@
-db.users.insert({
+db.user.insert({
 	"local_acct" : 1,
 	"groups" : [
 		"scot",
@@ -19,4 +19,4 @@ db.users.insert({
 	"fullname" : "Local Admin Account",
 	"last_activity_check" : null
 })
-db.users.ensureIndex({username: 1});
+db.user.ensureIndex({username: 1});
