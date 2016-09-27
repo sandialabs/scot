@@ -3255,6 +3255,16 @@ var AlertParent = React.createClass({displayName: "AlertParent",
             }
             if (col_names == undefined) {
                 console.log('Error finding columns in JSON');
+                if (this.props.headerData != undefined){
+                    if (this.props.headerData.body != undefined) {
+                        return (
+                            React.createElement("div", null, 
+                                React.createElement("div", {style: {color:'red'}}, "If you see this message, please notify your SCOT admin. Parsing failed on the message below. The raw alert is displayed."), 
+                                React.createElement("div", {className: "alertTableHorizontal", dangerouslySetInnerHTML: { __html: this.props.headerData.body}})
+                            )
+                        )
+                    }
+                }
             }
             col_names.unshift('entries'); //Add entries to 3rd column
             col_names.unshift('status'); //Add status to 2nd column
