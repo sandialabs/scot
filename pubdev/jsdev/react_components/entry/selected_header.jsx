@@ -23,6 +23,7 @@ var Notification            = require('react-notification-system');
 var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx');
+var InitialAjaxLoad;
 
 var SelectedHeader = React.createClass({
     getInitialState: function() {
@@ -72,99 +73,107 @@ var SelectedHeader = React.createClass({
         this.setState({loading:true});
     },
     componentDidMount: function() {
-        var entryType = 'entry';
-        if (this.props.type == 'alertgroup') { entryType = 'alert' };
-        //Main Type Load
-        $.ajax({
-            type:'get',
-            url:'scot/api/v2/' + this.props.type + '/' + this.props.id,
-            success:function(result) {
-                var eventResult = result;
-                this.setState({headerData:eventResult,showEventData:true, isNotFound:false, tagData:eventResult.tag, sourceData:eventResult.source})
-                if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                    this.setState({loading:false})
-                }
-            }.bind(this),
-            error: function(result) {
-                this.setState({showEventData:true, isNotFound:true})
-                if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                    this.setState({loading:false})
-                }
-                this.errorToggle("No data returned for main lookup (404 or another network error) Error: " + result.responseText);
-            }.bind(this),
-        });
-        //entry load
-        $.ajax({
-            type: 'get',
-            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, 
-            success: function(result) {
-                var entryResult = result.records;
-                this.setState({showEntryData:true, entryData:entryResult, runWatcher:true})
-                this.Watcher();
-                if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                    this.setState({loading:false});
-                }
-            }.bind(this),
-            error: function(result) {
-                this.setState({showEntryData:true})
-                if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                    this.setState({loading:false});
-                }
-                this.errorToggle("No data returned for entry lookup (404 or another network error) Error: " + result.responseText);
-            }
-        });
-        //entity load
-        $.ajax({
-            type: 'get',
-            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
-            success: function(result) {
-                var entityResult = result.records;
-                this.setState({showEntityData:true, entityData:entityResult})
-                var waitForEntry = {
-                    waitEntry: function() {
-                        if(this.state.showEntryData == false && alertgroupforentity === false) {
-                            setTimeout(waitForEntry.waitEntry,50);
-                        } else {
-                            alertgroupforentity = false;
-                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,this.scrollTo)}.bind(this));
-                            if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                                this.setState({loading:false});        
-                            }
+        var delayFunction = {
+            delay: function() {
+                var entryType = 'entry';
+                if (this.props.type == 'alertgroup') { entryType = 'alert' };
+                //Main Type Load
+                $.ajax({
+                    type:'get',
+                    url:'scot/api/v2/' + this.props.type + '/' + this.props.id,
+                    success:function(result) {
+                        var eventResult = result;
+                        this.setState({headerData:eventResult,showEventData:true, isNotFound:false, tagData:eventResult.tag, sourceData:eventResult.source})
+                        if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                            this.setState({loading:false})
                         }
-                    }.bind(this)
-                };
-                waitForEntry.waitEntry();
-            }.bind(this),
-            error: function(result) {
-                this.setState({showEntityData:true})
-                if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                    this.setState({loading:false});
-                }
-                this.errorToggle("No data returned for entity lookup (404 or another network error) Error: " + result.responseText);
-            }.bind(this)
-        });
-        //guide load
-        if (this.props.type == 'alertgroup') {
-            $.ajax({
-                type:'get',
-                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/guide', 
-                success: function(result) {
-                    if (result.records[0] != undefined) {
-                        var guideID = result.records[0].id;
-                        this.setState({guideID: guideID});
-                    } else {
-                        this.setState({guideID: 0});
+                    }.bind(this),
+                    error: function(result) {
+                        this.setState({showEventData:true, isNotFound:true})
+                        if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                            this.setState({loading:false})
+                        }
+                        this.errorToggle("No data returned for main lookup (404 or another network error) Error: " + result.responseText);
+                    }.bind(this),
+                });
+                //entry load
+                $.ajax({
+                    type: 'get',
+                    url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, 
+                    success: function(result) {
+                        var entryResult = result.records;
+                        this.setState({showEntryData:true, entryData:entryResult, runWatcher:true})
+                        this.Watcher();
+                        if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                            this.setState({loading:false});
+                        }
+                    }.bind(this),
+                    error: function(result) {
+                        this.setState({showEntryData:true})
+                        if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                            this.setState({loading:false});
+                        }
+                        this.errorToggle("No data returned for entry lookup (404 or another network error) Error: " + result.responseText);
                     }
-                }.bind(this),
-                error: function(result) {
-                    this.setState({guideID: null})
-                    this.errorToggle("No data returned for guide lookup (404 or another network error) Error: " + result.responseText);
-                }.bind(this)
-            });     
+                });
+                //entity load
+                $.ajax({
+                    type: 'get',
+                    url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
+                    success: function(result) {
+                        var entityResult = result.records;
+                        this.setState({showEntityData:true, entityData:entityResult})
+                        var waitForEntry = {
+                            waitEntry: function() {
+                                if(this.state.showEntryData == false && alertgroupforentity === false) {
+                                    setTimeout(waitForEntry.waitEntry,50);
+                                } else {
+                                    alertgroupforentity = false;
+                                    setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,this.scrollTo)}.bind(this));
+                                    if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                                        this.setState({loading:false});        
+                                    }
+                                }
+                            }.bind(this)
+                        };
+                        waitForEntry.waitEntry();
+                    }.bind(this),
+                    error: function(result) {
+                        this.setState({showEntityData:true})
+                        if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                            this.setState({loading:false});
+                        }
+                        this.errorToggle("No data returned for entity lookup (404 or another network error) Error: " + result.responseText);
+                    }.bind(this)
+                });
+                //guide load
+                if (this.props.type == 'alertgroup') {
+                    $.ajax({
+                        type:'get',
+                        url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/guide', 
+                        success: function(result) {
+                            if (result.records[0] != undefined) {
+                                var guideID = result.records[0].id;
+                                this.setState({guideID: guideID});
+                            } else {
+                                this.setState({guideID: 0});
+                            }
+                        }.bind(this),
+                        error: function(result) {
+                            this.setState({guideID: null})
+                            this.errorToggle("No data returned for guide lookup (404 or another network error) Error: " + result.responseText);
+                        }.bind(this)
+                    });     
+                }
+                Store.storeKey(this.props.id);
+                Store.addChangeListener(this.updated); 
+            }.bind(this)
         }
-        Store.storeKey(this.props.id);
-        Store.addChangeListener(this.updated); 
-    }, 
+        InitialAjaxLoad = setTimeout(delayFunction.delay,400);
+    },
+    componentWillUnmount: function() {
+        clearTimeout(InitialAjaxLoad)
+    },
     componentDidUpdate: function() {
         //This runs the watcher which handles the entity popup and link warning.
         if(this.state.runWatcher == true) {
