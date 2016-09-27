@@ -2578,9 +2578,10 @@ sub whoami {
     my $userobj = $mongo->collection('User')->find_one({username => $user});
 
     if ( defined ( $userobj )  ) {
+        my $user_href   = $userobj->as_hash;
         $self->do_render({
             user    => $user,
-            data    => $userobj->as_hash,
+            data    => $user_href,
         });
     }
     else {  

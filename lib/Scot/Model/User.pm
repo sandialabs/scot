@@ -134,7 +134,7 @@ has last_activity_check => (
     is              => 'ro',
     isa             => 'Epoch',
     required        => 1,
-    default         => 0,
+    default         => 4,
 );
 
 =item B<groups>
