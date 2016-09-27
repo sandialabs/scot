@@ -433,8 +433,9 @@ sub process_entry {
 sub update_entry {
     my $self    = shift;
     my $putdata = shift;
+    my $log     = $self->log;
 
-    $self->log->debug("updating entry");
+    $log->debug("updating entry");
 
     if ( $self->get_method eq "scot_api" ) {
         my $response = $self->scot->put($putdata);
@@ -447,7 +448,7 @@ sub update_entry {
         my $newdata = $putdata->{data};
 
         unless ($obj) {
-            $self->log->error("failed to get object with id ".$id);
+            $log->error("failed to get object with id ".$id);
         }
 
         $self->log->debug("got object with id of ". $obj->id);
@@ -466,7 +467,29 @@ sub update_entry {
 
         if ( defined($entity_aref) ) {
             if ( scalar(@$entity_aref) > 0 ) {
-                $mongo->collection('Entity')->update_entities($obj, $entity_aref);
+                my ($create_aref, $update_aref) = $mongo->collection('Entity')->update_entities($obj, $entity_aref);
+                $log->debug("created entities: ",join(',',@$create_aref));
+                foreach my $id (@$create_aref) {
+                    $self->env->mq->send("scot", {
+                        action  => "created",
+                        data    => {
+                            type    => "entity",
+                            id      => $id,
+                            who     => "scot-flair",
+                        }
+                    });
+                }
+                $log->debug("updated entities: ",join(',',@$update_aref));
+                foreach my $id (@$update_aref) {
+                    $self->env->mq->send("scot", {
+                        action  => "updated",
+                        data    => {
+                            type    => "entity",
+                            id      => $id,
+                            who     => "scot-flair",
+                        }
+                    });
+                }
             }
         }
 

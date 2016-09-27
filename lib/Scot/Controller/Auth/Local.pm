@@ -29,20 +29,20 @@ sub check {
     my $mongo   = $env->mongo;
     my $user    = $self->session('user');
     
-    $log->trace("Checking Login Status");
+    $log->debug("Checking Login Status");
 
     if (defined $user) {
         $self->update_lastvisit($user);
-        $log->trace("[User $user] has logged in");
+        $log->debug("[User $user] has logged in");
         return 1;
     }
 
 
-    $log->trace("New or expired session...");
+    $log->debug("New or expired session...");
 
     my $req     = $self->req;
     my $url     = $req->url->to_string();
-    $log->trace("Login Form will redirect after auth to url = $url");
+    $log->debug("Login Form will redirect after auth to url = $url");
     $self->session(orig_url => $url);
 
 
@@ -61,7 +61,7 @@ sub login {
     my $env     = $self->env;
     my $log     = $env->log;
     my $url     = $self->session('orig_url');
-    $log->trace("Trying to render Login Form url = $url");
+    $log->debug("Trying to render Login Form url = $url");
     $self->render( orig_url => $url );
 }
 
@@ -95,13 +95,13 @@ sub auth {
     my $log     = $env->log;
     my $path    = $self->req->url->path;
 
-    $log->trace("Authentication Check Begins");
+    $log->debug("Authentication Check Begins");
 
     my $user    = $self->param('user');
     my $pass    = $self->param('pass');
     my $orig_url= $self->session('orig_url');
 
-    $log->trace("Got user = $user orig_url = $orig_url");
+    $log->debug("Got user = $user orig_url = $orig_url");
 
     unless ( defined $user and defined $pass ) {
         return $self->failed_auth(
@@ -125,7 +125,7 @@ sub auth {
             $pass);
     }
 
-    $log->trace("Attempting local authentication for $user");
+    $log->debug("Attempting local authentication for $user");
     if ( $self->local_authenticates($user, $pass) ) {
         my $group_aref  = $self->get_groups;
         return $self->sucessful_auth($user);
@@ -143,7 +143,7 @@ sub get_user_groups {
     my $env         = $self->env;
     my $mongo       = $env->mongo;
     my $collection  = $mongo->collection('User');
-    my $userobj     = $collection->find_one(username => $user);
+    my $userobj     = $collection->find_one({username => $user});
     return $userobj->groups;
 }
 
@@ -154,21 +154,21 @@ sub local_authenticates {
     my $mongo       =  $self->env->mongo;
     my $log         =  $self->env->log;
 
-    $log->trace("Local Authentication for $username");
+    $log->debug("Local Authentication for $username");
 
     my $collection  = $mongo->collection('User');
     my $user        = $collection->find_one({ username => $username });
 
     return 0 unless defined($user);
 
-    $log->trace("User is in Database...");
+    $log->debug("User is in Database...");
 
-    my $phash   = $user->hash;
+    my $phash   = $user->pwhash;
 
     return 0 unless defined($phash);
     return 0 if ($phash eq '');
 
-    $log->trace('User has a password hash...');
+    $log->debug('User has a password hash...');
 
     my $pbkdf2  = Crypt::PBKDF2->new(
         hash_class  => 'HMACSHA2',
@@ -179,11 +179,11 @@ sub local_authenticates {
 
     return 0 unless ( $pbkdf2->validate($phash, $pass) );
 
-    $log->trace("Password matches Hash...");
+    $log->debug("Password matches Hash...");
 
     return 0 unless ( $user->active );
 
-    $log->trace("user $user is active...");
+    $log->debug("user $user is active...");
 
     my $groups  = $user->groups;
 
@@ -207,6 +207,44 @@ sub get_groups {
         push @groups, $group->name;
     }
     return wantarray ? @groups : \@groups;
+}
+
+sub failed_auth {
+    my $self    = shift;
+    my $msg     = shift;
+    my $user    = shift;
+    my $pass    = shift;
+    my $log     = $self->env->log;
+
+    $log->error("FAILED AUTH: $msg");
+    $log->debug("User: $user Pass: -----");
+
+    $self->update_user_failure($user);
+
+    $self->flash("Invalid Login");
+    $self->redirect_to('/login');
+    return;
+}
+
+sub sucessful_auth {
+    my $self    = shift;
+    my $user    = shift;
+    my $url     = shift;
+    my $orig_url= $self->session('orig_url');
+    my $log     = $self->env->log;
+
+    $log->debug("User $user sucessfully authenticated");
+
+    $self->update_user_sucess($user);
+    $self->session( 
+        user        => $user, 
+        groups      => $self->get_user_groups($user),
+        secure      => 1,
+        expiration  => 3600 * 4,
+    );
+
+    $self->redirect_to($orig_url); 
+    return;
 }
 
 
