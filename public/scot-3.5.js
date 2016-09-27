@@ -6681,6 +6681,7 @@ var React               = require('react');
 var DateRangePicker     = require('react-daterange-picker');
 var Popover             = require('react-bootstrap/lib/Popover')
 var OverlayTrigger      = require('react-bootstrap/lib/OverlayTrigger')
+var ButtonGroup         = require('react-bootstrap/lib/ButtonGroup');
 var Button              = require('react-bootstrap/lib/Button');
 var TagSourceFilter     = require('../components/list-view-filter-tag-source.jsx');
 'use strict';
@@ -6754,6 +6755,16 @@ var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
         this.setState({startepoch: '', endepoch: ''})
         this.refs[ref].hide(); 
     },
+    handleStatusFilter: function(e) {
+        if (e.target != undefined) {
+            if (e.target.textContent != undefined) {
+                this.handleFilter(e.target.textContent);
+            }
+        }
+    },
+    handleStatusFilterClear: function() {
+        this.handleFilter('');
+    },
     componentDidUpdate: function(prevProps, prevState) {
         var widthValue;
         if ($('#list-view-data-div').find('.'+this.state.className)[0]) {
@@ -6774,6 +6785,7 @@ var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
         var handleFilter = this.props.handleFilter;
         var showSort = false;
         var epochInputValue = '';
+        var statusInputValue = '';
         if (sort != undefined) {
             $.each(sort, function(key, value) {
                 if (key == columnsOne) {
@@ -6829,7 +6841,28 @@ var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
                     React.createElement(TagSourceFilter, {columnsOne: columnsOne, handleFilter: this.handleFilter, defaultValue: filterValue})
                 )
             )
-        }else {
+        } else if (columnsOne == 'status'){
+            if (this.state.statusInputValue != '') {
+                statusInputValue = this.state.statusInputValue
+            }
+            if (filterValue != undefined) {
+                statusInputValue = filterValue;
+            }
+            return (
+                React.createElement("th", {className: this.state.className}, 
+                    React.createElement("div", {onClick: this.handleSort}, 
+                        columnsDisplayOne, 
+                        showSort ?
+                        React.createElement("span", null, sortDirection == 'up' ? React.createElement("span", {className: "glyphicon glyphicon-triangle-top"}) : null, " ", sortDirection == 'down' ? React.createElement("span", {className: "glyphicon glyphicon-triangle-bottom"}) : null)
+                        :
+                        null
+                    ), 
+                    React.createElement(OverlayTrigger, {trigger: "focus", placement: "bottom", overlay: React.createElement(Popover, {id: "statuspicker"}, React.createElement(ButtonGroup, {vertical: true}, React.createElement(Button, {onClick: this.handleStatusFilter}, "Open"), React.createElement(Button, {onClick: this.handleStatusFilter}, "Closed"), React.createElement(Button, {onClick: this.handleStatusFilter}, "Promoted"), React.createElement(Button, {onClick: this.handleStatusFilterClear}, "Clear")))}, 
+                        React.createElement("input", {style: {width:'inherit'}, onKeyPress: this.handleEnterKey, value: statusInputValue})
+                    )
+                )
+            )
+        } else {
             return (
                 React.createElement("th", {className: this.state.className}, 
                     React.createElement("div", {onClick: this.handleSort}, 
@@ -6850,7 +6883,7 @@ var ListViewHeaderEach = React.createClass({displayName: "ListViewHeaderEach",
 
 module.exports = ListViewHeader;
 
-},{"../components/list-view-filter-tag-source.jsx":11,"react":919,"react-bootstrap/lib/Button":269,"react-bootstrap/lib/OverlayTrigger":283,"react-bootstrap/lib/Popover":284,"react-daterange-picker":311}],35:[function(require,module,exports){
+},{"../components/list-view-filter-tag-source.jsx":11,"react":919,"react-bootstrap/lib/Button":269,"react-bootstrap/lib/ButtonGroup":270,"react-bootstrap/lib/OverlayTrigger":283,"react-bootstrap/lib/Popover":284,"react-daterange-picker":311}],35:[function(require,module,exports){
 'use strict';
 
 
