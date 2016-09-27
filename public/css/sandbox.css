@@ -11,6 +11,10 @@
   background-color: red;
 }
 
+a:active {
+  color: red;
+}
+
 body {
   background-color: rgba(0,0,0,0);
   overflow:auto;
