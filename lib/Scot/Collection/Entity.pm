@@ -95,6 +95,9 @@ sub update_entities {
     #                { filter =>\&Dumper, value => $return });
     #    my $entity_id    = $return->{id};
 
+    my @created_ids = ();
+    my @updated_ids = ();
+
     foreach my $entity (@$earef) {
 
         my $value   = $entity->{value};
@@ -106,6 +109,7 @@ sub update_entities {
 
         if ($entity) {
             $log->trace("Found matching $type entity $value");
+            push @updated_ids, $entity->id;
         }
         else {
             $log->trace("Creating new $type entity $value");
@@ -113,6 +117,7 @@ sub update_entities {
                 value   => $value,
                 type    => $etype,
             });
+            push @created_ids, $entity->id;
         }
         # $log->trace("entity is ",{filter=>\&Dumper, value=>$entity});
         my $entity_id  = $entity->id;
@@ -137,6 +142,7 @@ sub update_entities {
             );
         }
     }
+    return \@created_ids, \@updated_ids;
 }
 
 override get_subthing => sub {
