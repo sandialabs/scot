@@ -2,6 +2,7 @@ var React               = require('react');
 var DateRangePicker     = require('react-daterange-picker');
 var Popover             = require('react-bootstrap/lib/Popover')
 var OverlayTrigger      = require('react-bootstrap/lib/OverlayTrigger')
+var ButtonGroup         = require('react-bootstrap/lib/ButtonGroup');
 var Button              = require('react-bootstrap/lib/Button');
 var TagSourceFilter     = require('../components/list-view-filter-tag-source.jsx');
 'use strict';
@@ -75,6 +76,16 @@ var ListViewHeaderEach = React.createClass({
         this.setState({startepoch: '', endepoch: ''})
         this.refs[ref].hide(); 
     },
+    handleStatusFilter: function(e) {
+        if (e.target != undefined) {
+            if (e.target.textContent != undefined) {
+                this.handleFilter(e.target.textContent);
+            }
+        }
+    },
+    handleStatusFilterClear: function() {
+        this.handleFilter('');
+    },
     componentDidUpdate: function(prevProps, prevState) {
         var widthValue;
         if ($('#list-view-data-div').find('.'+this.state.className)[0]) {
@@ -95,6 +106,7 @@ var ListViewHeaderEach = React.createClass({
         var handleFilter = this.props.handleFilter;
         var showSort = false;
         var epochInputValue = '';
+        var statusInputValue = '';
         if (sort != undefined) {
             $.each(sort, function(key, value) {
                 if (key == columnsOne) {
@@ -150,7 +162,28 @@ var ListViewHeaderEach = React.createClass({
                     <TagSourceFilter columnsOne={columnsOne} handleFilter={this.handleFilter} defaultValue={filterValue}/>
                 </th>
             )
-        }else {
+        } else if (columnsOne == 'status'){
+            if (this.state.statusInputValue != '') {
+                statusInputValue = this.state.statusInputValue
+            }
+            if (filterValue != undefined) {
+                statusInputValue = filterValue;
+            }
+            return (
+                <th className={this.state.className}>
+                    <div onClick={this.handleSort}>
+                        {columnsDisplayOne}
+                        {showSort ?
+                        <span>{sortDirection == 'up' ? <span className='glyphicon glyphicon-triangle-top'/> : null} {sortDirection == 'down' ? <span className='glyphicon glyphicon-triangle-bottom'/> : null}</span>
+                        :
+                        null}
+                    </div>
+                    <OverlayTrigger trigger='focus' placement='bottom' overlay={<Popover id='statuspicker'><ButtonGroup vertical><Button onClick={this.handleStatusFilter}>Open</Button><Button onClick={this.handleStatusFilter}>Closed</Button><Button onClick={this.handleStatusFilter}>Promoted</Button><Button onClick={this.handleStatusFilterClear}>Clear</Button></ButtonGroup></Popover>}>
+                        <input style={{width:'inherit'}} onKeyPress={this.handleEnterKey} value={statusInputValue}/>
+                    </OverlayTrigger>
+                </th>
+            )
+        } else {
             return (
                 <th className={this.state.className}>
                     <div onClick={this.handleSort}>
