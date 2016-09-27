@@ -661,8 +661,8 @@ $(function() {
 }); 
 
 function create_incident_handler(start, end) {
-$("#start").val(start);
-$("#end").val(end);
+$("#start").val(new Date(new Date(start).getTime() + (new Date(start).getTimezoneOffset()*60000)));
+$("#end").val(new Date(new Date(end).getTime() + (new Date(end).getTimezoneOffset()*60000)));
 $("#ih_creator").dialog('open');
 } 
 
