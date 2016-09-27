@@ -1,0 +1,16 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <center>
+            <h1>SCOT Login</h1>
+            <form action="/auth" method="post">
+            <label for="u">Username</label>
+            <input  id="u" type="text" name="user"><br>
+            <label for="p">Password</label>
+            <input  id="p"type="password" name="pass"><br>
+            <input type="submit"><input type="reset">
+            </form>
+        </center>
+    </body>
+</html>
