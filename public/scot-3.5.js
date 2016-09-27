@@ -949,7 +949,7 @@ var AddFlair = {
                                 $(a).attr('url',url);
                             }.bind(this))
                             //Make href an anchor so it doesn't go anywhere when clicked and instead opens up the modal in linkWarningPopup
-                            $(ifr.contentDocument.body).find('a').attr('href','#');
+                            //$(ifr.contentDocument.body).find('a').attr('href','#');
                             //$(ifr.contentDocument.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
                             $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
                             if($(ifr.contentDocument.body).find('.extras')[0] == null) {
@@ -5917,26 +5917,33 @@ var LinkWarning = React.createClass({displayName: "LinkWarning",
         this.props.linkWarningToggle();
     },
     render: function() {
-        return (
-            React.createElement("div", null, 
-                React.createElement(Modal, {
-                    isOpen: true, 
-                    onRequestClose: this.props.linkWarningToggle, 
-                    style: customStyles}, 
-                    React.createElement("div", {className: "modal-header"}, 
-                        React.createElement("img", {src: "/images/close_toolbar.png", className: "close_toolbar", onClick: this.props.linkWarningToggle}), 
-                        React.createElement("h3", {id: "myModalLabel"}, "Browse to site?")
-                    ), 
-                    React.createElement("div", {className: "modal-body"}, 
-                        "The link you clicked may take you to a site outside SCOT. If this is a link an attacker controls you may be tipping your hand."
-                    ), 
-                    React.createElement("div", {className: "modal-footer"}, 
-                        React.createElement(Button, {id: "cancel-delete", onClick: this.props.linkWarningToggle}, "Cancel"), 
-                        React.createElement(Button, {bsStyle: "info", id: "proceed", onClick: this.proceed}, "Proceed")
+        if ($.isUrlExternal(this.props.link)) {
+            return (
+                React.createElement("div", null, 
+                    React.createElement(Modal, {
+                        isOpen: true, 
+                        onRequestClose: this.props.linkWarningToggle, 
+                        style: customStyles}, 
+                        React.createElement("div", {className: "modal-header"}, 
+                            React.createElement("img", {src: "/images/close_toolbar.png", className: "close_toolbar", onClick: this.props.linkWarningToggle}), 
+                            React.createElement("h3", {id: "myModalLabel"}, "Browse to site?")
+                        ), 
+                        React.createElement("div", {className: "modal-body"}, 
+                            "The link you clicked may take you to a site outside SCOT. If this is a link an attacker controls you may be tipping your hand.", 
+                            React.createElement("br", null), 
+                            React.createElement("b", null, this.props.link)
+                        ), 
+                        React.createElement("div", {className: "modal-footer"}, 
+                            React.createElement(Button, {id: "cancel-delete", onClick: this.props.linkWarningToggle}, "Cancel"), 
+                            React.createElement(Button, {bsStyle: "info", id: "proceed", onClick: this.proceed}, "Proceed")
+                        )
                     )
                 )
             )
-        )
+        } else {
+            this.proceed();
+            return(React.createElement("div", null))
+        }
     }
 });
 module.exports = LinkWarning;
