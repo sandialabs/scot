@@ -467,6 +467,16 @@ var AlertParent = React.createClass({
             }
             if (col_names == undefined) {
                 console.log('Error finding columns in JSON');
+                if (this.props.headerData != undefined){
+                    if (this.props.headerData.body != undefined) {
+                        return (
+                            <div>
+                                <div style={{color:'red'}}>If you see this message, please notify your SCOT admin. Parsing failed on the message below. The raw alert is displayed.</div>
+                                <div className='alertTableHorizontal' dangerouslySetInnerHTML={{ __html: this.props.headerData.body}}/>
+                            </div>
+                        )
+                    }
+                }
             }
             col_names.unshift('entries'); //Add entries to 3rd column
             col_names.unshift('status'); //Add status to 2nd column
