@@ -2133,7 +2133,7 @@ sub thread_entries {
         $href->{children}   = [];   # create holder for children
 
         if ( $entry->summary ) {
-            $log->debug("entry is summary");
+            $log->trace("entry is summary");
             push @summaries, $href;
             next ENTRY;
         }
@@ -2154,7 +2154,7 @@ sub thread_entries {
         my $parent_ref          = $where{$entry->parent};
         # get the array ref within the parent
         my $parent_kids_aref    = $$parent_ref->{children};
-        $log->debug("parents children: ",{filter=>\&Dumper, value => $parent_kids_aref});
+        $log->trace("parents children: ",{filter=>\&Dumper, value => $parent_kids_aref});
         my $child_count         = 0;
 
         if ( defined $parent_kids_aref ) {
@@ -2165,7 +2165,7 @@ sub thread_entries {
         my $new_child_index = $child_count;
         $parent_kids_aref->[$new_child_index]  = $href;
         $log->debug("added entry to parents aref");
-        $log->debug("parents children: ",{filter=>\&Dumper, value => $parent_kids_aref});
+        $log->trace("parents children: ",{filter=>\&Dumper, value => $parent_kids_aref});
         $where{$entry->id} = \$parent_kids_aref->[$new_child_index];
     }
 
