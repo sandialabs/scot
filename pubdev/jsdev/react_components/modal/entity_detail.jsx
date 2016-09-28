@@ -577,19 +577,20 @@ var EntityReferences = React.createClass({
                 }
             }
         }.bind(this));   
-        $('#sortableentitytable').tablesorter();
+        $('#sortableentitytable'+this.props.entityid).tablesorter();
     },
     componentDidUpdate: function() {
-        var config = $( '#sortableentitytable' )[ 0 ].config,
+        var config = $( '#sortableentitytable'+this.props.entityid)[ 0 ].config,
         // applies or reapplies a sort to the table; use false to not update the sort
         resort = true // or [ [0,0], [1,0] ] etc
         $.tablesorter.updateAll( config, resort );
     },
     render: function() {
+        var id = 'sortableentitytable' + this.props.entityid;
         return (
             <div className='entityTableWrapper'>
             {this.state.loading ? <span>Loading: {this.state.loadingAlerts ? <span>Alerts </span> : null}{this.state.loadingEvents ? <span>Events </span> : null}{this.state.loadingIncidents ? <span>Incidents </span> : null}{this.state.loadingIntel ? <span>Intel </span> : null}</span>: null}
-            <table className="tablesorter entityTableHorizontal" id={'sortableentitytable'} width='100%'>
+            <table className="tablesorter entityTableHorizontal" id={id} width='100%'>
                 <thead>
                     <tr>
                         <th>peek</th>
