@@ -79,11 +79,6 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
     ->json_is('/views' => 2) # two gets = 2 views
     ->json_is('/view_history/scot-testing/where'    => '127.0.0.1');
 
-# print Dumper($t->tx->res->json), "\n";
-# done_testing();
-# exit 0;
-
-
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
     "Getting alerts in alertgroup")
     ->status_is(200)
@@ -93,6 +88,11 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
     ->json_is('/records/1/alertgroup'   => $alertgroup_id)
     ->json_is('/records/0/data/foo'     => 1)
     ->json_is('/records/1/data/foo'     => 3);
+
+# print Dumper($t->tx->res->json), "\n";
+# done_testing();
+# exit 0;
+
 
 
 my $alert1_id   = $t->tx->res->json->{records}->[0]->{id};
