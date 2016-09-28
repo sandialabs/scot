@@ -2,18 +2,12 @@
 var ReactDOM	    = require('react-dom')
 var React           = require('react')
 var ExpandableNav   = require('../../../node_modules/react-expandable-nav')
-//var Alerts          = require('./alert.jsx')
-//var Events          = require('./events.jsx')
-//var Incidents       = require('./incidents.jsx')
-//var Tasks           = require('./tasks.jsx')
-//var Intel           = require('./intel.jsx')
 var ListView        = require('./list-view.jsx');
 var Router	        = require('../../../node_modules/react-router').Router
 var Route	        = require('../../../node_modules/react-router').Route
 var Link	        = require('../../../node_modules/react-router').Link
 var browserHistory  = require('../../../node_modules/react-router/').hashHistory
 var Listener        = require('../activemq/listener.jsx')
-//var Guide           = require('./guide.jsx')
 var ExpandableNavContainer = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavContainer.js')
 var ExpandableNavbar = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavbar.js')
 var ExpandableNavHeader = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavHeader.js')
@@ -23,6 +17,7 @@ var ExpandableNavPage = require('../../../node_modules/react-expandable-nav/buil
 var ExpandableNavToggleButton = require('../../../node_modules/react-expandable-nav/build/components/ExpandableNavToggleButton.js')
 var SelectedContainer = require('../entry/selected_container.jsx')
 var EntityDetail      = require('../modal/entity_detail.jsx')
+var AMQ             = require('../debug-components/amq.jsx');
 var sethome = false
 var setalerts = false
 var setevents = false
@@ -30,6 +25,7 @@ var setincidents = false
 var setintel = false
 var settask = false
 var setguide = false
+var setamq = false
 var isalert = false
 var supertableid = [];
 var statetype = ''
@@ -56,6 +52,7 @@ var App = React.createClass({
                 setevents = false
                 settask = false
                 setguide = false
+                setamq = false
             }
             else if(this.props.params.value.toLowerCase() == 'entity'){
                 setguide = false
@@ -65,6 +62,7 @@ var App = React.createClass({
                 setalerts = false
                 setincidents = false
                 settask = false
+                setamq = false
                 if(this.props.params.id != null) {
                     state = 8
                     //array = this.props.params.id.split('+')
@@ -81,6 +79,7 @@ var App = React.createClass({
                 setalerts = false
                 setincidents = false
                 settask = false
+                setamq = false
                 state = 7
                 if(this.props.params.id != null) {
                     state = 7
@@ -104,6 +103,7 @@ var App = React.createClass({
                 setevents = false
                 settask = false
                 setguide = false
+                setamq = false
                 //if the url is just /alert/ with no id - default to alertgroup
                 if (this.props.params.id == null) {
                     id = null;
@@ -126,6 +126,7 @@ var App = React.createClass({
                 setevents = false
                 settask = false
                 setguide = false
+                setamq = false
             }
             else if(this.props.params.value.toLowerCase() == "event"){
                 state = 2
@@ -143,6 +144,7 @@ var App = React.createClass({
                 setincidents = false
                 settask = false
                 setguide = false
+                setamq = false
             }
             else if (this.props.params.value.toLowerCase() == "incident"){
                 state = 3
@@ -160,6 +162,7 @@ var App = React.createClass({
                 setalerts = false
                 setevents = false
                 settask = false
+                setamq = false
             }
             else if(this.props.params.value.toLowerCase() == "intel") {
                 state = 4
@@ -177,6 +180,7 @@ var App = React.createClass({
                 setincidents = false
                 setevents = false
                 settask = false
+                setamq = false
             }
             else if(this.props.params.value.toLowerCase() == "task")  {
                 state = 6
@@ -187,6 +191,18 @@ var App = React.createClass({
                 setincidents = false
                 setintel = false
                 settask = true
+                setamq = false
+            } 
+            else if (this.props.params.value.toLowerCase() == "amq") {
+                state = 99
+                setguide = false
+                sethome = false
+                setalerts = false
+                setevents = false
+                setincidents = false
+                setintel = false
+                settask = false
+                setamq = true
             }
             else {
                 state = 0
@@ -197,6 +213,7 @@ var App = React.createClass({
                 setintel = false
                 settask = false
                 setguide = false
+                setamq = false
             }
         }
         else {
@@ -313,6 +330,10 @@ var App = React.createClass({
         this.state.set == 8
         ?
         React.createElement(ExpandableNavPage, null, React.createElement(EntityDetail, {entityid: this.state.id, entitytype: 'entity', id: this.state.id, type: 'entity', viewMode: this.state.viewMode,  Notification:this.state.Notification, listViewFilter:this.state.listViewFilter, listViewSort:this.state.listViewSort, listViewPage:this.state.listViewPage, fullScreen:true}))
+        :
+        this.state.set = 99
+        ?
+        React.createElement(ExpandableNavPage, null, React.createElement(AMQ, {type: 'amq'}))
         :
         null
         )	
