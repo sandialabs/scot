@@ -530,7 +530,12 @@ sub get_one {
     if ( $object->meta->does_role("Scot::Role::Views") ) {
         $log->trace("_____ Adding to VIEWS _____");
         my $from = $self->tx->remote_address;
-        $object->add_view($user, $from, $env->now);
+        if ( $user ne "scot-alerts" ) {
+            $object->add_view($user, $from, $env->now);
+        }
+        else {
+            $log->debug("view by entity account $user ignored");
+        }
     }
 
     if ( ref($object) eq "Scot::Model::File" ) {
@@ -686,7 +691,11 @@ sub get_subthing {
         return;
     }
 
-    $cursor->sort({id   => -1});
+    # allow client to request sorting of subthing
+    if ( my $sort_opts = $self->build_sort_opts($req_href) ) {
+        $log->debug("got sort opts of: ",{filter=>\&Dumper, value=>$sort_opts});
+        $cursor->sort($sort_opts);
+    }
 
     $log->debug("Subthing $subthing cursor has ".$cursor->count." items");
 
