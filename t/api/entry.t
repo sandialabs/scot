@@ -93,6 +93,10 @@ $t  ->get_ok("/scot/api/v2/event/$event_id/entry")
     ->json_is('/records/0/children/1/id'    => $entry1b)
     ->json_is('/records/1/id'   => $entry2);
 
+  print Dumper($t->tx->res->json);
+ done_testing();
+ exit 0;
+
 $t  ->get_ok("/scot/api/v2/event/$event_id")
     ->status_is(200)
     ->json_is('/entry_count'    => 5);
