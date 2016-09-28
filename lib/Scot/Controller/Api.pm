@@ -2117,10 +2117,12 @@ sub thread_entries {
     my $count       = 1;
     my @summaries   = ();
 
+    $cursor->sort({id => 1});
 
     ENTRY:
     while ( my $entry   = $cursor->next ) {
 
+        # do not thread (include) entries not viewable by user
         unless ( $entry->is_readable($mygroups) ) {
             $log->debug("Entry ".$entry->id." is not readable by $user");
             next ENTRY;
@@ -2128,30 +2130,42 @@ sub thread_entries {
 
         $count++;
         my $href            = $entry->as_hash;
-        $href->{children}   = [];
+        $href->{children}   = [];   # create holder for children
 
         if ( $entry->summary ) {
+            $log->trace("entry is summary");
             push @summaries, $href;
             next ENTRY;
         }
 
         if ( $entry->parent == 0 ) {
+            # add this href to threaded array
             $threaded[$rindex]  = $href;
+            # store a link to this entry based on the entry id
             $where{$entry->id}  = \$threaded[$rindex];
+            # incr the index
             $rindex++;
             next ENTRY;
         }
 
+        $log->debug("Entry ".$entry->id." is a child entry to ".$entry->parent);
+
+        # get the parent href
         my $parent_ref          = $where{$entry->parent};
+        # get the array ref within the parent
         my $parent_kids_aref    = $$parent_ref->{children};
+        $log->trace("parents children: ",{filter=>\&Dumper, value => $parent_kids_aref});
         my $child_count         = 0;
 
         if ( defined $parent_kids_aref ) {
             $child_count    = scalar(@{$parent_kids_aref});
+            $log->debug("Parent has $child_count children");
         }
 
         my $new_child_index = $child_count;
         $parent_kids_aref->[$new_child_index]  = $href;
+        $log->debug("added entry to parents aref");
+        $log->trace("parents children: ",{filter=>\&Dumper, value => $parent_kids_aref});
         $where{$entry->id} = \$parent_kids_aref->[$new_child_index];
     }
 
