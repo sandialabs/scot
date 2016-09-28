@@ -348,8 +348,18 @@ function views(state, callback, payload){
 
 var ActiveMQ = {
     handle_update: function(callback, payload){
+    if (amqdebug == true) {
+        activemqaction = payload.action.activemq.action;
+        activemqid = payload.action.activemq.data.id;
+        activemqtype = payload.action.activemq.data.type;
+        activemqwho = payload.action.activemq.data.who;
+        activemqguid = payload.action.activemq.guid;
+        activemqhostname = payload.action.activemq.hostname;
+        activemqpid = payload.action.activemq.pid;
+        callback.emitChange('amqdebug');
+    }
     switch (payload.action.activemq.data.type) {
-
+    
             case 'tag': 
                 switch (payload.action.activemq.action) {
                     case 'updated':
