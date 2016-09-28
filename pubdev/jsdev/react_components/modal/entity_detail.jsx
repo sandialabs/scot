@@ -601,10 +601,10 @@ var EntityReferences = React.createClass({
                     </tr>
                 </thead>
                 <tbody>
+                    {this.state.entityDataIntel}
                     {this.state.entityDataIncident}
                     {this.state.entityDataEvent}
                     {this.state.entityDataAlertGroup}
-                    {this.state.entityDataIntel}
                 </tbody>
             </table>
             </div>
