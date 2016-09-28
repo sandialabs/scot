@@ -5773,7 +5773,10 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
         $('#sortableentitytable').tablesorter();
     },
     componentDidUpdate: function() {
-        $('#sortableentitytable').tablesorter(); 
+        var config = $( '#sortableentitytable' )[ 0 ].config,
+        // applies or reapplies a sort to the table; use false to not update the sort
+        resort = true // or [ [0,0], [1,0] ] etc
+        $.tablesorter.updateAll( config, resort );
     },
     render: function() {
         return (
