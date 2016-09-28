@@ -5794,10 +5794,10 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
                     )
                 ), 
                 React.createElement("tbody", null, 
+                    this.state.entityDataIntel, 
                     this.state.entityDataIncident, 
                     this.state.entityDataEvent, 
-                    this.state.entityDataAlertGroup, 
-                    this.state.entityDataIntel
+                    this.state.entityDataAlertGroup
                 )
             )
             )
