@@ -5732,7 +5732,12 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
         }
     },
     componentDidMount: function() {
-        this.alertRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/alert', function(result) {
+        this.alertRequest = $.ajax({
+            type: 'get',
+            url: 'scot/api/v2/entity/' + this.props.entityid + '/alert',
+            data: {sort:JSON.stringify({'id':-1})},
+            traditional:true,
+        }).then(function(result) {
             var result = result.records
             var arr = [];
             var arrPromoted = [];
@@ -5765,7 +5770,12 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
                 }
             }
         }.bind(this));
-        this.eventRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/event', function(result) {
+        this.eventRequest = $.ajax({
+            type: 'get',
+            url: 'scot/api/v2/entity/' + this.props.entityid + '/event',
+            data: {sort:JSON.stringify({'id':-1})},
+            traditional: true,
+        }).then(function(result) {
             var result = result.records
             var arr = [];
             var arrPromoted = [];
@@ -5798,7 +5808,12 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
                 }
             }
         }.bind(this));   
-        this.incidentRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/incident', function(result) {
+        this.incidentRequest = $.ajax({
+            type: 'get',
+            url: 'scot/api/v2/entity/' + this.props.entityid + '/incident',
+            data: {sort:JSON.stringify({'id':-1})},
+            traditional: true,
+        }).then(function(result) {
             var result = result.records
             var arr = [];
             var arrPromoted = [];
@@ -5831,7 +5846,12 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
                 }
             }
         }.bind(this));  
-        this.intelRequest = $.get('scot/api/v2/entity/' + this.props.entityid + '/intel', function(result) {
+        this.intelRequest = $.ajax({
+            type: 'get',
+            url: 'scot/api/v2/entity/' + this.props.entityid + '/intel',
+            data: {sort:JSON.stringify({'id':-1})},
+            traditional: true,
+        }).then(function(result) {
             var result = result.records
             var arr = [];
             var arrPromoted = [];
