@@ -686,6 +686,8 @@ sub get_subthing {
         return;
     }
 
+    $cursor->sort({id   => -1});
+
     $log->debug("Subthing $subthing cursor has ".$cursor->count." items");
 
     my @things;
