@@ -50,7 +50,6 @@ Config::Auto
 Data::GUID
 Redis
 File::LibMagic
-Courriel
 List::Uniq
 Domain::PublicSuffix
 Crypt::PBKDF2
@@ -85,3 +84,5 @@ Search::Elasticsearch
 Server::Starter
 Data::Clean::FromJSON
 Term::ANSIColor
+Daemon::Control
+Courriel
