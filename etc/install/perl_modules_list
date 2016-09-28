@@ -85,3 +85,4 @@ Search::Elasticsearch
 Server::Starter
 Data::Clean::FromJSON
 Term::ANSIColor
+Daemon::Control
