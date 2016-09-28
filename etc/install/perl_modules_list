@@ -34,6 +34,7 @@ MongoDB::OID
 Moose
 Moose::Role
 Moose::Util::TypeConstraints
+Meerkat
 Net::Jabber::Bot
 Net::LDAP
 Net::SMTP::TLS
@@ -66,7 +67,6 @@ Log::Log4perl
 File::Slurp
 AnyEvent::STOMP::Client
 AnyEvent::ForkManager;
-Meerkat
 MooseX::Singleton
 Mozilla::PublicSuffix
 Net::IDN::Encode
