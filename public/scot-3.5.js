@@ -7383,6 +7383,7 @@ module.exports = React.createClass({displayName: "exports",
     },
     render: function() {
         var listViewContainerHeight;
+        var showClearFilter = false;
         var handler = []; 
         if (this.state.listViewContainerDisplay == null) {
             listViewContainerHeight = null;
@@ -7395,6 +7396,9 @@ module.exports = React.createClass({displayName: "exports",
         if (this.state.id != null && this.state.typeCapitalized != null) {
             document.title = this.state.typeCapitalized.charAt(0) + '-' + this.state.id
         }
+        if (checkCookie('listViewFilter'+this.props.type) != null || checkCookie('listViewSort'+this.props.type) != null || checkCookie('listViewPage'+this.props.type) != null) {
+            showClearFilter = true
+        } 
         return (
             React.createElement("div", {key: this.state.listViewKey, className: "allComponents", style: {'margin-left': '17px'}}, 
                 React.createElement("div", null, 
@@ -7419,9 +7423,9 @@ module.exports = React.createClass({displayName: "exports",
                                     React.createElement(Button, {eventKey: "2", onClick: this.Notification, bsSize: "xsmall"}, "Turn On Notifications"), 
                                 
                                 this.props.type == 'event' || this.props.type == 'intel' ? React.createElement(Button, {onClick: this.createNewThing, eventKey: "6", bsSize: "xsmall"}, "Create ", this.state.typeCapitalized) : null, 
-                                React.createElement(Button, {onClick: this.clearAll, eventKey: "3", bsSize: "xsmall"}, "Clear All Filters"), 
                                 React.createElement(Button, {eventKey: "5", bsSize: "xsmall", onClick: this.exportCSV}, "Export to CSV"), 
-                                React.createElement(Button, {bsSize: "xsmall", onClick: this.toggleView}, "Full Screen Toggle (f)")
+                                React.createElement(Button, {bsSize: "xsmall", onClick: this.toggleView}, "Full Screen Toggle (f)"), 
+                                showClearFilter ? React.createElement(Button, {onClick: this.clearAll, eventKey: "3", bsSize: "xsmall", bsStyle: 'info'}, "Clear All Filters") : null
                             ), 
                                 React.createElement("div", {id: "list-view-container", style: {display:this.state.listViewContainerDisplay, height:listViewContainerHeight, opacity:this.state.loading ? '.2' : '1'}, tabIndex: "1"}, 
                                     React.createElement("div", {id: this.state.listViewOrientation, tabIndex: "2"}, 
