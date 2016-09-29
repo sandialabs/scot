@@ -227,7 +227,7 @@ sub _get_authtype {
         return $type;
     }
 
-    $type = $self->config->{authentication_type};
+    $type = $self->config->{auth_type};
 
     if ( $type) { 
         return $type;
