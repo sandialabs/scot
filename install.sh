@@ -668,6 +668,15 @@ fi
 echo -e "${yellow} installing SCOT files ${NC}"
 cp -r $DEVDIR/* $SCOTDIR/
 
+# default scot_env
+if [[ $AUTHMODE == "Remoteuser" ]]; then
+    cp $DEVDIR/etc/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
+else 
+    cp $DEVDIR/etc/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
+fi
+
+# private configs to overwrite default configs
+
 if [ -d "$PRIVATE_SCOT_MODULES" ]; then
     echo "Private SCOT modules and config directory exist.  Installing..."
     . $PRIVATE_SCOT_MODULES/install.sh
@@ -781,12 +790,6 @@ fi
 
 cpanm Meerkat
 cpanm Courriel
-
-if [[ $AUTHMODE == "Remoteuser" ]]; then
-    cp $DEVDIR/etc/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
-else 
-    cp $DEVDIR/etc/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
-fi
 
 
 if [ ! -e /etc/init.d/scot ]; then
