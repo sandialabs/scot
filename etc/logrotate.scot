@@ -1,4 +1,4 @@
-/var/log/scot.*.log {
+/var/log/scot/scot.*.log {
     daily
     missingok
     rotate 5
@@ -6,7 +6,7 @@
     notifempty
     copytruncate
 }
-/var/log/error.*.log {
+/var/log/scot/error.*.log {
     daily
     missingok
     rotate 5
