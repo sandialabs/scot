@@ -69,9 +69,12 @@ sub upload {
             $fqn .= ".".time();
         }
 
+        $log->debug("Moving $name to $fqn");
+
         $upload = $upload->move_to($fqn);
 
         if ( $! ) {
+            $log->error("Failed to Move: $!");
             $status = { 
                 status  => 'failed',
                 reason  => "$!",
@@ -79,6 +82,7 @@ sub upload {
             };
         }
         else {
+            $log->debug("moved");
             $status = {
                 status  => 'ok',
                 file    => $fqn,
@@ -93,6 +97,10 @@ sub upload {
         $filehref->{size}       = $size;
         $filehref->{directory}  = $dir;
         $filehref->{groups}     = $group_href;
+
+        # Bug here to fix.  We do not  know the entry_id at this point
+        # need to updated this after creating entry
+
         $filehref->{target}     = {
             type    => 'entry',
             id      => $entry_id,
@@ -102,6 +110,7 @@ sub upload {
             id      => $target_id,
         };
 
+        $log->debug("Creating File record with ",{filter=>\&Dumper, value=> $filehref});
         my $fileobj = $mongo->collection('File')->create($filehref);
 
         unless ( $fileobj ) {
@@ -116,12 +125,16 @@ sub upload {
             $fileobj, $entry_id, $target_type, $target_id
         );
 
+        $log->debug("newentry is ",{filter=>\&Dumper, value=> $newentry});
+
         my $newid;
         unless ($newentry) {
             $log->error("Failed to create file upload entry!");
             $newid  = $entry_id;
         }
-        $newid = $newentry->id;
+        else {
+            $newid = $newentry->id;
+        }
 
         push @statuses, $status;
     }
@@ -141,7 +154,9 @@ sub create_file_upload_entry {
     my $fid         = $fileobj->id;
     my $env         = $self->env;
     my $mongo       = $env->mongo;
+    my $log         = $env->log;
     my $col         = $mongo->collection('Entry');
+    $log->debug("going to entry collection to create entry");
     my $entry       = $col->create_from_file_upload($fileobj,
                                                     $entry_id,
                                                     $target_type,
@@ -164,6 +179,7 @@ sub create_file_upload_entry {
             what    => "file_uploaded",
         }
     });
+    return $entry;
 }
 
 sub get_groups_and_year {

@@ -541,6 +541,7 @@ sub get_one {
     if ( ref($object) eq "Scot::Model::File" ) {
         my $download    = $self->param('download');
         if ( $download ) {
+            $log->debug("File download Requested!");
             $self->res->content->headers->header(
                 'Content-Type', 
                 'application/x-download; name="'.$object->filename.'"');
@@ -552,6 +553,7 @@ sub get_one {
             );
             $static->serve($self, $object->filename);
             $self->rendered;
+            return;
         }
     }
 
