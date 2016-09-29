@@ -1,4 +1,5 @@
 db.user.insert({
+    "id": 1,
 	"local_acct" : 1,
 	"groups" : [
 		"scot",
