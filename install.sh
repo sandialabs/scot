@@ -788,8 +788,10 @@ if [ "$MONGOADMIN" == "0" ] || [ "$RESETDB" == "yes" ]; then
 
 fi
 
-cpanm Meerkat
-cpanm Courriel
+if [[ $INSTMODE != "SCOTONLY" ]]; then
+    cpanm Meerkat
+    cpanm Courriel
+fi
 
 
 if [ ! -e /etc/init.d/scot ]; then
