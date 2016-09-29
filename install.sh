@@ -753,12 +753,12 @@ done
 
 if [ "$RESETDB" == "yes" ];then
     echo -e "${red}- Dropping mongodb scot database!${NC}"
-    mongo scot-prod $DEVDIR/etc/database/reset.js
+    (cd $DEVDIR/etc; mongo scot-prod $DEVDIR/etc/database/reset.js)
     # mongo scot-prod $DBCONFIGJS
 else 
     INEXIST=$(mongo scot-prod --eval "printjson(db.alertgroup.getIndexes());" --quiet)
     if [ "$INEXIST" == "[ ]" ]; then
-        mongo scot-prod $DEVDIR/etc/database/reset.js
+        (cd $DEVDIR/etc; mongo scot-prod $DEVDIR/etc/database/reset.js)
     fi
 fi
 
@@ -775,7 +775,7 @@ if [ "$MONGOADMIN" == "0" ] || [ "$RESETDB" == "yes" ]; then
     HASH=`$DEVDIR/bin/passwd.pl`
 
     mongo scot-prod $DEVDIR/etc/admin_user.js
-    mongo scot-prod --eval "db.user.update({username:'admin'}, {$set:{hash:'$HASH'}})"
+    mongo scot-prod --eval "db.user.update({username:'admin'}, {$set:{pwhash:'$HASH'}})"
 
 fi
 
