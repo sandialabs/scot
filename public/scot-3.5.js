@@ -741,7 +741,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                                 )
                             )
                         ), 
-                        React.createElement(TinyMCE, {id: tinyID, content: "", className: 'inputtext', config: {plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css'}, onChange: this.handleEditorChange})
+                        React.createElement(TinyMCE, {id: tinyID, content: "", className: 'inputtext', config: {plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css'}, onChange: this.handleEditorChange})
                     )
                 )
             )
@@ -6053,34 +6053,34 @@ var LinkWarning = React.createClass({displayName: "LinkWarning",
         window.open(this.props.link);
         this.props.linkWarningToggle();
     },
+    componentWillMount: function() {
+        if ($.isUrlInternal(this.props.link)) {
+            this.proceed();
+        }
+    },
     render: function() {
-        if ($.isUrlExternal(this.props.link)) {
-            return (
-                React.createElement("div", null, 
-                    React.createElement(Modal, {
-                        isOpen: true, 
-                        onRequestClose: this.props.linkWarningToggle, 
-                        style: customStyles}, 
-                        React.createElement("div", {className: "modal-header"}, 
-                            React.createElement("img", {src: "/images/close_toolbar.png", className: "close_toolbar", onClick: this.props.linkWarningToggle}), 
-                            React.createElement("h3", {id: "myModalLabel"}, "Browse to site?")
-                        ), 
-                        React.createElement("div", {className: "modal-body"}, 
-                            "The link you clicked may take you to a site outside SCOT. If this is a link an attacker controls you may be tipping your hand.", 
-                            React.createElement("br", null), 
-                            React.createElement("b", null, this.props.link)
-                        ), 
-                        React.createElement("div", {className: "modal-footer"}, 
-                            React.createElement(Button, {id: "cancel-delete", onClick: this.props.linkWarningToggle}, "Cancel"), 
-                            React.createElement(Button, {bsStyle: "info", id: "proceed", onClick: this.proceed}, "Proceed")
-                        )
+        return (
+            React.createElement("div", null, 
+                React.createElement(Modal, {
+                    isOpen: true, 
+                    onRequestClose: this.props.linkWarningToggle, 
+                    style: customStyles}, 
+                    React.createElement("div", {className: "modal-header"}, 
+                        React.createElement("img", {src: "/images/close_toolbar.png", className: "close_toolbar", onClick: this.props.linkWarningToggle}), 
+                        React.createElement("h3", {id: "myModalLabel"}, "Browse to site?")
+                    ), 
+                    React.createElement("div", {className: "modal-body"}, 
+                        "The link you clicked may take you to a site outside SCOT. If this is a link an attacker controls you may be tipping your hand.", 
+                        React.createElement("br", null), 
+                        React.createElement("b", null, this.props.link)
+                    ), 
+                    React.createElement("div", {className: "modal-footer"}, 
+                        React.createElement(Button, {id: "cancel-delete", onClick: this.props.linkWarningToggle}, "Cancel"), 
+                        React.createElement(Button, {bsStyle: "info", id: "proceed", onClick: this.proceed}, "Proceed")
                     )
                 )
             )
-        } else {
-            this.proceed();
-            return(React.createElement("div", null))
-        }
+        )
     }
 });
 module.exports = LinkWarning;
