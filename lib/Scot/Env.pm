@@ -227,7 +227,7 @@ sub _get_authtype {
         return $type;
     }
 
-    $type = $self->config->{authentication_type};
+    $type = $self->config->{authtype};
 
     if ( $type) { 
         return $type;
@@ -249,7 +249,9 @@ has authclass => (
 sub _get_authclass {
     my $self        = shift;
     my $authtype    = $self->authtype;
-    return 'controller-auth-'.lc($authtype);
+    my $route       = 'controller-auth-'.lc($authtype);
+    $self->log->debug("Setting Authclass to $route");
+    return $route;
 }
 
 has 'filestorage'   => (
