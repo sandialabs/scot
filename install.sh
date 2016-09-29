@@ -775,6 +775,16 @@ if [ "$MONGOADMIN" == "0" ] || [ "$RESETDB" == "yes" ]; then
 
 fi
 
+cpanm Meerkat
+cpanm Courriel
+
+if [[ $AUTHMODE == "Remoteuser" ]]; then
+    cp $DEVDIR/etc/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
+else 
+    cp $DEVDIR/etc/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
+fi
+
+
 if [ ! -e /etc/init.d/scot ]; then
     echo -e "${yellow}+ missing /etc/init.d/scot, installing...${NC}"
     if [ $OS == "RedHatEnterpriseServer" ]; then
