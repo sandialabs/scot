@@ -29,7 +29,7 @@ my $source      = <<'EOF';
 EOF
 
 my $flair   = <<'EOF';
-<div><table><tr><th>Ipaddr </th><th>email address </th></tr><tr><td><div><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="10.10.1.2">10.10.1.2</span> </div> foo </td><td><span class="entity email" data-entity-type="email" data-entity-value="todd@sandia.gov">todd@sandia.gov</span> </td></tr></table></div>
+<div><table><tr><th>Ipaddr </th><th>email address </th></tr><tr><td><div><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="10.10.1.2">10.10.1.2</span> </div> foo </td><td><span class="entity email" data-entity-type="email" data-entity-value="todd@sandia.gov">todd@<span class="entity domain" data-entity-type="domain" data-entity-value="sandia.gov">sandia.gov</span></span> </td></tr></table></div>
 EOF
 
 chomp($flair);
@@ -56,6 +56,10 @@ my @entities = (
     {
         'value' => 'todd@sandia.gov',
         'type' => 'email'
+    },
+    {
+        value   => 'sandia.gov',
+        type    => 'domain',
     },
 );
 
