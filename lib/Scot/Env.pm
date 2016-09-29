@@ -249,7 +249,9 @@ has authclass => (
 sub _get_authclass {
     my $self        = shift;
     my $authtype    = $self->authtype;
-    return 'controller-auth-'.lc($authtype);
+    my $route       = 'controller-auth-'.lc($authtype);
+    $self->log->debug("Setting Authclass to $route");
+    return $route;
 }
 
 has 'filestorage'   => (
