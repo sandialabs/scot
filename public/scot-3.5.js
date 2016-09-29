@@ -741,7 +741,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                                 )
                             )
                         ), 
-                        React.createElement(TinyMCE, {id: tinyID, content: "", className: 'inputtext', config: {plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, toolbar1: 'full screen spellchecker | image | insertdatetime | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect | blockquote formatselect code', theme:'modern', content_css:'/css/entryeditor.css'}, onChange: this.handleEditorChange})
+                        React.createElement(TinyMCE, {id: tinyID, content: "", className: 'inputtext', config: {plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css'}, onChange: this.handleEditorChange})
                     )
                 )
             )
