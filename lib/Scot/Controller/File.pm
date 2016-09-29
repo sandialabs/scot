@@ -151,7 +151,7 @@ sub create_file_upload_entry {
         data    => {
             type    => "entry",
             id      => $entry_id,
-            who     => $self->sesion('user'),
+            who     => $self->session('user'),
             what    => "file_uploaded",
         }
     });
