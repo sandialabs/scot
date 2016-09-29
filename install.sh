@@ -60,7 +60,7 @@ CLEARLOGS="no"              # clear the logs in $LOGDIR
 REFRESH_AMQ_CONFIG="no"     # install new config for activemq and restart
 AUTHMODE="Remoteuser"       # authentication type to use
 DEFAULFILE=""               # override file for all the above
-DBCONFIGJS="./config.custom.js"   # initial config data you entered for DB
+# DBCONFIGJS="./config.custom.js"   # initial config data you entered for DB
 REFRESHAPACHECONF="no"      # refresh the apache config for SCOT
 SKIPNODE="no"               # skip the node/npm/grunt stuff
 
@@ -127,10 +127,10 @@ while getopts "adigmsrflqA:F:J:wNb:" opt; do
             echo -e "${green} --- Loading Defaults from $DEFAULTFILE ${NC}"
             . $DEFALTFILE
             ;;
-        J)
-            DBCONFIGJS=$OPTARG
-            echo -e "${green} --- Loading Config into DB from $DBCONFIGJS ${NC}"
-            ;;
+        #J)
+        #    DBCONFIGJS=$OPTARG
+        #    echo -e "${green} --- Loading Config into DB from $DBCONFIGJS ${NC}"
+        #    ;;
         w)
             REFRESHAPACHECONF="yes"
             echo -e "${red} --- overwriting exist SCOT apache config ${NC}"
@@ -161,7 +161,6 @@ Usage: $0 [-abigmsrflq] [-A mode]
     
     -A mode     mode = Local | Ldap | Remoteuser
                 default is Remoteuser (see docs for details)
-    -J file.js  bootstrap SCOT's config and scotmod collections from this file
 EOF
             exit 1;
             ;;
@@ -755,7 +754,12 @@ done
 if [ "$RESETDB" == "yes" ];then
     echo -e "${red}- Dropping mongodb scot database!${NC}"
     mongo scot-prod $DEVDIR/etc/database/reset.js
-    mongo scot-prod $DBCONFIGJS
+    # mongo scot-prod $DBCONFIGJS
+else 
+    INEXIST=$(mongo scot-prod --eval "printjson(db.alertgroup.getIndexes());" --quiet)
+    if [ "$INEXIST" == "[ ]" ]; then
+        mongo scot-prod $DEVDIR/etc/database/reset.js
+    fi
 fi
 
 MONGOADMIN=$(mongo scot-prod --eval "printjson(db.user.count({username:'admin'}))" --quiet)
