@@ -252,7 +252,7 @@ var TabContents = React.createClass({
             return (
                 <div className='tab-content'>
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
-                        <h3 id="myModalLabel">Entity: {this.props.data != null ? <EntityValue value={this.props.data.value} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3>
+                        <h4 id="myModalLabel">{this.props.data != null ? <EntityValue value={this.props.data.value}/> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>
                     </div>
                     <div style={{height:'100%',display:'flex', flex:'1 1 auto', margin:'10px', flexFlow:'inherit', minHeight:'1px'}}>
                     {this.props.data != null ? <EntityBody data={this.props.data} entityid={this.props.entityid} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/> : <div>Loading...</div>}
@@ -264,7 +264,7 @@ var TabContents = React.createClass({
             return (
                 <div className='tab-content'> 
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
-                        <a href={guideurl} target="_blank"><h3 id="myModalLabel">Guide {this.props.data != null ? <span><span><EntityValue value={this.props.entityid} /></span><div><EntityValue value={this.props.data.applies_to} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h3></a>
+                        <a href={guideurl} target="_blank"><h4 id="myModalLabel">{this.props.data != null ? <span><span><EntityValue value={this.props.entityid} /></span><div><EntityValue value={this.props.data.applies_to} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4></a>
                     </div>
                     <div style={{overflow:'auto',flex:'1 1 auto', margin:'10px'}}>
                     {this.props.data != null ? <GuideBody entityid={this.props.entityid} entitytype={this.props.entitytype}/> : <div>Loading...</div>}

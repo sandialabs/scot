@@ -5539,7 +5539,7 @@ var TabContents = React.createClass({displayName: "TabContents",
             return (
                 React.createElement("div", {className: "tab-content"}, 
                     React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
-                        React.createElement("h3", {id: "myModalLabel"}, "Entity: ", this.props.data != null ? React.createElement(EntityValue, {value: this.props.data.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
+                        React.createElement("h4", {id: "myModalLabel"}, this.props.data != null ? React.createElement(EntityValue, {value: this.props.data.value}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
                     ), 
                     React.createElement("div", {style: {height:'100%',display:'flex', flex:'1 1 auto', margin:'10px', flexFlow:'inherit', minHeight:'1px'}}, 
                     this.props.data != null ? React.createElement(EntityBody, {data: this.props.data, entityid: this.props.entityid, type: this.props.type, id: this.props.id, errorToggle: this.props.errorToggle}) : React.createElement("div", null, "Loading...")
@@ -5551,7 +5551,7 @@ var TabContents = React.createClass({displayName: "TabContents",
             return (
                 React.createElement("div", {className: "tab-content"}, 
                     React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
-                        React.createElement("a", {href: guideurl, target: "_blank"}, React.createElement("h3", {id: "myModalLabel"}, "Guide ", this.props.data != null ? React.createElement("span", null, React.createElement("span", null, React.createElement(EntityValue, {value: this.props.entityid})), React.createElement("div", null, React.createElement(EntityValue, {value: this.props.data.applies_to}))) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading...")))
+                        React.createElement("a", {href: guideurl, target: "_blank"}, React.createElement("h4", {id: "myModalLabel"}, this.props.data != null ? React.createElement("span", null, React.createElement("span", null, React.createElement(EntityValue, {value: this.props.entityid})), React.createElement("div", null, React.createElement(EntityValue, {value: this.props.data.applies_to}))) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading...")))
                     ), 
                     React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto', margin:'10px'}}, 
                     this.props.data != null ? React.createElement(GuideBody, {entityid: this.props.entityid, entitytype: this.props.entitytype}) : React.createElement("div", null, "Loading...")
