@@ -12,10 +12,8 @@ my $confobj = Scot::Util::Config->new({
     file    => 'logger_test.cfg',
 });
 my $loghref = $confobj->get_config();
-print Dumper($loghref);
 my $log     = Scot::Util::Logger->new($loghref);
 
-$log->debug("STARTING EE TEST");
 
 my $extractor   = Scot::Util::EntityExtractor->new({log=>$log});
 my $source      = <<'EOF';
@@ -30,8 +28,7 @@ This has some zeros:
 EOF
 
 my $flair   = <<'EOF';
-<div>
-</div>
+<div><br />This has some zeros:<br />0<br />0 0<br /><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="0.0.0.0">0.0.0.0</span><br /></div>
 EOF
 
 chomp($flair);
@@ -39,9 +36,7 @@ chomp($flair);
 my $plain = <<'EOF';
 This has some zeros:
 0
-
 0 0
-
 0.0.0.0
 EOF
 
@@ -52,7 +47,7 @@ print Dumper($result);
 
 my @entities = (
     {
-    'value' => '192.168.0.1',
+    'value' => '0.0.0.0',
     'type' => 'ipaddr'
     }
 );

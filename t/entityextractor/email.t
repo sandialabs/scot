@@ -19,11 +19,11 @@ my $extractor   = Scot::Util::EntityExtractor->new({
 });
 my $source      = <<'EOF';
 <div>tbruner@sandia.gov
-   mailman-bounces@trilinos.org</div>
+   mailman-bounces@trixios.org</div>
 EOF
 
 my $flair   = <<'EOF';
-<div><div><span class="entity email" data-entity-type="email" data-entity-value="tbruner@sandia.gov">tbruner@<span class="entity domain" data-entity-type="domain" data-entity-value="sandia.gov">sandia.gov</span></span> </div></div>
+<div><div><span class="entity email" data-entity-type="email" data-entity-value="tbruner@sandia.gov">tbruner@<span class="entity domain" data-entity-type="domain" data-entity-value="sandia.gov">sandia.gov</span></span><br /><span class="entity email" data-entity-type="email" data-entity-value="mailman-bounces@trixios.org">mailman-bounces@<span class="entity domain" data-entity-type="domain" data-entity-value="trixios.org">trixios.org</span></span> </div></div>
 EOF
 
 chomp($flair);
@@ -42,7 +42,15 @@ my @entities = (
         'type' => 'domain'
     },
     {
+        'value' => 'trixios.org',
+        'type' => 'domain'
+    },
+    {
         'value' => 'tbruner@sandia.gov',
+        'type' => 'email'
+    },
+    {
+        'value' => 'mailman-bounces@trixios.org',
         'type' => 'email'
     },
 );

@@ -232,7 +232,7 @@ sub process_html {
     my %entities;
 
     my $previous_level = $log->level();
-    $log->level(Log::Log4perl::Level::to_priority('WARN'));
+    # $log->level(Log::Log4perl::Level::to_priority('WARN'));
 
     $log->debug("===============");
     $log->debug("Processing HTML");
@@ -265,7 +265,7 @@ sub process_html {
     $txt =~ s/\n$//;
 
 	$entities{text}	    = $txt;
-#    $log->debug("PLAIN:".$fmt->format($tree));
+    $log->debug("PLAIN:".$fmt->format($tree));
 
     my $body    = $tree->look_down('_tag', 'body');
     my $div     = HTML::Element->new('div');
@@ -371,7 +371,9 @@ sub process_words {
     WORDS:
     foreach my $word (@words) {
 
-        $log->debug(" "x$level."Working with Word = $word.");
+        $log->debug(" "x$level."===========================");
+        $log->debug(" "x$level."Working with Word = $word =");
+        $log->debug(" "x$level."===========================");
 
         my $flairflag = 0;
 
@@ -487,10 +489,13 @@ sub process_words {
                 }
             }
         }
+
+        $log->debug("Flairflag is $flairflag");
+
         unless ($flairflag) {
             # if nothing is inserted, put plain text
             $log->debug(" "x$level."No flairable content detected.");
-            if ( $word ) {
+            if ( defined $word ) {
                 # $log->debug(" "x$level."...but there is a word here");
                 push @new, $word;
 
