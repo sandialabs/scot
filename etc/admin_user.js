@@ -18,6 +18,6 @@ db.user.insert({
 	"lastvisit" : NumberLong(0),
 	"display_orientation" : "horizontal",
 	"fullname" : "Local Admin Account",
-	"last_activity_check" : null
+	"last_activity_check" : 4
 })
 db.user.ensureIndex({username: 1});
