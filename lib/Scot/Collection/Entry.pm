@@ -117,7 +117,13 @@ EOF
         },
     };
 
+    $log->debug("creating file upload entry with ", {filter=>\&Dumper, value=>$entry_href});
+
     my $entry_obj   = $self->create($entry_href);
+
+    unless ( defined $entry_obj  and ref($entry_obj) eq "Scot::Model::Entry") {
+        $log->error("Failed to create entry object!");
+    }
 
     # TODO: need to actually update the updated time in the target
 
