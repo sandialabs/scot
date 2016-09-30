@@ -23,12 +23,16 @@ This has some zeros:
 
 0 0
 
+0 0 0 
+
+:0
+
 0.0.0.0
 </html>
 EOF
 
 my $flair   = <<'EOF';
-<div><br />This has some zeros:<br />0<br />0 0<br /><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="0.0.0.0">0.0.0.0</span><br /></div>
+<div><br />This has some zeros:<br />0<br />0 0<br />0 0 0<br />:0<br /><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="0.0.0.0">0.0.0.0</span><br /></div>
 EOF
 
 chomp($flair);
