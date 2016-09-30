@@ -495,6 +495,7 @@ sub process_words {
         unless ($flairflag) {
             # if nothing is inserted, put plain text
             $log->debug(" "x$level."No flairable content detected.");
+            $log->debug("word - $word -");
             if ( defined $word ) {
                 # $log->debug(" "x$level."...but there is a word here");
                 push @new, $word;

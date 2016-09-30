@@ -583,7 +583,7 @@ fi
 
 if [ "$NEWINIT" == "yes" ] || [ ! -e /etc/init.d/scot ]; then
     echo -e "${yellow} refreshing or instaling the scot init script ${NC}"
-    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS"]; then
+    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
         cp $DEVDIR/etc/scot-centos-init /etc/init.d/scot
     fi
     if [ $OS == "Ubuntu" ]; then
@@ -800,7 +800,7 @@ fi
 
 if [ ! -e /etc/init.d/scot ]; then
     echo -e "${yellow}+ missing /etc/init.d/scot, installing...${NC}"
-    if [ $OS == "RedHatEnterpriseServer" ]; then
+    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
         cp $DEVDIR/etc/scot-centos-init /etc/init.d/scot
     fi
     if [ $OS == "Ubuntu" ]; then
@@ -816,7 +816,7 @@ if [ ! -e /etc/init.d/scad ]; then
     /opt/scot/bin/scad.pl get_init_file > /etc/init.d/scad
     chmod +x /etc/init.d/scad
     if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
-        chkconfig -add scad
+        chkconfig --add scad
     else 
         update-rc.d scad defaults
     fi
@@ -827,7 +827,7 @@ if [ ! -e /etc/init.d/scfd ]; then
     /opt/scot/bin/scfd.pl get_init_file > /etc/init.d/scfd
     chmod +x /etc/init.d/scfd
     if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
-        chkconfig -add scfd
+        chkconfig --add scfd
     else 
         update-rc.d scfd defaults
     fi
@@ -838,7 +838,7 @@ if [ ! -e /etc/init.d/scepd ]; then
     /opt/scot/bin/scepd.pl get_init_file > /etc/init.d/scepd
     chmod +x /etc/init.d/scepd
     if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
-        chkconfig -add scepd
+        chkconfig --add scepd
     else 
         update-rc.d scepd defaults
     fi
@@ -851,9 +851,9 @@ echo "= restarting scot"
 # add elastic search to startup
 # TODO: add other (activemq?) to start here 
 if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
-    chkconfig -add elasticsearch
-    chkconfig -add scot
-    chkconfig -add activemq
+    chkconfig --add elasticsearch
+    chkconfig --add scot
+    chkconfig --add activemq
 else 
     update-rc.d elasticsearch defaults
     update-rc.d scot defaults
