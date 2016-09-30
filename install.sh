@@ -583,7 +583,7 @@ fi
 
 if [ "$NEWINIT" == "yes" ] || [ ! -e /etc/init.d/scot ]; then
     echo -e "${yellow} refreshing or instaling the scot init script ${NC}"
-    if [ $OS == "RedHatEnterpriseServer" ]; then
+    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS"]; then
         cp $DEVDIR/etc/scot-centos-init /etc/init.d/scot
     fi
     if [ $OS == "Ubuntu" ]; then
@@ -740,8 +740,12 @@ FIKTL=`grep failIndexKeyTooLong /etc/init/mongod.conf`
 if [ "$FIKTL" == "" ]; then
     echo "- SCOT will fail unless failIndexKeyTooLong=false in /etc/init/mongod.conf"
     echo "+ backing orig, and copying new into place. "
-    cp /etc/init/mongod.conf /etc/init/mongod.conf.bak
-    cp $DEVDIR/etc/init-mongod.conf /etc/init/mongod.conf
+    MDCDIR="/etc/init/"
+    if [ $OS == "CentOS" ] || [ $OS == "RedHatEnterpriseServer" ]; then
+        MDCDIR="/etc/"
+    fi
+    cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.bak
+    cp $DEVDIR/etc/init-mongod.conf $MDCDIR/mongod.conf
 fi
 
 
@@ -811,21 +815,33 @@ if [ ! -e /etc/init.d/scad ]; then
     echo -e "${yellow}+ adding /etc/init.d/scad...${NC}"
     /opt/scot/bin/scad.pl get_init_file > /etc/init.d/scad
     chmod +x /etc/init.d/scad
-    update-rc.d scad defaults
+    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
+        chkconfig -add scad
+    else 
+        update-rc.d scad defaults
+    fi
 fi
 if [ ! -e /etc/init.d/scfd ]; then
     echo -e "${red} Missing INIT for SCot Flair Daemon ${NC}"
     echo -e "${yellow}+ adding /etc/init.d/scfd...${NC}"
     /opt/scot/bin/scfd.pl get_init_file > /etc/init.d/scfd
     chmod +x /etc/init.d/scfd
-    update-rc.d scfd defaults
+    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
+        chkconfig -add scfd
+    else 
+        update-rc.d scfd defaults
+    fi
 fi
 if [ ! -e /etc/init.d/scepd ]; then
     echo -e "${red} Missing INIT for SCot ES Push Daemon ${NC}"
     echo -e "${yellow}+ adding /etc/init.d/scepd...${NC}"
     /opt/scot/bin/scepd.pl get_init_file > /etc/init.d/scepd
     chmod +x /etc/init.d/scepd
-    update-rc.d scepd defaults
+    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
+        chkconfig -add scepd
+    else 
+        update-rc.d scepd defaults
+    fi
 fi
 
 echo "= restarting scot"
@@ -834,7 +850,7 @@ echo "= restarting scot"
 #
 # add elastic search to startup
 # TODO: add other (activemq?) to start here 
-if [[ $OS == "RedHatEnterpriseServer" ]]; then
+if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
     chkconfig -add elasticsearch
     chkconfig -add scot
     chkconfig -add activemq
