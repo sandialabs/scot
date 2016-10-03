@@ -774,13 +774,14 @@ var PromotedData = React.createClass({
     },
     render: function() {
         var promotedFromType = null;
+        var fullarr = [];
+        var shortarr = [];
+        var shortforlength = 3;
         if (this.props.type == 'event') {
             promotedFromType = 'alert'
         } else if (this.props.type == 'incident') {
             promotedFromType = 'event'
         }
-        var fullarr = [];
-        var shortarr = [];
         //makes large array for modal
         for (i=0; i < this.props.data.length; i++) {
             if (i > 0) {fullarr.push(<div> , </div>)}
@@ -788,7 +789,10 @@ var PromotedData = React.createClass({
             fullarr.push(<div><a href={link}>{this.props.data[i]}</a></div>)
         }
         //makes small array for quick display in header
-        for (i=0; i < 3; i++) {
+        if (this.props.data.length < 3 ) {
+            shortforlength = this.props.data.length;
+        }
+        for (i=0; i < shortforlength; i++) {
             if (i > 0) {shortarr.push(<div> , </div>)}
             var link = '/#/' + promotedFromType + '/' + this.props.data[i];
             shortarr.push(<div><a href={link}>{this.props.data[i]}</a></div>)
