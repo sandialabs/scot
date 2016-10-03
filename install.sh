@@ -411,6 +411,18 @@ EOF
 
         HTTPCONFDIR=/etc/httpd/conf.d
 
+        echo "- Renaming existing conf files in $HTTPCONFDIR"
+        for FILE in $HTTPDCONFDIR/*.conf
+        do
+            if [ $FILE != "$HTTPDCONFDIR/scot.conf" ]; then
+                mv $FILE $FILE.bak
+            else
+                if [ $REFRESHAPACHECONF == "YES" ]; then
+                    mv $FILE $FILE.bak
+                fi
+            fi
+        done
+
         if [ ! -e /etc/httpd/conf.d/scot.conf ] || [ $REFRESHAPACHECONF == "yes"]; then
             echo -e "${yellow}+ adding scot configuration${NC}"
             REVPROXY=$DEVDIR/etc/scot-revproxy-$MYHOSTNAME
@@ -726,7 +738,15 @@ if [ "$MDBREFRESH" == "yes" ]; then
     service mongod stop
 
     echo "+ copying new mongod.conf"
-    cp $DEVDIR/etc/mongod.conf /etc/mongod.conf
+    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
+        cp $DEVDIR/etc/mongod-cent-init /etc/init.d/mongod
+        cp $DEVDIR/etc/mongod-cent-conf /etc/mongod.conf
+        # I really wish that mongo would get it's sh*t together and 
+        # install everything in the same place regardless of distro
+        DBDIR=/var/log/mongo 
+    else 
+        cp $DEVDIR/etc/mongod.conf /etc/mongod.conf
+    fi
 
     if [ ! -d $DBDIR ]; then
         echo "+ creating database dir $DBDIR"
@@ -745,10 +765,12 @@ if [ "$FIKTL" == "" ]; then
     echo "+ backing orig, and copying new into place. "
     MDCDIR="/etc/init/"
     if [ $OS == "CentOS" ] || [ $OS == "RedHatEnterpriseServer" ]; then
+        # this key is in the init script I installed above, so do nothing
         MDCDIR="/etc/"
+    else 
+        cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.bak
+        cp $DEVDIR/etc/init-mongod.conf $MDCDIR/mongod.conf
     fi
-    cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.bak
-    cp $DEVDIR/etc/init-mongod.conf $MDCDIR/mongod.conf
 fi
 
 
