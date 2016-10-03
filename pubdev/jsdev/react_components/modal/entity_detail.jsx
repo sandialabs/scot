@@ -36,7 +36,7 @@ var EntityDetail = React.createClass({
             $.ajax({
                 type: 'GET',
                 url: 'scot/api/v2/' + this.props.entitytype + '/byname',
-                data: {name:this.props.entityvalue.toLowerCase()}
+                data: {name:this.props.entityvalue}
             }).success(function(result) {
                 var entityid = result.id;
                 if (this.isMounted()) {
@@ -102,7 +102,7 @@ var EntityDetail = React.createClass({
                             $.ajax({
                                 type: 'GET',
                                 url: 'scot/api/v2/' + nextProps.entitytype + '/byname',
-                                data: {name:nextProps.entityvalue.toLowerCase()}
+                                data: {name:nextProps.entityvalue}
                             }).success(function(result) {
                                 var entityid = result.id;
                                 if (this.isMounted()) {

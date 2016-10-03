@@ -615,13 +615,13 @@ var EntryDataStatus = React.createClass({
     componentWillReceiveProps: function() {
         this.setState({buttonStatus:this.props.data.status});
     },
-    eventStatusToggle: function () {
+    /*eventStatusToggle: function () {
         if (this.state.buttonStatus == 'open') {
             this.statusAjax('closed');
         } else if (this.state.buttonStatus == 'closed') {
             this.statusAjax('open');
         } 
-    },
+    },*/
     closeAll: function() {
         this.statusAjax('closed');
     },
