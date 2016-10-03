@@ -2,7 +2,7 @@ wget
 git
 file-devel
 perl
-perl-devl
+perl-devel
 perl-CPAN
 httpd
 dialog
