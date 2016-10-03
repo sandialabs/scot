@@ -63,7 +63,7 @@ hostname
   use the fully qualified hostname for the LDAP/AD server, e.g. "ldap.foo.com"
 
 dn
-  The string is the distinguished name and can be provided by your LDAP admin.  typically, it looks like: "cn=something,ou=local confi, dc=edu"
+  The string is the distinguished name and can be provided by your LDAP admin.  typically, it looks like: "cn=something,ou=local config, dc=edu"
 
 password
   some LDAP/AD instance require a password

@@ -6,7 +6,7 @@ We've made installing SCOT a snap; follow these simple instructions and you'll b
 Minimum System Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Ubuntu 14.04LTS 
+* Ubuntu 14.04LTS or CentOS 7
 * 2 Quad Core CPUs
 * 16 GB Ram
 * 1TB Disk
@@ -19,6 +19,26 @@ Initial Installation
 Installation of SCOT requires internet access or the ability to have local
 mirrors of several apt/yum repos and access to CPAN (local or remote). 
 
+# CentOS only.  If you built your system from the minimal ISO, you will need to do the following:
+
+  $ su
+  # yum update
+  # yum -y install net-tools
+  # yum -y install git
+  # yum -y groupinstall "Development Tools"
+  # yum install wget
+
+# CentOS only.  Perl is pretty old on a default install.  SCOT requires at least Perl 5.18.  Fortunately, it is pretty easy to get there:
+
+  $ su
+  # wget http://www.cpan.org/src/5.0/perl-5.24.0.tar.gz
+  # tar xzvf perl-5.24.0.tar.gz
+  # cd perl-5.24.0
+  # ./Configure -des
+  # make
+  # make test
+  # make install
+
 # Get the SCOT source from Github::
 
    git clone https://github.com/sandialabs/scot.git scot 
@@ -27,14 +47,12 @@ mirrors of several apt/yum repos and access to CPAN (local or remote).
 
   $ cd /home/tbruner/scot
 
-# run the configuration bootstrap and answer the questions::
-  
-  $ bin/bootstrap.pl
+# Decide on the Authentication method you are planning to use. (RemoteUser, Local, or LDAP).  See Aunthentication section for more details.
 
 # run the installer as root.  Make sure http_proxy and https_proxy are set if needed::
 
   $ sudo bash
-  # ./install.sh
+  # ./install.sh -A Local
 
 # get a cup of coffee, initial install has to download and install many dependencies.  If any errors, should occur with downloading packages or failure of a package to install, it is OK to re-run the installer after those problems are resolved.
 
@@ -60,10 +78,8 @@ Usage: ./install.sh [-abigmsrflq] [-A mode] [-J file]
     -l      truncate logs in /var/log/scot (potential data loss)
     -q      install new activemq config, apps, initfiles and restart service
     -w      overwrite existing SCOT apache config files
-
     -A mode     mode = Local | Ldap | Remoteuser
                 default is Remoteuser (see docs for details)
-    -J file.js  bootstrap SCOT's config and scotmod collections from this file
 
 
 .. _upgrade:
@@ -159,7 +175,6 @@ Example Migration::
    ...
    newscot:/home/scot> cd /opt/scot/bin
    newscot:/opt/scot/bin> ./migrate.pl all
-
 
 
 Uninstallation
