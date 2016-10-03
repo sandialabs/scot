@@ -7,6 +7,7 @@ use lib '../lib';
 
 use Scot::Util::Config;
 use Scot::Env;
+use DateTime;
 
 my $cfgobj  = Scot::Util::Config->new({
     file    => "backup.cfg",
@@ -63,9 +64,16 @@ else {
     $cmd .= "--db scot-prod ";
 }
 
-$cmd .= "--oplog -o $dumpdir";
+# $cmd .= "--oplog -o $dumpdir";
+$cmd .= "-o $dumpdir";
+
+print "Executing: $cmd\n";
 
 system($cmd);
+
+#system("rm -f $pidfile");
+#exit 0;
+
 my $tarloc = "/tmp";
 if ( $config->{tarloc} ) {
     unless ( -d $config->{tarloc} ) {
@@ -79,7 +87,7 @@ if ( $config->{tarloc} ) {
 # is there a repo?
 my $escmd   = $config->{es_server}."/_snapshot/scot_backup/snapshot_1";
 
-my $repo_query = `curl -XGET $cmd`;
+my $repo_query = `curl -XGET $escmd`;
 if ( $repo_query =~ /repository_missing_exception/ ) {
     # need to create the repo 
     my $create = $config->{es_server} .qq|/_snapshot/scot_backup/ -d '{ "scot_backup": { "type": "fs", "settings": { "compress": "true", "location": "|. $config->{es_backup_location} .qq|" } } }'|;
@@ -114,6 +122,8 @@ else {
 my $esdir   = $config->{es_backup_location};
 my $dt  = DateTime->now();
 my $ts  = $dt->year . $dt->month . $dt->day . $dt->hour . $dt->minute;
+
+print "TARing up backups to $tarloc.$ts.tgz\n";
 system("tar cvzf $tarloc.$ts.tgz $dumpdir $esdir");
 
 if ( $config->{cleanup} ) {
