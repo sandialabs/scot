@@ -1182,6 +1182,15 @@ sub process_promotion {
         $mongo->collection('Alertgroup')
                 ->refresh_data($object->alertgroup, $user);
 
+        $env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                who     => $user,
+                type    => "alertgroup",
+                id      => $object->alertgroup,
+            },
+        });
+
         # copy alert data into an entry for that event
         my $entrycol = $mongo->collection('Entry');
         my $entryobj = $entrycol->create_from_promoted_alert($object,$proobj);
