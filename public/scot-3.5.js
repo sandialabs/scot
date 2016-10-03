@@ -3831,6 +3831,7 @@ var Entities                = require('../modal/entities.jsx');
 var ChangeHistory           = require('../modal/change_history.jsx');
 var ViewedByHistory         = require('../modal/viewed_by_history.jsx');
 var SelectedPermission      = require('../components/permission.jsx');
+var Modal                   = require('react-modal');
 var Button                  = require('react-bootstrap/lib/Button');
 var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar');
 var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger');
@@ -4571,7 +4572,30 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
     }
 });
 
+const customStyles = {
+    content : {
+        top     : '50%',
+        left    : '50%',
+        right   : 'auto',
+        bottom  : 'auto',
+        marginRight: '-50%',
+        transform:  'translate(-50%, -50%)'
+    }
+}
+
 var PromotedData = React.createClass({displayName: "PromotedData",
+    getInitialState: function() {
+        return {
+            showAllPromotedDataToolbar: false
+        }
+    },
+    showAllPromotedDataToggle: function() {
+        if (this.state.showAllPromotedDataToolbar == false) {
+            this.setState({showAllPromotedDataToolbar: true});  
+        } else {
+            this.setState({showAllPromotedDataToolbar: false});
+        }
+    },
     render: function() {
         var promotedFromType = null;
         if (this.props.type == 'event') {
@@ -4579,21 +4603,43 @@ var PromotedData = React.createClass({displayName: "PromotedData",
         } else if (this.props.type == 'incident') {
             promotedFromType = 'event'
         }
-        var arr = [];
+        var fullarr = [];
+        var shortarr = [];
+        //makes large array for modal
         for (i=0; i < this.props.data.length; i++) {
-            if (i > 0) {arr.push(React.createElement("div", null, " , "))}
+            if (i > 0) {fullarr.push(React.createElement("div", null, " , "))}
             var link = '/#/' + promotedFromType + '/' + this.props.data[i];
-            arr.push(React.createElement("div", null, React.createElement("a", {href: link}, this.props.data[i])))
+            fullarr.push(React.createElement("div", null, React.createElement("a", {href: link}, this.props.data[i])))
         }
+        //makes small array for quick display in header
+        for (i=0; i < 3; i++) {
+            if (i > 0) {shortarr.push(React.createElement("div", null, " , "))}
+            var link = '/#/' + promotedFromType + '/' + this.props.data[i];
+            shortarr.push(React.createElement("div", null, React.createElement("a", {href: link}, this.props.data[i])))
+        } 
+        if (this.props.data.length > 3) {shortarr.push(React.createElement("div", {onClick: this.showAllPromotedDataToggle}, ",", React.createElement("a", {href: "javascript:;"}, "...more")))}
         return (
-           React.createElement("td", null, React.createElement("span", {id: "promoted_from", style: {color: 'white', lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px', display:'flex'}}, arr)) 
+            React.createElement("td", null, React.createElement("span", {id: "promoted_from", style: {color: 'white', lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px', display:'flex'}}, shortarr), 
+            this.state.showAllPromotedDataToolbar ? React.createElement(Modal, {isOpen: true, onRequestClose: this.showAllPromotedDataToggle, style: customStyles}, 
+                React.createElement("div", {className: "modal-header"}, 
+                    React.createElement("img", {src: "images/close_toolbar.png", className: "close_toolbar", onClick: this.showAllPromotedDataToggle}), 
+                    React.createElement("h3", {id: "myModalLabel"}, "Promoted From")
+                ), 
+                React.createElement("div", {className: "modal-body promoted-from-full"}, 
+                    fullarr
+                ), 
+                React.createElement("div", {className: "modal-footer"}, 
+                    React.createElement(Button, {id: "cancel-modal", onClick: this.showAllPromotedDataToggle}, "Close")
+                )
+            ) : null
+            )
         )
     }   
 });
 
 module.exports = SelectedHeader;
 
-},{"../activemq/store.jsx":5,"../components/add_flair.jsx":7,"../components/permission.jsx":13,"../components/source.jsx":15,"../components/tag.jsx":17,"../modal/change_history.jsx":26,"../modal/delete.jsx":27,"../modal/entities.jsx":28,"../modal/entity_detail.jsx":29,"../modal/link_warning.jsx":30,"../modal/owner.jsx":31,"../modal/viewed_by_history.jsx":32,"./selected_entry.jsx":21,"./selected_header_options.jsx":23,"react":920,"react-bootstrap/lib/Button":270,"react-bootstrap/lib/ButtonToolbar":272,"react-bootstrap/lib/DropdownButton":276,"react-bootstrap/lib/MenuItem":280,"react-bootstrap/lib/OverlayTrigger":284,"react-bootstrap/lib/Popover":285,"react-crouton":311,"react-debounce-input":341,"react-notification-system":391,"react-time":701}],23:[function(require,module,exports){
+},{"../activemq/store.jsx":5,"../components/add_flair.jsx":7,"../components/permission.jsx":13,"../components/source.jsx":15,"../components/tag.jsx":17,"../modal/change_history.jsx":26,"../modal/delete.jsx":27,"../modal/entities.jsx":28,"../modal/entity_detail.jsx":29,"../modal/link_warning.jsx":30,"../modal/owner.jsx":31,"../modal/viewed_by_history.jsx":32,"./selected_entry.jsx":21,"./selected_header_options.jsx":23,"react":920,"react-bootstrap/lib/Button":270,"react-bootstrap/lib/ButtonToolbar":272,"react-bootstrap/lib/DropdownButton":276,"react-bootstrap/lib/MenuItem":280,"react-bootstrap/lib/OverlayTrigger":284,"react-bootstrap/lib/Popover":285,"react-crouton":311,"react-debounce-input":341,"react-modal":375,"react-notification-system":391,"react-time":701}],23:[function(require,module,exports){
 var React           = require('react');
 var ButtonGroup     = require('react-bootstrap/lib/ButtonGroup.js');
 var Button          = require('react-bootstrap/lib/Button.js');

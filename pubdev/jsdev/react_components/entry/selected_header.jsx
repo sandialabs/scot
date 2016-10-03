@@ -7,6 +7,7 @@ var Entities                = require('../modal/entities.jsx');
 var ChangeHistory           = require('../modal/change_history.jsx');
 var ViewedByHistory         = require('../modal/viewed_by_history.jsx');
 var SelectedPermission      = require('../components/permission.jsx');
+var Modal                   = require('react-modal');
 var Button                  = require('react-bootstrap/lib/Button');
 var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar');
 var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger');
@@ -747,7 +748,30 @@ var EntryDataSubject = React.createClass({
     }
 });
 
+const customStyles = {
+    content : {
+        top     : '50%',
+        left    : '50%',
+        right   : 'auto',
+        bottom  : 'auto',
+        marginRight: '-50%',
+        transform:  'translate(-50%, -50%)'
+    }
+}
+
 var PromotedData = React.createClass({
+    getInitialState: function() {
+        return {
+            showAllPromotedDataToolbar: false
+        }
+    },
+    showAllPromotedDataToggle: function() {
+        if (this.state.showAllPromotedDataToolbar == false) {
+            this.setState({showAllPromotedDataToolbar: true});  
+        } else {
+            this.setState({showAllPromotedDataToolbar: false});
+        }
+    },
     render: function() {
         var promotedFromType = null;
         if (this.props.type == 'event') {
@@ -755,14 +779,36 @@ var PromotedData = React.createClass({
         } else if (this.props.type == 'incident') {
             promotedFromType = 'event'
         }
-        var arr = [];
+        var fullarr = [];
+        var shortarr = [];
+        //makes large array for modal
         for (i=0; i < this.props.data.length; i++) {
-            if (i > 0) {arr.push(<div> , </div>)}
+            if (i > 0) {fullarr.push(<div> , </div>)}
             var link = '/#/' + promotedFromType + '/' + this.props.data[i];
-            arr.push(<div><a href={link}>{this.props.data[i]}</a></div>)
+            fullarr.push(<div><a href={link}>{this.props.data[i]}</a></div>)
         }
+        //makes small array for quick display in header
+        for (i=0; i < 3; i++) {
+            if (i > 0) {shortarr.push(<div> , </div>)}
+            var link = '/#/' + promotedFromType + '/' + this.props.data[i];
+            shortarr.push(<div><a href={link}>{this.props.data[i]}</a></div>)
+        } 
+        if (this.props.data.length > 3) {shortarr.push(<div onClick={this.showAllPromotedDataToggle}>,<a href='javascript:;'>...more</a></div>)}
         return (
-           <td><span id='promoted_from' style={{color: 'white', lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px', display:'flex'}}>{arr}</span></td> 
+            <td><span id='promoted_from' style={{color: 'white', lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px', display:'flex'}}>{shortarr}</span> 
+            {this.state.showAllPromotedDataToolbar ? <Modal isOpen={true} onRequestClose={this.showAllPromotedDataToggle} style={customStyles}>
+                <div className='modal-header'>
+                    <img src='images/close_toolbar.png' className='close_toolbar' onClick={this.showAllPromotedDataToggle} />
+                    <h3 id='myModalLabel'>Promoted From</h3>
+                </div>
+                <div className='modal-body promoted-from-full'>
+                    {fullarr}    
+                </div>
+                <div className='modal-footer'>
+                    <Button id='cancel-modal' onClick={this.showAllPromotedDataToggle}>Close</Button>
+                </div>
+            </Modal> : null }
+            </td>
         )
     }   
 });
