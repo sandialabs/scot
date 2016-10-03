@@ -407,7 +407,7 @@ EOF
 
     MYHOSTNAME=`hostname`
 
-    if [[ $OS == "RedHatEnterpriseServer" ]]; then
+    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
 
         HTTPCONFDIR=/etc/httpd/conf.d
 
