@@ -4439,13 +4439,13 @@ var EntryDataStatus = React.createClass({displayName: "EntryDataStatus",
     componentWillReceiveProps: function() {
         this.setState({buttonStatus:this.props.data.status});
     },
-    eventStatusToggle: function () {
+    /*eventStatusToggle: function () {
         if (this.state.buttonStatus == 'open') {
             this.statusAjax('closed');
         } else if (this.state.buttonStatus == 'closed') {
             this.statusAjax('open');
         } 
-    },
+    },*/
     closeAll: function() {
         this.statusAjax('closed');
     },
@@ -5323,7 +5323,7 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
             $.ajax({
                 type: 'GET',
                 url: 'scot/api/v2/' + this.props.entitytype + '/byname',
-                data: {name:this.props.entityvalue.toLowerCase()}
+                data: {name:this.props.entityvalue}
             }).success(function(result) {
                 var entityid = result.id;
                 if (this.isMounted()) {
@@ -5389,7 +5389,7 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
                             $.ajax({
                                 type: 'GET',
                                 url: 'scot/api/v2/' + nextProps.entitytype + '/byname',
-                                data: {name:nextProps.entityvalue.toLowerCase()}
+                                data: {name:nextProps.entityvalue}
                             }).success(function(result) {
                                 var entityid = result.id;
                                 if (this.isMounted()) {
