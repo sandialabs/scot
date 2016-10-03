@@ -94,7 +94,7 @@ sub update_user_failure {
     $log->trace("Updating User $username failure to authenticate");
 
     my $collection  = $mongo->collection('User');
-    my $user        = $collection->find_one(username    => $username);
+    my $user        = $collection->find_one({username    => $username});
 
     if ( $user ) {
         $user->update_inc(attempts => 1);
