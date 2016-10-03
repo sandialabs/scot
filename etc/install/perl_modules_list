@@ -1,3 +1,4 @@
+Server::Starter
 PSGI
 Plack
 CGI::PSGI
@@ -8,7 +9,6 @@ HTTP::Server::Simple::PSGI
 Starman
 Starlet
 JSON
-Curses::UI
 Number::Bytes::Human
 Sys::RunAlone
 Parallel::ForkManager
@@ -81,7 +81,6 @@ Data::Dumper::HTML
 Data::Dumper
 Safe
 Search::Elasticsearch
-Server::Starter
 Data::Clean::FromJSON
 Term::ANSIColor
 Daemon::Control
