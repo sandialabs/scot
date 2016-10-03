@@ -409,6 +409,10 @@ EOF
 
     if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
 
+        # allow rev proxy to work with selinux
+        echo "+ enabling apache to do network connections"
+        setsebool -P httpd_can_network_connect 1
+
         HTTPCONFDIR=/etc/httpd/conf.d
 
         echo "- Renaming existing conf files in $HTTPCONFDIR"
@@ -598,12 +602,12 @@ fi
 
 if [ "$NEWINIT" == "yes" ] || [ ! -e /etc/init.d/scot ]; then
     echo -e "${yellow} refreshing or instaling the scot init script ${NC}"
-    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
-        cp $DEVDIR/etc/scot-centos-init /etc/init.d/scot
-    fi
-    if [ $OS == "Ubuntu" ]; then
+    #if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
+    #    cp $DEVDIR/etc/scot-centos-init /etc/init.d/scot
+    #fi
+    #if [ $OS == "Ubuntu" ]; then
         cp $DEVDIR/etc/scot-init /etc/init.d/scot
-    fi
+    #fi
     chmod +x /etc/init.d/scot
     sed -i 's=/instdir='$SCOTDIR'=g' /etc/init.d/scot
 fi
@@ -776,8 +780,15 @@ fi
 
 MONGOSTATUS=`service mongod status`
 
-if [ "$MONGOSTATUS" == "mongod stop/waiting" ];then
-    service mongod start
+if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
+    MSTAT=`echo $MONGOSTATUS | grep inactive`
+    if [ $MSTAT == "0" ]; then
+        service mongod start
+    fi
+else 
+    if [ "$MONGOSTATUS" == "mongod stop/waiting" ];then
+        service mongod start
+    fi
 fi
 
 COUNTER=0
@@ -825,14 +836,14 @@ fi
 
 if [ ! -e /etc/init.d/scot ]; then
     echo -e "${yellow}+ missing /etc/init.d/scot, installing...${NC}"
-    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
-        cp $DEVDIR/etc/scot-centos-init /etc/init.d/scot
-    fi
-    if [ $OS == "Ubuntu" ]; then
-        cp $DEVDIR/etc/scot-init /etc/init.d/scot
-    fi
+    cp $DEVDIR/etc/scot-init /etc/init.d/scot
     chmod +x /etc/init.d/scot
     sed -i 's=/instdir='$SCOTDIR'=g' /etc/init.d/scot
+    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
+        chkconfig --add scot
+    else 
+        update-rc.d scot defaults
+    fi
 fi
 
 if [ ! -e /etc/init.d/scad ]; then
@@ -879,6 +890,7 @@ if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
     chkconfig --add elasticsearch
     chkconfig --add scot
     chkconfig --add activemq
+    chkconfig --add mongod
 else 
     update-rc.d elasticsearch defaults
     update-rc.d scot defaults
