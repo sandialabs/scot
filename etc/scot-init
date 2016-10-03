@@ -19,7 +19,7 @@ SCRIPT="/opt/scot/script/Scot"
 
 OS=`lsb_release -i | cut -s -f2`
 
-if [[ $OS == "RedHatEnterpriseServer" ]];then
+if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ];then
     APACHE="httpd"
 else 
     APACHE="apache2"
