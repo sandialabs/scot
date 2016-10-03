@@ -196,6 +196,9 @@ if [[ $INSTMODE != "SCOTONLY" ]]; then
     echo -e "${yellow}+ installing prerequisite packages ${NC}"
 
     if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
+
+        # so later perl packages can compile
+        yum -y install openssl-devel
         #
         # install mongo
         #

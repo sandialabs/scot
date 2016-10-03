@@ -13,7 +13,7 @@
 . /lib/lsb/init-functions
 
 APP="SCOT"
-CMD="hypnotoad"
+CMD="/usr/local/bin/hypnotoad"
 PIDFILE="/var/run/hypno.pid"
 SCRIPT="/opt/scot/script/Scot"
 
