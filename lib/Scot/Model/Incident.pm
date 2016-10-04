@@ -63,6 +63,12 @@ has promoted_from => (
     default     => sub {[]},
 );
 
+has doe_report_id => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'n/a'
+);
 
 
 =item B<reportable>
