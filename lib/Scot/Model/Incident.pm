@@ -70,6 +70,11 @@ has doe_report_id => (
     default     => 'n/a'
 );
 
+has closed  => (
+    is      => 'ro',
+    isa     => 'Maybe[Epoch]',
+);
+
 
 =item B<reportable>
 
@@ -131,7 +136,7 @@ from Scot::Role::Type
 
 =item B<category>
 
-the security category
+the doie category
 
 =cut
 
@@ -140,6 +145,13 @@ has category  => (
     isa             => 'Str',
     required        => 1,
     default         => 'none',
+);
+
+has security_category => (
+    is              => 'ro',
+    isa             => 'Str',
+    required        => 1,
+    default         => 'NONE',
 );
 
 =item B<sensitivity>
