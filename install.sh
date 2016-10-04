@@ -416,9 +416,9 @@ EOF
         HTTPCONFDIR=/etc/httpd/conf.d
 
         echo "- Renaming existing conf files in $HTTPCONFDIR"
-        for FILE in $HTTPDCONFDIR/*.conf
+        for FILE in $HTTPCONFDIR/*.conf
         do
-            if [ $FILE != "$HTTPDCONFDIR/scot.conf" ]; then
+            if [ $FILE != "$HTTPCONFDIR/scot.conf" ]; then
                 mv $FILE $FILE.bak
             else
                 if [ $REFRESHAPACHECONF == "YES" ]; then
@@ -770,6 +770,7 @@ if [ "$FIKTL" == "" ]; then
     MDCDIR="/etc/init/"
     if [ $OS == "CentOS" ] || [ $OS == "RedHatEnterpriseServer" ]; then
         # this key is in the init script I installed above, so do nothing
+        echo "~ cent/redhat ... nothing to do..."
         MDCDIR="/etc/"
     else 
         cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.bak
@@ -781,8 +782,9 @@ fi
 MONGOSTATUS=`service mongod status`
 
 if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
-    MSTAT=`echo $MONGOSTATUS | grep inactive`
-    if [ $MSTAT == "0" ]; then
+    echo $MONGOSTATUS | grep inactive
+    MSTAT=$?
+    if [ "$MSTAT" == "0" ]; then
         service mongod start
     fi
 else 
