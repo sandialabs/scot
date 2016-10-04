@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 use Crypt::PBKDF2;
 use IO::Prompt;
