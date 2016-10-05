@@ -30,3 +30,534 @@ paths:
                 -in: query
                 name
 
+definitions:
+    Alertgroup:
+        type: object
+        properties:
+            id:
+                type: integer
+                format: int64
+                description: unique primary key
+            message_id:
+                type: string
+                description: e-mail message id or unique guid
+            subject:
+                type: string
+                description: Subject of the alertgroup
+            body:
+                type: string
+                description: Source HTML or Plain text as received or edited
+            body_plain:
+                type: string
+                description: Plain text (no html) version of body
+            body_flair:
+                type: string
+                description: HTML version of body with flaired entities
+            owner:
+                type: string
+                description: the username of the owner of the alertgroup
+            groups:
+                type: object
+                properties: 
+                    read:
+                        type: array
+                        description: set of groups permitted read access
+                        items:
+                            type: string
+                    modify:
+                        type: array
+                        description: set of groups permitted modify access
+                        items:
+                            type: string
+            promotion_id:
+                type: integer
+                description: the primary key id of the event this was promoted to
+            parsed:
+                type: integer
+                description: set to 1 if this alertgroup has been parsed
+            source:
+                type: array
+                description: set of source names
+                items:
+                    type: string
+            source:
+                type: array
+                description: set of source names
+                items:
+                    type: string
+            tag:
+                type: array
+                description: set of tag strings
+                items:
+                    type: string
+            updated:
+                type: integer
+                description: time of last update in seconds since unix epoch
+            created:
+                type: integer
+                description: time of creation in seconds since unix epoch
+            when:
+                type: integer
+                description: user supplied timestamp in seconds since unix epoch
+            views:
+                type: integer
+                description: count of the times alertgroup has been viewed
+            view_history:
+                type: object
+                description: records of who viewed from where and when
+                properties:
+                    when: 
+                        type: integer
+                        description: when viewing occurred in seconds since unix epoch
+                    where:
+                        type: string
+                        description: ip address of browser or client that viewed
+            status:
+                type: string
+                description: status of the alertgroup. can only be open, closed or promoted
+            open_count:
+                type: integer
+            closed_count:
+                type: integer
+            promoted_count:
+                type: integer
+            alert_count:
+                type: integer
+            columns:
+                type: array
+                description: column names for the data in the alertgroup
+                items:
+                    type: string
+    Alert:
+        type: object
+        properties:
+            id:
+                type: integer
+                format: int64
+                description: unique primary key
+            alertgroup_id:
+                type: integer
+                description: id of the alertgroup that generated this alert
+            entry_count:
+                type: integer
+                description: number of entries attached to alert
+            owner:
+                type: string
+                description: the username of the owner of the alertgroup
+            groups:
+                type: object
+                properties: 
+                    read:
+                        type: array
+                        description: set of groups permitted read access
+                        items:
+                            type: string
+                    modify:
+                        type: array
+                        description: set of groups permitted modify access
+                        items:
+                            type: string
+            parsed:
+                type: integer
+                description: set to 1 if this alertgroup has been parsed
+            promotion_id:
+                type: integer
+                description: the primary key id of the event this was promoted to
+            status:
+                type: string
+                description: status of the alertgroup. can only be open, closed or promoted
+            updated:
+                type: integer
+                description: time of last update in seconds since unix epoch
+            created:
+                type: integer
+                description: time of creation in seconds since unix epoch
+            when:
+                type: integer
+                description: user supplied timestamp in seconds since unix epoch
+            data:
+                type: object
+                description: key value pairs of alert data
+            data_with_flair:
+                type: object
+                description: key value pairs where the values have been parsed for flair
+            columns:
+                type: array
+                description: column names for the data in the alertgroup
+                items:
+                    type: string
+    Entity:
+        type: object
+        properties:
+            id:
+                type: integer
+                format: int64
+                description: unique primary key
+            value:
+                type: string
+                description: the string that is the entity
+            type:
+                type: string
+                description: the type of entity eg. domain, md5, etc.
+            classes:
+                type: array
+                description: array of classes to apply to entity
+                items:
+                    type: string
+            data:
+                type: object
+                description: key value pairs of alert data
+    Entry:
+        type: object
+        properties:
+            id:
+                type: integer
+                format: int64
+                description: unique primary key
+            parsed:
+                type: integer
+                description: set to 1 if this alertgroup has been parsed
+            owner:
+                type: string
+                description: the username of the owner of the alertgroup
+            groups:
+                type: object
+                properties: 
+                    read:
+                        type: array
+                        description: set of groups permitted read access
+                        items:
+                            type: string
+                    modify:
+                        type: array
+                        description: set of groups permitted modify access
+                        items:
+                            type: string
+            target:
+                type: object
+                description: pointer to the target of this linked thing
+                properties:
+                    id: 
+                        type: integer
+                        description: the id of the targetted item
+                    type:
+                        type: string
+                        description: the collection we are linking to
+            summary:
+                type: bool
+                description: is this entry a summary
+            updated:
+                type: integer
+                description: time of last update in seconds since unix epoch
+            created:
+                type: integer
+                description: time of creation in seconds since unix epoch
+            when:
+                type: integer
+                description: user supplied timestamp in seconds since unix epoch
+            task:
+                type: object
+                description: key value pairs of alert data
+                properties:
+                    when:
+                        type: integer
+                        description: when entry was made a task, in secods since unix epoch
+                    who:
+                        type: string
+                        description: the owner of the task
+                    status:
+                        type: string
+                        description: open, assigned or completed
+            is_task:
+                type: bool
+                description: is this a task
+            parent:
+                type: integer
+                description: the id of the parent entry 
+            target:
+                type: object
+                description: pointer to the target of this linked thing
+                properties:
+                    id: 
+                        type: integer
+                        description: the id of the targetted item
+                    type:
+                        type: string
+                        description: the collection we are linking to
+    Event:
+        type: object
+        properties:
+            id:
+                type: integer
+                format: int64
+                description: unique primary key
+            owner:
+                type: string
+                description: the username of the owner of the alertgroup
+            groups:
+                type: object
+                properties: 
+                    read:
+                        type: array
+                        description: set of groups permitted read access
+                        items:
+                            type: string
+                    modify:
+                        type: array
+                        description: set of groups permitted modify access
+                        items:
+                            type: string
+            promotion_id:
+                type: integer
+                description: the primary key id of the event this was promoted to
+            status:
+                type: string
+                description: status of the alertgroup. can only be open, closed or promoted
+            subject:
+                type: string
+                description: Subject of the alertgroup
+            source:
+                type: array
+                description: set of source names
+                items:
+                    type: string
+            tag:
+                type: array
+                description: set of tag strings
+                items:
+                    type: string
+            updated:
+                type: integer
+                description: time of last update in seconds since unix epoch
+            created:
+                type: integer
+                description: time of creation in seconds since unix epoch
+            when:
+                type: integer
+                description: user supplied timestamp in seconds since unix epoch
+            views:
+                type: integer
+                description: count of the times alertgroup has been viewed
+            view_history:
+                type: object
+                description: records of who viewed from where and when
+                properties:
+                    when: 
+                        type: integer
+                        description: when viewing occurred in seconds since unix epoch
+                    where:
+                        type: string
+                        description: ip address of browser or client that viewed
+            promoted_from:
+                type: array
+                description: ids of the alerts that were promoted into this
+                items:
+                    type: integer
+    File:
+        type: object
+        properties:
+            id:
+                type: integer
+                format: int64
+                description: unique primary key
+            owner:
+                type: string
+                description: the username of the owner of the alertgroup
+            groups:
+                type: object
+                properties: 
+                    read:
+                        type: array
+                        description: set of groups permitted read access
+                        items:
+                            type: string
+                    modify:
+                        type: array
+                        description: set of groups permitted modify access
+                        items:
+                            type: string
+            updated:
+                type: integer
+                description: time of last update in seconds since unix epoch
+            created:
+                type: integer
+                description: time of creation in seconds since unix epoch
+            when:
+                type: integer
+                description: user supplied timestamp in seconds since unix epoch
+            entry_target:
+                type: object
+                description: pointer to the target of this linked thing
+                properties:
+                    id: 
+                        type: integer
+                        description: the id of the targetted item
+                    type:
+                        type: string
+                        description: the collection we are linking to
+            filename:
+                type: string
+                description: the filename
+            size:
+                type: integer
+                description: the size of file in bytes
+            notes:
+                type: string
+                description: short note about file
+            entry:
+                type: integer
+                description: the entry id that holds the upload record
+            directory:
+                type: string
+                description: the directory the file is stored in
+            md5:
+                type: string
+                description: the md5 hash of the file
+            sha1:
+                type: string
+                description: the sha1 hash of the file
+            sha256:
+                type: string
+                description: the sha256 hash of the file
+    Incident:
+        type: object
+        properties:
+            id:
+                type: integer
+                format: int64
+                description: unique primary key
+            events:
+                type: array
+                description: array of event ids that were promoted into this incident
+                items:
+                    type: integer
+            owner:
+                type: string
+                description: the username of the owner of the alertgroup
+            groups:
+                type: object
+                properties: 
+                    read:
+                        type: array
+                        description: set of groups permitted read access
+                        items:
+                            type: string
+                    modify:
+                        type: array
+                        description: set of groups permitted modify access
+                        items:
+                            type: string
+            status:
+                type: string
+                description: status of the alertgroup. can only be open, closed or promoted
+            subject:
+                type: string
+                description: Subject of the alertgroup
+            source:
+                type: array
+                description: set of source names
+                items:
+                    type: string
+            tag:
+                type: array
+                description: set of tag strings
+                items:
+                    type: string
+            updated:
+                type: integer
+                description: time of last update in seconds since unix epoch
+            created:
+                type: integer
+                description: time of creation in seconds since unix epoch
+            when:
+                type: integer
+                description: user supplied timestamp in seconds since unix epoch
+            promoted_from:
+                type: array
+                description: ids of the events that were promoted into this
+                items:
+                    type: integer
+            doe_report_id:
+                type: string
+                description: the doe report id
+            closed:
+                type: integer
+                description: the time the incident was closed
+            reportable:
+                type: bool
+                description: is incident reportable
+            category:
+                type: string
+                description: the catagory
+            security_category:
+                type: string
+                description: because you can never have too many categories
+            sensitivity:
+                type: string
+                description: the security sensitivity
+
+    Intel:
+        type: object
+        properties:
+            id:
+                type: integer
+                format: int64
+                description: unique primary key
+            owner:
+                type: string
+                description: the username of the owner of the alertgroup
+            groups:
+                type: object
+                properties: 
+                    read:
+                        type: array
+                        description: set of groups permitted read access
+                        items:
+                            type: string
+                    modify:
+                        type: array
+                        description: set of groups permitted modify access
+                        items:
+                            type: string
+            promotion_id:
+                type: integer
+                description: the primary key id of the event this was promoted to
+            status:
+                type: string
+                description: status of the alertgroup. can only be open, closed or promoted
+            subject:
+                type: string
+                description: Subject of the alertgroup
+            source:
+                type: array
+                description: set of source names
+                items:
+                    type: string
+            tag:
+                type: array
+                description: set of tag strings
+                items:
+                    type: string
+            updated:
+                type: integer
+                description: time of last update in seconds since unix epoch
+            created:
+                type: integer
+                description: time of creation in seconds since unix epoch
+            when:
+                type: integer
+                description: user supplied timestamp in seconds since unix epoch
+            views:
+                type: integer
+                description: count of the times alertgroup has been viewed
+            view_history:
+                type: object
+                description: records of who viewed from where and when
+                properties:
+                    when: 
+                        type: integer
+                        description: when viewing occurred in seconds since unix epoch
+                    where:
+                        type: string
+                        description: ip address of browser or client that viewed
+
