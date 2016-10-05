@@ -56,6 +56,7 @@ mirrors of several apt/yum repos and access to CPAN (local or remote).
 
 # get a cup of coffee, initial install has to download and install many dependencies.  If any errors, should occur with downloading packages or failure of a package to install, it is OK to re-run the installer after those problems are resolved.
 
+# NOTE: you may have to adjust your firewall settings to allow your browser to connect to port 443.
 
 install.sh Options
 ^^^^^^^^^^^^^^^^^^
