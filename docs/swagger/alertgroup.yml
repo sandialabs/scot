@@ -1,0 +1,80 @@
+Alertgroup:
+    type: object
+    properties:
+        id:
+            type: integer
+            format: int64
+            description: unique primary key
+        message_id:
+            type: string
+            description: e-mail message id or unique guid
+        subject:
+            type: string
+            description: Subject of the alertgroup
+        body:
+            type: string
+            description: Source HTML or Plain text as received or edited
+        body_plain:
+            type: string
+            description: Plain text (no html) version of body
+        body_flair:
+            type: string
+            description: HTML version of body with flaired entities
+        owner:
+            type: string
+            description: the username of the owner of the alertgroup
+        groups:
+            $ref: "#/role/groups"
+        promotion_id:
+            type: integer
+            description: the primary key id of the event this was promoted to
+        parsed:
+            type: integer
+            description: set to 1 if this alertgroup has been parsed
+        source:
+            $ref: "#/role/source"
+        tag:
+            $ref: "#/role/tag"
+        updated:
+            type: integer
+            description: time of last update in seconds since unix epoch
+        created:
+            type: integer
+            description: time of creation in seconds since unix epoch
+        when:
+            type: integer
+            description: user supplied timestamp in seconds since unix epoch
+        views:
+            type: integer
+            description: count of the times alertgroup has been viewed
+        view_history:
+            type: object
+            description: records of who viewed from where and when
+            properties:
+                when: 
+                    type: integer
+                    description: when viewing occurred in seconds since unix epoch
+                where:
+                    type: string
+                    description: ip address of browser or client that viewed
+        status:
+            type: string
+            description: status of the alertgroup. can only be open, closed or promoted
+        open_count:
+            type: integer
+        closed_count:
+            type: integer
+        promoted_count:
+            type: integer
+        alert_count:
+            type: integer
+        columns:
+            type: array
+            description: column names for the data in the alertgroup
+            items:
+                type: string
+
+
+                
+
+

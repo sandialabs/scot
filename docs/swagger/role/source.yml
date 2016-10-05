@@ -1,0 +1,6 @@
+source:
+    type: array
+    description: set of source names
+    items:
+        type: string
+
