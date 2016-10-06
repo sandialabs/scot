@@ -109,7 +109,12 @@ sub get_display_count {
             '$nin'  => [ 'alertgroup', 'entry' ]
         }
     });
-    return $cursor->count;
+    my %seen;
+    while (my $link = $cursor->next) {
+        my $key = $link->target->{type} . $link->target->{id};
+        $seen{$key}++;
+    }
+    return scalar(keys %seen);
 }
 
 1;
