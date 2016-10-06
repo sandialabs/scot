@@ -106,7 +106,7 @@ sub get_display_count {
     my $cursor  = $self->find({
         'entity_id'   => $entity->id,
         'target.type' => {
-            '$nin'  => [ 'alertgroup', 'entry' ]
+            '$in'  => [ 'alert', 'incident', 'intel', 'event' ]
         }
     });
     my %seen;
