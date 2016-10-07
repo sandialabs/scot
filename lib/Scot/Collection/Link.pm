@@ -100,7 +100,7 @@ sub get_total_appearances {
     return $cursor->count;
 }
 
-sub get_display_count {
+sub get_display_count_slow {
     my $self    = shift;
     my $entity  = shift;
     my $cursor  = $self->find({
@@ -116,6 +116,30 @@ sub get_display_count {
         $seen{$key}++;
     }
     return scalar(keys %seen);
+}
+
+sub get_display_count {
+    my $self    = shift;
+    my $entity  = shift;
+    my $collection  = $self->collection_name;
+    my %command;
+    my $tie = tie(%command, "Tie::IxHash");
+    %command = (
+        'distinct'  => 'entity',
+        'key'       => 'value',
+        'query'     => { value => $entity->value },
+    );
+    my $mongo   = $self->meerkat;
+    my $result  = $self->_try_mongo_op(
+        get_distinct    => sub {
+            my $dbn  = $mongo->database_name;
+            my $db   = $mongo->_mongo_database($dbn);
+            my $job  = $db->run_command(\%command);
+            return $job->{value};
+        }
+    );
+    $self->env->log->debug("got result: ",{filter=>\&Dumper, value=>$result});
+    return scalar(@$result);
 }
 
 1;
