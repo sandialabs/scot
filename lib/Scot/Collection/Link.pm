@@ -125,20 +125,31 @@ sub get_display_count {
     my %command;
     my $tie = tie(%command, "Tie::IxHash");
     %command = (
-        'distinct'  => 'entity',
-        'key'       => 'value',
-        'query'     => { value => $entity->value },
+        'distinct'  => 'link',
+        'key'       => 'target.id',
+        'query'     => { 
+            value => $entity->value,
+            'target.type'   => {
+                '$in'   => [ 'alert', 'event', 'intel', 'incident' ]
+            }
+        },
     );
+    # $self->env->log->debug("command is ",{filter=>\&Dumper, value=>\%command});
+
     my $mongo   = $self->meerkat;
     my $result  = $self->_try_mongo_op(
         get_distinct    => sub {
             my $dbn  = $mongo->database_name;
             my $db   = $mongo->_mongo_database($dbn);
             my $job  = $db->run_command(\%command);
-            return $job->{value};
+            # $self->env->log->debug("job is ",{filter=>\&Dumper, value=>$job});
+            return $job->{values};
         }
     );
-    $self->env->log->debug("got result: ",{filter=>\&Dumper, value=>$result});
+    # $self->env->log->debug("got result: ",{filter=>\&Dumper, value=>$result});
+    unless (defined $result) {
+        return 0;
+    }
     return scalar(@$result);
 }
 
