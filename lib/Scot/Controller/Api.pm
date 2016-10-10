@@ -203,31 +203,9 @@ sub apply_sources {
 
 =item B<GET /scot/api/v2/:thing>
 
-=pod
-entity
-@api {post} /scot/api/v2/:thing
-@apiName Get Lis of :thing
-@apiGroup CRUD
-@apiDescription Retrieve a set of things
-@apiParam {String} thing The "alert", "event", "incident", "intel", etc. you wish to retrieve
-
-@apiExample Example Usage
-    curl https://scotserver/scot/api/v2/alert
-
-@apiSuccessExample {json} Success-Response:
-    HTTP/1.1 200 OK
-    {
-        "records":  [
-            { key1: value1, ..., keyx: valuex },
-            ...
-        ],
-        "queryRecordCount": 25,
-        "totalRecordCount": 102323
-    }
-
 =cut
 
-sub get_many {
+sub list {
     my $self    = shift;
     my $env     = $self->env;
     my $mongo   = $env->mongo;
@@ -399,7 +377,7 @@ sub get_many {
     # hack to kil error when '$' appears in match ref
     delete $req_href->{request}; 
 
-    $self->audit("get_many", $req_href);
+    $self->audit("list", $req_href);
 }
 
 
@@ -412,24 +390,6 @@ sub get_many {
 #}
 
 =item B<GET /scot/api/v2/:thing/:id>
-
-=pod
-
-@api {post} /scot/api/v2/:thing/:id
-@apiName Get One of :thing
-@apiGroup CRUD
-@apiDescription Retrieve a thing
-@apiParam {String} thing The "alert", "event", "incident", "intel", etc. you wish to retrieve
-
-@apiExample Example Usage
-    curl https://scotserver/scot/api/v2/alert/123
-
-@apiSuccessExample {json} Success-Response:
-    HTTP/1.1 200 OK
-    {
-        key1: value1,
-        ...
-    }
 
 =cut
 
@@ -644,25 +604,6 @@ sub tablify {
 
 =item B<GET /scot/api/v2/:thing/:id/:subthing>
 
-=pod
-
-@api {post} /scot/api/v2/:thing/:id/:subthing
-@apiName Get related information
-@apiGroup CRUD
-@apiDescription Retrieve subthings related to the thing
-@apiParam {String} thing The "alert", "event", "incident", "intel", etc. you wish to retrieve
-
-@apiExample Example Usage
-    curl https://scotserver/scot/api/v2/event/123/entry
-
-@apiSuccessExample {json} Success-Response:
-    HTTP/1.1 200 OK
-    {
-        [
-            { key1: value1, ... },
-            ...
-        ]
-    }
 
 =cut
 
@@ -782,23 +723,6 @@ sub get_subthing {
 
 =item B<PUT /scot/api/v2/:thing/:id>
 
-=pod
-
-@api {post} /scot/api/v2/:thing/:id
-@apiName Updated thing
-@apiGroup CRUD
-@apiDescription update thing 
-@apiParam {String} thing The "alert", "event", "incident", "intel", etc. you wish to retrieve
-
-@apiExample Example Usage
-    curl https://scotserver/scot/api/v2/event/123 -d '{"key1": "value1", ...}'
-
-@apiSuccessExample {json} Success-Response:
-    HTTP/1.1 200 OK
-    {
-        id : 123,
-        status : "successfully updated",
-    }
 
 =cut
 
@@ -1487,26 +1411,6 @@ sub ownership_change_permitted {
 
 =item B<DELETE /scot/api/v2/:thing/:id>
 
-=pod
-
-@api {delete} /scot/api/v2/:thing/:id
-@apiName Delete thing
-@apiGroup CRUD
-@apiDescription Delete thing 
-@apiParam {String} thing The "alert", "event", "incident", "intel", etc. you wish to retrieve
-
-@apiExample Example Usage
-    curl -X DELETE https://scotserver/scot/api/v2/event/123 
-
-@apiSuccessExample {json} Success-Response:
-    HTTP/1.1 200 OK
-    {
-        id : 123,
-        thing: "event",
-        status : "ok",
-        action: "delete"
-    }
-
 =cut
 
 sub delete {
@@ -1647,27 +1551,6 @@ sub delete {
 
 =item B<DELETE /scot/api/v2/:thing/:id/:/subthing/:subid>
 
-=pod
-
-@api {delete} /scot/api/v2/:thing/:id/:subthing/:subid
-@apiName Delete thing
-@apiGroup CRUD
-@apiDescription Delete Link between thing and subthing 
-@apiParam {String} thing The "alert", "event", "incident", "intel", etc. you wish to retrieve
-
-@apiExample Example Usage
-    curl -X DELETE https://scotserver/scot/api/v2/event/123/source/3 
-
-@apiSuccessExample {json} Success-Response:
-    HTTP/1.1 200 OK
-    {
-        id : 123,
-        thing: "event",
-        subthing: "source",
-        subid: 6,
-        status : "ok",
-        action: "unlink"
-    }
 
 =cut
 
@@ -2335,6 +2218,7 @@ sub get_req_value {
 }
 
 # alertgroups are weird, and some analysts want to view multiple alerts from multiple alertgroups
+# experimental: no route to this exists currently in Scot.pm
 
 sub supertable {
     my $self    = shift;
