@@ -15,8 +15,8 @@ span > div > div.ReactTags__selected {
 
 span > div > div > div > div.ReactTags__suggestions {
     position:absolute;
-    width:100%;
-    overflow:auto;
+    /*width:100%;*/
+    /*overflow:auto;*/
     z-index:99;
     height:auto;
 }
@@ -70,7 +70,7 @@ div.ReactTags__selected a.ReactTags__remove {
 /* Styles for suggestions */
 div.ReactTags__suggestions {
     position: relative;
-    width: 100%;
+    /*width: 100%;*/
     height: 450px;
     /*overflow: auto;i*/
     z-index: 99;

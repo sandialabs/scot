@@ -4,7 +4,7 @@ var React        = require('react')
 var Menu         = require('../Menu')
 var MenuItemCell = require('../MenuItemCell')
 var renderCell   = require('./renderCell')
-var cloneWithProps = require('react-clonewithprops')
+import { cloneElement } from 'react'
 
 module.exports = function(props) {
 
@@ -14,15 +14,15 @@ module.exports = function(props) {
     React.Children.forEach(props.children, function(child){
         if (child){
             if (child.props && child.props.isMenu){
-                menu = cloneWithProps(child, {
-                    ref: 'subMenu'
+                menu = cloneElement(child, {
+                    ref: 'subMenu',
+                    subMenu: true
                 })
-                menu.props.subMenu = true
                 return
             }
 
             if (typeof child != 'string'){
-                child = cloneWithProps(child, {
+                child = cloneElement(child, {
                     style    : props.cellStyle,
                     itemIndex: props.itemIndex,
                     itemCount: props.itemCount

@@ -1,5 +1,5 @@
 var faker = require('faker')
-var Guid = require('guid')
+var Guid = require('node-uuid')
 
 module.exports = (function(){
 

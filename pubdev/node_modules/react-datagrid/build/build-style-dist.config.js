@@ -14,7 +14,7 @@ module.exports = {
     loaders: [
       {
           test: /\.styl$/,
-          loader: ExtractTextPlugin.extract('style-loader', 'css-loader!stylus-loader')
+          loader: ExtractTextPlugin.extract('style-loader', 'css-loader!autoprefixer!stylus-loader')
       }
     ]
   },

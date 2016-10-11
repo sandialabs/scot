@@ -20,6 +20,8 @@ var prepareItem       = require('./prepareItem')
 var propTypes = require('./propTypes')
 var ScrollContainer = require('./ScrollContainer')
 
+import { findDOMNode } from 'react-dom'
+
 var MenuItem = require('./MenuItem')
 
 var MenuClass = React.createClass({
@@ -101,8 +103,8 @@ var MenuClass = React.createClass({
 
                 var props = this.props
 
-                var scrollRegion = Region.from(this.refs.scrollContainer.getDOMNode())
-                var domNode      = this.getDOMNode()
+                var scrollRegion = Region.from(findDOMNode(this.refs.scrollContainer))
+                var domNode      = findDOMNode(this)
                 var domRegion    = Region.from(domNode)
                 var paddingSize  = domRegion.height
 
@@ -422,7 +424,7 @@ var MenuClass = React.createClass({
 
         var tolerance = 5
 
-        var domNode    = this.getDOMNode()
+        var domNode    = findDOMNode(this)
         var menuNode   = domNode.querySelector('.z-menu')
 
         if (!menuNode){

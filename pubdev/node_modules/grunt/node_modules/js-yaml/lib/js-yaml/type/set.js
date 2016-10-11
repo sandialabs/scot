@@ -1,31 +1,29 @@
 'use strict';
 
-
-var NIL  = require('../common').NIL;
 var Type = require('../type');
-
 
 var _hasOwnProperty = Object.prototype.hasOwnProperty;
 
+function resolveYamlSet(data) {
+  if (data === null) return true;
 
-function resolveYamlSet(object /*, explicit*/) {
-  var key;
+  var key, object = data;
 
   for (key in object) {
     if (_hasOwnProperty.call(object, key)) {
-      if (null !== object[key]) {
-        return NIL;
-      }
+      if (object[key] !== null) return false;
     }
   }
 
-  return object;
+  return true;
 }
 
+function constructYamlSet(data) {
+  return data !== null ? data : {};
+}
 
 module.exports = new Type('tag:yaml.org,2002:set', {
-  loader: {
-    kind: 'object',
-    resolver: resolveYamlSet
-  }
+  kind: 'mapping',
+  resolve: resolveYamlSet,
+  construct: constructYamlSet
 });
