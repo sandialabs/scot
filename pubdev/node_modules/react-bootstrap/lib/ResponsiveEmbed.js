@@ -1,16 +1,26 @@
 'use strict';
 
-var _inherits = require('babel-runtime/helpers/inherits')['default'];
-
-var _classCallCheck = require('babel-runtime/helpers/class-call-check')['default'];
-
-var _extends = require('babel-runtime/helpers/extends')['default'];
-
-var _objectWithoutProperties = require('babel-runtime/helpers/object-without-properties')['default'];
-
-var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
-
 exports.__esModule = true;
+
+var _extends3 = require('babel-runtime/helpers/extends');
+
+var _extends4 = _interopRequireDefault(_extends3);
+
+var _objectWithoutProperties2 = require('babel-runtime/helpers/objectWithoutProperties');
+
+var _objectWithoutProperties3 = _interopRequireDefault(_objectWithoutProperties2);
+
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _possibleConstructorReturn2 = require('babel-runtime/helpers/possibleConstructorReturn');
+
+var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
+var _inherits2 = require('babel-runtime/helpers/inherits');
+
+var _inherits3 = _interopRequireDefault(_inherits2);
 
 var _classnames = require('classnames');
 
@@ -24,59 +34,15 @@ var _warning = require('warning');
 
 var _warning2 = _interopRequireDefault(_warning);
 
-var ResponsiveEmbed = (function (_React$Component) {
-  _inherits(ResponsiveEmbed, _React$Component);
+var _bootstrapUtils = require('./utils/bootstrapUtils');
 
-  function ResponsiveEmbed() {
-    _classCallCheck(this, ResponsiveEmbed);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-    _React$Component.apply(this, arguments);
-  }
+// TODO: This should probably take a single `aspectRatio` prop.
 
-  ResponsiveEmbed.prototype.render = function render() {
-    var _props = this.props;
-    var bsClass = _props.bsClass;
-    var className = _props.className;
-    var a16by9 = _props.a16by9;
-    var a4by3 = _props.a4by3;
-    var children = _props.children;
-
-    var props = _objectWithoutProperties(_props, ['bsClass', 'className', 'a16by9', 'a4by3', 'children']);
-
-    process.env.NODE_ENV !== 'production' ? _warning2['default'](!(!a16by9 && !a4by3), '`a16by9` or `a4by3` attribute must be set.') : undefined;
-    process.env.NODE_ENV !== 'production' ? _warning2['default'](!(a16by9 && a4by3), 'Either `a16by9` or `a4by3` attribute can be set. Not both.') : undefined;
-
-    var aspectRatio = {
-      'embed-responsive-16by9': a16by9,
-      'embed-responsive-4by3': a4by3
-    };
-
-    return _react2['default'].createElement(
-      'div',
-      { className: _classnames2['default'](bsClass, aspectRatio) },
-      _react.cloneElement(children, _extends({}, props, {
-        className: _classnames2['default'](className, 'embed-responsive-item')
-      }))
-    );
-  };
-
-  return ResponsiveEmbed;
-})(_react2['default'].Component);
-
-ResponsiveEmbed.defaultProps = {
-  bsClass: 'embed-responsive',
-  a16by9: false,
-  a4by3: false
-};
-
-ResponsiveEmbed.propTypes = {
+var propTypes = {
   /**
-   * bootstrap className
-   * @private
-   */
-  bsClass: _react.PropTypes.string,
-  /**
-   * This component accepts only one child element
+   * This component requires a single child element
    */
   children: _react.PropTypes.element.isRequired,
   /**
@@ -89,5 +55,54 @@ ResponsiveEmbed.propTypes = {
   a4by3: _react.PropTypes.bool
 };
 
-exports['default'] = ResponsiveEmbed;
+var defaultProps = {
+  a16by9: false,
+  a4by3: false
+};
+
+var ResponsiveEmbed = function (_React$Component) {
+  (0, _inherits3['default'])(ResponsiveEmbed, _React$Component);
+
+  function ResponsiveEmbed() {
+    (0, _classCallCheck3['default'])(this, ResponsiveEmbed);
+    return (0, _possibleConstructorReturn3['default'])(this, _React$Component.apply(this, arguments));
+  }
+
+  ResponsiveEmbed.prototype.render = function render() {
+    var _extends2;
+
+    var _props = this.props;
+    var a16by9 = _props.a16by9;
+    var a4by3 = _props.a4by3;
+    var className = _props.className;
+    var children = _props.children;
+    var props = (0, _objectWithoutProperties3['default'])(_props, ['a16by9', 'a4by3', 'className', 'children']);
+
+    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props);
+
+    var bsProps = _splitBsProps[0];
+    var elementProps = _splitBsProps[1];
+
+
+    process.env.NODE_ENV !== 'production' ? (0, _warning2['default'])(a16by9 || a4by3, 'Either `a16by9` or `a4by3` must be set.') : void 0;
+    process.env.NODE_ENV !== 'production' ? (0, _warning2['default'])(!(a16by9 && a4by3), 'Only one of `a16by9` or `a4by3` can be set.') : void 0;
+
+    var classes = (0, _extends4['default'])({}, (0, _bootstrapUtils.getClassSet)(bsProps), (_extends2 = {}, _extends2[(0, _bootstrapUtils.prefix)(bsProps, '16by9')] = a16by9, _extends2[(0, _bootstrapUtils.prefix)(bsProps, '4by3')] = a4by3, _extends2));
+
+    return _react2['default'].createElement(
+      'div',
+      { className: (0, _classnames2['default'])(classes) },
+      (0, _react.cloneElement)(children, (0, _extends4['default'])({}, elementProps, {
+        className: (0, _classnames2['default'])(className, (0, _bootstrapUtils.prefix)(bsProps, 'item'))
+      }))
+    );
+  };
+
+  return ResponsiveEmbed;
+}(_react2['default'].Component);
+
+ResponsiveEmbed.propTypes = propTypes;
+ResponsiveEmbed.defaultProps = defaultProps;
+
+exports['default'] = (0, _bootstrapUtils.bsClass)('embed-responsive', ResponsiveEmbed);
 module.exports = exports['default'];

@@ -1,6 +1,7 @@
 'use strict';
 
-import React from 'react'
+import React from 'react';
+import { render } from 'react-dom'
 import Scroller from './src'
 
 require('./index.styl')
@@ -13,7 +14,7 @@ const App = class extends React.Component {
 			<Scroller
 				style={{border: '1px solid red', width: 400}}
 				height={500}
-				loading={true}
+				xsloading={true}
 				scrollHeight={10000}
 				scrollWidth={1200}
 				onVerticalScroll={this.onVerticalScroll}
@@ -27,4 +28,4 @@ const App = class extends React.Component {
 	}
 }
 
-React.render(<App />, document.getElementById('content'))
+render(<App />, document.getElementById('content'))

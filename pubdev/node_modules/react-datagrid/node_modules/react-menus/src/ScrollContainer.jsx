@@ -4,6 +4,8 @@ var React    = require('react')
 var assign   = require('object-assign')
 var buffer   = require('buffer-function')
 
+import { findDOMNode } from 'react-dom'
+
 var Scroller = require('./Scroller')
 
 function stop(event){
@@ -158,7 +160,7 @@ module.exports = React.createClass({
     },
 
     getAvailableSizeDOM: function() {
-        return this.getDOMNode()
+        return findDOMNode(this)
     },
 
     getCurrentTableHeight: function() {
@@ -166,7 +168,7 @@ module.exports = React.createClass({
     },
 
     getCurrentSizeDOM: function() {
-        return this.refs.tableWrap.getDOMNode()
+        return findDOMNode(this.refs.tableWrap)
     },
 
     handleScrollTop: function(event){

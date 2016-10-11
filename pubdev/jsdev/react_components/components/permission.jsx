@@ -1,7 +1,6 @@
 var React           = require('react');
 var Button          = require('react-bootstrap/lib/Button');
 var ReactTags       = require('react-tag-input').WithContext;
-var AppActions      = require('../flux/actions.jsx');
 
 var SelectedPermission = React.createClass({
     getInitialState: function () {
@@ -134,7 +133,6 @@ var PermissionIterator = React.createClass({
             contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success');
-                AppActions.updateItem(this.state.key,'headerUpdate');
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to delete group');
@@ -188,7 +186,6 @@ var NewPermission = React.createClass({
             success: function(data) {
                 console.log('success: permission added');
                 toggle();
-                AppActions.updateItem(this.state.key,'headerUpdate');
             }.bind(this),
             error: function() {
                 toggle();

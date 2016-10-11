@@ -1,6 +1,0 @@
-node_modules/
-.flowconfig
-.test
-.sass-cache/
-npm-debug.log
-spec.js

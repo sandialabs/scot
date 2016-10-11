@@ -13,7 +13,6 @@ var Task                    = require('../components/task.jsx');
 var SelectedPermission      = require('../components/permission.jsx');
 var Frame                   = require('react-frame');
 var Store                   = require('../activemq/store.jsx');
-var AppActions              = require('../flux/actions.jsx');
 var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx'); 

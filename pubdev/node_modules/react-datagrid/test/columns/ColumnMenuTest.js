@@ -25,7 +25,7 @@ var tryWithClass  = testUtils.tryWithClass
 describe('DataGrid Test Suite - Columns', function(){
 
 
-    it('check column menu should be displayed',function() {
+    xit('check column menu should be displayed',function() {
 
         var data = [{ id: 0, index: 1, firstName: 'John', city: 'London', email: 'jon@gmail.com'}];
         var columns = [

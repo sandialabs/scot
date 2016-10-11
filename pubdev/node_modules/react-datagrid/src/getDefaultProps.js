@@ -1,7 +1,7 @@
 'use strict';
 
 if (!global.fetch && global.window){
-    require('whatwg-fetch')
+    require('whatwg-fetch');
 }
 
 var fetch = global.fetch

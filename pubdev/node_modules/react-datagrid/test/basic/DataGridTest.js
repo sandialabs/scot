@@ -20,7 +20,7 @@ var generateMockData = testUtils.generateMockData
 
 describe('DataGrid Test Suite - Basic', function(){
 
-	it('renders basic grid', function(){
+	xit('renders basic grid', function(){
 
         var data = generateMockData({type : 'local', len : 1})
 

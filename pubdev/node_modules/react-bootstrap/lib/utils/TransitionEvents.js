@@ -1,3 +1,6 @@
+'use strict';
+
+exports.__esModule = true;
 /**
  * Copyright 2013-2014, Facebook, Inc.
  * All rights reserved.
@@ -11,9 +14,6 @@
  * https://github.com/facebook/react/blob/v0.12.0/PATENTS
  */
 
-'use strict';
-
-exports.__esModule = true;
 var canUseDOM = !!(typeof window !== 'undefined' && window.document && window.document.createElement);
 
 /**
@@ -99,7 +99,6 @@ var ReactTransitionEvents = {
       addEventListener(node, endEvent, eventListener);
     });
   },
-
   removeEndEventListener: function removeEndEventListener(node, eventListener) {
     if (endEvents.length === 0) {
       return;
