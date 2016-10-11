@@ -100,16 +100,57 @@ sub get_total_appearances {
     return $cursor->count;
 }
 
-sub get_display_count {
+sub get_display_count_slow {
     my $self    = shift;
     my $entity  = shift;
     my $cursor  = $self->find({
         'entity_id'   => $entity->id,
         'target.type' => {
+            # '$in'  => [ 'alert', 'incident', 'intel', 'event' ]
             '$nin'  => [ 'alertgroup', 'entry' ]
         }
     });
-    return $cursor->count;
+    my %seen;
+    while (my $link = $cursor->next) {
+        my $key = $link->target->{type} . $link->target->{id};
+        $seen{$key}++;
+    }
+    return scalar(keys %seen);
+}
+
+sub get_display_count {
+    my $self    = shift;
+    my $entity  = shift;
+    my $collection  = $self->collection_name;
+    my %command;
+    my $tie = tie(%command, "Tie::IxHash");
+    %command = (
+        'distinct'  => 'link',
+        'key'       => 'target.id',
+        'query'     => { 
+            value => $entity->value,
+            'target.type'   => {
+                '$in'   => [ 'alert', 'event', 'intel', 'incident' ]
+            }
+        },
+    );
+    # $self->env->log->debug("command is ",{filter=>\&Dumper, value=>\%command});
+
+    my $mongo   = $self->meerkat;
+    my $result  = $self->_try_mongo_op(
+        get_distinct    => sub {
+            my $dbn  = $mongo->database_name;
+            my $db   = $mongo->_mongo_database($dbn);
+            my $job  = $db->run_command(\%command);
+            # $self->env->log->debug("job is ",{filter=>\&Dumper, value=>$job});
+            return $job->{values};
+        }
+    );
+    # $self->env->log->debug("got result: ",{filter=>\&Dumper, value=>$result});
+    unless (defined $result) {
+        return 0;
+    }
+    return scalar(@$result);
 }
 
 1;

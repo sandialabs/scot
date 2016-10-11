@@ -92,6 +92,16 @@ get JSON that was submitted with the web request
         return $req->json;
     });
 
+=pod
+
+@apiDefine SearchRecord
+@apiSuccess {Number} id         The unique integer id of the matching thing
+@apiSuccess {String} type       The name of the thing. e.g. alertgroup
+@apiSuccess {Number} score      ElasticSearch scoring of match
+@apiSuccess {String} snippet    The Snippet around the match
+
+=cut
+
 
 =head2 SCOT Routes
 
@@ -104,13 +114,31 @@ get JSON that was submitted with the web request
     # routes
     my $r       = $self->routes;
 
-    $r->route( '/login' )   
-      ->to ( $authclass.'#login' ) 
-      ->name( 'login' );
-    $r->route( '/auth' )    
-      ->via('post') 
-      ->to($authclass.'#auth') 
-      ->name('auth');
+    $r  ->route ( '/login' )   
+        ->to    ( $authclass.'#login' ) 
+        ->name  ( 'login' );
+
+=pod
+
+@api {post} /auth Request Authentication
+@apiName AuthenticateUser
+@apiGroup Auth
+@apiVersion 2.0.0
+@apiDescription submit credentials for authentication
+This route is only works on Local and LDAP authentication.  RemoteUser authentication
+relies on the browser BasicAuth popup.
+
+@apiParam {String} user     username of the person attempting to authenticate
+@apiParam {string} pass     password of the person attempting authentication
+
+@apiSuccess (200) {Cookie}  Encrypted Session Cookie
+
+=cut
+
+    $r  ->route ( '/auth' )    
+        ->via   ('post') 
+        ->to    ($authclass.'#auth') 
+        ->name  ('auth');
     
     # make sure that we have passed authentication
 
@@ -132,14 +160,50 @@ get JSON that was submitted with the web request
             ->to    ('controller-search#search')
             ->name  ('search');
 
+=pod
+
+@api {get} /scot/api/v2/esearch Search Scot
+@apiName esearch
+@apiGroup Search
+@apiVersion 2.0.0
+@apiDescription search SCOT data in ElasticSearch 
+@apiParam {String} qstring  String to Search for in Alert and Entry records 
+@apiSuccess {Object}    -
+@apiSuccess {Number}    -.queryRecordCount    Number of Records Returned
+@apiSuccess {Number}    -.totalRecordCount    Number of all Matching Records
+@apiSuccess {Object[]}  -.records             SearchRecords returned
+
+=cut
+
     $scot   ->route ('/api/v2/esearch')
             ->to    ('controller-search#newsearch')
             ->name  ('esearch');
+
+=pod
+
+@api {put} /scot/api/v2/command/:action Send Queue Command
+@apiName send command to queue
+@apiGroup Queue
+@apiVersion 2.0.0
+@apiDescription send the the string :command to the scot activemq topic queue
+
+=cut
 
     $scot   ->route ('/api/v2/command/:action')
             ->via   ('put')
             ->to    ('controller-api#do_command')
             ->name  ('do_command');
+
+=pod
+
+@api {post} /scot/api/v2/file Upload File
+@apiName File_Uploader
+@apiGroup File
+@apiVersion 2.0.0
+@apiDescription Upload a file to the SCOT system
+@apiParam {File} upload     User selected file to upload
+
+=cut
 
     $scot   ->route ('/api/v2/file')
             ->via   ('post')
@@ -151,11 +215,6 @@ get JSON that was submitted with the web request
             ->to    ('controller-api#create')
             ->name  ('create');
 
-    $scot   ->route ('/api/v2/supertable')
-            ->via   ('get')
-            ->to    ('controller-api#supertable')
-            ->name  ('supertable');
-
     $scot   ->route ('/api/v2/whoami')
             ->via   ('get')
             ->to    ('controller-api#whoami')
@@ -166,30 +225,233 @@ get JSON that was submitted with the web request
             ->to    ('controller-api#autocomplete')
             ->name  ('autocomplete');
 
+=pod
+
+@api {get} /scot/api/v2/:thing/:id View Record
+@apiName Display :thing :id
+@apiVersion 2.0.0
+@apiGroup CRUD
+@apiDescription Display the :thing with matching :id
+
+@apiParam {String} thing         The collection you are trying to access
+@apiParam {Number} id            The integer id of the :thing to display
+
+@apiSuccess {Object}    -       The JSON representation of the thing
+
+@apiExample Example Usage
+    curl https://scotserver/scot/api/v2/alert/123
+
+@apiSuccessExample {json} Success-Response:
+    HTTP/1.1 200 OK
+    {
+        key1: value1,
+        ...
+    }
+
+=cut
+
     $scot   ->route ('/api/v2/:thing/#id')
             ->via   ('get')
             ->to    ('controller-api#get_one')
             ->name  ('get_one');
 
+=pod
+
+@api {get} /scot/api/v2/:thing List Records
+@apiName List :thing
+@apiGroup CRUD
+@apiVersion 2.0.0
+@apiDescription List set of :thing objects that match provided params
+The params passed to this route allow you to filter the list returned to you.
+* If the column_name is a string column, the value of the param is placed within a / / regex search
+* If the column_name is tag or source, comma seperated strings can be sent and matching records will have to have ALL tags, or sources, listed.
+* If the column_name is tag or source, pipe '|' seperated strings can be sent and matching records will have to have AT Least One tags, or sources, listed.
+* If the column_name is a date field, the field assumes an array of values and will search for datetimes between the least value and the greatest value of the provided array
+* If the column_name is a numeric column, the following can be can sent:
+
+  | value       | Explanation |
+  | ----------- | ----------- |
+  |    x        |value of column name must equal number x
+  |    >=x      |value of column name must be greater or equal to x
+  |    >x       |value of column name must be greater than x
+  |    <=x      |value of column name must be less than or equal to x
+  |    <x       |value of column name must be less than x
+  |    <x\|>y    |value of column name must be less than x or greater than y
+  |    >x\|<y    |value of column name must be less than y and greater than x
+  |    =x\|=y\|=z  |value of column name must be equal to x or y or z
+
+@apiParam {String} thing            The collection you are trying to access
+@apiParam {String} column_name_1    condition, see above
+@apiParam {String} column_name_x    condition, see above
+@apiParam {Array}  columns          Array of Column Names to return
+@apiParam {Number} limit            Return no more than this number of records
+@apiParam {Number} offset           Start returned records after this number of records
+
+@apiSuccess {Object}    -
+@apiSuccess {Number}    -.queryRecordCount    Number of Records Returned
+@apiSuccess {Number}    -.totalRecordCount    Number of all Matching Records
+@apiSuccess {Object[]}  -.records             Records of type requested
+
+@apiExample Example Usage
+    curl -XGET https://scotserver/scot/api/v2/alert 
+
+@apiSuccessExample {json} Success-Response:
+    HTTP/1.1 200 OK
+    {
+        "records":  [
+            { key1: value1, ..., keyx: valuex },
+            ...
+        ],
+        "queryRecordCount": 25,
+        "totalRecordCount": 102323
+    }
+
+=cut
+
     $scot   ->route ('/api/v2/:thing')
             ->via   ('get')
-            ->to    ('controller-api#get_many')
-            ->name  ('get_many');
+            ->to    ('controller-api#list')
+            ->name  ('list');
+
+=pod
+
+@api {post} /scot/api/v2/:thing/:id/:subthing List Related Records
+@apiName Get related information
+@apiVersion 2.0.0
+@apiGroup CRUD
+@apiDescription Retrieve subthings related to the thing
+
+
+
+Alertgroup subthings
+----------
+* alert
+* entity
+* entry
+* tag
+* source
+
+Alert subthings
+-----
+* alertgroup
+* entity
+* entry
+* tag
+* source
+
+Event subthings
+-----
+* entity
+* entry
+* tag
+* source
+
+
+@apiParam {String} thing The "alert", "event", "incident", "intel", etc. you wish to retrieve
+
+@apiExample Example Usage
+    curl -XGET https://scotserver/scot/api/v2/event/123/entry
+
+@apiSuccessExample {json} Success-Response:
+    HTTP/1.1 200 OK
+    {
+        "queryRecordCount": 25,
+        "totalRecordCount": 102,
+        [
+            { key1: value1, ... },
+            ...
+        ]
+    }
+
+=cut
 
     $scot   ->route ('/api/v2/:thing/:id/:subthing')
             ->via   ('get')
             ->to    ('controller-api#get_subthing')
             ->name  ('get_subthing');
 
+=pod
+
+@api {put} /scot/api/v2/:thing/:id Update thing
+@apiName Updated thing
+@apiVersion 2.0.0
+@apiGroup CRUD
+@apiDescription update thing 
+@apiParam {String} thing The "alert", "event", "incident", "intel", etc. you wish to retrieve
+
+@apiExample Example Usage
+    curl -XPUT https://scotserver/scot/api/v2/event/123 -d '{"key1": "value1", ...}'
+
+@apiSuccessExample {json} Success-Response:
+    HTTP/1.1 200 OK
+    {
+        id : 123,
+        status : "successfully updated",
+    }
+
+=cut
+
     $scot   ->route ('/api/v2/:thing/:id')
             ->via   ('put')
             ->to    ('controller-api#update')
             ->name  ('update');
 
+=pod
+
+@api {delete} /scot/api/v2/:thing/:id/:subthing/:subid Break Link
+@apiName Delete a thing related to a thing
+@apiVersion 2.0.0
+@apiGroup CRUD
+@apiDescription Delete a linkage between a thing and a related subthing.
+For example, a tag "foo" may be applied to many events.  You wish to 
+disassociate "foo" with event 123, but retain the tag "foo" for use with
+other events.
+
+@apiParam {String} thing The "alert", "event", "incident", "intel", etc. you wish to retrieve
+
+@apiExample Example Usage
+    curl -XDELETE https://scotserver/scot/api/v2/event/123/tag/11 
+
+@apiSuccessExample {json} Success-Response:
+    HTTP/1.1 200 OK
+    {
+        id : 123,
+        thing: "event",
+        subthing: "tag",
+        subid: 11,
+        status : "ok",
+        action: "delete"
+    }
+
+=cut
+
     $scot   ->route ('/api/v2/:thing/:id/:subthing/:subid')
             ->via   ('delete')
             ->to    ('controller-api#breaklink')
             ->name  ('delete');
+
+=pod
+
+@api {delete} /scot/api/v2/:thing/:id Delete Record
+@apiName Delete thing
+@apiVersion 2.0.0
+@apiGroup CRUD
+@apiDescription Delete thing 
+@apiParam {String} thing The "alert", "event", "incident", "intel", etc. you wish to retrieve
+
+@apiExample Example Usage
+    curl -X DELETE https://scotserver/scot/api/v2/event/123 
+
+@apiSuccessExample {json} Success-Response:
+    HTTP/1.1 200 OK
+    {
+        id : 123,
+        thing: "event",
+        status : "ok",
+        action: "delete"
+    }
+
+=cut
 
     $scot   ->route ('/api/v2/:thing/:id')
             ->via   ('delete')
