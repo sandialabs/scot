@@ -2,7 +2,6 @@
 var React       = require('react')
 var TinyMCE     = require('react-tinymce')
 var Dropzone    = require('../../../node_modules/react-dropzone')
-var AppActions  = require('../flux/actions.jsx');
 var Button      = require('react-bootstrap/lib/Button.js');
 var finalfiles = []
 

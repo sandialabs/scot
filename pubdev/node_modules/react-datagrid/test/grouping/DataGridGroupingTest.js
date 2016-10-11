@@ -25,7 +25,7 @@ var generateMockData = testUtils.generateMockData
 
 describe('DataGrid Test Suite -  Grouping',function() {
 
-	it('check groupBy prop works',function() {
+	xit('check groupBy prop works',function() {
 
 		var data = generateMockData({type : 'local',len : 10})
 		// prepare data for grouping
