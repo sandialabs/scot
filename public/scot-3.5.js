@@ -20920,10 +20920,7 @@ module.exports = React.createClass({
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _reactDom = require('react-dom');
-
 var React = require('react');
-var ReactDOM = require('react-dom');
 var assign = require('object-assign');
 var Toolbar = require('react-simple-toolbar');
 var Region = Toolbar.Region;
@@ -21169,11 +21166,10 @@ module.exports = React.createClass({
 		var page = this.props.page;
 		this.setState({
 			inputFocused: true
-		}, function () {
-
-			var domNode = (0, _reactDom.findDOMNode)(this.refs.input);
+		}, (function () {
+			var domNode = React.findDOMNode(this.refs.input);
 			domNode.value = page;
-		}.bind(this));
+		}).bind(this));
 	},
 
 	onPageSizeChange: function onPageSizeChange(event) {
@@ -21283,8 +21279,7 @@ module.exports = React.createClass({
 				' - ',
 				end,
 				' of ',
-				props.dataSourceCount || 1,
-				'.'
+				props.dataSourceCount || 1
 			),
 			sep,
 			refreshIcon
@@ -21334,20 +21329,13 @@ module.exports = React.createClass({
 				sep,
 				'Page ',
 				this.renderInput(props),
-				' of',
-				WHITESPACE,
+				' / ',
 				props.maxPage,
-				'.',
 				sep,
 				this.icon('gotoNext', props),
 				this.icon('gotoLast', props),
 				showPageSize ? sep : null,
 				pageSize
-			),
-			React.createElement(
-				Region,
-				{ flex: '1 1 auto' },
-				displaying
 			)
 		);
 	},
@@ -21424,7 +21412,8 @@ module.exports = React.createClass({
 		this.props.onPageChange(page);
 	}
 });
-},{"object-assign":45,"react":714,"react-dom":266,"react-simple-toolbar":220,"react-style-normalizer":230}],219:[function(require,module,exports){
+
+},{"object-assign":45,"react":714,"react-simple-toolbar":220,"react-style-normalizer":230}],219:[function(require,module,exports){
 'use strict';
 
 var React     = require('react')
