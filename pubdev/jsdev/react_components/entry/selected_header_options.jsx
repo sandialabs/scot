@@ -4,7 +4,6 @@ var Button          = require('react-bootstrap/lib/Button.js');
 var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
 var DropdownButton  = require('react-bootstrap/lib/DropdownButton.js');
 var Promote         = require('../components/promote.jsx');
-var Appactions      = require('../flux/actions.jsx');
 
 var SelectedHeaderOptions = React.createClass({
     toggleFlair: function() { 
