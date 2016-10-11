@@ -1,30 +1,44 @@
 'use strict';
 
-
-var NIL  = require('../common').NIL;
 var Type = require('../type');
-
 
 var _toString = Object.prototype.toString;
 
+function resolveYamlPairs(data) {
+  if (data === null) return true;
 
-function resolveYamlPairs(object /*, explicit*/) {
-  var index, length, pair, keys, result;
+  var index, length, pair, keys, result,
+      object = data;
 
   result = new Array(object.length);
 
   for (index = 0, length = object.length; index < length; index += 1) {
     pair = object[index];
 
-    if ('[object Object]' !== _toString.call(pair)) {
-      return NIL;
-    }
+    if (_toString.call(pair) !== '[object Object]') return false;
 
     keys = Object.keys(pair);
 
-    if (1 !== keys.length) {
-      return NIL;
-    }
+    if (keys.length !== 1) return false;
+
+    result[index] = [ keys[0], pair[keys[0]] ];
+  }
+
+  return true;
+}
+
+function constructYamlPairs(data) {
+  if (data === null) return [];
+
+  var index, length, pair, keys, result,
+      object = data;
+
+  result = new Array(object.length);
+
+  for (index = 0, length = object.length; index < length; index += 1) {
+    pair = object[index];
+
+    keys = Object.keys(pair);
 
     result[index] = [ keys[0], pair[keys[0]] ];
   }
@@ -32,10 +46,8 @@ function resolveYamlPairs(object /*, explicit*/) {
   return result;
 }
 
-
 module.exports = new Type('tag:yaml.org,2002:pairs', {
-  loader: {
-    kind: 'array',
-    resolver: resolveYamlPairs
-  }
+  kind: 'sequence',
+  resolve: resolveYamlPairs,
+  construct: constructYamlPairs
 });

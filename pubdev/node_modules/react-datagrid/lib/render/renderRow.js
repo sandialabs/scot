@@ -1,5 +1,7 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 var assign = require('object-assign');
 var React = require('react');
 
@@ -34,7 +36,7 @@ module.exports = function renderRow(props, data, index, fn) {
 
     var selected = false;
 
-    if (typeof props.selected == 'object' && props.selected) {
+    if (_typeof(props.selected) == 'object' && props.selected) {
         selected = !!props.selected[selectedKey];
     } else if (props.selected) {
         selected = selectedKey === props.selected;

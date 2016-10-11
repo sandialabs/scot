@@ -4,20 +4,20 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin')
 
 module.exports = {
     entry: {
-        'index': './index.styl'
+      'index': './index.styl'
     },
     output: {
-        filename: 'index.css'
+      filename: 'index.css'
     },
     module: {
-        loaders: [
-            {
-                test: /\.styl$/,
-                loader: ExtractTextPlugin.extract('style-loader', 'css-loader!stylus-loader')
-            }
-        ]
+      loaders: [
+        {
+          test: /\.styl$/,
+          loader: ExtractTextPlugin.extract('style-loader', 'css-loader!autoprefixer!stylus-loader')
+        }
+      ]
     },
     plugins: [
-        new ExtractTextPlugin('[name].css')
+      new ExtractTextPlugin('[name].css')
     ]
 }

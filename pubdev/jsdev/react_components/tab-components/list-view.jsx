@@ -11,8 +11,6 @@ var Popover                 = require('react-bootstrap/lib/Popover')
 var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger')
 var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar')
 var DateRangePicker         = require('../../../node_modules/react-daterange-picker')
-var Source                  = require('react-tag-input-tags/react-tag-input').WithContext
-var Tags                    = require('react-tag-input').WithContext
 var Button                  = require('react-bootstrap/lib/Button')
 var SplitButton             = require('react-bootstrap/lib/SplitButton.js');
 var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
@@ -410,6 +408,25 @@ module.exports = React.createClass({
             </div>
         )
     },
+    componentDidUpdate: function() {
+        //auto scrolls to selected id
+        if (this.state.id != null) {
+            if ($('#'+this.state.id).offset() != undefined && $('.list-view-table-data').offset() != undefined) {
+                var cParentTop =  $('.list-view-table-data').offset().top;
+                var cTop = $('#'+this.state.id).offset().top - cParentTop;
+                var cHeight = $('#'+this.state.id).outerHeight(true);
+                var windowTop = $('#list-view-data-div').offset().top;
+                var visibleHeight = $('#list-view-data-div').height();
+
+                var scrolled = $('#list-view-data-div').scrollTop();
+                if (cTop < (scrolled)) {
+                    $('#list-view-data-div').animate({'scrollTop': cTop-(visibleHeight/2)}, 'fast', '');
+                } else if (cTop + cHeight + cParentTop> windowTop + visibleHeight) {
+                    $('#list-view-data-div').animate({'scrollTop': (cTop + cParentTop) - visibleHeight + scrolled + cHeight}, 'fast', 'swing');
+                }
+            }
+        }
+    },
     stopdrag: function(e){
         $('iframe').each(function(index,ifr){
         $(ifr).removeClass('pointerEventsOff')
@@ -467,7 +484,7 @@ module.exports = React.createClass({
         $('.splitter').css('width', '100%')
         $('.mainview').show()
         this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
-        scrollheight: this.state.idsarray.length != 0 ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', resize: 'vertical'})
+        scrollheight: this.state.id != null ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', resize: 'vertical'})
         this.setState({listViewOrientation: 'landscape-list-view'});
         setCookie('viewMode',"landscape",1000);
     },

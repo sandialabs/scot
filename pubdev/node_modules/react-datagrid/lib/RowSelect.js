@@ -1,5 +1,7 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 var assign = require('object-assign');
 var getSelected = require('./getSelected');
 
@@ -205,12 +207,12 @@ module.exports = {
     isMultiSelect: function isMultiSelect() {
         var selected = getSelected(this.p, this.state);
 
-        return selected && typeof selected == 'object';
+        return selected && (typeof selected === 'undefined' ? 'undefined' : _typeof(selected)) == 'object';
     },
 
     getSelectedMap: function getSelectedMap() {
         var selected = getSelected(this.p, this.state);
-        var multiSelect = selected && typeof selected == 'object';
+        var multiSelect = selected && (typeof selected === 'undefined' ? 'undefined' : _typeof(selected)) == 'object';
         var map;
 
         if (multiSelect) {

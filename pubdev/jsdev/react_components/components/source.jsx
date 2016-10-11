@@ -1,7 +1,6 @@
 var React               = require('react');
 var Button              = require('react-bootstrap/lib/Button');
 var ReactTags           = require('react-tag-input').WithContext;
-var AppActions          = require('../flux/actions.jsx');
 
 var Source = React.createClass({
     getInitialState: function() {

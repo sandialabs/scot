@@ -3,7 +3,7 @@
 var React = require('react')
 var MenuItemCell = require('./MenuItemCell')
 
-var cloneWithProps = require('react-clonewithprops')
+var cloneElement = React.cloneElement
 var assign         = require('object-assign')
 
 function emptyFn(){}
@@ -37,11 +37,13 @@ module.exports = function(props, state) {
     var result = menuItems.map(function(item, index){
         var itemProps = item.props
 
+        const onMenuItemMouseInteraction = {}
+
         if (itemProps && itemProps.isMenuItem){
             i++
 
-            itemProps.onMenuItemMouseOver = this.onMenuItemMouseOver
-            itemProps.onMenuItemMouseOut  = this.onMenuItemMouseOut
+            onMenuItemMouseInteraction.onMenuItemMouseOver = this.onMenuItemMouseOver
+            onMenuItemMouseInteraction.onMenuItemMouseOut  = this.onMenuItemMouseOut
         }
 
         var children = React.Children.map(itemProps.children, function(c){ return c })
@@ -58,7 +60,7 @@ module.exports = function(props, state) {
 
         var onClick = itemProps.onClick || emptyFn
 
-        var cloned = cloneWithProps(item, assign({
+        var cloned = cloneElement(item, assign({
             interactionStyles: props.interactionStyles,
             itemIndex: i,
             itemCount: menuItems.length,
@@ -75,7 +77,7 @@ module.exports = function(props, state) {
                 onClick.apply(null, arguments)
                 this.onMenuItemClick(event, props, index)
             }.bind(this)
-        }, {
+        }, onMenuItemMouseInteraction, {
             style        : itemStyleProps.itemStyle,
             overStyle    : itemStyleProps.itemOverStyle,
             activeStyle  : itemStyleProps.itemActiveStyle,
