@@ -1,27 +1,21 @@
 'use strict';
 
 
-var NIL = {};
-
-
 function isNothing(subject) {
-  return (undefined === subject) || (null === subject);
+  return (typeof subject === 'undefined') || (subject === null);
 }
 
 
 function isObject(subject) {
-  return ('object' === typeof subject) && (null !== subject);
+  return (typeof subject === 'object') && (subject !== null);
 }
 
 
 function toArray(sequence) {
-  if (Array.isArray(sequence)) {
-    return sequence;
-  } else if (isNothing(sequence)) {
-    return [];
-  } else {
-    return [ sequence ];
-  }
+  if (Array.isArray(sequence)) return sequence;
+  else if (isNothing(sequence)) return [];
+
+  return [ sequence ];
 }
 
 
@@ -52,9 +46,14 @@ function repeat(string, count) {
 }
 
 
-module.exports.NIL        = NIL;
-module.exports.isNothing  = isNothing;
-module.exports.isObject   = isObject;
-module.exports.toArray    = toArray;
-module.exports.repeat     = repeat;
-module.exports.extend     = extend;
+function isNegativeZero(number) {
+  return (number === 0) && (Number.NEGATIVE_INFINITY === 1 / number);
+}
+
+
+module.exports.isNothing      = isNothing;
+module.exports.isObject       = isObject;
+module.exports.toArray        = toArray;
+module.exports.repeat         = repeat;
+module.exports.isNegativeZero = isNegativeZero;
+module.exports.extend         = extend;

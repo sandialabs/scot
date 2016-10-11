@@ -5,6 +5,8 @@ var assign        = require('object-assign')
 var normalize     = require('react-style-normalizer')
 var EVENT_NAMES   = require('react-event-names')
 
+import { findDOMNode } from 'react-dom'
+
 var getMenuOffset = require('../getMenuOffset')
 
 var prepareChildren = require('./prepareChildren')
@@ -145,7 +147,7 @@ var MenuItem = React.createClass({
 
             if (props.menu){
                 // console.log(props);
-                menuOffset = getMenuOffset(this.getDOMNode())
+                menuOffset = getMenuOffset(findDOMNode(this))
             }
 
             // console.log(menuOffset, offset);

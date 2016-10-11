@@ -218,7 +218,7 @@ describe('DataGrid Test Suite - Pagination', function(){
 
     })
 
-    it('check pageSizeChanged prop ',function(done) {
+    xit('check pageSizeChanged prop ',function(done) {
 
         var PAGE_SIZE = 3
         var CHANGED_PAGE_SIZE = 20

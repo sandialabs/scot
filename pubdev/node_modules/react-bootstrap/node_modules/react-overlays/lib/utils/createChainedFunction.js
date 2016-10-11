@@ -1,3 +1,8 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 /**
  * Safe chained function
  *
@@ -7,9 +12,6 @@
  * @param {function} functions to chain
  * @returns {function|null}
  */
-'use strict';
-
-exports.__esModule = true;
 function createChainedFunction() {
   for (var _len = arguments.length, funcs = Array(_len), _key = 0; _key < _len; _key++) {
     funcs[_key] = arguments[_key];
@@ -37,5 +39,5 @@ function createChainedFunction() {
   }, null);
 }
 
-exports['default'] = createChainedFunction;
+exports.default = createChainedFunction;
 module.exports = exports['default'];

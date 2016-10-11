@@ -3,6 +3,11 @@ react-menus
 
 > A carefully crafted menu for React
 
+## 2.0.0
+
+ * update to support React 0.14
+
+ 
 ## 1.1.0
 
  * add `onChildClick` prop called whenever a submenu item is clicked, at any level of nesting.

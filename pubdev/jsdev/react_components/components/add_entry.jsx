@@ -2,7 +2,6 @@
 var React       = require('react')
 var TinyMCE     = require('react-tinymce')
 var Dropzone    = require('../../../node_modules/react-dropzone')
-var AppActions  = require('../flux/actions.jsx');
 var Button      = require('react-bootstrap/lib/Button.js');
 var marksave = false
 var addentrydata = true
@@ -79,7 +78,7 @@ var AddEntryModal = React.createClass({
                                 </span>
                             </div>
                         </div>
-                        <TinyMCE id={tinyID} content={""} className={'inputtext'} config={{plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css'}} onChange={this.handleEditorChange} /> 
+                        <TinyMCE id={tinyID} content={""} className={'inputtext'} config={{plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) {args.content += ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css'}} onChange={this.handleEditorChange} /> 
                     </div>    
                 </div>
             )
@@ -87,7 +86,6 @@ var AddEntryModal = React.createClass({
     onCancel: function(){
         this.props.addedentry()
         this.setState({change:false})
-        AppActions.updateItem(this.props.targetid, 'headerUpdate')
     },
 	submit: function(){
         if($('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text() == "" && $('#' + this.props.id + '_ifr').contents().find("#tinymce").find('img').length == 0) {
@@ -125,7 +123,6 @@ var AddEntryModal = React.createClass({
                     }.bind(this) 
                 })               
                 this.props.addedentry()
-                AppActions.updateItem(this.props.targetid,'headerUpdate')
             }
             else if (this.props.stage == 'Edit'){
                 $.ajax({
@@ -192,7 +189,6 @@ var AddEntryModal = React.createClass({
                     }.bind(this) 
                 })
                 this.props.addedentry()
-                AppActions.updateItem(this.props.targetid,'headerUpdate');
             }	
             else {
                 var data = new Object();
@@ -225,7 +221,6 @@ var AddEntryModal = React.createClass({
                     }.bind(this)
                 })
                 this.props.addedentry()
-                AppActions.updateItem(this.props.targetid,'headerUpdate');
             }
         }
     },
@@ -267,7 +262,6 @@ var AddEntryModal = React.createClass({
             })
 
             this.props.addedentry()
-            AppActions.updateItem(this.props.targetid, 'headerUpdate')
         }
     }
 });

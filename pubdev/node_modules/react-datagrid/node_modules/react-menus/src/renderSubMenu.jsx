@@ -2,7 +2,8 @@
 
 var Region           = require('region-align')
 var assign           = require('object-assign')
-var cloneWithProps   = require('react-clonewithprops')
+var React = require('react')
+var cloneElement = React.cloneElement
 var getPositionStyle = require('./getSubMenuPositionStyle')
 
 module.exports = function(props, state) {
@@ -12,7 +13,7 @@ module.exports = function(props, state) {
 
         var style = getPositionStyle.call(this, props, state)
 
-        menu = cloneWithProps(menu, assign({
+        menu = cloneElement(menu, assign({
             ref          : 'subMenu',
             subMenu      : true,
             parentMenu   : this,

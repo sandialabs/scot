@@ -10,6 +10,7 @@
  * NOTE: an empty array is never returned. If there are no items in the group, it simply means the group
  * does not exist, so undefined is returned
  */
+
 module.exports = function (keys, data) {
 
     if (typeof keys == 'string') {

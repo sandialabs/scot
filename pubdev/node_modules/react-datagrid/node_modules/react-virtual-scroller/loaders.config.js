@@ -15,10 +15,10 @@ module.exports = [
     },
     {
         test: /\.styl$/,
-        loader: 'style-loader!css-loader!stylus-loader'
+        loader: 'style-loader!css-loader!autoprefixer!stylus-loader'
     },
     {
         test: /\.css$/,
-        loader: 'style-loader!css-loader'
+        loader: 'style-loader!css-loader!autoprefixer'
     }
 ]
