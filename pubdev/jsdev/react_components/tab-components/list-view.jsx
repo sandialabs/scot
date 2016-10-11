@@ -408,6 +408,25 @@ module.exports = React.createClass({
             </div>
         )
     },
+    componentDidUpdate: function() {
+        //auto scrolls to selected id
+        if (this.state.id != null) {
+            if ($('#'+this.state.id).offset() != undefined && $('.list-view-table-data').offset() != undefined) {
+                var cParentTop =  $('.list-view-table-data').offset().top;
+                var cTop = $('#'+this.state.id).offset().top - cParentTop;
+                var cHeight = $('#'+this.state.id).outerHeight(true);
+                var windowTop = $('#list-view-data-div').offset().top;
+                var visibleHeight = $('#list-view-data-div').height();
+
+                var scrolled = $('#list-view-data-div').scrollTop();
+                if (cTop < (scrolled)) {
+                    $('#list-view-data-div').animate({'scrollTop': cTop-(visibleHeight/2)}, 'fast', '');
+                } else if (cTop + cHeight + cParentTop> windowTop + visibleHeight) {
+                    $('#list-view-data-div').animate({'scrollTop': (cTop + cParentTop) - visibleHeight + scrolled + cHeight}, 'fast', 'swing');
+                }
+            }
+        }
+    },
     stopdrag: function(e){
         $('iframe').each(function(index,ifr){
         $(ifr).removeClass('pointerEventsOff')

@@ -50,19 +50,7 @@ var ListViewDataEach = React.createClass({
             }
         }
         this.props.selected(type,rowid,taskid)
-        //scroll to
-        var cParentTop =  $('.list-view-table-data').offset().top;
-        var cTop = $('#'+rowid).offset().top - cParentTop;
-        var cHeight = $('#'+rowid).outerHeight(true);
-        var windowTop = $('#list-view-data-div').offset().top;
-        var visibleHeight = $('#list-view-data-div').height();
         
-        var scrolled = $('#list-view-data-div').scrollTop();
-        if (cTop < (scrolled)) {
-            $('#list-view-data-div').animate({'scrollTop': cTop-(visibleHeight/2)}, 'fast', '');
-        } else if (cTop + cHeight + cParentTop> windowTop + visibleHeight) {
-            $('#list-view-data-div').animate({'scrollTop': (cTop + cParentTop) - visibleHeight + scrolled + cHeight}, 'fast', 'swing');
-        }
     },
     render: function() {
         var rowid;
