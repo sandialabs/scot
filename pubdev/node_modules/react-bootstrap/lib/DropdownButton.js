@@ -1,18 +1,26 @@
 'use strict';
 
-var _inherits = require('babel-runtime/helpers/inherits')['default'];
-
-var _classCallCheck = require('babel-runtime/helpers/class-call-check')['default'];
-
-var _extends = require('babel-runtime/helpers/extends')['default'];
-
-var _objectWithoutProperties = require('babel-runtime/helpers/object-without-properties')['default'];
-
-var _Object$keys = require('babel-runtime/core-js/object/keys')['default'];
-
-var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
-
 exports.__esModule = true;
+
+var _objectWithoutProperties2 = require('babel-runtime/helpers/objectWithoutProperties');
+
+var _objectWithoutProperties3 = _interopRequireDefault(_objectWithoutProperties2);
+
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _possibleConstructorReturn2 = require('babel-runtime/helpers/possibleConstructorReturn');
+
+var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
+var _inherits2 = require('babel-runtime/helpers/inherits');
+
+var _inherits3 = _interopRequireDefault(_inherits2);
+
+var _extends2 = require('babel-runtime/helpers/extends');
+
+var _extends3 = _interopRequireDefault(_extends2);
 
 var _react = require('react');
 
@@ -22,51 +30,60 @@ var _Dropdown = require('./Dropdown');
 
 var _Dropdown2 = _interopRequireDefault(_Dropdown);
 
-var _lodashCompatObjectOmit = require('lodash-compat/object/omit');
+var _splitComponentProps2 = require('./utils/splitComponentProps');
 
-var _lodashCompatObjectOmit2 = _interopRequireDefault(_lodashCompatObjectOmit);
+var _splitComponentProps3 = _interopRequireDefault(_splitComponentProps2);
 
-var _lodashCompatObjectPick = require('lodash-compat/object/pick');
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _lodashCompatObjectPick2 = _interopRequireDefault(_lodashCompatObjectPick);
+var propTypes = (0, _extends3['default'])({}, _Dropdown2['default'].propTypes, {
 
-var _Button = require('./Button');
+  // Toggle props.
+  bsStyle: _react2['default'].PropTypes.string,
+  bsSize: _react2['default'].PropTypes.string,
+  title: _react2['default'].PropTypes.node.isRequired,
+  noCaret: _react2['default'].PropTypes.bool,
 
-var _Button2 = _interopRequireDefault(_Button);
+  // Override generated docs from <Dropdown>.
+  /**
+   * @private
+   */
+  children: _react2['default'].PropTypes.node
+});
 
-var DropdownButton = (function (_React$Component) {
-  _inherits(DropdownButton, _React$Component);
+var DropdownButton = function (_React$Component) {
+  (0, _inherits3['default'])(DropdownButton, _React$Component);
 
   function DropdownButton() {
-    _classCallCheck(this, DropdownButton);
-
-    _React$Component.apply(this, arguments);
+    (0, _classCallCheck3['default'])(this, DropdownButton);
+    return (0, _possibleConstructorReturn3['default'])(this, _React$Component.apply(this, arguments));
   }
 
   DropdownButton.prototype.render = function render() {
     var _props = this.props;
-    var bsStyle = _props.bsStyle;
     var bsSize = _props.bsSize;
-    var disabled = _props.disabled;
-    var _props2 = this.props;
-    var title = _props2.title;
-    var children = _props2.children;
+    var bsStyle = _props.bsStyle;
+    var title = _props.title;
+    var children = _props.children;
+    var props = (0, _objectWithoutProperties3['default'])(_props, ['bsSize', 'bsStyle', 'title', 'children']);
 
-    var props = _objectWithoutProperties(_props2, ['title', 'children']);
+    var _splitComponentProps = (0, _splitComponentProps3['default'])(props, _Dropdown2['default'].ControlledComponent);
 
-    var dropdownProps = _lodashCompatObjectPick2['default'](props, _Object$keys(_Dropdown2['default'].ControlledComponent.propTypes));
-    var toggleProps = _lodashCompatObjectOmit2['default'](props, _Object$keys(_Dropdown2['default'].ControlledComponent.propTypes));
+    var dropdownProps = _splitComponentProps[0];
+    var toggleProps = _splitComponentProps[1];
+
 
     return _react2['default'].createElement(
       _Dropdown2['default'],
-      _extends({}, dropdownProps, {
+      (0, _extends3['default'])({}, dropdownProps, {
         bsSize: bsSize,
         bsStyle: bsStyle
       }),
       _react2['default'].createElement(
         _Dropdown2['default'].Toggle,
-        _extends({}, toggleProps, {
-          disabled: disabled
+        (0, _extends3['default'])({}, toggleProps, {
+          bsSize: bsSize,
+          bsStyle: bsStyle
         }),
         title
       ),
@@ -79,28 +96,9 @@ var DropdownButton = (function (_React$Component) {
   };
 
   return DropdownButton;
-})(_react2['default'].Component);
+}(_react2['default'].Component);
 
-DropdownButton.propTypes = _extends({
-  disabled: _react2['default'].PropTypes.bool,
-  bsStyle: _Button2['default'].propTypes.bsStyle,
-  bsSize: _Button2['default'].propTypes.bsSize,
-
-  /**
-   * When used with the `title` prop, the noCaret option will not render a caret icon, in the toggle element.
-   */
-  noCaret: _react2['default'].PropTypes.bool,
-  title: _react2['default'].PropTypes.node.isRequired
-
-}, _Dropdown2['default'].propTypes);
-
-DropdownButton.defaultProps = {
-  disabled: false,
-  pullRight: false,
-  dropup: false,
-  navItem: false,
-  noCaret: false
-};
+DropdownButton.propTypes = propTypes;
 
 exports['default'] = DropdownButton;
 module.exports = exports['default'];

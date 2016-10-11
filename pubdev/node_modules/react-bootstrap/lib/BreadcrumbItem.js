@@ -1,12 +1,26 @@
 'use strict';
 
-var _objectWithoutProperties = require('babel-runtime/helpers/object-without-properties')['default'];
-
-var _extends = require('babel-runtime/helpers/extends')['default'];
-
-var _interopRequireDefault = require('babel-runtime/helpers/interop-require-default')['default'];
-
 exports.__esModule = true;
+
+var _extends2 = require('babel-runtime/helpers/extends');
+
+var _extends3 = _interopRequireDefault(_extends2);
+
+var _objectWithoutProperties2 = require('babel-runtime/helpers/objectWithoutProperties');
+
+var _objectWithoutProperties3 = _interopRequireDefault(_objectWithoutProperties2);
+
+var _classCallCheck2 = require('babel-runtime/helpers/classCallCheck');
+
+var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+var _possibleConstructorReturn2 = require('babel-runtime/helpers/possibleConstructorReturn');
+
+var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
+var _inherits2 = require('babel-runtime/helpers/inherits');
+
+var _inherits3 = _interopRequireDefault(_inherits2);
 
 var _classnames = require('classnames');
 
@@ -20,77 +34,64 @@ var _SafeAnchor = require('./SafeAnchor');
 
 var _SafeAnchor2 = _interopRequireDefault(_SafeAnchor);
 
-var BreadcrumbItem = _react2['default'].createClass({
-  displayName: 'BreadcrumbItem',
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-  propTypes: {
-    /**
-     * If set to true, renders `span` instead of `a`
-     */
-    active: _react2['default'].PropTypes.bool,
-    /**
-     * HTML id for the wrapper `li` element
-     */
-    id: _react2['default'].PropTypes.oneOfType([_react2['default'].PropTypes.string, _react2['default'].PropTypes.number]),
-    /**
-     * HTML id for the inner `a` element
-     */
-    linkId: _react2['default'].PropTypes.oneOfType([_react2['default'].PropTypes.string, _react2['default'].PropTypes.number]),
-    /**
-     * `href` attribute for the inner `a` element
-     */
-    href: _react2['default'].PropTypes.string,
-    /**
-     * `title` attribute for the inner `a` element
-     */
-    title: _react2['default'].PropTypes.node,
-    /**
-     * `target` attribute for the inner `a` element
-     */
-    target: _react2['default'].PropTypes.string
-  },
+var propTypes = {
+  /**
+   * If set to true, renders `span` instead of `a`
+   */
+  active: _react2['default'].PropTypes.bool,
+  /**
+   * `href` attribute for the inner `a` element
+   */
+  href: _react2['default'].PropTypes.string,
+  /**
+   * `title` attribute for the inner `a` element
+   */
+  title: _react2['default'].PropTypes.node,
+  /**
+   * `target` attribute for the inner `a` element
+   */
+  target: _react2['default'].PropTypes.string
+};
 
-  getDefaultProps: function getDefaultProps() {
-    return {
-      active: false
-    };
-  },
+var defaultProps = {
+  active: false
+};
 
-  render: function render() {
+var BreadcrumbItem = function (_React$Component) {
+  (0, _inherits3['default'])(BreadcrumbItem, _React$Component);
+
+  function BreadcrumbItem() {
+    (0, _classCallCheck3['default'])(this, BreadcrumbItem);
+    return (0, _possibleConstructorReturn3['default'])(this, _React$Component.apply(this, arguments));
+  }
+
+  BreadcrumbItem.prototype.render = function render() {
     var _props = this.props;
     var active = _props.active;
-    var className = _props.className;
-    var id = _props.id;
-    var linkId = _props.linkId;
-    var children = _props.children;
     var href = _props.href;
     var title = _props.title;
     var target = _props.target;
+    var className = _props.className;
+    var props = (0, _objectWithoutProperties3['default'])(_props, ['active', 'href', 'title', 'target', 'className']);
 
-    var props = _objectWithoutProperties(_props, ['active', 'className', 'id', 'linkId', 'children', 'href', 'title', 'target']);
+    // Don't try to render these props on non-active <span>.
 
-    var linkProps = {
-      href: href,
-      title: title,
-      target: target,
-      id: linkId
-    };
+    var linkProps = { href: href, title: title, target: target };
 
     return _react2['default'].createElement(
       'li',
-      { id: id, className: _classnames2['default'](className, { active: active }) },
-      active ? _react2['default'].createElement(
-        'span',
-        props,
-        children
-      ) : _react2['default'].createElement(
-        _SafeAnchor2['default'],
-        _extends({}, props, linkProps),
-        children
-      )
+      { className: (0, _classnames2['default'])(className, { active: active }) },
+      active ? _react2['default'].createElement('span', props) : _react2['default'].createElement(_SafeAnchor2['default'], (0, _extends3['default'])({}, props, linkProps))
     );
-  }
-});
+  };
+
+  return BreadcrumbItem;
+}(_react2['default'].Component);
+
+BreadcrumbItem.propTypes = propTypes;
+BreadcrumbItem.defaultProps = defaultProps;
 
 exports['default'] = BreadcrumbItem;
 module.exports = exports['default'];
