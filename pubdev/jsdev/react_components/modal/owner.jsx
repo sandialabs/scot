@@ -3,7 +3,6 @@ var Modal               = require('react-modal');
 var Button              = require('react-bootstrap/lib/Button');
 var DropdownButton      = require('react-bootstrap/lib/DropdownButton');
 var MenuItem            = require('react-bootstrap/lib/MenuItem');
-var AppActions          = require('../flux/actions.jsx');
 const customStyles = {
     content : {
         top     : '50%',
@@ -42,7 +41,6 @@ var Owner = React.createClass({
             contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 var key = this.state.key;
-                AppActions.updateItem(key,'headerUpdate');
             }.bind(this),
             error: function() {
                 this.props.updated('error','Failed to change owner');
