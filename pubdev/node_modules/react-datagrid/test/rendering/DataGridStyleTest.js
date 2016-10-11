@@ -124,7 +124,7 @@ describe('DataGrid Test Suite -  Row Style',function() {
 
 	})
 
-	it('check column style works',function() {
+	xit('check column style works',function() {
 
 		var COL_COLOR = 'blue'
 		var COL_COLOR_INDEX = 4
@@ -159,7 +159,7 @@ describe('DataGrid Test Suite -  Row Style',function() {
 
 	})
 
-	it('check column textAlign works',function() {
+	xit('check column textAlign works',function() {
 
 		var TEXT_ALIGN = 'right'
 		var COL_ALIGN_INDEX = 2
@@ -194,7 +194,7 @@ describe('DataGrid Test Suite -  Row Style',function() {
 
 	})
 
-	it('check column.className is applied to column cells', function(){
+	xit('check column.className is applied to column cells', function(){
 
 		var data = generateMockData({type : 'local', len : 10})
 

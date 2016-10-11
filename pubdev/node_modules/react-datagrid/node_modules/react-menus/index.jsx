@@ -1,7 +1,7 @@
 'use strict';
 
 require('./index.styl')
-
+import { render } from 'react-dom'
 var React = require('react')
 var Menu  = require('./src')
 
@@ -146,4 +146,4 @@ var App = React.createClass({
     }
 })
 
-React.render(<App />, document.getElementById('content'))
+render(<App />, document.getElementById('content'))

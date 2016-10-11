@@ -1,53 +1,44 @@
 'use strict';
 
-
-var NIL  = require('../common').NIL;
 var Type = require('../type');
-
 
 var _hasOwnProperty = Object.prototype.hasOwnProperty;
 var _toString       = Object.prototype.toString;
 
+function resolveYamlOmap(data) {
+  if (data === null) return true;
 
-function resolveYamlOmap(object /*, explicit*/) {
-  var objectKeys = [], index, length, pair, pairKey, pairHasKey;
+  var objectKeys = [], index, length, pair, pairKey, pairHasKey,
+      object = data;
 
   for (index = 0, length = object.length; index < length; index += 1) {
     pair = object[index];
     pairHasKey = false;
 
-    if ('[object Object]' !== _toString.call(pair)) {
-      return NIL;
-    }
+    if (_toString.call(pair) !== '[object Object]') return false;
 
     for (pairKey in pair) {
       if (_hasOwnProperty.call(pair, pairKey)) {
-        if (!pairHasKey) {
-          pairHasKey = true;
-        } else {
-          return NIL;
-        }
+        if (!pairHasKey) pairHasKey = true;
+        else return false;
       }
     }
 
-    if (!pairHasKey) {
-      return NIL;
-    }
+    if (!pairHasKey) return false;
 
-    if (-1 === objectKeys.indexOf(pairKey)) {
-      objectKeys.push(pairKey);
-    } else {
-      return NIL;
-    }
+    if (objectKeys.indexOf(pairKey) === -1) objectKeys.push(pairKey);
+    else return false;
   }
 
-  return object;
+  return true;
 }
 
+function constructYamlOmap(data) {
+  return data !== null ? data : [];
+}
 
 module.exports = new Type('tag:yaml.org,2002:omap', {
-  loader: {
-    kind: 'array',
-    resolver: resolveYamlOmap
-  }
+  kind: 'sequence',
+  resolve: resolveYamlOmap,
+  construct: constructYamlOmap
 });
