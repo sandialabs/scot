@@ -1,5 +1,4 @@
 var React               = require('react');
-var AppActions          = require('../flux/actions.jsx');
 var ReactDateTime       = require('react-datetime');
 
 var IncidentTable = React.createClass({

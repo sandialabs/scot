@@ -263,7 +263,7 @@ var UserAgent_DEPRECATED = {
   },
 
   mobile: function mobile() {
-    return _populate() || (_iphone || _ipad || _android || _mobile);
+    return _populate() || _iphone || _ipad || _android || _mobile;
   },
 
   nativeApp: function nativeApp() {

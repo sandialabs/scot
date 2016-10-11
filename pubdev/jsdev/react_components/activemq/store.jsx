@@ -1,5 +1,5 @@
 var Dispatcher      = require('./dispatcher.jsx')
-var EventEmitter    = require('../../../node_modules/events-activemq/events').EventEmitter
+var EventEmitter    = require('../../../node_modules/events').EventEmitter
 var assign          = require('object-assign')
 var Activemq        = require('./handleupdate.jsx')
 var storekey;

@@ -1,5 +1,5 @@
 var React = require('react')
-var PaginationToolbar = React.createFactory(require('../../../node_modules/events-react-datagrid/react-datagrid/lib/PaginationToolbar'));
+var PaginationToolbar = React.createFactory(require('react-datagrid/lib/PaginationToolbar'));
 var assign = require('object-assign');
 
 function clamp(value, min, max) {

@@ -1,25 +1,27 @@
 'use strict';
 
-exports.__esModule = true;
-exports['default'] = isOverflowing;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = isOverflowing;
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+var _isWindow = require('dom-helpers/query/isWindow');
 
-var _domHelpersQueryIsWindow = require('dom-helpers/query/isWindow');
+var _isWindow2 = _interopRequireDefault(_isWindow);
 
-var _domHelpersQueryIsWindow2 = _interopRequireDefault(_domHelpersQueryIsWindow);
+var _ownerDocument = require('dom-helpers/ownerDocument');
 
-var _domHelpersOwnerDocument = require('dom-helpers/ownerDocument');
+var _ownerDocument2 = _interopRequireDefault(_ownerDocument);
 
-var _domHelpersOwnerDocument2 = _interopRequireDefault(_domHelpersOwnerDocument);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function isBody(node) {
   return node && node.tagName.toLowerCase() === 'body';
 }
 
 function bodyIsOverflowing(node) {
-  var doc = _domHelpersOwnerDocument2['default'](node);
-  var win = _domHelpersQueryIsWindow2['default'](doc);
+  var doc = (0, _ownerDocument2.default)(node);
+  var win = (0, _isWindow2.default)(doc);
   var fullWidth = win.innerWidth;
 
   // Support: ie8, no innerWidth
@@ -32,9 +34,8 @@ function bodyIsOverflowing(node) {
 }
 
 function isOverflowing(container) {
-  var win = _domHelpersQueryIsWindow2['default'](container);
+  var win = (0, _isWindow2.default)(container);
 
   return win || isBody(container) ? bodyIsOverflowing(container) : container.scrollHeight > container.clientHeight;
 }
-
 module.exports = exports['default'];
