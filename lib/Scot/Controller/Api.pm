@@ -2018,6 +2018,7 @@ sub thread_entries {
     my @threaded    = ();
     my %where       = ();
     my $rindex      = 0;
+    my $sindex      = 0;
     my $count       = 1;
     my @summaries   = ();
 
@@ -2034,11 +2035,19 @@ sub thread_entries {
 
         $count++;
         my $href            = $entry->as_hash;
-        $href->{children}   = [];   # create holder for children
+        if ( ! defined $href->{children} ) {
+            $href->{children}   = [];   # create holder for children
+        }
+
+        if ( ref($href->{children}) ne "ARRAY" ) {
+            $href->{children}   = [];   # create holder for children
+        }
 
         if ( $entry->summary ) {
             $log->trace("entry is summary");
             push @summaries, $href;
+            $where{$entry->id} = \$summaries[$sindex];
+            $sindex++;
             next ENTRY;
         }
 
@@ -2067,9 +2076,10 @@ sub thread_entries {
         }
 
         my $new_child_index = $child_count;
+        $log->debug("The parent has $child_count children");
         $parent_kids_aref->[$new_child_index]  = $href;
         $log->debug("added entry to parents aref");
-        $log->trace("parents children: ",{filter=>\&Dumper, value => $parent_kids_aref});
+        $log->debug("parents children: ",{filter=>\&Dumper, value => $parent_kids_aref});
         $where{$entry->id} = \$parent_kids_aref->[$new_child_index];
     }
 
