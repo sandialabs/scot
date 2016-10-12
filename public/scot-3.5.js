@@ -1568,6 +1568,17 @@ var IncidentTable = React.createClass({displayName: "IncidentTable",
         }; 
         var date_types = ['Occurred', 'Discovered', 'Reported', 'Closed'] 
         var report_types = {'DOE Report Id:':'doe_report_id'};
+        var reportValue = ''; 
+        var reportTypeShort = '';
+        var reportType = '';
+         $(Object.getOwnPropertyNames(report_types)).each(function(index, report_type) {
+            reportTypeShort = report_types[report_type];
+            if (this.props.headerData != null) {
+                reportValue = this.props.headerData[reportTypeShort];
+            }
+            reportType = report_type;
+        }.bind(this)) 
+        
         return {
             dropdownOptions: dropdown,
             title_to_data_name: title_to_data_name,
@@ -1578,6 +1589,9 @@ var IncidentTable = React.createClass({displayName: "IncidentTable",
             reported: 0,
             closed: 0,
             reportId: 0,
+            reportValue: reportValue,
+            reportTypeShort: reportTypeShort,
+            reportType: reportType,
         }
     },
     onChange: function(event) {
@@ -1597,6 +1611,9 @@ var IncidentTable = React.createClass({displayName: "IncidentTable",
                 this.props.errorToggle('Failed to updated incident data') 
             }.bind(this)
         })
+    },
+    inputOnChange: function(event) {
+        this.setState({reportValue:event.target.value});
     },
     render: function() {
         var incidentData = this.props.headerData;
@@ -1635,13 +1652,9 @@ var IncidentTable = React.createClass({displayName: "IncidentTable",
             datesArr.push(React.createElement(IncidentDates, {typeTitle: typeTitle, value: value, typeLower: typeLower, type: this.props.type, id: this.props.id}));
             //datesArr.push(<div style={{display:'flex',flexFlow:'row'}}><span>{typeTitle}</span><span style={{width:'250px'}}><input value={formatTime} onClick={this.showCalendar}/></span>{this.state.showCalendar ? <ReactInputMoment moment={moment} onSave={this.onSave}/> : null}</div>)
         }
-        $(Object.getOwnPropertyNames(this.state.report_types)).each(function(index, report_type) {
-            var reportTypeShort = this.state.report_types[report_type];
-            var value = this.props.headerData[reportTypeShort];
-            var arr = [];
-            arr.push(React.createElement("input", {onBlur: this.onChange, value: value, id: reportTypeShort}));
-            reportingArr.push(React.createElement("div", null, React.createElement("span", {className: "incidentTableWidth"}, report_type), React.createElement("span", null, arr)));
-        }.bind(this))
+        var arr = [];
+        arr.push(React.createElement("input", {onBlur: this.onChange, onChange: this.inputOnChange, value: this.state.reportValue, id: this.state.reportTypeShort}));
+        reportingArr.push(React.createElement("div", null, React.createElement("span", {className: "incidentTableWidth"}, this.state.reportType), React.createElement("span", null, arr)));
         return (
             React.createElement("div", {className: "incidentTable"}, 
                 dropdownArr, 
