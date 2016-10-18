@@ -77,7 +77,7 @@ Readonly my $DOMAIN_REGEX_2 => qr{
         # knock out common filenames
         (?<!php|cgi|cfm|pdf|exe|doc|htm|txt|scr|jsp|jar|rar|zip)   
         (?<!htlm|docx|pptx)
-        (?<!pl|py)
+        (?<!py)
     )
     \b                                   # word boundary
 }xms;
