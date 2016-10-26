@@ -4513,7 +4513,7 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
             var subjectWidth = 1000;
         }
         return (
-            React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement("input", {type: "text", defaultValue: this.state.value, onKeyPress: this.handleEnterKey, style: {width:subjectWidth+'px',lineHeight:'normal'}}))
+            React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement("input", {type: "text", defaultValue: this.state.value, onKeyPress: this.handleEnterKey, onBlur: this.handleChange, style: {width:subjectWidth+'px',lineHeight:'normal'}}))
         )
     }
 });
