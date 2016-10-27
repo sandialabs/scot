@@ -1,4 +1,5 @@
 var React           = require('react');
+var Button          = require('react-bootstrap/lib/Button.js');
 
 var Promote = React.createClass({
     getInitialState: function () {
@@ -36,9 +37,12 @@ var Promote = React.createClass({
         var type = this.props.type;
         var id = this.props.id; 
         return (
-            <span onClick={this.promote}>
-                Promote to {this.state.newType}
-            </span>
+            <Button bsStyle='warning' eventKey='1' bsSize='xsmall' onClick={this.promote}>
+                <img src='/images/megaphone.png'/>
+                <span>
+                    Promote to {this.state.newType}
+                </span>
+            </Button>
         )
     }
 });

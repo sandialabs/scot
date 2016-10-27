@@ -2202,6 +2202,7 @@ module.exports = SelectedPermission
 
 },{"react":714,"react-bootstrap/lib/Button":49,"react-tag-input":371}],14:[function(require,module,exports){
 var React           = require('react');
+var Button          = require('react-bootstrap/lib/Button.js');
 
 var Promote = React.createClass({displayName: "Promote",
     getInitialState: function () {
@@ -2239,8 +2240,11 @@ var Promote = React.createClass({displayName: "Promote",
         var type = this.props.type;
         var id = this.props.id; 
         return (
-            React.createElement("span", {onClick: this.promote}, 
-                "Promote to ", this.state.newType
+            React.createElement(Button, {bsStyle: "warning", eventKey: "1", bsSize: "xsmall", onClick: this.promote}, 
+                React.createElement("img", {src: "/images/megaphone.png"}), 
+                React.createElement("span", null, 
+                    "Promote to ", this.state.newType
+                )
             )
         )
     }
@@ -2248,7 +2252,7 @@ var Promote = React.createClass({displayName: "Promote",
 
 module.exports = Promote;
 
-},{"react":714}],15:[function(require,module,exports){
+},{"react":714,"react-bootstrap/lib/Button.js":49}],15:[function(require,module,exports){
 var React               = require('react');
 var Button              = require('react-bootstrap/lib/Button');
 var ReactTags           = require('react-tag-input').WithContext;
@@ -4509,7 +4513,7 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
             var subjectWidth = 1000;
         }
         return (
-            React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement("input", {type: "text", defaultValue: this.state.value, onKeyPress: this.handleEnterKey, style: {width:subjectWidth+'px',lineHeight:'normal'}}))
+            React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement("input", {type: "text", defaultValue: this.state.value, onKeyPress: this.handleEnterKey, onBlur: this.handleChange, style: {width:subjectWidth+'px',lineHeight:'normal'}}))
         )
     }
 });
@@ -4892,7 +4896,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                     React.createElement(Button, {eventKey: "5", onClick: this.props.changeHistoryToggle, bsSize: "xsmall"}, React.createElement("img", {src: "/images/clock.png"}), " ", subjectType, " History"), 
                     React.createElement(Button, {eventKey: "6", onClick: this.props.permissionsToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-users", "aria-hidden": "true"}), " Permissions"), 
                     React.createElement(Button, {eventKey: "7", onClick: this.props.entitiesToggle, bsSize: "xsmall"}, React.createElement("span", {className: "entity"}, "__"), " View Entities"), 
-                    showPromote ? React.createElement(Button, {bsStyle: "warning", eventKey: "8", bsSize: "xsmall"}, React.createElement("img", {src: "/images/megaphone.png"}), " ", React.createElement(Promote, {type: type, id: id, updated: this.props.updated})) : null, 
+                    showPromote ? React.createElement(Promote, {type: type, id: id, updated: this.props.updated}) : null, 
                     React.createElement(Button, {bsStyle: "danger", eventKey: "9", onClick: this.props.deleteToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-trash", "aria-hidden": "true"}), " Delete ", subjectType), 
                     React.createElement(Button, {bsStyle: "info", eventKey: "10", onClick: this.manualUpdate, bsSize: "xsmall", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
                 )

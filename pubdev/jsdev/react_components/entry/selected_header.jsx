@@ -743,7 +743,7 @@ var EntryDataSubject = React.createClass({
             var subjectWidth = 1000;
         }
         return (
-            <div>{this.props.subjectType} {this.props.id}: <input type='text' defaultValue={this.state.value} onKeyPress={this.handleEnterKey} style={{width:subjectWidth+'px',lineHeight:'normal'}} /></div>
+            <div>{this.props.subjectType} {this.props.id}: <input type='text' defaultValue={this.state.value} onKeyPress={this.handleEnterKey} onBlur={this.handleChange} style={{width:subjectWidth+'px',lineHeight:'normal'}} /></div>
         )
     }
 });
