@@ -20,6 +20,7 @@ with    qw(
     Scot::Role::Entriable
     Scot::Role::Hashable
     Scot::Role::Permission
+    Scot::Role::Targetable
     Scot::Role::Times
 );
 
@@ -97,6 +98,19 @@ Hash of stats about this signature.  TODO: define internal structure
 =cut
 
 has stats => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    default     => sub { {} },
+);
+
+=item <options>
+
+hash of optional params 
+
+=cut
+
+has options => (
     is          => 'ro',
     isa         => 'HashRef',
     required    => 1,
