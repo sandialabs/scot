@@ -1568,6 +1568,17 @@ var IncidentTable = React.createClass({displayName: "IncidentTable",
         }; 
         var date_types = ['Occurred', 'Discovered', 'Reported', 'Closed'] 
         var report_types = {'DOE Report Id:':'doe_report_id'};
+        var reportValue = ''; 
+        var reportTypeShort = '';
+        var reportType = '';
+         $(Object.getOwnPropertyNames(report_types)).each(function(index, report_type) {
+            reportTypeShort = report_types[report_type];
+            if (this.props.headerData != null) {
+                reportValue = this.props.headerData[reportTypeShort];
+            }
+            reportType = report_type;
+        }.bind(this)) 
+        
         return {
             dropdownOptions: dropdown,
             title_to_data_name: title_to_data_name,
@@ -1578,6 +1589,9 @@ var IncidentTable = React.createClass({displayName: "IncidentTable",
             reported: 0,
             closed: 0,
             reportId: 0,
+            reportValue: reportValue,
+            reportTypeShort: reportTypeShort,
+            reportType: reportType,
         }
     },
     onChange: function(event) {
@@ -1597,6 +1611,9 @@ var IncidentTable = React.createClass({displayName: "IncidentTable",
                 this.props.errorToggle('Failed to updated incident data') 
             }.bind(this)
         })
+    },
+    inputOnChange: function(event) {
+        this.setState({reportValue:event.target.value});
     },
     render: function() {
         var incidentData = this.props.headerData;
@@ -1635,13 +1652,9 @@ var IncidentTable = React.createClass({displayName: "IncidentTable",
             datesArr.push(React.createElement(IncidentDates, {typeTitle: typeTitle, value: value, typeLower: typeLower, type: this.props.type, id: this.props.id}));
             //datesArr.push(<div style={{display:'flex',flexFlow:'row'}}><span>{typeTitle}</span><span style={{width:'250px'}}><input value={formatTime} onClick={this.showCalendar}/></span>{this.state.showCalendar ? <ReactInputMoment moment={moment} onSave={this.onSave}/> : null}</div>)
         }
-        $(Object.getOwnPropertyNames(this.state.report_types)).each(function(index, report_type) {
-            var reportTypeShort = this.state.report_types[report_type];
-            var value = this.props.headerData[reportTypeShort];
-            var arr = [];
-            arr.push(React.createElement("input", {onBlur: this.onChange, value: value, id: reportTypeShort}));
-            reportingArr.push(React.createElement("div", null, React.createElement("span", {className: "incidentTableWidth"}, report_type), React.createElement("span", null, arr)));
-        }.bind(this))
+        var arr = [];
+        arr.push(React.createElement("input", {onBlur: this.onChange, onChange: this.inputOnChange, value: this.state.reportValue, id: this.state.reportTypeShort}));
+        reportingArr.push(React.createElement("div", null, React.createElement("span", {className: "incidentTableWidth"}, this.state.reportType), React.createElement("span", null, arr)));
         return (
             React.createElement("div", {className: "incidentTable"}, 
                 dropdownArr, 
@@ -2189,6 +2202,7 @@ module.exports = SelectedPermission
 
 },{"react":714,"react-bootstrap/lib/Button":49,"react-tag-input":371}],14:[function(require,module,exports){
 var React           = require('react');
+var Button          = require('react-bootstrap/lib/Button.js');
 
 var Promote = React.createClass({displayName: "Promote",
     getInitialState: function () {
@@ -2226,8 +2240,11 @@ var Promote = React.createClass({displayName: "Promote",
         var type = this.props.type;
         var id = this.props.id; 
         return (
-            React.createElement("span", {onClick: this.promote}, 
-                "Promote to ", this.state.newType
+            React.createElement(Button, {bsStyle: "warning", eventKey: "1", bsSize: "xsmall", onClick: this.promote}, 
+                React.createElement("img", {src: "/images/megaphone.png"}), 
+                React.createElement("span", null, 
+                    "Promote to ", this.state.newType
+                )
             )
         )
     }
@@ -2235,7 +2252,7 @@ var Promote = React.createClass({displayName: "Promote",
 
 module.exports = Promote;
 
-},{"react":714}],15:[function(require,module,exports){
+},{"react":714,"react-bootstrap/lib/Button.js":49}],15:[function(require,module,exports){
 var React               = require('react');
 var Button              = require('react-bootstrap/lib/Button');
 var ReactTags           = require('react-tag-input').WithContext;
@@ -4496,7 +4513,7 @@ var EntryDataSubject = React.createClass({displayName: "EntryDataSubject",
             var subjectWidth = 1000;
         }
         return (
-            React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement("input", {type: "text", defaultValue: this.state.value, onKeyPress: this.handleEnterKey, style: {width:subjectWidth+'px',lineHeight:'normal'}}))
+            React.createElement("div", null, this.props.subjectType, " ", this.props.id, ": ", React.createElement("input", {type: "text", defaultValue: this.state.value, onKeyPress: this.handleEnterKey, onBlur: this.handleChange, style: {width:subjectWidth+'px',lineHeight:'normal'}}))
         )
     }
 });
@@ -4879,7 +4896,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                     React.createElement(Button, {eventKey: "5", onClick: this.props.changeHistoryToggle, bsSize: "xsmall"}, React.createElement("img", {src: "/images/clock.png"}), " ", subjectType, " History"), 
                     React.createElement(Button, {eventKey: "6", onClick: this.props.permissionsToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-users", "aria-hidden": "true"}), " Permissions"), 
                     React.createElement(Button, {eventKey: "7", onClick: this.props.entitiesToggle, bsSize: "xsmall"}, React.createElement("span", {className: "entity"}, "__"), " View Entities"), 
-                    showPromote ? React.createElement(Button, {bsStyle: "warning", eventKey: "8", bsSize: "xsmall"}, React.createElement("img", {src: "/images/megaphone.png"}), " ", React.createElement(Promote, {type: type, id: id, updated: this.props.updated})) : null, 
+                    showPromote ? React.createElement(Promote, {type: type, id: id, updated: this.props.updated}) : null, 
                     React.createElement(Button, {bsStyle: "danger", eventKey: "9", onClick: this.props.deleteToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-trash", "aria-hidden": "true"}), " Delete ", subjectType), 
                     React.createElement(Button, {bsStyle: "info", eventKey: "10", onClick: this.manualUpdate, bsSize: "xsmall", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
                 )
