@@ -76,8 +76,8 @@ Readonly my $DOMAIN_REGEX_2 => qr{
         [a-zA-Z0-9-]{2,63}                  # last word, can catpute punycode
         # knock out common filenames
         (?<!php|cgi|cfm|pdf|exe|doc|htm|txt|scr|jsp|jar|rar|zip)   
-        (?<!html|docx|pptx)
-        (?<!pl|py)
+        (?<!htlm|docx|pptx)
+        (?<!py)
     )
     \b                                   # word boundary
 }xms;
