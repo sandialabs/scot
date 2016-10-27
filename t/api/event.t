@@ -33,13 +33,9 @@ my $event_id = $t->tx->res->json->{id};
 $t  ->get_ok("/scot/api/v2/event/$event_id?tag=test,foo")
     ->status_is(200)
     ->json_is('/id'     => $event_id)
-    ->json_is('/owner'  => 'scot-admin')
+    ->json_is('/owner'  => 'scot-testing')
     ->json_is('/status'  => 'open')
     ->json_is('/subject' => 'Test Event 1');
-
-print Dumper($t->tx->res->json);
-done_testing();
-exit 0;
 
 my $orig_updated    = $t->tx->res->json->{updated};
 
@@ -62,7 +58,7 @@ my $entry1 = $t->tx->res->json->{id};
 $t  ->get_ok("/scot/api/v2/event/$event_id")
     ->status_is(200)
     ->json_is('/id' => $event_id)
-    ->json_is('/owner'  => 'scot-admin')
+    ->json_is('/owner'  => 'scot-testing')
     ->json_is('/status'  => 'open')
     ->json_is('/subject'    => 'Test Event 1');
 
@@ -79,15 +75,27 @@ $t  ->post_ok  ('/scot/api/v2/event'  => json =>{
 
 my $event_2 = $t->tx->res->json->{id};
 
-my $cols    = encode_json([qw(event_id updated created)]);
-my $filter  = encode_json({id   => {'$in' => [ $event_id, $event_2 ]}});
-my $grid    = encode_json({'id' => -1});
-my $url = "/scot/api/v2/event?columns=$cols&match=$filter&sort=$grid";
+#my $cols    = encode_json([qw(event_id updated created)]);
+#my $filter  = encode_json({id   => {'$in' => [ $event_id, $event_2 ]}});
+my $sort    = encode_json({'id' => -1});
+my $url = "/scot/api/v2/event"; # ?columns=$cols&match=$filter&sort=$grid";
 
-$t  ->get_ok($url, "Get Event List" )
+$t  ->get_ok($url   => 
+             {}     =>
+             form   => {
+                sort    => $sort,
+                id      => [ $event_id, $event_2 ],
+                columns => [ qw(id updated created) ],
+            },
+            
+            "Get Event List" )
     ->status_is(200)
     ->json_is('/records/0/id'    => $event_2)
     ->json_is('/records/1/id'    => $event_id);
+
+#  print Dumper($t->tx->res->json);
+#  done_testing();
+#  exit 0;
 
 
 my $update2time = $t->tx->res->json->{data}->[1]->{updated};
