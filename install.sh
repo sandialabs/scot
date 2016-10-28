@@ -264,8 +264,11 @@ EOF
             else 
                 echo "+ Adding Mongo 10Gen repo and updating apt-get caches"
                 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 --keyserver-options http-proxy=$PROXY
-                echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
-
+                if [ $OSVERSION == "16" ]; then
+                    echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+                else 
+                    echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+                fi
             fi
         fi
 
@@ -788,8 +791,16 @@ if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
         service mongod start
     fi
 else 
-    if [ "$MONGOSTATUS" == "mongod stop/waiting" ];then
-        service mongod start
+    if [ $OSVERSION == "16" ]; then
+        echo $MONGOSTATUS | grep inactive
+        MSTAT=$?
+        if [ "$MSTAT" == "0" ]; then
+            service mongod start
+        fi
+    else
+        if [ "$MONGOSTATUS" == "mongod stop/waiting" ];then
+            service mongod start
+        fi
     fi
 fi
 
