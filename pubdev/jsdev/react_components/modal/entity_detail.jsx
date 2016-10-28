@@ -685,6 +685,7 @@ var ReferencesBody = React.createClass({
         var aHref = null;
         var promotedHref = null;
         var statusColor = null
+        var subject = this.props.data.subject;
         if (this.props.data.status == 'promoted') {
             statusColor = 'orange';
         }else if (this.props.data.status =='closed') {
@@ -705,6 +706,18 @@ var ReferencesBody = React.createClass({
         else {
             aHref = '/#/' + this.props.type + '/' + this.props.data.id;
         }
+        if (subject == undefined) {
+            if (this.props.data.data != undefined) {
+                if (this.props.data.data.alert_name != undefined) {
+                    subject = this.props.data.data.alert_name;
+                } else {
+                    subject = '';
+                }
+            } else {
+                subject = '';
+            }
+        }
+
         return (
             <tr id={trId} index={this.props.index}>
                 <td valign='top' style={{textAlign:'center',cursor: 'pointer'}} onClick={this.onClick} id={tdId}><i className="fa fa-eye fa-1" aria-hidden="true"></i></td>
@@ -712,7 +725,7 @@ var ReferencesBody = React.createClass({
                 <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}><a href={aHref} target="_blank">{this.props.data.id}</a></td>
                 <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}>{this.props.type}</td>
                 <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px', textAlign:'center'}}>{this.props.data.entry_count}</td>
-                <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}>{this.props.data.subject}</td>
+                <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}>{subject}</td>
             </tr>
         )    
     }
