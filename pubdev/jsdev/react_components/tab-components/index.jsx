@@ -1,6 +1,11 @@
 'use strict';
 var ReactDOM	    = require('react-dom')
 var React           = require('react')
+var Navbar          = require('react-bootstrap/lib/Navbar.js');
+var Nav             = require('react-bootstrap/lib/Nav.js');
+var NavItem         = require('react-bootstrap/lib/NavItem.js');
+var NavDropdown     = require('react-bootstrap/lib/NavDropdown.js');
+var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
 var ExpandableNav   = require('../../../node_modules/react-expandable-nav')
 var ListView        = require('./list-view.jsx');
 var Router	        = require('../../../node_modules/react-router').Router
@@ -80,9 +85,9 @@ var App = React.createClass({
                 setincidents = false
                 settask = false
                 setamq = false
-                state = 7
+                state = 5 
                 if(this.props.params.id != null) {
-                    state = 7
+                    state = 5
                     statetype = 'guide'	
                     //array = this.props.params.id.split('+')
                     id = this.props.params.id
@@ -165,7 +170,7 @@ var App = React.createClass({
                 setamq = false
             }
             else if(this.props.params.value.toLowerCase() == "intel") {
-                state = 4
+                state = 4 
                 if(this.props.params.id != null) {
                     state = 4
                     statetype = 'intel'	
@@ -228,7 +233,7 @@ var App = React.createClass({
 	        type: 'get',
 	        url: '/scot/api/v2/handler?current=1'
 	    }).success(function(response){
-	        this.setState({handler: response.records['username']})
+	        this.setState({handler: response.records[0].username})
 	        }.bind(this))
     },
     componentWillMount: function() {
@@ -275,7 +280,38 @@ var App = React.createClass({
         ];
         var headerStyle = { paddingLeft: 5 };
         var fullStyle   = { paddingLeft: 50};
-        
+        var IH = 'Incident Handler: ' + this.state.handler;
+        /*return (
+            <div>
+                <Navbar inverse fixedTop={true}>
+                    <Navbar.Header>
+                        <Navbar.Brand>
+                            <a href='#' style={{margin:'0', padding:'0'}}><img src='scot.png' style={{width:'50px', margin:'0', padding:'0'}} /></a>
+                        </Navbar.Brand>
+                        <div className='presentation' style={{paddingTop:'15px',paddingBottom:'15px',paddingLeft:'15px', color:'white', display:'flex'}}>{IH}</div>
+                        <Navbar.Toggle />
+                    </Navbar.Header>
+                    <Navbar.Collapse>
+                        <Nav onSelect={this.handleSelect} pullRight={true}>
+                            <NavItem eventKey={1} href="#/alertgroup" active={setalerts}>Alert</NavItem>
+                            <NavItem eventKey={2} href="#/event" active={setevents}>Event</NavItem>
+                            <NavItem eventKey={3} href="#/incident" active={setincidents}>Incident</NavItem>
+                            <NavItem eventKey={4} href="#/task" active={settask}>Task</NavItem>
+                            <NavItem eventKey={5} href="#/guide" active={setguide}>Guide</NavItem>
+                            <NavItem eventKey={6} href="#/intel" active={setintel}>Intel</NavItem>
+                            <NavItem eventKey={7} href="incident_handler">Incident Handler</NavItem>
+                        </Nav>
+                    </Navbar.Collapse>
+                </Navbar>
+                <div style={{paddingTop:'50px'}}>
+                    <div>
+                        <img src='/images/scot-600h.png' style={{width:'350px', height: '320px','margin-left':'auto', 'margin-right':'auto', display: 'block'}}/>
+                        <h1>Sandia Cyber Omni Tracker 3.5</h1>
+                        <h1>Official Use Only</h1>
+                    </div>
+                </div>
+            </div>
+        )*/
         
     return (
         React.createElement(ExpandableNavContainer, {expanded: false}, React.createElement(ExpandableNavToggleButton, {smallClass: "s", className: "shared"}),
@@ -340,6 +376,40 @@ var App = React.createClass({
         );
 
     },
+    handleSelect: function(selectedKey) {
+        switch(selectedKey) {
+            case 0:
+                this.setState({set:0});
+                break;
+            case 1:
+                window.location.hash = '#/alertgroup';
+                window.location.href = window.location.hash;
+                break;
+            case 2:
+                window.location.hash = '#/event';
+                window.location.href = window.location.hash;
+                break;
+            case 3:
+                window.location.hash = '#/incident';
+                window.location.href = window.location.hash;
+                break;
+            case 4:
+                window.location.hash = '#/task';
+                window.location.href = window.location.hash;
+                break;
+            case 5:
+                window.location.hash = '#/guide';
+                window.location.href = window.location.hash;
+                break;
+            case 6:
+                window.location.hash = '#/intel';
+                window.location.href = window.location.hash;
+                break;
+            case 7:
+                window.open('incident_handler.html');
+                break;
+       }
+    },
     handleGuide: function(){
         window.location.hash = '#/guide/'
         window.location.href = window.location.hash
@@ -369,9 +439,6 @@ var App = React.createClass({
     handleTasks: function(){
         window.location.hash = '#/task/'
         window.location.href = window.location.hash
-    },
-    handleChat: function (){
-	    window.open('/scot/chat/irt')
     },
     handlePad: function(){
 	    //window.open('scratchpad.html')
