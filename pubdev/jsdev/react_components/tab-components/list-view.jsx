@@ -35,27 +35,34 @@ module.exports = React.createClass({
         var scrollWidth  = '650px'  
         var columnsDisplay = [];
         var columns = [];
+        var columnsClassName = [];
         var showSelectedContainer = false;
         width = 650
         
         if (this.props.type == 'alertgroup' || this.props.type == 'alert') {
             columnsDisplay = ['ID', 'Status', 'Subject', 'Created', 'Sources', 'Tags', 'Views']
             columns = ['id', 'status', 'subject', 'created', 'source', 'tag', 'views']
+            columnsClassName=['id', 'status', 'subject', 'created', 'source', 'tag', 'views']
         } else if (this.props.type == 'event') {
             columnsDisplay = ['ID', 'Status', 'Subject', 'Created', 'Updated', 'Sources', 'Tags', 'Owner', 'Entries', 'Views']
             columns = ['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
+            columnsClassName=['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
         } else if (this.props.type == 'incident') {
             columnsDisplay = ['ID', 'DOE', 'Status', 'Owner', 'Subject', 'Occurred', 'Type']
             columns = ['id', 'doe_report_id', 'status', 'owner', 'subject', 'occurred', 'type']
+            columnsClassName = ['id', 'doe_report_id', 'status', 'owner', 'subject', 'occurred', 'type']
         } else if (this.props.type == 'task') {
             columnsDisplay = ['Type', 'ID', 'Status', 'Owner', 'Entry Id', 'Updated']
             columns = ['target.type', 'target.id', 'task.status', 'owner', 'id', 'updated']
+            columnsClassName = ['target_type', 'target_id', 'task_status', 'owner', 'id', 'updated']
         } else if (this.props.type == 'guide') {
             columnsDisplay = ['ID', 'Applies To']
             columns = ['id', 'applies_to']
+            columnsClassName = ['id', 'applies_to']
         } else if (this.props.type == 'intel') {
             columnsDisplay =['ID', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
             columns = ['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
+            columnsClassName = ['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
         }
         if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; alertPreSelectedId=id;};
 
@@ -69,7 +76,7 @@ module.exports = React.createClass({
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: [], listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.listViewSort, filter: this.props.listViewFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, };
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: [], listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.listViewSort, filter: this.props.listViewFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, };
     },
     componentWillMount: function() {
         if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
@@ -278,55 +285,15 @@ module.exports = React.createClass({
 
     //This is used for the dragging portrait and landscape views
     reloadItem: function(e){
-        /*
-       console.log($('.container-fluid2').width())
-        if($('.container-fluid2').width() == 100){
-            $('.paging').css('display', 'none')
-        }
-        */
         $('iframe').each(function(index,ifr){
             $(ifr).addClass('pointerEventsOff')
         })
-        //var t2 = document.getElementById('fluid2')
         height = $(window).height() - 170
-        //width = $(t2).width()
-        //portrait
-        /*if(this.state.display == 'flex'){
-        fluidheight = $(window).height() - 108
-            $('.container-fluid2').css('height', height)
-            $('.container-fluid2').css('max-height', height)
-            //$('.container-fluid2').css('max-width', '915px')
-            if(e != null){
-                //width = e.clientX
-                $('.container-fluid2').css('width', listStartWidth + e.clientX - listStartX)
-            }
-            if(width < size){
-                var array = []
-                array =  ['table-row-smallclass', 'attributes-smallclass','module-reporter-smallclass', 'status-owner-smallclass']
-
-                $('.paging').css('width', width)
-                $('.paging').css('overflow-x','auto')
-                $('.splitter').css('width', '5px')
-                this.setState({classname: array})
-           }
-            else {
-                size = 645
-                var array = []
-                var classname = [' ', ' ', ' ', ' ']
-                array = ['dates-orgclass', 'status-owner-orgclass', 'module-reporter-orgclass']
-                $('.paging').css('width', width)
-                this.setState({scrollwidth: '650px', sizearray: array, classname:classname})
-               }
-        }*/
-        //landscape
-        //else {
-        //    $('.container-fluid2').css('height', this.state.idsarray.length != 0 ? '300px' : height)
         if(e != null){
             $('.container-fluid2').css('height', listStartHeight + e.clientY - listStartY)
             $('#list-view-data-div').css('height', listStartHeight + e.clientY - listStartY)
             this.forceUpdate();
         }
-        //}
     },
     launchEvent: function(type,rowid,entryid){
         if(this.state.display == 'block'){
@@ -354,21 +321,9 @@ module.exports = React.createClass({
             showClearFilter = true
         } 
         return (
-            <div key={this.state.listViewKey} className="allComponents" style={{'margin-left': '17px'}}>
-                <div>
+            <div key={this.state.listViewKey} className="allComponents">
+                <div className="black-border-line">
                     {this.state.Notification == 'on' ? <Notificationactivemq ref='notificationSystem' /> : null}
-                    <div className='main-header-info-null'>
-                        <div className='main-header-info-child'>
-                            <h2 style={{'font-size': '30px'}}>{this.state.typeCapitalized}</h2>
-                        </div>
-                        <div className='main-header-info-child-centered'>
-                            <div>Incident Handler: {handler}</div>
-                            <h2 style={{'font-size': '19px'}}>OUO</h2>
-                        </div>
-                        <div className='main-header-info-child'>
-                            <Search />
-                        </div>
-                    </div>
                     <div className='mainview'>
                         <div>
                            <div style={{display: 'inline-flex'}}>
@@ -386,12 +341,12 @@ module.exports = React.createClass({
                                         <div className='tableview' style={{display: 'flex'}}>
                                             <div id='fluid2' className="container-fluid2" style={{width:'100%', 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow': 'hidden','padding-left':'5px', display:'flex', flexFlow: 'column'}}>                 
                                                 <table style={{width:'100%'}}>
-                                                    <ListViewHeader data={this.state.objectarray} columns={this.state.columns} columnsDisplay={this.state.columnsDisplay} handleSort={this.handleSort} sort={this.state.sort} filter={this.state.filter} handleFilter={this.handleFilter} startepoch={this.state.startepoch} endepoch={this.state.endepoch}/>
+                                                    <ListViewHeader data={this.state.objectarray} columns={this.state.columns} columnsDisplay={this.state.columnsDisplay} columnsClassName={this.state.columnsClassName} handleSort={this.handleSort} sort={this.state.sort} filter={this.state.filter} handleFilter={this.handleFilter} startepoch={this.state.startepoch} endepoch={this.state.endepoch}/>
                                                 </table>
                                                 <div id='list-view-data-div' style={{height:this.state.scrollheight}} className='list-view-overflow'>
                                                     <div className='list-view-data-div' style={{display:'block'}}>
                                                         <table style={{width:'100%'}}>
-                                                            <ListViewData data={this.state.objectarray} columns={this.state.columns} type={this.state.type} selected={this.selected} selectedId={this.state.id}/>
+                                                            <ListViewData data={this.state.objectarray} columns={this.state.columns} columnsClassName={this.state.columnsClassName} type={this.state.type} selected={this.selected} selectedId={this.state.id}/>
                                                         </table>
                                                     </div>
                                                 </div>

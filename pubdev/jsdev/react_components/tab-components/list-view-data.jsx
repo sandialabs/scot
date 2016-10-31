@@ -9,11 +9,12 @@ var ListViewData = React.createClass({
     },
     render: function() {
         var columns = this.props.columns;
+        var columnsClassName = this.props.columnsClassName;
         var data = this.props.data;
         var arr = [];
         var className = 'list-data-pane';
             for (z=0; z < data.length; z++) {
-                arr.push(<ListViewDataEach columns={columns} dataOneRow={data[z]} z={z} type={this.props.type} selected={this.props.selected} selectedId={this.props.selectedId}/>)
+                arr.push(<ListViewDataEach columns={columns} columnsClassName={columnsClassName} dataOneRow={data[z]} z={z} type={this.props.type} selected={this.props.selected} selectedId={this.props.selectedId}/>)
             }
         return (
             <tbody className='list-view-table-data'>
@@ -57,19 +58,28 @@ var ListViewDataEach = React.createClass({
         var mainid;
         var arr = [];
         var columns = this.props.columns;
+        var columnsClassName = this.props.columnsClassName
         var dataOneRow = this.props.dataOneRow;
         var evenOdd = 'even';
         var backgroundColor;
         if (!isEven(this.props.z)) { evenOdd = 'odd' };
         var subClassName = 'table-row list-view-row'+evenOdd;
         for (i=0; i < columns.length; i++) {
-            arr.push(<ListViewDataEachColumn dataOneRow={dataOneRow} columnsOne={columns[i]} type={this.props.type}/>)
+            arr.push(<ListViewDataEachColumn dataOneRow={dataOneRow} columnsOne={columns[i]} columnsOneClassName={columnsClassName[i]} type={this.props.type}/>)
         }
         //process id for the row
         for (i=0; i < this.props.columns.length; i++) {
             if (this.props.columns[i] == 'id') {
                 mainid = parseInt(this.props.dataOneRow[this.props.columns[i]])
                 rowid=mainid;
+            }
+            if (this.props.columns[i].indexOf('.') !== -1) {
+                var subthing = this.props.columns[i].split('.')[1];
+                if (subthing == 'id') {
+                    mainid = this.props.columns[i].split('.').reduce(this.obj, this.props.dataOneRow)
+                    rowid = mainid;
+                    break;
+                }
             }
         }
         if (this.props.selectedId == rowid) {
@@ -88,8 +98,8 @@ var ListViewDataEach = React.createClass({
         window.addEventListener('resize',this.resizeTable);
     },
     resizeTable: function() {
-        for (i=0; i < this.props.columns.length; i++) {
-            var className = '.' + this.props.columns[i] + '-list-header-column';
+        for (i=0; i < this.props.columnsClassName.length; i++) {
+            var className = '.' + this.props.columnsClassName[i] + '-list-header-column';
             var width = $('.list-view-table-data').find(className).width();
             $('.list-view-table-header').find(className).css('width',width);
         }
@@ -103,7 +113,8 @@ var ListViewDataEachColumn = React.createClass({
     render: function() {
         var dataOneRow = this.props.dataOneRow;
         var columnsOne = this.props.columnsOne;
-        var className = columnsOne + '-list-header-column' 
+        var columnsOneClassName = this.props.columnsOneClassName;
+        var className = columnsOneClassName + '-list-header-column' 
         var dataRender = dataOneRow[columnsOne];
         //break apart columns with a . because both are needed to get data reference
         if (columnsOne.indexOf('.') !== -1) {
