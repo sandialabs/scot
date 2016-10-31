@@ -16,6 +16,7 @@ var ListViewHeader = React.createClass({
     render: function() {
         var columns = this.props.columns;
         var columnsDisplay = this.props.columnsDisplay;
+        var columnsClassName = this.props.columnsClassName;
         var data = this.props.data;
         var sort = this.props.sort;
         var filter = this.props.filter;
@@ -24,7 +25,7 @@ var ListViewHeader = React.createClass({
         var arr = [];
         var className = 'wrapper table-row header';
         for (i=0; i < columns.length; i++) {
-            arr.push(<ListViewHeaderEach columnsOne={columns[i]} columnsDisplayOne={columnsDisplay[i]} sort={sort} filter={filter} handleSort={handleSort} handleFilter={handleFilter} />)
+            arr.push(<ListViewHeaderEach columnsOne={columns[i]} columnsDisplayOne={columnsDisplay[i]} columnsClassName={columnsClassName[i]} sort={sort} filter={filter} handleSort={handleSort} handleFilter={handleFilter} />)
         }
         return (
             <tbody className='list-view-table-header'>
@@ -38,7 +39,7 @@ var ListViewHeader = React.createClass({
 
 var ListViewHeaderEach = React.createClass({
     getInitialState: function() {
-        var className = this.props.columnsOne + '-list-header-column';
+        var className = this.props.columnsClassName + '-list-header-column';
         return {
             startepoch:'', endepoch:'', className:className,
         }
