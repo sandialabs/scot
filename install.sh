@@ -276,6 +276,8 @@ EOF
             add-apt-repository -y ppa:maxmind/ppa
         fi
 
+        apt-get install -y mongodb-org
+
         if [[ ! -e /etc/apt/sources.list.d/elasticsearch-2.x.list ]]; then
             wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 
