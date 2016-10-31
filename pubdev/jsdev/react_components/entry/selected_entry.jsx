@@ -262,10 +262,10 @@ var SelectedEntry = React.createClass({
     containerHeightAdjust: function() {
         var scrollHeight;
         if ($('#list-view-container')[0]) {
-            scrollHeight = $(window).height() - $('#list-view-container').height() - $('#header').height() - 90 
+            scrollHeight = $(window).height() - $('#list-view-container').height() - $('#header').height() - 70 
             scrollHeight = scrollHeight + 'px'
         } else {
-            scrollHeight = $(window).height() - $('#header').height() - 90 
+            scrollHeight = $(window).height() - $('#header').height() - 70 
             scrollHeight = scrollHeight + 'px'
         }
         //$('#detail-container').css('height',scrollHeight);
