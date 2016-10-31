@@ -81,7 +81,7 @@ var Search = React.createClass({
         }
         return (
             <div>
-                <input style={{marginTop:'10px',padding:'10px 20px', backgroundColor: 'white', color:'black', float:'right', width:'30%', borderRadius:'50px',position:'relative'}} onChange={this.doSearch}/>
+                <input className='esearch-query' style={{marginTop:'3px',padding:'10px 20px', backgroundColor: 'white', color:'black', float:'right', borderRadius:'50px',position:'relative'}} placeholder={'Search...'} onChange={this.doSearch}/>
                 {this.state.showSearchToolbar ? 
                     <Draggable handle="#handle1" onMouseDown={this.moveDivInit}>
                         <div id="dragme1" className='box react-draggable searchPopUp' style={{height:this.state.entityHeight,maxWidth:'80%', maxHeight:'75%', display:'flex', flexFlow:'column', right:'0px',top:'70px'}}>
