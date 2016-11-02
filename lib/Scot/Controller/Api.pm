@@ -1403,8 +1403,11 @@ sub ownership_change_permitted {
             return undef;
         }
     }
+
     if ( $object->meta->does_role("Scot::Role::Permission") ) {
-        return 1
+        if ( $object->is_modifiable($self->session('groups')) ) {
+            return 1;
+        }
     }
     return undef;
 }
@@ -1672,6 +1675,12 @@ returns true if one of the user's groups is "admin"
 sub user_is_admin {
     my $self    = shift;
     my $groups  = $self->session('groups');
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    $log->debug("checking if user is in admin group");
+    $log->debug({filter => \&Dumper, value=>$groups});
+
     if ( grep { /admin/ } @{$groups} ) {
         return 1;
     }
