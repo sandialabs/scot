@@ -12,6 +12,7 @@ use DateTime;
 my $cfgobj  = Scot::Util::Config->new({
     file    => "backup.cfg",
     paths   => [ '/opt/scot/etc' ],
+    location    => '/opt/scotbackup' ],
 });
 my $config  = $cfgobj->get_config();
 
@@ -49,7 +50,7 @@ unless (-d $dumpdir ) {
 }
 
 
-system("rm -rf $dumpdir/*");
+system("rm -rf $dumpdir/mongo");
 
 my $cmd = "/usr/bin/mongodump ";
 
