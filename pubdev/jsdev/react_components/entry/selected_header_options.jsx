@@ -304,6 +304,7 @@ var SelectedHeaderOptions = React.createClass({
                     <Button eventKey="5" onClick={this.props.changeHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> {subjectType} History</Button>
                     <Button eventKey="6" onClick={this.props.permissionsToggle} bsSize='xsmall'><i className="fa fa-users" aria-hidden="true"></i> Permissions</Button>
                     <Button eventKey="7" onClick={this.props.entitiesToggle} bsSize='xsmall'><span className='entity'>__</span> View Entities</Button>
+                    {type == 'guide' ? <Button eventKey='8' onClick={this.props.guideRedirectToAlertListWithFilter} bsSize='xsmall'><i className="fa fa-table" aria-hidden='true'></i> View Related Alerts</Button> : null}
                     {showPromote ? <Promote type={type} id={id} updated={this.props.updated} /> : null}
                     <Button bsStyle='danger' eventKey="9" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button>
                     <Button bsStyle='info' eventKey="10" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
