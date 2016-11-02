@@ -49,7 +49,7 @@ var AddFlair = {
                                                         } else {
                                                             country_code = entitydata.geoip.data.isocode;
                                                         }
-                                                        var flag = $('<img class="noselect">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
+                                                        var flag = $('<img title="'+country_code.toLowerCase()+'">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
                                                         flag.addClass('extras');
                                                         $(entity).append(flag);
                                                     }
@@ -58,19 +58,19 @@ var AddFlair = {
                                                     if (entitydata.sidd.data.blocklist != undefined) {
                                                         if (entitydata.sidd.data.blocklist.action != undefined) {
                                                             if (entitydata.sidd.data.blocklist.action.firewall != false) {
-                                                                $(entity).append($('<img>').attr('src', '/images/flair/firewalled.png'));    
+                                                                $(entity).append($('<img title="firewall block">').attr('src', '/images/flair/firewalled.png'));    
                                                             }
                                                             if (entitydata.sidd.data.blocklist.action.watch != false) {
-                                                                $(entity).append($('<img>').attr('src', '/images/flair/watch.png'));
+                                                                $(entity).append($('<img title="watch list">').attr('src', '/images/flair/watch.png'));
                                                             }
                                                             if (entitydata.sidd.data.blocklist.action.whitelist != false) {
-                                                                $(entity).append($('<img>').attr('src', '/images/flair/white_list.jpg'));
+                                                                $(entity).append($('<img title="white list">').attr('src', '/images/flair/white_list.jpg'));
                                                             }
                                                             if (entitydata.sidd.data.blocklist.action.blackhole != false) {
-                                                                $(entity).append($('<img>').attr('src', '/images/flair/blackholed.png'));;
+                                                                $(entity).append($('<img title="dns black hole">').attr('src', '/images/flair/blackholed.png'));;
                                                             }
                                                             if (entitydata.sidd.data.blocklist.action.proxy_block != false) {
-                                                                $(entity).append($('<img>').attr('src', '/images/flair/blocked.png'));
+                                                                $(entity).append($('<img title="proxy block">').attr('src', '/images/flair/blocked.png'));
                                                             }
                                                         }
                                                     }
@@ -78,7 +78,7 @@ var AddFlair = {
                                             }
                                             if (entityEntryCount != undefined) {
                                                 if (entityEntryCount != 0) {
-                                                    $(entity).append($('<img>').attr('src', '/images/flair/note.gif'));
+                                                    $(entity).append($('<img title="entity has entry">').attr('src', '/images/flair/note.gif'));
                                                 }
                                             }
                                         }
@@ -123,7 +123,7 @@ var AddFlair = {
                                             } else {
                                                 country_code = entitydata.geoip.data.isocode;
                                             }
-                                            var flag = $('<img class="noselect">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
+                                            var flag = $('<img title="'+country_code.toLowerCase()+'">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
                                             flag.addClass('extras');
                                             $(entity).append(flag);
                                         }
@@ -132,19 +132,19 @@ var AddFlair = {
                                         if (entitydata.sidd.data.blocklist != undefined) {
                                             if (entitydata.sidd.data.blocklist.action != undefined) {
                                                 if (entitydata.sidd.data.blocklist.action.firewall != false) {
-                                                    $(entity).append($('<img>').attr('src', '/images/flair/firewalled.png'));    
+                                                    $(entity).append($('<img title="firewall block">').attr('src', '/images/flair/firewalled.png'));    
                                                 }
                                                 if (entitydata.sidd.data.blocklist.action.watch != false) {
-                                                    $(entity).append($('<img>').attr('src', '/images/flair/watch.png'));
+                                                    $(entity).append($('<img title="watch list">').attr('src', '/images/flair/watch.png'));
                                                 }
                                                 if (entitydata.sidd.data.blocklist.action.whitelist != false) {
-                                                    $(entity).append($('<img>').attr('src', '/images/flair/white_list.jpg'));
+                                                    $(entity).append($('<img title="white list">').attr('src', '/images/flair/white_list.jpg'));
                                                 }
                                                 if (entitydata.sidd.data.blocklist.action.blackhole != false) {
-                                                    $(entity).append($('<img>').attr('src', '/images/flair/blackholed.png'));
+                                                    $(entity).append($('<img title="dns black hole">').attr('src', '/images/flair/blackholed.png'));
                                                 }
                                                 if (entitydata.sidd.data.blocklist.action.proxy_block != false) {
-                                                    $(entity).append($('<img>').attr('src', '/images/flair/blocked.png'));
+                                                    $(entity).append($('<img title="proxy block">').attr('src', '/images/flair/blocked.png'));
                                                 }
                                             }
                                         }
@@ -152,7 +152,7 @@ var AddFlair = {
                                 }
                                 if (entityEntryCount != undefined) {
                                     if (entityEntryCount != 0) {
-                                        $(entity).append($('<img>').attr('src', '/images/flair/note.gif'));
+                                        $(entity).append($('<img title="entity has entry">').attr('src', '/images/flair/note.gif'));
                                     }
                                 }
                             }

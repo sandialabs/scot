@@ -73,7 +73,7 @@ var SourceDataIterator = React.createClass({
             }
         }
         return (
-            <Button id="event_source" bsSize={'xsmall'} onClick={this.sourceDelete}>{value} <span style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></Button>
+            <Button id="event_source" bsSize={'xsmall'}>{value} <span onClick={this.sourceDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></Button>
         )
     }
 });
