@@ -55,6 +55,7 @@ sub startup {
             clients => 1,
             proxy   => 1,
             pidfile => '/var/run/hypno.pid',
+            heartbeat_timeout => 40,
         },
     );
 
