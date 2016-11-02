@@ -103,8 +103,22 @@ my $update2time = $t->tx->res->json->{data}->[1]->{updated};
 sleep 1;
 print "waking from sleep\n";
 
+$t  ->post_ok  ('/scot/api/v2/event'  => json =>{
+        subject => "Test Event x",
+        source  => ["foobar"],
+        groups  => {
+            read   => ['super-secrect'],
+            modify => ['super-duper-secret'],
+        },
+        alert_id    => 3,
+    })
+    ->status_is(200)
+    ->json_is('/status' => 'ok');
+
+my $event_x = $t->tx->res->json->{id};
+
 my $tx  = $t->ua->build_tx(
-    PUT => "/scot/api/v2/event/$event_2" => json => {
+    PUT => "/scot/api/v2/event/$event_x" => json => {
     owner   => "boombaz",
 });
 $t  ->request_ok($tx)
@@ -187,8 +201,13 @@ $t  ->request_ok($tx)
 
 $t->get_ok("/scot/api/v2/event/$event_id/tag")
     ->status_is(200)
-    ->json_is('/records/0/value' => "foo")
-    ->json_is('/records/1/value' => "boo");
+    ->json_is('/records/0/value' => "test")
+    ->json_is('/records/1/value' => "foo")
+    ->json_is('/records/2/value' => "boo");
+
+# print Dumper($t->tx->res->json);
+# done_testing();
+# exit 0;
 
 $t->get_ok("/scot/api/v2/event/$event_id")
     ->status_is(200);
@@ -200,7 +219,7 @@ ok($new_updated > $orig_updated, "Updated was updated");
 
 
 
-#  print Dumper($t->tx->res->json);
+ print Dumper($t->tx->res->json);
  done_testing();
  exit 0;
 
