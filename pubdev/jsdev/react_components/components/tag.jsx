@@ -74,7 +74,7 @@ var TagDataIterator = React.createClass({
             }
         }
         return (
-            <Button id="event_tag" bsSize={'xsmall'} onClick={this.tagDelete}>{value} <span style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></Button>
+            <Button id="event_tag" bsSize={'xsmall'}>{value} <span onClick={this.tagDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></Button>
         )
     }
 });
