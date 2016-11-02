@@ -983,7 +983,7 @@ var AddFlair = {
                                                         } else {
                                                             country_code = entitydata.geoip.data.isocode;
                                                         }
-                                                        var flag = $('<img class="noselect">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
+                                                        var flag = $('<img title="'+country_code.toLowerCase()+'">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
                                                         flag.addClass('extras');
                                                         $(entity).append(flag);
                                                     }
@@ -992,19 +992,19 @@ var AddFlair = {
                                                     if (entitydata.sidd.data.blocklist != undefined) {
                                                         if (entitydata.sidd.data.blocklist.action != undefined) {
                                                             if (entitydata.sidd.data.blocklist.action.firewall != false) {
-                                                                $(entity).append($('<img>').attr('src', '/images/flair/firewalled.png'));    
+                                                                $(entity).append($('<img title="firewall block">').attr('src', '/images/flair/firewalled.png'));    
                                                             }
                                                             if (entitydata.sidd.data.blocklist.action.watch != false) {
-                                                                $(entity).append($('<img>').attr('src', '/images/flair/watch.png'));
+                                                                $(entity).append($('<img title="watch list">').attr('src', '/images/flair/watch.png'));
                                                             }
                                                             if (entitydata.sidd.data.blocklist.action.whitelist != false) {
-                                                                $(entity).append($('<img>').attr('src', '/images/flair/white_list.jpg'));
+                                                                $(entity).append($('<img title="white list">').attr('src', '/images/flair/white_list.jpg'));
                                                             }
                                                             if (entitydata.sidd.data.blocklist.action.blackhole != false) {
-                                                                $(entity).append($('<img>').attr('src', '/images/flair/blackholed.png'));;
+                                                                $(entity).append($('<img title="dns black hole">').attr('src', '/images/flair/blackholed.png'));;
                                                             }
                                                             if (entitydata.sidd.data.blocklist.action.proxy_block != false) {
-                                                                $(entity).append($('<img>').attr('src', '/images/flair/blocked.png'));
+                                                                $(entity).append($('<img title="proxy block">').attr('src', '/images/flair/blocked.png'));
                                                             }
                                                         }
                                                     }
@@ -1012,7 +1012,7 @@ var AddFlair = {
                                             }
                                             if (entityEntryCount != undefined) {
                                                 if (entityEntryCount != 0) {
-                                                    $(entity).append($('<img>').attr('src', '/images/flair/note.gif'));
+                                                    $(entity).append($('<img title="entity has entry">').attr('src', '/images/flair/note.gif'));
                                                 }
                                             }
                                         }
@@ -1057,7 +1057,7 @@ var AddFlair = {
                                             } else {
                                                 country_code = entitydata.geoip.data.isocode;
                                             }
-                                            var flag = $('<img class="noselect">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
+                                            var flag = $('<img title="'+country_code.toLowerCase()+'">').attr('src', '/images/flags/' + country_code.toLowerCase() + '.png');
                                             flag.addClass('extras');
                                             $(entity).append(flag);
                                         }
@@ -1066,19 +1066,19 @@ var AddFlair = {
                                         if (entitydata.sidd.data.blocklist != undefined) {
                                             if (entitydata.sidd.data.blocklist.action != undefined) {
                                                 if (entitydata.sidd.data.blocklist.action.firewall != false) {
-                                                    $(entity).append($('<img>').attr('src', '/images/flair/firewalled.png'));    
+                                                    $(entity).append($('<img title="firewall block">').attr('src', '/images/flair/firewalled.png'));    
                                                 }
                                                 if (entitydata.sidd.data.blocklist.action.watch != false) {
-                                                    $(entity).append($('<img>').attr('src', '/images/flair/watch.png'));
+                                                    $(entity).append($('<img title="watch list">').attr('src', '/images/flair/watch.png'));
                                                 }
                                                 if (entitydata.sidd.data.blocklist.action.whitelist != false) {
-                                                    $(entity).append($('<img>').attr('src', '/images/flair/white_list.jpg'));
+                                                    $(entity).append($('<img title="white list">').attr('src', '/images/flair/white_list.jpg'));
                                                 }
                                                 if (entitydata.sidd.data.blocklist.action.blackhole != false) {
-                                                    $(entity).append($('<img>').attr('src', '/images/flair/blackholed.png'));
+                                                    $(entity).append($('<img title="dns black hole">').attr('src', '/images/flair/blackholed.png'));
                                                 }
                                                 if (entitydata.sidd.data.blocklist.action.proxy_block != false) {
-                                                    $(entity).append($('<img>').attr('src', '/images/flair/blocked.png'));
+                                                    $(entity).append($('<img title="proxy block">').attr('src', '/images/flair/blocked.png'));
                                                 }
                                             }
                                         }
@@ -1086,7 +1086,7 @@ var AddFlair = {
                                 }
                                 if (entityEntryCount != undefined) {
                                     if (entityEntryCount != 0) {
-                                        $(entity).append($('<img>').attr('src', '/images/flair/note.gif'));
+                                        $(entity).append($('<img title="entity has entry">').attr('src', '/images/flair/note.gif'));
                                     }
                                 }
                             }
@@ -2328,7 +2328,7 @@ var SourceDataIterator = React.createClass({displayName: "SourceDataIterator",
             }
         }
         return (
-            React.createElement(Button, {id: "event_source", bsSize: 'xsmall', onClick: this.sourceDelete}, value, " ", React.createElement("span", {style: {paddingLeft:'3px'}, className: "glyphicon glyphicon-remove", ariaHidden: "true"}))
+            React.createElement(Button, {id: "event_source", bsSize: 'xsmall'}, value, " ", React.createElement("span", {onClick: this.sourceDelete, style: {paddingLeft:'3px'}, className: "glyphicon glyphicon-remove", ariaHidden: "true"}))
         )
     }
 });
@@ -2540,7 +2540,7 @@ var TagDataIterator = React.createClass({displayName: "TagDataIterator",
             }
         }
         return (
-            React.createElement(Button, {id: "event_tag", bsSize: 'xsmall', onClick: this.tagDelete}, value, " ", React.createElement("span", {style: {paddingLeft:'3px'}, className: "glyphicon glyphicon-remove", ariaHidden: "true"}))
+            React.createElement(Button, {id: "event_tag", bsSize: 'xsmall'}, value, " ", React.createElement("span", {onClick: this.tagDelete, style: {paddingLeft:'3px'}, className: "glyphicon glyphicon-remove", ariaHidden: "true"}))
         )
     }
 });
@@ -3133,6 +3133,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         return (
             React.createElement("div", {id: divid, key: id, className: divClass, style: {height:height}}, 
                 (type == 'incident' && this.props.headerData != null) ? React.createElement(IncidentTable, {type: type, id: id, headerData: this.props.headerData, errorToggle: this.props.errorToggle}) : null, 
+                (type == 'signature' && this.props.headerData != null) ? React.createElement(SignatureTable, {type: type, id: id, headerData: this.props.headerData, errorToggle: this.props.errorToggle}) : null, 
                 showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId, isPopUp: this.props.isPopUp, entryToggle: this.props.entryToggle, updated: this.updatedCB, aType: this.props.aType, aID: this.props.aID, entryToolbar: this.props.entryToolbar, errorToggle: this.props.errorToggle, fileUploadToggle: this.props.fileUploadToggle, fileUploadToolbar: this.props.fileUploadToolbar}) : React.createElement("span", null, "Loading..."), 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntry, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB, errorToggle: this.props.errorToggle}) : null) : null, 
                 this.props.fileUploadToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(FileUpload, {type: this.props.type, targetid: this.props.id, id: 'file_upload', fileUploadToggle: this.props.fileUploadToggle, updated: this.updatedCB, errorToggle: this.props.errorToggle}) : null) : null, 
@@ -6246,6 +6247,7 @@ var setincidents = false
 var setintel = false
 var settask = false
 var setguide = false
+var setsignature = false
 var setamq = false
 var isalert = false
 var supertableid = [];
@@ -6274,6 +6276,7 @@ var App = React.createClass({displayName: "App",
                 settask = false
                 setguide = false
                 setamq = false
+                setsignature = false
             }
            
             else if( this.props.params.value.toLowerCase() == "alert"){
@@ -6292,6 +6295,7 @@ var App = React.createClass({displayName: "App",
                 settask = false
                 setguide = false
                 setamq = false
+                setsignature = false
                 //if the url is just /alert/ with no id - default to alertgroup
                 if (this.props.params.id == null) {
                     id = null;
@@ -6315,6 +6319,7 @@ var App = React.createClass({displayName: "App",
                 settask = false
                 setguide = false
                 setamq = false
+                setsignature = false
             }
             else if(this.props.params.value.toLowerCase() == "event"){
                 state = 2
@@ -6333,6 +6338,7 @@ var App = React.createClass({displayName: "App",
                 settask = false
                 setguide = false
                 setamq = false
+                setsignature = false
             }
             else if (this.props.params.value.toLowerCase() == "incident"){
                 state = 3
@@ -6351,6 +6357,7 @@ var App = React.createClass({displayName: "App",
                 setevents = false
                 settask = false
                 setamq = false
+                setsignature = false
             }
             
             else if(this.props.params.value.toLowerCase() == "task")  {
@@ -6363,6 +6370,7 @@ var App = React.createClass({displayName: "App",
                 setintel = false
                 settask = true
                 setamq = false
+                setsignature = false
             }  
             else if(this.props.params.value.toLowerCase() == 'guide'){
                 setguide = true
@@ -6373,6 +6381,7 @@ var App = React.createClass({displayName: "App",
                 setincidents = false
                 settask = false
                 setamq = false
+                setsignature = false
                 state = 5
                 statetype = 'guide'
                 if(this.props.params.id != null) {
@@ -6399,6 +6408,26 @@ var App = React.createClass({displayName: "App",
                 setevents = false
                 settask = false
                 setamq = false
+                setsignature = false
+            }
+            else if(this.props.params.value.toLowerCase() == "signature") {
+                state = 7
+                if(this.props.params.id != null) {
+                    state = 7
+                    statetype = 'signature'
+                    //array = this.props.params.id.split('+')
+                    id = this.props.params.id
+                    id2 = this.props.params.id2
+                }
+                setguide = false
+                setintel = true
+                sethome = false
+                setalerts = false
+                setincidents = false
+                setevents = false
+                settask = false
+                setamq = false
+                setsignature = true
             } 
             else if(this.props.params.value.toLowerCase() == 'entity'){
                 setguide = false
@@ -6409,6 +6438,7 @@ var App = React.createClass({displayName: "App",
                 setincidents = false
                 settask = false
                 setamq = false
+                setsignature = false
                 if(this.props.params.id != null) {
                     state = 98
                     //array = this.props.params.id.split('+')
@@ -6427,6 +6457,7 @@ var App = React.createClass({displayName: "App",
                 setintel = false
                 settask = false
                 setamq = true
+                setsignature = false
             }
             else {
                 state = 0
@@ -6438,6 +6469,7 @@ var App = React.createClass({displayName: "App",
                 settask = false
                 setguide = false
                 setamq = false
+                setsignature = false
             }
         }
         else {
@@ -6483,7 +6515,8 @@ var App = React.createClass({displayName: "App",
                             React.createElement(NavItem, {eventKey: 4, href: "#/task", active: settask}, "Task"), 
                             React.createElement(NavItem, {eventKey: 5, href: "#/guide", active: setguide}, "Guide"), 
                             React.createElement(NavItem, {eventKey: 6, href: "#/intel", active: setintel}, "Intel"), 
-                            React.createElement(NavItem, {eventKey: 7, href: "incident_handler"}, IH)
+                            /*<NavItem eventKey={7} href="#/signature" active={setsignature} disabled>Signature</NavItem>*/
+                            React.createElement(NavItem, {eventKey: 8, href: "incident_handler"}, IH)
                         ), 
                             React.createElement("span", {id: "ouo_warning", className: "ouo-warning"}, "Official Use Only"), 
                             React.createElement("div", {className: "col-sm-1 col-md-1 pull-right"}, 
@@ -6522,6 +6555,10 @@ var App = React.createClass({displayName: "App",
                     null, 
                     this.state.set == 6 ?
                         React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type: 'intel', Notification: this.state.Notification, listViewFilter: this.state.listViewFilter, listViewSort: this.state.listViewSort, listViewPage: this.state.listViewPage}) 
+                    :
+                    null, 
+                    this.state.set == 7 ?
+                        React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type: 'signature', Notification: this.state.Notification, listViewFilter: this.state.listViewFilter, listViewSort: this.state.listViewSort, listViewPage: this.state.listViewPage}) 
                     :
                     null, 
                     this.state.set == 98 ?
@@ -6566,6 +6603,10 @@ var App = React.createClass({displayName: "App",
                 window.location.href = window.location.hash;
                 break;
             case 7:
+                window.location.hash = '#/signature';
+                window.location.href = window.location.hash;
+                break;
+            case 8:
                 window.open('incident_handler.html');
                 break;
        }
