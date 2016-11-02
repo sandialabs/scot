@@ -153,4 +153,22 @@ sub get_display_count {
     return scalar(@$result);
 }
 
+sub get_degree {
+    my $self    = shift;
+    my $type    = shift;
+    my $id      = shift;
+    my $cursor  = $self->get_links_by_target({
+        type    => $type,
+        id      => $id
+    });
+    # TODO: implement the db.link.distinct("value") in meerkat
+    my %seen    = ();
+    
+    while ( my $link = $cursor->next ) {
+        $seen{$link->value}++;
+    }
+    return scalar(keys %seen);
+}
+
+
 1;
