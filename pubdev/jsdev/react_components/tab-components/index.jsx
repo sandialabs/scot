@@ -23,6 +23,7 @@ var setincidents = false
 var setintel = false
 var settask = false
 var setguide = false
+var setsignature = false
 var setamq = false
 var isalert = false
 var supertableid = [];
@@ -51,6 +52,7 @@ var App = React.createClass({
                 settask = false
                 setguide = false
                 setamq = false
+                setsignature = false
             }
            
             else if( this.props.params.value.toLowerCase() == "alert"){
@@ -69,6 +71,7 @@ var App = React.createClass({
                 settask = false
                 setguide = false
                 setamq = false
+                setsignature = false
                 //if the url is just /alert/ with no id - default to alertgroup
                 if (this.props.params.id == null) {
                     id = null;
@@ -92,6 +95,7 @@ var App = React.createClass({
                 settask = false
                 setguide = false
                 setamq = false
+                setsignature = false
             }
             else if(this.props.params.value.toLowerCase() == "event"){
                 state = 2
@@ -110,6 +114,7 @@ var App = React.createClass({
                 settask = false
                 setguide = false
                 setamq = false
+                setsignature = false
             }
             else if (this.props.params.value.toLowerCase() == "incident"){
                 state = 3
@@ -128,6 +133,7 @@ var App = React.createClass({
                 setevents = false
                 settask = false
                 setamq = false
+                setsignature = false
             }
             
             else if(this.props.params.value.toLowerCase() == "task")  {
@@ -140,6 +146,7 @@ var App = React.createClass({
                 setintel = false
                 settask = true
                 setamq = false
+                setsignature = false
             }  
             else if(this.props.params.value.toLowerCase() == 'guide'){
                 setguide = true
@@ -150,6 +157,7 @@ var App = React.createClass({
                 setincidents = false
                 settask = false
                 setamq = false
+                setsignature = false
                 state = 5
                 statetype = 'guide'
                 if(this.props.params.id != null) {
@@ -176,6 +184,26 @@ var App = React.createClass({
                 setevents = false
                 settask = false
                 setamq = false
+                setsignature = false
+            }
+            else if(this.props.params.value.toLowerCase() == "signature") {
+                state = 7
+                if(this.props.params.id != null) {
+                    state = 7
+                    statetype = 'signature'
+                    //array = this.props.params.id.split('+')
+                    id = this.props.params.id
+                    id2 = this.props.params.id2
+                }
+                setguide = false
+                setintel = true
+                sethome = false
+                setalerts = false
+                setincidents = false
+                setevents = false
+                settask = false
+                setamq = false
+                setsignature = true
             } 
             else if(this.props.params.value.toLowerCase() == 'entity'){
                 setguide = false
@@ -186,6 +214,7 @@ var App = React.createClass({
                 setincidents = false
                 settask = false
                 setamq = false
+                setsignature = false
                 if(this.props.params.id != null) {
                     state = 98
                     //array = this.props.params.id.split('+')
@@ -204,6 +233,7 @@ var App = React.createClass({
                 setintel = false
                 settask = false
                 setamq = true
+                setsignature = false
             }
             else {
                 state = 0
@@ -215,6 +245,7 @@ var App = React.createClass({
                 settask = false
                 setguide = false
                 setamq = false
+                setsignature = false
             }
         }
         else {
@@ -260,7 +291,8 @@ var App = React.createClass({
                             <NavItem eventKey={4} href="#/task" active={settask}>Task</NavItem>
                             <NavItem eventKey={5} href="#/guide" active={setguide}>Guide</NavItem>
                             <NavItem eventKey={6} href="#/intel" active={setintel}>Intel</NavItem>
-                            <NavItem eventKey={7} href="incident_handler">{IH}</NavItem>
+                            {/*<NavItem eventKey={7} href="#/signature" active={setsignature} disabled>Signature</NavItem>*/}
+                            <NavItem eventKey={8} href="incident_handler">{IH}</NavItem>
                         </Nav>
                             <span id='ouo_warning' className='ouo-warning'>Official Use Only</span>
                             <div className='col-sm-1 col-md-1 pull-right'>
@@ -299,6 +331,10 @@ var App = React.createClass({
                     null}
                     {this.state.set == 6 ?
                         <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'intel'} Notification={this.state.Notification} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} /> 
+                    :
+                    null}
+                    {this.state.set == 7 ?
+                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'signature'} Notification={this.state.Notification} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} /> 
                     :
                     null}
                     {this.state.set == 98 ?
@@ -343,6 +379,10 @@ var App = React.createClass({
                 window.location.href = window.location.hash;
                 break;
             case 7:
+                window.location.hash = '#/signature';
+                window.location.href = window.location.hash;
+                break;
+            case 8:
                 window.open('incident_handler.html');
                 break;
        }
