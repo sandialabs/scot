@@ -161,6 +161,10 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-search#search')
             ->name  ('search');
 
+    $scot   ->route ('/api/v2/graph/:thing/:id/:depth')
+            ->to    ('controller-graph#get_graph')
+            ->name  ('get_graph');
+
 =pod
 
 @api {get} /scot/api/v2/esearch Search Scot
@@ -210,6 +214,17 @@ relies on the browser BasicAuth popup.
             ->via   ('post')
             ->to    ('controller-file#upload')
             ->name  ('create');
+
+=pod
+
+@api {post} /scot/api/v2/:thing Create thing
+@apiName Create :thing
+@apiGroup CRUD
+@apiVersion 2.0.0
+@apiDescription Create a :thing
+@apiParam {Object} -     The JSON of object to create
+
+=cut
 
     $scot   ->route ('/api/v2/:thing')
             ->via   ('post')
