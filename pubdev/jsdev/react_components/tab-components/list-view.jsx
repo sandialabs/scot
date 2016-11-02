@@ -356,7 +356,7 @@ module.exports = React.createClass({
                                     <Page pagefunction={this.getNewData} defaultPageSize={50} count={this.state.totalcount} pagination={true} type={this.props.type} defaultpage={this.state.activepage.page}/>
                                     <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
                                 </div>
-                            {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid}/> : null}
+                            {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter}/> : null}
                         </div>
                     </div>
                 </div>
@@ -630,9 +630,15 @@ module.exports = React.createClass({
     },
 
 
-    handleFilter: function(column,string,clearall){
+    handleFilter: function(column,string,clearall,type){
         var currentFilter = this.state.filter;
         var newFilterObj = {};
+        var _type;
+        if (type != undefined) {
+            _type = type;
+        } else {
+            _type = this.props.type;
+        }
         if (clearall == true) {
             this.setState({filter:newFilterObj})
         } else { 
@@ -678,7 +684,7 @@ module.exports = React.createClass({
             }
             this.setState({filter:newFilterObj});
             this.getNewData({page:0},null,newFilterObj)
-            var cookieName = 'listViewFilter' + this.props.type;
+            var cookieName = 'listViewFilter' + _type;
             setCookie(cookieName,JSON.stringify(newFilterObj),1000);
         }
     },
