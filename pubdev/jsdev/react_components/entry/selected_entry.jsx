@@ -300,6 +300,7 @@ var SelectedEntry = React.createClass({
             divid = 'other-detail-container';
             height = null;
         }
+        //Add signature code when ready
         return (
             <div id={divid} key={id} className={divClass} style={{height:height}}> 
                 {(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
