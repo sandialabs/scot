@@ -12,7 +12,7 @@ use DateTime;
 my $cfgobj  = Scot::Util::Config->new({
     file    => "backup.cfg",
     paths   => [ '/opt/scot/etc' ],
-    location    => '/opt/scotbackup' ],
+    location    => '/opt/scotbackup' ,
 });
 my $config  = $cfgobj->get_config();
 
