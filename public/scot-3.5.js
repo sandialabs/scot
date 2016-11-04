@@ -2810,7 +2810,7 @@ var SelectedHeader = require('./selected_header.jsx');
 var SelectedContainer = React.createClass({displayName: "SelectedContainer",
     render: function() {
         var datarows = [];
-        datarows.push(React.createElement(SelectedHeader, {key: this.props.id, id: this.props.id, type: this.props.type, toggleEventDisplay: this.props.viewEvent, taskid: this.props.taskid, alertPreSelectedId: this.props.alertPreSelectedId})); 
+        datarows.push(React.createElement(SelectedHeader, {key: this.props.id, id: this.props.id, type: this.props.type, toggleEventDisplay: this.props.viewEvent, taskid: this.props.taskid, alertPreSelectedId: this.props.alertPreSelectedId, handleFilter: this.props.handleFilter})); 
         //var width = this.state.width;
         var width = '100%';
         if ($('#list-view')[0] != undefined ) {
@@ -4291,6 +4291,12 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#iframe_'+this.props.taskid).position().top -30)
         }
     },
+    guideRedirectToAlertListWithFilter: function() {
+        //column, string, clearall (bool), type
+        this.props.handleFilter(null,null,true,null);
+        this.props.handleFilter('subject', this.state.headerData.applies_to[0], false, "alertgroup");
+        window.open('#/alertgroup/');
+    },
     render: function() {
         var headerData = this.state.headerData;         
         var viewedby = this.viewedbyfunc(headerData);
@@ -4319,7 +4325,6 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                                         React.createElement("td", null, React.createElement("span", {id: "event_updated", style: {color: 'white',lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px'}}, this.state.showEventData ? React.createElement(EntryDataUpdated, {data: this.state.headerData.updated}) : null)), 
                                         (type == 'event' || type == 'incident') && this.state.showEventData ? React.createElement("th", null, "Promoted From:") : null, 
                                         (type == 'event' || type == 'incident') && this.state.showEventData ? React.createElement(PromotedData, {data: this.state.headerData.promoted_from, type: type, id: id}) : null, 
-                                        
                                         React.createElement("th", null, "Tags: "), 
                                         React.createElement("td", null, this.state.showEventData ? React.createElement(Tag, {data: this.state.tagData, id: id, type: type, updated: this.updated}) : null), 
                                         React.createElement("th", null, "Source: "), 
@@ -4337,7 +4342,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                     this.state.changeHistoryToolbar ? React.createElement(ChangeHistory, {changeHistoryToggle: this.changeHistoryToggle, id: id, type: type, subjectType: subjectType}) : null, 
                     this.state.entitiesToolbar ? React.createElement(Entities, {entitiesToggle: this.entitiesToggle, entityData: this.state.entityData, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff}) : null, 
                     this.state.deleteToolbar ? React.createElement(DeleteEvent, {subjectType: subjectType, type: type, id: id, deleteToggle: this.deleteToggle, updated: this.updated}) :null, 
-                    this.state.showEventData ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated, alertSelected: this.state.alertSelected, aIndex: this.state.aIndex, aType: this.state.aType, aStatus: this.state.aStatus, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, sourceToggle: this.sourceToggle, guideID: this.state.guideID, subjectName: this.state.headerData.subject, fileUploadToggle: this.fileUploadToggle, fileUploadToolbar: this.state.fileUploadToolbar}) : null, 
+                    this.state.showEventData ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated, alertSelected: this.state.alertSelected, aIndex: this.state.aIndex, aType: this.state.aType, aStatus: this.state.aStatus, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, sourceToggle: this.sourceToggle, guideID: this.state.guideID, subjectName: this.state.headerData.subject, fileUploadToggle: this.fileUploadToggle, fileUploadToolbar: this.state.fileUploadToolbar, guideRedirectToAlertListWithFilter: this.guideRedirectToAlertListWithFilter}) : null, 
                     this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: id, type: type, permissionData: this.state.headerData, permissionsToggle: this.permissionsToggle, updated: this.updated}) : null
                     ), 
                     this.state.showEventData ? React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, headerData: this.state.headerData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, linkWarningToggle: this.linkWarningToggle, entryToolbar: this.state.entryToolbar, isAlertSelected: this.state.alertSelected, aType: this.state.aType, aID: this.state.aID, alertPreSelectedId: this.props.alertPreSelectedId, errorToggle: this.errorToggle, fileUploadToggle: this.fileUploadToggle, fileUploadToolbar: this.state.fileUploadToolbar}) : null
@@ -4898,6 +4903,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                     React.createElement(Button, {eventKey: "5", onClick: this.props.changeHistoryToggle, bsSize: "xsmall"}, React.createElement("img", {src: "/images/clock.png"}), " ", subjectType, " History"), 
                     React.createElement(Button, {eventKey: "6", onClick: this.props.permissionsToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-users", "aria-hidden": "true"}), " Permissions"), 
                     React.createElement(Button, {eventKey: "7", onClick: this.props.entitiesToggle, bsSize: "xsmall"}, React.createElement("span", {className: "entity"}, "__"), " View Entities"), 
+                    type == 'guide' ? React.createElement(Button, {eventKey: "8", onClick: this.props.guideRedirectToAlertListWithFilter, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-table", "aria-hidden": "true"}), " View Related Alerts") : null, 
                     showPromote ? React.createElement(Promote, {type: type, id: id, updated: this.props.updated}) : null, 
                     React.createElement(Button, {bsStyle: "danger", eventKey: "9", onClick: this.props.deleteToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-trash", "aria-hidden": "true"}), " Delete ", subjectType), 
                     React.createElement(Button, {bsStyle: "info", eventKey: "10", onClick: this.manualUpdate, bsSize: "xsmall", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
@@ -7377,7 +7383,7 @@ module.exports = React.createClass({displayName: "exports",
                                     React.createElement(Page, {pagefunction: this.getNewData, defaultPageSize: 50, count: this.state.totalcount, pagination: true, type: this.props.type, defaultpage: this.state.activepage.page}), 
                                     React.createElement("div", {onMouseDown: this.dragdiv, className: "splitter", style: {display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}})
                                 ), 
-                            this.state.showSelectedContainer ? React.createElement(SelectedContainer, {id: this.state.id, type: this.state.queryType, alertPreSelectedId: this.state.alertPreSelectedId, taskid: this.state.entryid}) : null
+                            this.state.showSelectedContainer ? React.createElement(SelectedContainer, {id: this.state.id, type: this.state.queryType, alertPreSelectedId: this.state.alertPreSelectedId, taskid: this.state.entryid, handleFilter: this.handleFilter}) : null
                         )
                     )
                 )
@@ -7651,9 +7657,15 @@ module.exports = React.createClass({displayName: "exports",
     },
 
 
-    handleFilter: function(column,string,clearall){
+    handleFilter: function(column,string,clearall,type){
         var currentFilter = this.state.filter;
         var newFilterObj = {};
+        var _type;
+        if (type != undefined) {
+            _type = type;
+        } else {
+            _type = this.props.type;
+        }
         if (clearall == true) {
             this.setState({filter:newFilterObj})
         } else { 
@@ -7699,7 +7711,7 @@ module.exports = React.createClass({displayName: "exports",
             }
             this.setState({filter:newFilterObj});
             this.getNewData({page:0},null,newFilterObj)
-            var cookieName = 'listViewFilter' + this.props.type;
+            var cookieName = 'listViewFilter' + _type;
             setCookie(cookieName,JSON.stringify(newFilterObj),1000);
         }
     },
