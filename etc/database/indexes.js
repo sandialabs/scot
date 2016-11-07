@@ -56,16 +56,16 @@ db.tag.ensureIndex(         { "id":         1}, {unique: true, dropDups:true}  )
 db.tag.ensureIndex(         { "value":      1}  );
 
 db.link.ensureIndex(        { "id":         1}, {unique: true, dropDups:true}  );
-db.link.ensureIndex(        { "value": 1 } );
-db.link.ensureIndex(        { "entity_id": 1 } );
+db.link.ensureIndex(        { "value":      1 } );
+db.link.ensureIndex(        { "entity_id":  1 } );
 db.link.ensureIndex(        { "target.type": 1, "target.id": 1} );
-db.link.ensureIndex(        { "when": 1, } );
+db.link.ensureIndex(        { "when":       1 } );
 
-db.appearance.ensureIndex(  { "id":         1}, {unique: true, dropDups:true} );
-db.appearance.ensureIndex(  { "when":       1} );
-db.appearance.ensureIndex(  { "type":       1} );
-db.appearance.ensureIndex(  { "value":       1} );
-db.appearance.ensureIndex(  { "target":       1} );
+db.appearance.ensureIndex(  { "id":      1}, {unique: true, dropDups:true} );
+db.appearance.ensureIndex(  { "when":    1} );
+db.appearance.ensureIndex(  { "type":    1} );
+db.appearance.ensureIndex(  { "value":   1} );
+db.appearance.ensureIndex(  { "target":  1} );
 
 db.guide.ensureIndex    (   { "id":         1}, {unique: true, dropDups:true});
 db.guide.ensureIndex    (   { "applies_to": 1} );
