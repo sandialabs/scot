@@ -3,6 +3,7 @@
     </head>
     <body>
         <center>
+            <img src="/images/scot_logo_473x473.png" alt="SCOT logo">
             <h1>SCOT Login</h1>
             <form action="/auth" method="post">
             <label for="u">Username</label>
