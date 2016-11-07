@@ -1,28 +1,49 @@
 'use strict';
 
+
 var YAMLException = require('./exception');
 
-var TYPE_CONSTRUCTOR_OPTIONS = [
-  'kind',
-  'resolve',
-  'construct',
-  'instanceOf',
-  'predicate',
-  'represent',
-  'defaultStyle',
-  'styleAliases'
-];
 
-var YAML_NODE_KINDS = [
-  'scalar',
-  'sequence',
-  'mapping'
-];
+// TODO: Add tag format check.
+function Type(tag, options) {
+  options = options || {};
 
-function compileStyleAliases(map) {
+  this.tag    = tag;
+  this.loader = options['loader'] || null;
+  this.dumper = options['dumper'] || null;
+
+  if (null === this.loader && null === this.dumper) {
+    throw new YAMLException('Incomplete YAML type definition. "loader" or "dumper" setting must be specified.');
+  }
+
+  if (null !== this.loader) {
+    this.loader = new Type.Loader(this.loader);
+  }
+
+  if (null !== this.dumper) {
+    this.dumper = new Type.Dumper(this.dumper);
+  }
+}
+
+
+Type.Loader = function TypeLoader(options) {
+  options = options || {};
+
+  this.kind     = options['kind']     || null;
+  this.resolver = options['resolver'] || null;
+
+  if ('string' !== this.kind &&
+      'array'  !== this.kind &&
+      'object' !== this.kind) {
+    throw new YAMLException('Unacceptable "kind" setting of a type loader.');
+  }
+};
+
+
+function compileAliases(map) {
   var result = {};
 
-  if (map !== null) {
+  if (null !== map) {
     Object.keys(map).forEach(function (style) {
       map[style].forEach(function (alias) {
         result[String(alias)] = style;
@@ -33,29 +54,29 @@ function compileStyleAliases(map) {
   return result;
 }
 
-function Type(tag, options) {
+
+Type.Dumper = function TypeDumper(options) {
   options = options || {};
 
-  Object.keys(options).forEach(function (name) {
-    if (TYPE_CONSTRUCTOR_OPTIONS.indexOf(name) === -1) {
-      throw new YAMLException('Unknown option "' + name + '" is met in definition of "' + tag + '" YAML type.');
-    }
-  });
-
-  // TODO: Add tag format check.
-  this.tag          = tag;
   this.kind         = options['kind']         || null;
-  this.resolve      = options['resolve']      || function () { return true; };
-  this.construct    = options['construct']    || function (data) { return data; };
+  this.defaultStyle = options['defaultStyle'] || null;
   this.instanceOf   = options['instanceOf']   || null;
   this.predicate    = options['predicate']    || null;
-  this.represent    = options['represent']    || null;
-  this.defaultStyle = options['defaultStyle'] || null;
-  this.styleAliases = compileStyleAliases(options['styleAliases'] || null);
+  this.representer  = options['representer']  || null;
+  this.styleAliases = compileAliases(options['styleAliases'] || null);
 
-  if (YAML_NODE_KINDS.indexOf(this.kind) === -1) {
-    throw new YAMLException('Unknown kind "' + this.kind + '" is specified for "' + tag + '" YAML type.');
+  if ('undefined' !== this.kind &&
+      'null'      !== this.kind &&
+      'boolean'   !== this.kind &&
+      'integer'   !== this.kind &&
+      'float'     !== this.kind &&
+      'string'    !== this.kind &&
+      'array'     !== this.kind &&
+      'object'    !== this.kind &&
+      'function'  !== this.kind) {
+    throw new YAMLException('Unacceptable "kind" setting of a type dumper.');
   }
-}
+};
+
 
 module.exports = Type;
