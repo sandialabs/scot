@@ -19,7 +19,7 @@ my $es  = Scot::Util::ElasticSearch->new({
     log => $log,
     config => {
         nodes => [
-         'as3001snllx.sandia.gov:9200',
+         'localhost:9200',
         ],
     },
 });

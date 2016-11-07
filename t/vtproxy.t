@@ -27,7 +27,7 @@ my $vt  = Scot::Util::VirusTotal->new({
 # my $domain_report = $vt->get_domain_report('wix.com');
 # say Dumper($domain_report);
 
-my $hash = "5894742146c02ba8af5390c91e4f0d2e5ad6cfaa2b916945ebb4fad633b054e3";
+my $hash = "put your hash here";
 
 my $behavior = $vt->get_file_behaviour($hash);
 
