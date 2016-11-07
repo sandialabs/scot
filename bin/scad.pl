@@ -4,6 +4,8 @@ use warnings;
 use strict;
 use Daemon::Control;
 
+# start the scot alert daemon
+
 exit Daemon::Control->new(
     name    =>  "Scot Alert Daemon (scad)",
     lsb_start   => '$scot',

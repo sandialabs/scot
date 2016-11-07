@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
 use lib '../lib';
+use lib '/opt/scot/lib';
 use Parallel::ForkManager;
 use Scot::Env;
 use Scot::App::Migrate;
