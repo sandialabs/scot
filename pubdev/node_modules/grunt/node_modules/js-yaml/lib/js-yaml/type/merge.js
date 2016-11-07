@@ -1,12 +1,18 @@
 'use strict';
 
+
+var NIL  = require('../common').NIL;
 var Type = require('../type');
 
-function resolveYamlMerge(data) {
-  return data === '<<' || data === null;
+
+function resolveYamlMerge(object /*, explicit*/) {
+  return '<<' === object ? object : NIL;
 }
 
+
 module.exports = new Type('tag:yaml.org,2002:merge', {
-  kind: 'scalar',
-  resolve: resolveYamlMerge
+  loader: {
+    kind: 'string',
+    resolver: resolveYamlMerge
+  }
 });

@@ -1,84 +1,56 @@
 'use strict';
 
-var esprima;
 
-// Browserified version does not have esprima
-//
-// 1. For node.js just require module as deps
-// 2. For browser try to require mudule via external AMD system.
-//    If not found - try to fallback to window.esprima. If not
-//    found too - then fail to parse.
-//
-try {
-  // workaround to exclude package from browserify list.
-  var _require = require;
-  esprima = _require('esprima');
-} catch (_) {
-  /*global window */
-  if (typeof window !== 'undefined') esprima = window.esprima;
-}
+var esprima = require('esprima');
 
+
+var NIL  = require('../../common').NIL;
 var Type = require('../../type');
 
-function resolveJavascriptFunction(data) {
-  if (data === null) return false;
 
-  try {
-    var source = '(' + data + ')',
-        ast    = esprima.parse(source, { range: true });
-
-    if (ast.type                    !== 'Program'             ||
-        ast.body.length             !== 1                     ||
-        ast.body[0].type            !== 'ExpressionStatement' ||
-        ast.body[0].expression.type !== 'FunctionExpression') {
-      return false;
-    }
-
-    return true;
-  } catch (err) {
-    return false;
-  }
-}
-
-function constructJavascriptFunction(data) {
+function resolveJavascriptFunction(object /*, explicit*/) {
   /*jslint evil:true*/
 
-  var source = '(' + data + ')',
-      ast    = esprima.parse(source, { range: true }),
-      params = [],
-      body;
+  try {
+    var source = '(' + object + ')',
+        ast    = esprima.parse(source, { range: true }),
+        params = [],
+        body;
 
-  if (ast.type                    !== 'Program'             ||
-      ast.body.length             !== 1                     ||
-      ast.body[0].type            !== 'ExpressionStatement' ||
-      ast.body[0].expression.type !== 'FunctionExpression') {
-    throw new Error('Failed to resolve function');
+    if ('Program'             !== ast.type         ||
+        1                     !== ast.body.length  ||
+        'ExpressionStatement' !== ast.body[0].type ||
+        'FunctionExpression'  !== ast.body[0].expression.type) {
+      return NIL;
+    }
+
+    ast.body[0].expression.params.forEach(function (param) {
+      params.push(param.name);
+    });
+
+    body = ast.body[0].expression.body.range;
+
+    // Esprima's ranges include the first '{' and the last '}' characters on
+    // function expressions. So cut them out.
+    return new Function(params, source.slice(body[0]+1, body[1]-1));
+  } catch (err) {
+    return NIL;
   }
-
-  ast.body[0].expression.params.forEach(function (param) {
-    params.push(param.name);
-  });
-
-  body = ast.body[0].expression.body.range;
-
-  // Esprima's ranges include the first '{' and the last '}' characters on
-  // function expressions. So cut them out.
-  /*eslint-disable no-new-func*/
-  return new Function(params, source.slice(body[0] + 1, body[1] - 1));
 }
+
 
 function representJavascriptFunction(object /*, style*/) {
   return object.toString();
 }
 
-function isFunction(object) {
-  return Object.prototype.toString.call(object) === '[object Function]';
-}
 
 module.exports = new Type('tag:yaml.org,2002:js/function', {
-  kind: 'scalar',
-  resolve: resolveJavascriptFunction,
-  construct: constructJavascriptFunction,
-  predicate: isFunction,
-  represent: representJavascriptFunction
+  loader: {
+    kind: 'string',
+    resolver: resolveJavascriptFunction
+  },
+  dumper: {
+    kind: 'function',
+    representer: representJavascriptFunction,
+  }
 });
