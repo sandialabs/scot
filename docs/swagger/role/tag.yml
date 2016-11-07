@@ -1,6 +1,0 @@
-tag:
-    type: array
-    description: set of tag strings
-    items:
-        type: string
-

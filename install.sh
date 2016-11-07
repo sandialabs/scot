@@ -347,14 +347,14 @@ EOF
 
         echo "+ renaming $AMQDIR/webapps/scotaq to $AMQDIR/webapps/scot"
         mv $AMQDIR/webapps/scotaq      $AMQDIR/webapps/scot
-        cp $DEVDIR/etc/activemq-init   /etc/init.d/activemq
+        cp $DEVDIR/etc/init/activemq-init   /etc/init.d/activemq
         chmod +x /etc/init.d/activemq
         chown -R activemq.activemq $AMQDIR
     fi
 
     if [ ! -e "/etc/init.d/activemq" ]; then
         echo "+ copying activemq init file to /etc/init.d"
-        cp $DEVDIR/etc/activemq-init   /etc/init.d/activemq
+        cp $DEVDIR/etc/init/activemq-init   /etc/init.d/activemq
     fi
     if [ ! -e "$AMQDIR/conf/scotamq.xml" ]; then
         echo "+ ensuring scotamq.xml is present"
@@ -434,37 +434,37 @@ EOF
 
         if [ ! -e /etc/httpd/conf.d/scot.conf ] || [ $REFRESHAPACHECONF == "yes"]; then
             echo -e "${yellow}+ adding scot configuration${NC}"
-            REVPROXY=$DEVDIR/etc/scot-revproxy-$MYHOSTNAME
+            REVPROXY=$DEVDIR/etc/apache2/scot-revproxy-$MYHOSTNAME
             if [ ! -e $REVPROXY ]||[$REFRESHAPACHECONF == "yes"]; then
 
                 echo -e "${red}= custom apache config for $MYHOSTNAME not present, using defaults${NC}"
 
                 if [[ $OSVERSION == "7" ]]; then
                     if [[ $AUTHMODE == "Remoteuser" ]]; then
-                        if [ -e $PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-7-remoteuser.conf ]; then
-                            REVPROXY=$PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-7-remoteuser.conf
+                        if [ -e $PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-7-remoteuser.conf ]; then
+                            REVPROXY=$PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-7-remoteuser.conf
                         else 
-                            REVPROXY=$DEVDIR/etc/scot-revproxy-rh-7-remoteuser.conf
+                            REVPROXY=$DEVDIR/etc/apache2/scot-revproxy-rh-7-remoteuser.conf
                         fi
                     else
-                        if [ -e $PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-7-aux.conf ];then
-                            REVPROXY=$PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-7-aux.conf
+                        if [ -e $PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-7-aux.conf ];then
+                            REVPROXY=$PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-7-aux.conf
                         else 
-                            REVPROXY=$DEVDIR/etc/scot-revproxy-rh-7-aux.conf
+                            REVPROXY=$DEVDIR/etc/apache2/scot-revproxy-rh-7-aux.conf
                         fi
                     fi
                 else
                     if [[ $AUTHMODE == "Remoteuser" ]]; then
-                        if [ -e $PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-remoteuser.conf ];then
-                            REVPROXY=$PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-remoteuser.conf
+                        if [ -e $PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-remoteuser.conf ];then
+                            REVPROXY=$PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-remoteuser.conf
                         else
-                            REVPROXY=$DEVDIR/etc/scot-revproxy-rh-remoteuser.conf
+                            REVPROXY=$DEVDIR/etc/apache2/scot-revproxy-rh-remoteuser.conf
                         fi
                     else
-                        if [ -e $PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-aux.conf ];then
-                            REVPROXY=$PRIVATE_SCOT_MODULES/etc/scot-revproxy-rh-aux.conf
+                        if [ -e $PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-aux.conf ];then
+                            REVPROXY=$PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-aux.conf
                         else
-                            REVPROXY=$DEVDIR/etc/scot-revproxy-rh-aux.conf
+                            REVPROXY=$DEVDIR/etc/apache2/scot-revproxy-rh-aux.conf
                         fi
                     fi
                 fi
@@ -608,10 +608,10 @@ fi
 if [ "$NEWINIT" == "yes" ] || [ ! -e /etc/init.d/scot ]; then
     echo -e "${yellow} refreshing or instaling the scot init script ${NC}"
     #if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
-    #    cp $DEVDIR/etc/scot-centos-init /etc/init.d/scot
+    #    cp $DEVDIR/etc/init/scot-centos-init /etc/init.d/scot
     #fi
     #if [ $OS == "Ubuntu" ]; then
-        cp $DEVDIR/etc/scot-init /etc/init.d/scot
+        cp $DEVDIR/etc/init/scot-init /etc/init.d/scot
     #fi
     chmod +x /etc/init.d/scot
     sed -i 's=/instdir='$SCOTDIR'=g' /etc/init.d/scot
@@ -751,7 +751,7 @@ if [ "$MDBREFRESH" == "yes" ]; then
 
     echo "+ copying new mongod.conf"
     if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
-        cp $DEVDIR/etc/mongod-cent-init /etc/init.d/mongod
+        cp $DEVDIR/etc/init/mongod-cent-init /etc/init.d/mongod
         cp $DEVDIR/etc/mongod-cent-conf /etc/mongod.conf
         # I really wish that mongo would get it's sh*t together and 
         # install everything in the same place regardless of distro
@@ -854,7 +854,7 @@ fi
 
 if [ ! -e /etc/init.d/scot ]; then
     echo -e "${yellow}+ missing /etc/init.d/scot, installing...${NC}"
-    cp $DEVDIR/etc/scot-init /etc/init.d/scot
+    cp $DEVDIR/etc/init/scot-init /etc/init.d/scot
     chmod +x /etc/init.d/scot
     sed -i 's=/instdir='$SCOTDIR'=g' /etc/init.d/scot
     if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
