@@ -4,6 +4,8 @@ use warnings;
 use strict;
 use Daemon::Control;
 
+# start the process that adds to elastic search
+
 exit Daemon::Control->new(
     name    =>  "Scot ElasticSearch Push Daemon (scepd)",
     lsb_start   => '$scot',
