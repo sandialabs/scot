@@ -652,7 +652,10 @@ if [ -d $BACKDIR ]; then
 else 
     echo "+ creating backup directory $BACKDIR "
     mkdir -p $BACKUPDIR
-    chown scot:scot $BACKUPDIR
+    mkdir -p $BACKUPDIR/mongo
+    mkdir -p $BACKUPDIR/elastic
+    chown -R scot:scot $BACKUPDIR
+    chown -R elasticsearch:elasticsearch $BACKUPDIR/elastic
 fi
 
 ###
