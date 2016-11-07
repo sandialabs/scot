@@ -2519,6 +2519,7 @@ sub whoami {
 
     if ( defined ( $userobj )  ) {
         my $user_href   = $userobj->as_hash;
+        $user_href->{sensitivity} = "OUO";
         $self->do_render({
             user    => $user,
             data    => $user_href,
