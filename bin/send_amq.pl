@@ -6,6 +6,8 @@ use v5.18;
 use strict;
 use warnings;
 
+# sample code on how to watch for topic messages
+
 use AnyEvent::STOMP::Client;
 use Scot::Env;
 use JSON;

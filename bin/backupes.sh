@@ -1,5 +1,12 @@
 #!/bin/bash
 
+##
+## THIS IS JUST AN EXAMPLE
+## of how to backup elastic search
+## 
+## use backup.pl to backup scot's mongo and elastic instances
+###
+
 ESRV='localhost:9200'
 SETTINGS='{ "scot_backup": { "type": "fs", "settings": { "compress": "true", "location": "/opt/esback" } } }'
 

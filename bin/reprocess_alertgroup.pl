@@ -11,6 +11,10 @@ use Scot::App::Mail;
 use Scot::Env;
 use Data::Dumper;
 
+# sample code on how to reprocess an alertgroup for flair
+# ./reprocess_alertgroup.pl 123
+
+
 say "--- Starting Mail Reprocessor ---";
 
 my $processor   = Scot::App::Mail->new({

@@ -3,6 +3,8 @@
 use Crypt::PBKDF2;
 use IO::Prompt;
 
+# sample code on how to generate password hashes for scot
+
 my $pass    = prompt("Enter New Admin Password : ", -e => '*');
 my $pbkdf2  = Crypt::PBKDF2->new(
         hash_class => 'HMACSHA2',
