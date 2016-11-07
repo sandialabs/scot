@@ -13,6 +13,8 @@ use DateTime::Format::Strptime;
 use HTML::Entities;
 use Getopt::Long qw(GetOptions);
 
+# utility to preprocess alert(group) or entries
+
 my $colname;
 my $type;
 GetOptions(
