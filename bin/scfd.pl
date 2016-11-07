@@ -4,6 +4,8 @@ use warnings;
 use strict;
 use Daemon::Control;
 
+# the flairing daemon
+
 exit Daemon::Control->new(
     name    =>  "Scot Flair Daemon (scfd)",
     lsb_start   => '$scot',

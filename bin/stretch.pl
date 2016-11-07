@@ -11,6 +11,8 @@ use Scot::App::Stretch;
 use IO::Prompt;
 use Getopt::Long qw(GetOptions);
 
+# put things into elastic 
+
 my $interactive;
 my $configfile  = "stretch.app.cfg";
 my $maxworkers  = 1;

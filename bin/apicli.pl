@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
 use lib '../lib';
+use lib '/opt/scot/lib';
+
 use Scot::Env;
 use Scot::Util::Scot;
 use Data::Dumper;
