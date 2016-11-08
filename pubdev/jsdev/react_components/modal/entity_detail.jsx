@@ -5,7 +5,7 @@ var Popover                 = require('react-bootstrap/lib/Popover');
 var Tabs                    = require('react-bootstrap/lib/Tabs');
 var Tab                     = require('react-bootstrap/lib/Tab');
 var Inspector               = require('react-inspector');
-var SelectedEntry           = require('../entry/selected_entry.jsx');
+var SelectedEntry           = require('../detail/selected_entry.jsx');
 var AddEntry                = require('../components/add_entry.jsx');
 var Draggable               = require('react-draggable');
 
@@ -338,7 +338,7 @@ var EntityBody = React.createClass({
             }
         }
         //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
-        var SelectedEntry = require('../entry/selected_entry.jsx');
+        var SelectedEntry = require('../detail/selected_entry.jsx');
         //PopOut available
         //var href = '/#/entity/' + this.props.entityid + '/' + this.props.type + '/' + this.props.id;
         var href = '/#/entity/'+this.props.entityid;
@@ -746,7 +746,7 @@ var GuideBody = React.createClass ({
     },
     render: function() {
         //Lazy Loading SelectedEntry as it is not actually loaded when placed at the top of the page due to the calling order. 
-        var SelectedEntry = require('../entry/selected_entry.jsx');
+        var SelectedEntry = require('../detail/selected_entry.jsx');
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='pills'>
                 <Tab eventKey={1} style={{overflow:'auto'}}><Button bsSize='small' onClick={this.entryToggle}>Add Entry</Button><br/>
