@@ -3,7 +3,7 @@ define({
   "version": "2.0.0",
   "description": "apiDoc Documentation of SCOT API",
   "title": "SCOT API documentation",
-  "url": "https://as3001snllx.sandia.gov/scot/api/v2",
+  "url": "https://scotserver/scot/api/v2",
   "sampleUrl": false,
   "apidoc": "0.2.0",
   "generator": {

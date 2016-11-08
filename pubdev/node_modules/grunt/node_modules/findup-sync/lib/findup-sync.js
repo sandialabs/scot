@@ -13,6 +13,7 @@ var path = require('path');
 
 // External libs.
 var glob = require('glob');
+var _ = require('lodash');
 
 // Search for a filename in the given directory or all parent directories.
 module.exports = function(patterns, options) {
@@ -27,13 +28,9 @@ module.exports = function(patterns, options) {
   var files, lastpath;
   do {
     // Search for files matching patterns.
-    files = patterns.map(function(pattern) {
+    files = _(patterns).map(function(pattern) {
       return glob.sync(pattern, globOptions);
-    }).reduce(function(a, b) {
-      return a.concat(b);
-    }).filter(function(entry, index, arr) {
-      return index === arr.indexOf(entry);
-    });
+    }).flatten().uniq().value();
     // Return file if found.
     if (files.length > 0) {
       return path.resolve(path.join(globOptions.cwd, files[0]));
