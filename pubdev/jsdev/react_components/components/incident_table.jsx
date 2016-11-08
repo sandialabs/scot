@@ -112,18 +112,7 @@ var IncidentTable = React.createClass({
             var arr = [];
             for (i=0; i < this.state.dropdownOptions[dropdown_name].length; i++){
                 var item = this.state.dropdownOptions[dropdown_name][i];
-                //for (var prop in this.state.title_to_data_name) {
-                    //var type = this.state.title_to_data_name[prop];
-                    //if (type == this.state.title_to_data_name[dropdown_name]) {
-                        //if (incidentData[type] != null) {
-                            //if (incidentData[type] == item) {
-                            //    arr.push(<option selected="selected">{item}</option>)
-                            //} else {
-                                arr.push(<option>{item}</option>)
-                            //}
-                        //}
-                    //}
-                //}
+                arr.push(<option>{item}</option>)
             }
             var datetype = this.state.title_to_data_name[dropdown_name];
             var selectValue = this.props.headerData[datetype];
@@ -136,7 +125,6 @@ var IncidentTable = React.createClass({
             var typeTitle = datetype + ':';
             var value = this.props.headerData[typeLower] * 1000;
             datesArr.push(<IncidentDates typeTitle={typeTitle} value={value} typeLower={typeLower} type={this.props.type} id={this.props.id}/>);
-            //datesArr.push(<div style={{display:'flex',flexFlow:'row'}}><span>{typeTitle}</span><span style={{width:'250px'}}><input value={formatTime} onClick={this.showCalendar}/></span>{this.state.showCalendar ? <ReactInputMoment moment={moment} onSave={this.onSave}/> : null}</div>)
         }
         var arr = [];
         arr.push(<input onBlur={this.onChange} onChange={this.inputOnChange} value={this.state.reportValue} id={this.state.reportTypeShort}/>);

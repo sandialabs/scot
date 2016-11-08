@@ -1,5 +1,6 @@
 var searchboxtext = false
 var whoami = '';
+var sensitivity = ''; 
 var activemqwho = ''
 var activemqid = ''
 var activemqmessage = ''
@@ -19,6 +20,11 @@ $.ajax({
     url:'scot/api/v2/whoami',
     success: function(result) {
         whoami=result.user;
+        if (result.data != undefined) {
+            if (result.data.sensitivity != undefined) {
+                sensitivity=result.data.sensitivity;
+            }
+        }
     },
     error: function() {
         alert('Failed to detect user, please authenticate');

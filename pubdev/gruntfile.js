@@ -16,7 +16,7 @@ module.exports = function(grunt) {
             },
             client: {
                 
-                src: ['jsdev/react_components/tab-components/*.jsx'],
+                src: ['jsdev/react_components/main/*.jsx'],
                 dest: '../public/scot-3.5.js'
             }
         }
