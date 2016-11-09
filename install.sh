@@ -909,6 +909,14 @@ if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
     chkconfig --add scot
     chkconfig --add activemq
     chkconfig --add mongod
+
+    echo "+ Allowing Firewalld to pass web traffic"
+    firewall-cmd --permanent --add-port=80/tcp
+    firewall-cmd --permanent --add-port=443/tcp
+    firewall-cmd --reload
+
+    /opt/activemq/bin/activemq start
+
 else 
     update-rc.d elasticsearch defaults
     update-rc.d scot defaults
