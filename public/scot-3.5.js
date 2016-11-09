@@ -752,6 +752,10 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
     onCancel: function(){
         this.props.addedentry()
         this.setState({change:false})
+        //click refresh detail button on screen to refresh data while the tinymce window was open since it held back updates of the DOM
+        if ($('#refresh-detail')) {
+            $('#refresh-detail').click();
+        }
     },
 	submit: function(){
         if($('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text() == "" && $('#' + this.props.id + '_ifr').contents().find("#tinymce").find('img').length == 0) {
@@ -2869,7 +2873,6 @@ var Store                   = require('../activemq/store.jsx');
 var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx'); 
-var SelectedHeaderOptions   = require('./selected_header_options.jsx');
 var IncidentTable           = require('../components/incident_table.jsx');
 
 var SelectedEntry = React.createClass({displayName: "SelectedEntry",
@@ -3791,7 +3794,7 @@ var EntryData = React.createClass({displayName: "EntryData",
 
 module.exports = SelectedEntry
 
-},{"../activemq/store.jsx":5,"../components/add_entry.jsx":6,"../components/add_flair.jsx":7,"../components/file_upload.jsx":9,"../components/incident_table.jsx":10,"../components/permission.jsx":13,"../components/summary.jsx":16,"../components/task.jsx":18,"../modal/delete.jsx":30,"../modal/entity_detail.jsx":32,"../modal/link_warning.jsx":33,"./selected_header_options.jsx":24,"react":989,"react-bootstrap/lib/Button.js":50,"react-bootstrap/lib/DropdownButton.js":55,"react-bootstrap/lib/MenuItem.js":60,"react-bootstrap/lib/SplitButton.js":73,"react-dom":470,"react-frame":474,"react-time":787}],23:[function(require,module,exports){
+},{"../activemq/store.jsx":5,"../components/add_entry.jsx":6,"../components/add_flair.jsx":7,"../components/file_upload.jsx":9,"../components/incident_table.jsx":10,"../components/permission.jsx":13,"../components/summary.jsx":16,"../components/task.jsx":18,"../modal/delete.jsx":30,"../modal/entity_detail.jsx":32,"../modal/link_warning.jsx":33,"react":989,"react-bootstrap/lib/Button.js":50,"react-bootstrap/lib/DropdownButton.js":55,"react-bootstrap/lib/MenuItem.js":60,"react-bootstrap/lib/SplitButton.js":73,"react-dom":470,"react-frame":474,"react-time":787}],23:[function(require,module,exports){
 var React                   = require('react');
 var ReactTime               = require('react-time');
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
@@ -4928,7 +4931,7 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
                     type == 'guide' ? React.createElement(Button, {eventKey: "8", onClick: this.props.guideRedirectToAlertListWithFilter, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-table", "aria-hidden": "true"}), " View Related Alerts") : null, 
                     showPromote ? React.createElement(Promote, {type: type, id: id, updated: this.props.updated}) : null, 
                     React.createElement(Button, {bsStyle: "danger", eventKey: "9", onClick: this.props.deleteToggle, bsSize: "xsmall"}, React.createElement("i", {className: "fa fa-trash", "aria-hidden": "true"}), " Delete ", subjectType), 
-                    React.createElement(Button, {bsStyle: "info", eventKey: "10", onClick: this.manualUpdate, bsSize: "xsmall", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
+                    React.createElement(Button, {id: "refresh-detail", bsStyle: "info", eventKey: "10", onClick: this.manualUpdate, bsSize: "xsmall", style: {float:'right'}}, React.createElement("i", {className: "fa fa-refresh", "aria-hidden": "true"}))
                 )
             )
         } else {
