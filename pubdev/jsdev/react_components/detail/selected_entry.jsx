@@ -16,7 +16,6 @@ var Store                   = require('../activemq/store.jsx');
 var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx'); 
-var SelectedHeaderOptions   = require('./selected_header_options.jsx');
 var IncidentTable           = require('../components/incident_table.jsx');
 
 var SelectedEntry = React.createClass({
