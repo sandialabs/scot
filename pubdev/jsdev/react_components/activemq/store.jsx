@@ -9,6 +9,10 @@ function activeMQ(payload){
 
 var Storeaq = assign({}, EventEmitter.prototype, {
     emitChange: function(key){
+        if ($('.mce-tinymce')[0]) {
+            console.log('Entry box open - holding off update')
+            return;
+        }
         this.emit(key)
     },
     addChangeListener: function(callback){
