@@ -37,6 +37,7 @@ body:active {
 }
 
 pre {
+   overflow: auto;
    display: block;
    padding: 9.5px;
    margin: 0 0 10px;
