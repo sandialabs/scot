@@ -641,6 +641,10 @@ function activeMQ(payload){
 
 var Storeaq = assign({}, EventEmitter.prototype, {
     emitChange: function(key){
+        if ($('.mce-tinymce')[0]) {
+            console.log('Entry box open - holding off update')
+            return;
+        }
         this.emit(key)
     },
     addChangeListener: function(callback){
@@ -730,7 +734,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
         var not_saved_entry_id = 'not_saved_entry_'+this.props.id
         var tinyID = 'tiny_'+this.props.id
             return (
-                React.createElement("div", {id: not_saved_entry_id}, 
+                React.createElement("div", {id: not_saved_entry_id, className: 'not_saved_entry'}, 
                     React.createElement("div", {className: 'row-fluid entry-outer', style: {border: '3px solid blue',marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}, 
                         React.createElement("div", {className: 'row-fluid entry-header'}, 
                             React.createElement("div", {className: "entry-header-inner"}, "[", React.createElement("a", {style: {color:'black'}, href: "#/not_saved_0"}, "Not_Saved_0"), "]by ", whoami, 
@@ -3578,8 +3582,6 @@ var AlertRowBlank = React.createClass({displayName: "AlertRowBlank",
         } 
         return (
             React.createElement("tr", {className: "not_selectable", style: {display:DisplayValue}}, 
-                React.createElement("td", {style: {padding:'0'}}
-                ), 
                 React.createElement("td", {colSpan: "50"}, 
                     showEntry ? React.createElement("div", null, React.createElement(SelectedEntry, {type: this.props.type, id: this.props.id})) : null, 
                     showAddEntryToolbar ? React.createElement(AddEntry, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.toggleOffAddEntry, updated: this.props.updated, errorToggle: this.props.errorToggle}) : null, 
