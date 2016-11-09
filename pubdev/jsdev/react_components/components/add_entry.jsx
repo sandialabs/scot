@@ -86,6 +86,10 @@ var AddEntryModal = React.createClass({
     onCancel: function(){
         this.props.addedentry()
         this.setState({change:false})
+        //click refresh detail button on screen to refresh data while the tinymce window was open since it held back updates of the DOM
+        if ($('#refresh-detail')) {
+            $('#refresh-detail').click();
+        }
     },
 	submit: function(){
         if($('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text() == "" && $('#' + this.props.id + '_ifr').contents().find("#tinymce").find('img').length == 0) {
