@@ -1021,7 +1021,7 @@ var AddFlair = {
                                             }
                                             if (entityEntryCount != undefined) {
                                                 if (entityEntryCount != 0) {
-                                                    $(entity).append($('<img title="entity has entry">').attr('src', '/images/flair/note.gif'));
+                                                    $(entity).append($('<img class="extras" title="entity has entry">').attr('src', '/images/flair/note.gif'));
                                                 }
                                             }
                                         }
@@ -1095,7 +1095,7 @@ var AddFlair = {
                                 }
                                 if (entityEntryCount != undefined) {
                                     if (entityEntryCount != 0) {
-                                        $(entity).append($('<img title="entity has entry">').attr('src', '/images/flair/note.gif'));
+                                        $(entity).append($('<img class="extras" title="entity has entry">').attr('src', '/images/flair/note.gif'));
                                     }
                                 }
                             }
