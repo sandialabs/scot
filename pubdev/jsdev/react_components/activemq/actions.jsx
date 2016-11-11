@@ -19,11 +19,11 @@ function register_client(){
             clientId: client,
             destination: 'topic://scot'
         }
-    }).done(function(){
+    }).success(function(){
         console.log('Registered client as '+client);
-    }).fail(function() {
+    }).error(function() {
         console.log("Error: failed to register client, retry in 1 sec");
-        setTimeout(register_client, 1000);
+        setTimeout(function() {register_client()}, 1000);
     })
 }
 
@@ -46,9 +46,9 @@ var Actions = {
                 json:'true',
                 username: whoami
             }
-        }).done(function(data) {
+        }).success(function(data) {
             console.log("Received Message")
-            var set = setTimeout(Actions.updateView(), 40)
+            var set = setTimeout(function() {Actions.updateView()}, 40)
             var messages = $(data).text().split('\n')
             $.each(messages, function(key,message){
                 if(message != ""){
@@ -59,8 +59,9 @@ var Actions = {
                     })
                 }
             });       
-        }).fail(function(){
-            setTimeout(Actions.updateView(), 20000)
+        }).error(function(){
+            setTimeout(function() {Actions.updateView()}, 1000)
+            console.log('AMQ not detected, retrying in 1 second.')
         })
     }
 }
