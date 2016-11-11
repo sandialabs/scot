@@ -267,8 +267,12 @@ sub process_alertgroup {
     $log->debug("asking scot for /alertgroup/$id/alert");
 
     my $alertgroup_href = $self->get_alertgroup($id);
-    $log->debug("got",{filter=>\&Dumper, value=>$alertgroup_href});
+    $log->debug("Alerts in AG:",{filter=>\&Dumper, value=>$alertgroup_href->{alerts}});
     my $alerts_aref     = $alertgroup_href->{alerts};
+
+    if ( ref($alerts_aref) ne "ARRAY" ) {
+        $alerts_aref    = [ $alerts_aref ];
+    }
 
     foreach my $record (@$alerts_aref) {
         my $newalert = $self->flair_record($record); 
