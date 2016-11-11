@@ -20,11 +20,11 @@ function register_client(){
             clientId: client,
             destination: 'topic://scot'
         }
-    }).done(function(){
+    }).success(function(){
         console.log('Registered client as '+client);
-    }).fail(function() {
+    }).error(function() {
         console.log("Error: failed to register client, retry in 1 sec");
-        setTimeout(register_client, 1000);
+        setTimeout(function() {register_client()}, 1000);
     })
 }
 
@@ -47,9 +47,9 @@ var Actions = {
                 json:'true',
                 username: whoami
             }
-        }).done(function(data) {
+        }).success(function(data) {
             console.log("Received Message")
-            var set = setTimeout(Actions.updateView(), 40)
+            var set = setTimeout(function() {Actions.updateView()}, 40)
             var messages = $(data).text().split('\n')
             $.each(messages, function(key,message){
                 if(message != ""){
@@ -60,8 +60,9 @@ var Actions = {
                     })
                 }
             });       
-        }).fail(function(){
-            setTimeout(Actions.updateView(), 20000)
+        }).error(function(){
+            setTimeout(function() {Actions.updateView()}, 1000)
+            console.log('AMQ not detected, retrying in 1 second.')
         })
     }
 }
@@ -710,20 +711,20 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                 type: 'GET',
                 url:  '/scot/api/v2/entry/'+ this.props.id
         }).success(function(response){
-                if (response.body_flair == '') {
-                    this.setState({subitem: response.body});
-                } else {
-                    this.setState({subitem: response.body_flair});
-                }
-            }.bind(this))
-            var newheight;
-            newheight= document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-            newheight = newheight + 'px'
-            this.setState({height: newheight})
+            if (response.body_flair == '') {
+                this.setState({subitem: response.body});
+            } else {
+                this.setState({subitem: response.body_flair});
+            }
+        }.bind(this))
+        var newheight;
+        newheight= document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+        newheight = newheight + 'px'
+        this.setState({height: newheight})
         } 
     },
     componentDidMount: function() {
-        $('#tiny_' + this.props.id + '_ifr').css('height', '200px')
+        //$('#tiny_' + this.props.id + '_ifr').css('height', '100px')
         $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top)
         if(this.props.title == 'CopyToEntry') {
             $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(this.props.content)
@@ -1020,7 +1021,7 @@ var AddFlair = {
                                             }
                                             if (entityEntryCount != undefined) {
                                                 if (entityEntryCount != 0) {
-                                                    $(entity).append($('<img title="entity has entry">').attr('src', '/images/flair/note.gif'));
+                                                    $(entity).append($('<img class="extras" title="entity has entry">').attr('src', '/images/flair/note.gif'));
                                                 }
                                             }
                                         }
@@ -1094,7 +1095,7 @@ var AddFlair = {
                                 }
                                 if (entityEntryCount != undefined) {
                                     if (entityEntryCount != 0) {
-                                        $(entity).append($('<img title="entity has entry">').attr('src', '/images/flair/note.gif'));
+                                        $(entity).append($('<img class="extras" title="entity has entry">').attr('src', '/images/flair/note.gif'));
                                     }
                                 }
                             }
@@ -4826,9 +4827,11 @@ var SelectedHeaderOptions = React.createClass({displayName: "SelectedHeaderOptio
         $('tr.selected').each(function(x,y) {
             var storearray = []
             $(y).find('td').each(function(x,y) {
-                var obj = $(y).text()
-                obj = obj.replace(/,/g,'|')
-                storearray.push(obj)
+                var copy = $(y).clone(false);
+                $(copy).find('.extras').remove();
+                var value = $(copy).text()
+                value = value.replace(/,/g,'|')
+                storearray.push(value);
             })
             csv += storearray.join() + '\n'
         });
