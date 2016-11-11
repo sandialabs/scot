@@ -44,20 +44,20 @@ var AddEntryModal = React.createClass({
                 type: 'GET',
                 url:  '/scot/api/v2/entry/'+ this.props.id
         }).success(function(response){
-                if (response.body_flair == '') {
-                    this.setState({subitem: response.body});
-                } else {
-                    this.setState({subitem: response.body_flair});
-                }
-            }.bind(this))
-            var newheight;
-            newheight= document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-            newheight = newheight + 'px'
-            this.setState({height: newheight})
+            if (response.body_flair == '') {
+                this.setState({subitem: response.body});
+            } else {
+                this.setState({subitem: response.body_flair});
+            }
+        }.bind(this))
+        var newheight;
+        newheight= document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+        newheight = newheight + 'px'
+        this.setState({height: newheight})
         } 
     },
     componentDidMount: function() {
-        $('#tiny_' + this.props.id + '_ifr').css('height', '200px')
+        //$('#tiny_' + this.props.id + '_ifr').css('height', '100px')
         $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top)
         if(this.props.title == 'CopyToEntry') {
             $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(this.props.content)
