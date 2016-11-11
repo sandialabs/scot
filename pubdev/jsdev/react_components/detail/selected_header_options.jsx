@@ -202,9 +202,11 @@ var SelectedHeaderOptions = React.createClass({
         $('tr.selected').each(function(x,y) {
             var storearray = []
             $(y).find('td').each(function(x,y) {
-                var obj = $(y).text()
-                obj = obj.replace(/,/g,'|')
-                storearray.push(obj)
+                var copy = $(y).clone(false);
+                $(copy).find('.extras').remove();
+                var value = $(copy).text()
+                value = value.replace(/,/g,'|')
+                storearray.push(value);
             })
             csv += storearray.join() + '\n'
         });
