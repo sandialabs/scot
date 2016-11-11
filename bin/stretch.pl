@@ -40,7 +40,7 @@ Invalid option!
 EOF
 ;
 
-my $paths   = [qw(/opt/scot/etc /home/tbruner/Scot-Internal-Modules/etc)];
+my $paths   = [qw(/opt/scot/etc)];
 
 my $loop    = Scot::App::Stretch->new( 
     paths              => $paths,
