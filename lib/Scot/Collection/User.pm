@@ -1,6 +1,8 @@
 package Scot::Collection::User;
 
 use lib '../../../lib';
+use Crypt::PBKDF2;
+
 use Moose 2;
 extends 'Scot::Collection';
 with    qw(
@@ -17,6 +19,21 @@ sub create_from_api {
     
     my $request = $href->{request}->{json};
 
+    my $password    = delete $request->{password};
+    unless ($password) {
+        $log->warn("Empty Password!");
+        $password = '';
+    }
+
+    my $pbkdf2  = Crypt::PBKDF2->new(
+        hash_class  => 'HMACSHA2',
+        hash_args   => { sha_size => 512 },
+        iterations  => 10000,
+        salt_len    => 15,
+    );
+    my $hash        = $pbkdf2->generate($password);
+    $request->{pwhash} = $hash;
+
     my $user    = $self->create($request);
 
     unless ($user) {
@@ -27,5 +44,6 @@ sub create_from_api {
 
     return $user;
 }
+
 
 1;

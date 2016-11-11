@@ -49,20 +49,6 @@ has description    => (
     default     => 'no desc',
 );
 
-=item B<members> 
-
-The members of this group
-
-=cut
-
-has members => (
-    is          => 'ro',
-    isa         => 'ArrayRef',
-    traits      => ['Array'],
-    required    => 1,
-    default     => sub {[]},
-);
-
 __PACKAGE__->meta->make_immutable;
 1;
 
