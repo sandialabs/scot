@@ -16,8 +16,31 @@ sub create_from_api {
     if ( $group ) {
         return $group;
     }
-
     $log->error("Failed to create GROUP from ", { fitler => \&Dumper, value => $request });
     return undef;
 }
+
+override get_subthing => sub {
+    my $self        = shift;
+    my $thing       = shift;
+    my $id          = shift;
+    my $subthing    = shift;
+    my $env         = $self->env;
+    my $mongo       = $env->mongo;
+    my $log         = $env->log;
+    $id += 0;
+
+    if ( $subthing eq "user" ) {
+        my $col = $mongo->collection('Group');
+        my $obj = $col->find_one({id => $id});
+        my $name    = $obj->name;
+
+        my $subcol = $mongo->collection('User');
+        my $cur     = $subcol->find({groups=>$name});
+
+        return $cur;
+    }
+
+};
+
 1;
