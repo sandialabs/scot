@@ -378,10 +378,18 @@ sub update_alerts_in_alertgroup {
 sub get_bundled_alertgroup {
     my $self    = shift;
     my $id      = shift;
+    my $log     = $self->env->log;
     my $agobj   = $self->find_iid($id);
     my $href    = $agobj->as_hash;
+       $href->{alerts} = [];
     my $col     = $self->env->mongo->collection('Alert');
+    $id         += 0;
+    my $match   = { alertgroup => $id };
+    $log->debug("Looking for alerts in alertgroup $id");
+
     my $cur     = $col->find({alertgroup => $id});
+    $log->debug("Found ". $cur->count. " matches");
+
     while (my $alert = $cur->next) {
         my $ahref   = $alert->as_hash;
         push @{ $href->{alerts} }, $ahref;
