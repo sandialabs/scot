@@ -64,7 +64,7 @@ sub run  {
     my $scot_mode   = $env->config->{globals}->{scot_mode};
     my $interactive;
 
-    my $messages_aref   = $imap->get_messages_aref($opts_href);
+    my $messages_aref   = $imap->get_unseen_messages_aref($opts_href);
     my $pause           = 1;
     my $reprocess       = $opts_href->{reprocess};
 

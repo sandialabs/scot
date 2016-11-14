@@ -103,6 +103,34 @@ sub build_options {
     return @options;
 }
 
+sub get_unseen_messages_aref {
+    my $self        = shift;
+    my $opts_href   = shift;
+    my $log         = $self->log;
+    my $imap        = $self->imap_client;
+
+    if ( $opts_href->{mail_box} ) {
+        $self->mailbox($opts_href->{mail_box});
+    }
+    my $box     = $self->mailbox;
+
+    unless ( $imap->select($box) ) {
+        $log->error("Failed to select $box!");
+        return undef;
+    }
+
+    my @unseen_uids = $imap->unseen;
+
+    if ( scalar(@unseen_uids) == 0 ) {
+        $log->warn("no unseen messages...");
+    }
+    else {
+        $log->debug(scalar(@unseen_uids)." unread messages found");
+    }
+
+    return wantarray ? @unseen_uids : \@unseen_uids;
+}
+
 
 sub get_messages_aref {
     my $self        = shift;
