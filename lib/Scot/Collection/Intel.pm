@@ -39,6 +39,8 @@ sub create_from_api {
     my $json    = $request->{request}->{json};
     my $user    = $request->{user};
 
+    $json->{owner} = $user;
+
     my @tags    = $env->get_req_array($json, "tags");
     my @sources = $env->get_req_array($json, "sources");
 
