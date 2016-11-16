@@ -162,5 +162,5 @@ if ( $config->{cleanup} ) {
     }
     system("rm -rf $esdir/*");
 }
-
+system("find $config->{location} -ctime 7 -print0 | xargs -0 /bin/rm -f");
 system("rm -f $pidfile");
