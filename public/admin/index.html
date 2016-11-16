@@ -231,13 +231,15 @@ function group_modal(groupname, group_members, all_users, group_type) {
       $('#users').append(user_option);
       group_members_by_user.push(username);
    });
-   $(Object.keys(all_users)).each(function(user_index, username) {
-      if($.inArray(username, group_members_by_user) < 0 && all_users[username].local_acct) {
-         var fullname = all_users[username].fullname;
-         var user_option = $('<option></option>').val(username).text(fullname).attr('name', 'all_users');
-         $('#all_users').append(user_option);
-      }
-   });
+    for (i=0; i < all_users.length; i++) {
+        // $(Object.keys(all_users)).each(function(user_index, username) {
+            if($.inArray(all_users[i].username, group_members_by_user) < 0) {
+                var fullname = all_users[i].fullname;
+                var user_option = $('<option></option>').val(all_users[i].username).text(all_users[i].fullname).attr('name', 'all_users');
+                $('#all_users').append(user_option);
+            }
+        //});
+    }
    $('#users option:selected').removeAttr("selected");
    $('#group_modal').data('group_type', group_type);
    $('#group_label').text(group_type + ' Group');
@@ -279,6 +281,7 @@ function user_modal(username, fullname, active, locked, user_groups, all_groups,
 
 function populate_local_users_n_groups() {
             var allGroups;
+            var users;
 			$.ajax({
 			   type:'GET',
 			   url: '/scot/api/v2/user',
@@ -287,7 +290,7 @@ function populate_local_users_n_groups() {
 			   //var auth_method = response.data.method;
 			   var auth_method = 'local';
                if(auth_method == 'local') {
-			      var users = response.records;
+			      users = response.records;
 			      //var groups = response.data.groups;
 			      $('#users_table').html('<tr><th></th><th></th><th>User</th><th>Full Name</th><th>Active</th></tr>');
 			      for (i=0; i < users.length; i++) {
@@ -323,13 +326,19 @@ function populate_local_users_n_groups() {
                         var count = 'n/a'
                         var trow = $('<tr class="row"><td><img src="/images/edit.png" style="max-width:inherit;"></img></td><td>'+groups[j].name+'</td><td>'+count+'</td></tr>');
                         var group = groups[j];
-                        $(trow).data('groupname', groups[j].name).on("click", function(group) {
+                        $(trow).data('groupname', groups[j].name).click({param1:group}, function(event) {
                             //var group = groups[j].name;
                             var group_users = new Array();
-                            $(group).each(function(usr_idx, username) {
-                                group_users.push({username : username, fullname: users[username].fullname});
-                            });
-                            group_modal(groupname, group_users, users, 'Edit');
+                            var groupname = event.data.param1.name;
+                            $.ajax({
+                                type:'GET',
+                                url: '/scot/api/v2/group/' + event.data.param1.id + '/user',
+                            }).done(function(response){
+                                for (z=0; z < response.records.length; z++) {
+                                    group_users.push({username : response.records[z].username, fullname: response.records[z].fullname});    
+                                }
+                                group_modal(groupname, group_users, users, 'Edit');
+                            })
                         });
                         $('#groups_table').append(trow);
                     }
@@ -570,25 +579,25 @@ $.ajax({
 		    url = '/scot/api/v2/user/';
           }
 		  $(button).append('<img class="loading" src="/loading.gif"></img>');
-		  var form_data = new Object();
           var id             = $('#user_modal').find('input[name=id]').val();
-		  form_data.username = $('#user_modal').find('input[name=username]').val();
-		  form_data.fullname = $('#user_modal').find('input[name=fullname]').val();
-		  form_data.active   = $('#user_modal').find('input[name=active]').prop('checked');
+		  var username = $('#user_modal').find('input[name=username]').val();
+		  var fullname = $('#user_modal').find('input[name=fullname]').val();
+		  var active   = $('#user_modal').find('input[name=active]').prop('checked');
 		  var password = $('#user_modal').find('input[name=password]').val();
 		  if(password.length > 0) {
-		     form_data.password = password;
+		     password = password;
 		  }
-		  form_data.groups   = $('#user_form').find('select[name=groups]').find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from each option (selected or not) in the groups select into array 
+		  var groups   = $('#user_form').find('select[name=groups]').find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from each option (selected or not) in the groups select into array 
             if (id != undefined) {
                 url = '/scot/api/v2/user/' + id;
             }
-            
+            var json = {'username':username,'fullname':fullname, 'active':active, 'password':password, 'groups':groups}
             $.ajax({
                 type: ajax_type,
                 async: true,
                 url:  url,
-                data: JSON.stringify(form_data)
+                data: JSON.stringify(json),
+                contentType: 'application/json; charset=UTF-8',
             }).done(function(response) {
                 $('#user_modal').modal('hide');
                 populate_local_users_n_groups();
@@ -601,6 +610,8 @@ $.ajax({
 
 		function save_group_changes(button) {
 		  $('.loading').remove();
+          var ajax_type = 'PUT';
+          var url;
 		  var group_type = $('#group_modal').data('group_type');
 		  if(group_type == 'New') {
 		    //TODO: make sure this username isn't already taken
@@ -610,18 +621,23 @@ $.ajax({
 			return 1;
 		    } 
 		    if(empty(groupname_input, 'groupname')) {  return 1;}
-		    //TODO: make sure password isn't empty
-		  }
+            ajax_type = 'POST'  		  
+            url = '/scot/api/v2/group/';
+          }
 		  $(button).append('<img class="loading" src="/loading.gif"></img>');
 		  var form_data = new Object();
 		  form_data.groupname = $('#group_modal').find('input[name=groupname]').val();
 		  form_data.users   = $('#group_form').find('select[name=users]').find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from each option (selected or not) in the users select into array 
-		  $.ajax({
+		  if (id != undefined) {
+            url = '/scot/api/v2/group/' + id;
+          }
+          $.ajax({
 		     type: 'PUT',
 		     async: true,
 		     url:  '/scot/admin/auth/group/'+form_data.groupname,
-		     data: JSON.stringify(form_data)
-		  }).done(function(response) {
+		     data: JSON.stringify(form_data),
+		     contentType: 'application/json; charset=UTF-8',
+          }).done(function(response) {
 		     $('#group_modal').modal('hide');
 		     populate_local_users_n_groups();
 		  }).error(function(response) {
@@ -661,9 +677,11 @@ $.ajax({
 		function new_group() {
 		   $.ajax({
 		      type: 'GET',
-		      url:  '/scot/admin/auth'
-		   }).done(function(response) {
-		      group_modal('', '', response.data.users, 'New'); 
+		      url:  '/scot/api/v2/user',
+              data: {limit:0}
+            }).done(function(response) {
+              users = response.records;		
+		      group_modal('', '', users, 'New'); 
 		   });
 
 		}
