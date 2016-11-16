@@ -33,11 +33,12 @@ var EntityDetail = React.createClass({
     },
     componentDidMount: function () {
         var currentTabArray = this.state.tabs;
+        var valueClicked = this.props.entityvalue;
         if (this.props.entityid == undefined) {
             $.ajax({
                 type: 'GET',
                 url: 'scot/api/v2/' + this.props.entitytype + '/byname',
-                data: {name:this.props.entityvalue}
+                data: {name:valueClicked}
             }).success(function(result) {
                 var entityid = result.id;
                 if (this.isMounted()) {
@@ -47,7 +48,7 @@ var EntityDetail = React.createClass({
                         url: 'scot/api/v2/' + this.props.entitytype + '/' + entityid 
                     }).success(function(result) {
                         //this.setState({entityData:result})
-                        var newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype, valueClicked:this.props.entityvalue}
+                        var newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype, valueClicked:valueClicked}
                         currentTabArray.push(newTab);
                         if (this.isMounted()) {
                             var entityidsarray = [];
@@ -63,7 +64,7 @@ var EntityDetail = React.createClass({
                 url: 'scot/api/v2/' + this.props.entitytype + '/' + this.state.entityid
             }).success(function(result) {
                 //this.setState({entityData:result})
-                var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:this.props.entityvalue}
+                var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:valueClicked}
                 currentTabArray.push(newTab);
                 if (this.isMounted()) {
                     var entityidsarray = [];
