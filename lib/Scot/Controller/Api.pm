@@ -186,6 +186,10 @@ sub apply_tags {
             $mongo->collection('Tag')->add_tag_to($col, $id, $tag);
         }
     }
+    $self->audit("tag_thing", {
+        thing   => $col,
+        id      => $id,
+    });
 }
 
 sub apply_sources {
@@ -1165,6 +1169,18 @@ sub process_promotion {
             type    => $object->get_collection_name,
             id      => $object->id,
         }
+    });
+    $self->audit("promotion", {
+        type    => $object->get_collection_name . " to ". 
+                   $proobj->get_collection_name,
+        source => { 
+            type    => $object->get_collection_name,
+            id      => $object->id,
+        },
+        destination => {
+            type    => $proobj->get_collection_name,
+            id      => $proobj->id,
+        },
     });
 }
 
