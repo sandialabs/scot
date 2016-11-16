@@ -28,6 +28,7 @@ var EntityDetail = React.createClass({
             tabs: tabs,
             initialLoad:false,
             processedIds:processedIdsArray,
+            valueClicked:'',
         }
     },
     componentDidMount: function () {
@@ -46,7 +47,7 @@ var EntityDetail = React.createClass({
                         url: 'scot/api/v2/' + this.props.entitytype + '/' + entityid 
                     }).success(function(result) {
                         //this.setState({entityData:result})
-                        var newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype}
+                        var newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype, valueClicked:this.props.entityvalue}
                         currentTabArray.push(newTab);
                         if (this.isMounted()) {
                             var entityidsarray = [];
@@ -62,7 +63,7 @@ var EntityDetail = React.createClass({
                 url: 'scot/api/v2/' + this.props.entitytype + '/' + this.state.entityid
             }).success(function(result) {
                 //this.setState({entityData:result})
-                var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype}
+                var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:this.props.entityvalue}
                 currentTabArray.push(newTab);
                 if (this.isMounted()) {
                     var entityidsarray = [];
@@ -111,7 +112,7 @@ var EntityDetail = React.createClass({
                                         type: 'GET',
                                         url: 'scot/api/v2/' + nextProps.entitytype + '/' + entityid
                                     }).success(function(result) {
-                                        var newTab = {data:result, entityid:entityid, entitytype:nextProps.entitytype}
+                                        var newTab = {data:result, entityid:entityid, entitytype:nextProps.entitytype, valueClicked:nextProps.entityvalue}
                                         currentTabArray.push(newTab);
                                         if (this.isMounted()) {
                                             this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
@@ -124,7 +125,7 @@ var EntityDetail = React.createClass({
                                 type: 'GET',
                                 url: 'scot/api/v2/' + nextProps.entitytype + '/' + nextProps.entityid
                             }).success(function(result) {
-                                var newTab = {data:result, entityid:nextProps.entityid, entitytype:nextProps.entitytype}
+                                var newTab = {data:result, entityid:nextProps.entityid, entitytype:nextProps.entitytype, valueClicked:nextProps.entityvalue}
                                 currentTabArray.push(newTab);
                                 if (this.isMounted()) {
                                     this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
@@ -221,9 +222,9 @@ var EntityDetail = React.createClass({
             if (this.state.tabs[i].entitytype == 'guide') {
                 title = 'guide'
             } else {
-                title = this.state.tabs[i].data.value.slice(0,15);
+                title = this.state.tabs[i].valueClicked.slice(0,15);
             }
-            tabsArr.push(<Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} i={z} key={z} errorToggle={this.props.errorToggle}/></Tab>)
+            tabsArr.push(<Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} valueClicked={this.state.tabs[i].valueClicked} i={z} key={z} errorToggle={this.props.errorToggle}/></Tab>)
         }
         return (
             <Draggable handle="#handle" onMouseDown={this.moveDivInit} key={this.props.key}>
@@ -252,7 +253,7 @@ var TabContents = React.createClass({
             return (
                 <div className='tab-content'>
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
-                        <h4 id="myModalLabel">{this.props.data != null ? <EntityValue value={this.props.data.value}/> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>
+                        <h4 id="myModalLabel">{this.props.data != null ? <EntityValue value={this.props.valueClicked}/> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>
                     </div>
                     <div style={{height:'100%',display:'flex', flex:'1 1 auto', margin:'10px', flexFlow:'inherit', minHeight:'1px'}}>
                     {this.props.data != null ? <EntityBody data={this.props.data} entityid={this.props.entityid} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/> : <div>Loading...</div>}
