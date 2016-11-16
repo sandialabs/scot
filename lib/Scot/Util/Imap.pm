@@ -117,7 +117,7 @@ sub _connect_to_imap {
         Ignoresizeerrors    => $self->ignore_size_errors,
     );
 
-    $log->trace("Initializing IMAP client w/ options: ", 
+    $log->debug("Initializing IMAP client w/ options: ", 
                 {filter =>\&Dumper, value => \@options});
     
     my $client = retry {
