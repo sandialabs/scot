@@ -634,8 +634,10 @@ $.ajax({
 		  $(button).append('<img class="loading" src="/loading.gif"></img>');
 		  var id = $('#group_modal').find('input[name=id]').val();
           var groupname = $('#group_modal').find('input[name=groupname]').val();
-		  var users   = $('#group_form').find('select[name=users]').find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from each option (selected or not) in the users select into array 
-		  var usersid = $('#group_form').find('select[name=users]').find('option').map(function() { return $(this).attr('id'); }).toArray();
+		  var selectedusers   = $('#group_form').find('select[name=users]').find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from the left (selected) side in the users select into array 
+		  var unselectedusers = $('#group_form').find('select[name=allusers]').find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from the right (unselected) side in the users select into array
+          var selectedusersid = $('#group_form').find('select[name=users]').find('option').map(function() { return $(this).attr('id'); }).toArray();
+          var unselectedusersid = $('#group_form').find('select{name=allusers]').find('option').map(function() { return $(this).attr('id'); }).toArray();
           if (id != undefined) {
             url = '/scot/api/v2/group/' + id;
           }
@@ -653,12 +655,12 @@ $.ajax({
               data: {limit:0},
             }).done(function(response) {
                 for (j=0; j < response.records.length; j++) {
-                    for (i=0; i < usersid.length; i++) {
-                        if (usersid[i] == response.records[i].id) { //This section used if user is on Left (to be added)
+                    for (i=0; i < selectedusersid.length; i++) {
+                        if (selectedusersid[i] == response.records[i].id) { //This section used if user is on Left (to be added)
                             var currentGroup = response.records[i].groups;
                             currentGroup.push(groupname);
                             //todo check if group is already there and skip if it is. 
-                            var url = '/scot/api/v2/user/' + usersid[i];
+                            var url = '/scot/api/v2/user/' + selectedusersid[i];
                             var json = {'groups':groupname};
                             $.ajax({
                                 type: 'put',
@@ -667,7 +669,7 @@ $.ajax({
                                 data: JSON.stringify(json),
                                 contentType: 'application/json; charset=UTF-8',
                             }).done(function(response) {
-                                console.log('adding: ' + users[i]);
+                                console.log('adding: ' + selectedusers[i]);
                                 //populate_local_users_n_groups();
                             }).error(function(response) {
                                 $('.loading').attr('src', '/images/close_toolbar.png');
