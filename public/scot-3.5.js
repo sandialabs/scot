@@ -3535,15 +3535,32 @@ var AlertBody = React.createClass({displayName: "AlertBody",
             buttonStyle = 'warning';
         }
         
-        if (data.columns.length != 0) {
-            columns = data.columns
-        } else if (data.data.columns.length != 0) {
-            columns = data.data.columns
-        } else if (this.props.headerData != 0) {
-            columns = this.props.headerData.columns;
-        } else {
-            console.log('Error finding columns in JSON');
+        if (columns == undefined) {
+            if (data.columns != undefined) {
+                if (data.columns.length != 0) {
+                    columns = data.columns
+                } 
+            }
         }
+        if (columns == undefined) {
+            if (data.data != undefined) {
+                if (data.data.columns != undefined) {
+                    if (data.data.columns.length != 0) {
+                        columns = data.data.columns
+                    }
+                }
+            }
+        }
+        if (columns == undefined) {
+            if (this.props.headerData != undefined) {
+                if (this.props.headerData.length != 0) {
+                    columns = this.props.headerData.columns;
+                } else {
+                    console.log('Error finding columns in JSON'); 
+                }
+            }
+        }
+        
         for (var i=0; i < columns.length; i++) {
             var value = columns[i];
             rowReturn.push(React.createElement(AlertRow, {data: data, dataFlair: dataFlair, value: value}))
