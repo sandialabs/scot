@@ -387,9 +387,9 @@ sub has_computed_attributes {
 
 sub get_aggregate_count {
     my $self    = shift;
-    my $href    = shift;
+    my $aref    = shift;
     my $rawcol  = $self->_mongo_collection;
-    my $result  = $rawcol->aggregate($href);
+    my $result  = $rawcol->aggregate($aref);
     return $result;
 }
 
