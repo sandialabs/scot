@@ -3318,7 +3318,17 @@ var AlertParent = React.createClass({displayName: "AlertParent",
                 if (items[0].data != undefined) {
                     if (items[0].data.columns != undefined) {
                         if (items[0].data.columns.length != 0) {
-                            col_names = items[0].data.columns.slice(0)
+                            col_names = items[0].data.columns.slice(0);
+                        }
+                    }
+                }
+            }
+
+            if (col_names == undefined) {
+                if (this.props.headerData != undefined) {
+                    if (this.props.headerData.columns != undefined) {
+                        if (this.props.headerData.columns.length != 0) {
+                            col_names = items[0].data.columns.slice(0);
                         }
                     }
                 }
