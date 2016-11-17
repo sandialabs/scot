@@ -93,15 +93,20 @@ sub create_from_api {
     my $open_count      = 0;
     my $closed_count    = 0;
     my $promoted_count  = 0;
-    my %columns         = ();
+    my @columns         = ();
             
     foreach my $alert_href (@$data) {
+
+        @columns = keys %$alert_href;
 
         my $chref   = {
             data        => $alert_href,
             alertgroup  => $id,
             status      => 'open',
+        #    columns     => \@columns,
         };
+
+
 
         $log->trace("Creating alert ", {filter=>\&Dumper, value => $chref});
 
@@ -141,14 +146,6 @@ sub create_from_api {
             alert_count     => $alert_count,
         }
     });
-    # amq stuff should originate out of Api.pm
-    #$self->env->mq->send("scot",{
-    #    action  => "created", 
-    #    data    => {
-    #        type    => "alertgroup",
-    #        id      => $alertgroup->id
-    #    }
-    #});
     return $alertgroup;
 }
 
