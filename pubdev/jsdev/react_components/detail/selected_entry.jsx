@@ -502,7 +502,7 @@ var AlertParent = React.createClass({
                     dataFlair = items[z].data;
                 }
                 
-                body.push(<AlertBody index={z} data={items[z]} dataFlair={dataFlair} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected} alertPreSelectedId={this.props.alertPreSelectedId} activeId={this.state.activeId} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle}/>)
+                body.push(<AlertBody index={z} data={items[z]} dataFlair={dataFlair} headerData={this.props.headerData} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected} alertPreSelectedId={this.props.alertPreSelectedId} activeId={this.state.activeId} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle} />)
             }
             var search = null;
             if (items[0].data_with_flair != undefined) {
@@ -659,8 +659,10 @@ var AlertBody = React.createClass({
     },
     render: function() {
         var data = this.props.data;
+        var headerData = this.props.headerData;
         var dataFlair = this.props.dataFlair;
         var index = this.props.index;
+        var columns;
         var selected = 'un-selected'
         var rowReturn=[];
         var buttonStyle = '';
@@ -674,11 +676,13 @@ var AlertBody = React.createClass({
         } else if (data.status == 'promoted') {
             buttonStyle = 'warning';
         }
-        var columns;
+        
         if (data.columns.length != 0) {
             columns = data.columns
         } else if (data.data.columns.length != 0) {
             columns = data.data.columns
+        } else if (this.props.headerData != 0) {
+            columns = this.props.headerData.columns;
         } else {
             console.log('Error finding columns in JSON');
         }
