@@ -592,7 +592,8 @@ sub approved_sender {
 
     foreach my $ad ( @$domains ) {
         $log->trace("comparing to domain $ad");
-        if ( $ad eq $this_domain ) {
+        # if ( $ad eq $this_domain ) {
+        if ( $ad =~ /$this_domain$/ ) {
             $log->trace("approved domain");
             return 1;
         }
