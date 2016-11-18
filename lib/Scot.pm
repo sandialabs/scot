@@ -161,6 +161,21 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-search#search')
             ->name  ('search');
 
+=pod
+
+@api {get} /scot/api/v2/game SCOT Gamefication
+@apiName game
+@apiGroup Game
+@apiVersion 2.0.0
+@apiDescription provide fun? stats on analyst behavior
+@apiSuccess {Object}    -
+
+=cut
+
+    $scot   ->route ('/api/v2/game')
+            ->to    ('controller-api#get_game_data')
+            ->name  ('game');
+
     $scot   ->route ('/api/v2/graph/:thing/:id/:depth')
             ->to    ('controller-graph#get_graph')
             ->name  ('get_graph');
