@@ -2601,4 +2601,41 @@ sub get_max_id {
     return $obj->id;
 }
 
+sub get_game_data {
+    my $self    = shift;
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+    my $user    = $self->session('user');
+
+    my $col = $mongo->collection('Game');
+    my $cur = $col->find();
+    my %res = ();
+
+    while ( my $gobj = $cur->next ) {
+        my $user    = $gobj->username;
+        my $cat     = $gobj->category;
+        my $count   = $gobj->count;
+        $res{$cat}{$user} = $count;
+    }
+
+    # truncate results to top 3
+    my %trunc   = ();
+
+    foreach my $cat (keys %res) {
+        my $h = $res{$cat};
+        my @ranked = sort { $h->{$b} <=> $h->{$a} } keys (%$h);
+        $#ranked = 2;   # truncate to 3 members
+
+        foreach $r (@ranked) {
+            push @{$trunc{$cat}}, { username => $r, count => $res{$cat}{$r} };
+        }
+    }
+    
+    $self->do_render(\%trunc);
+
+
+}
+
 1;
