@@ -2603,7 +2603,6 @@ sub get_max_id {
 
 sub get_game_data {
     my $self    = shift;
-    my $self    = shift;
     my $env     = $self->env;
     my $mongo   = $env->mongo;
     my $log     = $env->log;
