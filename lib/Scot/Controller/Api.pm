@@ -2628,7 +2628,7 @@ sub get_game_data {
         my @ranked = sort { $h->{$b} <=> $h->{$a} } keys (%$h);
         $#ranked = 2;   # truncate to 3 members
 
-        foreach $r (@ranked) {
+        foreach my $r (@ranked) {
             push @{$trunc{$cat}}, { username => $r, count => $res{$cat}{$r} };
         }
     }
