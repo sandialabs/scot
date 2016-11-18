@@ -302,7 +302,7 @@ sub teacher {
     
     my $match   = {
         '$match'    => { 
-            'target.type'  => 'entry',
+            'target.type'  => 'guide',
             when        => { '$lte' => $when->[0] , '$gte' => $when->[1] },
         },
     };
