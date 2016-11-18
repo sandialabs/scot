@@ -40,8 +40,32 @@ define({ "api": [
         ]
       }
     },
-    "filename": "lib/Scot.pm",
+    "filename": "./Scot.pm",
     "groupTitle": "Auth"
+  },
+  {
+    "type": "post",
+    "url": "/scot/api/v2/:thing",
+    "title": "Create thing",
+    "name": "Create__thing",
+    "group": "CRUD",
+    "version": "2.0.0",
+    "description": "<p>Create a :thing</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Object",
+            "optional": false,
+            "field": "-",
+            "description": "<p>The JSON of object to create</p>"
+          }
+        ]
+      }
+    },
+    "filename": "./Scot.pm",
+    "groupTitle": "CRUD"
   },
   {
     "type": "delete",
@@ -80,7 +104,7 @@ define({ "api": [
         }
       ]
     },
-    "filename": "lib/Scot.pm",
+    "filename": "./Scot.pm",
     "groupTitle": "CRUD"
   },
   {
@@ -120,7 +144,7 @@ define({ "api": [
         }
       ]
     },
-    "filename": "lib/Scot.pm",
+    "filename": "./Scot.pm",
     "groupTitle": "CRUD"
   },
   {
@@ -178,7 +202,7 @@ define({ "api": [
         "type": "json"
       }
     ],
-    "filename": "lib/Scot.pm",
+    "filename": "./Scot.pm",
     "groupTitle": "CRUD"
   },
   {
@@ -218,7 +242,7 @@ define({ "api": [
         }
       ]
     },
-    "filename": "lib/Scot.pm",
+    "filename": "./Scot.pm",
     "groupTitle": "CRUD"
   },
   {
@@ -325,7 +349,7 @@ define({ "api": [
         "type": "json"
       }
     ],
-    "filename": "lib/Scot.pm",
+    "filename": "./Scot.pm",
     "groupTitle": "CRUD"
   },
   {
@@ -365,7 +389,7 @@ define({ "api": [
         }
       ]
     },
-    "filename": "lib/Scot.pm",
+    "filename": "./Scot.pm",
     "groupTitle": "CRUD"
   },
   {
@@ -389,8 +413,32 @@ define({ "api": [
         ]
       }
     },
-    "filename": "lib/Scot.pm",
+    "filename": "./Scot.pm",
     "groupTitle": "File"
+  },
+  {
+    "type": "get",
+    "url": "/scot/api/v2/game",
+    "title": "SCOT Gamefication",
+    "name": "game",
+    "group": "Game",
+    "version": "2.0.0",
+    "description": "<p>provide fun? stats on analyst behavior</p>",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "-",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "filename": "./Scot.pm",
+    "groupTitle": "Game"
   },
   {
     "type": "put",
@@ -400,7 +448,7 @@ define({ "api": [
     "group": "Queue",
     "version": "2.0.0",
     "description": "<p>send the the string :command to the scot activemq topic queue</p>",
-    "filename": "lib/Scot.pm",
+    "filename": "./Scot.pm",
     "groupTitle": "Queue"
   },
   {
@@ -458,7 +506,7 @@ define({ "api": [
         ]
       }
     },
-    "filename": "lib/Scot.pm",
+    "filename": "./Scot.pm",
     "groupTitle": "Search"
   }
 ] });
