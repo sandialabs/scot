@@ -78,6 +78,7 @@ sub run {
         closer
         cleaner
         fixer
+        operative
     ));
 
     foreach my $category (@cats) {
@@ -319,6 +320,40 @@ sub teacher {
     my $col     = $mongo->collection('Entry');
     $self->aggregate('teacher', $col, \@agg);
 }
+
+=item B<operative>
+
+this game calculates who has created the most Intel 
+
+=cut
+
+sub operative {
+    my $self    = shift;
+    my $when    = shift;
+    my $env     = $self->env;
+    my $log     = $self->log;
+    my $mongo   = $env->mongo;
+    
+    my $match   = {
+        '$match'    => { 
+            'target.type'  => 'intel',
+            when        => { '$lte' => $when->[0] , '$gte' => $when->[1] },
+        },
+    };
+
+    my $group   = {
+        '$group'    => {
+            '_id'   => '$owner',
+            total   => { '$sum' => 1 },
+        }
+    };
+
+    my @agg = ( $match, $group );
+
+    my $col     = $mongo->collection('Entry');
+    $self->aggregate('operative', $col, \@agg);
+}
+
 
 
 
