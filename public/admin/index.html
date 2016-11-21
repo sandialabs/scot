@@ -68,7 +68,7 @@ function fullDateFormat(dateObject) {
 
 function restore_confirm() {
         $('#restore_btn').find('img').remove();
-        $('#restore_btn').prop('disabled', true).append('<img src="/loading.gif" style="width:20px;"></img>');
+        $('#restore_btn').prop('disabled', true).append('<img src="./loading.gif" style="width:20px;"></img>');
         var fd = new FormData();
         fd.append("upload", document.getElementById('restore_file').files[0]);
 	$('#progress_restoring').show();
@@ -307,7 +307,7 @@ function populate_local_users_n_groups() {
                         $(trow).data('username', users[i].username).click({param1:user}, function(event){
                             var active = event.data.param1.active;
                             if (active == 1) {active = true} else {active = false}
-                            user_modal(event.data.param1.username, event.data.param1.fullname, active, (event.data.param1.lockouts > 0), event.data.param1.groups, allGroups, 'Edit', event.data.param1.id);
+                            user_modal(event.data.param1.username, event.data.param1.fullname, active, (event.data.param1.lockouts > 0), event.data.param1.group, allGroups, 'Edit', event.data.param1.id);
                         });
                         $('#users_table').append(trow); 
                     }
@@ -321,14 +321,14 @@ function populate_local_users_n_groups() {
                 allGroups = response.records;
                 var auth_method = 'local';
                 if (auth_method == 'local') {
-                    var groups = response.records;
+                    //var group = response.records;
                     $('#groups_table').html('<tr><th></th><th></th><th>Group Name</th><th>Num Users</th></tr>');
-                    for (j=0; j < groups.length; j++) {                  
+                    for (j=0; j < response.records.length; j++) {                  
                         //var count = groups[groupname].length;
                         var count = 'n/a'
-                        var trow = $('<tr class="row"><td><img src="/images/edit.png" style="max-width:inherit;"></img></td><td>'+groups[j].name+'</td><td>'+count+'</td></tr>');
-                        var group = groups[j];
-                        $(trow).data('groupname', groups[j].name).click({param1:group}, function(event) {
+                        var trow = $('<tr class="row"><td><img src="/images/edit.png" style="max-width:inherit;"></img></td><td>'+response.records[j].name+'</td><td>'+count+'</td></tr>');
+                        var group = response.records[j];
+                        $(trow).data('groupname', group.name).click({param1:group}, function(event) {
                             //var group = groups[j].name;
                             var group_users = new Array();
                             var groupname = event.data.param1.name;
@@ -580,7 +580,7 @@ $.ajax({
 		    ajax_type = 'POST';
 		    url = '/scot/api/v2/user/';
           }
-		  $(button).append('<img class="loading" src="/loading.gif"></img>');
+		  $(button).append('<img class="loading" src="./loading.gif"></img>');
           var id             = $('#user_modal').find('input[name=id]').val();
 		  var username = $('#user_modal').find('input[name=username]').val();
 		  var fullname = $('#user_modal').find('input[name=fullname]').val();
@@ -594,11 +594,11 @@ $.ajax({
           } else {
             acitve = 0;
           }
-		  var groups   = $('#user_form').find('select[name=groups]').find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from each option (selected or not) in the groups select into array 
+		  var group   = $('#user_form').find('select[name=groups]').find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from each option (selected or not) in the groups select into array 
             if (id != undefined) {
                 url = '/scot/api/v2/user/' + id;
             }
-            var json = {'username':username,'fullname':fullname, 'active':active, 'password':password, 'groups':groups}
+            var json = {'username':username,'fullname':fullname, 'active':active, 'password':password, 'group':group}
             $.ajax({
                 type: ajax_type,
                 async: true,
@@ -631,13 +631,17 @@ $.ajax({
             ajax_type = 'POST'  		  
             url = '/scot/api/v2/group/';
           }
-		  $(button).append('<img class="loading" src="/loading.gif"></img>');
+		  $(button).append('<img class="loading" src="./loading.gif"></img>');
 		  var id = $('#group_modal').find('input[name=id]').val();
           var groupname = $('#group_modal').find('input[name=groupname]').val();
-		  var selectedusers   = $('#group_form').find('select[name=users]').find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from the left (selected) side in the users select into array 
-		  var unselectedusers = $('#group_form').find('select[name=allusers]').find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from the right (unselected) side in the users select into array
-          var selectedusersid = $('#group_form').find('select[name=users]').find('option').map(function() { return $(this).attr('id'); }).toArray();
-          var unselectedusersid = $('#group_form').find('select{name=allusers]').find('option').map(function() { return $(this).attr('id'); }).toArray();
+		  var selectedusers   = $('#group_form').find('select')[0];
+          selectedusers = $(selectedusers).find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from the left (selected) side in the users select into array 
+		  var unselectedusers = $('#group_form').find('select')[1];
+          unselectedusers = $(unselectedusers).find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from the right (unselected) side in the users select into array
+          var selectedusersid = $('#group_form').find('select')[0];
+          selectedusersid = $(selectedusersid).find('option').map(function() { return parseInt($(this).attr('id')); }).toArray();
+          var unselectedusersid = $('#group_form').find('select')[1]
+          unselectedusersid = $(unselectedusersid).find('option').map(function() { return parseInt($(this).attr('id')); }).toArray();
           if (id != undefined) {
             url = '/scot/api/v2/group/' + id;
           }
@@ -654,14 +658,14 @@ $.ajax({
               url:  '/scot/api/v2/user',
               data: {limit:0},
             }).done(function(response) {
-                for (j=0; j < response.records.length; j++) {
-                    for (i=0; i < selectedusersid.length; i++) {
-                        if (selectedusersid[i] == response.records[i].id) { //This section used if user is on Left (to be added)
-                            var currentGroup = response.records[i].groups;
+                for (i=0; i < response.records.length; i++) {
+                    if (selectedusersid.indexOf(response.records[i].id) !== -1) {
+                        if (response.records[i].group.indexOf(groupname) === -1) {
+                            var currentGroup = response.records[i].group;
                             currentGroup.push(groupname);
                             //todo check if group is already there and skip if it is. 
-                            var url = '/scot/api/v2/user/' + selectedusersid[i];
-                            var json = {'groups':groupname};
+                            var url = '/scot/api/v2/user/' + response.records[i].id;
+                            var json = {'group':currentGroup};
                             $.ajax({
                                 type: 'put',
                                 async: true,
@@ -669,27 +673,45 @@ $.ajax({
                                 data: JSON.stringify(json),
                                 contentType: 'application/json; charset=UTF-8',
                             }).done(function(response) {
-                                console.log('adding: ' + selectedusers[i]);
-                                //populate_local_users_n_groups();
+                                populate_local_users_n_groups();
                             }).error(function(response) {
                                 $('.loading').attr('src', '/images/close_toolbar.png');
-                            });  
-                        } else {                                    // This section used if user is on Right (to be removed)
-                            var index = currentGroup.indexOf(groupname);  
-                            if (index === -1) {
-                                currentGroup
+                            });
+                        }
+                    }
+                    if (unselectedusersid.indexOf(response.records[i].id) !== -1) {
+                        console.log(i);
+                        if (response.records[i].group.indexOf(groupname) !== -1) { 
+                            var currentGroup = response.records[i].group;
+                            var index = currentGroup.indexOf(groupname);
+                            if (index !== -1) {
+                                currentGroup.splice(index,1)
+                                var url = '/scot/api/v2/user/' + response.records[i].id;
+                                var json = {'group':currentGroup}
+                                $.ajax({
+                                    type: 'put',
+                                    asynx: true,
+                                    url: url,
+                                    data: JSON.stringify(json),
+                                    contentType: 'application/json; charset=UTF-8'
+                                }).done(function(response) {
+                                    console.log('removing from group')
+                                }).error(function(response) {
+                                    $('.loading').attr('src','/images/close_toolbar.png');
+                                });
                             }
                         }
                     }
                 }
-            }
+                    
             $('#group_modal').modal('hide');
 		    populate_local_users_n_groups();
           }).error(function(response) {
 		     $('.loading').attr('src', '/images/close_toolbar.png');
 		  });
 		  return false;
-		}
+		})
+        }
 
 		
 		function new_user() {
@@ -747,7 +769,7 @@ $.ajax({
 	
 		function create_backup() {
         $('#create_btn').find('img').remove();
-        $('#create_btn').prop('disabled', true).append('<img src="/loading.gif" style="width:20px;"></img>');
+        $('#create_btn').prop('disabled', true).append('<img src="./loading.gif" style="width:20px;"></img>');
         $.ajax({
 			type: 'post',
 		        url:  '/scot/admin/backup'
@@ -769,7 +791,7 @@ $.ajax({
 
 	function update_backup_schedule() {
           $('#schedule_btn').find('img').remove();
-	  $('#schedule_btn').append('<img  style="width:20px;" src="/loading.gif"></img>');
+	  $('#schedule_btn').append('<img  style="width:20px;" src="./loading.gif"></img>');
 	  var data = {'schedule' : $('#schedule').val(), 'max_disk' : $('#max_disk').val(), 'enable_backups' : $('#enable_backups').prop('checked')};
 	  $.ajax({
 	    type: 'POST',
@@ -792,7 +814,7 @@ $.ajax({
 
     function email_settings(type) {
           $('#'+type+'_email_btn').find('img').remove();
-	  $('#'+type+'_email_btn').append('<img  style="width:20px;" src="/loading.gif"></img>');
+	  $('#'+type+'_email_btn').append('<img  style="width:20px;" src="./loading.gif"></img>');
       var form = $('#email_options');
       var email_hostname = form.find('input[name=address]').val();
       var email_port = form.find('input[name=port]').val();
@@ -861,7 +883,7 @@ $.ajax({
         <div class="section" id="info">
                  <span style="font-size:150%; font-weight:bold">Version</span>
                  <div class="nwell well">
-        SCOT Version: 3.5.0 - Donner Party &nbsp; &nbsp;
+        SCOT Version: 3.5.1 - Donner Party &nbsp; &nbsp;
         <button class="btn" style="display:none;" disabled>Check for SCOT update</button>
         &nbsp; &nbsp;<button class="btn" style='display:none;' onclick="offline_update()" disabled>Offline SCOT update</button>
 	<div id="offline_upload_input" style="display:none;"><hr><b>Select SCOT Update File</b><br><input type="file" id="update_file" name="update_file" onchange="upload_file_changed()" style="margin-bottom:0px;"><button class="btn btn-warning" id="update_warn_btn" style="display:none;" onclick="update_warn()" >Apply Update</button>
@@ -1294,7 +1316,7 @@ $.ajax({
                             </div>
                             <table style="margin:auto;">
                                 <tr><th>Group Members</th><th></th><th>Available Users</th></tr>
-                                    <tr><td><select name="users" class="select_swap" id="users" multiple></select></td><td><span style="display:block;"><button type="button" style="font-size:150%;" onclick="add_users()">&larr;</button><br><button type="button" style="font-size:150%;" onclick="remove_users()">&rarr;</button></span></td><td><select style="width:inherit;" class="select_swap" id="all_users" multiple></select></td></tr>
+                                    <tr><td><select name="users" class="select_swap" id="users" multiple></select></td><td><span style="display:block;"><button type="button" style="font-size:150%;" onclick="add_users()">&larr;</button><br><button type="button" style="font-size:150%;" onclick="remove_users()">&rarr;</button></span></td><td><select name="all_users" style="width:inherit;" class="select_swap" id="all_users" multiple></select></td></tr>
                             </table>
                         </form>
                     </div>
