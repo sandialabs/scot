@@ -1,0 +1,335 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installing SCOT &#8212; SCOT 3.5.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '3.5.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
+    <link rel="next" title="Authentication/Authorization" href="auth.html" />
+    <link rel="prev" title="SCOT Terminology" href="terminology.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="auth.html" title="Authentication/Authorization"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="terminology.html" title="SCOT Terminology"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="installing-scot">
+<h1>Installing SCOT<a class="headerlink" href="#installing-scot" title="Permalink to this headline">¶</a></h1>
+<p>We&#8217;ve made installing SCOT a snap; follow these simple instructions and you&#8217;ll be running in no time.</p>
+<div class="section" id="minimum-system-requirements">
+<h2>Minimum System Requirements<a class="headerlink" href="#minimum-system-requirements" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Ubuntu 14.04LTS or CentOS 7</li>
+<li>2 Quad Core CPUs</li>
+<li>16 GB Ram</li>
+<li>1TB Disk</li>
+</ul>
+<p>The installer will also work for CentOS/Redhat EL.</p>
+</div>
+<div class="section" id="initial-installation">
+<h2>Initial Installation<a class="headerlink" href="#initial-installation" title="Permalink to this headline">¶</a></h2>
+<p>Installation of SCOT requires internet access or the ability to have local
+mirrors of several apt/yum repos and access to CPAN (local or remote).</p>
+<p># CentOS only.  If you built your system from the minimal ISO, you will need to do the following:</p>
+<blockquote>
+<div>$ su
+# yum update
+# yum -y install net-tools
+# yum -y install git
+# yum -y groupinstall &#8220;Development Tools&#8221;
+# yum install wget</div></blockquote>
+<p># CentOS only.  Perl is pretty old on a default install.  SCOT requires at least Perl 5.18.  Fortunately, it is pretty easy to get there:</p>
+<blockquote>
+<div>$ su
+# wget <a class="reference external" href="http://www.cpan.org/src/5.0/perl-5.24.0.tar.gz">http://www.cpan.org/src/5.0/perl-5.24.0.tar.gz</a>
+# tar xzvf perl-5.24.0.tar.gz
+# cd perl-5.24.0
+# ./Configure -des
+# make
+# make test
+# make install</div></blockquote>
+<p># Get the SCOT source from Github:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">sandialabs</span><span class="o">/</span><span class="n">scot</span><span class="o">.</span><span class="n">git</span> <span class="n">scot</span>
+</pre></div>
+</div>
+<p># cd to the SCOT directory:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd /home/tbruner/scot
+</pre></div>
+</div>
+<p># Decide on the Authentication method you are planning to use. (RemoteUser, Local, or LDAP).  See Aunthentication section for more details.</p>
+<p># run the installer as root.  Make sure http_proxy and https_proxy are set if needed:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo bash
+# ./install.sh -A Local
+</pre></div>
+</div>
+<p># get a cup of coffee, initial install has to download and install many dependencies.  If any errors, should occur with downloading packages or failure of a package to install, it is OK to re-run the installer after those problems are resolved.</p>
+<p># NOTE: you may have to adjust your firewall settings to allow your browser to connect to port 443.</p>
+</div>
+<div class="section" id="install-sh-options">
+<h2>install.sh Options<a class="headerlink" href="#install-sh-options" title="Permalink to this headline">¶</a></h2>
+<p>SCOT&#8217;s install is designed to automate many of the tasks need to install and
+upgrade SCOT.  The installer takes the following flags to modify its installtion behavior:</p>
+<p>Usage: ./install.sh [-abigmsrflq] [-A mode] [-J file]</p>
+<blockquote>
+<div><table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-a</span></kbd></td>
+<td>do not attempt to perform an &#8220;apt-get update&#8221;</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-d</span></kbd></td>
+<td>do not delete /opt/scot before installation</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-i</span></kbd></td>
+<td>do not overwrite an existing /etc/init.d/scot file</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-g</span></kbd></td>
+<td>Overwrite existing GeoCitiy DB</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-m</span></kbd></td>
+<td>Overwrite mongodb config and restart mongo service</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-s</span></kbd></td>
+<td>SAFE SCOT. Only instal SCOT software, do not refresh apt, do not
+overwrite /etc/init.d/scot, do not reset db, and
+do not delete /opt/scotfiles</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-r</span></kbd></td>
+<td>delete SCOT database (will result in data loss!)</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-f</span></kbd></td>
+<td>delete /opt/scotfiles directory and contents ( again, data loss!)</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-l</span></kbd></td>
+<td>truncate logs in /var/log/scot (potential data loss)</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-q</span></kbd></td>
+<td>install new activemq config, apps, initfiles and restart service</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-w</span></kbd></td>
+<td>overwrite existing SCOT apache config files</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-A <var>mode</var></span></kbd></td>
+<td>mode = Local | Ldap | Remoteuser
+default is Remoteuser (see docs for details)</td></tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+<div class="section" id="upgrading">
+<span id="upgrade"></span><h2>Upgrading<a class="headerlink" href="#upgrading" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><dl class="first docutils">
+<dt>From 3.4</dt>
+<dd><ul class="first last simple">
+<li>BACKUP your existing SCOT database (mongodump scotng-prod)</li>
+<li>delete /etc/init.d/scot3 and remove crontab entries about scot</li>
+<li>pull latest code and run the install.sh script</li>
+<li>Migrate your database (see below)</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>3.5.x &#8211;</dt>
+<dd><ul class="first last simple">
+<li>git pull</li>
+<li>bash install.sh -s</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="database-migration">
+<h2>Database Migration<a class="headerlink" href="#database-migration" title="Permalink to this headline">¶</a></h2>
+<p>Many parts of the database have changed from the 3.4 version of SCOT and it
+is necessary to migrate that data if you wish to continue to access that data
+in SCOT 3.5.  We have developed a migration program to assist with this task.</p>
+<p>We are assuming that you Mongo instance has sufficient space to keep the 3.4
+database and the new 3.5 database on it during the migration.  The 3.5 instance
+will be roughly the same size as the 3.4 instance.</p>
+<p>Depending on the amount of data you need to migrate, this process could take
+a while.  It is hard to estimate, but from my experience, the migration will
+process a million alerts in 24 hours.</p>
+<p>Migration is designed to be parallelized.  Not only can each collection be
+migrated concurrently, but you can also specify the number of processes to
+operate on each collection.  For example, if you have 1 million alerts to
+process, you can specify 4 processes to work on alerts and each process will
+migrate 250,000 alerts.  Unless you have very large databases, my recommendation
+is to allow a single process to work on each collection because this will
+make it easier to detect and correct any anomalies in the data migration.</p>
+<p>The migration command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd /opt/scot/bin
+$ ./migrate.pl alert 2
+</pre></div>
+</div>
+<p>would begin migrating alerts from the 3.4 database using two processes.</p>
+<p>Best practice in migration is to open a terminal for each collection, start
+tmux or screen, and then start the migration for a collection.  Extensive
+logging is performed in /var/log/scot/migration.alert.log, where alert is
+the actual collection being migrated.  Pro tip: &#8216;grep -i error /var/log/scot/migration*&#8217;</p>
+<p>The list of collections to migrate:</p>
+<p># alertgroup
+# alert
+# event
+# entry
+# user
+# guide
+# handler
+# user
+# file</p>
+<p>If you wish for totally hands off operation, do the following:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd /opt/scot/bin
+$ ./migrate.pl all
+</pre></div>
+</div>
+<p>This will sequentially migrate the collections listed above.  The migration
+will take a bit longer, though.</p>
+<p>NOTE:  Migration assumes that the database to be migrated is on the same
+database server as the new server.  So in other words, if you are installing
+SCOT 3.5 on a new system, and want to migrate your database to that server,
+you will need to use the mongodump and mongorestore to move the old database
+to the new server first.</p>
+<p>Example Migration:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ ssh oldscot
+oldscot:/home/scot&gt; mongodump scotng-prod
+...
+oldscot:/home/scot&gt; tar czvf ./scotng-prod.tgz ./dump
+...
+oldscot:/home/scot&gt; scp scotng-prod.tgz scot@newscot:/home/scot
+...
+oldscot:/home/scot&gt; exit
+$ ssh newscot
+newscot:/home/scot&gt; tar xzvf ./scotng-prod.tgz
+...
+newscot:/home/scot&gt; mongorestore --db scotng-prod ./dump/scotng-prod
+...
+newscot:/home/scot&gt; cd /opt/scot/bin
+newscot:/opt/scot/bin&gt; ./migrate.pl all
+</pre></div>
+</div>
+</div>
+<div class="section" id="uninstallation">
+<h2>Uninstallation<a class="headerlink" href="#uninstallation" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><dl class="first docutils">
+<dt>Source</dt>
+<dd><ul class="first last simple">
+<li>rm -rf /opt/sandia/webapps/scot</li>
+<li>sudo crontab -e #remove all the scot stuff</li>
+<li>rm /etc/init.d/scot</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installing SCOT</a><ul>
+<li><a class="reference internal" href="#minimum-system-requirements">Minimum System Requirements</a></li>
+<li><a class="reference internal" href="#initial-installation">Initial Installation</a></li>
+<li><a class="reference internal" href="#install-sh-options">install.sh Options</a></li>
+<li><a class="reference internal" href="#upgrading">Upgrading</a></li>
+<li><a class="reference internal" href="#database-migration">Database Migration</a></li>
+<li><a class="reference internal" href="#uninstallation">Uninstallation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="terminology.html"
+                        title="previous chapter">SCOT Terminology</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="auth.html"
+                        title="next chapter">Authentication/Authorization</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/install.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="auth.html" title="Authentication/Authorization"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="terminology.html" title="SCOT Terminology"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2011-2016, Sandia National Laboratories.
+    </div>
+  </body>
+</html>

@@ -141,14 +141,12 @@ sub get_groups {
     # else local is all that remains
     $log->debug("group mode is local");
     my $mongo   = $env->mongo;
-    my $col     = $mongo->collection('Group');
-    my $cursor  = $col->find({members => $user});
+    my $col     = $mongo->collection('User');
+    my $userobj = $col->find_one({username => $user});
+    my $groups  = $userobj->groups;
 
-    while ( my $group = $cursor->next ) {
-        push @groups, $group->name;
-    }
-    $log->debug("got ".join(',',@groups));
-    return wantarray ? @groups : \@groups;
+    $log->debug("got ".join(',',@$groups));
+    return wantarray ? @$groups : \@$groups;
 }
 
 1;
