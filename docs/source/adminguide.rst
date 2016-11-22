@@ -13,6 +13,55 @@ backup is a gzipped tar file and will be stored in /opt/scotbackup.  Moving thes
 backups to another system is left as an exercise to the admin.  By default, the
 last 7 days of backups are kept in /opt/scotbackup and files older than 7 days are removed.
 
+Manual Backup
+^^^^^^^^^^^^^
+
+I get it, you don't trust some fancy script to back up.  Here's what is going on behind the 
+scenes.
+
+#.  Back up the mongo database with the "mongodump" command.
+
+    $ cd /directory/with/space
+    $ mongodump --db scot-prod 
+    $ tar czvf /another/dir/scot-prod.tgz ./dump
+
+#.  Use unix tools to copy SCOT config in /opt/scot/etc
+
+#.  ElasticSearch backup is more involved:
+
+    ##.  if you have never backed up elastic, you will need to create
+        a repo::
+
+        $ curl -XPUT localhost:9200/_snapshot/scot_backup -d '{
+        >    "scot_backup": {
+        >         "type": "fs",
+        >         "settings: {
+        >             "compress": "true",
+        >             "location": "/opt/esback"
+        >         }
+        >     }
+        > }'
+
+    ##.  if you have already backup up once before, remove any conflicting
+        snapshot (or use different snapshot name)::
+
+        $ curl -XDELETE localhost:9200/_snapshot/scot_backub/snapshot_1
+        
+    ##.  Create the Snapshot::
+
+        $ curl -XPUT localhost:9200/_snapshot/scot_backup/snapshot_1
+
+    ##.  Check on status::
+
+        $ curl -XGET localhost:9200/_snapshot/scot_backup/_all
+
+    ##.  When complete, use tar to back up /opt/esback::
+
+        $ tar czvf /home/scot/esback.tgz /opt/esback
+
+    ##.  store scot-prod.tgz and esback.tgz in a safe place.
+
+
 Restore
 -------
 
@@ -23,6 +72,53 @@ Extract the timestamped SCOT backup tar file::
 This will create a directory "./dump/scot-prod".  Restore the MondoDB with::
 
     mongorestore --dropdatabase --db scot-prod ./dump/scot-prod
+
+Manual Restore
+^^^^^^^^^^^^^^
+
+#.  Restore Mongo:
+
+   ##.  remove existing scot-prod database::
+   
+        $ mongo scot-prod < /opt/scot/etc/database/reset.js
+
+    ##.  extract scot-prod.tgz::
+
+        $ cd /home/scot
+        $ tar xzvf /tmp/scot-prod.tgz 
+        $ cd dump
+        $ mongorestore --db=scot-prod .
+
+#.  Restore configs by copying backup of /opt/scot/etc/ directory
+
+#.  Restore ElasticSearch
+
+    ##.  Close ElasticSearch indexes that are active.::
+
+        $ curl -XPOST localhost:9200/scot/_close
+
+    ##.  Remove existing contents of /opt/esback::
+
+        $ rm -rf /opt/esback/*
+
+    ##.  extract esback.tgz::
+
+        $ cd /opt/esback
+        $ tar xzvf /tmp/esback.tgz 
+
+    ##.  Make sure that /etc/elasticsearch/elasticsearch.yml has the following::
+
+        repo.path: [ '/opt/esback' ]
+        (restart es if you have to make a change to the yml file
+
+    ##.  Create the "scot_backup" repo if it doesn't exist (see above)
+
+    ##.  curl -XPOST localhost:9200/_snapshot/scot_backup/snapsot_1/_restore
+
+
+#. Finally, restart scot.::
+
+    # service scot restart
 
 SSL Certs
 ---------

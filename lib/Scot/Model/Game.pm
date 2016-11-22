@@ -49,6 +49,12 @@ has category    => (
     required    => 1,
 );
 
+has tooltip => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+);
+
 =item B<count>
 
 the count for the category
