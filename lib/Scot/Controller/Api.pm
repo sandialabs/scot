@@ -2607,6 +2607,15 @@ sub get_game_data {
     my $mongo   = $env->mongo;
     my $log     = $env->log;
     my $user    = $self->session('user');
+    my $tt      = {
+        teacher     => "Most Guide Entries Authored",
+        tattler     => "Most Incidents Promoted",
+        alarmist    => "Most Alerts Promoted",
+        closer      => "Most Closed things",
+        cleaner     => "Most Deleted Things",
+        fixer       => "Most Edited Entries",
+        operative   => "Most Intel Entries",
+    };
 
     my $col = $mongo->collection('Game');
     my $cur = $col->find();
@@ -2628,12 +2637,14 @@ sub get_game_data {
         $#ranked = 2;   # truncate to 3 members
 
         foreach my $r (@ranked) {
-            push @{$trunc{$cat}}, { username => $r, count => $res{$cat}{$r} };
+            $trunc{$cat} = {
+                tooltip => $tt->{$cat},
+            };
+            push @{$trunc{$cat}->{results}}, { username => $r, count => $res{$cat}{$r} };
         }
     }
     
     $self->do_render(\%trunc);
-
 
 }
 
