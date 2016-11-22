@@ -730,6 +730,9 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
             $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(this.props.content)
         }
     },
+    shouldComponentUpdate: function() {
+        return false; //prevent updating this component because it causes the page container to scroll upwards and lose focus due to a bug in paste_preprocess.
+    },
 	render: function() {
         var item = this.state.subitem
         var not_saved_entry_id = 'not_saved_entry_'+this.props.id
@@ -745,7 +748,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                                 )
                             )
                         ), 
-                        React.createElement(TinyMCE, {id: tinyID, content: "", className: 'inputtext', config: {plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) {args.content += ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css'}, onChange: this.handleEditorChange})
+                        React.createElement(TinyMCE, {id: tinyID, content: "", className: 'inputtext', config: {plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) {args.content += ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css'}})
                     )
                 )
             )
