@@ -44,6 +44,7 @@ sub upsert {
     my $href    = shift;
     my $user    = $href->{_id};
     my $count   = $href->{total};
+    my $tt      = $href->{tooltip};
 
     my $obj     = $self->find_one({ username => $user, category => $type });
     if ( $obj ) {
@@ -54,6 +55,7 @@ sub upsert {
             username    => $user,
             category    => $type,
             count       => $count,
+            tooltip     => $tt,
         });
     }
     return $obj;
