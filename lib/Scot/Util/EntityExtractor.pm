@@ -191,10 +191,6 @@ Readonly my $IP_REGEX   => qr{
     (?!\.)\b
 }xms;
 
-Readonly my $GOOGLE_ANALYTICS_REGEX => qr{
-    (__utma=\d{9}\.(\d{9})\.\d{10}\.\d{10}\.\d{10}\.\d+\;)
-}xms;
-
 Readonly my $LAT_LONG_REGEX => qr{
     \b
     ([-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?))
@@ -212,7 +208,6 @@ sub _build_regexes {
         { type  => "sha256",    regex  => $SHA256_REGEX },
         { type  => "domain",    regex  => $DOMAIN_REGEX_2 },
         { type  => "file",      regex  => $FILE_REGEX },
-        { type  => "ganalytics",      regex  => $GOOGLE_ANALYTICS_REGEX },
         { type  => "snumber",   regex => $SNUMBER_REGEX },
     ];
 }

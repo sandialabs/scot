@@ -10,7 +10,6 @@ Contents:
     Installation <install>
     Post-Installation <postinstall>
     SCOT Overview <overview>
-    SCOT Terminology <terminology>
     User Guide <userguide>
     Admin Guide <adminguide>
     Developer Guide <devguide>

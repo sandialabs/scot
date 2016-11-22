@@ -43,6 +43,14 @@ to update this configuration file.
 .. literalinclude:: ../../etc/templates/ldap.cfg
    :linenos:
 
+logger.cfg
+^^^^^^^^^^
+
+How to configure the SCOT logger.
+
+.. literalinclude:: ../../etc/templates/logger.cfg
+   :linenos:
+
 mail.app.cfg
 ^^^^^^^^^^^^
 
