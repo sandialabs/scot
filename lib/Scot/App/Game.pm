@@ -50,6 +50,20 @@ has thishostname    =>  (
     default     => sub { hostname; },
 );
 
+has tooltip => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    default     => sub { {
+        teacher     => "Most Guide Entries Authored",
+        tattler     => "Most Incidents Promoted",
+        alarmist    => "Most Alerts Promoted",
+        closer      => "Most Closed things",
+        cleaner     => "Most Deleted Things",
+        fixer       => "Most Edited Entries",
+        operative   => "Most Intel Entries",
+    }},
+);
+
 
 sub out {
     my $self    = shift;
@@ -129,14 +143,22 @@ sub aggregate {
     my $log     = $self->log;
     my $env     = $self->env;
     my $mongo   = $env->mongo;
+    my $tt      = $self->tooltip;
 
     my $result  = $col->get_aggregate_count($agcmd);
 
+    $log->debug("Aggregating $type");
+
     if ( $result ) {
-        $log->debug("writing aggregation results");
+
+        $log->debug("writing aggregation results for $type");
 
         my $gcol    = $mongo->collection("Game");
         while ( my $doc = $result->next ) {
+            $doc->{tooltip} = $tt->{$type};
+
+            $log->debug("updating ",{filter=>\&Dumper, value => $doc});
+
             my $gameobj = $gcol->upsert($type,$doc);
             unless ($gameobj) {
                 $log->error("failed to create game object");
