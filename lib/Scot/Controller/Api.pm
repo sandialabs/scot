@@ -2637,10 +2637,7 @@ sub get_game_data {
         $#ranked = 2;   # truncate to 3 members
 
         foreach my $r (@ranked) {
-            $trunc{$cat} = {
-                tooltip => $tt->{$cat},
-            };
-            push @{$trunc{$cat}->{results}}, { username => $r, count => $res{$cat}{$r} };
+            push @{$trunc{$cat}}, { username => $r, count => $res{$cat}{$r} tooltip => $tt->{$cat}};
         }
     }
     
