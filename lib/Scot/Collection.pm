@@ -393,4 +393,32 @@ sub get_aggregate_count {
     return $result;
 }
 
+sub get_default_permissions {
+    my $self    = shift;
+    my $type    = shift;
+    my $id      = shift;
+    my $env     = $self->env;
+
+    unless (defined $type and defined $id) {
+        return $env->default_groups;
+    }
+
+    my $mongo   = $self->meerkat;
+    my $col     = $mongo->collection(ucfirst($type));
+    my $obj     = $col->find_one({id => $id});
+
+    unless ( $obj ) {
+        return $env->default_groups;
+    }
+
+    if ( $obj->meta->does_role('Scot::Role::Permission') ) {
+        return $obj->groups;
+    }
+    
+    return $env->default_groups;
+}
+
+
+
+
 1;

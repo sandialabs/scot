@@ -577,24 +577,24 @@ sub approved_sender {
     my $log     = $self->log;
 
     $this_sender =~ s/<(.*)>/$1/;
-    $log->trace("Checking if Sender $this_sender is approved");
+    $log->debug("Checking if Sender $this_sender is approved");
 
 
     foreach my $as (@$senders) {
-        $log->trace("comparing $as");
+        $log->debug("comparing $as");
         if ( $as eq $this_sender ) {
-            $log->trace("you are approved!");
+            $log->debug("you are approved!");
             return 1;
         }
     }
     my $this_domain = (split(/\@/, $this_sender))[1];
-    $log->trace("not explicitly named, checking domain $this_domain");
+    $log->debug("not explicitly named, checking domain $this_domain");
 
     foreach my $ad ( @$domains ) {
-        $log->trace("comparing to domain $ad");
+        $log->debug("comparing to domain $ad");
         # if ( $ad eq $this_domain ) {
         if ( $ad =~ /$this_domain$/ ) {
-            $log->trace("approved domain");
+            $log->debug("approved domain");
             return 1;
         }
     }

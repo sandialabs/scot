@@ -176,11 +176,15 @@ sub create_from_api {
 
     $request->{task} = $self->validate_task($request);
 
+    my $default_permitted_groups = $self->get_default_permissions(
+        $target_type, $target_id
+    );
+
     unless ( $request->{readgroups} ) {
-        $json->{groups}->{read} = $env->default_groups->{read};
+        $json->{groups}->{read} = $default_permitted_groups->{read};
     }
     unless ( $request->{modifygroups} ) {
-        $json->{groups}->{modify} = $env->default_groups->{modify};
+        $json->{groups}->{modify} = $default_permitted_groups->{modify};
     }
 
     $json->{target} = {
@@ -195,8 +199,8 @@ sub create_from_api {
     my $entry_obj   = $self->create($json);
 
     return $entry_obj;
-
 }
+
 
 sub validate_task {
     my $self    = shift;
