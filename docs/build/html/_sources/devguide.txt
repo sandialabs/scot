@@ -17,7 +17,10 @@ docs/
     text files that form documentation for SCOT
     
 etc/
-    configuration files for Scot.  Logging and the Scot application currently
+    configuration files for Scot go here
+
+etcsrc/
+    starting templates for your config files.
 
 lib/
     Perl library Hierarchy
@@ -86,7 +89,7 @@ templates/
 SCOT REST API
 -------------
 
-`SCOT API Documentation.</api/index.html>`_
+`SCOT API Documentation. </api/index.html>`_
 
 SCOT get API
 ^^^^^^^^^^^^
@@ -124,45 +127,45 @@ SCOT get API
 
 #. Retrieve list of "things" base on Numerical conditions
 
-  ##. matching a single number::
+  a. matching a single number::
 
-    /scot/api/v2/event?views=2      
+        /scot/api/v2/event?views=2      
 
-    output: events with two views
+        output: events with two views
 
-  ##. matching a set of numbers::
+  b. matching a set of numbers::
 
-    /scot/api/v2/event?entry_count=2&entry_count=4&entry_count=6
+        /scot/api/v2/event?entry_count=2&entry_count=4&entry_count=6
 
-    output: events with entry_count's of 2, 4, or 6
+        output: events with entry_count's of 2, 4, or 6
 
-  ##. matching everything but a number::
+  c. matching everything but a number::
   
-    /scot/api/v2/event?views=!1
+        /scot/api/v2/event?views=!1
 
-    output: events with views not equal to 1
+        output: events with views not equal to 1
 
-  ##. matching everyting but a set of numbers::
+  d. matching everyting but a set of numbers::
 
-    /scot/api/v2/event?views=!1&views=!2&views=!3
+        /scot/api/v2/event?views=!1&views=!2&views=!3
 
-    output: events with views not equal to 1,2, or 3.  
-    (note:  if ! appears in any element, all are treated as if they are !
+        output: events with views not equal to 1,2, or 3.  
+        (note:  if ! appears in any element, all are treated as if they are !
 
-  ##. matching an expression::
+  e. matching an expression::
 
-    /scot/api/v2/event?views=4<x<8
-    /scot/api/v2/event?views=4<=x<8
-    /scot/api/v2/event?views=4<=x<=8
-    /scot/api/v2/event?views=4<x<=8
-    /scot/api/v2/event?views=9>x>=2
+        /scot/api/v2/event?views=4<x<8
+        /scot/api/v2/event?views=4<=x<8
+        /scot/api/v2/event?views=4<=x<=8
+        /scot/api/v2/event?views=4<x<=8
+        /scot/api/v2/event?views=9>x>=2
 
-    output: events with views (represented by x) matching the expression
-    syntax notes: the expression must be of the form some number of digit,
-     followed immediately by one of the following operands: < <= > >=, the
-     letter lower case x (which represents the column name) followed immediately
-     by the comparison operands, and finally followed immediately by some numbe
-     of digits.
+        output: events with views (represented by x) matching the expression
+        syntax notes: the expression must be of the form some number of digit,
+        followed immediately by one of the following operands: < <= > >=, the
+        letter lower case x (which represents the column name) followed 
+        immediately by the comparison operands, and finally followed 
+        immediately by some numbe of digits.
 
 #. Retrieve list of "things" based on Set Fields like "tag" or "source"::
 

@@ -62,7 +62,9 @@ Ex: bots, import scripts, export scripts, etc.</dd>
 <dt>docs/</dt>
 <dd>text files that form documentation for SCOT</dd>
 <dt>etc/</dt>
-<dd>configuration files for Scot.  Logging and the Scot application currently</dd>
+<dd>configuration files for Scot go here</dd>
+<dt>etcsrc/</dt>
+<dd>starting templates for your config files.</dd>
 <dt>lib/</dt>
 <dd><p class="first">Perl library Hierarchy</p>
 <p>Scot.pm - the top level mojolicious application library containing route info</p>
@@ -120,7 +122,7 @@ Ex: bots, import scripts, export scripts, etc.</dd>
 </div>
 <div class="section" id="scot-rest-api">
 <h2>SCOT REST API<a class="headerlink" href="#scot-rest-api" title="Permalink to this headline">¶</a></h2>
-<p><a href="#id1"><span class="problematic" id="id2">`SCOT API Documentation.&lt;/api/index.html&gt;`_</span></a></p>
+<p><a class="reference external" href="/api/index.html">SCOT API Documentation.</a></p>
 <div class="section" id="scot-get-api">
 <h3>SCOT get API<a class="headerlink" href="#scot-get-api" title="Permalink to this headline">¶</a></h3>
 <ol class="arabic">
@@ -163,32 +165,37 @@ Ex: bots, import scripts, export scripts, etc.</dd>
 </li>
 </ol>
 <blockquote>
-<div><p>##. matching a single number:</p>
+<div><ol class="loweralpha">
+<li><p class="first">matching a single number:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?views=2
 
 output: events with two views
 </pre></div>
 </div>
-<p>##. matching a set of numbers:</p>
+</li>
+<li><p class="first">matching a set of numbers:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?entry_count=2&amp;entry_count=4&amp;entry_count=6
 
 output: events with entry_count&#39;s of 2, 4, or 6
 </pre></div>
 </div>
-<p>##. matching everything but a number:</p>
+</li>
+<li><p class="first">matching everything but a number:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?views=!1
 
 output: events with views not equal to 1
 </pre></div>
 </div>
-<p>##. matching everyting but a set of numbers:</p>
+</li>
+<li><p class="first">matching everyting but a set of numbers:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?views=!1&amp;views=!2&amp;views=!3
 
 output: events with views not equal to 1,2, or 3.
 (note:  if ! appears in any element, all are treated as if they are !
 </pre></div>
 </div>
-<p>##. matching an expression:</p>
+</li>
+<li><p class="first">matching an expression:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>/scot/api/v2/event?views=4&lt;x&lt;8
 /scot/api/v2/event?views=4&lt;=x&lt;8
 /scot/api/v2/event?views=4&lt;=x&lt;=8
@@ -197,12 +204,14 @@ output: events with views not equal to 1,2, or 3.
 
 output: events with views (represented by x) matching the expression
 syntax notes: the expression must be of the form some number of digit,
- followed immediately by one of the following operands: &lt; &lt;= &gt; &gt;=, the
- letter lower case x (which represents the column name) followed immediately
- by the comparison operands, and finally followed immediately by some numbe
- of digits.
+followed immediately by one of the following operands: &lt; &lt;= &gt; &gt;=, the
+letter lower case x (which represents the column name) followed
+immediately by the comparison operands, and finally followed
+immediately by some numbe of digits.
 </pre></div>
 </div>
+</li>
+</ol>
 </div></blockquote>
 <ol class="arabic">
 <li><p class="first">Retrieve list of &#8220;things&#8221; based on Set Fields like &#8220;tag&#8221; or &#8220;source&#8221;:</p>

@@ -5,7 +5,7 @@ $ENV{'SCOT_AUTH_TYPE'}   = "Testing";
 $ENV{'scot_env_configfile'} = '../../../Scot-Internal-Modules/etc/scot_env_test.cfg';
 
 print "Resetting test db...\n";
-system("mongo scot-testing <../../etc/database/reset.js 2>&1 > /dev/null");
+system("mongo scot-testing <../../etcsrc/database/reset.js 2>&1 > /dev/null");
 
 use TAP::Harness;
 my %args = (

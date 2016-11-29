@@ -173,7 +173,7 @@ Logging
 SCOT is a prolific logger.  All logs are stored in /var/log/scot.  It is highly recommended to set 
 up logrotate to avoid filling you disk.  Create a /etc/logrotate.d/scot like 
 
-.. literalinclude:: ../../etc/logrotate.scot
+.. literalinclude:: ../../etcsrc/logrotate.scot
    :linenos:
 
 
