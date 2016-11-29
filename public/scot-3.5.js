@@ -769,20 +769,20 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
             if(this.props.stage == 'Reply') {
                 var data = new Object()
                 $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
-                    $(y).find('p').each(function(r,s){
-                        $(s).find('img').each(function(key, value){ 
-                            var canvas = document.createElement('canvas')
-                            var set = new Image()
-                            set = $(value)
-                            canvas.width =  set[0].width
-                            canvas.height = set[0].height
-                            var ctx = canvas.getContext('2d')
-                            ctx.drawImage(set[0], 0, 0)
-                            var dataURL = canvas.toDataURL("image/png")
-                            //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
-                            $(value).attr('src', dataURL)
-                        })
-                    })
+                    $(y).find('img').each(function(key, value){
+                        var img = new Image()
+                        var canvas = document.createElement('canvas')
+                        var ctx = canvas.getContext('2d')
+                        var src = value.src;
+                        img.crossOrigin = 'Anonymous';
+                        img.src = src;
+                        canvas.width =  value.width
+                        canvas.height = value.height
+                        ctx.drawImage(img, 0, 0)
+                        var dataURL = canvas.toDataURL("image/png")
+                        //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
+                        $(value).attr('src', dataURL)
+                    }) 
                 })
                 data = JSON.stringify({parent: Number(this.props.id), body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
                 $.ajax({
@@ -835,20 +835,20 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
             else if(this.props.type == 'alert'){ 
                 var data;
                 $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
-                    $(y).find('p').each(function(r,s){
-                        $(s).find('img').each(function(key, value){ 
-                            var canvas = document.createElement('canvas')
-                            var set = new Image()
-                            set = $(value)
-                            canvas.width =  set[0].width
-                            canvas.height = set[0].height
-                            var ctx = canvas.getContext('2d')
-                            ctx.drawImage(set[0], 0, 0)
-                            var dataURL = canvas.toDataURL("image/png")
-                            //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
-                            $(value).attr('src', dataURL)
-                        })
-                    })
+                    $(y).find('img').each(function(key, value){
+                        var img = new Image()
+                        var canvas = document.createElement('canvas')
+                        var ctx = canvas.getContext('2d')
+                        var src = value.src;
+                        img.crossOrigin = 'Anonymous';
+                        img.src = src;
+                        canvas.width =  value.width
+                        canvas.height = value.height
+                        ctx.drawImage(img, 0, 0)
+                        var dataURL = canvas.toDataURL("image/png")
+                        //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
+                        $(value).attr('src', dataURL)
+                    }) 
                 })
                 data = JSON.stringify({body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid), target_type: 'alert',  parent: 0})
                 $.ajax({
@@ -867,19 +867,19 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
             else {
                 var data = new Object();
                 $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
-                    $(y).find('p').each(function(r,s){
-                            $(s).find('img').each(function(key, value){ 
-                                var canvas = document.createElement('canvas')
-                                var set = new Image()
-                                set = $(value)
-                                canvas.width =  set[0].width
-                                canvas.height = set[0].height
-                                var ctx = canvas.getContext('2d')
-                                ctx.drawImage(set[0], 0, 0)
-                                var dataURL = canvas.toDataURL("image/png")
-                                //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
-                                $(value).attr('src', dataURL)
-                            })
+                    $(y).find('img').each(function(key, value){ 
+                        var img = new Image()
+                        var canvas = document.createElement('canvas')
+                        var ctx = canvas.getContext('2d')
+                        var src = value.src;
+                        img.crossOrigin = 'Anonymous';
+                        img.src = src;
+                        canvas.width =  value.width
+                        canvas.height = value.height
+                        ctx.drawImage(img, 0, 0)
+                        var dataURL = canvas.toDataURL("image/png")
+                        //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
+                        $(value).attr('src', dataURL)
                     })
                 })
                 data = {parent: 0, body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
@@ -901,19 +901,19 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
     forEdit: function(set){
         if(set){
             $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
-                $(y).find('p').each(function(r,s){
-                        $(s).find('img').each(function(key, value){ 
-                            var canvas = document.createElement('canvas')
-                            var set = new Image()
-                            set = $(value)
-                            canvas.width =  set[0].width
-                            canvas.height = set[0].height
-                            var ctx = canvas.getContext('2d')
-                            ctx.drawImage(set[0], 0, 0)
-                            var dataURL = canvas.toDataURL("image/png")
-                            //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
-                            $(value).attr('src', dataURL)
-                        })
+                $(y).find('img').each(function(key, value){
+                    var img = new Image()
+                    var canvas = document.createElement('canvas')
+                    var ctx = canvas.getContext('2d')
+                    var src = value.src;
+                    img.crossOrigin = 'Anonymous';
+                    img.src = src;
+                    canvas.width =  value.width
+                    canvas.height = value.height
+                    ctx.drawImage(img, 0, 0)
+                    var dataURL = canvas.toDataURL("image/png")
+                    //dataURL = dataURL.replace(/^data:image\/(png|jpg);base64,/,"")
+                    $(value).attr('src', dataURL)
                 })
             })
             var data = {
@@ -5584,9 +5584,9 @@ module.exports = React.createClass({displayName: "exports",
             columns = ['target.type', 'target.id', 'task.status', 'owner', 'id', 'updated']
             columnsClassName = ['target_type', 'target_id', 'task_status', 'owner', 'id', 'updated']
         } else if (this.props.type == 'guide') {
-            columnsDisplay = ['ID', 'Applies To']
-            columns = ['id', 'applies_to']
-            columnsClassName = ['id', 'applies_to']
+            columnsDisplay = ['ID', 'Subject', 'Applies To']
+            columns = ['id', 'subject', 'applies_to']
+            columnsClassName = ['id', 'subject', 'applies_to']
         } else if (this.props.type == 'intel') {
             columnsDisplay =['ID', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
             columns = ['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
