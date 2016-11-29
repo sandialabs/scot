@@ -56,9 +56,9 @@ module.exports = React.createClass({
             columns = ['target.type', 'target.id', 'task.status', 'owner', 'id', 'updated']
             columnsClassName = ['target_type', 'target_id', 'task_status', 'owner', 'id', 'updated']
         } else if (this.props.type == 'guide') {
-            columnsDisplay = ['ID', 'Applies To']
-            columns = ['id', 'applies_to']
-            columnsClassName = ['id', 'applies_to']
+            columnsDisplay = ['ID', 'Subject', 'Applies To']
+            columns = ['id', 'subject', 'applies_to']
+            columnsClassName = ['id', 'subject', 'applies_to']
         } else if (this.props.type == 'intel') {
             columnsDisplay =['ID', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
             columns = ['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
