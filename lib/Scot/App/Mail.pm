@@ -286,6 +286,11 @@ sub run {
         }
         $proc_count++;
         $log->trace("[UID $uid] Child process $pid finishes");
+
+        if ( $self->config->{leave_unseen} ) {
+            $imap->mark_uid_unseed($uid);
+        }
+
         $taskmgr->finish;
 
         if ( $self->interactive eq "yes" ) {
@@ -381,6 +386,7 @@ sub process_message {
     my $log     = $self->log;
     my $scot    = $self->scot;
     my $imap    = $self->imap;
+    my $nowdt   = DateTime->now;
 
     my $message_id  = $msghref->{message_id};
 
@@ -407,6 +413,9 @@ sub process_message {
         print "health check...skipping.\n" if ($self->interactive eq "yes" or
                                                $self->verbose == 1);
         $imap->delete_message($msghref->{imap_uid});
+        $self->put_health_stat({
+            amount  => 1,
+        });
         return;
     }
 
@@ -498,6 +507,13 @@ sub post_alertgroup {
                 type    => 'alertgroup',
             },
         });
+        my $now = DateTime->now;
+        $mongo->collection('Stat')->increment($now,
+                                              "alertgroups created",
+                                              1);
+        $mongo->collection('Stat')->increment($now,
+                                              "alerts created",
+                                              $agobj->alert_count);
     }
     return $response;
 }
@@ -619,6 +635,34 @@ sub is_health_check {
         return 1;
     }
     return undef;
+}
+
+sub put_health_stat {
+    my $self    = shift;
+    my $href    = shift;
+    my $now     = DateTime->now;
+
+    if ( $self->get_method eq "scot_api" ) {
+        my $response = $self->scot->post({
+            type    => "stat",
+            data    => {
+                action  => 'incr',
+                year    => $now->year,
+                month   => $now->month,
+                day     => $now->day,
+                hour    => $now->hour,
+                dow     => $now->dow,
+                quarter => $now->quarter,
+                metric  => 'mail healthcheck received',
+                value   => $href->{amount},
+            }
+        });
+    }
+    else {
+        my $mongo   = $self->env->mongo;
+        my $col     = $mongo->collection('Stat');
+        $col->increment($now, "mail healthcheck received", $href->{amount});
+    }
 }
 
 1;
