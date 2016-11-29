@@ -9,6 +9,13 @@ use Test::More;
 use Scot::Util::Scot;
 use Data::Dumper;
 use IO::Prompt;
+
+my $srvr = $ENV{'scot_ua_server'};
+unless ( $srvr ) {
+    prompt "Enter Scot server > ";
+    $srvr = $_;
+}
+
 my $user = $ENV{'scot_ua_username'};
 unless ($user ) {
     prompt "Enter username > ";
@@ -20,8 +27,9 @@ unless ($pass ) {
     $pass    = $_;
 }
 
+
 my $scot    = Scot::Util::Scot->new({
-    servername  => 'as3001snllx.sandia.gov',
+    servername  => $srvr,
     username    => $user,
     password    => $pass,
     authtype    => 'RemoteUser',
