@@ -96,10 +96,10 @@ my @sources = (
         entity  => [ { type => 'file', value => 'webadmin.php' } ],
     },
     {
-        source  => 'tbruner@sandia.gov',
-        flair   => '<div><span class="entity email" data-entity-type="email" data-entity-value="tbruner@sandia.gov">tbruner@sandia.gov</span> </div>',
-        plain   => 'tbruner@sandia.gov',
-        entity  => [ { type => 'email', value => 'tbruner@sandia.gov' } ],
+        source  => 'scot-dev@sandia.gov',
+        flair   => '<div><span class="entity email" data-entity-type="email" data-entity-value="scot-dev@sandia.gov">scot-dev@sandia.gov</span> </div>',
+        plain   => 'scot-dev@sandia.gov',
+        entity  => [ { type => 'email', value => 'scot-dev@sandia.gov' } ],
     },
     {
         source  => 'dffdb29b64e355a0ef29843e68c23b4f',
