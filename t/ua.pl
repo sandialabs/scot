@@ -9,7 +9,7 @@ my $env = Scot::Env->new({
 });
 
 my $client  = Scot::Util::Scot->new({
-    servername  => 'as3001snllx'
+    servername  => 'localhost'
 });
 
 my $tx  = $client->get("/scot/api/v2/event/9000");
