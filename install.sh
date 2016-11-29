@@ -58,7 +58,7 @@ RESETDB="no"                # delete existing scot db
 SFILESDEL="no"              # delete existing filestore directory and contents
 CLEARLOGS="no"              # clear the logs in $LOGDIR
 REFRESH_AMQ_CONFIG="no"     # install new config for activemq and restart
-AUTHMODE="Remoteuser"       # authentication type to use
+AUTHMODE="Local"            # authentication type to use
 DEFAULFILE=""               # override file for all the above
 # DBCONFIGJS="./config.custom.js"   # initial config data you entered for DB
 REFRESHAPACHECONF="no"      # refresh the apache config for SCOT
@@ -851,6 +851,8 @@ if [[ $INSTMODE != "SCOTONLY" ]]; then
     cpanm Courriel
 fi
 
+echo "+ copying documentation to public dir"
+cp -r $DEVDIR/docs/build/html/* $SCOTDIR/public/docs/
 
 if [ ! -e /etc/init.d/scot ]; then
     echo -e "${yellow}+ missing /etc/init.d/scot, installing...${NC}"
@@ -922,6 +924,23 @@ else
     update-rc.d scot defaults
     update-rc.d activemq defaults
 fi
+
+if [ $AUTHMODE == "Local"  ];then
+    echo "!!!!"
+    echo "!!!! AUTHMODE is set to LOCAL.  Use the admin username and password"
+    echo "!!!! to initially access SCOT.  Please see only documentation for "
+    echo "!!!! direction on how to create users/password or to switch "
+    echo "!!!! authentication options."
+    echo "!!!!"
+fi
+
+
+echo ""
+echo "@@"
+echo "@@ SCOT online documentaton is available at "
+echo "@@  https://localhost/docs/index.html"
+echo "@@"
+echo ""
 
 echo "----"
 echo "----"

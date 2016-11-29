@@ -18,18 +18,18 @@ my $extractor   = Scot::Util::EntityExtractor->new({
     log => $log
 });
 my $source      = <<'EOF';
-<div>tbruner@sandia.gov
+<div>scot-dev@sandia.gov
    mailman-bounces@trixios.org</div>
 EOF
 
 my $flair   = <<'EOF';
-<div><div><span class="entity email" data-entity-type="email" data-entity-value="tbruner@sandia.gov">tbruner@<span class="entity domain" data-entity-type="domain" data-entity-value="sandia.gov">sandia.gov</span></span><br /><span class="entity email" data-entity-type="email" data-entity-value="mailman-bounces@trixios.org">mailman-bounces@<span class="entity domain" data-entity-type="domain" data-entity-value="trixios.org">trixios.org</span></span> </div></div>
+<div><div><span class="entity email" data-entity-type="email" data-entity-value="scot-dev@sandia.gov">scot-dev@<span class="entity domain" data-entity-type="domain" data-entity-value="sandia.gov">sandia.gov</span></span><br /><span class="entity email" data-entity-type="email" data-entity-value="mailman-bounces@trixios.org">mailman-bounces@<span class="entity domain" data-entity-type="domain" data-entity-value="trixios.org">trixios.org</span></span> </div></div>
 EOF
 
 chomp($flair);
 
 my $plain = <<'EOF';
-   tbruner@sandia.gov
+   scot-dev@sandia.gov
 EOF
 
 chomp($plain);
@@ -46,7 +46,7 @@ my @entities = (
         'type' => 'domain'
     },
     {
-        'value' => 'tbruner@sandia.gov',
+        'value' => 'scot-dev@sandia.gov',
         'type' => 'email'
     },
     {
