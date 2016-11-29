@@ -171,7 +171,7 @@ echo -e "${NC}"
 echo -e "${yellow}Determining OS..."
 echo -e "${NC}"
 
-DISTRO=`$DEVDIR/etc/install/determine_os.sh | cut -d ' ' -f 2`
+DISTRO=`$DEVDIR/etcsrc/install/determine_os.sh | cut -d ' ' -f 2`
 echo "Looks like a $DISTRO based system"
 
 if [[ $DISTRO == "RedHat" ]]; then
@@ -233,7 +233,7 @@ EOF
 	echo "sslverify=false" >> /etc/yum.conf
 
 	echo "+ installing rpms..."
-        for pkg in `cat $DEVDIR/etc/install/rpms_list`; do
+        for pkg in `cat $DEVDIR/etcsrc/install/rpms_list`; do
             echo "+ package = $pkg";
             yum install $pkg -y
         done
@@ -299,7 +299,7 @@ EOF
 
         echo -e "${yellow}+ installing apt packages ${NC}"
 
-        for pkg in `cat $DEVDIR/etc/install/ubuntu_debs_list`; do
+        for pkg in `cat $DEVDIR/etcsrc/install/ubuntu_debs_list`; do
             # echo "+ package $pkg"
             pkgs="$pkgs $pkg"
             apt-get -y install $pkg
@@ -339,11 +339,11 @@ EOF
         rm -rf $AMQDIR/webapps/scotaq
 
         echo "+ copying scot xml files into $AMQDIR/conf"
-        cp $DEVDIR/etc/scotamq.xml     $AMQDIR/conf
-        cp $DEVDIR/etc/jetty.xml       $AMQDIR/conf
+        cp $DEVDIR/etcsrc/scotamq.xml     $AMQDIR/conf
+        cp $DEVDIR/etcsrc/jetty.xml       $AMQDIR/conf
 
-        echo "+ copying $DEVDIR/etc/scotaq to $AMQDIR/webapps"
-        cp -R $DEVDIR/etc/scotaq       $AMQDIR/webapps
+        echo "+ copying $DEVDIR/etcsrc/scotaq to $AMQDIR/webapps"
+        cp -R $DEVDIR/etcsrc/scotaq       $AMQDIR/webapps
 
         echo "+ renaming $AMQDIR/webapps/scotaq to $AMQDIR/webapps/scot"
         mv $AMQDIR/webapps/scotaq      $AMQDIR/webapps/scot
@@ -354,11 +354,11 @@ EOF
 
     if [ ! -e "/etc/init.d/activemq" ]; then
         echo "+ copying activemq init file to /etc/init.d"
-        cp $DEVDIR/etc/init/activemq-init   /etc/init.d/activemq
+        cp $DEVDIR/etcsrc/init/activemq-init   /etc/init.d/activemq
     fi
     if [ ! -e "$AMQDIR/conf/scotamq.xml" ]; then
         echo "+ ensuring scotamq.xml is present"
-        cp $DEVDIR/etc/scotamq.xml     $AMQDIR/conf
+        cp $DEVDIR/etcsrc/scotamq.xml     $AMQDIR/conf
     fi
 
     echo -e "${yellow}+ installing ActiveMQ${NC}"
@@ -392,7 +392,7 @@ EOF
 
     echo -e "${yellow}+ installing Perl Modules${NC}"
 
-    for mod in `cat $DEVDIR/etc/install/perl_modules_list`; do
+    for mod in `cat $DEVDIR/etcsrc/install/perl_modules_list`; do
         DOCRES=`perldoc -l $mod 2>/dev/null`
         if [[ -z "$DOCRES" ]]; then
             echo "+ Installing perl module $mod"
@@ -434,7 +434,7 @@ EOF
 
         if [ ! -e /etc/httpd/conf.d/scot.conf ] || [ $REFRESHAPACHECONF == "yes"]; then
             echo -e "${yellow}+ adding scot configuration${NC}"
-            REVPROXY=$DEVDIR/etc/apache2/scot-revproxy-$MYHOSTNAME
+            REVPROXY=$DEVDIR/etcsrc/apache2/scot-revproxy-$MYHOSTNAME
             if [ ! -e $REVPROXY ]||[$REFRESHAPACHECONF == "yes"]; then
 
                 echo -e "${red}= custom apache config for $MYHOSTNAME not present, using defaults${NC}"
@@ -444,13 +444,13 @@ EOF
                         if [ -e $PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-7-remoteuser.conf ]; then
                             REVPROXY=$PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-7-remoteuser.conf
                         else 
-                            REVPROXY=$DEVDIR/etc/apache2/scot-revproxy-rh-7-remoteuser.conf
+                            REVPROXY=$DEVDIR/etcsrc/apache2/scot-revproxy-rh-7-remoteuser.conf
                         fi
                     else
                         if [ -e $PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-7-aux.conf ];then
                             REVPROXY=$PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-7-aux.conf
                         else 
-                            REVPROXY=$DEVDIR/etc/apache2/scot-revproxy-rh-7-aux.conf
+                            REVPROXY=$DEVDIR/etcsrc/apache2/scot-revproxy-rh-7-aux.conf
                         fi
                     fi
                 else
@@ -458,13 +458,13 @@ EOF
                         if [ -e $PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-remoteuser.conf ];then
                             REVPROXY=$PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-remoteuser.conf
                         else
-                            REVPROXY=$DEVDIR/etc/apache2/scot-revproxy-rh-remoteuser.conf
+                            REVPROXY=$DEVDIR/etcsrc/apache2/scot-revproxy-rh-remoteuser.conf
                         fi
                     else
                         if [ -e $PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-aux.conf ];then
                             REVPROXY=$PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-aux.conf
                         else
-                            REVPROXY=$DEVDIR/etc/apache2/scot-revproxy-rh-aux.conf
+                            REVPROXY=$DEVDIR/etcsrc/apache2/scot-revproxy-rh-aux.conf
                         fi
                     fi
                 fi
@@ -518,7 +518,7 @@ EOF
         if [ ! -e $SITESAVAILABLE/scot.conf ] || [ $REFRESHAPACHECONF == "yes" ]; then
 
             echo -e "${yellow}+ adding scot configuration${NC}"
-            REVPROXY=$DEVDIR/etc/scot-revproxy-$MYHOSTNAME
+            REVPROXY=$DEVDIR/etcsrc/scot-revproxy-$MYHOSTNAME
 
             if [ ! -e $REVPROXY ]; then
                 echo -e "${red}= custom apache config for $MYHOSTNAME not present, using defaults${NC}"
@@ -526,13 +526,13 @@ EOF
                     if [ -e $PRIVATE_SCOT_MODULES/etc/scot-revproxy-ubuntu-remoteuser.conf ]; then
                         REVPROXY=$PRIVATE_SCOT_MODULES/etc/scot-revproxy-ubuntu-remoteuser.conf
                     else
-                        REVPROXY=$DEVDIR/etc/scot-revproxy-ubuntu-remoteuser.conf
+                        REVPROXY=$DEVDIR/etcsrc/apache2/scot-revproxy-ubuntu-remoteuser.conf
                     fi
                 else 
                     if [ -e $PRIVATE_SCOT_MODULES/etc/scot-revproxy-ubuntu-aux.conf ]; then
                         REVPROXY=$PRIVATE_SCOT_MODULES/etc/scot-revproxy-ubuntu-aux.conf
                     else
-                        REVPROXY=$DEVDIR/etc/scot-revproxy-ubuntu-aux.conf
+                        REVPROXY=$DEVDIR/etcsrc/apache2/scot-revproxy-ubuntu-aux.conf
                     fi
                 fi
             fi
@@ -569,12 +569,12 @@ EOF
     if [ -e $GEODIR/GeoLiteCity.dat ]; then
         if [ "$OVERGEO" == "yes" ]; then
             echo -e "${red}- overwriting existing GeoLiteCity.dat file"
-            cp $DEVDIR/etc/GeoLiteCity.dat $GEODIR/GeoLiteCity.dat
+            cp $DEVDIR/etcsrc/GeoLiteCity.dat $GEODIR/GeoLiteCity.dat
             chmod +r $GEODIR/GeoLiteCity.dat
         fi
     else 
         echo "+ copying GeoLiteCity.dat file"
-        cp $DEVDIR/etc/GeoLiteCity.dat $GEODIR/GeoLiteCity.dat
+        cp $DEVDIR/etcsrc/GeoLiteCity.dat $GEODIR/GeoLiteCity.dat
         chmod +r $GEODIR/GeoLiteCity.dat
     fi
 
@@ -611,7 +611,7 @@ if [ "$NEWINIT" == "yes" ] || [ ! -e /etc/init.d/scot ]; then
     #    cp $DEVDIR/etc/init/scot-centos-init /etc/init.d/scot
     #fi
     #if [ $OS == "Ubuntu" ]; then
-        cp $DEVDIR/etc/init/scot-init /etc/init.d/scot
+        cp $DEVDIR/etcsrc/init/scot-init /etc/init.d/scot
     #fi
     chmod +x /etc/init.d/scot
     sed -i 's=/instdir='$SCOTDIR'=g' /etc/init.d/scot
@@ -697,9 +697,9 @@ cp -r $DEVDIR/* $SCOTDIR/
 
 # default scot_env
 if [[ $AUTHMODE == "Remoteuser" ]]; then
-    cp $DEVDIR/etc/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
+    cp $DEVDIR/etcsrc/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
 else 
-    cp $DEVDIR/etc/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
+    cp $DEVDIR/etcsrc/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
 fi
 
 # private configs to overwrite default configs
@@ -736,7 +736,7 @@ chown scot:scot $LOGDIR/scot.log
 
 if [ ! -e /etc/logrotate.d/scot ]; then
     echo "+ installing logrotate policy"
-    cp $DEVDIR/etc/logrotate.scot /etc/logrotate.d/scot
+    cp $DEVDIR/etcsrc/logrotate.scot /etc/logrotate.d/scot
 else 
     echo "= logrotate policy in place"
 fi
@@ -751,13 +751,13 @@ if [ "$MDBREFRESH" == "yes" ]; then
 
     echo "+ copying new mongod.conf"
     if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
-        cp $DEVDIR/etc/init/mongod-cent-init /etc/init.d/mongod
-        cp $DEVDIR/etc/mongod-cent-conf /etc/mongod.conf
+        cp $DEVDIR/etcsrc/init/mongod-cent-init /etc/init.d/mongod
+        cp $DEVDIR/etcsrc/mongod-cent-conf /etc/mongod.conf
         # I really wish that mongo would get it's sh*t together and 
         # install everything in the same place regardless of distro
         DBDIR=/var/log/mongo 
     else 
-        cp $DEVDIR/etc/mongod.conf /etc/mongod.conf
+        cp $DEVDIR/etcsrc/mongod.conf /etc/mongod.conf
     fi
 
     if [ ! -d $DBDIR ]; then
@@ -811,7 +811,7 @@ fi
 
 COUNTER=0
 grep -q 'waiting for connections on port' /var/log/mongodb/mongod.log
-while [[ $? -ne 0 && $COUNTER -lt 100 ]]; do
+while [[ $? -ne 0 && $COUNTER -lt 50 ]]; do
     sleep 1
     let COUNTER+=1
     echo "~ waiting for mongo to initialize ( $COUNTER seconds)"
@@ -820,12 +820,12 @@ done
 
 if [ "$RESETDB" == "yes" ];then
     echo -e "${red}- Dropping mongodb scot database!${NC}"
-    (cd $DEVDIR/etc; mongo scot-prod $DEVDIR/etc/database/reset.js)
+    (cd $DEVDIR/etcsrc; mongo scot-prod $DEVDIR/etcsrc/database/reset.js)
     # mongo scot-prod $DBCONFIGJS
 else 
     INEXIST=$(mongo scot-prod --eval "printjson(db.alertgroup.getIndexes());" --quiet)
     if [ "$INEXIST" == "[ ]" ]; then
-        (cd $DEVDIR/etc; mongo scot-prod $DEVDIR/etc/database/reset.js)
+        (cd $DEVDIR/etcsrc; mongo scot-prod $DEVDIR/etcsrc/database/reset.js)
     fi
 fi
 
@@ -841,7 +841,7 @@ if [ "$MONGOADMIN" == "0" ] || [ "$RESETDB" == "yes" ]; then
     set='$set'
     HASH=`$DEVDIR/bin/passwd.pl`
 
-    mongo scot-prod $DEVDIR/etc/admin_user.js
+    mongo scot-prod $DEVDIR/etcsrc/admin_user.js
     mongo scot-prod --eval "db.user.update({username:'admin'}, {$set:{pwhash:'$HASH'}})"
 
 fi
@@ -856,7 +856,7 @@ cp -r $DEVDIR/docs/build/html/* $SCOTDIR/public/docs/
 
 if [ ! -e /etc/init.d/scot ]; then
     echo -e "${yellow}+ missing /etc/init.d/scot, installing...${NC}"
-    cp $DEVDIR/etc/init/scot-init /etc/init.d/scot
+    cp $DEVDIR/etcsrc/init/scot-init /etc/init.d/scot
     chmod +x /etc/init.d/scot
     sed -i 's=/instdir='$SCOTDIR'=g' /etc/init.d/scot
     if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then

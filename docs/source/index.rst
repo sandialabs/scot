@@ -24,6 +24,7 @@ Contents:
     License <license>
     Installation <install>
     Post-Installation <postinstall>
+    Migrating 3.4 data <migration>
     SCOT Overview <overview>
     User Guide <userguide>
     Admin Guide <adminguide>

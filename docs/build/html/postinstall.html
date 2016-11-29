@@ -56,7 +56,7 @@
 <div class="section" id="migration">
 <h2>Migration<a class="headerlink" href="#migration" title="Permalink to this headline">¶</a></h2>
 <p>If you backed up data from your 3.4 SCOT instance and wish to restore it,
-you will need to follow the migration procedure <span class="xref doc">migration.rst</span></p>
+you will need to follow the migration procedure <span class="xref std std-ref">migration.rst</span></p>
 </div>
 <div class="section" id="ssl-certs">
 <h2>SSL Certs<a class="headerlink" href="#ssl-certs" title="Permalink to this headline">¶</a></h2>
@@ -631,18 +631,149 @@ to update this configuration file.</p>
 <div class="section" id="enrichments-cfg">
 <h3>enrichments.cfg<a class="headerlink" href="#enrichments-cfg" title="Permalink to this headline">¶</a></h3>
 <p>This config file is lists the entity enrichments and is used in the Flairing process.</p>
-<dl class="docutils">
-<dt>..literalinclude:: ../../etc/templates/enrichments.cfg</dt>
-<dd><table class="first last docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">linenos:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</dd>
-</dl>
+<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">environment</span> <span class="o">=</span> <span class="p">(</span>
+    
+    <span class="c1">##</span>
+    <span class="c1">## mappings tell SCOT what enrichments are available for a given entity type</span>
+    <span class="c1">##</span>
+    <span class="n">mappings</span>    <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="c1"># type      =&gt; [ qw(enrichment1 enrichment2 .. ) ]</span>
+        <span class="n">ipaddr</span>      <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span> <span class="n">geoip</span> <span class="n">robtex_ip</span><span class="p">)</span> <span class="p">],</span>
+        <span class="n">email</span>       <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span> <span class="p">)</span> <span class="p">],</span>
+        <span class="n">md5</span>         <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span> <span class="p">)</span> <span class="p">],</span>
+        <span class="n">sha1</span>        <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span> <span class="p">)</span> <span class="p">],</span>
+        <span class="n">sha256</span>      <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span> <span class="p">)</span> <span class="p">],</span>
+        <span class="n">domain</span>      <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span> <span class="n">robtex_dns</span> <span class="p">)</span> <span class="p">],</span>
+        <span class="n">file</span>        <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span>  <span class="p">)</span> <span class="p">],</span>
+        <span class="n">ganalytics</span>  <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span>  <span class="p">)</span> <span class="p">],</span>
+        <span class="n">snumber</span>     <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span>  <span class="p">)</span> <span class="p">],</span>
+        <span class="n">message_id</span>  <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span> <span class="p">)</span> <span class="p">],</span>
+    <span class="p">},</span>
+
+    <span class="c1">## </span>
+    <span class="c1">## foreach enrichment listed above place any config info for it here</span>
+    <span class="c1">## </span>
+    <span class="n">configs</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="c1"># </span>
+        <span class="c1"># Native enrichments have the form of</span>
+        <span class="c1"># </span>
+        <span class="c1"># enrichment_name =&gt; {</span>
+        <span class="c1">#       type    =&gt; &#39;native&#39;,</span>
+        <span class="c1">#       module  =&gt; &#39;Perl::Style::Module&#39;,</span>
+        <span class="c1">#       config  =&gt; {        # hash of config data that module might need</span>
+        <span class="c1">#           foo =&gt; &#39;bar&#39;,</span>
+        <span class="c1">#       },</span>
+        <span class="c1"># }</span>
+
+        <span class="n">geoip</span>   <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nb">type</span>    <span class="o">=&gt;</span> <span class="s1">&#39;native&#39;</span><span class="p">,</span>
+            <span class="n">module</span>  <span class="o">=&gt;</span> <span class="s1">&#39;Scot::Util::Geoip&#39;</span><span class="p">,</span>
+            <span class="c1"># config =&gt; { file =&gt; &#39;foo&#39; }</span>
+        <span class="p">},</span>
+
+        <span class="c1"># </span>
+        <span class="c1"># Link enrichments have the form of</span>
+        <span class="c1"># </span>
+        <span class="c1"># enrichment_name =&gt; {</span>
+        <span class="c1">#       type    =&gt; &#39;external_link&#39;, # or &#39;internal_link&#39;</span>
+        <span class="c1">#       url     =&gt; &#39;https://www.foo.com/search?term=%s&#39;, # sprintf consumes this</span>
+        <span class="c1">#       field   =&gt; &#39;value&#39;, # field of entity to pump into url via sprintf</span>
+        <span class="c1">#       title   =&gt; &#39;DoIt&#39;, # text to place in button</span>
+        <span class="c1"># }</span>
+
+        <span class="n">robtex_ip</span>   <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nb">type</span>    <span class="o">=&gt;</span> <span class="s1">&#39;external_link&#39;</span><span class="p">,</span>
+            <span class="n">url</span>     <span class="o">=&gt;</span> <span class="s1">&#39;https://www.robtex.com/ip/</span><span class="si">%s</span><span class="s1">.html&#39;</span><span class="p">,</span>
+            <span class="n">field</span>   <span class="o">=&gt;</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span>
+            <span class="n">title</span>   <span class="o">=&gt;</span> <span class="s1">&#39;Lookup on Robtex (external)&#39;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">robtex_dns</span>   <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nb">type</span>    <span class="o">=&gt;</span> <span class="s1">&#39;external_link&#39;</span><span class="p">,</span>
+            <span class="n">url</span>     <span class="o">=&gt;</span> <span class="s1">&#39;https://www.robtex.com/dns/</span><span class="si">%s</span><span class="s1">.html&#39;</span><span class="p">,</span>
+            <span class="n">field</span>   <span class="o">=&gt;</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span>
+            <span class="n">title</span>   <span class="o">=&gt;</span> <span class="s1">&#39;Lookup on Robtex (external)&#39;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">splunk</span>      <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="nb">type</span>    <span class="o">=&gt;</span> <span class="s1">&#39;internal_link&#39;</span><span class="p">,</span>
+            <span class="n">url</span>     <span class="o">=&gt;</span> <span class="s1">&#39;https://splunkserver.your.gov/en-US/app/search/flashtimeline?q=search</span><span class="si">%%</span><span class="s1">20</span><span class="si">%s</span><span class="s1">&amp;earliest=15m&amp;latest=now&#39;</span><span class="p">,</span>
+            <span class="n">field</span>   <span class="o">=&gt;</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span>
+            <span class="n">title</span>   <span class="o">=&gt;</span> <span class="s1">&#39;Search Last 15 minutes on Splunk&#39;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+<span class="p">);</span>
+
+</pre></div>
+</td></tr></table></div>
 </div>
 </div>
 <div class="section" id="cron-jobs">
@@ -653,7 +784,9 @@ entry.  It is recommended to run this every 2 to 5 minutes.  Here&#8217;s the cr
 </pre></div>
 </div>
 <p>Automating SCOT backups are a good idea as well:</p>
-<p>0 3,12,20 * * * /opt/scot/bin/backup.pl     # backup scot at 3am 12 noon and 8pm</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">0</span> <span class="mi">3</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">20</span> <span class="o">*</span> <span class="o">*</span> <span class="o">*</span> <span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">backup</span><span class="o">.</span><span class="n">pl</span>     <span class="c1"># backup scot at 3am 12 noon and 8pm</span>
+</pre></div>
+</div>
 </div>
 </div>
 
