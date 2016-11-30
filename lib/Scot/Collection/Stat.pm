@@ -35,6 +35,9 @@ sub increment {
     my $dt      = shift;
     my $metric  = shift;
     my $value   = shift;   
+    my $log     = $env->log;
+
+    $log->debug("Incrementing a Stat record");
 
     my $obj = $self->find({
         year    => $dt->year,
@@ -45,6 +48,8 @@ sub increment {
     });
 
     unless ( $obj ) { 
+        $log->debug("Creating new stat record");
+
         $obj = $self->create({
             year    => $dt->year,
             month   => $dt->month,
@@ -57,6 +62,7 @@ sub increment {
         });
     }
     else {
+        $log->debug("Updating existing stat record");
         $obj->update_inc({
             value   => $value
         });
