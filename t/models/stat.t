@@ -48,7 +48,7 @@ my $rec = {
     value   => 1,
 };
 
-my $stat1    = $stat->create($rec);
+my $stat1    = $stat->create_from_api($rec);
 
 ok (defined $stat1, "stat 1 created");
 is ($stat1->id, 1, "ID is correct");
@@ -57,7 +57,7 @@ is ($stat1->month, $dt->month, "month was set correctly");
 is ($stat1->hour, $dt->hour, "hour was set correctly");
 is ($stat1->value, 1, "value is set correctly");
 
-$stat->increment($dt, "test", 2);
+$stat1 = $stat->increment($dt, "test", 2);
 is ($stat1->value, 3, "value was incremented properly");
 
 
