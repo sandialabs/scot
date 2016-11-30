@@ -2534,7 +2534,12 @@ sub whoami {
     my $userobj = $mongo->collection('User')->find_one({username => $user});
 
     if ( defined ( $userobj )  ) {
+        $userobj->update_set(lastvisit => $env->now);
         my $user_href   = $userobj->as_hash;
+        # TODO:  move this to config file?
+        # placed here initially for convenience but not very logical
+        # since it has nothing to do with the user
+        # and is used to populate the sensitivity cell on the header.
         $user_href->{sensitivity} = "OUO";
         $self->do_render({
             user    => $user,
@@ -2669,6 +2674,31 @@ sub get_daemon_status {
     my ($status)=  $result =~ /.*\[(.*)\]/; 
     $log->debug("plucked $status");
     return $status;
+}
+
+sub get_who_online {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $now     = $env->now;
+    my $ago     = 30 * 60;   # activity in last 30 minutes
+    my $col     = $env->mongo->collection('User');
+    my $cur     = $col->find({ lastvisit => { '$gte' => $now - $ago }});
+    $cur->sort({lastvisit => -1});
+    my $total   = $cur->count;
+    my @results = ();
+
+    while (my $user = $cur->next ) {
+        push @results, {
+            username        => $user->username,
+            last_activity   => $now - $user->lastvisit,
+        };
+    }
+    $self->do_render({
+        records             => \@results,
+        queryRecordCount    => scalar(@results),
+        totalRecordCount    => $total
+
+    });
 }
 
 1;
