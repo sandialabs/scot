@@ -2645,4 +2645,26 @@ sub get_game_data {
 
 }
 
+sub get_status {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    my $status  = {
+        'Scot Flair Daemon'         => $self->get_daemon_status('scfd'),
+        'Scot Elastic Push Daemon'  => $self->get_daemon_status('scepd'),
+        'System Uptime'             => `uptime`,
+        'MongoDB'                   => `service mongod status`,
+    };
+}
+
+sub get_daemon_status {
+    my $self    = shift;
+    my $daemon  = shift;
+    my $result  = `service status $daemon`;
+    my ($status)=  $result =~ /.* \[(.*)]\]/; 
+    return $status;
+}
+
 1;
