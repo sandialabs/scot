@@ -31,7 +31,7 @@ the epoch representation
 
 =cut
 
-has epch  => (
+has epoch  => (
     is          => 'ro',
     isa         => 'Epoch',
     required    => 1,
@@ -55,42 +55,42 @@ sub _build_epoch {
 has year    => (
     is          => 'ro',
     isa         => 'Int',
-    requrired   => 1,
+    required    => 1,
     default     => 1969,
 );
 
 has month    => (
     is          => 'ro',
     isa         => 'Int',
-    requrired   => 1,
+    required   => 1,
     default     => 1,
 );
 
 has day    => (
     is          => 'ro',
     isa         => 'Int',
-    requrired   => 1,
+    required   => 1,
     default     => 2,
 );
 
 has dow    => (
     is          => 'ro',
     isa         => 'Int',
-    requrired   => 1,
+    required   => 1,
     default     => 2,
 );
 
 has quarter    => (
     is          => 'ro',
     isa         => 'Int',
-    requrired   => 1,
+    required   => 1,
     default     => 1,
 );
 
 has hour    => (
     is          => 'ro',
     isa         => 'Int',
-    requrired   => 1,
+    required   => 1,
     default     => 1,
 );
 
