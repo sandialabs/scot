@@ -710,6 +710,7 @@ var EntryDataSubject = React.createClass({
     getInitialState: function() {
         return {
             value:this.props.data.subject,
+            width:'',
         }
     },
     handleChange: function(event) {
@@ -724,6 +725,7 @@ var EntryDataSubject = React.createClass({
                 success: function(data) {
                     console.log('success: ' + data);
                     this.setState({value:newValue});
+                    this.calculateWidth(newValue);
                 }.bind(this),
                 error: function() { 
                     this.props.updated('error','Failed to update the subject');
@@ -731,14 +733,22 @@ var EntryDataSubject = React.createClass({
             });
         }
     },
+    componentDidMount: function() {
+       this.calculateWidth(this.state.value); 
+    },
     handleEnterKey: function(e) {
         if (e.key == 'Enter') {
             this.handleChange(e);
         }
     },
+    calculateWidth: function(input) {
+        var newWidth;
+        $('#invisible').html($('<span></span>').text(input));
+        newWidth = ($('#invisible').width() + 5) + 'px';
+        this.setState({width:newWidth});
+    },
     render: function() {
-        //if this is rewritten you can built it from scratch by using an input box with onBlur={handleChange}
-        if (this.state.value != undefined) {
+        /*if (this.state.value != undefined) {
             var subjectLength = this.state.value.length;
             var subjectWidth = subjectLength * 14;
             if (subjectWidth <= 200) {
@@ -746,9 +756,9 @@ var EntryDataSubject = React.createClass({
             }
         } else {
             var subjectWidth = 1000;
-        }
+        }*/
         return (
-            <div>{this.props.subjectType} {this.props.id}: <input type='text' defaultValue={this.state.value} onKeyPress={this.handleEnterKey} onBlur={this.handleChange} style={{width:subjectWidth+'px',lineHeight:'normal'}} /></div>
+            <div>{this.props.subjectType} {this.props.id}: <input type='text' defaultValue={this.state.value} onKeyPress={this.handleEnterKey} onBlur={this.handleChange} style={{width:this.state.width,lineHeight:'normal'}} /></div>
         )
     }
 });
