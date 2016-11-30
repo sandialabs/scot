@@ -37,7 +37,7 @@ my $dt  = DateTime->now;
 my $stat  = $mongo->collection("Stat");
 ok (defined $stat, "Collection object is defined");
 
-my $stat1    = $stat->create(
+my $rec = {
     year    => $dt->year,
     month   => $dt->month,
     day     => $dt->day,
@@ -46,7 +46,9 @@ my $stat1    = $stat->create(
     hour    => $dt->hour,
     metric  => "test",
     value   => 1,
-);
+};
+
+my $stat1    = $stat->create($rec);
 
 ok (defined $stat1, "stat 1 created");
 is ($stat1->id, 1, "ID is correct");
