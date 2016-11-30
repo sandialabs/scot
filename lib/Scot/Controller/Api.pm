@@ -2657,13 +2657,17 @@ sub get_status {
         'System Uptime'             => `uptime`,
         'MongoDB'                   => `service mongod status`,
     };
+    $self->do_render($status);
 }
 
 sub get_daemon_status {
     my $self    = shift;
     my $daemon  = shift;
-    my $result  = `service status $daemon`;
-    my ($status)=  $result =~ /.* \[(.*)]\]/; 
+    my $log     = $self->env->log;
+    my $result  = `service $daemon status`;
+    $log->debug("DAEMON status is $result");
+    my ($status)=  $result =~ /.*\[(.*)\]/; 
+    $log->debug("plucked $status");
     return $status;
 }
 
