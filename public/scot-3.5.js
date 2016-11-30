@@ -2504,38 +2504,35 @@ var React = require('react');
 var Panel = require('react-bootstrap/lib/Panel.js');
 var Badge = require('react-bootstrap/lib/Badge.js');
 
-var Stats = React.createClass({displayName: "Stats",
+var Status = React.createClass({displayName: "Status",
     getInitialState: function() {
         return {
-            StatData: null
+            StatusData: null
         }
     },
     componentDidMount: function() {
-        //TODO Commented out until stats are live
-        /*$.ajax({
+        $.ajax({
             type: 'get',
-            url: '/scot/api/v2/stat',
+            url: '/scot/api/v2/status',
         }).success(function(response) {
-            this.setState({StatData:response});
-        }.bind(this))*/
+            this.setState({StatusData:response});
+        }.bind(this))
     },
     render: function() {
-        var StatRows = [];
-        if (this.state.StatData != null) {
-            for (var key in this.state.StatData) {
-                StatRows.push(
+        var StatusRows = [];
+        if (this.state.StatusData != null) {
+            for (var key in this.state.StatusData) {
+                StatusRows.push(
                     React.createElement(Panel, {header: key}, 
                         React.createElement("div", {style: {display:'flex', flexFlow:'column'}}, 
-                            React.createElement("div", {style: { fontWeight:'bold'}}, this.state.StatData[key][0].username, " ", React.createElement(Badge, {className: "pull-right", style: {marginLeft:'15px'}}, this.state.StatData[key][0].count)), 
-                            React.createElement("div", {style: { fontWeight: 'bold'}}, this.state.StatData[key][1].username, " ", React.createElement(Badge, {className: "pull-right", style: {marginLeft:'15px'}}, this.state.StatData[key][1].count)), 
-                            React.createElement("div", {style: { fontWeight: 'bold'}}, this.state.StatData[key][2].username, " ", React.createElement(Badge, {className: "pull-right", style: {marginLeft:'15px'}}, this.state.StatData[key][2].count))
+                            React.createElement("div", {style: {fontWeight:'bold'}}, this.state.StatusData[key])
                         )
                     )
                 )
             }
         } else {
-            StatRows.push(
-                React.createElement(Panel, {header: 'SCOT 3.5 Stats'}, 
+            StatusRows.push(
+                React.createElement(Panel, {header: 'SCOT 3.5 Status'}, 
                     React.createElement("br", null), 
                     React.createElement("div", {style: {fontWeight:'bold'}}, "Coming Soon"), 
                     React.createElement("br", null)
@@ -2545,17 +2542,17 @@ var Stats = React.createClass({displayName: "Stats",
         return (
             React.createElement("div", {id: "stats", className: "stats"}, 
                 React.createElement("div", {style: {textAlign:'center'}}, 
-                    React.createElement("h2", null, "Stats")
+                    React.createElement("h2", null, "Status")
                 ), 
                 React.createElement("div", {style: {display:'flex'}}, 
-                    StatRows
+                    StatusRows
                 )
             )
         );
     }
 });
 
-module.exports = Stats;
+module.exports = Status;
 
 },{"react":994,"react-bootstrap/lib/Badge.js":52,"react-bootstrap/lib/Panel.js":74}],18:[function(require,module,exports){
 var React               = require('react');
@@ -6303,7 +6300,7 @@ var AMQ             = require('../debug-components/amq.jsx');
 var Search          = require('../components/esearch.jsx');
 var Visualization   = require('../components/visualization.jsx');
 var Gamification    = require('../components/gamification.jsx');
-var Stats           = require('../components/stats.jsx');
+var Status           = require('../components/status.jsx');
 var sethome = false
 var setalerts = false
 var setevents = false
@@ -6615,17 +6612,17 @@ var App = React.createClass({displayName: "App",
                             )
                     )
                 ), 
-                React.createElement("div", {style: {paddingTop:'50px'}}, 
+                React.createElement("div", {className: "mainNavPadding"}, 
                     this.state.set == 0 ? 
-                    React.createElement("div", null, 
+                    React.createElement("div", {className: "homePageDisplay"}, 
                         React.createElement("div", null, 
                             React.createElement("img", {src: "/images/scot-600h.png", style: {width:'350px', height: '320px',marginLeft:'auto', marginRight:'auto', display: 'block'}}), 
                             React.createElement("h1", null, "Sandia Cyber Omni Tracker 3.5"), 
                             React.createElement("h1", null, sensitivity)
                         ), 
                         React.createElement("div", {className: "homePageBoards"}, 
-                            React.createElement(Gamification, null)
-                            /*<Stats /> */
+                            React.createElement(Gamification, null), 
+                            React.createElement(Status, null)
                         )
                     )
                     :
@@ -6729,7 +6726,7 @@ var App = React.createClass({displayName: "App",
     ), document.getElementById('content'))
 
 
-},{"../../../node_modules/react-router":561,"../../../node_modules/react-router/":561,"../activemq/listener.jsx":4,"../components/esearch.jsx":8,"../components/gamification.jsx":10,"../components/stats.jsx":17,"../components/visualization.jsx":21,"../debug-components/amq.jsx":22,"../detail/selected_container.jsx":23,"../list/list-view.jsx":29,"../modal/entity_detail.jsx":34,"react":994,"react-bootstrap/lib/MenuItem.js":63,"react-bootstrap/lib/Nav.js":64,"react-bootstrap/lib/NavDropdown.js":65,"react-bootstrap/lib/NavItem.js":66,"react-bootstrap/lib/Navbar.js":67,"react-dom":475}],31:[function(require,module,exports){
+},{"../../../node_modules/react-router":561,"../../../node_modules/react-router/":561,"../activemq/listener.jsx":4,"../components/esearch.jsx":8,"../components/gamification.jsx":10,"../components/status.jsx":17,"../components/visualization.jsx":21,"../debug-components/amq.jsx":22,"../detail/selected_container.jsx":23,"../list/list-view.jsx":29,"../modal/entity_detail.jsx":34,"react":994,"react-bootstrap/lib/MenuItem.js":63,"react-bootstrap/lib/Nav.js":64,"react-bootstrap/lib/NavDropdown.js":65,"react-bootstrap/lib/NavItem.js":66,"react-bootstrap/lib/Navbar.js":67,"react-dom":475}],31:[function(require,module,exports){
 var React           = require('react');
 var ReactTime       = require('react-time');
 var Modal           = require('react-modal');
