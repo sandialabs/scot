@@ -18,7 +18,7 @@ var AMQ             = require('../debug-components/amq.jsx');
 var Search          = require('../components/esearch.jsx');
 var Visualization   = require('../components/visualization.jsx');
 var Gamification    = require('../components/gamification.jsx');
-var Stats           = require('../components/stats.jsx');
+var Status           = require('../components/status.jsx');
 var sethome = false
 var setalerts = false
 var setevents = false
@@ -340,7 +340,7 @@ var App = React.createClass({
                         </div>
                         <div className="homePageBoards">
                             <Gamification />
-                            <Stats />
+                            <Status />
                         </div>
                     </div>
                     :
