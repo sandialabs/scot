@@ -330,9 +330,9 @@ var App = React.createClass({
                             </div>
                     </Navbar.Collapse>
                 </Navbar>
-                <div style={{paddingTop:'50px'}}>
+                <div className='mainNavPadding'>
                     {this.state.set == 0 ? 
-                    <div>
+                    <div className="homePageDisplay">
                         <div>
                             <img src='/images/scot-600h.png' style={{width:'350px', height: '320px',marginLeft:'auto', marginRight:'auto', display: 'block'}}/>
                             <h1>Sandia Cyber Omni Tracker 3.5</h1>
@@ -340,7 +340,7 @@ var App = React.createClass({
                         </div>
                         <div className="homePageBoards">
                             <Gamification />
-                            {/*<Stats /> */}
+                            <Stats />
                         </div>
                     </div>
                     :
