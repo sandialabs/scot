@@ -2511,13 +2511,12 @@ var Stats = React.createClass({displayName: "Stats",
         }
     },
     componentDidMount: function() {
-        //TODO Commented out until stats are live
-        /*$.ajax({
+        $.ajax({
             type: 'get',
-            url: '/scot/api/v2/stat',
+            url: '/scot/api/v2/status',
         }).success(function(response) {
             this.setState({StatData:response});
-        }.bind(this))*/
+        }.bind(this))
     },
     render: function() {
         var StatRows = [];
@@ -2526,9 +2525,7 @@ var Stats = React.createClass({displayName: "Stats",
                 StatRows.push(
                     React.createElement(Panel, {header: key}, 
                         React.createElement("div", {style: {display:'flex', flexFlow:'column'}}, 
-                            React.createElement("div", {style: { fontWeight:'bold'}}, this.state.StatData[key][0].username, " ", React.createElement(Badge, {className: "pull-right", style: {marginLeft:'15px'}}, this.state.StatData[key][0].count)), 
-                            React.createElement("div", {style: { fontWeight: 'bold'}}, this.state.StatData[key][1].username, " ", React.createElement(Badge, {className: "pull-right", style: {marginLeft:'15px'}}, this.state.StatData[key][1].count)), 
-                            React.createElement("div", {style: { fontWeight: 'bold'}}, this.state.StatData[key][2].username, " ", React.createElement(Badge, {className: "pull-right", style: {marginLeft:'15px'}}, this.state.StatData[key][2].count))
+                            React.createElement("div", {style: {fontWeight:'bold'}}, this.state.StatData[key])
                         )
                     )
                 )
@@ -6615,17 +6612,17 @@ var App = React.createClass({displayName: "App",
                             )
                     )
                 ), 
-                React.createElement("div", {style: {paddingTop:'50px'}}, 
+                React.createElement("div", {className: "mainNavPadding"}, 
                     this.state.set == 0 ? 
-                    React.createElement("div", null, 
+                    React.createElement("div", {className: "homePageDisplay"}, 
                         React.createElement("div", null, 
                             React.createElement("img", {src: "/images/scot-600h.png", style: {width:'350px', height: '320px',marginLeft:'auto', marginRight:'auto', display: 'block'}}), 
                             React.createElement("h1", null, "Sandia Cyber Omni Tracker 3.5"), 
                             React.createElement("h1", null, sensitivity)
                         ), 
                         React.createElement("div", {className: "homePageBoards"}, 
-                            React.createElement(Gamification, null)
-                            /*<Stats /> */
+                            React.createElement(Gamification, null), 
+                            React.createElement(Stats, null)
                         )
                     )
                     :
