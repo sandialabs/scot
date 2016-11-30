@@ -9,13 +9,12 @@ var Stats = React.createClass({
         }
     },
     componentDidMount: function() {
-        //TODO Commented out until stats are live
-        /*$.ajax({
+        $.ajax({
             type: 'get',
-            url: '/scot/api/v2/stat',
+            url: '/scot/api/v2/status',
         }).success(function(response) {
             this.setState({StatData:response});
-        }.bind(this))*/
+        }.bind(this))
     },
     render: function() {
         var StatRows = [];
@@ -24,9 +23,7 @@ var Stats = React.createClass({
                 StatRows.push(
                     <Panel header={key} >
                         <div style={{display:'flex', flexFlow:'column'}}>
-                            <div style={{ fontWeight:'bold'}}>{this.state.StatData[key][0].username} <Badge className='pull-right' style={{marginLeft:'15px'}}>{this.state.StatData[key][0].count}</Badge></div>
-                            <div style={{ fontWeight: 'bold'}}>{this.state.StatData[key][1].username} <Badge className='pull-right' style={{marginLeft:'15px'}}>{this.state.StatData[key][1].count}</Badge></div>
-                            <div style={{ fontWeight: 'bold'}}>{this.state.StatData[key][2].username} <Badge className='pull-right' style={{marginLeft:'15px'}}>{this.state.StatData[key][2].count}</Badge></div>
+                            <div style={{fontWeight:'bold'}}>{this.state.StatData[key]}</div>
                         </div>
                     </Panel>
                 )
