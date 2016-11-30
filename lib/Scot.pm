@@ -184,6 +184,10 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-api#get_status')
             ->name  ('get_status');
 
+    $scot   ->route ('/api/v2/who')
+            ->to    ('controller-api#get_who_online')
+            ->name  ('get_who_online');
+
 =pod
 
 @api {get} /scot/api/v2/esearch Search Scot
