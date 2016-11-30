@@ -16,6 +16,7 @@ The model of a Stat
 =cut
 
 extends 'Scot::Model';
+
 with    qw(
     Meerkat::Role::Document
     Scot::Role::Hashable
@@ -49,7 +50,7 @@ sub _build_epoch {
         minute  => 0,
         second  => 0,
     );
-    return $dt;
+    return $dt->epoch;
 }
 
 has year    => (
@@ -107,5 +108,7 @@ has value   => (
     required    => 1,
     default     => 0,
 );
+
+__PACKAGE__->meta->make_immutable;
 
 1;
