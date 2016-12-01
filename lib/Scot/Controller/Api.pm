@@ -1269,7 +1269,6 @@ sub check_promotion_input {
     my $log     = $self->env->log;
 
     $log->debug("Checking promotion input");
-    $log->debug("to is $to");
     # $log->debug("from is $from");
     
     if ( defined $from ) {
@@ -1282,6 +1281,7 @@ sub check_promotion_input {
         $log->trace("No promoting or unpromoting in update.");
         return undef;
     }
+    $log->debug("to is $to");
     return 1;
 }
 
@@ -1372,7 +1372,7 @@ sub do_task_checks {
 
     if ( defined $params->{make_task} ) {
         $key = "make_task";
-        $params->{is_task}  = 1;
+        $params->{class}  = 'task';
         $status = "open";
     }
     elsif ( defined $params->{take_task} ) {
@@ -1386,7 +1386,7 @@ sub do_task_checks {
 
     if ( $key ne '' ) {
         delete $params->{$key};
-        $params->{task} = {
+        $params->{metadata} = {
             who     => $user,
             when    => $now,
             status  => $status,
@@ -1899,8 +1899,11 @@ sub build_limit {
 
 
     my $limit   = $params->{limit} // $json->{limit};
-    $log->debug("LIMIT of $limit detected");
-    return $limit;
+    if ( $limit ) {
+        $log->debug("LIMIT of $limit detected");
+        return $limit;
+    }
+    return undef;
 }
 
 =item B<build_offset($href)>
@@ -2506,6 +2509,7 @@ sub autocomplete {
 
     my @values  = ();
     my $match   = { $key => qr/$search/i };
+
     $log->debug("Matching: ",{filter=>\&Dumper,value=>$match});
 
     my $cursor  = $collection->find($match);
