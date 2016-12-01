@@ -535,7 +535,7 @@ var SelectedHeader = React.createClass({
             <div> {this.state.isNotFound ? <h1>No record found.</h1> :
             <div>
                 <div id="header">
-                    <div id="NewEventInfo" className="entry-header-info-null" style={{width:'100%'}}>
+                    <div id="NewEventInfo" className="entry-header-info-null">
                         <div className='details-subject' style={{display: 'inline-flex',paddingLeft:'5px'}}>
                             {this.state.showEventData ? <EntryDataSubject data={this.state.headerData} subjectType={subjectType} type={type} id={this.props.id} updated={this.updated} />: null}
                             {this.state.refreshing ? <span style={{color:'lightblue'}}>Refreshing Data...</span> :null }
@@ -550,7 +550,7 @@ var SelectedHeader = React.createClass({
                                         <th>Owner: </th>
                                         <td><span>{this.state.showEventData ? <Owner key={id} data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
                                         <th>Updated: </th>
-                                        <td><span id='event_updated' style={{color: 'white',lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px'}} >{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
+                                        <td><span id='event_updated'>{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                         {(type == 'event' || type == 'incident') && this.state.showEventData ? <th>Promoted From:</th> : null}
                                         {(type == 'event' || type == 'incident') && this.state.showEventData ? <PromotedData data={this.state.headerData.promoted_from} type={type} id={id} /> : null}
                                         <th>Tags: </th>
@@ -744,7 +744,7 @@ var EntryDataSubject = React.createClass({
     calculateWidth: function(input) {
         var newWidth;
         $('#invisible').html($('<span></span>').text(input));
-        newWidth = ($('#invisible').width() + 5) + 'px';
+        newWidth = ($('#invisible').width() + 25) + 'px';
         this.setState({width:newWidth});
     },
     render: function() {
@@ -814,7 +814,7 @@ var PromotedData = React.createClass({
         } 
         if (this.props.data.length > 3) {shortarr.push(<div onClick={this.showAllPromotedDataToggle}>,<a href='javascript:;'>...more</a></div>)}
         return (
-            <td><span id='promoted_from' style={{color: 'white', lineHeight: '12pt', fontSize: '12pt', paddingTop:'5px', display:'flex'}}>{shortarr}</span> 
+            <td><span id='promoted_from' style={{display:'flex'}}>{shortarr}</span> 
             {this.state.showAllPromotedDataToolbar ? <Modal isOpen={true} onRequestClose={this.showAllPromotedDataToggle} style={customStyles}>
                 <div className='modal-header'>
                     <img src='images/close_toolbar.png' className='close_toolbar' onClick={this.showAllPromotedDataToggle} />

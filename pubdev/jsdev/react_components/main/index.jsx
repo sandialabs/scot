@@ -16,9 +16,11 @@ var SelectedContainer = require('../detail/selected_container.jsx')
 var EntityDetail      = require('../modal/entity_detail.jsx')
 var AMQ             = require('../debug-components/amq.jsx');
 var Search          = require('../components/esearch.jsx');
-var Visualization   = require('../components/visualization.jsx');
-var Gamification    = require('../components/gamification.jsx');
-var Status           = require('../components/status.jsx');
+var Visualization   = require('../components/dashboard/visualization.jsx');
+var Gamification    = require('../components/dashboard/gamification.jsx');
+var Status           = require('../components/dashboard/status.jsx');
+var Online          = require('../components/dashboard/online.jsx');
+var Stats           = require('../components/dashboard/stats.jsx');
 var sethome = false
 var setalerts = false
 var setevents = false
@@ -333,15 +335,15 @@ var App = React.createClass({
                 <div className='mainNavPadding'>
                     {this.state.set == 0 ? 
                     <div className="homePageDisplay">
-                        <div>
-                            <img src='/images/scot-600h.png' style={{width:'350px', height: '320px',marginLeft:'auto', marginRight:'auto', display: 'block'}}/>
+                        <div className='col-md-4'>
+                            <img src='/images/scot-600h.png' style={{maxWidth:'350px',width:'100%',marginLeft:'auto', marginRight:'auto', display: 'block'}}/>
                             <h1>Sandia Cyber Omni Tracker 3.5</h1>
                             <h1>{sensitivity}</h1>
-                        </div>
-                        <div className="homePageBoards">
-                            <Gamification />
                             <Status />
                         </div>
+                        <Gamification />
+                        <Online />
+                        <Stats />
                     </div>
                     :
                     null}
