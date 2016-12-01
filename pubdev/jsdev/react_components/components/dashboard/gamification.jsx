@@ -32,10 +32,10 @@ var Gamification = React.createClass({
                 GameRows.push(
                     <OverlayTrigger placement="top" overlay={<Tooltip id='tooltip'>{this.state.GameData[key][0].tooltip}</Tooltip>}>
                         <Panel header={keyCapitalized} >
-                            <div style={{display:'flex', flexFlow:'column'}}>
-                                <div style={{ fontWeight:'bold'}}>{this.state.GameData[key][0].username} <Badge className='pull-right' style={{marginLeft:'15px'}}>{this.state.GameData[key][0].count}</Badge></div>
-                                <div style={{ fontWeight: 'bold'}}>{this.state.GameData[key][1].username} <Badge className='pull-right' style={{marginLeft:'15px'}}>{this.state.GameData[key][1].count}</Badge></div>
-                                <div style={{ fontWeight: 'bold'}}>{this.state.GameData[key][2].username} <Badge className='pull-right' style={{marginLeft:'15px'}}>{this.state.GameData[key][2].count}</Badge></div>
+                            <div>
+                                <div>{this.state.GameData[key][0].username} <Badge>{this.state.GameData[key][0].count}</Badge></div>
+                                <div>{this.state.GameData[key][1].username} <Badge>{this.state.GameData[key][1].count}</Badge></div>
+                                <div>{this.state.GameData[key][2].username} <Badge>{this.state.GameData[key][2].count}</Badge></div>
                             </div>
                         </Panel>
                     </OverlayTrigger>
@@ -43,11 +43,11 @@ var Gamification = React.createClass({
             }
         }
         return (
-            <div id='gamification' className="gamification">
-                <div style={{textAlign:'center'}}>
+            <div id='gamification' className="dashboard col-md-2">
+                <div>
                     <h2>Leader Board</h2>
                 </div>
-                <div style={{display:'flex'}}>
+                <div>
                     {GameRows}
                 </div>
             </div>
