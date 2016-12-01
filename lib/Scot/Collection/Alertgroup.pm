@@ -93,17 +93,14 @@ sub create_from_api {
     my $open_count      = 0;
     my $closed_count    = 0;
     my $promoted_count  = 0;
-    my @columns         = ();
             
     foreach my $alert_href (@$data) {
-
-        @columns = keys %$alert_href;
 
         my $chref   = {
             data        => $alert_href,
             alertgroup  => $id,
             status      => 'open',
-        #    columns     => \@columns,
+            columns     => $alertgroup->columns,
         };
 
 
