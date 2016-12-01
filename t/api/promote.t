@@ -49,8 +49,8 @@ my $updated         = $t->tx->res->json->{updated};
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
            "Get alertgroup $alertgroup_id" )
     ->status_is(200)
-    ->json_is('/totalRecordCount'   => 2)
-    ->json_is('/queryRecordCount'   => 2)
+    ->json_is('/totalRecordCount'       => 2)
+    ->json_is('/queryRecordCount'       => 2)
     ->json_is('/records/0/alertgroup'   => $alertgroup_id)
     ->json_is('/records/1/alertgroup'   => $alertgroup_id)
     ->json_is('/records/0/data/foo'     => 1)
@@ -67,13 +67,20 @@ $t->put_ok("/scot/api/v2/alert/$alert_1_id" => json =>
 )->status_is(200)
  ->json_is('/status'    => "successfully promoted");
 
-#print Dumper($t->tx->res->json), "\n";
-#done_testing();
-#exit 0;
-
-
 my $event1  = $t->tx->res->json->{id};
 
+$t->get_ok("/scot/api/v2/event/$event1/entry" => {},
+    "Get the entries from the new event" )
+    ->status_is(200)
+    ->json_is('/records/0/class'    => 'alert')
+    ->json_is('/records/0/parent'   => 0 )
+    ->json_is('/records/0/children/0/class'    => 'entry')
+    ->json_is('/records/0/children/0/parent'    => 1);
+
+
+# print Dumper($t->tx->res->json), "\n";
+# done_testing();
+# exit 0;
 
 $t->get_ok("/scot/api/v2/event/$event1/alert" => {},
     "Get alerts promoted to Event $event1")
@@ -108,9 +115,28 @@ $t->put_ok("/scot/api/v2/alert/$alert_2_id" => json =>
  ->json_is('/pid'        => $event1)                     
  ->json_is('/status'    => "successfully promoted");    # expect the id of the promoted object
 
-# print Dumper($t->tx->res->json), "\n";
-# done_testing();
-# exit 0;
+$t->get_ok("/scot/api/v2/event/$event1/entry" => {},
+    "Get the entries from the new event" )
+    ->status_is(200)
+    ->json_is('/records/0/class'    => 'alert')
+    ->json_is('/records/0/parent'   => 0 )
+    ->json_is('/records/0/children/0/class'    => 'entry')
+    ->json_is('/records/0/children/0/parent'    => 1)
+    ->json_is('/records/0/children/1/class'     => 'entry')
+    ->json_is('/records/0/children/1/parent'     => 1)
+    ->json_is('/records/0/children/0/body'  => '<h3>From Alert <a href="/#/alert/1">1</h3><table class="tablesorter alertTableHorizontal">
+<tr>
+<th>foo</th><th>bar</th>
+</tr>
+<tr>
+<td>1</td><td>2</td>
+</tr>
+</table>
+');
+
+ print Dumper($t->tx->res->json), "\n";
+ done_testing();
+ exit 0;
 
 $t->get_ok("/scot/api/v2/event/$event1/alert" => {},
     "Get alerts promoted to Event $event1")
