@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use Scot::Util::Logger;
 use Scot::Util::Config;
-
+use DateTime;
 use Moose;
 use namespace::autoclean;
 
@@ -66,6 +66,35 @@ has base_url    => (
     required        => 1,
     default         => '/scot/api/v2',
 );
+
+sub put_stat {
+    my $self    = shift;
+    my $metric  = shift;
+    my $value   = shift;
+    my $now     = DateTime->now;
+
+    if ( $self->get_method eq "scot_api" ) {
+        my $response    = $self->scot->post({
+            type    => "stat",
+            data    => {
+                action  => 'incr',
+                year    => $now->year,
+                month   => $now->month,
+                day     => $now->day,
+                hour    => $now->hour,
+                dow     => $now->dow,
+                quarter => $now->quarter,
+                metric  => $metric,
+                value   => $value,
+            }
+        });
+    }
+    else {
+        my $mongo   = $self->env->mongo;
+        my $col     = $mongo->collection('Stat');
+        $col->increment($now, $metric, $value);
+    }
+}
 
 
 1;
