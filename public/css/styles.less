@@ -1,7 +1,7 @@
 @entry_border_rounded: 5px;
 @entry_header_background_color: #DDD;
 @body_background_color: #EEE;
-@import "/css/bootstrap.css";
+//@import "/css/bootstrap.css";
 
 .dropdown-menu>li>a {
     padding-right:0px !important;
@@ -247,12 +247,12 @@ body {
 }
 
 .details-table th {
- font-size:12pt;
+ //font-size:12pt;
  outline: 0px solid transparent;
 }
 
 .details-subject {
- font-size:18pt;
+ font-size:x-large;
 }
 
 .grid-table th {
@@ -354,10 +354,9 @@ body {
 }
 
 .toolbar {
-  //display: none;
   position:relative;
-  padding-top:10px;
-  margin-bottom:10px;
+  padding-top:5px;
+  margin-bottom:5px;
   border-top:1px solid white;
 }
 .toolbar  select {
@@ -1416,24 +1415,32 @@ a:active {
     display: table-cell;
 }
 
-.gamification {
-    position: relative;
-    float: left;
-    padding: 20px;
-    margin: auto;
+.dashboard {
+    text-align: center;
 }
 
-.stats {
-    position: relative;
-    float: right;
-    padding: 20px;
-    margin: auto;
-
+.dashboardStatusParent {
+    text-align: center;
+    padding-top:50px;
 }
 
-.homePageBoards {
+.dashBoardStatusChild {
     display: flex;
-    flex-wrap: wrap;
+    flex-flow: column;
+}
+
+.dashboardStatusDetail {
+    font-weight: initial;
+}
+
+.dashboardStatusDetailNotRunning {
+    font-weight: bold;
+    color: red;
+}
+
+.dashboardStatusDetailRunning {
+    font-weight: bold;
+    color: green;
 }
 
 .mainNavPadding {
