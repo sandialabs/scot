@@ -14,7 +14,7 @@ $ENV{'scot_env_configfile'} = '../../../Scot-Internal-Modules/etc/scot_env_test.
 print "Resetting test db...\n";
 system("mongo scot-testing <../../etcsrc/database/reset.js 2>&1 > /dev/null");
 
-my @defgroups       = ( 'wg-scot-ir', 'wg-scot-testing' );
+my $defgroups       = [ 'wg-scot-ir', 'wg-scot-testing' ];
 
 my $t   = Test::Mojo->new('Scot');
 
@@ -45,8 +45,7 @@ my $entry1 = $t->tx->res->json->{id};
 $t  ->get_ok("/scot/api/v2/entry/$entry1" => {}, 
     "get to make sure entry is not task" )
     ->status_is(200)
-    ->json_is('/is_task'        => 0);
-  print Dumper($t->tx->res->json);
+    ->json_is('/class'        => 'entry');
 # make entry1 a task
 
 $t  ->put_ok("/scot/api/v2/entry/$entry1" => json => {
@@ -56,13 +55,12 @@ $t  ->put_ok("/scot/api/v2/entry/$entry1" => json => {
 $t  ->get_ok("/scot/api/v2/entry/$entry1" => {}, 
     "Seeing if Entry $entry1 is now a task" )
     ->status_is(200)
-    ->json_is('/is_task'        => 1)
-    ->json_is('/task/status'    => 'open');
+    ->json_is('/class'        => 'task')
+    ->json_is('/metadata/status'    => 'open');
 
 # print Dumper($t->tx->res->json);
 # done_testing();
 # exit 0;
-
 
 $t  ->put_ok("/scot/api/v2/entry/$entry1" => json => {
     take_task => 1 })
@@ -71,8 +69,8 @@ $t  ->put_ok("/scot/api/v2/entry/$entry1" => json => {
 $t  ->get_ok("/scot/api/v2/entry/$entry1" => {}, 
     "Seeing if Entry $entry1 is now a task" )
     ->status_is(200)
-    ->json_is('/is_task'        => 1)
-    ->json_is('/task/status'    => 'assigned');
+    ->json_is('/class'        => 'task')
+    ->json_is('/metadata/status'    => 'assigned');
 
 $t  ->put_ok("/scot/api/v2/entry/$entry1" => json => {
     close_task => 1 })
@@ -81,8 +79,8 @@ $t  ->put_ok("/scot/api/v2/entry/$entry1" => json => {
 $t  ->get_ok("/scot/api/v2/entry/$entry1" => {}, 
     "Seeing if Entry $entry1 is now a task" )
     ->status_is(200)
-    ->json_is('/is_task'        => 1)
-    ->json_is('/task/status'    => 'closed');
+    ->json_is('/class'        => 'task')
+    ->json_is('/metadata/status'    => 'closed');
 
 $t  ->put_ok("/scot/api/v2/entry/$entry1" => json => {
     close_task => 1 })
