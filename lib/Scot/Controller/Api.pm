@@ -2068,7 +2068,7 @@ sub thread_entries {
             $href->{children}   = [];   # create holder for children
         }
 
-        if ( $entry->summary ) {
+        if ( $entry->class eq "summary" ) {
             $log->trace("entry is summary");
             push @summaries, $href;
             $where{$entry->id} = \$summaries[$sindex];
