@@ -42,7 +42,13 @@ LOGDIR="/var/log/scot";
 AMQDIR="/opt/activemq"
 AMQTAR="apache-activemq-5.13.2-bin.tar.gz"
 AMQURL="https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-activemq/5.13.2/$AMQTAR"
-PROXY="http://wwwproxy.sandia.gov:80"
+
+t_proxy=$(printenv http_proxy)
+
+if [[ ! -z $t_proxy ]]; then
+    PROXY=$(printenv http_proxy)
+fi
+
 
 ##
 ## defaults
@@ -263,7 +269,12 @@ EOF
                 echo "= mongo 10Gen repo already present"
             else 
                 echo "+ Adding Mongo 10Gen repo and updating apt-get caches"
-                apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 --keyserver-options http-proxy=$PROXY
+                # apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 --keyserver-options http-proxy=$PROXY
+                if [[ ! -z $PROXY ]]; then
+                    apt-key adv --keyserver-options http-proxy=$PROXY --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EA312927
+                else 
+                    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EA312927
+                fi
                 if [ $OSVERSION == "16" ]; then
                     echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
                 else 
@@ -276,7 +287,7 @@ EOF
             add-apt-repository -y ppa:maxmind/ppa
         fi
 
-        apt-get install -y mongodb-org
+        apt-get update && apt-get install -y mongodb-org
 
         if [[ ! -e /etc/apt/sources.list.d/elasticsearch-2.x.list ]]; then
             wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
@@ -312,6 +323,29 @@ EOF
     ## 
     echo    "--- Installing ActiveMQ"
     echo    ""
+    echo -e "${yellow}+ installing ActiveMQ${NC}"
+
+    if [ -e "$AMQDIR/bin/activemq" ]; then
+        echo "= activemq already installed"
+        # service activemq restart
+    else
+
+        if [ ! -e /tmp/$AMQTAR ]; then
+            echo "= downloading $AMQURL"
+            # curl -o /tmp/apache-activemq.tar.gz $AMQTAR
+            wget -P /tmp $AMQURL 
+        fi
+
+        if [ ! -d $AMQDIR ];then
+            mkdir -p $AMQDIR
+            chown -R activemq.activemq $AMQDIR
+        fi
+
+        tar xf /tmp/$AMQTAR --directory /tmp
+        mv /tmp/apache-activemq-5.13.2/* $AMQDIR
+
+    fi
+
     echo -e "${yellow}= Checking for activemq user ${NC}"
 
     AMQ_USER=`grep -c activemq: /etc/passwd`
@@ -361,27 +395,8 @@ EOF
         cp $DEVDIR/etcsrc/scotamq.xml     $AMQDIR/conf
     fi
 
-    echo -e "${yellow}+ installing ActiveMQ${NC}"
-
-    if [ -e "$AMQDIR/bin/activemq" ]; then
-        echo "= activemq already installed"
-        # service activemq restart
-    else
-
-        if [ ! -e /tmp/$AMQTAR ]; then
-            echo "= downloading $AMQURL"
-            # curl -o /tmp/apache-activemq.tar.gz $AMQTAR
-            wget -P /tmp $AMQURL 
-        fi
-
-        if [ ! -d $AMQDIR ];then
-            mkdir -p $AMQDIR
-            chown -R activemq.activemq $AMQDIR
-        fi
-
-        tar xf /tmp/$AMQTAR --directory /tmp
-        mv /tmp/apache-activemq-5.13.2/* $AMQDIR
-
+    AMQSTAT=`ps -ef | grep activemq | grep -v grep`
+    if [[ $? == 1 ]]; then
         echo "${green}+ starting activemq${NC}"
         service activemq start
     fi
