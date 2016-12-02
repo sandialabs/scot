@@ -395,11 +395,7 @@ EOF
         cp $DEVDIR/etcsrc/scotamq.xml     $AMQDIR/conf
     fi
 
-    AMQSTAT=`ps -ef | grep activemq | grep -v grep`
-    if [[ $? == 1 ]]; then
-        echo "${green}+ starting activemq${NC}"
-        service activemq start
-    fi
+    service activemq restart
 
     ###
     ### Perl Module installation
@@ -714,7 +710,41 @@ cp -r $DEVDIR/* $SCOTDIR/
 if [[ $AUTHMODE == "Remoteuser" ]]; then
     cp $DEVDIR/etcsrc/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
 else 
-    cp $DEVDIR/etcsrc/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
+    if [[ ! -e $SCOTDIR/etc/scot_env.cfg ]]; then
+        cp $DEVDIR/etcsrc/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
+    else
+        echo "= scot_env.cfg already present, skipping..."
+    fi
+fi
+
+if [[ ! -e $SCOTDIR/etc/mongo.cfg ]];then
+    cp $DEVDIR/etcsrc/mongo.cfg $SCOTDIR/etc/mongo.cfg
+else
+    echo "= mongo.cfg already present, skipping..."
+fi
+
+if [[ ! -e $SCOTDIR/etc/logger.cfg ]]; then
+    cp $DEVDIR/etcsrc/logger.cfg $SCOTDIR/etc/logger.cfg
+else
+    echo "= logger.cfg already present, skipping..."
+fi
+
+if [[ ! -e $SCOTDIR/etc/imap.cfg ]]; then
+    cp $DEVDIR/etcsrc/imap.cfg $SCOTDIR/etc/imap.cfg
+else
+    echo "= imap.cfg already present, skipping..."
+fi
+
+if [[ ! -e $SCOTDIR/etc/activemq.cfg ]]; then
+    cp $DEVDIR/etcsrc/activemq.cfg $SCOTDIR/etc/activemq.cfg
+else
+    echo "= activemq.cfg already present, skipping..."
+fi
+
+if [[ ! -e $SCOTDIR/etc/enrichments.cfg ]]; then
+    cp $DEVDIR/etcsrc/enrichments.cfg $SCOTDIR/etc/enrichments.cfg
+else
+    echo "= enrichments.cfg already present, skipping..."
 fi
 
 # private configs to overwrite default configs
@@ -915,8 +945,12 @@ if [ ! -e /etc/init.d/scepd ]; then
     fi
 fi
 
+echo "= restarting apache2"
+/etc/init.d/apache2 restart
+
 echo "= restarting scot"
 /etc/init.d/scot restart
+
     
 #
 # add elastic search to startup
