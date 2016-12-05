@@ -44,9 +44,14 @@ AMQTAR="apache-activemq-5.13.2-bin.tar.gz"
 AMQURL="https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-activemq/5.13.2/$AMQTAR"
 
 t_proxy=$(printenv http_proxy)
+t_s_proxy=$(printenv https_proxy)
 
 if [[ ! -z $t_proxy ]]; then
     PROXY=$(printenv http_proxy)
+fi
+
+if [[ ! -z $t_s_proxy ]]; then
+    SPROXY=$(printenv https_proxy)
 fi
 
 
@@ -270,9 +275,9 @@ EOF
             else 
                 echo "+ Adding Mongo 10Gen repo and updating apt-get caches"
                 # apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 --keyserver-options http-proxy=$PROXY
-                if [[ ! -z $PROXY ]]; then
-                    echo " - using $PROXY to add Mongo 10Gen key"
-                    apt-key adv --keyserver-options http-proxy=$PROXY --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EA312927
+                if [[ ! -z $SPROXY ]]; then
+                    echo " - using $SPROXY to add Mongo 10Gen key"
+                    apt-key adv --keyserver-options http-proxy=$SPROXY --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EA312927
                 else 
                     echo " - Not using proxy to add Mongo 10Gen key"
                     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EA312927
