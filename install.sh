@@ -62,7 +62,7 @@ if [[ ! -z $https_proxy ]]; then
     SPROXY="$https_proxy/"
     echo "+ Secure PROXY is now $SPROXY"
 else 
-    echo "- https_proxy NOT SET!  if you are behind a proxy, this install will not work until you set this environment variable"
+    echo "- https_proxy NOT SET!  if you are behind a proxy, this install may not work until you set this environment variable"
 fi
 
 
