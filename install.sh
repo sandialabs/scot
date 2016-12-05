@@ -288,7 +288,7 @@ EOF
                 # apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 --keyserver-options http-proxy=$PROXY
                 if [[ ! -z $PROXY ]]; then
                     echo " - using $PROXY to add Mongo 10Gen key"
-                    apt-key adv --keyserver-options http-proxy=$SPROXY --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EA312927
+                    apt-key adv --keyserver-options http-proxy=$PROXY --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EA312927
                 else 
                     echo " - Not using proxy to add Mongo 10Gen key"
                     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EA312927
