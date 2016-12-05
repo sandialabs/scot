@@ -20,7 +20,7 @@ db.guide.drop();
 db.appearance.drop();
 
 print ("Creating indexes...");
-load("../etc/database/indexes.js");
+load("../etcsrc/database/indexes.js");
 print ("Zero-ing the nexid collection...");
-load("../etc/database/zero_nextid.js");
+load("../etcsrc/database/zero_nextid.js");
 
