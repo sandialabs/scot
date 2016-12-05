@@ -46,6 +46,9 @@ AMQURL="https://repository.apache.org/content/repositories/releases/org/apache/a
 t_proxy=$(printenv http_proxy)
 t_s_proxy=$(printenv https_proxy)
 
+echo "= http proxy $http_proxy"
+echo "= https proxy $https_proxy"
+
 if [[ ! -z $t_proxy ]]; then
     echo "+ http_proxy environment variable detected"
     PROXY=$(printenv http_proxy)
