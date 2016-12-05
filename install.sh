@@ -807,8 +807,10 @@ fi
 ###
 ### Mongo Configuration
 ###
+echo "+ Configuring MongoDB"
 
 if [ "$MDBREFRESH" == "yes" ]; then
+    echo "+ Refresh of Mongo Config requested"
     echo "= stopping mongod"
     service mongod stop
 
@@ -819,8 +821,33 @@ if [ "$MDBREFRESH" == "yes" ]; then
         # I really wish that mongo would get it's sh*t together and 
         # install everything in the same place regardless of distro
         DBDIR=/var/log/mongo 
-    else 
-        cp $DEVDIR/etcsrc/mongod.conf /etc/mongod.conf
+    fi
+
+    if [ $OS == "Ubuntu" ]; then
+        if [ $OSVERSION == "16" ]; then
+            MDCDIR="/etc/"
+            cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.bak
+            cp $DEVDIR/etcsrc/init-ubuntu16-mongod.conf $MDCDIR/mongod.conf
+            FIKTL=`grep failIndexKeyTooLong /lib/systemd/system/mongod.service`
+            if [ "$FIKTL" == "" ]; then
+                echo "- SCOT will fail unless failIndexKeyTooLong=false in /lib/systemd/system/mongod.service"
+                echo "+ backing orig, and copying new into place. "
+                ext=`date +%s`
+                cp /lib/systemd/system/mongod.service /tmp/mongod.service.backup.$ext
+                cp $DEVDIR/etcsrc/systemd-mongod.conf /lib/systemd/system/mongod.service
+                cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.$ext
+                cp $DEVDIR/etcsrc/mongod.conf $MDCDIR/mongod.conf
+            fi
+        else 
+            FIKTL=`grep failIndexKeyTooLong /etc/init/mongod.conf`
+            if [ "$FIKTL" == "" ]; then
+                echo "- SCOT will fail unless failIndexKeyTooLong=false in /etc/init/mongod.conf"
+                echo "+ backing orig, and copying new into place. "
+                MDCDIR="/etc/init/"
+                cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.bak
+                cp $DEVDIR/etcsrc/init-mongod.conf $MDCDIR/mongod.conf
+            fi
+        fi
     fi
 
     if [ ! -d $DBDIR ]; then
@@ -832,23 +859,9 @@ if [ "$MDBREFRESH" == "yes" ]; then
 
     echo "- clearing /var/log/mondob/mongod.log"
     cat /dev/null > /var/log/mongodb/mongod.log
+else
+    echo "- skipping configuration of mongodb at user request"
 fi
-
-FIKTL=`grep failIndexKeyTooLong /etc/init/mongod.conf`
-if [ "$FIKTL" == "" ]; then
-    echo "- SCOT will fail unless failIndexKeyTooLong=false in /etc/init/mongod.conf"
-    echo "+ backing orig, and copying new into place. "
-    MDCDIR="/etc/init/"
-    if [ $OS == "CentOS" ] || [ $OS == "RedHatEnterpriseServer" ]; then
-        # this key is in the init script I installed above, so do nothing
-        echo "~ cent/redhat ... nothing to do..."
-        MDCDIR="/etc/"
-    else 
-        cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.bak
-        cp $DEVDIR/etc/init-mongod.conf $MDCDIR/mongod.conf
-    fi
-fi
-
 
 MONGOSTATUS=`service mongod status`
 
