@@ -183,7 +183,7 @@ sub local_authenticates {
 
     return 0 unless ( $user->active );
 
-    $log->debug("user $user is active...");
+    $log->debug("user ", { filter => \&Dumper, value=> $user });
 
     my $groups  = $user->groups;
 
