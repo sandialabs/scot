@@ -10,6 +10,7 @@ use Net::LDAP;
 use Digest::SHA qw(sha512_hex);
 use Crypt::PBKDF2;
 use Scot::Model::User;
+use Data::Dumper;
 
 use base 'Scot::Controller::Auth';
 
