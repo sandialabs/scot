@@ -47,11 +47,19 @@ t_proxy=$(printenv http_proxy)
 t_s_proxy=$(printenv https_proxy)
 
 if [[ ! -z $t_proxy ]]; then
+    echo "+ http_proxy environment variable detected"
     PROXY=$(printenv http_proxy)
+    echo "+ PROXY is now $PROXY"
+else 
+    echo "- http_proxy NOT SET!  if you are behind a proxy, this install will not work until you set this environment variable"
 fi
 
 if [[ ! -z $t_s_proxy ]]; then
+    echo "+ https_proxy environment variable detected"
     SPROXY=$(printenv https_proxy)
+    echo "+ Secure PROXY is now $SPROXY"
+else 
+    echo "- https_proxy NOT SET!  if you are behind a proxy, this install will not work until you set this environment variable"
 fi
 
 
