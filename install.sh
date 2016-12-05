@@ -49,17 +49,17 @@ t_s_proxy=$(printenv https_proxy)
 echo "= http proxy $http_proxy"
 echo "= https proxy $https_proxy"
 
-if [[ ! -z $t_proxy ]]; then
+if [[ ! -z $http_proxy ]]; then
     echo "+ http_proxy environment variable detected"
-    PROXY=$(printenv http_proxy)
+    PROXY="$http_proxy/" 
     echo "+ PROXY is now $PROXY"
 else 
     echo "- http_proxy NOT SET!  if you are behind a proxy, this install will not work until you set this environment variable"
 fi
 
-if [[ ! -z $t_s_proxy ]]; then
+if [[ ! -z $https_proxy ]]; then
     echo "+ https_proxy environment variable detected"
-    SPROXY=$(printenv https_proxy)
+    SPROXY="$https_proxy/"
     echo "+ Secure PROXY is now $SPROXY"
 else 
     echo "- https_proxy NOT SET!  if you are behind a proxy, this install will not work until you set this environment variable"
@@ -286,8 +286,8 @@ EOF
             else 
                 echo "+ Adding Mongo 10Gen repo and updating apt-get caches"
                 # apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 --keyserver-options http-proxy=$PROXY
-                if [[ ! -z $SPROXY ]]; then
-                    echo " - using $SPROXY to add Mongo 10Gen key"
+                if [[ ! -z $PROXY ]]; then
+                    echo " - using $PROXY to add Mongo 10Gen key"
                     apt-key adv --keyserver-options http-proxy=$SPROXY --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EA312927
                 else 
                     echo " - Not using proxy to add Mongo 10Gen key"
