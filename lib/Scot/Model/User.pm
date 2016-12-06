@@ -137,14 +137,14 @@ has last_activity_check => (
     default         => 4,
 );
 
-=item B<group>
+=item B<groups>
 
 array_ref of groups a user belongs to 
 (only used for local auth, otherwise LDAP group set is used)
 
 =cut
 
-has group  => (
+has groups  => (
     is          => 'ro',
     isa         => 'ArrayRef',
     traits      => ['Array'],
