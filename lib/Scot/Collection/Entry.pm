@@ -12,6 +12,7 @@ with    qw(
     Scot::Role::GetTagged
 );
 
+
 sub create_from_promoted_alert {
     my $self    = shift;
     my $alert   = shift;
@@ -22,7 +23,7 @@ sub create_from_promoted_alert {
     my $mq      = $env->mq;
     my $json;
 
-    $log->debug("Creating Entry from promoted Alert");
+    $log->debug("Creating/Adding to Alert Entry from promoted Alert");
 
     $json->{groups}->{read}    = $alert->groups->{read} // 
                                  $env->default_groups->{read};
@@ -36,13 +37,55 @@ sub create_from_promoted_alert {
     $json->{body}              = 
         qq|<h3>From Alert <a href="/#/alert/$id">$id</h3>|.
         $self->build_table($alert);
-
     $log->debug("Using : ",{filter=>\&Dumper, value => $json});
 
+    my $existing_entry = $self->find_existing_alert_entry("event", $event->id);
+
+    if ( $existing_entry ) {
+        # use this as the parent so that all additional alert promoted to this event
+        # will be "enclosed" in on "alert" class entry.
+        $json->{parent} = $existing_entry->id;
+    }
+    else {
+        # create the "alert" type entry
+        $log->debug("creating a new alert type entry");
+        my $aentry  = $self->create({
+            class   => "alert",
+            parent  => 0,
+            target  => {
+                type    => 'event',
+                id      => $event->id,
+            },
+        });
+        $json->{parent} = $aentry->id;
+    }
+
+    $log->debug("creating the promoted alert entry");
     my $entry_obj              = $self->create($json);
 
     $log->debug("Created Entry : ".$entry_obj->id);
     return $entry_obj;
+}
+
+sub find_existing_alert_entry {
+    my $self    = shift;
+    my $type    = shift;
+    my $id      = shift;
+    my $log     = $self->env->log;
+
+    my $col     = $self->env->mongo->collection('Entry');
+    my $obj     = $col->find_one({
+        'target.type'   => $type,
+        'target.id'     => $id,
+        class           => "alert",
+    });
+
+    if ( defined $obj and ref($obj) eq "Scot::Model::Entry" ) {
+        $log->debug("Found an existing alert entry type for $type $id");
+        return $obj;
+    }
+    $log->warn("Target of Alert promotion does not have an existing alert entry");
+    return undef;
 }
 
 sub build_table {
@@ -51,12 +94,19 @@ sub build_table {
     my $data    = $alert->data;
     my $html    = qq|<table class="tablesorter alertTableHorizontal">\n|;
 
-    foreach my $key ( @{$alert->data->{columns}} ) {
+    $html .= "<tr>\n";
+    foreach my $key ( @{$alert->columns} ) {
         next if ($key eq "columns");
-        my $value   = $alert->data->{$key};
-        $html .= qq|<tr><th align="left">$key</th><td>$value</td></tr>\n|;
+        $html .= "<th>$key</th>";
     }
-    $html .= qq|</table>|;
+    $html .= "\n</tr>\n<tr>\n";
+
+    foreach my $key ( @{$alert->columns} ) {
+        next if ($key eq "columns");
+        my $value   = $data->{$key};
+        $html .= qq|<td>$value</td>|;
+    }
+    $html .= qq|\n</tr>\n</table>\n|;
     return $html;
 }
 
@@ -119,6 +169,27 @@ EOF
 
     $log->debug("creating file upload entry with ", {filter=>\&Dumper, value=>$entry_href});
 
+    my $existing_entry = $self->find_existing_alert_entry($target_type, $target_id);
+
+    if ( $existing_entry ) {
+        # use this as the parent so that all additional file uploads
+        # will be "enclosed" in on "file" class entry.
+        $entry_href->{parent} = $existing_entry->id;
+    }
+    else {
+        # create the "alert" type entry
+        $log->debug("creating a new alert type entry");
+        my $aentry  = $self->create({
+            class   => "file",
+            parent  => 0,
+            target  => {
+                type    => $target_type,
+                id      => $target_id
+            },
+        });
+        $entry_href->{parent} = $aentry->id;
+    }
+
     my $entry_obj   = $self->create($entry_href);
 
     unless ( defined $entry_obj  and ref($entry_obj) eq "Scot::Model::Entry") {
@@ -126,17 +197,6 @@ EOF
     }
 
     # TODO: need to actually update the updated time in the target
-
-    # Api.pm should do this
-    #my $mq      = $env->mq;
-    #$mq->send("scot", {
-    #    action  => 'updated',
-    #    data    => {
-    #        type    => $target_type,
-    #        id      => $target_id,
-    #        who     => 'fileupload',
-    #    }
-    #});
 
     return $entry_obj;
 
@@ -174,7 +234,11 @@ sub create_from_api {
         };
     }
 
-    $request->{task} = $self->validate_task($request);
+    my $task = $self->validate_task($request);
+    if ( $task ) {
+        $json->{class}      = "task";
+        $json->{metadata}   = $task;
+    }
 
     my $default_permitted_groups = $self->get_default_permissions(
         $target_type, $target_id
@@ -209,7 +273,7 @@ sub validate_task {
 
     unless ( defined $json->{task} ) {
         # if task isn't set that is ok and valid
-        return {};
+        return undef; 
     }
 
     # however, if it is set, we need to make sure it has 
@@ -300,10 +364,10 @@ EOF
     my $href    = {
         body    => $html,
         parent  => $entryid,
-        groups  => $env->default_groups,
+        groups  => $self->get_default_permissions($parententry->target->{type}, $parententry->target->{id}),
         target  => {
             type    => $parententry->target->{type},
-            id      => $parententry->traget->{id},
+            id      => $parententry->target->{id},
         },
     };
 

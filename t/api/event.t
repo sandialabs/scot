@@ -13,7 +13,7 @@ $ENV{'scot_env_configfile'} = '../../../Scot-Internal-Modules/etc/scot_env_test.
 print "Resetting test db...\n";
 system("mongo scot-testing <../../etcsrc/database/reset.js 2>&1 > /dev/null");
 
-my @defgroups       = ( 'wg-scot-ir', 'testing' );
+my $defgroups       = [ 'wg-scot-ir', 'testing' ];
 
 my $t   = Test::Mojo->new('Scot');
 
@@ -22,8 +22,10 @@ $t  ->post_ok  ('/scot/api/v2/event'  => json => {
         source  => ["firetest"],
         tag     => ['test'],
         status  => 'open',
-#        readgroups  => $defgroups,
-#        modifygroups=> $defgroups,
+        groups      => {
+            read    => $defgroups,
+            modify  => $defgroups,
+        },
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
@@ -47,8 +49,10 @@ $t  ->post_ok('/scot/api/v2/entry' => json => {
         body        => "Entry 1 on Event $event_id",
         target_id   => $event_id,
         target_type => "event",
-        readgroups  => $defgroups,
-        modifygroups=> $defgroups,
+        groups      => {
+            read    => $defgroups,
+            modify  => $defgroups,
+        },
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
@@ -186,6 +190,10 @@ $t  ->get_ok("/scot/api/v2/event/$event_id/entry")
     ->json_is('/records/0/id'   => $entry1)
     ->json_is('/records/1/id'   => $entry2);
 
+# print Dumper($t->tx->res->json);
+# done_testing();
+# exit 0;
+
 
 
 my $tx  = $t->ua->build_tx(
@@ -204,10 +212,6 @@ $t->get_ok("/scot/api/v2/event/$event_id/tag")
     ->json_is('/records/0/value' => "test")
     ->json_is('/records/1/value' => "foo")
     ->json_is('/records/2/value' => "boo");
-
-# print Dumper($t->tx->res->json);
-# done_testing();
-# exit 0;
 
 $t->get_ok("/scot/api/v2/event/$event_id")
     ->status_is(200);
