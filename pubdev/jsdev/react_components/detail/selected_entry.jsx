@@ -831,27 +831,34 @@ var EntryParent = React.createClass({
         var type = this.props.type;
         var id = this.props.id;
         var isPopUp = this.props.isPopUp;
-        var summary = items.summary;
+        var itemsClass = this.props.items.class;
+        var summary = 0;                                        //define Summary as false unless itemsClass is "summary"
         var editEntryToolbar = this.state.editEntryToolbar;
         var editEntryToggle = this.editEntryToggle;
         var errorToggle=this.props.errorToggle;
         var outerClassName = 'row-fluid entry-outer';
         var innerClassName = 'row-fluid entry-header';
         var taskOwner = '';
-        if (summary == 1) {
+        if (itemsClass == 'summary') {
             outerClassName += ' summary_entry';
+            summary = 1;
         }
-        if (items.task.status == 'open' || items.task.status == 'assigned') {
-            taskOwner = '-- Task Owner ' + items.task.who + ' ';
-            outerClassName += ' todo_open_outer';
-            innerClassName += ' todo_open';
-        } else if ((items.task.status == 'closed' || items.task.status == 'completed') && items.task.who != null ) {
-            taskOwner = '-- Task Owner ' + items.task.who + ' ';
-            outerClassName += ' todo_completed_outer';
-            innerClassName += ' todo_completed';
-        } else if (items.task.status == 'closed' || items.task.status == 'completed') {
-            outerClassName += ' todo_undefined_outer';
-            innerClassName += ' todo_undefined';
+        if (itemsClass == 'task') {
+            if (items.metadata.status == 'open' || items.metadata.status == 'assigned') {
+                taskOwner = '-- Task Owner ' + items.metadata.who + ' ';
+                outerClassName += ' todo_open_outer';
+                innerClassName += ' todo_open';
+            } else if ((items.metadata.status == 'closed' || items.metadata.status == 'completed') && items.metadata.who != null ) {
+                taskOwner = '-- Task Owner ' + items.metadata.who + ' ';
+                outerClassName += ' todo_completed_outer';
+                innerClassName += ' todo_completed';
+            } else if (items.metadata.status == 'closed' || items.metadata.status == 'completed') {
+                outerClassName += ' todo_undefined_outer';
+                innerClassName += ' todo_undefined';
+            }
+        }
+        if (itemsClass == 'alert') {
+            outerClassName += ' event_entry_container_alert'
         }
         itemarr.push(<EntryData id={items.id} key={items.id} subitem = {items} type={type} targetid={id} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={isPopUp} errorToggle={this.props.errorToggle} />);
         for (var prop in items) {
@@ -882,7 +889,7 @@ var EntryParent = React.createClass({
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
                                     { type != 'entity' ? <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem> : null}
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} /></MenuItem>
-                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items.task} /></MenuItem>
+                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items.metadata} /></MenuItem>
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
                                     <MenuItem onClick={this.reparseFlair}>Reparse Flair</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
