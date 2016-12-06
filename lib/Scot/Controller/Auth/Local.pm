@@ -10,6 +10,7 @@ use Net::LDAP;
 use Digest::SHA qw(sha512_hex);
 use Crypt::PBKDF2;
 use Scot::Model::User;
+use Data::Dumper;
 
 use base 'Scot::Controller::Auth';
 
@@ -183,7 +184,7 @@ sub local_authenticates {
 
     return 0 unless ( $user->active );
 
-    $log->debug("user $user is active...");
+    $log->debug("user ", { filter => \&Dumper, value=> $user });
 
     my $groups  = $user->groups;
 
