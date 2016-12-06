@@ -7,7 +7,7 @@ var Store                   = require('../activemq/store.jsx')
 var notificationStyle = {
     Containers: {
         DefaultStyle: {
-            height: '100%', width:'98%', overflowY: 'auto', paddingTop: '65px', left: 'null', marginLeft: 'null'
+            height: '100%', width:'98%', overflowY: 'auto', left: 'null', marginLeft: 'null', position: 'relative'
         },
     },
     NotificationItem: {
