@@ -837,6 +837,8 @@ if [ "$MDBREFRESH" == "yes" ]; then
                 cp $DEVDIR/etcsrc/systemd-mongod.conf /lib/systemd/system/mongod.service
                 cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.$ext
                 cp $DEVDIR/etcsrc/mongod.conf $MDCDIR/mongod.conf
+            else 
+                echo "~ appears that failIndexKeyTooLong is in /lib/systemd/system/mongod.service"
             fi
         else 
             FIKTL=`grep failIndexKeyTooLong /etc/init/mongod.conf`
@@ -924,7 +926,13 @@ fi
 
 if [[ $INSTMODE != "SCOTONLY" ]]; then
     cpanm Meerkat
-    cpanm Courriel
+    if [ $OSVERSION == "16" ]; then
+        echo "+ Installing older Courriel due to 16.04 bug"
+        cpanm Courriel@0.42
+    else
+        echo "+ installing current Courriel"
+        cpanm Courriel
+    fi
 fi
 
 echo "+ copying documentation to public dir"
