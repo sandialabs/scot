@@ -42,7 +42,29 @@ LOGDIR="/var/log/scot";
 AMQDIR="/opt/activemq"
 AMQTAR="apache-activemq-5.13.2-bin.tar.gz"
 AMQURL="https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-activemq/5.13.2/$AMQTAR"
-PROXY="http://wwwproxy.sandia.gov:80"
+
+t_proxy=$(printenv http_proxy)
+t_s_proxy=$(printenv https_proxy)
+
+echo "= http proxy $http_proxy"
+echo "= https proxy $https_proxy"
+
+if [[ ! -z $http_proxy ]]; then
+    echo "+ http_proxy environment variable detected"
+    PROXY="$http_proxy/" 
+    echo "+ PROXY is now $PROXY"
+else 
+    echo "- http_proxy NOT SET!  if you are behind a proxy, this install will not work until you set this environment variable"
+fi
+
+if [[ ! -z $https_proxy ]]; then
+    echo "+ https_proxy environment variable detected"
+    SPROXY="$https_proxy/"
+    echo "+ Secure PROXY is now $SPROXY"
+else 
+    echo "- https_proxy NOT SET!  if you are behind a proxy, this install may not work until you set this environment variable"
+fi
+
 
 ##
 ## defaults
@@ -263,7 +285,14 @@ EOF
                 echo "= mongo 10Gen repo already present"
             else 
                 echo "+ Adding Mongo 10Gen repo and updating apt-get caches"
-                apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 --keyserver-options http-proxy=$PROXY
+                # apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 --keyserver-options http-proxy=$PROXY
+                if [[ ! -z $PROXY ]]; then
+                    echo " - using $PROXY to add Mongo 10Gen key"
+                    apt-key adv --keyserver-options http-proxy=$PROXY --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EA312927
+                else 
+                    echo " - Not using proxy to add Mongo 10Gen key"
+                    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EA312927
+                fi
                 if [ $OSVERSION == "16" ]; then
                     echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
                 else 
@@ -276,7 +305,7 @@ EOF
             add-apt-repository -y ppa:maxmind/ppa
         fi
 
-        apt-get install -y mongodb-org
+        apt-get update && apt-get install -y mongodb-org
 
         if [[ ! -e /etc/apt/sources.list.d/elasticsearch-2.x.list ]]; then
             wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
@@ -312,6 +341,29 @@ EOF
     ## 
     echo    "--- Installing ActiveMQ"
     echo    ""
+    echo -e "${yellow}+ installing ActiveMQ${NC}"
+
+    if [ -e "$AMQDIR/bin/activemq" ]; then
+        echo "= activemq already installed"
+        # service activemq restart
+    else
+
+        if [ ! -e /tmp/$AMQTAR ]; then
+            echo "= downloading $AMQURL"
+            # curl -o /tmp/apache-activemq.tar.gz $AMQTAR
+            wget -P /tmp $AMQURL 
+        fi
+
+        if [ ! -d $AMQDIR ];then
+            mkdir -p $AMQDIR
+            chown -R activemq.activemq $AMQDIR
+        fi
+
+        tar xf /tmp/$AMQTAR --directory /tmp
+        mv /tmp/apache-activemq-5.13.2/* $AMQDIR
+
+    fi
+
     echo -e "${yellow}= Checking for activemq user ${NC}"
 
     AMQ_USER=`grep -c activemq: /etc/passwd`
@@ -361,30 +413,7 @@ EOF
         cp $DEVDIR/etcsrc/scotamq.xml     $AMQDIR/conf
     fi
 
-    echo -e "${yellow}+ installing ActiveMQ${NC}"
-
-    if [ -e "$AMQDIR/bin/activemq" ]; then
-        echo "= activemq already installed"
-        # service activemq restart
-    else
-
-        if [ ! -e /tmp/$AMQTAR ]; then
-            echo "= downloading $AMQURL"
-            # curl -o /tmp/apache-activemq.tar.gz $AMQTAR
-            wget -P /tmp $AMQURL 
-        fi
-
-        if [ ! -d $AMQDIR ];then
-            mkdir -p $AMQDIR
-            chown -R activemq.activemq $AMQDIR
-        fi
-
-        tar xf /tmp/$AMQTAR --directory /tmp
-        mv /tmp/apache-activemq-5.13.2/* $AMQDIR
-
-        echo "${green}+ starting activemq${NC}"
-        service activemq start
-    fi
+    service activemq restart
 
     ###
     ### Perl Module installation
@@ -699,7 +728,41 @@ cp -r $DEVDIR/* $SCOTDIR/
 if [[ $AUTHMODE == "Remoteuser" ]]; then
     cp $DEVDIR/etcsrc/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
 else 
-    cp $DEVDIR/etcsrc/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
+    if [[ ! -e $SCOTDIR/etc/scot_env.cfg ]]; then
+        cp $DEVDIR/etcsrc/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
+    else
+        echo "= scot_env.cfg already present, skipping..."
+    fi
+fi
+
+if [[ ! -e $SCOTDIR/etc/mongo.cfg ]];then
+    cp $DEVDIR/etcsrc/mongo.cfg $SCOTDIR/etc/mongo.cfg
+else
+    echo "= mongo.cfg already present, skipping..."
+fi
+
+if [[ ! -e $SCOTDIR/etc/logger.cfg ]]; then
+    cp $DEVDIR/etcsrc/logger.cfg $SCOTDIR/etc/logger.cfg
+else
+    echo "= logger.cfg already present, skipping..."
+fi
+
+if [[ ! -e $SCOTDIR/etc/imap.cfg ]]; then
+    cp $DEVDIR/etcsrc/imap.cfg $SCOTDIR/etc/imap.cfg
+else
+    echo "= imap.cfg already present, skipping..."
+fi
+
+if [[ ! -e $SCOTDIR/etc/activemq.cfg ]]; then
+    cp $DEVDIR/etcsrc/activemq.cfg $SCOTDIR/etc/activemq.cfg
+else
+    echo "= activemq.cfg already present, skipping..."
+fi
+
+if [[ ! -e $SCOTDIR/etc/enrichments.cfg ]]; then
+    cp $DEVDIR/etcsrc/enrichments.cfg $SCOTDIR/etc/enrichments.cfg
+else
+    echo "= enrichments.cfg already present, skipping..."
 fi
 
 # private configs to overwrite default configs
@@ -744,8 +807,10 @@ fi
 ###
 ### Mongo Configuration
 ###
+echo "+ Configuring MongoDB"
 
 if [ "$MDBREFRESH" == "yes" ]; then
+    echo "+ Refresh of Mongo Config requested"
     echo "= stopping mongod"
     service mongod stop
 
@@ -756,8 +821,35 @@ if [ "$MDBREFRESH" == "yes" ]; then
         # I really wish that mongo would get it's sh*t together and 
         # install everything in the same place regardless of distro
         DBDIR=/var/log/mongo 
-    else 
-        cp $DEVDIR/etcsrc/mongod.conf /etc/mongod.conf
+    fi
+
+    if [ $OS == "Ubuntu" ]; then
+        if [ $OSVERSION == "16" ]; then
+            MDCDIR="/etc/"
+            cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.bak
+            cp $DEVDIR/etcsrc/init-ubuntu16-mongod.conf $MDCDIR/mongod.conf
+            FIKTL=`grep failIndexKeyTooLong /lib/systemd/system/mongod.service`
+            if [ "$FIKTL" == "" ]; then
+                echo "- SCOT will fail unless failIndexKeyTooLong=false in /lib/systemd/system/mongod.service"
+                echo "+ backing orig, and copying new into place. "
+                ext=`date +%s`
+                cp /lib/systemd/system/mongod.service /tmp/mongod.service.backup.$ext
+                cp $DEVDIR/etcsrc/systemd-mongod.conf /lib/systemd/system/mongod.service
+                cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.$ext
+                cp $DEVDIR/etcsrc/mongod.conf $MDCDIR/mongod.conf
+            else 
+                echo "~ appears that failIndexKeyTooLong is in /lib/systemd/system/mongod.service"
+            fi
+        else 
+            FIKTL=`grep failIndexKeyTooLong /etc/init/mongod.conf`
+            if [ "$FIKTL" == "" ]; then
+                echo "- SCOT will fail unless failIndexKeyTooLong=false in /etc/init/mongod.conf"
+                echo "+ backing orig, and copying new into place. "
+                MDCDIR="/etc/init/"
+                cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.bak
+                cp $DEVDIR/etcsrc/init-mongod.conf $MDCDIR/mongod.conf
+            fi
+        fi
     fi
 
     if [ ! -d $DBDIR ]; then
@@ -769,23 +861,9 @@ if [ "$MDBREFRESH" == "yes" ]; then
 
     echo "- clearing /var/log/mondob/mongod.log"
     cat /dev/null > /var/log/mongodb/mongod.log
+else
+    echo "- skipping configuration of mongodb at user request"
 fi
-
-FIKTL=`grep failIndexKeyTooLong /etc/init/mongod.conf`
-if [ "$FIKTL" == "" ]; then
-    echo "- SCOT will fail unless failIndexKeyTooLong=false in /etc/init/mongod.conf"
-    echo "+ backing orig, and copying new into place. "
-    MDCDIR="/etc/init/"
-    if [ $OS == "CentOS" ] || [ $OS == "RedHatEnterpriseServer" ]; then
-        # this key is in the init script I installed above, so do nothing
-        echo "~ cent/redhat ... nothing to do..."
-        MDCDIR="/etc/"
-    else 
-        cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.bak
-        cp $DEVDIR/etc/init-mongod.conf $MDCDIR/mongod.conf
-    fi
-fi
-
 
 MONGOSTATUS=`service mongod status`
 
@@ -848,7 +926,13 @@ fi
 
 if [[ $INSTMODE != "SCOTONLY" ]]; then
     cpanm Meerkat
-    cpanm Courriel
+    if [ $OSVERSION == "16" ]; then
+        echo "+ Installing older Courriel due to 16.04 bug"
+        cpanm Courriel@0.42
+    else
+        echo "+ installing current Courriel"
+        cpanm Courriel
+    fi
 fi
 
 echo "+ copying documentation to public dir"
@@ -900,8 +984,12 @@ if [ ! -e /etc/init.d/scepd ]; then
     fi
 fi
 
+echo "= restarting apache2"
+/etc/init.d/apache2 restart
+
 echo "= restarting scot"
 /etc/init.d/scot restart
+
     
 #
 # add elastic search to startup
