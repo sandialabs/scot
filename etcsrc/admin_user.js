@@ -2,9 +2,9 @@ db.user.insert({
     "id": 1,
 	"local_acct" : 1,
 	"groups" : [
-		"scot",
-		"admin",
-		"ir"
+		"wg-scot",
+		"wg-scot-admin",
+		"wg-scot-ir"
 	        
 	],
 	"tzpref" : "MST7MDT",
