@@ -31,58 +31,42 @@ with    qw(
 
 =over 4
 
-=item B<summary>
+=item B<class>
 
-this bool if true says that this entry is the summary
-and should be at the top.  If there are multiple summaries
-then they are listed in chrono order
+The "type" of entry.  
+"summary"   => the summary boxes
+"alert",    => alert recap box
+"entry"     => normal user entered
+"task"      => a task entry
+"file"      => holder of files uploaded entries
 
 =cut
 
-has summary     => (
+has class   => (
     is          => 'ro',
-    isa         => 'Bool',
-    traits      => ['Bool'],
+    isa         => 'Str',
     required    => 1,
-    default     => 0,
-    handles     => {
-        make_summary    => 'set',
-        unsummarize     => 'unset',
-    },
+    default     => 'entry',
 );
 
-=item B<task>
+=item B<metadata>
 
-the hash of {
+data about the entry.
+if entry is task then it is a 
+hash of {
     when    => seconds_epoch,
     who     => username,
     status  => open|assigned|completed
 }
 
-existance implies that this entry is a task
-
 =cut
 
-has task  => (
+has metadata  => (
     is          => 'ro',
     isa         => 'HashRef',
     traits      => ['Hash'],
     required    => 1,
     default     => sub { {} },
-);
-
-=item B<is_task>
-
-easy bool to query for tasks
-
-=cut
-
-has is_task     => (
-    is          => 'ro',
-    isa         => 'Bool',
-    traits      => [ 'Bool' ],
-    required    => 1,
-    default     => 0,
 );
 
 =item B<parent>
