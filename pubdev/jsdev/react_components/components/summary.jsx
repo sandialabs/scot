@@ -15,18 +15,17 @@ const customStyles = {
 var Summary = React.createClass({ 
      getInitialState: function () {
         return {
-            summary:this.props.summary,
             key:this.props.id,
         }
      },
      toggle: function() {
-        var newSummary;
-        if (this.state.summary === 1) {
-            newSummary = 0;
-        } else if (this.state.summary === 0) {
-            newSummary = 1;
+        var newClass;
+        if (this.props.summary === 1) {
+            newClass = 'entry';
+        } else if (this.props.summary === 0) {
+            newClass = 'summary';
         }
-        var json = {'summary':newSummary};
+        var json = {'class':newClass};
         $.ajax({
             type: 'put',
             url: 'scot/api/v2/entry/' + this.props.entryid,
@@ -43,10 +42,10 @@ var Summary = React.createClass({
     render: function() {
         var summaryDisplay = 'Summary Loading...'
         var onClick;
-        if (this.state.summary == 0) {
+        if (this.props.summary == 0) {
             summaryDisplay = 'Make Summary';
             onClick = this.toggle;
-        } else if (this.state.summary == 1) {
+        } else if (this.props.summary == 1) {
             summaryDisplay = 'Remove Summary';
             onClick = this.toggle;
         }

@@ -2721,18 +2721,17 @@ const customStyles = {
 var Summary = React.createClass({displayName: "Summary", 
      getInitialState: function () {
         return {
-            summary:this.props.summary,
             key:this.props.id,
         }
      },
      toggle: function() {
-        var newSummary;
-        if (this.state.summary === 1) {
-            newSummary = 0;
-        } else if (this.state.summary === 0) {
-            newSummary = 1;
+        var newClass;
+        if (this.props.summary === 1) {
+            newClass = 'entry';
+        } else if (this.props.summary === 0) {
+            newClass = 'summary';
         }
-        var json = {'summary':newSummary};
+        var json = {'class':newClass};
         $.ajax({
             type: 'put',
             url: 'scot/api/v2/entry/' + this.props.entryid,
@@ -2749,10 +2748,10 @@ var Summary = React.createClass({displayName: "Summary",
     render: function() {
         var summaryDisplay = 'Summary Loading...'
         var onClick;
-        if (this.state.summary == 0) {
+        if (this.props.summary == 0) {
             summaryDisplay = 'Make Summary';
             onClick = this.toggle;
-        } else if (this.state.summary == 1) {
+        } else if (this.props.summary == 1) {
             summaryDisplay = 'Remove Summary';
             onClick = this.toggle;
         }
@@ -2933,17 +2932,8 @@ const customStyles = {
 var Task = React.createClass({displayName: "Task",
     getInitialState: function () {
         return {
-            taskOwner:this.props.taskData.who,
-            taskStatus:this.props.taskData.status, 
             key:this.props.id,
         }
-    },
-    componentWillMount: function () { 
-        /*this.taskRequest = $.get('scot/api/v2/entry/' + this.props.entryid, function(result) {
-            var taskOwner = result.task.who;
-            var taskStatus = result.task.status;
-            this.setState({taskOwner:taskOwner, taskStatus:taskStatus})
-        }.bind(this));*/ 
     },
     makeTask: function () {
         var json = {'make_task':1}
@@ -2993,22 +2983,22 @@ var Task = React.createClass({displayName: "Task",
     render: function () {
         var taskDisplay = 'Task Loading...';
         var onClick; 
-        if (this.state.taskStatus === undefined || this.state.taskStatus === null) {
+        if (this.props.taskData.status === undefined || this.props.taskData.status === null) {
             taskDisplay = 'Make Task';
             onClick = this.makeTask;
-        } else if (whoami != this.state.taskOwner && this.state.taskStatus == 'open') {
+        } else if (whoami != this.props.taskData.who && this.props.taskData.status == 'open') {
             taskDisplay = 'Assign task to me';
             onClick = this.takeTask;
-        } else if (whoami == this.state.taskOwner && this.state.taskStatus == 'open') {
+        } else if (whoami == this.props.taskData.who && this.props.taskData.status == 'open') {
             taskDisplay = 'Close Task';
             onClick = this.closeTask;
-        } else if (this.state.taskStatus == 'closed' || this.state.taskStatus == 'completed') {
+        } else if (this.props.taskData.status == 'closed' || this.props.taskData.status == 'completed') {
             taskDisplay = 'Reopen Task';
             onClick = this.makeTask;
-        } else if (whoami == this.state.taskOwner && this.state.taskStatus == 'assigned') {
+        } else if (whoami == this.props.taskData.who && this.props.taskData.status == 'assigned') {
             taskDisplay = 'Close Task';
             onClick = this.closeTask;
-        } else if (whoami != this.state.taskowner && this.state.taskStatus == 'assigned') {
+        } else if (whoami != this.props.taskData.who && this.props.taskData.status == 'assigned') {
             taskDisplay = 'Assign task to me';
             onClick = this.takeTask;
         }
@@ -3961,27 +3951,34 @@ var EntryParent = React.createClass({displayName: "EntryParent",
         var type = this.props.type;
         var id = this.props.id;
         var isPopUp = this.props.isPopUp;
-        var summary = items.summary;
+        var itemsClass = this.props.items.class;
+        var summary = 0;                                        //define Summary as false unless itemsClass is "summary"
         var editEntryToolbar = this.state.editEntryToolbar;
         var editEntryToggle = this.editEntryToggle;
         var errorToggle=this.props.errorToggle;
         var outerClassName = 'row-fluid entry-outer';
         var innerClassName = 'row-fluid entry-header';
         var taskOwner = '';
-        if (summary == 1) {
+        if (itemsClass == 'summary') {
             outerClassName += ' summary_entry';
+            summary = 1;
         }
-        if (items.task.status == 'open' || items.task.status == 'assigned') {
-            taskOwner = '-- Task Owner ' + items.task.who + ' ';
-            outerClassName += ' todo_open_outer';
-            innerClassName += ' todo_open';
-        } else if ((items.task.status == 'closed' || items.task.status == 'completed') && items.task.who != null ) {
-            taskOwner = '-- Task Owner ' + items.task.who + ' ';
-            outerClassName += ' todo_completed_outer';
-            innerClassName += ' todo_completed';
-        } else if (items.task.status == 'closed' || items.task.status == 'completed') {
-            outerClassName += ' todo_undefined_outer';
-            innerClassName += ' todo_undefined';
+        if (itemsClass == 'task') {
+            if (items.metadata.status == 'open' || items.metadata.status == 'assigned') {
+                taskOwner = '-- Task Owner ' + items.metadata.who + ' ';
+                outerClassName += ' todo_open_outer';
+                innerClassName += ' todo_open';
+            } else if ((items.metadata.status == 'closed' || items.metadata.status == 'completed') && items.metadata.who != null ) {
+                taskOwner = '-- Task Owner ' + items.metadata.who + ' ';
+                outerClassName += ' todo_completed_outer';
+                innerClassName += ' todo_completed';
+            } else if (items.metadata.status == 'closed' || items.metadata.status == 'completed') {
+                outerClassName += ' todo_undefined_outer';
+                innerClassName += ' todo_undefined';
+            }
+        }
+        if (itemsClass == 'alert') {
+            outerClassName += ' event_entry_container_alert'
         }
         itemarr.push(React.createElement(EntryData, {id: items.id, key: items.id, subitem: items, type: type, targetid: id, editEntryToolbar: editEntryToolbar, editEntryToggle: editEntryToggle, isPopUp: isPopUp, errorToggle: this.props.errorToggle}));
         for (var prop in items) {
@@ -4012,7 +4009,7 @@ var EntryParent = React.createClass({displayName: "EntryParent",
                                 React.createElement(SplitButton, {bsSize: "xsmall", title: "Reply", key: items.id, id: 'Reply '+items.id, onClick: this.replyEntryToggle, pullRight: true}, 
                                      type != 'entity' ? React.createElement(MenuItem, {eventKey: "1", onClick: this.fileUploadToggle}, "Upload File") : null, 
                                     React.createElement(MenuItem, {eventKey: "3"}, React.createElement(Summary, {type: type, id: id, entryid: items.id, summary: summary})), 
-                                    React.createElement(MenuItem, {eventKey: "4"}, React.createElement(Task, {type: type, id: id, entryid: items.id, taskData: items.task})), 
+                                    React.createElement(MenuItem, {eventKey: "4"}, React.createElement(Task, {type: type, id: id, entryid: items.id, taskData: items.metadata})), 
                                     React.createElement(MenuItem, {onClick: this.permissionsToggle}, "Permissions"), 
                                     React.createElement(MenuItem, {onClick: this.reparseFlair}, "Reparse Flair"), 
                                     React.createElement(MenuItem, {eventKey: "2", onClick: this.deleteToggle}, "Delete")
@@ -6682,7 +6679,7 @@ var App = React.createClass({displayName: "App",
             this.props.params.value = ''
             state = 0
         }
-        setTimeout(function(){Listener.activeMq()}, 3000)
+        Listener.activeMq();   //register for amq updates
         return{id: id, id2: id2, set: state, handler: "Scot", viewMode:'default'}	
     },
     componentDidMount: function() {
