@@ -91,17 +91,43 @@ sub find_existing_alert_entry {
 sub build_table {
     my $self    = shift;
     my $alert   = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
     my $data    = $alert->data;
     my $html    = qq|<table class="tablesorter alertTableHorizontal">\n|;
 
+    $log->debug("BUILDING ALERT TABLE");
+    my $alerthref = $alert->as_hash;
+    $log->debug({filter=>\&Dumper, value=>$alerthref});
+
+    # some confusion as to where columns should actually be
+    my $columns = $alert->columns;
+    $log->debug("columns are ",{filter=>\&Dumper, $columns});
+
+    if ( ! defined $columns or scalar(@$columns) == 0) { 
+        $log->debug("Columns not in the right place!");
+        $columns    = $data->{columns};
+        $log->debug("columns are ",{filter=>\&Dumper, value => $columns});
+    }
+    else {
+        $log->debug("columns ok? ",{filter=>\&Dumper, value => $columns});
+    }
+
+    if  ( ! defined $columns or scalar(@$columns) == 0) {
+        $log->debug("Columns still unset!");
+    }
+    else {
+        $log->debug("columns ok? ",{filter=>\&Dumper, value => $columns});
+    }
+
     $html .= "<tr>\n";
-    foreach my $key ( @{$alert->columns} ) {
+    foreach my $key ( @{$columns} ) {
         next if ($key eq "columns");
         $html .= "<th>$key</th>";
     }
     $html .= "\n</tr>\n<tr>\n";
 
-    foreach my $key ( @{$alert->columns} ) {
+    foreach my $key ( @{$columns} ) {
         next if ($key eq "columns");
         my $value   = $data->{$key};
         $html .= qq|<td>$value</td>|;

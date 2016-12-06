@@ -1,0 +1,13 @@
+[Unit]
+Description=SCot Elasticsearch Push Daemon
+Requires=scot.service
+
+[Service]
+ExecStart=/opt/scot/bin/stretch.pl
+Restart=always
+RestartSec=10
+StandardOutput=/var/log/scot/scot.stretch.log
+StandardError=/var/log/scot/scot.stretch.log
+
+[Install]
+WantedBy=multi-user.target
