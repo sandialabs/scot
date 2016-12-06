@@ -283,7 +283,7 @@ var App = React.createClass({
             this.props.params.value = ''
             state = 0
         }
-        setTimeout(function(){Listener.activeMq()}, 3000)
+        Listener.activeMq();   //register for amq updates
         return{id: id, id2: id2, set: state, handler: "Scot", viewMode:'default'}	
     },
     componentDidMount: function() {
