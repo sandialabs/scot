@@ -308,6 +308,15 @@ EOF
 
         apt-get update && apt-get install -y mongodb-org
 
+        if [ $OSVERSION == "16" ]; then 
+            if [ ! -e /var/log/mongodb/mongod.log ]; then
+                touch /var/log/mongodb/mongod.log
+            fi
+            chown mongodb.mongodb /var/log/mongodb/mongod.log
+            systemctl enable mongod.service
+            systemctl restart mongod.service
+        fi
+
         if [[ ! -e /etc/apt/sources.list.d/elasticsearch-2.x.list ]]; then
             wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 
