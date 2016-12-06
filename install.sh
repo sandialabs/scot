@@ -74,8 +74,8 @@ DELDIR="yes"                # delete the $SCOTDIR prior to installation
 NEWINIT="yes"               # install a new $SCOTINIT
 OVERGEO="no"                # overwrite the GeoIP database
 MDBREFRESH="yes"            # install new Mongod.conf and restart
+#MDBREFRESH="no"             # overwrite an existing mongod config
 INSTMODE="all"              # install everything or just SCOTONLY 
-MDBREFRESH="no"             # overwrite an existing mongod config
 RESETDB="no"                # delete existing scot db
 SFILESDEL="no"              # delete existing filestore directory and contents
 CLEARLOGS="no"              # clear the logs in $LOGDIR
@@ -113,11 +113,12 @@ while getopts "adigmsrflqA:F:J:wNb:" opt; do
             OVERGEO="yes"
             ;;
         m)
-            echo -e "${red} --- overwrite mongodb config and restart ${NC}"
-            MDBREFRESH="yes"
+            echo -e "${red} --- do not overwrite mongodb config and restart ${NC}"
+            MDBREFRESH="no"
             ;;
         s)
             echo -e "${green} --- INSTALL only SCOT software ${NC}"
+            MDBREFRESH="no"
             INSTMODE="SCOTONLY"
             REFRESHAPT="no"
             NEWINIT="no"
@@ -313,11 +314,17 @@ EOF
             echo "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-2.x.list
         fi
 
-        apt-get install -y elasticsearch
-
         if [ "$REFRESHAPT" == "yes" ]; then
             echo "= updating apt repository"
             apt-get update 2>&1 > /dev/null
+        fi
+
+        apt-get install -y elasticsearch
+
+        if [ $OSVERSION == "16" ]; then
+            echo "+ elastic post install for 16.04"
+            sed -i 's/#START_DAEMON/START_DAEMON/' /etc/default/elasticsearch
+            systemctl restart elasticsearch
         fi
 
         if [ $SKIPNODE == "no" ]; then
@@ -466,7 +473,7 @@ EOF
             REVPROXY=$DEVDIR/etcsrc/apache2/scot-revproxy-$MYHOSTNAME
             if [ ! -e $REVPROXY ]||[$REFRESHAPACHECONF == "yes"]; then
 
-                echo -e "${red}= custom apache config for $MYHOSTNAME not present, using defaults${NC}"
+                echo -e "${red}= custom apache config for hostname=$MYHOSTNAME not present, using defaults${NC}"
 
                 if [[ $OSVERSION == "7" ]]; then
                     if [[ $AUTHMODE == "Remoteuser" ]]; then
@@ -950,17 +957,18 @@ if [ ! -e /etc/init.d/scot ]; then
     fi
 fi
 
-if [ ! -e /etc/init.d/scad ]; then
-    echo -e "${red} Missing INIT for SCot Alert Daemon ${NC}"
-    echo -e "${yellow}+ adding /etc/init.d/scad...${NC}"
-    /opt/scot/bin/scad.pl get_init_file > /etc/init.d/scad
-    chmod +x /etc/init.d/scad
-    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
-        chkconfig --add scad
-    else 
-        update-rc.d scad defaults
-    fi
-fi
+#if [ ! -e /etc/init.d/scad ]; then
+#    echo -e "${red} Missing INIT for SCot Alert Daemon ${NC}"
+#    echo -e "${yellow}+ adding /etc/init.d/scad...${NC}"
+#    /opt/scot/bin/scad.pl get_init_file > /etc/init.d/scad
+#    chmod +x /etc/init.d/scad
+#    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
+#        chkconfig --add scad
+#    else 
+#        update-rc.d scad defaults
+#    fi
+#fi
+
 if [ ! -e /etc/init.d/scfd ]; then
     echo -e "${red} Missing INIT for SCot Flair Daemon ${NC}"
     echo -e "${yellow}+ adding /etc/init.d/scfd...${NC}"
@@ -968,10 +976,19 @@ if [ ! -e /etc/init.d/scfd ]; then
     chmod +x /etc/init.d/scfd
     if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
         chkconfig --add scfd
+        /etc/init.d/scfd start
     else 
-        update-rc.d scfd defaults
+        if [ $OSVERSION == "14" ]; then
+            update-rc.d scfd defaults
+            service scfd start
+        else
+            cp $DEVDIR/etcsrc/scfd.unit /etc/systemd/system/scfd.service
+            systemctl enable scfd.service
+            systemctl start scfd.service
+        fi
     fi
 fi
+
 if [ ! -e /etc/init.d/scepd ]; then
     echo -e "${red} Missing INIT for SCot ES Push Daemon ${NC}"
     echo -e "${yellow}+ adding /etc/init.d/scepd...${NC}"
@@ -979,8 +996,16 @@ if [ ! -e /etc/init.d/scepd ]; then
     chmod +x /etc/init.d/scepd
     if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
         chkconfig --add scepd
+        /etc/init.d/scepd start
     else 
-        update-rc.d scepd defaults
+        if [ $OSVERSION == "14" ]; then
+            update-rc.d scepd defaults
+            service scepd start
+        else 
+            cp $DEVDIR/etc/scepd.unit /etc/systemd/system/scepd.service
+            systemctl enable scepd.service
+            systemctl start scepd.service
+        fi
     fi
 fi
 
@@ -1004,14 +1029,14 @@ if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
     firewall-cmd --permanent --add-port=80/tcp
     firewall-cmd --permanent --add-port=443/tcp
     firewall-cmd --reload
-
-    /opt/activemq/bin/activemq start
-
 else 
     update-rc.d elasticsearch defaults
     update-rc.d scot defaults
     update-rc.d activemq defaults
 fi
+
+echo "+ starting activemq"
+/opt/activemq/bin/activemq start
 
 if [ $AUTHMODE == "Local"  ];then
     echo "!!!!"
