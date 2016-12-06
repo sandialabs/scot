@@ -2664,7 +2664,7 @@ sub get_status {
         'Scot Flair Daemon'         => $self->get_daemon_status('scfd'),
         'Scot Elastic Push Daemon'  => $self->get_daemon_status('scepd'),
         'System Uptime'             => `uptime`,
-        'MongoDB'                   => `service mongod status`,
+        'MongoDB'                   => $self->get_daemon_status('mongod'),
     };
     $self->do_render($status);
 }
@@ -2673,11 +2673,31 @@ sub get_daemon_status {
     my $self    = shift;
     my $daemon  = shift;
     my $log     = $self->env->log;
+
+    my $systemd = `systemctl | grep "\-.mount"`;
+
+    if ( $systemd =~ /-\.mount/ ) {
+        $log->debug("systemd style services!");
+        my $result  = `service $daemon status`;
+        my @statuses  = ();
+        foreach my $line (split(/\n/,$result)) {
+            next unless ( $line =~ / +\S+:/ );
+            my ($type, $data) = split(/: /,$line);
+            if ( $type =~ /Active/ ) {
+                push @statuses, $data;
+            }
+            if ( $type =~ /Main PID/ ) {
+                push @statuses, $data;
+            }
+        }
+        return join(' ',reverse @statuses);
+    }
+
     my $result  = `service $daemon status`;
     $log->debug("DAEMON status is $result");
     my ($status)=  $result =~ /.*\[(.*)\]/; 
     $log->debug("plucked $status");
-    return $status;
+    return $result;
 }
 
 sub get_who_online {
