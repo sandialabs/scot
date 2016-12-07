@@ -314,6 +314,7 @@ EOF
             fi
             chown mongodb.mongodb /var/log/mongodb/mongod.log
             systemctl enable mongod.service
+            systemctl daemon-reload mongod.service
             systemctl restart mongod.service
         fi
 
@@ -954,75 +955,79 @@ fi
 echo "+ copying documentation to public dir"
 cp -r $DEVDIR/docs/build/html/* $SCOTDIR/public/docs/
 
-if [ ! -e /etc/init.d/scot ]; then
-    echo -e "${yellow}+ missing /etc/init.d/scot, installing...${NC}"
-    cp $DEVDIR/etcsrc/init/scot-init /etc/init.d/scot
-    chmod +x /etc/init.d/scot
-    sed -i 's=/instdir='$SCOTDIR'=g' /etc/init.d/scot
-    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
-        chkconfig --add scot
-    else 
-        update-rc.d scot defaults
-    fi
-fi
-
-#if [ ! -e /etc/init.d/scad ]; then
-#    echo -e "${red} Missing INIT for SCot Alert Daemon ${NC}"
-#    echo -e "${yellow}+ adding /etc/init.d/scad...${NC}"
-#    /opt/scot/bin/scad.pl get_init_file > /etc/init.d/scad
-#    chmod +x /etc/init.d/scad
-#    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
-#        chkconfig --add scad
-#    else 
-#        update-rc.d scad defaults
-#    fi
-#fi
-
-if [ ! -e /etc/init.d/scfd ]; then
-    echo -e "${red} Missing INIT for SCot Flair Daemon ${NC}"
-    echo -e "${yellow}+ adding /etc/init.d/scfd...${NC}"
-    /opt/scot/bin/scfd.pl get_init_file > /etc/init.d/scfd
-    chmod +x /etc/init.d/scfd
-    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
-        chkconfig --add scfd
-        /etc/init.d/scfd start
-    else 
-        if [ $OSVERSION == "14" ]; then
-            update-rc.d scfd defaults
-            service scfd start
-        else
-            cp $DEVDIR/etcsrc/scfd.unit /etc/systemd/system/scfd.service
-            systemctl enable scfd.service
-            systemctl start scfd.service
+if [ $OSVERSION == "16"]; then 
+    cp $DEVDIR/etcsrc/scot /etc/systemd/system/scot.service
+    systemctl enable scot.service
+    systemctl start scot.service
+else 
+    if [ ! -e /etc/init.d/scot ]; then
+        echo -e "${yellow}+ missing /etc/init.d/scot, installing...${NC}"
+        cp $DEVDIR/etcsrc/init/scot-init /etc/init.d/scot
+        chmod +x /etc/init.d/scot
+        sed -i 's=/instdir='$SCOTDIR'=g' /etc/init.d/scot
+        if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
+            chkconfig --add scot
+        else 
+            update-rc.d scot defaults
         fi
     fi
 fi
 
-if [ ! -e /etc/init.d/scepd ]; then
-    echo -e "${red} Missing INIT for SCot ES Push Daemon ${NC}"
-    echo -e "${yellow}+ adding /etc/init.d/scepd...${NC}"
-    /opt/scot/bin/scepd.pl get_init_file > /etc/init.d/scepd
-    chmod +x /etc/init.d/scepd
-    if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
-        chkconfig --add scepd
-        /etc/init.d/scepd start
-    else 
-        if [ $OSVERSION == "14" ]; then
-            update-rc.d scepd defaults
-            service scepd start
+if [ $OSVERSION == "16"]; then 
+    cp $DEVDIR/etcsrc/scfd.unit /etc/systemd/system/scfd.service
+    systemctl enable scfd.service
+    systemctl start scfd.service
+else 
+    if [ ! -e /etc/init.d/scfd ]; then
+        echo -e "${red} Missing INIT for SCot Flair Daemon ${NC}"
+        echo -e "${yellow}+ adding /etc/init.d/scfd...${NC}"
+        /opt/scot/bin/scfd.pl get_init_file > /etc/init.d/scfd
+        chmod +x /etc/init.d/scfd
+        if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
+            chkconfig --add scfd
+            /etc/init.d/scfd start
         else 
-            cp $DEVDIR/etc/scepd.unit /etc/systemd/system/scepd.service
-            systemctl enable scepd.service
-            systemctl start scepd.service
+            update-rc.d scfd defaults
+            service scfd start
+        fi
+    fi
+fi
+
+if [ $OSVERSION == "16"]; then 
+    cp $DEVDIR/etcsrc/scepd.unit /etc/systemd/system/scepd.service
+    systemctl enable scepd.service
+    systemctl start scepd.service
+else 
+    if [ ! -e /etc/init.d/scepd ]; then
+        echo -e "${red} Missing INIT for SCot ES Push Daemon ${NC}"
+        echo -e "${yellow}+ adding /etc/init.d/scepd...${NC}"
+        /opt/scot/bin/scepd.pl get_init_file > /etc/init.d/scepd
+        chmod +x /etc/init.d/scepd
+        if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
+            chkconfig --add scepd
+            /etc/init.d/scepd start
+        else 
+            if [ $OSVERSION == "14" ]; then
+                update-rc.d scepd defaults
+                service scepd start
+            fi
         fi
     fi
 fi
 
 echo "= restarting apache2"
-/etc/init.d/apache2 restart
+if [ $OSVERSION == "16" ]; then
+    systemctl restart apache2
+else 
+    /etc/init.d/apache2 restart
+fi
 
 echo "= restarting scot"
-/etc/init.d/scot restart
+if [ $OSVERSION == "16" ]; then
+    systemctl restart scot
+else 
+    /etc/init.d/scot restart
+fi
 
     
 #
@@ -1039,9 +1044,11 @@ if [ $OS == "RedHatEnterpriseServer" ] || [ $OS == "CentOS" ]; then
     firewall-cmd --permanent --add-port=443/tcp
     firewall-cmd --reload
 else 
-    update-rc.d elasticsearch defaults
-    update-rc.d scot defaults
-    update-rc.d activemq defaults
+    if [ $OSVERSION == "14" ]; then 
+        update-rc.d elasticsearch defaults
+        update-rc.d scot defaults
+        update-rc.d activemq defaults
+    fi
 fi
 
 echo "+ starting activemq"

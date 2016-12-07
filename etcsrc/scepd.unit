@@ -1,6 +1,5 @@
 [Unit]
 Description=SCot Elasticsearch Push Daemon
-Requires=scot.service
 
 [Service]
 ExecStart=/opt/scot/bin/stretch.pl
