@@ -844,7 +844,7 @@ if [ "$MDBREFRESH" == "yes" ]; then
         if [ $OSVERSION == "16" ]; then
             MDCDIR="/etc/"
             cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.bak
-            cp $DEVDIR/etcsrc/init-ubuntu16-mongod.conf $MDCDIR/mongod.conf
+            cp $DEVDIR/etcsrc/mongod.conf $MDCDIR/mongod.conf
             FIKTL=`grep failIndexKeyTooLong /lib/systemd/system/mongod.service`
             if [ "$FIKTL" == "" ]; then
                 echo "- SCOT will fail unless failIndexKeyTooLong=false in /lib/systemd/system/mongod.service"
@@ -942,14 +942,10 @@ if [ "$MONGOADMIN" == "0" ] || [ "$RESETDB" == "yes" ]; then
 fi
 
 if [[ $INSTMODE != "SCOTONLY" ]]; then
+    cpanm -f MooseX::Role::MongoDB # to get arround deprecation warnings, remove this once upstream pull request is accepted
     cpanm Meerkat
-    if [ $OSVERSION == "16" ]; then
-        echo "+ Installing older Courriel due to 16.04 bug"
-        cpanm Courriel@0.42
-    else
-        echo "+ installing current Courriel"
-        cpanm Courriel
-    fi
+    echo "+ installing current Courriel"
+    cpanm Courriel
 fi
 
 echo "+ copying documentation to public dir"
