@@ -1,6 +1,5 @@
 [Unit]
 Description=SCot Flair Daemon
-Requires=scot.service
 
 [Service]
 ExecStart=/opt/scot/bin/flairer.pl
