@@ -210,7 +210,6 @@ libapache2-mod-proxy-html
 libapache2-mod-rpaf
 libimlib2-dev
 libimlib2
-redis-server
 starman
 libgeoip-dev
 default-jre
