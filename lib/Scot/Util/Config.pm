@@ -39,7 +39,7 @@ sub get_config {
 
     unless ($fqname) {
         print "\nERROR: Can not find config file $file\n";
-        print "Paths searched: ",join(',' @$paths),"\n";
+        print "Paths searched: ".join(',',@{$paths})."\n";
         die "Unable to find config file $file \n";
     }
     print "Reading config file: $fqname\n";
