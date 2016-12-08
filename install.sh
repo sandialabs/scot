@@ -995,6 +995,7 @@ else
 fi
 
 if [ $OSVERSION == "16" ]; then 
+    echo "+ setting up systemd service for scot flairing daemon"
     cp $DEVDIR/etcsrc/scfd.unit /etc/systemd/system/scfd.service
     systemctl enable scfd.service
     systemctl start scfd.service
@@ -1015,6 +1016,7 @@ else
 fi
 
 if [ $OSVERSION == "16" ]; then 
+    echo "+ setting up systemd service for scot elasticsearch push daemon"
     cp $DEVDIR/etcsrc/scepd.unit /etc/systemd/system/scepd.service
     systemctl enable scepd.service
     systemctl start scepd.service
