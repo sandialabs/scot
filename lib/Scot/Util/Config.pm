@@ -36,6 +36,12 @@ sub get_config {
         }
     }, @$paths);
 
+
+    unless ($fqname) {
+        print "\nERROR: Can not find config file $file\n";
+        print "Paths searched: ",join(',' @$paths),"\n";
+        die "Unable to find config file $file \n";
+    }
     print "Reading config file: $fqname\n";
 
     no strict 'refs'; # I know, but...

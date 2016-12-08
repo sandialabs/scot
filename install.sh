@@ -320,6 +320,10 @@ EOF
 
         if [[ ! -e /etc/apt/sources.list.d/elasticsearch-2.x.list ]]; then
             wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+            if [ $? -gt 0 ];
+                echo "~ failed to grap elastic GPC-KEY, could be SSL problem"
+                wget --no-check-certificate -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+            fi
 
             echo "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main" | sudo tee -a /etc/apt/sources.list.d/elasticsearch-2.x.list
         fi
@@ -786,6 +790,18 @@ else
     echo "= enrichments.cfg already present, skipping..."
 fi
 
+if [[ ! -e $SCOTDIR/etc/flair.app.cfg ]]; then
+    cp $DEVDIR/etcsrc/flair.app.cfg $SCOTDIR/etc/flair.app.cfg
+else
+    echo "= flair.app.cfg already present, skipping..."
+fi
+
+if [[ ! -e $SCOTDIR/etc/flair_logger.cfg ]]; then
+    cp $DEVDIR/etcsrc/flair_logger.cfg $SCOTDIR/etc/flair_logger.cfg
+else
+    echo "= flair_logger.cfg already present, skipping..."
+fi
+
 # private configs to overwrite default configs
 
 if [ -d "$PRIVATE_SCOT_MODULES" ]; then
@@ -954,6 +970,7 @@ if [[ $INSTMODE != "SCOTONLY" ]]; then
     cpanm Meerkat
     echo "+ installing current Courriel"
     cpanm Courriel
+    cpanm AnyEvent::ForkManager
 fi
 
 echo "+ copying documentation to public dir"
