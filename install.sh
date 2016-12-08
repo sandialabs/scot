@@ -771,7 +771,11 @@ else
 fi
 
 if [[ ! -e $SCOTDIR/etc/activemq.cfg ]]; then
-    cp $DEVDIR/etcsrc/activemq.cfg $SCOTDIR/etc/activemq.cfg
+    if [[ -e $DEVDIR/etcsrc/activemq.cfg ]]; then
+        cp $DEVDIR/etcsrc/activemq.cfg $SCOTDIR/etc/activemq.cfg
+    else 
+        echo "- activemq.cfg not present, skipping..."
+    fi
 else
     echo "= activemq.cfg already present, skipping..."
 fi
@@ -873,13 +877,17 @@ if [ "$MDBREFRESH" == "yes" ]; then
         echo "+ creating database dir $DBDIR"
         mkdir -p $DBDIR
     fi
-    echo "+ ensuring prober ownership of $DBDIR"
+    echo "+ ensuring proper ownership of $DBDIR"
     chown -R mongodb:mongodb $DBDIR
 
     echo "- clearing /var/log/mondob/mongod.log"
     cat /dev/null > /var/log/mongodb/mongod.log
 else
     echo "- skipping configuration of mongodb at user request"
+fi
+
+if [ $OSVERSION == "16" ]; then
+    systemctl daemon-reload
 fi
 
 MONGOSTATUS=`service mongod status`
@@ -951,7 +959,7 @@ fi
 echo "+ copying documentation to public dir"
 cp -r $DEVDIR/docs/build/html/* $SCOTDIR/public/docs/
 
-if [ $OSVERSION == "16"]; then 
+if [ $OSVERSION == "16" ]; then 
     cp $DEVDIR/etcsrc/scot /etc/systemd/system/scot.service
     systemctl enable scot.service
     systemctl start scot.service
@@ -969,7 +977,7 @@ else
     fi
 fi
 
-if [ $OSVERSION == "16"]; then 
+if [ $OSVERSION == "16" ]; then 
     cp $DEVDIR/etcsrc/scfd.unit /etc/systemd/system/scfd.service
     systemctl enable scfd.service
     systemctl start scfd.service
@@ -989,7 +997,7 @@ else
     fi
 fi
 
-if [ $OSVERSION == "16"]; then 
+if [ $OSVERSION == "16" ]; then 
     cp $DEVDIR/etcsrc/scepd.unit /etc/systemd/system/scepd.service
     systemctl enable scepd.service
     systemctl start scepd.service
