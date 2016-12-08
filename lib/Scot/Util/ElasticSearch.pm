@@ -8,7 +8,7 @@ use v5.18;
 use Moose;
 use Mojo::JSON qw/decode_json encode_json/;
 use Search::Elasticsearch;
-use Search::Elasticsearch::Client::1_0::Direct::Snapshot;
+# use Search::Elasticsearch::Client::1_0::Direct::Snapshot;
 use Scot::Env;
 use Data::Dumper;
 use Try::Tiny;
@@ -18,7 +18,7 @@ use namespace::autoclean;
 
 has es   => (
     is          => 'ro',
-    isa         => 'Search::Elasticsearch::Client::2_0::Direct',
+    isa         => 'Object',
     required    => 1,
     lazy        => 1,
     builder     => '_build_es',
