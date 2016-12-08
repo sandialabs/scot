@@ -320,7 +320,7 @@ EOF
 
         if [[ ! -e /etc/apt/sources.list.d/elasticsearch-2.x.list ]]; then
             wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
-            if [ $? -gt 0 ];
+            if [ $? -gt 0 ]; then
                 echo "~ failed to grap elastic GPC-KEY, could be SSL problem"
                 wget --no-check-certificate -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
             fi
