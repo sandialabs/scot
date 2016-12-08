@@ -18,7 +18,14 @@ sub new {
         defined($config->{logfile}) &&
         defined($config->{log_level}) ) {
         print Dumper($config),"\n";
-        die ("Invalid Configuration for Logger!");
+        warn ("Invalid Configuration for Logger!");
+        $config = {
+            logger_name => 'SCOT',
+            layout      => '%d %7p [%P] %15F{1}: %4L %m%n',
+            appender_name   => 'scot_log',
+            logfile         => '/var/log/scot/scot.log',
+            log_level       => 'DEBUG',
+        };
     }
 
     my $log     = Log::Log4perl->get_logger($config->{logger_name});
