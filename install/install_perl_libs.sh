@@ -20,6 +20,7 @@ then
     exit 1
 fi
 
+export PERL_LWP_SSL_VERIFY_HOSTNAME=0
 CPANOPTS="--verbose --no-check-certificate --mirror-only"
 CPANMIRROR="--mirror https://stratopan.com/toddbruner/Scot-deps/master"
 CPAN="/usr/local/bin/cpanm $CPANOPTS $CPANMIRROR"
@@ -128,6 +129,7 @@ do
         echo "+ pushing onto retry list";
         RETRY="$RETRY $i"
     fi
+    echo ""
 done
 
 for i in $RETRY
@@ -138,6 +140,7 @@ do
         echo "!!! FAILED RETRY of $i !!!";
         FAILED="$FAILED $i"
     fi
+    echo ""
 done
 
 echo "~~~~~~~~~~~ Failed Perl Modules ~~~~~~~~~~~~~~";
