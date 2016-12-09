@@ -20,7 +20,7 @@ then
     exit 1
 fi
 
-CPANOPTS="--verbose --mirror-only"
+CPANOPTS="--verbose --no-check-certificate --mirror-only"
 CPANMIRROR="--mirror https://stratopan.com/toddbruner/Scot-deps/master"
 CPAN="/usr/local/bin/cpanm $CPANOPTS $CPANMIRROR"
 
