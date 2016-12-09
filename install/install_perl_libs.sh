@@ -21,8 +21,10 @@ then
 fi
 
 export PERL_LWP_SSL_VERIFY_HOSTNAME=0
-CPANOPTS="--verbose --no-check-certificate --mirror-only"
-CPANMIRROR="--mirror https://stratopan.com/toddbruner/Scot-deps/master"
+CPANOPTS="--verbose"
+# CPANOPTS="--verbose --no-check-certificate --mirror-only"
+# CPANMIRROR="--mirror https://stratopan.com/toddbruner/Scot-deps/master"
+CPANMIRROR=""
 CPAN="/usr/local/bin/cpanm $CPANOPTS $CPANMIRROR"
 
 echo "= using $CPAN"
