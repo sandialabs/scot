@@ -37,7 +37,7 @@ TESTURL="http://getscot.sandia.gov"
 BACKUPDIR="/sdb/scotbackup"        
 GEOIPDIR="/usr/local/share/GeoIP"
 DBDIR="/var/lib/mongodb"
-CPANM="/usr/local/bin/cpanm"
+CPANM="/usr/local/bin/cpanm --mirror-only --mirror https://stratopan.com/toddbruner/Scot-deps/master"
 LOGDIR="/var/log/scot";
 AMQDIR="/opt/activemq"
 AMQTAR="apache-activemq-5.13.2-bin.tar.gz"
@@ -967,10 +967,10 @@ fi
 
 if [[ $INSTMODE != "SCOTONLY" ]]; then
     cpanm -f MooseX::Role::MongoDB # to get arround deprecation warnings, remove this once upstream pull request is accepted
-    cpanm Meerkat
+    cpanm -f Meerkat
     echo "+ installing current Courriel"
     cpanm Courriel
-    cpanm AnyEvent::ForkManager
+    cpanm -f AnyEvent::ForkManager
 fi
 
 echo "+ copying documentation to public dir"
