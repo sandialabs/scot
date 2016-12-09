@@ -2,7 +2,14 @@
 
 DISTRO=`../etcsrc/install/determine_os.sh | cut -d ' ' -f 2`;
 
-echo "============== PERL Module Installer ============== ";
+echo "============== PERL Module Installer ============== "
+echo "+ updating apt repositories"
+apt-get update 2>&1 > /dev/null
+
+if [ $? != 0 ]; then
+    echo "! unable to update apt !"
+    exit 1
+fi
 
 APT='
     make
