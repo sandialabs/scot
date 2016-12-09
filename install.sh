@@ -37,7 +37,7 @@ TESTURL="http://getscot.sandia.gov"
 BACKUPDIR="/sdb/scotbackup"        
 GEOIPDIR="/usr/local/share/GeoIP"
 DBDIR="/var/lib/mongodb"
-CPANM="/usr/local/bin/cpanm --mirror-only --mirror https://stratopan.com/toddbruner/Scot-deps/master"
+CPANM="cpanm --mirror-only --mirror https://stratopan.com/toddbruner/Scot-deps/master"
 LOGDIR="/var/log/scot";
 AMQDIR="/opt/activemq"
 AMQTAR="apache-activemq-5.13.2-bin.tar.gz"
@@ -448,9 +448,9 @@ EOF
         if [[ -z "$DOCRES" ]]; then
             echo "+ Installing perl module $mod"
             if [ "$mod" = "MongoDB" ]; then
-                cpanm $mod --force
+                $CPANM $mod --force
             else
-                cpanm $mod
+                $CPANM $mod
             fi
         fi
     done
@@ -936,11 +936,11 @@ if [ "$MONGOADMIN" == "0" ] || [ "$RESETDB" == "yes" ]; then
 fi
 
 if [[ $INSTMODE != "SCOTONLY" ]]; then
-    cpanm -f MooseX::Role::MongoDB # to get arround deprecation warnings, remove this once upstream pull request is accepted
-    cpanm -f Meerkat
+    $CPANM -f MooseX::Role::MongoDB # to get arround deprecation warnings, remove this once upstream pull request is accepted
+    $CPANM -f Meerkat
     echo "+ installing current Courriel"
-    cpanm Courriel
-    cpanm -f AnyEvent::ForkManager
+    $CPANM Courriel
+    $CPANM -f AnyEvent::ForkManager
 fi
 
 if [ $OSVERSION == "16" ]; then 
