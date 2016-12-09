@@ -18,7 +18,6 @@ libimlib2-dev
 libimlib2
 libgeoip-dev
 default-jre
-cpanminus
 libmaxminddb0
 libmaxminddb-dev
 mmdb-bin
