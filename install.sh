@@ -448,9 +448,9 @@ EOF
         if [[ -z "$DOCRES" ]]; then
             echo "+ Installing perl module $mod"
             if [ "$mod" = "MongoDB" ]; then
-                $CPANM $mod --force
+                $CPANM -v $mod --force
             else
-                $CPANM $mod
+                $CPANM -v $mod
             fi
         fi
     done
