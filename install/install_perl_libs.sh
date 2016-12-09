@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DISTRO=`../etcsrc/install/determine_os.sh | cur -d ' ' -f 2`;
+DISTRO=`../etcsrc/install/determine_os.sh | cut -d ' ' -f 2`;
 
 echo "============== PERL Module Installer ============== ";
 if [ $DISTRO != "RedHat" ]; then
