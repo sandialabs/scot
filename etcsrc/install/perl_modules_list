@@ -3,6 +3,10 @@ Moose::Role
 Moose::Util::TypeConstraints
 MooseX::MetaDescription::Meta::Attribute
 MooseX::Singleton
+MooseX::Emulate::Class::Access
+MooseX::Types
+MooseX::Types::Common
+MooseX::MethodAttributes
 AnyEvent
 Server::Starter
 PSGI

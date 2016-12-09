@@ -758,7 +758,7 @@ else
     fi
 fi
 
-CFGFILES='mongo logger imap activemq enrichments flair.app flair_logger stretch.app stretch_logger game.app'
+CFGFILES='mongo logger imap activemq enrichments flair.app flair_logger stretch.app stretch_logger game.app elastic'
 
 for file in $CFGFILES
 do
@@ -941,6 +941,11 @@ if [[ $INSTMODE != "SCOTONLY" ]]; then
     echo "+ installing current Courriel"
     cpanm Courriel
     cpanm -f AnyEvent::ForkManager
+fi
+
+if [ $OSVERSION == "16" ]; then 
+    echo "+ retrying elasticsearch start"
+    systemctl restart elasticsearch.service
 fi
 
 echo "+ copying documentation to public dir"
