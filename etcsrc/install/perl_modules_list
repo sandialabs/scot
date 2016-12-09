@@ -85,6 +85,6 @@ Safe
 Search::Elasticsearch
 Data::Clean::FromJSON
 Term::ANSIColor
-Daemon::Control
 Courriel
 AnyEvent::ForkManager;
+Daemon::Control
