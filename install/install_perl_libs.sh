@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 DISTRO=`../etcsrc/install/determine_os.sh | cur -d ' ' -f 2`;
 
@@ -6,6 +6,7 @@ echo "============== PERL Module Installer ============== ";
 if [ $DISTRO != "RedHat" ]; then
     echo "- removing evil ubuntu version"
     apt-get remove cpanminus
+    apt-get install make
 fi
 
 echo "+ getting latest cpanminus"
@@ -13,7 +14,7 @@ curl -L http://cpanmin.us | perl - --sudo App::cpanminus
 
 WCPP=`which cpanm`
 
-if [ $WCPP == "/usr/bin/cpanm" ]; 
+if [ "$WCPP" == "/usr/bin/cpanm" ]; 
 then
     echo "! WRONG CPAN !";
     exit 1
