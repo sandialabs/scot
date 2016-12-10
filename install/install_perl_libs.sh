@@ -1,10 +1,11 @@
 #!/bin/bash
 
-DISTRO=`../etcsrc/install/determine_os.sh | cut -d ' ' -f 2`;
+DISTRO=`../etcsrc/install/determine_os.sh | cut -d ' ' -f 1`;
 
 echo "============== PERL Module Installer ============== "
 echo "+ updating apt repositories"
 apt-get update 2>&1 > /dev/null
+apt-get install --reinstall ca-certificates
 
 if [ $? != 0 ]; then
     echo "! unable to update apt !"
@@ -218,8 +219,10 @@ done
 
 
 if [ $DISTRO != "RedHat" ]; then
-    echo "- removing evil ubuntu version"
-    apt-get remove cpanminus
+    echo "- removing old ubuntu version of cpanm"
+    apt-get remove cpanminus -y
+else 
+    yum -y remove perl-App-cpanminus
 fi
 
 echo "+ getting latest cpanminus"
