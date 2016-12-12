@@ -48,7 +48,7 @@ var EntityDetail = React.createClass({
                         url: 'scot/api/v2/' + this.props.entitytype + '/' + entityid 
                     }).success(function(result) {
                         //this.setState({entityData:result})
-                        var newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype, valueClicked:valueClicked}
+                        var newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype, valueClicked:result.value}
                         currentTabArray.push(newTab);
                         if (this.isMounted()) {
                             var entityidsarray = [];
@@ -64,7 +64,7 @@ var EntityDetail = React.createClass({
                 url: 'scot/api/v2/' + this.props.entitytype + '/' + this.state.entityid
             }).success(function(result) {
                 //this.setState({entityData:result})
-                var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:valueClicked}
+                var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:result.value}
                 currentTabArray.push(newTab);
                 if (this.isMounted()) {
                     var entityidsarray = [];
@@ -223,7 +223,11 @@ var EntityDetail = React.createClass({
             if (this.state.tabs[i].entitytype == 'guide') {
                 title = 'guide'
             } else {
-                title = this.state.tabs[i].valueClicked.slice(0,15);
+                if (this.state.tabs[i].valueClicked != undefined) {
+                    title = this.state.tabs[i].valueClicked.slice(0,15);
+                } else {
+                    title = '';
+                }
             }
             tabsArr.push(<Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} valueClicked={this.state.tabs[i].valueClicked} i={z} key={z} errorToggle={this.props.errorToggle}/></Tab>)
         }
@@ -256,7 +260,7 @@ var TabContents = React.createClass({
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
                         <h4 id="myModalLabel">{this.props.data != null ? <EntityValue value={this.props.valueClicked}/> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>
                     </div>
-                    <div style={{height:'100%',display:'flex', flex:'1 1 auto', margin:'10px', flexFlow:'inherit', minHeight:'1px'}}>
+                    <div style={{height:'100%',display:'flex', flex:'1 1 auto', marginLeft:'10px', flexFlow:'inherit', minHeight:'1px'}}>
                     {this.props.data != null ? <EntityBody data={this.props.data} entityid={this.props.entityid} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/> : <div>Loading...</div>}
                     </div>
                 </div>
@@ -268,7 +272,7 @@ var TabContents = React.createClass({
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
                         <a href={guideurl} target="_blank"><h4 id="myModalLabel">{this.props.data != null ? <span><span><EntityValue value={this.props.entityid} /></span><div><EntityValue value={this.props.data.applies_to} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4></a>
                     </div>
-                    <div style={{overflow:'auto',flex:'1 1 auto', margin:'10px'}}>
+                    <div style={{overflow:'auto',flex:'1 1 auto', marginLeft:'10px'}}>
                     {this.props.data != null ? <GuideBody entityid={this.props.entityid} entitytype={this.props.entitytype}/> : <div>Loading...</div>}
                     </div> 
                 </div>
@@ -333,7 +337,7 @@ var EntityBody = React.createClass({
                         entityEnrichmentDataArr.push(<Tab eventKey={enrichmentEventKey} style={{overflow:'auto'}} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/></Tab>);
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'link') {
-                        entityEnrichmentLinkArr.push(<Button bsSize='small' target='_blank' href={entityData[prop].data.url}>{entityData[prop].data.title}</Button>)
+                        entityEnrichmentLinkArr.push(<Button bsSize='xsmall' target='_blank' href={entityData[prop].data.url}>{entityData[prop].data.title}</Button>)
                         enrichmentEventKey++;
                     }
                 }
@@ -346,8 +350,8 @@ var EntityBody = React.createClass({
         var href = '/#/entity/'+this.props.entityid;
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='tabs'>
-                <Tab eventKey={1} style={{overflow:'auto'}} title={this.state.appearances}>{entityEnrichmentLinkArr}<span><br/><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><a href={href} style={{color:'#c400ff'}} target='_blank'>Large amount of references. Click to view the whole entity</a></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton}/><br/></Tab>
-                <Tab eventKey={2} style={{overflow:'auto'}} title="Entry"><Button bsSize='small' onClick={this.entryToggle}>Add Entry</Button><br/>
+                <Tab eventKey={1} style={{overflow:'auto'}} title={this.state.appearances}>{entityEnrichmentLinkArr}<span><br/><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><a href={href} style={{color:'#c400ff'}} target='_blank'>List truncated due to large amount of references. Click to view the whole entity</a></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton}/><br/></Tab>
+                <Tab eventKey={2} style={{overflow:'auto'}} title="Entry"><Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
                 {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
                 {entityEnrichmentGeoArr}
                 {entityEnrichmentDataArr}
@@ -392,8 +396,8 @@ var GeoView = React.createClass({
         var copy = copyArr.join('');
         return(
             <div>
-                <Button bsSize='small' onClick={this.copyToEntity}>Copy to <b>{"entity"}</b> entry</Button>
-                {this.props.type != 'alertgroup' ? <Button bsSize='small' onClick={this.copyToEntry}>Copy to <b>{this.props.type} {this.props.id}</b> entry</Button> : null}
+                <Button bsSize='xsmall' onClick={this.copyToEntity}>Copy to <b>{"entity"}</b> entry</Button>
+                {this.props.type != 'alertgroup' ? <Button bsSize='xsmall' onClick={this.copyToEntry}>Copy to <b>{this.props.type} {this.props.id}</b> entry</Button> : null}
                 {this.state.copyToEntryToolbar ? <AddEntry title='CopyToEntry' type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.copyToEntry} content={copy} errorToggle={this.props.errorToggle}/> : null}
                 {this.state.copyToEntityToolbar ? <AddEntry title='CopyToEntry' type={'entity'} targetid={this.props.entityData.id} id={this.props.entityData.id} addedentry={this.copyToEntity} content={copy} errorToggle={this.props.errorToggle}/> : null}
                 <div className="entityTableWrapper">
@@ -751,7 +755,7 @@ var GuideBody = React.createClass ({
         var SelectedEntry = require('../detail/selected_entry.jsx');
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='pills'>
-                <Tab eventKey={1} style={{overflow:'auto'}}><Button bsSize='small' onClick={this.entryToggle}>Add Entry</Button><br/>
+                <Tab eventKey={1} style={{overflow:'auto'}}><Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
                 {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} /></Tab>
             </Tabs>
         )
