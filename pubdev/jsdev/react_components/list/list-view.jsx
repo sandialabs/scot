@@ -118,7 +118,7 @@ module.exports = React.createClass({
                 array = this.props.id
                 //scrolled = $('.container-fluid2').scrollTop()    
                 if(this.state.viewMode == 'landscape'){
-                    height = '300px'
+                    height = '25vh'
                 }
             }
         }
@@ -297,7 +297,7 @@ module.exports = React.createClass({
     },
     launchEvent: function(type,rowid,entryid){
         if(this.state.display == 'block'){
-            this.state.scrollheight = '300px'
+            this.state.scrollheight = '25vh'
         }
         this.setState({alertPreSelectedId: 0, scrollheight: this.state.scrollheight, id:rowid, showSelectedContainer: true, queryType:type, entryid:entryid})
 
@@ -401,7 +401,7 @@ module.exports = React.createClass({
         if(this.state.id.length != 0 && this.state.showSelectedContainer == true  && this.state.listViewContainerDisplay != 'none' ){
             this.setState({listViewContainerDisplay: 'none', scrollheight:'0px'})
         } else {
-            this.setState({listViewContainerDisplay: null, scrollheight:'300px'})
+            this.setState({listViewContainerDisplay: null, scrollheight:'25vh'})
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
