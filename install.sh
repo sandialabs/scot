@@ -338,7 +338,8 @@ EOF
         if [ $OSVERSION == "16" ]; then
             echo "+ elastic post install for 16.04"
             sed -i 's/#START_DAEMON/START_DAEMON/' /etc/default/elasticsearch
-            systemctl restart elasticsearch
+            systemctl enable elasticsearch.service
+            systemctl restart elasticsearch.service
         fi
 
         if [ $SKIPNODE == "no" ]; then
@@ -447,9 +448,9 @@ EOF
         if [[ -z "$DOCRES" ]]; then
             echo "+ Installing perl module $mod"
             if [ "$mod" = "MongoDB" ]; then
-                cpanm $mod --force
+                $CPANM -v $mod --force
             else
-                cpanm $mod
+                $CPANM -v $mod
             fi
         fi
     done
@@ -750,57 +751,26 @@ if [[ $AUTHMODE == "Remoteuser" ]]; then
     cp $DEVDIR/etcsrc/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
 else 
     if [[ ! -e $SCOTDIR/etc/scot_env.cfg ]]; then
+        echo "+ copying scot_env.cfg into $SCOTDIR/etc"
         cp $DEVDIR/etcsrc/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
     else
         echo "= scot_env.cfg already present, skipping..."
     fi
 fi
 
-if [[ ! -e $SCOTDIR/etc/mongo.cfg ]];then
-    cp $DEVDIR/etcsrc/mongo.cfg $SCOTDIR/etc/mongo.cfg
-else
-    echo "= mongo.cfg already present, skipping..."
-fi
+CFGFILES='mongo logger imap activemq enrichments flair.app flair_logger stretch.app stretch_logger game.app elastic'
 
-if [[ ! -e $SCOTDIR/etc/logger.cfg ]]; then
-    cp $DEVDIR/etcsrc/logger.cfg $SCOTDIR/etc/logger.cfg
-else
-    echo "= logger.cfg already present, skipping..."
-fi
-
-if [[ ! -e $SCOTDIR/etc/imap.cfg ]]; then
-    cp $DEVDIR/etcsrc/imap.cfg $SCOTDIR/etc/imap.cfg
-else
-    echo "= imap.cfg already present, skipping..."
-fi
-
-if [[ ! -e $SCOTDIR/etc/activemq.cfg ]]; then
-    if [[ -e $DEVDIR/etcsrc/activemq.cfg ]]; then
-        cp $DEVDIR/etcsrc/activemq.cfg $SCOTDIR/etc/activemq.cfg
-    else 
-        echo "- activemq.cfg not present, skipping..."
+for file in $CFGFILES
+do
+    CFGDEST="$SCOTDIR/etc/$file.cfg"
+    if [[ -e $CFGDEST ]]; then
+        echo "= $CFGDEST already present, skipping..."
+    else
+        CFGSRC="$DEVDIR/etcsrc/$file.cfg"
+        echo "+ copying $CFGSRC to $CFGDEST"
+        cp $CFGSRC $CFGDEST
     fi
-else
-    echo "= activemq.cfg already present, skipping..."
-fi
-
-if [[ ! -e $SCOTDIR/etc/enrichments.cfg ]]; then
-    cp $DEVDIR/etcsrc/enrichments.cfg $SCOTDIR/etc/enrichments.cfg
-else
-    echo "= enrichments.cfg already present, skipping..."
-fi
-
-if [[ ! -e $SCOTDIR/etc/flair.app.cfg ]]; then
-    cp $DEVDIR/etcsrc/flair.app.cfg $SCOTDIR/etc/flair.app.cfg
-else
-    echo "= flair.app.cfg already present, skipping..."
-fi
-
-if [[ ! -e $SCOTDIR/etc/flair_logger.cfg ]]; then
-    cp $DEVDIR/etcsrc/flair_logger.cfg $SCOTDIR/etc/flair_logger.cfg
-else
-    echo "= flair_logger.cfg already present, skipping..."
-fi
+done
 
 # private configs to overwrite default configs
 
@@ -966,11 +936,16 @@ if [ "$MONGOADMIN" == "0" ] || [ "$RESETDB" == "yes" ]; then
 fi
 
 if [[ $INSTMODE != "SCOTONLY" ]]; then
-    cpanm -f MooseX::Role::MongoDB # to get arround deprecation warnings, remove this once upstream pull request is accepted
-    cpanm -f Meerkat
+    $CPANM -f MooseX::Role::MongoDB # to get arround deprecation warnings, remove this once upstream pull request is accepted
+    $CPANM -f Meerkat
     echo "+ installing current Courriel"
-    cpanm Courriel
-    cpanm -f AnyEvent::ForkManager
+    $CPANM Courriel
+    $CPANM -f AnyEvent::ForkManager
+fi
+
+if [ $OSVERSION == "16" ]; then 
+    echo "+ retrying elasticsearch start"
+    systemctl restart elasticsearch.service
 fi
 
 echo "+ copying documentation to public dir"
