@@ -654,12 +654,12 @@ var ReferencesBody = React.createClass({
                 var entryResult = result.records;
                 var summary = false;
                 for (i=0; i < entryResult.length; i++) {
-                    if (entryResult[i].summary == 1) {
+                    if (entryResult[i].class == 'summary') {
                         summary = true;
                         if (this.isMounted) {
-                            this.setState({showSummary:true,summaryData:entryResult[i].body_flair})
+                            this.setState({showSummary:true,summaryData:entryResult[i].body})
                             $('#entityTable' + this.props.data.id).qtip({ 
-                                content: {text: $(entryResult[i].body_flair)}, 
+                                content: {text: $(entryResult[i].body)}, 
                                 style: { classes: 'qtip-scot' }, 
                                 hide: 'unfocus', 
                                 position: { my: 'top left', at: 'right', target: $('#entitySummaryRow'+this.props.data.id)},//[position.left,position.top] }, 

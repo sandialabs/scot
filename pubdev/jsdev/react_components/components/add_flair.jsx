@@ -167,6 +167,8 @@ var AddFlair = {
         }.bind(this),1000);
     },
 }
+
+/* Placed in selectedHeader and selectedEntry accordingly
 var Watcher = {  
     pentry: function(ifr,flairToolbarToggle,type,linkWarningToggle,id) {
         if(type != 'alertgroup') {  
@@ -256,7 +258,7 @@ function infopop(entityid, entityvalue, flairToolbarToggle) {
 }
 function linkWarningPopup(url,linkWarningToggle) {
     linkWarningToggle(url);
-}
+}*/
 function abbreviateNumber(num, fixed) {
     if (num === null) { return null; } // terminate early
     if (num === 0) { return '0'; } // terminate early
@@ -268,4 +270,6 @@ function abbreviateNumber(num, fixed) {
         e = d + ['', 'K', 'M', 'B', 'T'][k]; // append power
     return e;
 }
-module.exports = {AddFlair, Watcher}
+
+//module.exports = {AddFlair, Watcher}
+module.exports = {AddFlair}
