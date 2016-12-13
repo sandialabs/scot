@@ -1150,6 +1150,8 @@ var AddFlair = {
         }.bind(this),1000);
     },
 }
+
+/* Placed in selectedHeader and selectedEntry accordingly
 var Watcher = {  
     pentry: function(ifr,flairToolbarToggle,type,linkWarningToggle,id) {
         if(type != 'alertgroup') {  
@@ -1239,7 +1241,7 @@ function infopop(entityid, entityvalue, flairToolbarToggle) {
 }
 function linkWarningPopup(url,linkWarningToggle) {
     linkWarningToggle(url);
-}
+}*/
 function abbreviateNumber(num, fixed) {
     if (num === null) { return null; } // terminate early
     if (num === 0) { return '0'; } // terminate early
@@ -1251,7 +1253,9 @@ function abbreviateNumber(num, fixed) {
         e = d + ['', 'K', 'M', 'B', 'T'][k]; // append power
     return e;
 }
-module.exports = {AddFlair, Watcher}
+
+//module.exports = {AddFlair, Watcher}
+module.exports = {AddFlair}
 
 },{}],8:[function(require,module,exports){
 var React = require('react');
@@ -4361,48 +4365,6 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             this.errorToggle(_message);
         }
     },
-    /*granular updates -- to be implemented later 
-    updatedType: function() {
-        this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
-            var eventResult = result;
-            this.setState({showEventData:true, eventLoaded:true, headerData:eventResult})
-        }.bind(this)); 
-    },
-    updatedSource: function() {
-       this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
-            var sourceResult = result.records;
-            this.setState({showSource:true, sourceLoaded:true, sourceData:sourceResult})
-       }.bind(this)); 
-    },
-    updatedTag: function() {
-        this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
-            var tagResult = result.records;
-            this.setState({showTag:true, tagLoaded:true, tagData:tagResult});
-        }.bind(this));
-    },
-    updatedEntry: function() {
-        var entryType = 'entry';
-        if (this.props.type == 'alertgroup') {entryType = 'alert'};
-        this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, function(result) {
-            var entryResult = result.records;
-            this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult}) 
-        }.bind(this)); 
-        this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
-            var entityResult = result.records;
-            this.setState({showEntityData:true, entityLoaded:true, entityData:entityResult})
-            var waitForEntry = {
-                waitEntry: function() {
-                    if(this.state.entryLoaded == false && alertgroupforentity === false){
-                        setTimeout(waitForEntry.waitEntry,50);
-                    } else {
-                        alertgroupforentity = false;
-                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
-                    }
-                }.bind(this)
-            };
-            waitForEntry.waitEntry();
-        }.bind(this));
-     },*/
     errorToggle: function(string) {
         if (this.state.errorDisplay == false) {
             this.setState({notificationMessage:string,notificationType:'error',errorDisplay:true})
@@ -4411,11 +4373,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         }
     },
     flairToolbarToggle: function(id,value,type){
-        //if (this.state.flairToolbar == false) {
             this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
-        //} else {
-        //    this.setState({flairToolbar:false})
-        //}
     },
     flairToolbarOff: function() {
         if (this.isMounted()) {
@@ -7796,12 +7754,12 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
                 var entryResult = result.records;
                 var summary = false;
                 for (i=0; i < entryResult.length; i++) {
-                    if (entryResult[i].summary == 1) {
+                    if (entryResult[i].class == 'summary') {
                         summary = true;
                         if (this.isMounted) {
-                            this.setState({showSummary:true,summaryData:entryResult[i].body_flair})
+                            this.setState({showSummary:true,summaryData:entryResult[i].body})
                             $('#entityTable' + this.props.data.id).qtip({ 
-                                content: {text: $(entryResult[i].body_flair)}, 
+                                content: {text: $(entryResult[i].body)}, 
                                 style: { classes: 'qtip-scot' }, 
                                 hide: 'unfocus', 
                                 position: { my: 'top left', at: 'right', target: $('#entitySummaryRow'+this.props.data.id)},//[position.left,position.top] }, 
