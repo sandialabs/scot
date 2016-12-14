@@ -1150,6 +1150,8 @@ var AddFlair = {
         }.bind(this),1000);
     },
 }
+
+/* Placed in selectedHeader and selectedEntry accordingly
 var Watcher = {  
     pentry: function(ifr,flairToolbarToggle,type,linkWarningToggle,id) {
         if(type != 'alertgroup') {  
@@ -1239,7 +1241,7 @@ function infopop(entityid, entityvalue, flairToolbarToggle) {
 }
 function linkWarningPopup(url,linkWarningToggle) {
     linkWarningToggle(url);
-}
+}*/
 function abbreviateNumber(num, fixed) {
     if (num === null) { return null; } // terminate early
     if (num === 0) { return '0'; } // terminate early
@@ -1251,7 +1253,9 @@ function abbreviateNumber(num, fixed) {
         e = d + ['', 'K', 'M', 'B', 'T'][k]; // append power
     return e;
 }
-module.exports = {AddFlair, Watcher}
+
+//module.exports = {AddFlair, Watcher}
+module.exports = {AddFlair}
 
 },{}],8:[function(require,module,exports){
 var React = require('react');
@@ -4361,48 +4365,6 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             this.errorToggle(_message);
         }
     },
-    /*granular updates -- to be implemented later 
-    updatedType: function() {
-        this.eventRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id, function(result) {
-            var eventResult = result;
-            this.setState({showEventData:true, eventLoaded:true, headerData:eventResult})
-        }.bind(this)); 
-    },
-    updatedSource: function() {
-       this.sourceRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/source', function(result) {
-            var sourceResult = result.records;
-            this.setState({showSource:true, sourceLoaded:true, sourceData:sourceResult})
-       }.bind(this)); 
-    },
-    updatedTag: function() {
-        this.tagRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/tag', function(result) {
-            var tagResult = result.records;
-            this.setState({showTag:true, tagLoaded:true, tagData:tagResult});
-        }.bind(this));
-    },
-    updatedEntry: function() {
-        var entryType = 'entry';
-        if (this.props.type == 'alertgroup') {entryType = 'alert'};
-        this.entryRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, function(result) {
-            var entryResult = result.records;
-            this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult}) 
-        }.bind(this)); 
-        this.entityRequest = $.get('scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity', function(result) {
-            var entityResult = result.records;
-            this.setState({showEntityData:true, entityLoaded:true, entityData:entityResult})
-            var waitForEntry = {
-                waitEntry: function() {
-                    if(this.state.entryLoaded == false && alertgroupforentity === false){
-                        setTimeout(waitForEntry.waitEntry,50);
-                    } else {
-                        alertgroupforentity = false;
-                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
-                    }
-                }.bind(this)
-            };
-            waitForEntry.waitEntry();
-        }.bind(this));
-     },*/
     errorToggle: function(string) {
         if (this.state.errorDisplay == false) {
             this.setState({notificationMessage:string,notificationType:'error',errorDisplay:true})
@@ -4411,11 +4373,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         }
     },
     flairToolbarToggle: function(id,value,type){
-        //if (this.state.flairToolbar == false) {
             this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
-        //} else {
-        //    this.setState({flairToolbar:false})
-        //}
     },
     flairToolbarOff: function() {
         if (this.isMounted()) {
@@ -5804,7 +5762,7 @@ module.exports = React.createClass({displayName: "exports",
                 array = this.props.id
                 //scrolled = $('.container-fluid2').scrollTop()    
                 if(this.state.viewMode == 'landscape'){
-                    height = '300px'
+                    height = '25vh'
                 }
             }
         }
@@ -5983,7 +5941,7 @@ module.exports = React.createClass({displayName: "exports",
     },
     launchEvent: function(type,rowid,entryid){
         if(this.state.display == 'block'){
-            this.state.scrollheight = '300px'
+            this.state.scrollheight = '25vh'
         }
         this.setState({alertPreSelectedId: 0, scrollheight: this.state.scrollheight, id:rowid, showSelectedContainer: true, queryType:type, entryid:entryid})
 
@@ -6087,7 +6045,7 @@ module.exports = React.createClass({displayName: "exports",
         if(this.state.id.length != 0 && this.state.showSelectedContainer == true  && this.state.listViewContainerDisplay != 'none' ){
             this.setState({listViewContainerDisplay: 'none', scrollheight:'0px'})
         } else {
-            this.setState({listViewContainerDisplay: null, scrollheight:'300px'})
+            this.setState({listViewContainerDisplay: null, scrollheight:'25vh'})
         }
         /*var t2 = document.getElementById('fluid2')
         $(t2).resize(function(){
@@ -7190,7 +7148,7 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
                         url: 'scot/api/v2/' + this.props.entitytype + '/' + entityid 
                     }).success(function(result) {
                         //this.setState({entityData:result})
-                        var newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype, valueClicked:valueClicked}
+                        var newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype, valueClicked:result.value}
                         currentTabArray.push(newTab);
                         if (this.isMounted()) {
                             var entityidsarray = [];
@@ -7206,7 +7164,7 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
                 url: 'scot/api/v2/' + this.props.entitytype + '/' + this.state.entityid
             }).success(function(result) {
                 //this.setState({entityData:result})
-                var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:valueClicked}
+                var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:result.value}
                 currentTabArray.push(newTab);
                 if (this.isMounted()) {
                     var entityidsarray = [];
@@ -7365,7 +7323,11 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
             if (this.state.tabs[i].entitytype == 'guide') {
                 title = 'guide'
             } else {
-                title = this.state.tabs[i].valueClicked.slice(0,15);
+                if (this.state.tabs[i].valueClicked != undefined) {
+                    title = this.state.tabs[i].valueClicked.slice(0,15);
+                } else {
+                    title = '';
+                }
             }
             tabsArr.push(React.createElement(Tab, {className: "tab-content", eventKey: this.state.tabs[i].entityid, title: title}, React.createElement(TabContents, {data: this.state.tabs[i].data, type: this.props.type, id: this.props.id, entityid: this.state.tabs[i].entityid, entitytype: this.state.tabs[i].entitytype, valueClicked: this.state.tabs[i].valueClicked, i: z, key: z, errorToggle: this.props.errorToggle})))
         }
@@ -7398,7 +7360,7 @@ var TabContents = React.createClass({displayName: "TabContents",
                     React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
                         React.createElement("h4", {id: "myModalLabel"}, this.props.data != null ? React.createElement(EntityValue, {value: this.props.valueClicked}) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading..."))
                     ), 
-                    React.createElement("div", {style: {height:'100%',display:'flex', flex:'1 1 auto', margin:'10px', flexFlow:'inherit', minHeight:'1px'}}, 
+                    React.createElement("div", {style: {height:'100%',display:'flex', flex:'1 1 auto', marginLeft:'10px', flexFlow:'inherit', minHeight:'1px'}}, 
                     this.props.data != null ? React.createElement(EntityBody, {data: this.props.data, entityid: this.props.entityid, type: this.props.type, id: this.props.id, errorToggle: this.props.errorToggle}) : React.createElement("div", null, "Loading...")
                     )
                 )
@@ -7410,7 +7372,7 @@ var TabContents = React.createClass({displayName: "TabContents",
                     React.createElement("div", {style: {flex: '0 1 auto',marginLeft: '10px'}}, 
                         React.createElement("a", {href: guideurl, target: "_blank"}, React.createElement("h4", {id: "myModalLabel"}, this.props.data != null ? React.createElement("span", null, React.createElement("span", null, React.createElement(EntityValue, {value: this.props.entityid})), React.createElement("div", null, React.createElement(EntityValue, {value: this.props.data.applies_to}))) : React.createElement("div", {style: {display:'inline-flex',position:'relative'}}, "Loading...")))
                     ), 
-                    React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto', margin:'10px'}}, 
+                    React.createElement("div", {style: {overflow:'auto',flex:'1 1 auto', marginLeft:'10px'}}, 
                     this.props.data != null ? React.createElement(GuideBody, {entityid: this.props.entityid, entitytype: this.props.entitytype}) : React.createElement("div", null, "Loading...")
                     )
                 )
@@ -7475,7 +7437,7 @@ var EntityBody = React.createClass({displayName: "EntityBody",
                         entityEnrichmentDataArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, style: {overflow:'auto'}, title: prop}, React.createElement(EntityEnrichmentButtons, {dataSource: entityData[prop], type: this.props.type, id: this.props.id, errorToggle: this.props.errorToggle})));
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'link') {
-                        entityEnrichmentLinkArr.push(React.createElement(Button, {bsSize: "small", target: "_blank", href: entityData[prop].data.url}, entityData[prop].data.title))
+                        entityEnrichmentLinkArr.push(React.createElement(Button, {bsSize: "xsmall", target: "_blank", href: entityData[prop].data.url}, entityData[prop].data.title))
                         enrichmentEventKey++;
                     }
                 }
@@ -7488,8 +7450,8 @@ var EntityBody = React.createClass({displayName: "EntityBody",
         var href = '/#/entity/'+this.props.entityid;
         return (
             React.createElement(Tabs, {className: "tab-content", defaultActiveKey: 1, bsStyle: "tabs"}, 
-                React.createElement(Tab, {eventKey: 1, style: {overflow:'auto'}, title: this.state.appearances}, entityEnrichmentLinkArr, React.createElement("span", null, React.createElement("br", null), React.createElement("b", null, "Appears: ", this.state.appearances, " times")), this.state.showFullEntityButton == true ? React.createElement("span", {style: {paddingLeft:'5px'}}, React.createElement("a", {href: href, style: {color:'#c400ff'}, target: "_blank"}, "Large amount of references. Click to view the whole entity")) : null, React.createElement("br", null), React.createElement(EntityReferences, {entityid: this.props.entityid, updateAppearances: this.updateAppearances, type: this.props.type, showFullEntityButton: this.showFullEntityButton}), React.createElement("br", null)), 
-                React.createElement(Tab, {eventKey: 2, style: {overflow:'auto'}, title: "Entry"}, React.createElement(Button, {bsSize: "small", onClick: this.entryToggle}, "Add Entry"), React.createElement("br", null), 
+                React.createElement(Tab, {eventKey: 1, style: {overflow:'auto'}, title: this.state.appearances}, entityEnrichmentLinkArr, React.createElement("span", null, React.createElement("br", null), React.createElement("b", null, "Appears: ", this.state.appearances, " times")), this.state.showFullEntityButton == true ? React.createElement("span", {style: {paddingLeft:'5px'}}, React.createElement("a", {href: href, style: {color:'#c400ff'}, target: "_blank"}, "List truncated due to large amount of references. Click to view the whole entity")) : null, React.createElement("br", null), React.createElement(EntityReferences, {entityid: this.props.entityid, updateAppearances: this.updateAppearances, type: this.props.type, showFullEntityButton: this.showFullEntityButton}), React.createElement("br", null)), 
+                React.createElement(Tab, {eventKey: 2, style: {overflow:'auto'}, title: "Entry"}, React.createElement(Button, {bsSize: "xsmall", onClick: this.entryToggle}, "Add Entry"), React.createElement("br", null), 
                 this.state.entryToolbar ? React.createElement(AddEntry, {title: 'Add Entry', type: "entity", targetid: this.props.entityid, id: 'add_entry', addedentry: this.entryToggle, errorToggle: this.props.errorToggle}) : null, " ", React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid})), 
                 entityEnrichmentGeoArr, 
                 entityEnrichmentDataArr
@@ -7534,8 +7496,8 @@ var GeoView = React.createClass({displayName: "GeoView",
         var copy = copyArr.join('');
         return(
             React.createElement("div", null, 
-                React.createElement(Button, {bsSize: "small", onClick: this.copyToEntity}, "Copy to ", React.createElement("b", null, "entity"), " entry"), 
-                this.props.type != 'alertgroup' ? React.createElement(Button, {bsSize: "small", onClick: this.copyToEntry}, "Copy to ", React.createElement("b", null, this.props.type, " ", this.props.id), " entry") : null, 
+                React.createElement(Button, {bsSize: "xsmall", onClick: this.copyToEntity}, "Copy to ", React.createElement("b", null, "entity"), " entry"), 
+                this.props.type != 'alertgroup' ? React.createElement(Button, {bsSize: "xsmall", onClick: this.copyToEntry}, "Copy to ", React.createElement("b", null, this.props.type, " ", this.props.id), " entry") : null, 
                 this.state.copyToEntryToolbar ? React.createElement(AddEntry, {title: "CopyToEntry", type: this.props.type, targetid: this.props.id, id: this.props.id, addedentry: this.copyToEntry, content: copy, errorToggle: this.props.errorToggle}) : null, 
                 this.state.copyToEntityToolbar ? React.createElement(AddEntry, {title: "CopyToEntry", type: 'entity', targetid: this.props.entityData.id, id: this.props.entityData.id, addedentry: this.copyToEntity, content: copy, errorToggle: this.props.errorToggle}) : null, 
                 React.createElement("div", {className: "entityTableWrapper"}, 
@@ -7792,12 +7754,12 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
                 var entryResult = result.records;
                 var summary = false;
                 for (i=0; i < entryResult.length; i++) {
-                    if (entryResult[i].summary == 1) {
+                    if (entryResult[i].class == 'summary') {
                         summary = true;
                         if (this.isMounted) {
-                            this.setState({showSummary:true,summaryData:entryResult[i].body_flair})
+                            this.setState({showSummary:true,summaryData:entryResult[i].body})
                             $('#entityTable' + this.props.data.id).qtip({ 
-                                content: {text: $(entryResult[i].body_flair)}, 
+                                content: {text: $(entryResult[i].body)}, 
                                 style: { classes: 'qtip-scot' }, 
                                 hide: 'unfocus', 
                                 position: { my: 'top left', at: 'right', target: $('#entitySummaryRow'+this.props.data.id)},//[position.left,position.top] }, 
@@ -7893,7 +7855,7 @@ var GuideBody = React.createClass ({displayName: "GuideBody",
         var SelectedEntry = require('../detail/selected_entry.jsx');
         return (
             React.createElement(Tabs, {className: "tab-content", defaultActiveKey: 1, bsStyle: "pills"}, 
-                React.createElement(Tab, {eventKey: 1, style: {overflow:'auto'}}, React.createElement(Button, {bsSize: "small", onClick: this.entryToggle}, "Add Entry"), React.createElement("br", null), 
+                React.createElement(Tab, {eventKey: 1, style: {overflow:'auto'}}, React.createElement(Button, {bsSize: "xsmall", onClick: this.entryToggle}, "Add Entry"), React.createElement("br", null), 
                 this.state.entryToolbar ? React.createElement(AddEntry, {title: 'Add Entry', type: "guide", targetid: this.props.entityid, id: 'add_entry', addedentry: this.entryToggle, errorToggle: this.props.errorToggle}) : null, " ", React.createElement(SelectedEntry, {type: 'guide', id: this.props.entityid, isPopUp: 1}))
             )
         )
