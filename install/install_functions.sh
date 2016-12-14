@@ -37,7 +37,7 @@ function set_defaults () {
     SKIPNODE="no"               # skip the node/npm/grunt stuff
 }
 
-sub process_command_line () {
+function process_command_line () {
     echo -e "${yellow}~~~~~ Reading Command Line Args ~~~~~~~${nc}"
     while getopts "adigmsrflqA:F:J:wNb:" opt; do
         case $opt in
@@ -237,6 +237,11 @@ function configure_accounts {
     if [ $SCOT_USER -ne 1 ]; then
         echo -e "${green}+ adding scot user ${nc}"
         useradd -c "SCOT User" -d $SCOTDIR -M -s /bin/bash scot
+        if [[ $OS == "Ubuntu" ]]; then
+            usermod -a -G scot www-data
+        else
+            usermod -a -G scot apache
+        fi
     fi
 
 }
@@ -254,6 +259,7 @@ function install_packages {
             echo "${green}+ Refreshing APT DB Repo"
             apt-get-update
             if [ $? != 0 ];
+            then
                 echo "${red}! Error refreshing the Apt db repository!"
                 exit 2;
             fi
@@ -278,11 +284,96 @@ function install_packages {
 }
 
 function install_perl_modules {
+    echo "${red}++++++++++ PERL module Installation +++++++++++${nc}"
+    echo "${green}= installing pre-compiled package perl libs${nc}"
+    if [[ $OS == "Ubuntu" ]]; then
+        PREPACKFILES=$DEDVIR/install/perl_debs_list
+    else
+        PREPACKFILES=$DEVDIR/install/perl_yum_list
+    fi
 
+    for $prepack in `cat $PREPACKFILES`
+    do
+        echo -e "${green}+ adding $prepack ${nc}"
+        if [[ $OS == "Ubuntu" ]]; then
+           apt-get install $prepack -y
+        else
+            yum -y install $prepack
+        fi
+    done
+
+    echo -e "${green} Updating CPANMinus ${nc}"
+
+    echo -e "${red} removing old cpanm ${nc}"
+    if [[ $OS == "Ubuntu" ]]; then
+        apt-get remove cpanminus -y
+    else
+        yum -y remove perl-App-cpanminus
+    fi
+
+
+    CPANM="/usr/local/bin/cpanm"
+
+    if [[ ! -e $CPANM ]]; 
+    then
+        echo -e "${green} installing latest cpanminus ${nc}"
+        curl -L http://cpanmin.us | perl - --sudo App::cpanminus
+
+        if [[ ! -e $CPANM ]]; 
+        then
+            echo -e "${red}!!!! $CPANM not found!  SCOT will not install properly without $CPANM"
+            echo    "!!!! As root try: curl -L http://cpanmin.us | perl - --sudo App::cpanminus "
+            echo -e "!!!! again. Once sucessfully installed restart scot install {$nc} "
+            exit 3
+        fi
+    fi
+
+    for modules in `cat $DEVDIR/install/perl_modules_list`
+    do
+        echo -e "${green} 1st Attempt to install $module"
+        $CPANM $module
+        if [ $? == 1]; then
+            echo -e "${red} 1st attemp to install $module failed will retry once more ${nc}"
+            RETRY="$RETRY $module"
+        fi
+        echo ""
+    done
+
+    for module in $RETRY
+    do
+        echo -e "${green} 2nd Attempt to install $module"
+        $CPANM $module
+        if [ $? == 1]; then
+            echo -e "${red} 2nd attempt to install $module failed.  You are likely to "
+            echo -e " encouter problems with SCOT until this is fixed. ${nc}"
+            FAILED="$FAILED $module"
+        fi
+        echo ""
+    done
+
+    echo -e "${red} ============ FAILED PERL MODULES ================== ";
+    for module in $FAILED
+    do
+        echo "     $module"
+    done
+    echo -e "${nc} "
 }
 
 function install_nodejs {
-
+    if [[ $OS == "Ubuntu" ]]
+    then
+        if [ $SKIPNODE == "no" ]; then
+            echo "+ installing nodejs"
+            curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
+            apt-get install -y nodejs
+        fi
+    else
+        if [ $SKIPNODE == "no" ]; then
+            echo "+ installing nodejs"
+            curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
+            yum -y install nodejs
+        fi
+    fi
 }
 
 function ensure_mongo_apt_entry {
@@ -292,6 +383,7 @@ function ensure_mongo_apt_entry {
         echo "= mongo entry in /etc/apt/sources.list already present"
     else
         if grep --quiet 10gen /etc/apt/sources.list
+        then
             echo "= 10gen mongo repo already present in /etc/apt/sources.list"
         else
             echo "+ adding Mongo 10Gen repo to /etc/apt/sources.list"
@@ -441,12 +533,12 @@ function install_activemq {
     fi
 }
 
-function get-rev-proxy-config {
+function get-ubuntu-rev-proxy-config {
     REVPROXY=$DEVDIR/etcsrc/scot-revproxy-$MYHOSTNAME
     local SASRC="scot-revproxy-ubuntu-remoteuser.conf"
     if [[ ! -e $REVPROXY ]]
     then
-        echo -e "${red}- custom scot configuration for $MYHOSTNAME not found, using default"
+        echo -e "${red}- custom scot configuration for $MYHOSTNAME not found, using default ${nc}"
         if [[ $AUTHMODE == "RemoteUser" ]];
         then
             if [[ -e $PRIVATE_SCOT_MODULE/etc/$SASRC ]]
@@ -465,6 +557,91 @@ function get-rev-proxy-config {
             fi
         fi
     fi
+    echo "= REVPROXY set to $REVPROXY"
+}
+
+function get-cent-7-proxy-config {
+    local SARC="scot-revproxy-rh-7-remoteuser.conf"
+    if [[ $AUTHMODE == "RemoteUser" ]];
+    then
+        if [[ -e $PRIVATE_SCOT_MODULES/etc/$SARC ]]
+        then
+            REVPROXY=$PRIVATE_SCOT_MODULES/etc/$SARC
+        else 
+            REVPROXY=$DEVDIR/etcsrc/apche2/scot-revproxy-rh-7-remoteuser.conf
+        fi
+    else
+        if [[ -e $PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-7-aux.conf ]];
+        then
+            REVPROXY=$PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-7-aux.conf
+        else
+            REVPROXY=$DEVDIR/etcsrc/apache2/scot-revproxy-rh-7-aux.conf
+        fi
+    fi
+    echo "= REVPROXY set to $REVPROXY"
+}
+
+function get-cent-6-proxy-config {
+    local SARC="scot-revproxy-rh-remoteuser.conf"
+    if [[ $AUTHMODE == "RemoteUser" ]];
+    then
+        if [[ -e $PRIVATE_SCOT_MODULES/etc/$SARC ]]
+        then
+            REVPROXY=$PRIVATE_SCOT_MODULES/etc/$SARC
+        else 
+            REVPROXY=$DEVDIR/etcsrc/apche2/scot-revproxy-rh-remoteuser.conf
+        fi
+    else
+        if [[ -e $PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-aux.conf ]];
+        then
+            REVPROXY=$PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-aux.conf
+        else
+            REVPROXY=$DEVDIR/etcsrc/apache2/scot-revproxy-rh-aux.conf
+        fi
+    fi
+    echo "= REVPROXY set to $REVPROXY"
+}
+
+function get-cent-rev-proxy-config {
+    REVPROXY=$DEVDIR/etcsrc/scot-revproxy-$MYHOSTNAME
+    if [[ ! -e $REVPROXY ]];
+    then
+        echo -e "${red}- custom scot config for $MYHOSTNAME not found using default ${nc}"
+        if [[ $OSVERSION == "7" ]];
+        then
+            get-cent-7-proxy-config
+        else
+            get-cent-6-proxy-config
+        fi
+    fi
+}
+
+function generate_ssl {
+    echo -e "${green}+ creating SSL certificates (CHANGE these ASAP)"
+    SSLDIR="/etc/apache2/ssl"
+    if [[ ! -f $SSLDIR/scot.key ]]; then
+        mkdir -p $SSLDIR/ssl/
+        openssl genrsa 2048 > $SSLDIR/scot.key
+        openssl req -new -key $SSLDIR/scot.key \
+                    -out /tmp/scot.csr \
+                    -subj '/CN=localhost/O=SCOT Default Cert/C=US'
+        openssl x509 -req -days 36530 \
+                     -in /tmp/scot.csr
+                     -signkey $SSLDIR/scot.key \
+                     -out $SSLDIR/scot.crt
+    fi
+}
+
+function update_scot_apache_conf {
+    local CONFDIR=$CENT_HTTP_CONF_DIR
+    if [[ $OS == "Ubuntu" ]];
+    then
+        CONFDIR=$SITESAVAILABLE
+    fi
+    echo -e "${yellow}~ modifying scot.conf to local defaults ${nc}"
+    sed -i 's=/scot/document/root='$SCOTROOT'/public=g' $CONFDIR/scot.conf
+    sed -i 's=localport='$SCOTPORT'=g' $CONFDIR/scot.conf
+    sed -i 's=scot\.server\.tld='$MYHOSTNAME'=g' $CONFDIR/scot.conf
 }
 
 function ubuntu-apache-configure {
@@ -472,7 +649,7 @@ function ubuntu-apache-configure {
     SITESENABLED="$ACD/sites-enabled"
     SITESAVAILABLE="$ACD/sites-available"
 
-    if [[ $REFRESHAPACHECONF == "yes"]]
+    if [[ $REFRESHAPACHECONF == "yes" ]]
     then
         rm -f $SITESENABLED/scot.conf
         rm -f $SITESAVAILABLE/scot.conf
@@ -493,12 +670,41 @@ function ubuntu-apache-configure {
     if [[ ! -e $SITESAVAILABLE/scot.conf ]] 
     then
         echo -e "${yellow}+ adding scot apache configuration ${nc}"
-        get-rev-proxy-config
+        get-ubuntu-rev-proxy-config
+    fi
+    cp $REVPROXY $SITESAVAILABLE/scot.conf
+    ln -sf $SITESAVAILABLE/scot.conf $SITESENABLED/scot.conf
 
+    update_scot_apache_conf
+    generate_ssl
 }
 
 function cent-apache-configure {
+    echo "+ Enabling apache to do network connections"
+    setsebool -P httpd_can_network_connect 1
 
+    CENT_HTTP_CONF_DIR=/etc/httpd/conf.d
+
+    echo "- Renaming existing conf file in $CENT_HTTP_CONF_DIR"
+
+    for FILE in $CENT_HTTP_CONF_DIR/*.conf
+    do
+        if [[ $FILE != "$CENT_HTTP_CONF_DIR/scot.conf" ]];
+        then
+            mv $FILE $FILE.bak
+        else
+            if [[ $REFRESHAPACHECONF == "YES" ]];
+            then
+                mv $FILE $FILE.bak
+            fi
+        fi
+    done
+    get-cent-rev-proxy-config
+    echo -e "${green}+ copying scot.conf to apache ${nc}"
+    cp $REVPROXY $CENT_HTTP_CONF_DIR/scot.conf
+    
+    update_scot_apache_conf
+    generate_ssl
 }
 
 function configure_apache {
@@ -513,43 +719,345 @@ function configure_apache {
     fi
 }
 
-function configure_geoip {
-
+function copy_documentation {
+    echo "+ installing SCOT docmentation at https://localhost/docs/index.html"
+    cp -r $DEVDIR/docs/build/html/* $SCOTDIR/public/docs
 }
 
+function configure_geoip {
+    if [[ -e $GEODIR/GeoLiteCity.dat ]]; then 
+        if [[ $OVERGEO == "yes" ]]; then
+            local BCKUP=GeoLiteCity.dat.$$
+            echo -e "${red}- overwriting existing GeoLiteCity.dat file (original backed to $BCKUP ${nc}"
+            cp $GEODIR/GeoLiteCity.dat $GEODIR/$BCKUP
+            cp $DEVDIR/etcsrc/GeoLiteCity.dat $GEODIR/GeoLiteCity.dat
+        fi
+    else 
+        echo -e "${green}+ copying GeoLiteCity.dat file ${nc}"
+        cp $DEVDIR/etcsrc/GeoLiteCity.dat $GEODIR/GeoLiteCity.dat
+        chmod +r $GEODIR/GeoLiteCity.dat
+    fi
+}
+
+function configure_ubuntu_startup {
+    if [[ $OSVERSION == "14" ]]; then
+        update-rc.d elasticsearch defaults
+        update-rc.d scot defaults
+        update-rc.d activemq defaults
+        update-rc.d scepd defaults
+        update-rc.d scfd defaults
+    else
+        SYSDSERVICES='elasticsearch.service scot.service scfd.service scepd.service mongod.service'
+        for service in $SYSDSERVICES
+        do
+            if [[ ! -e /etc/systemd/system/$service ]];
+            then
+                cp $DEVDIR/etcsrc/systemd/$service /etc/systemd/system/$service
+            fi
+            systemctl enable $service
+            # systemctl restart $service do this in start services
+        done
+    fi
+}
+
+function configure_cent_startup {
+    echo "+ adding startup scripts"
+    chkconfig --add elasticsearch
+    chkconfig --add scot
+    chkconfig --add activemq
+    chkconfig --add mongod
+    chkconfig --add scepd
+    chkconfig --add scfd
+
+    echo "+ Allowing Firewalld to pass web traffic"
+    firewall-cmd --permanent --add-port=80/tcp
+    firewall-cmd --permanent --add-port=443/tcp
+    firewall-cmd --reload
+}
 
 function configure_startup {
+    if [[ ! -e /etc/init.d/scot ]]; then
+        echo -e "${yellow} adding /etc/init.d/scot ${nc}"
+        cp $DEVDIR/etcsrc/init/scot-init /etc/init.d/scot
+        chmod +x /etc/init.d/scot
+        sed -i 's=/instdir='$SCOTDIR'=g' /etc/init.d/scot
+    fi
 
+    if [ ! -e /etc/init.d/scfd ]; then
+        echo -e "${red} Missing INIT for SCot Flair Daemon ${NC}"
+        echo -e "${yellow}+ adding /etc/init.d/scfd...${NC}"
+        /opt/scot/bin/scfd.pl get_init_file > /etc/init.d/scfd
+        chmod +x /etc/init.d/scfd
+    fi
+
+    if [ ! -e /etc/init.d/scepd ]; then
+        echo -e "${red} Missing INIT for SCot ES Push Daemon ${NC}"
+        echo -e "${yellow}+ adding /etc/init.d/scepd...${NC}"
+        /opt/scot/bin/scepd.pl get_init_file > /etc/init.d/scepd
+        chmod +x /etc/init.d/scepd
+    fi
+
+    if [[ $OS == "Ubuntu" ]]; then
+        configure_ubuntu_startup
+    else 
+        configure_cent_startup
+    fi
 }
 
 function configure_filestore {
+    echo -e "${yellow} Checking SCOT filestore $FILESTORE ${nc}"
 
+    if [ "$SFILESDEL" == "yes" ]; then
+        echo -e "${red}- removing existing filestore${nc}"
+        if [ "$FILESTORE" != "/" ] && [ "$FILESTORE" != "/usr" ]
+        then
+            # try to prevent major catastrophe!
+            echo " WARNING: You are about to delete $FILESTORE.  ARE YOU SURE? "
+            read -n 1 -p "Enter y to proceed" NUKEIT
+            if [[ $NUKEIT == "y" ]];
+            then
+                rm -rf  $FILESTORE
+            else
+                echo -e "${green} $FILESTORE deletion aborted.${nc}"
+            fi
+        else
+            echo -e "${RED} Someone set filestore to /, so deletion skipped.${nc}"
+        fi
+    fi
+
+    if [ -d $FILESTORE ]; then
+        echo "= filestore directory exists";
+    else
+        echo "+ creating new filestore directory"
+        mkdir -p $FILESTORE
+    fi
+
+    echo "= ensuring proper ownership and permissions of $FILESTORE"
+    chown scot $FILESTORE
+    chgrp scot $FILESTORE
+    chmod g+w $FILESTORE
 }
 
 function configure_backup {
-
+    if [ -d $BACKDIR ]; then
+        echo "= backup directory $BACKDIR exists"
+    else 
+        echo "+ creating backup directory $BACKDIR "
+        mkdir -p $BACKUPDIR
+        mkdir -p $BACKUPDIR/mongo
+        mkdir -p $BACKUPDIR/elastic
+        chown -R scot:scot $BACKUPDIR
+        chown -R elasticsearch:elasticsearch $BACKUPDIR/elastic
+    fi
 }
 
 function install_scot {
+    if [ "$DELDIR" == "true" ]; then
+        echo -e "${red}- removing target installation directory $SCOTDIR ${NC}"
+        rm -rf $SCOTDIR
+    fi
+
+    if [ ! -d $SCOTDIR ]; then
+        echo -e "+ creating $SCOTDIR";
+        mkdir -p $SCOTDIR
+        chown scot:scot $SCOTDIR
+        chmod 754 $SCOTDIR
+    fi
+
+    chown -R scot.scot $SCOTDIR
+    chmod -R 755 $SCOTDIR/bin
 
 }
 
 function configure_scot {
+    if [[ $AUTHMODE == "Remoteuser" ]]; then
+        cp $DEVDIR/etcsrc/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
+    else 
+        if [[ ! -e $SCOTDIR/etc/scot_env.cfg ]]; then
+            echo "+ copying scot_env.cfg into $SCOTDIR/etc"
+            cp $DEVDIR/etcsrc/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
+        else
+            echo "= scot_env.cfg already present, skipping..."
+        fi
+    fi
 
+    CFGFILES='mongo logger imap activemq enrichments flair.app 
+             flair_logger stretch.app stretch_logger game.app elastic'
+
+    for file in $CFGFILES
+    do
+        CFGDEST="$SCOTDIR/etc/$file.cfg"
+        if [[ -e $CFGDEST ]]; then
+            echo "= $CFGDEST already present, skipping..."
+        else
+            CFGSRC="$DEVDIR/etcsrc/$file.cfg"
+            echo "+ copying $CFGSRC to $CFGDEST"
+            cp $CFGSRC $CFGDEST
+        fi
+    done
 }
 
 function install_private {
-
+    if [ -d "$PRIVATE_SCOT_MODULES" ]; then
+        echo "Private SCOT modules and config directory exist.  Installing..."
+        . $PRIVATE_SCOT_MODULES/install.sh
+    fi
 }
 
-funtion configure_logging {
+function configure_logging {
+    if [ ! -d $LOGDIR ]; then
+        echo "+ creating Log dir $LOGDIR"
+        mkdir -p $LOGDIR
+    fi
 
+    echo "= ensuring proper log ownership/permissions"
+    chown scot.scot $LOGDIR
+    chmod g+w $LOGDIR
+
+    if [ "$CLEARLOGS"  == "yes" ]; then
+        echo -e "${red}- clearing any existing scot logs${NC}"
+        for i in $LOGDIR/*; do
+            cat /dev/null > $i
+        done
+    fi
+
+    touch $LOGDIR/scot.log
+    chown scot:scot $LOGDIR/scot.log
+
+    if [ ! -e /etc/logrotate.d/scot ]; then
+        echo "+ installing logrotate policy"
+        cp $DEVDIR/etcsrc/logrotate.scot /etc/logrotate.d/scot
+    else 
+        echo "= logrotate policy in place"
+    fi
+}
+
+function add_failIndexKeyTooLong {
+    if [[ $OSVERSION == "16" ]]; then
+        FIKTL=`grep failIndexKeyTooLong /lib/systemd/system/mongod.service`
+        if [ "$FIKTL" == "" ]; then
+            echo "- SCOT will fail unless failIndexKeyTooLong=false in /lib/systemd/system/mongod.service"
+            echo "+ backing orig, and copying new into place. "
+            ext=`date +%s`
+            cp /lib/systemd/system/mongod.service /tmp/mongod.service.backup.$ext
+            cp $DEVDIR/etcsrc/systemd-mongod.conf /lib/systemd/system/mongod.service
+            cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.$ext
+            cp $DEVDIR/etcsrc/mongod.conf $MDCDIR/mongod.conf
+        else 
+            echo "~ appears that failIndexKeyTooLong is in /lib/systemd/system/mongod.service"
+        fi
+    else 
+        FIKTL=`grep failIndexKeyTooLong /etc/init/mongod.conf`
+        if [ "$FIKTL" == "" ]; then
+            echo "- SCOT will fail unless failIndexKeyTooLong=false in /etc/init/mongod.conf"
+            echo "+ backing orig, and copying new into place. "
+            MDCDIR="/etc/init/"
+            cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.bak
+            cp $DEVDIR/etcsrc/init-mongod.conf $MDCDIR/mongod.conf
+        fi
+    fi
 }
 
 function configure_mongodb {
+    echo "= Configuring MongoDB"
+    echo "= Stopping MongoDB"
+
+    if [[ $OSVERSION == "16" ]]; then
+        systemctl stop mongod.service
+    else
+        service mongod stop
+    fi
+
+    if [[ $OS == "Ubuntu" ]]; then
+        if [[ $OSVERSION == "16" ]]; then
+            MDCDIR="/etc"
+            if [[ $MDBREFRESH == "yes" ]]; then
+                echo "+ backing up mongod.conf"
+                cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.$$
+                cp $DEVDIR/etcsrc/mongod.conf $MDCDIR/mongod.conf
+                add_failIndexKeyTooLong
+            fi 
+        else 
+            MDCDIR="/etc/init"
+            if [[ $MDBREFRESH == "yes" ]]; then
+                echo "+ backing up mongod.conf"
+                cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.$$
+                cp $DEVDIR/etcsrc/init-mongod.conf $MDCDIR/mongod.conf
+                add_failIndexKeyTooLong
+            fi
+        fi
+    else
+        MDCDIR="/etc/init"
+        if [[ $MDBREFRESH == "yes" ]]; then
+            echo "+ backing up mongod.conf"
+            cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.$$
+            cp $DEVDIR/etcsrc/init-mongod.conf $MDCDIR/mongod.conf
+            add_failIndexKeyTooLong
+        fi
+    fi
+
+    if [[ ! -d $DBDIR ]]; then
+        echo "+ creating db dir $DBDIR"
+        mkdir -p $DBDIR
+    fi
+
+    echo "+ ensuring proper ownership of $DBDIR"
+    chown -R mongodb:mongodb $DBDIR
+
+    echo "- clearing /var/log/mongod/monod.log"
+    cat /dev/null > /var/log/mongodb/mongod.log
 
 }
 
-function start_services {
+function start_mongo {
+    if [[ $OS == "Ubuntu" ]]; then
+        if [[ $OSVERSION == "16" ]]; then
+            systemctl restart mongod.service
+        else
+            service mongod restart
+        fi
+    else
+        service mongod start
+    fi
+}
 
+function wait_for_mongo {
+    COUNTER=0
+    grep -q 'waiting for connections on port' /var/log/mongod.log
+    while [[ $? -ne 0 && $COUNTER -lt 50 ]]; do
+        sleep 1
+        let COUNTER+=1
+        echo "~ waiting for mongo to initialize ($COUNTER seconds have passed)"
+        grep -q 'waiting for connections on port' /var/log/mongod.log
+    done
+}
+
+
+function start_services {
+    AMQSTATUS=`ps -ef | grep -v grep | grep activemq`
+    if [[ $? != 0 ]]; then
+        $AMQDIR/bin/activemq start
+    fi
+
+    if [[ $OS == "Ubuntu" ]]; then
+        if [[ $OSVERSION == "16" ]]; then
+            systemctl daemon-reload
+            start_mongo
+            wait_for_mongo
+            systemctl restart scot.service
+            systemctl restart apache2.service
+            systemctl restart scfd.service
+            systemctl restart scepd.service
+        else 
+            /etc/init.d/scot restart
+            service apache2 restart
+            service scfd restart
+            service scepd restart
+        fi
+    else
+        /etc/init.d/scot restart
+        service apache2 restart
+        service scfd restart
+        service scepd restart
+    fi
 }
