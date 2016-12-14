@@ -20,11 +20,10 @@ if [[ $INSTMODE != "SCOTONLY" ]]; then
     install_mongodb
     install_elasticsearch
     install_activemq
-
+    configure_geoip
 fi
 
 configure_apache
-configure_geoip
 configure_startup
 configure_filestore
 configure_backup
