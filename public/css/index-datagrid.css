@@ -985,6 +985,11 @@ html.u-app body * {
   -o-user-select: text;
   user-select: text;
 }
+
+.react-datagrid-pagination-toolbar {
+  padding:0px !important;
+}
+
 .react-datagrid .loadmask {
 
 }
