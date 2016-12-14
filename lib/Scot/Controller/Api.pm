@@ -2242,6 +2242,7 @@ sub do_command {
     $env->mq->send("scot", {
         action  => "message",
         data    => {
+            wall    => ""
         }
     });
 
