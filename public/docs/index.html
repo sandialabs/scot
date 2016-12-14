@@ -17,7 +17,8 @@
         VERSION:     '3.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -25,7 +26,6 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="SCOT 3.5.1 documentation" href="#" />
     <link rel="next" title="License" href="license.html" /> 
   </head>
   <body role="document">
@@ -49,108 +49,134 @@
             
   <div class="section" id="scot-documentation">
 <h1>SCOT Documentation<a class="headerlink" href="#scot-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Thanks for using SCOT!  Please consider joining the scot-users mailing list:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">scot</span><span class="o">-</span><span class="n">users</span><span class="nd">@sandia</span><span class="o">.</span><span class="n">gov</span>
+</pre></div>
+</div>
+<p>Send &#8220;subscribe&#8221; in the subject or message body.</p>
+<p>You can also &#8220;follow&#8221;  us on twitter at ___________________ .</p>
+<p>Regardless, if you are using SCOT, please send us an e-mail at:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">scot</span><span class="o">-</span><span class="n">dev</span><span class="nd">@sandia</span><span class="o">.</span><span class="n">gov</span>
+</pre></div>
+</div>
+<p>and let us know.  It helps us with our management continuing to support SCOT development.</p>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
-<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="license.html"> License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html"> Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html#minimum-system-requirements">Minimum System Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#system-preparation">System Preparation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="install.html#centos-7-only">CENTOS 7 (only)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="install.html#ubuntu-and-cent">Ubuntu and CENT</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#install-sh-options">install.sh Options</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="postinstall.html"> Post-Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="postinstall.html#migration">Migration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="postinstall.html#ssl-certs">SSL Certs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="postinstall.html#configuration-files">Configuration Files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="postinstall.html#scot-env-cfg">scot_env.cfg</a></li>
+<li class="toctree-l3"><a class="reference internal" href="postinstall.html#ldap-cfg">ldap.cfg</a></li>
+<li class="toctree-l3"><a class="reference internal" href="postinstall.html#logger-cfg">logger.cfg</a></li>
+<li class="toctree-l3"><a class="reference internal" href="postinstall.html#mail-app-cfg">mail.app.cfg</a></li>
+<li class="toctree-l3"><a class="reference internal" href="postinstall.html#flair-app-cfg">flair.app.cfg</a></li>
+<li class="toctree-l3"><a class="reference internal" href="postinstall.html#enrichments-cfg">enrichments.cfg</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="postinstall.html#cron-jobs">CRON Jobs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html"> Migrating 3.4 data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html"> SCOT Overview</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="overview.html#philosophy">Philosophy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="overview.html#why-use-scot">Why Use SCOT</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="terminology.html">Terminology</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="terminology.html#irt">IRT</a></li>
-<li class="toctree-l2"><a class="reference internal" href="terminology.html#alertgroups">Alertgroups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="terminology.html#alerts">Alerts</a></li>
-<li class="toctree-l2"><a class="reference internal" href="terminology.html#events">Events</a></li>
-<li class="toctree-l2"><a class="reference internal" href="terminology.html#entry">Entry</a></li>
-<li class="toctree-l2"><a class="reference internal" href="terminology.html#task">Task</a></li>
-<li class="toctree-l2"><a class="reference internal" href="terminology.html#entity">Entity</a></li>
-<li class="toctree-l2"><a class="reference internal" href="terminology.html#flair">Flair</a></li>
-<li class="toctree-l2"><a class="reference internal" href="terminology.html#intel">Intel</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="install.html#minimum-system-requirements">Minimum System Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#initial-installation">Initial Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#install-sh-options">install.sh Options</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#upgrading">Upgrading</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#database-migration">Database Migration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#uninstallation">Uninstallation</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="auth.html">Authentication/Authorization</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="auth.html#authentication">Authentication</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="auth.html#remoteuser">RemoteUser</a></li>
-<li class="toctree-l3"><a class="reference internal" href="auth.html#ldap">Ldap</a></li>
-<li class="toctree-l3"><a class="reference internal" href="auth.html#local">Local</a></li>
-<li class="toctree-l3"><a class="reference internal" href="auth.html#roll-your-own">Roll Your Own</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="auth.html#changing-authentication-methods">Changing Authentication Methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="auth.html#authorization">Authorization</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="config.html">Initial Configuration</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="config.html#ssl-certs">SSL Certs</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="config.html#configuration-files">Configuration Files</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#scot-env-cfg">scot_env.cfg</a></li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#ldap-cfg">ldap.cfg</a></li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#mail-app-cfg">mail.app.cfg</a></li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#flair-app-cfg">flair.app.cfg</a></li>
-<li class="toctree-l2"><a class="reference internal" href="config.html#enrichments-cfg">enrichments.cfg</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="alertconfig.html">Getting Alerts</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="alertconfig.html#imap">IMAP</a></li>
-<li class="toctree-l2"><a class="reference internal" href="alertconfig.html#rest-api">REST API</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="maintenance.html">Admin / Maintenance</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="maintenance.html#backup">Backup</a></li>
-<li class="toctree-l2"><a class="reference internal" href="maintenance.html#restore">Restore</a></li>
-<li class="toctree-l2"><a class="reference internal" href="maintenance.html#updating-geoip-files">Updating GeoIP files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="maintenance.html#upgrading-scot">Upgrading SCOT</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="login.html">Login to SCOT</a></li>
-<li class="toctree-l1"><a class="reference internal" href="intel.html">Intel</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="intel.html#intel-grid">Intel Grid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="intel.html#intel-details">Intel Details</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="alerts.html">Alerts</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="alerts.html#alert-grid">Alert Grid</a></li>
-<li class="toctree-l2"><a class="reference internal" href="alerts.html#alert-details">Alert Details</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="events.html">Events</a></li>
-<li class="toctree-l1"><a class="reference internal" href="incidents.html">Incidents</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tasks.html">Tasks</a></li>
-<li class="toctree-l1"><a class="reference internal" href="guides.html">Guides</a></li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="game.html">Game-ification</a></li>
-<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
-<li class="toctree-l1"><a class="reference internal" href="incident_handler.html">Incident Handler</a></li>
-<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Topics</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="advanced.html#alert-parsing">Alert Parsing</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="advanced.html#rest-or-email">REST or Email</a></li>
-<li class="toctree-l3"><a class="reference internal" href="advanced.html#why-e-mail">Why E-mail</a></li>
-<li class="toctree-l3"><a class="reference internal" href="advanced.html#getting-your-hands-dirty">Getting your Hands Dirty</a></li>
-<li class="toctree-l3"><a class="reference internal" href="advanced.html#alert-json">Alert JSON</a></li>
-<li class="toctree-l3"><a class="reference internal" href="advanced.html#working-with-the-perl-parsers">Working with the Perl Parsers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#terminology">Terminology</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#irt">IRT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#alertgroups">Alertgroups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#alerts">Alerts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#events">Events</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#entry">Entry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#task">Task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#entity">Entity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#flair">Flair</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html#intel">Intel</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="advanced.html#entities-ioc-and-flair">Entities, IOC, and Flair</a></li>
+<li class="toctree-l1"><a class="reference internal" href="userguide.html"> User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#views">Views</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#list-view">List View</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#detail-view">Detail View</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#alert">Alert</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#alert-details">Alert Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#events">Events</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#event-grid-view">Event Grid View</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#event-detail-view">Event Detail View</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#incident">Incident</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#intel">Intel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#guide">Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#task">Task</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#tags">Tags</a></li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#flair">Flair</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#what-the-heck-is-flair">What the heck is Flair?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#the-process">The Process</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#entities">Entities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#entity-types">Entity Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#building-additional-entity-types">Building Additional Entity Types</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="userguide.html#permissions">Permissions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#default-groups-and-owners">Default Groups and Owners</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#admin-group">Admin Group</a></li>
+<li class="toctree-l3"><a class="reference internal" href="userguide.html#note-about-group-names">Note about Group Names</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="adminguide.html"> Admin Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#backup">Backup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="adminguide.html#manual-backup">Manual Backup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#restore">Restore</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="adminguide.html#manual-restore">Manual Restore</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#ssl-certs">SSL Certs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#geoip">GeoIP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#upgrading">Upgrading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#cron-entries">CRON Entries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#daemons">Daemons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="adminguide.html#logging">Logging</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="devguide.html"> Developer Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="devguide.html#scot-architecture">SCOT Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devguide.html#scot-directory-map">SCOT Directory Map</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devguide.html#scot-rest-api">SCOT REST API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="devguide.html#scot-get-api">SCOT get API</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="devguide.html#scot-event-queue">SCOT Event Queue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devguide.html#scot-server">SCOT Server</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devguide.html#scot-ui">SCOT UI</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="indicies-and-tables">
+<h1>Indicies and Tables<a class="headerlink" href="#indicies-and-tables" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
 <li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
 <li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
@@ -167,7 +193,7 @@
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">SCOT Documentation</a></li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#indicies-and-tables">Indicies and Tables</a></li>
 </ul>
 
   <h4>Next topic</h4>
@@ -176,7 +202,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/index.txt"
+      <li><a href="_sources/index.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
