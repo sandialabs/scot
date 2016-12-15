@@ -1,6 +1,8 @@
 #!/bin/bash
 . ./install_functions.sh
 
+INTERACTIVE='yes'
+
 set_ascii_colors
 root_check
 set_defaults
@@ -11,27 +13,61 @@ get_os_version
 
 configure_accounts
 
+proceed
+
 if [[ $INSTMODE != "SCOTONLY" ]]; then
     echo -e "{yellow}+ Installing Prerequisite Packages ${nc}"
 
     install_packages
+    proceed
+
     install_perl_modules
+    proceed
+
     install_nodejs
+    proceed
+
     install_mongodb
+    proceed
+
     install_elasticsearch
+    proceed
+
     install_activemq
+    proceed
+
     configure_geoip
+    proceed
+
 fi
 
 configure_apache
+proceed
+
 configure_startup
+proceed
+
 configure_filestore
+proceed
+
 configure_backup
+proceed
+
 install_scot
+proceed
+
 configure_scot
+proceed
+
 install_private
+proceed
+
 configure_logging
+proceed
+
 configure_mongodb
+proceed
+
 start_services
 
 if [ $AUTHMODE == "Local"  ];then
