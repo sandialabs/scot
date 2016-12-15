@@ -1596,6 +1596,11 @@ var Search = React.createClass({displayName: "Search",
             this.setState({results:response.records, showSearchToolbar:true})
         }.bind(this))
     },
+    handleEnterKey: function(e) {
+        if (e.key == 'Enter') {
+            this.doSearch(e);
+        }
+    },
     render: function(){
         var tableRows = [] ;
         if (this.state.results != undefined) {
@@ -1605,7 +1610,7 @@ var Search = React.createClass({displayName: "Search",
         }
         return (
             React.createElement("div", null, 
-                React.createElement("input", {className: "esearch-query", style: {marginTop:'3px',padding:'10px 20px', backgroundColor: 'white', color:'black', float:'right', borderRadius:'50px',position:'relative'}, placeholder: 'Search...', onBlur: this.doSearch}), 
+                React.createElement("input", {className: "esearch-query", style: {marginTop:'3px',padding:'10px 20px', backgroundColor: 'white', color:'black', float:'right', borderRadius:'50px',position:'relative'}, placeholder: 'Search...', onBlur: this.doSearch, onKeyPress: this.handleEnterKey}), 
                 this.state.showSearchToolbar ? 
                     React.createElement(Draggable, {handle: "#handle1", onMouseDown: this.moveDivInit}, 
                         React.createElement("div", {id: "dragme1", className: "box react-draggable searchPopUp", style: {height:this.state.entityHeight,maxWidth:'80vw', maxHeight:'75vh', display:'flex', flexFlow:'column', right:'0px',top:'70px'}}, 
