@@ -693,6 +693,7 @@ sub get_subthing {
         $log->debug("Getting Entry Count total: $enc_total");
 
         &$entity_xform_timer;
+
         $log->debug("rendering subthing");
         $self->do_render({
             records             => \%things,
@@ -1938,6 +1939,12 @@ sub build_fields {
     $log->debug("Looking for field limit in params:",{filter=>\&Dumper, value=>$params});
     $log->debug("column filter is ",{filter=>\&Dumper, value=>$aref});
 
+    if (defined $aref) {
+        if ( ref $aref ne "ARRAY" ) {
+            $aref = [ $aref ];
+        }
+    }
+
     foreach my $f (@$aref) {
         $log->debug("Limit field to $f");
         $fields{$f} = 1;
@@ -2242,6 +2249,7 @@ sub do_command {
     $env->mq->send("scot", {
         action  => "message",
         data    => {
+            wall    => ""
         }
     });
 

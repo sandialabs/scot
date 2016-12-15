@@ -1,0 +1,45 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:             activemq
+# Required-Start:       $local_fs $syslog
+# Required-Stop:        $local_fs $syslog
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    ActiveMQ
+# Description:          ActiveMQ messaging queue server
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+DIR="/opt/activemq"
+APP="activemq"
+OPTS="console xbean:$DIR/conf/scotamq.xml &> /var/log/activemq/scot.amq.log"
+CMD="$DIR/bin/$APP $OPTS"
+SHUT="$DIR/bin/activemq stop --all"
+
+case "$1" in
+    start)
+        echo -n "Starting $APP: "
+        su - activemq -c "$CMD"&
+        echo "$APP."
+        ;;
+    stop)
+        echo -n "Stopping $APP: "
+        $SHUT 
+        for PID in `ps -ef | grep activemq | grep -v grep | awk '{print $2}'`
+        do
+            kill $PID
+        done
+        echo "$APP."
+        ;;
+    restart)
+        $0 stop
+        $0 start
+        ;;
+    *)
+        echo "Usage: $NAME { start|stop|restart }" >&2
+        exit 1
+        ;;
+esac
+exit 0
