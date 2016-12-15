@@ -1,5 +1,14 @@
 #!/bin/bash
 
+function proceed () {
+    if [[ $INTERACTIVE == 'yes' ]]; then
+        read -p 'continue?' FOO
+        if [[ $FOO == "Y" ]];
+            INTERACTIVE="no"
+        fi
+    fi
+}
+
 function set_defaults () {
     DEVDIR="$( cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
     PRIVATE_SCOT_MODULES="$DEVDIR/../Scot-Internal-Modules"
