@@ -37,7 +37,7 @@ TESTURL="http://getscot.sandia.gov"
 BACKUPDIR="/sdb/scotbackup"        
 GEOIPDIR="/usr/local/share/GeoIP"
 DBDIR="/var/lib/mongodb"
-CPANM="/usr/local/bin/cpanm --mirror-only --mirror https://stratopan.com/toddbruner/Scot-deps/master"
+CPANM="/usr/local/bin/cpanm" 
 LOGDIR="/var/log/scot";
 AMQDIR="/opt/activemq"
 AMQTAR="apache-activemq-5.13.2-bin.tar.gz"
@@ -252,10 +252,10 @@ enabled=1
 EOF
         fi
 
-	echo "+ adding line to allow unverifyed ssl in yum"
-	echo "sslverify=false" >> /etc/yum.conf
+        echo "+ adding line to allow unverifyed ssl in yum"
+        echo "sslverify=false" >> /etc/yum.conf
 
-	echo "+ installing rpms..."
+        echo "+ installing rpms..."
         for pkg in `cat $DEVDIR/etcsrc/install/rpms_list`; do
             echo "+ package = $pkg";
             yum install $pkg -y
@@ -264,7 +264,7 @@ EOF
         #
         # get cpanm going for later use
         # 
-	echo "+ ensuring cpanm is installed"
+	    echo "+ ensuring cpanm is installed"
         curl -L http://cpanmin.us | perl - --sudo App::cpanminus
 
         # 
@@ -278,6 +278,8 @@ EOF
     fi
 
     if [[ $OS == "Ubuntu" ]]; then
+	    echo "+ ensuring cpanm is installed"
+        curl -L http://cpanmin.us | perl - --sudo App::cpanminus
         if grep --quiet mongo /etc/apt/sources.list; then
             echo "= mongo source present"
         else 
