@@ -14,8 +14,8 @@ var EntityDetail = React.createClass({
     getInitialState: function() {
         var tabs = [];
         var processedIdsArray = [];
-        var entityHeight = '500px';
-        var entityWidth = '700px';
+        var entityHeight = '400px';
+        var entityWidth = '550px';
         if (this.props.fullScreen == true) {
             entityHeight = '100vh'
             entityWidth = '95%'
@@ -25,10 +25,14 @@ var EntityDetail = React.createClass({
             entityid: this.props.entityid,
             entityHeight: entityHeight,
             entityWidth: entityWidth,
+            entityHeightint: 400,
+            entityWidthint: 550,
             tabs: tabs,
             initialLoad:false,
             processedIds:processedIdsArray,
             valueClicked:'',
+            defaultEntityOffset:this.props.entityoffset,
+            entityobj: this.props.entityobj,
         }
     },
     componentDidMount: function () {
@@ -171,6 +175,12 @@ var EntityDetail = React.createClass({
         checkForInitialLoadComplete.checkForInitialLoadComplete();
     },
     initDrag: function(e) {
+        //remove the entityPopUpMaxSizeDefault class so it can be resized.
+        if ($('#dragme').hasClass('entityPopUpMaxSizeDefault')) {
+            var height = $('#dragme').height() + 'px';
+            $('#dragme').css('height',height);
+            $('#dragme').removeClass('entityPopUpMaxSizeDefault');
+        }
         var elem = document.getElementById('dragme');
         startX = e.clientX;
         startY = e.clientY;
@@ -210,12 +220,24 @@ var EntityDetail = React.createClass({
     handleSelectTab(key) {
         this.setState({currentKey:key});
     },
+    positionBottomBoundsCheck: function() {
+        return ($(document).height() - this.state.defaultEntityOffset.top - this.state.entityHeightint);
+    },
+    positionRightBoundsCheck: function(e) {
+        if (!e) {
+            return ($(document).width() - this.state.defaultEntityOffset.left - this.state.entityWidthint);
+        } else {
+            return ($(document).width() - (this.state.defaultEntityOffset.left + e ) - this.state.entityWidthint);
+        }
+    },
     render: function() {
         //This makes the size that was last used hold for future entities
         /*if (entityPopUpHeight && entityPopUpWidth) {
             entityHeight = entityPopUpHeight;
             entityWidth = entityPopUpWidth;
         }*/
+        var defaultOffsetY;
+        var defaultOffsetX;
         var tabsArr = [];
         for (var i=0; i < this.state.tabs.length; i++) {
             var z = i+1;
@@ -231,9 +253,32 @@ var EntityDetail = React.createClass({
             }
             tabsArr.push(<Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} valueClicked={this.state.tabs[i].valueClicked} i={z} key={z} errorToggle={this.props.errorToggle}/></Tab>)
         }
+        if (this.state.defaultEntityOffset) {
+            var positionBottomBoundsValue = this.positionBottomBoundsCheck();
+            var positionRightBoundsValue = this.positionRightBoundsCheck();
+            if (positionBottomBoundsValue < 0 ) {
+                defaultOffsetY = this.state.defaultEntityOffset.top + positionBottomBoundsValue;
+                if (this.positionRightBoundsCheck($(this.state.entityobj).width()) < 0) {
+                    defaultOffsetX = this.state.defaultEntityOffset.left - this.state.entityWidthint;
+                } else {
+                    defaultOffsetX = this.state.defaultEntityOffset.left + $(this.state.entityobj).width();
+                }
+            } else {
+                defaultOffsetY = this.state.defaultEntityOffset.top + 20;
+                if (positionRightBoundsValue < 0 ) {
+                    defaultOffsetX = this.state.defaultEntityOffset.left + positionRightBoundsValue;
+                } else {
+                    defaultOffsetX = this.state.defaultEntityOffset.left;
+                }
+            }
+            
+        } else {
+            defaultOffsetY = '50';
+            defaultOffsetX = '0';
+        }
         return (
-            <Draggable handle="#handle" onMouseDown={this.moveDivInit} key={this.props.key}>
-                <div id="dragme" className='box react-draggable entityPopUp' style={{height:this.state.entityHeight,width:this.state.entityWidth, display:'flex', flexFlow:'column'}}>
+            <Draggable handle="#handle" onMouseDown={this.moveDivInit} key={this.props.key} defaultPosition={{x:defaultOffsetX, y:defaultOffsetY}}>
+                <div id="dragme" className='box react-draggable entityPopUp entityPopUpMaxSizeDefault' style={{height:this.state.entityHeight,width:this.state.entityWidth}}>
                     <div id='popup-flex-container' style={{height: '100%', display:'flex', flexFlow:'row'}}>
                         <div id="entity_detail_container" style={{height: '100%', flexFlow: 'column', display: 'flex', width:'100%'}}>
                             <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarOff}/></span></div></div>
@@ -331,10 +376,10 @@ var EntityBody = React.createClass({
             for (var prop in entityData) {
                 if (entityData[prop] != undefined) {
                     if (prop == 'geoip') {
-                        entityEnrichmentGeoArr.push(<Tab eventKey={enrichmentEventKey} style={{overflow:'auto'}} title={prop}><GeoView data={entityData[prop].data} type={this.props.type} id={this.props.id} entityData={this.props.data} errorToggle={this.props.errorToggle}/></Tab>);
+                        entityEnrichmentGeoArr.push(<Tab eventKey={enrichmentEventKey} className='entityPopUpButtons' style={{overflow:'auto'}} title={prop}><GeoView data={entityData[prop].data} type={this.props.type} id={this.props.id} entityData={this.props.data} errorToggle={this.props.errorToggle}/></Tab>);
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'data') {
-                        entityEnrichmentDataArr.push(<Tab eventKey={enrichmentEventKey} style={{overflow:'auto'}} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/></Tab>);
+                        entityEnrichmentDataArr.push(<Tab eventKey={enrichmentEventKey} className='entityPopUpButtons' style={{overflow:'auto'}} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/></Tab>);
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'link') {
                         entityEnrichmentLinkArr.push(<Button bsSize='xsmall' target='_blank' href={entityData[prop].data.url}>{entityData[prop].data.title}</Button>)
@@ -350,8 +395,8 @@ var EntityBody = React.createClass({
         var href = '/#/entity/'+this.props.entityid;
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='tabs'>
-                <Tab eventKey={1} style={{overflow:'auto'}} title={this.state.appearances}>{entityEnrichmentLinkArr}<span><br/><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><a href={href} style={{color:'#c400ff'}} target='_blank'>List truncated due to large amount of references. Click to view the whole entity</a></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton}/><br/></Tab>
-                <Tab eventKey={2} style={{overflow:'auto'}} title="Entry"><Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
+                <Tab eventKey={1} className='entityPopUpButtons' style={{overflow:'auto'}} title={this.state.appearances}>{entityEnrichmentLinkArr}<span><br/><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><a href={href} style={{color:'#c400ff'}} target='_blank'>List truncated due to large amount of references. Click to view the whole entity</a></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton}/><br/></Tab>
+                <Tab eventKey={2} className='entityPopUpButtons' style={{overflow:'auto'}} title="Entry"><Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
                 {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
                 {entityEnrichmentGeoArr}
                 {entityEnrichmentDataArr}
