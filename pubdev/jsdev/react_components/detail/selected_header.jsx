@@ -50,6 +50,8 @@ var SelectedHeader = React.createClass({
             entityData:'',
             entityid:null,
             entitytype:null,
+            entityoffset:null,
+            entityobj:null,
             flairToolbar:false,
             linkWarningToolbar:false,
             refreshing:false,
@@ -270,8 +272,8 @@ var SelectedHeader = React.createClass({
             this.setState({errorDisplay:false})
         }
     },
-    flairToolbarToggle: function(id,value,type){
-            this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
+    flairToolbarToggle: function(id,value,type,entityoffset,entityobj){
+            this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type,entityoffset:entityoffset, entityobj:entityobj})
     },
     flairToolbarOff: function() {
         if (this.isMounted()) {
@@ -422,6 +424,9 @@ var SelectedHeader = React.createClass({
         }
     },
     checkFlairHover: function(ifr) {
+        function returnifr() {
+            return ifr;
+        }
         if(this.props.type != 'alertgroup') {
             if(ifr.contentDocument != null) {
                 $(ifr).contents().find('.entity').each(function(index, entity) {
@@ -431,7 +436,10 @@ var SelectedHeader = React.createClass({
                         $(entity).data('state', 'up');
                         var entityid = $(entity).attr('data-entity-id');
                         var entityvalue = $(entity).attr('data-entity-value');
-                        this.flairToolbarToggle(entityid,entityvalue,'entity')
+                        var entityobj = $(entity);
+                        var ifr = returnifr();
+                        var entityoffset = {top: $(entity).offset().top+$(ifr).offset().top, left: $(entity).offset().left+$(ifr).offset().left}
+                        this.flairToolbarToggle(entityid,entityvalue,'entity',entityoffset, entityobj)
                     }
                 }.bind(this));
             }
@@ -452,8 +460,9 @@ var SelectedHeader = React.createClass({
                     $(entity).data('state', 'down');
                     var entityid = $(entity).attr('data-entity-id');
                     var entityvalue = $(entity).attr('data-entity-value');
-                    this.flairToolbarToggle(entityid, entityvalue, 'entity');
-
+                    var entityoffset = $(entity).offset();                                      
+                    var entityobj = $(entity);
+                    this.flairToolbarToggle(entityid, entityvalue, 'entity', entityoffset, entityobj);
                 } 
             }.bind(this));
             $(document.body).find('.alertTableHorizontal').find('a').each(function(index,a) {
@@ -518,7 +527,7 @@ var SelectedHeader = React.createClass({
                     </div>
                     <Notification ref="notificationSystem" /> 
                     {this.state.errorDisplay ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} buttons="CLOSE MESSAGE" onDismiss={this.errorToggle}/> : null}
-                    {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} errorToggle={this.errorToggle}/> : null}
+                    
                     {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                     {this.state.viewedByHistoryToolbar ? <ViewedByHistory viewedByHistoryToggle={this.viewedByHistoryToggle} id={id} type={type} subjectType={subjectType} viewedby={viewedby}/> : null}
                     {this.state.changeHistoryToolbar ? <ChangeHistory changeHistoryToggle={this.changeHistoryToggle} id={id} type={type} subjectType={subjectType}/> : null} 
@@ -526,10 +535,10 @@ var SelectedHeader = React.createClass({
                     {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} /> :null}
                     {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} guideRedirectToAlertListWithFilter={this.guideRedirectToAlertListWithFilter}/> : null} 
                     {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
-                    </div>
-                    {this.state.showEventData ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar}/> : null}
-                
                 </div>
+                {this.state.showEventData ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar}/> : null}
+            {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} errorToggle={this.errorToggle} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj}/> : null}    
+            </div>
             }
             </div>
         )

@@ -352,7 +352,7 @@ var App = React.createClass({
                     :
                     null}
                     {this.state.set == 2 ? 
-                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'event'} Notification={this.state.notification} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} />
+                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'event'} Notification={this.state.Notification} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} />
                     :
                     null}
                     {this.state.set == 3 ? 
