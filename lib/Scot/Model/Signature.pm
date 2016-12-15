@@ -22,6 +22,7 @@ with    qw(
     Scot::Role::Permission
     Scot::Role::Targetable
     Scot::Role::Times
+    Scot::Role::Permission
 );
 
 =head1 Attributes
@@ -42,7 +43,7 @@ has name  => (
 
 =item B<type>
 
-the type of signature: yara, extractor, sourcefire, etc.
+the type of signature: yara, extractor, sourcefire, pipeline, etc.
 
 =cut
 
