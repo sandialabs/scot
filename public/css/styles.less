@@ -760,14 +760,25 @@ border-radius: 4px 4px 4px 4px;
     //max-height:30vh;
 }
 
+.entityPopUpMaxSizeDefault {
+    max-height: 500px;
+}
+
 .entityPopUp {
-    //max-width:40%;
-    position:absolute;
+    position:fixed;
     z-index:100;
     background-color:#AEC0D0; 
     border:1px solid black;    
-    //overflow:auto;
-    //resize:both;
+    display:flex;
+    flex-flow:column;
+    top:0px;
+    bottom:0px;
+    left:0px;
+    right:0px;
+}
+
+.entityPopUpButtons {
+    padding-top:5px;
 }
 
 //Entity Popup Nav Bar Smaller

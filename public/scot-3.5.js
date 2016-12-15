@@ -3150,7 +3150,10 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             showEntityData:this.props.showEntityData,
             entryData:this.props.entryData,
             entityData:this.props.entityData,
+            entityid: null,
             entitytype:null,
+            entityoffset:null,
+            entityobj:null,
             key:this.props.id,
             flairToolbar:false,
             errorDisplay:false,
@@ -3270,14 +3273,10 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
             }); 
         }
     },
-    flairToolbarToggle: function(id,value,type) {
-        //if (this.state.flairToolbar == false) {
-            if (this.isMounted()) {
-                this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
-            }
-        //} else {
-        //    this.setState({flairToolbar:false})
-        //}
+    flairToolbarToggle: function(id,value,type,entityoffset,entityobj) {
+        if (this.isMounted()) {
+            this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type,entityoffset:entityoffset,entityobj:entityobj})
+        }
     },
     flairToolbarOff: function() {
         if (this.isMounted()) {
@@ -3338,6 +3337,9 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
         }
     },
     checkFlairHover: function(ifr) {
+        function returnifr() {
+            return ifr;
+        }
         if(this.props.type != 'alertgroup') {
             if(ifr.contentDocument != null) {
                 $(ifr).contents().find('.entity').each(function(index, entity) {
@@ -3347,7 +3349,10 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                         $(entity).data('state', 'up');
                         var entityid = $(entity).attr('data-entity-id');
                         var entityvalue = $(entity).attr('data-entity-value');
-                        this.flairToolbarToggle(entityid,entityvalue,'entity')
+                        var entityobj = $(entity);
+                        var ifr = returnifr();
+                        var entityoffset = {top: $(entity).offset().top+$(ifr).offset().top, left: $(entity).offset().left+$(ifr).offset().left}
+                        this.flairToolbarToggle(entityid,entityvalue,'entity',entityoffset, entityobj)                    
                     }
                 }.bind(this));
             }
@@ -3369,8 +3374,9 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                     $(entity).data('state', 'down');
                     var entityid = $(entity).attr('data-entity-id');
                     var entityvalue = $(entity).attr('data-entity-value');
-                    this.flairToolbarToggle(entityid, entityvalue, 'entity');
-
+                    var entityoffset = $(entity).offset();                                      
+                    var entityobj = $(entity);
+                    this.flairToolbarToggle(entityid, entityvalue, 'entity', entityoffset, entityobj); 
                 }
             }.bind(this));
             subtable.find('a').each(function(index,a) {
@@ -3431,7 +3437,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 showEntryData ? React.createElement(EntryIterator, {data: data, type: type, id: id, alertSelected: this.props.alertSelected, headerData: this.props.headerData, alertPreSelectedId: this.props.alertPreSelectedId, isPopUp: this.props.isPopUp, entryToggle: this.props.entryToggle, updated: this.updatedCB, aType: this.props.aType, aID: this.props.aID, entryToolbar: this.props.entryToolbar, errorToggle: this.props.errorToggle, fileUploadToggle: this.props.fileUploadToggle, fileUploadToolbar: this.props.fileUploadToolbar}) : React.createElement("span", null, "Loading..."), 
                 this.props.entryToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(AddEntry, {title: 'Add Entry', type: this.props.type, targetid: this.props.id, id: 'add_entry', addedentry: this.props.entryToggle, updated: this.updatedCB, errorToggle: this.props.errorToggle}) : null) : null, 
                 this.props.fileUploadToolbar ? React.createElement("div", null, this.props.isAlertSelected == false ? React.createElement(FileUpload, {type: this.props.type, targetid: this.props.id, id: 'file_upload', fileUploadToggle: this.props.fileUploadToggle, updated: this.updatedCB, errorToggle: this.props.errorToggle}) : null) : null, 
-                this.state.flairToolbar ? React.createElement(EntityDetail, {key: this.state.entityDetailKey, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id, aID: this.props.aID, aType: this.props.aType}): null, 
+                this.state.flairToolbar ? React.createElement(EntityDetail, {key: this.state.entityDetailKey, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id, aID: this.props.aID, aType: this.props.aType, entityoffset: this.state.entityoffset, entityobj: this.state.entityobj}): null, 
                 this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null, 
                 this.state.errorDisplay ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage, buttons: "CLOSE MESSAGE", onDismiss: this.errorToggle}) : null
             )       
@@ -4152,6 +4158,8 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             entityData:'',
             entityid:null,
             entitytype:null,
+            entityoffset:null,
+            entityobj:null,
             flairToolbar:false,
             linkWarningToolbar:false,
             refreshing:false,
@@ -4372,8 +4380,8 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             this.setState({errorDisplay:false})
         }
     },
-    flairToolbarToggle: function(id,value,type){
-            this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
+    flairToolbarToggle: function(id,value,type,entityoffset,entityobj){
+            this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type,entityoffset:entityoffset, entityobj:entityobj})
     },
     flairToolbarOff: function() {
         if (this.isMounted()) {
@@ -4524,6 +4532,9 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
         }
     },
     checkFlairHover: function(ifr) {
+        function returnifr() {
+            return ifr;
+        }
         if(this.props.type != 'alertgroup') {
             if(ifr.contentDocument != null) {
                 $(ifr).contents().find('.entity').each(function(index, entity) {
@@ -4533,7 +4544,10 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                         $(entity).data('state', 'up');
                         var entityid = $(entity).attr('data-entity-id');
                         var entityvalue = $(entity).attr('data-entity-value');
-                        this.flairToolbarToggle(entityid,entityvalue,'entity')
+                        var entityobj = $(entity);
+                        var ifr = returnifr();
+                        var entityoffset = {top: $(entity).offset().top+$(ifr).offset().top, left: $(entity).offset().left+$(ifr).offset().left}
+                        this.flairToolbarToggle(entityid,entityvalue,'entity',entityoffset, entityobj)
                     }
                 }.bind(this));
             }
@@ -4554,8 +4568,9 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                     $(entity).data('state', 'down');
                     var entityid = $(entity).attr('data-entity-id');
                     var entityvalue = $(entity).attr('data-entity-value');
-                    this.flairToolbarToggle(entityid, entityvalue, 'entity');
-
+                    var entityoffset = $(entity).offset();                                      
+                    var entityobj = $(entity);
+                    this.flairToolbarToggle(entityid, entityvalue, 'entity', entityoffset, entityobj);
                 } 
             }.bind(this));
             $(document.body).find('.alertTableHorizontal').find('a').each(function(index,a) {
@@ -4620,7 +4635,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                     ), 
                     React.createElement(Notification, {ref: "notificationSystem"}), 
                     this.state.errorDisplay ? React.createElement(Crouton, {type: this.state.notificationType, id: Date.now(), message: this.state.notificationMessage, buttons: "CLOSE MESSAGE", onDismiss: this.errorToggle}) : null, 
-                    this.state.flairToolbar ? React.createElement(EntityDetail, {key: this.state.entityDetailKey, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id, errorToggle: this.errorToggle}) : null, 
+                    
                     this.state.linkWarningToolbar ? React.createElement(LinkWarning, {linkWarningToggle: this.linkWarningToggle, link: this.state.link}) : null, 
                     this.state.viewedByHistoryToolbar ? React.createElement(ViewedByHistory, {viewedByHistoryToggle: this.viewedByHistoryToggle, id: id, type: type, subjectType: subjectType, viewedby: viewedby}) : null, 
                     this.state.changeHistoryToolbar ? React.createElement(ChangeHistory, {changeHistoryToggle: this.changeHistoryToggle, id: id, type: type, subjectType: subjectType}) : null, 
@@ -4628,10 +4643,10 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                     this.state.deleteToolbar ? React.createElement(DeleteEvent, {subjectType: subjectType, type: type, id: id, deleteToggle: this.deleteToggle, updated: this.updated}) :null, 
                     this.state.showEventData ? React.createElement(SelectedHeaderOptions, {type: type, subjectType: subjectType, id: id, status: this.state.headerData.status, promoteToggle: this.promoteToggle, permissionsToggle: this.permissionsToggle, entryToggle: this.entryToggle, entitiesToggle: this.entitiesToggle, changeHistoryToggle: this.changeHistoryToggle, viewedByHistoryToggle: this.viewedByHistoryToggle, deleteToggle: this.deleteToggle, updated: this.updated, alertSelected: this.state.alertSelected, aIndex: this.state.aIndex, aType: this.state.aType, aStatus: this.state.aStatus, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, sourceToggle: this.sourceToggle, guideID: this.state.guideID, subjectName: this.state.headerData.subject, fileUploadToggle: this.fileUploadToggle, fileUploadToolbar: this.state.fileUploadToolbar, guideRedirectToAlertListWithFilter: this.guideRedirectToAlertListWithFilter}) : null, 
                     this.state.permissionsToolbar ? React.createElement(SelectedPermission, {updateid: id, id: id, type: type, permissionData: this.state.headerData, permissionsToggle: this.permissionsToggle, updated: this.updated}) : null
-                    ), 
-                    this.state.showEventData ? React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, headerData: this.state.headerData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, linkWarningToggle: this.linkWarningToggle, entryToolbar: this.state.entryToolbar, isAlertSelected: this.state.alertSelected, aType: this.state.aType, aID: this.state.aID, alertPreSelectedId: this.props.alertPreSelectedId, errorToggle: this.errorToggle, fileUploadToggle: this.fileUploadToggle, fileUploadToolbar: this.state.fileUploadToolbar}) : null
-                
-                )
+                ), 
+                this.state.showEventData ? React.createElement(SelectedEntry, {id: id, type: type, entryToggle: this.entryToggle, updated: this.updated, entryData: this.state.entryData, entityData: this.state.entityData, headerData: this.state.headerData, showEntryData: this.state.showEntryData, showEntityData: this.state.showEntityData, alertSelected: this.alertSelected, summaryUpdate: this.summaryUpdate, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, linkWarningToggle: this.linkWarningToggle, entryToolbar: this.state.entryToolbar, isAlertSelected: this.state.alertSelected, aType: this.state.aType, aID: this.state.aID, alertPreSelectedId: this.props.alertPreSelectedId, errorToggle: this.errorToggle, fileUploadToggle: this.fileUploadToggle, fileUploadToolbar: this.state.fileUploadToolbar}) : null, 
+            this.state.flairToolbar ? React.createElement(EntityDetail, {key: this.state.entityDetailKey, flairToolbarToggle: this.flairToolbarToggle, flairToolbarOff: this.flairToolbarOff, entityid: this.state.entityid, entityvalue: this.state.entityvalue, entitytype: this.state.entitytype, type: this.props.type, id: this.props.id, errorToggle: this.errorToggle, entityoffset: this.state.entityoffset, entityobj: this.state.entityobj}) : null
+            )
             
             )
         )
@@ -6706,7 +6721,7 @@ var App = React.createClass({displayName: "App",
                     :
                     null, 
                     this.state.set == 2 ? 
-                        React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type: 'event', Notification: this.state.notification, listViewFilter: this.state.listViewFilter, listViewSort: this.state.listViewSort, listViewPage: this.state.listViewPage})
+                        React.createElement(ListView, {id: this.state.id, id2: this.state.id2, viewMode: this.state.viewMode, type: 'event', Notification: this.state.Notification, listViewFilter: this.state.listViewFilter, listViewSort: this.state.listViewSort, listViewPage: this.state.listViewPage})
                     :
                     null, 
                     this.state.set == 3 ? 
@@ -7114,8 +7129,8 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
     getInitialState: function() {
         var tabs = [];
         var processedIdsArray = [];
-        var entityHeight = '500px';
-        var entityWidth = '700px';
+        var entityHeight = '400px';
+        var entityWidth = '550px';
         if (this.props.fullScreen == true) {
             entityHeight = '100vh'
             entityWidth = '95%'
@@ -7125,10 +7140,14 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
             entityid: this.props.entityid,
             entityHeight: entityHeight,
             entityWidth: entityWidth,
+            entityHeightint: 400,
+            entityWidthint: 550,
             tabs: tabs,
             initialLoad:false,
             processedIds:processedIdsArray,
             valueClicked:'',
+            defaultEntityOffset:this.props.entityoffset,
+            entityobj: this.props.entityobj,
         }
     },
     componentDidMount: function () {
@@ -7271,6 +7290,12 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         checkForInitialLoadComplete.checkForInitialLoadComplete();
     },
     initDrag: function(e) {
+        //remove the entityPopUpMaxSizeDefault class so it can be resized.
+        if ($('#dragme').hasClass('entityPopUpMaxSizeDefault')) {
+            var height = $('#dragme').height() + 'px';
+            $('#dragme').css('height',height);
+            $('#dragme').removeClass('entityPopUpMaxSizeDefault');
+        }
         var elem = document.getElementById('dragme');
         startX = e.clientX;
         startY = e.clientY;
@@ -7310,12 +7335,24 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
     handleSelectTab(key) {
         this.setState({currentKey:key});
     },
+    positionBottomBoundsCheck: function() {
+        return ($(document).height() - this.state.defaultEntityOffset.top - this.state.entityHeightint);
+    },
+    positionRightBoundsCheck: function(e) {
+        if (!e) {
+            return ($(document).width() - this.state.defaultEntityOffset.left - this.state.entityWidthint);
+        } else {
+            return ($(document).width() - (this.state.defaultEntityOffset.left + e ) - this.state.entityWidthint);
+        }
+    },
     render: function() {
         //This makes the size that was last used hold for future entities
         /*if (entityPopUpHeight && entityPopUpWidth) {
             entityHeight = entityPopUpHeight;
             entityWidth = entityPopUpWidth;
         }*/
+        var defaultOffsetY;
+        var defaultOffsetX;
         var tabsArr = [];
         for (var i=0; i < this.state.tabs.length; i++) {
             var z = i+1;
@@ -7331,9 +7368,32 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
             }
             tabsArr.push(React.createElement(Tab, {className: "tab-content", eventKey: this.state.tabs[i].entityid, title: title}, React.createElement(TabContents, {data: this.state.tabs[i].data, type: this.props.type, id: this.props.id, entityid: this.state.tabs[i].entityid, entitytype: this.state.tabs[i].entitytype, valueClicked: this.state.tabs[i].valueClicked, i: z, key: z, errorToggle: this.props.errorToggle})))
         }
+        if (this.state.defaultEntityOffset) {
+            var positionBottomBoundsValue = this.positionBottomBoundsCheck();
+            var positionRightBoundsValue = this.positionRightBoundsCheck();
+            if (positionBottomBoundsValue < 0 ) {
+                defaultOffsetY = this.state.defaultEntityOffset.top + positionBottomBoundsValue;
+                if (this.positionRightBoundsCheck($(this.state.entityobj).width()) < 0) {
+                    defaultOffsetX = this.state.defaultEntityOffset.left - this.state.entityWidthint;
+                } else {
+                    defaultOffsetX = this.state.defaultEntityOffset.left + $(this.state.entityobj).width();
+                }
+            } else {
+                defaultOffsetY = this.state.defaultEntityOffset.top + 20;
+                if (positionRightBoundsValue < 0 ) {
+                    defaultOffsetX = this.state.defaultEntityOffset.left + positionRightBoundsValue;
+                } else {
+                    defaultOffsetX = this.state.defaultEntityOffset.left;
+                }
+            }
+            
+        } else {
+            defaultOffsetY = '50';
+            defaultOffsetX = '0';
+        }
         return (
-            React.createElement(Draggable, {handle: "#handle", onMouseDown: this.moveDivInit, key: this.props.key}, 
-                React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp", style: {height:this.state.entityHeight,width:this.state.entityWidth, display:'flex', flexFlow:'column'}}, 
+            React.createElement(Draggable, {handle: "#handle", onMouseDown: this.moveDivInit, key: this.props.key, defaultPosition: {x:defaultOffsetX, y:defaultOffsetY}}, 
+                React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp entityPopUpMaxSizeDefault", style: {height:this.state.entityHeight,width:this.state.entityWidth}}, 
                     React.createElement("div", {id: "popup-flex-container", style: {height: '100%', display:'flex', flexFlow:'row'}}, 
                         React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex', width:'100%'}}, 
                             React.createElement("div", {id: "handle", style: {width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarOff})))), 
@@ -7431,10 +7491,10 @@ var EntityBody = React.createClass({displayName: "EntityBody",
             for (var prop in entityData) {
                 if (entityData[prop] != undefined) {
                     if (prop == 'geoip') {
-                        entityEnrichmentGeoArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, style: {overflow:'auto'}, title: prop}, React.createElement(GeoView, {data: entityData[prop].data, type: this.props.type, id: this.props.id, entityData: this.props.data, errorToggle: this.props.errorToggle})));
+                        entityEnrichmentGeoArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, className: "entityPopUpButtons", style: {overflow:'auto'}, title: prop}, React.createElement(GeoView, {data: entityData[prop].data, type: this.props.type, id: this.props.id, entityData: this.props.data, errorToggle: this.props.errorToggle})));
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'data') {
-                        entityEnrichmentDataArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, style: {overflow:'auto'}, title: prop}, React.createElement(EntityEnrichmentButtons, {dataSource: entityData[prop], type: this.props.type, id: this.props.id, errorToggle: this.props.errorToggle})));
+                        entityEnrichmentDataArr.push(React.createElement(Tab, {eventKey: enrichmentEventKey, className: "entityPopUpButtons", style: {overflow:'auto'}, title: prop}, React.createElement(EntityEnrichmentButtons, {dataSource: entityData[prop], type: this.props.type, id: this.props.id, errorToggle: this.props.errorToggle})));
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'link') {
                         entityEnrichmentLinkArr.push(React.createElement(Button, {bsSize: "xsmall", target: "_blank", href: entityData[prop].data.url}, entityData[prop].data.title))
@@ -7450,8 +7510,8 @@ var EntityBody = React.createClass({displayName: "EntityBody",
         var href = '/#/entity/'+this.props.entityid;
         return (
             React.createElement(Tabs, {className: "tab-content", defaultActiveKey: 1, bsStyle: "tabs"}, 
-                React.createElement(Tab, {eventKey: 1, style: {overflow:'auto'}, title: this.state.appearances}, entityEnrichmentLinkArr, React.createElement("span", null, React.createElement("br", null), React.createElement("b", null, "Appears: ", this.state.appearances, " times")), this.state.showFullEntityButton == true ? React.createElement("span", {style: {paddingLeft:'5px'}}, React.createElement("a", {href: href, style: {color:'#c400ff'}, target: "_blank"}, "List truncated due to large amount of references. Click to view the whole entity")) : null, React.createElement("br", null), React.createElement(EntityReferences, {entityid: this.props.entityid, updateAppearances: this.updateAppearances, type: this.props.type, showFullEntityButton: this.showFullEntityButton}), React.createElement("br", null)), 
-                React.createElement(Tab, {eventKey: 2, style: {overflow:'auto'}, title: "Entry"}, React.createElement(Button, {bsSize: "xsmall", onClick: this.entryToggle}, "Add Entry"), React.createElement("br", null), 
+                React.createElement(Tab, {eventKey: 1, className: "entityPopUpButtons", style: {overflow:'auto'}, title: this.state.appearances}, entityEnrichmentLinkArr, React.createElement("span", null, React.createElement("br", null), React.createElement("b", null, "Appears: ", this.state.appearances, " times")), this.state.showFullEntityButton == true ? React.createElement("span", {style: {paddingLeft:'5px'}}, React.createElement("a", {href: href, style: {color:'#c400ff'}, target: "_blank"}, "List truncated due to large amount of references. Click to view the whole entity")) : null, React.createElement("br", null), React.createElement(EntityReferences, {entityid: this.props.entityid, updateAppearances: this.updateAppearances, type: this.props.type, showFullEntityButton: this.showFullEntityButton}), React.createElement("br", null)), 
+                React.createElement(Tab, {eventKey: 2, className: "entityPopUpButtons", style: {overflow:'auto'}, title: "Entry"}, React.createElement(Button, {bsSize: "xsmall", onClick: this.entryToggle}, "Add Entry"), React.createElement("br", null), 
                 this.state.entryToolbar ? React.createElement(AddEntry, {title: 'Add Entry', type: "entity", targetid: this.props.entityid, id: 'add_entry', addedentry: this.entryToggle, errorToggle: this.props.errorToggle}) : null, " ", React.createElement(SelectedEntry, {type: 'entity', id: this.props.entityid})), 
                 entityEnrichmentGeoArr, 
                 entityEnrichmentDataArr

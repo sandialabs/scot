@@ -26,7 +26,10 @@ var SelectedEntry = React.createClass({
             showEntityData:this.props.showEntityData,
             entryData:this.props.entryData,
             entityData:this.props.entityData,
+            entityid: null,
             entitytype:null,
+            entityoffset:null,
+            entityobj:null,
             key:this.props.id,
             flairToolbar:false,
             errorDisplay:false,
@@ -146,14 +149,10 @@ var SelectedEntry = React.createClass({
             }); 
         }
     },
-    flairToolbarToggle: function(id,value,type) {
-        //if (this.state.flairToolbar == false) {
-            if (this.isMounted()) {
-                this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type})
-            }
-        //} else {
-        //    this.setState({flairToolbar:false})
-        //}
+    flairToolbarToggle: function(id,value,type,entityoffset,entityobj) {
+        if (this.isMounted()) {
+            this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type,entityoffset:entityoffset,entityobj:entityobj})
+        }
     },
     flairToolbarOff: function() {
         if (this.isMounted()) {
@@ -214,6 +213,9 @@ var SelectedEntry = React.createClass({
         }
     },
     checkFlairHover: function(ifr) {
+        function returnifr() {
+            return ifr;
+        }
         if(this.props.type != 'alertgroup') {
             if(ifr.contentDocument != null) {
                 $(ifr).contents().find('.entity').each(function(index, entity) {
@@ -223,7 +225,10 @@ var SelectedEntry = React.createClass({
                         $(entity).data('state', 'up');
                         var entityid = $(entity).attr('data-entity-id');
                         var entityvalue = $(entity).attr('data-entity-value');
-                        this.flairToolbarToggle(entityid,entityvalue,'entity')
+                        var entityobj = $(entity);
+                        var ifr = returnifr();
+                        var entityoffset = {top: $(entity).offset().top+$(ifr).offset().top, left: $(entity).offset().left+$(ifr).offset().left}
+                        this.flairToolbarToggle(entityid,entityvalue,'entity',entityoffset, entityobj)                    
                     }
                 }.bind(this));
             }
@@ -245,8 +250,9 @@ var SelectedEntry = React.createClass({
                     $(entity).data('state', 'down');
                     var entityid = $(entity).attr('data-entity-id');
                     var entityvalue = $(entity).attr('data-entity-value');
-                    this.flairToolbarToggle(entityid, entityvalue, 'entity');
-
+                    var entityoffset = $(entity).offset();                                      
+                    var entityobj = $(entity);
+                    this.flairToolbarToggle(entityid, entityvalue, 'entity', entityoffset, entityobj); 
                 }
             }.bind(this));
             subtable.find('a').each(function(index,a) {
@@ -307,7 +313,7 @@ var SelectedEntry = React.createClass({
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar}/> : <span>Loading...</span>} 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
                 {this.props.fileUploadToolbar ? <div>{this.props.isAlertSelected == false ? <FileUpload type={this.props.type} targetid={this.props.id} id={'file_upload'} fileUploadToggle={this.props.fileUploadToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
-                {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} aID={this.props.aID} aType={this.props.aType}/>: null}
+                {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} aID={this.props.aID} aType={this.props.aType} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                 {this.state.errorDisplay ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} buttons="CLOSE MESSAGE" onDismiss={this.errorToggle}/> : null} 
             </div>       
