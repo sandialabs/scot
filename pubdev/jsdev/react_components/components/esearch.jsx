@@ -72,6 +72,11 @@ var Search = React.createClass({
             this.setState({results:response.records, showSearchToolbar:true})
         }.bind(this))
     },
+    handleEnterKey: function(e) {
+        if (e.key == 'Enter') {
+            this.doSearch(e);
+        }
+    },
     render: function(){
         var tableRows = [] ;
         if (this.state.results != undefined) {
@@ -81,13 +86,13 @@ var Search = React.createClass({
         }
         return (
             <div>
-                <input className='esearch-query' style={{marginTop:'3px',padding:'10px 20px', backgroundColor: 'white', color:'black', float:'right', borderRadius:'50px',position:'relative'}} placeholder={'Search...'} onChange={this.doSearch}/>
+                <input className='esearch-query' style={{marginTop:'3px',padding:'10px 20px', backgroundColor: 'white', color:'black', float:'right', borderRadius:'50px',position:'relative'}} placeholder={'Search...'} onBlur={this.doSearch} onKeyPress={this.handleEnterKey}/>
                 {this.state.showSearchToolbar ? 
                     <Draggable handle="#handle1" onMouseDown={this.moveDivInit}>
                         <div id="dragme1" className='box react-draggable searchPopUp' style={{height:this.state.entityHeight,maxWidth:'80vw', maxHeight:'75vh', display:'flex', flexFlow:'column', right:'0px',top:'70px'}}>
                             <div id='search_container' style={{height: '100%', display:'flex', flexFlow:'column'}}>
                                 <div id='handle1' style={{width:'100%',background:'#7a8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.close}/></span></div></div>
-                                <div style={{display:'flex', flexFlow:'row'}}>
+                                <div style={{display:'flex', flexFlow:'row', overflowY:'auto'}}>
                                     <div id='container1' style={{overflowY:'auto'}}>
                                         <SearchDataEachHeader />
                                         <div style={{display:'flex',flexFlow:'column'}}>

@@ -17,7 +17,7 @@ var EntityDetail = React.createClass({
         var entityHeight = '400px';
         var entityWidth = '550px';
         if (this.props.fullScreen == true) {
-            entityHeight = '100vh'
+            entityHeight = '95vh'
             entityWidth = '95%'
         }
         return {
@@ -239,6 +239,10 @@ var EntityDetail = React.createClass({
         var defaultOffsetY;
         var defaultOffsetX;
         var tabsArr = [];
+        var DragmeClass = 'box react-draggable entityPopUp entityPopUpMaxSizeDefault'
+        if (this.props.fullScreen == true) {
+            DragmeClass = 'box react-draggable entityPopUp'
+        }
         for (var i=0; i < this.state.tabs.length; i++) {
             var z = i+1;
             var title = 'tab';
@@ -278,7 +282,7 @@ var EntityDetail = React.createClass({
         }
         return (
             <Draggable handle="#handle" onMouseDown={this.moveDivInit} key={this.props.key} defaultPosition={{x:defaultOffsetX, y:defaultOffsetY}}>
-                <div id="dragme" className='box react-draggable entityPopUp entityPopUpMaxSizeDefault' style={{height:this.state.entityHeight,width:this.state.entityWidth}}>
+                <div id="dragme" className={DragmeClass} style={{height:this.state.entityHeight,width:this.state.entityWidth}}>
                     <div id='popup-flex-container' style={{height: '100%', display:'flex', flexFlow:'row'}}>
                         <div id="entity_detail_container" style={{height: '100%', flexFlow: 'column', display: 'flex', width:'100%'}}>
                             <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarOff}/></span></div></div>
