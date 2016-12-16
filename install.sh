@@ -278,7 +278,8 @@ EOF
     fi
 
     if [[ $OS == "Ubuntu" ]]; then
-        apt-get install curl -y
+        apt-get update
+        apt-get install curl make -y
 	    echo "+ ensuring cpanm is installed"
         curl -L http://cpanmin.us | perl - --sudo App::cpanminus
         if [[ ! -e /usr/local/bin/cpanm ]];
