@@ -767,7 +767,7 @@ else
     fi
 fi
 
-CFGFILES='mongo logger imap activemq enrichments flair.app flair_logger stretch.app stretch_logger game.app elastic'
+CFGFILES='mongo logger imap activemq enrichments flair.app flair_logger stretch.app stretch_logger game.app elastic scot_server'
 
 for file in $CFGFILES
 do
