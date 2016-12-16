@@ -280,6 +280,11 @@ EOF
     if [[ $OS == "Ubuntu" ]]; then
 	    echo "+ ensuring cpanm is installed"
         curl -L http://cpanmin.us | perl - --sudo App::cpanminus
+        if [[ ! -e /usr/local/bin/cpanm ]];
+        then
+            echo "install can not work without /usr/local/bin/cpanm"
+            exit 1
+        fi
         if grep --quiet mongo /etc/apt/sources.list; then
             echo "= mongo source present"
         else 
