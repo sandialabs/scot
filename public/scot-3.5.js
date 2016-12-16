@@ -1596,6 +1596,11 @@ var Search = React.createClass({displayName: "Search",
             this.setState({results:response.records, showSearchToolbar:true})
         }.bind(this))
     },
+    handleEnterKey: function(e) {
+        if (e.key == 'Enter') {
+            this.doSearch(e);
+        }
+    },
     render: function(){
         var tableRows = [] ;
         if (this.state.results != undefined) {
@@ -1605,13 +1610,13 @@ var Search = React.createClass({displayName: "Search",
         }
         return (
             React.createElement("div", null, 
-                React.createElement("input", {className: "esearch-query", style: {marginTop:'3px',padding:'10px 20px', backgroundColor: 'white', color:'black', float:'right', borderRadius:'50px',position:'relative'}, placeholder: 'Search...', onChange: this.doSearch}), 
+                React.createElement("input", {className: "esearch-query", style: {marginTop:'3px',padding:'10px 20px', backgroundColor: 'white', color:'black', float:'right', borderRadius:'50px',position:'relative'}, placeholder: 'Search...', onBlur: this.doSearch, onKeyPress: this.handleEnterKey}), 
                 this.state.showSearchToolbar ? 
                     React.createElement(Draggable, {handle: "#handle1", onMouseDown: this.moveDivInit}, 
                         React.createElement("div", {id: "dragme1", className: "box react-draggable searchPopUp", style: {height:this.state.entityHeight,maxWidth:'80vw', maxHeight:'75vh', display:'flex', flexFlow:'column', right:'0px',top:'70px'}}, 
                             React.createElement("div", {id: "search_container", style: {height: '100%', display:'flex', flexFlow:'column'}}, 
                                 React.createElement("div", {id: "handle1", style: {width:'100%',background:'#7a8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.close})))), 
-                                React.createElement("div", {style: {display:'flex', flexFlow:'row'}}, 
+                                React.createElement("div", {style: {display:'flex', flexFlow:'row', overflowY:'auto'}}, 
                                     React.createElement("div", {id: "container1", style: {overflowY:'auto'}}, 
                                         React.createElement(SearchDataEachHeader, null), 
                                         React.createElement("div", {style: {display:'flex',flexFlow:'column'}}, 
@@ -7132,7 +7137,7 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         var entityHeight = '400px';
         var entityWidth = '550px';
         if (this.props.fullScreen == true) {
-            entityHeight = '100vh'
+            entityHeight = '95vh'
             entityWidth = '95%'
         }
         return {
@@ -7354,6 +7359,10 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         var defaultOffsetY;
         var defaultOffsetX;
         var tabsArr = [];
+        var DragmeClass = 'box react-draggable entityPopUp entityPopUpMaxSizeDefault'
+        if (this.props.fullScreen == true) {
+            DragmeClass = 'box react-draggable entityPopUp'
+        }
         for (var i=0; i < this.state.tabs.length; i++) {
             var z = i+1;
             var title = 'tab';
@@ -7393,7 +7402,7 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         }
         return (
             React.createElement(Draggable, {handle: "#handle", onMouseDown: this.moveDivInit, key: this.props.key, defaultPosition: {x:defaultOffsetX, y:defaultOffsetY}}, 
-                React.createElement("div", {id: "dragme", className: "box react-draggable entityPopUp entityPopUpMaxSizeDefault", style: {height:this.state.entityHeight,width:this.state.entityWidth}}, 
+                React.createElement("div", {id: "dragme", className: DragmeClass, style: {height:this.state.entityHeight,width:this.state.entityWidth}}, 
                     React.createElement("div", {id: "popup-flex-container", style: {height: '100%', display:'flex', flexFlow:'row'}}, 
                         React.createElement("div", {id: "entity_detail_container", style: {height: '100%', flexFlow: 'column', display: 'flex', width:'100%'}}, 
                             React.createElement("div", {id: "handle", style: {width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}, React.createElement("div", null, React.createElement("span", {className: "pull-left", style: {paddingLeft:'5px'}}, React.createElement("i", {className: "fa fa-arrows", ariaHidden: "true"})), React.createElement("span", {className: "pull-right", style: {cursor:'pointer',paddingRight:'5px'}}, React.createElement("i", {className: "fa fa-times", onClick: this.props.flairToolbarOff})))), 
