@@ -16,7 +16,7 @@ configure_accounts
 proceed
 
 if [[ $INSTMODE != "SCOTONLY" ]]; then
-    echo -e "{yellow}+ Installing Prerequisite Packages ${nc}"
+    echo -e "${blue}+ Installing Prerequisite Packages ${nc}"
 
     install_packages
     proceed
