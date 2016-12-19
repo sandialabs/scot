@@ -278,8 +278,15 @@ EOF
     fi
 
     if [[ $OS == "Ubuntu" ]]; then
+        apt-get update
+        apt-get install curl make -y
 	    echo "+ ensuring cpanm is installed"
         curl -L http://cpanmin.us | perl - --sudo App::cpanminus
+        if [[ ! -e /usr/local/bin/cpanm ]];
+        then
+            echo "install can not work without /usr/local/bin/cpanm"
+            exit 1
+        fi
         if grep --quiet mongo /etc/apt/sources.list; then
             echo "= mongo source present"
         else 
@@ -760,7 +767,7 @@ else
     fi
 fi
 
-CFGFILES='mongo logger imap activemq enrichments flair.app flair_logger stretch.app stretch_logger game.app elastic'
+CFGFILES='mongo logger imap activemq enrichments flair.app flair_logger stretch.app stretch_logger game.app elastic scot_server'
 
 for file in $CFGFILES
 do
