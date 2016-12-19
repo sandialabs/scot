@@ -7134,8 +7134,10 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
     getInitialState: function() {
         var tabs = [];
         var processedIdsArray = [];
-        var entityHeight = '400px';
-        var entityWidth = '550px';
+        var entityHeightint = 400;
+        var entityWidthint = 600;
+        var entityHeight = entityHeightint + 'px';
+        var entityWidth = entityWidthint + 'px';
         if (this.props.fullScreen == true) {
             entityHeight = '95vh'
             entityWidth = '95%'
@@ -7145,8 +7147,8 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
             entityid: this.props.entityid,
             entityHeight: entityHeight,
             entityWidth: entityWidth,
-            entityHeightint: 400,
-            entityWidthint: 550,
+            entityHeightint: entityHeightint,
+            entityWidthint: entityWidthint,
             tabs: tabs,
             initialLoad:false,
             processedIds:processedIdsArray,
@@ -7360,7 +7362,7 @@ var EntityDetail = React.createClass({displayName: "EntityDetail",
         var defaultOffsetX;
         var tabsArr = [];
         var DragmeClass = 'box react-draggable entityPopUp entityPopUpMaxSizeDefault'
-        if (this.props.fullScreen == true) {
+        if (this.props.fullScreen == true || $('react-draggable-dragged')) { //Don't readd entityPopUpMaxSizeDefault if full screen or if the box has been dragged
             DragmeClass = 'box react-draggable entityPopUp'
         }
         for (var i=0; i < this.state.tabs.length; i++) {
@@ -7793,7 +7795,8 @@ var EntityReferences = React.createClass({displayName: "EntityReferences",
                         React.createElement("th", null, "id"), 
                         React.createElement("th", null, "type"), 
                         React.createElement("th", null, "entries"), 
-                        React.createElement("th", null, "subject")
+                        React.createElement("th", null, "subject"), 
+                        React.createElement("th", null, "last updated")
                     )
                 ), 
                 React.createElement("tbody", null, 
@@ -7859,8 +7862,11 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
         var tdId = 'entitySummaryRow' + this.props.data.id;
         var aHref = null;
         var promotedHref = null;
-        var statusColor = null
+        var statusColor = null;
+        var daysSince = null;
         var subject = this.props.data.subject;
+        var updatedTime = this.props.data.updated;
+        var updatedTimeHumanReadable = '';
         if (this.props.data.status == 'promoted') {
             statusColor = 'orange';
         }else if (this.props.data.status =='closed') {
@@ -7892,7 +7898,10 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
                 subject = '';
             }
         }
-
+        if (updatedTime != undefined) {
+            daysSince = Math.floor((Math.round(new Date().getTime()/1000)-updatedTime)/86400);
+            updatedTimeHumanReadable = new Date(1000 * updatedTime).toLocaleString()
+        }
         return (
             React.createElement("tr", {id: trId, index: this.props.index}, 
                 React.createElement("td", {valign: "top", style: {textAlign:'center',cursor: 'pointer'}, onClick: this.onClick, id: tdId}, React.createElement("i", {className: "fa fa-eye fa-1", "aria-hidden": "true"})), 
@@ -7900,7 +7909,8 @@ var ReferencesBody = React.createClass({displayName: "ReferencesBody",
                 React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, React.createElement("a", {href: aHref, target: "_blank"}, this.props.data.id)), 
                 React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, this.props.type), 
                 React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px', textAlign:'center'}}, this.props.data.entry_count), 
-                React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, subject)
+                React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}}, subject), 
+                React.createElement("td", {valign: "top", style: {paddingRight:'4px', paddingLeft:'4px'}, title: updatedTimeHumanReadable}, daysSince, " days ago")
             )
         )    
     }
