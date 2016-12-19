@@ -2,7 +2,10 @@
 
 function proceed () {
     if [[ $INTERACTIVE == 'yes' ]]; then
-        read -p 'continue?' FOO
+        read -p 'continue? [Y/y/n] ' FOO
+        if [[ $FOO != "Y" ]] || [[ $FOO != "y" ]]; then
+            exit 1
+        fi
         if [[ $FOO == "Y" ]]; then
             INTERACTIVE="no"
         fi
@@ -272,7 +275,7 @@ function install_packages {
     then
         if [[ $REFRESHAPT == "yes" ]]
         then
-            echo -e "${green}+ Refreshing APT DB Repo"
+            echo -e "${green}+ Refreshing APT DB Repo ${nc}"
             apt-get-update
             if [ $? != 0 ];
             then
@@ -281,7 +284,7 @@ function install_packages {
             fi
         fi
         echo -e "${green}+ installing apt packages"
-        for pkg in `cat $DEVDIR/install/packages/ubuntu_debs_list`
+        for pkg in `cat $DEVDIR/packages/ubuntu_debs_list`
         do
             apt-get -y install $pkg
         done
@@ -292,7 +295,7 @@ function install_packages {
         echo "sslverify=false" >> /etc/yum.conf
 
         echo "+ installing rpms..."
-        for pkg in `cat $DEVDIR/install/packages/rpms_list`; do
+        for pkg in `cat $DEVDIR/packages/rpms_list`; do
             echo "+ package = $pkg";
             yum install $pkg -y
         done
@@ -303,9 +306,9 @@ function install_perl_modules {
     echo -e "${blue}++++++++++ PERL module Installation +++++++++++${nc}"
     echo -e "${blue}= installing pre-compiled package perl libs${nc}"
     if [[ $OS == "Ubuntu" ]]; then
-        PREPACKFILES=$DEDVIR/install/perl_debs_list
+        PREPACKFILES=$DEDVIR/packages/perl_debs_list
     else
-        PREPACKFILES=$DEVDIR/install/perl_yum_list
+        PREPACKFILES=$DEVDIR/packages/perl_yum_list
     fi
 
     for $prepack in `cat $PREPACKFILES`
@@ -344,7 +347,7 @@ function install_perl_modules {
         fi
     fi
 
-    for modules in `cat $DEVDIR/install/perl_modules_list`
+    for modules in `cat $DEVDIR/packages/perl_modules_list`
     do
         echo -e "${green} 1st Attempt to install $module"
         $CPANM $module
@@ -535,7 +538,7 @@ function install_activemq {
         rm -rf $AMQDIR/webapps/scotaq
 
         echo "+ copying scot xml files into $AMQDIR/conf"
-        local AMQSRC=$DEVDIR/install/src/ActiveMQ
+        local AMQSRC=$DEVDIR/src/ActiveMQ
         cp $AMQSRC/amq/scotamq.xml     $AMQDIR/conf
         cp $AMQSRC/amq/jetty.xml       $AMQDIR/conf
 
@@ -551,7 +554,7 @@ function install_activemq {
 }
 
 function get-ubuntu-rev-proxy-config {
-    local SDIR=$DEVDIR/install/src/apache2
+    local SDIR=$DEVDIR/src/apache2
     REVPROXY=$SDIR/scot-revproxy-$MYHOSTNAME
     local SASRC="scot-revproxy-ubuntu-remoteuser.conf"
     if [[ ! -e $REVPROXY ]]
@@ -580,7 +583,7 @@ function get-ubuntu-rev-proxy-config {
 
 function get-cent-7-proxy-config {
     local SARC="scot-revproxy-rh-7-remoteuser.conf"
-    local SDIR=$DEVDIR/install/src/apache2
+    local SDIR=$DEVDIR/src/apache2
     if [[ $AUTHMODE == "RemoteUser" ]];
     then
         if [[ -e $PRIVATE_SCOT_MODULES/etc/$SARC ]]
@@ -602,7 +605,7 @@ function get-cent-7-proxy-config {
 
 function get-cent-6-proxy-config {
     local SARC="scot-revproxy-rh-remoteuser.conf"
-    local SDIR=$DEVDIR/install/src/apache2
+    local SDIR=$DEVDIR/src/apache2
     if [[ $AUTHMODE == "RemoteUser" ]];
     then
         if [[ -e $PRIVATE_SCOT_MODULES/etc/$SARC ]]
@@ -623,7 +626,7 @@ function get-cent-6-proxy-config {
 }
 
 function get-cent-rev-proxy-config {
-    REVPROXY=$DEVDIR/install/src/apache2/scot-revproxy-$MYHOSTNAME
+    REVPROXY=$DEVDIR/src/apache2/scot-revproxy-$MYHOSTNAME
     if [[ ! -e $REVPROXY ]];
     then
         echo -e "${red}- custom scot config for $MYHOSTNAME not found using default ${nc}"
@@ -745,7 +748,7 @@ function copy_documentation {
 }
 
 function configure_geoip {
-    local SDIR=$DEVDIR/install/src/geoip
+    local SDIR=$DEVDIR/src/geoip
     if [[ -e $GEODIR/GeoLiteCity.dat ]]; then 
         if [[ $OVERGEO == "yes" ]]; then
             local BCKUP=GeoLiteCity.dat.$$
@@ -761,7 +764,7 @@ function configure_geoip {
 }
 
 function configure_ubuntu_startup {
-    local SDIR=$DEVDIR/install/src/systemd
+    local SDIR=$DEVDIR/src/systemd
     if [[ $OSVERSION == "16" ]]; then
         SYSDSERVICES='
             elasticsearch.service 
@@ -808,7 +811,7 @@ function configure_cent_startup {
 }
 
 function configure_startup {
-    local SDIR=$DEVDIR/install/src
+    local SDIR=$DEVDIR/src
     if [[ ! -e /etc/init.d/scot ]]; then
         echo -e "${yellow} adding /etc/init.d/scot ${nc}"
         cp $SDIR/scot/scot-init /etc/init.d/scot
@@ -903,7 +906,7 @@ function install_scot {
 }
 
 function configure_scot {
-    local SDIR=$DEVDIR/install/src/scot
+    local SDIR=$DEVDIR/src/scot
     if [[ $AUTHMODE == "Remoteuser" ]]; then
         cp $SDIR/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
     else 
@@ -961,7 +964,7 @@ function configure_logging {
 
     if [ ! -e /etc/logrotate.d/scot ]; then
         echo "+ installing logrotate policy"
-        cp $DEVDIR/install/src/logrotate/logrotate.scot /etc/logrotate.d/scot
+        cp $DEVDIR/src/logrotate/logrotate.scot /etc/logrotate.d/scot
     else 
         echo "= logrotate policy in place"
     fi
@@ -971,7 +974,7 @@ function add_failIndexKeyTooLong {
 
     echo "= checking failIndexKeyTooLong Mongod parameter"
 
-    local SDIR=$DEVDIR/install/src/mongodb
+    local SDIR=$DEVDIR/src/mongodb
     if [[ $OSVERSION == "16" ]]; then
         FIKTL=`grep failIndexKeyTooLong /lib/systemd/system/mongod.service`
         if [ "$FIKTL" == "" ]; then
@@ -1002,7 +1005,7 @@ function add_failIndexKeyTooLong {
 function configure_mongodb {
     echo "= Configuring MongoDB"
     echo "= Stopping MongoDB"
-    local SDIR=$DEVDIR/install/src/mongodb
+    local SDIR=$DEVDIR/src/mongodb
 
     if [[ $OSVERSION == "16" ]]; then
         systemctl stop mongod.service
