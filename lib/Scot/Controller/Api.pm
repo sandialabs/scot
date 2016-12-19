@@ -530,9 +530,10 @@ sub get_one {
 
 
     my $data_href   = {};
-    if ( $req_href->{fields} and 
+    if ( $req_href->{columns} and 
          $object->meta->does_role("Scot::Role::Hashable")) {
-        $data_href  = $object->as_hash($req_href->{fields});
+        $log->debug("filtering columns...Yeah!");
+        $data_href  = $object->as_hash($req_href->{columns});
     }
     else {
         $data_href  = $object->as_hash;
