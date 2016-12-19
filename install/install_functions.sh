@@ -2,10 +2,7 @@
 
 function proceed () {
     if [[ $INTERACTIVE == 'yes' ]]; then
-        read -p 'continue? [Y/y/n] ' FOO
-        if [[ $FOO != "Y" ]] || [[ $FOO != "y" ]]; then
-            exit 1
-        fi
+        read -p 'continue? [ctr-c to quit] ' FOO
         if [[ $FOO == "Y" ]]; then
             INTERACTIVE="no"
         fi
