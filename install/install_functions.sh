@@ -528,22 +528,24 @@ function install_activemq {
         rm -rf $AMQDIR/webapps/scotaq
 
         echo "+ copying scot xml files into $AMQDIR/conf"
-        cp $DEVDIR/etcsrc/scotamq.xml     $AMQDIR/conf
-        cp $DEVDIR/etcsrc/jetty.xml       $AMQDIR/conf
+        local AMQSRC=$DEVDIR/install/src/ActiveMQ
+        cp $AMQSRC/amq/scotamq.xml     $AMQDIR/conf
+        cp $AMQSRC/amq/jetty.xml       $AMQDIR/conf
 
-        echo "+ copying $DEVDIR/etcsrc/scotaq to $AMQDIR/webapps"
-        cp -R $DEVDIR/etcsrc/scotaq       $AMQDIR/webapps
+        echo "+ copying $AMQSRC/amq/scotaq to $AMQDIR/webapps"
+        cp -R $AMQSRC/amq/scotaq       $AMQDIR/webapps
 
         echo "+ renaming $AMQDIR/webapps/scotaq to $AMQDIR/webapps/scot"
         mv $AMQDIR/webapps/scotaq      $AMQDIR/webapps/scot
-        cp $DEVDIR/etc/init/activemq-init   /etc/init.d/activemq
+        cp $AMQSRC/amq//activemq-init   /etc/init.d/activemq
         chmod +x /etc/init.d/activemq
         chown -R activemq.activemq $AMQDIR
     fi
 }
 
 function get-ubuntu-rev-proxy-config {
-    REVPROXY=$DEVDIR/etcsrc/scot-revproxy-$MYHOSTNAME
+    local SDIR=$DEVDIR/install/src/apache2
+    REVPROXY=$SDIR/scot-revproxy-$MYHOSTNAME
     local SASRC="scot-revproxy-ubuntu-remoteuser.conf"
     if [[ ! -e $REVPROXY ]]
     then
@@ -554,7 +556,7 @@ function get-ubuntu-rev-proxy-config {
             then
                 REVPROXY=$PRIVATE_SCOT_MODULE/etc/$SASRC
             else 
-                REVPROXY=$DEVDIR/etcsrc/apache2/$SASRC
+                REVPROXY=$SDIR/$SASRC
             fi
         else
             SASRC="scot-revproxy-ubuntu-aux.conf"
@@ -562,7 +564,7 @@ function get-ubuntu-rev-proxy-config {
             then
                 REVPROXY=$PRIVATE_SCOT_MODULE/etc/$SASRC
             else 
-                REVPROXY=$DEVDIR/etcsrc/apache2/$SASRC
+                REVPROXY=$SDIR/$SASRC
             fi
         fi
     fi
@@ -571,20 +573,21 @@ function get-ubuntu-rev-proxy-config {
 
 function get-cent-7-proxy-config {
     local SARC="scot-revproxy-rh-7-remoteuser.conf"
+    local SDIR=$DEVDIR/install/src/apache2
     if [[ $AUTHMODE == "RemoteUser" ]];
     then
         if [[ -e $PRIVATE_SCOT_MODULES/etc/$SARC ]]
         then
             REVPROXY=$PRIVATE_SCOT_MODULES/etc/$SARC
         else 
-            REVPROXY=$DEVDIR/etcsrc/apche2/scot-revproxy-rh-7-remoteuser.conf
+            REVPROXY=$SDIR/scot-revproxy-rh-7-remoteuser.conf
         fi
     else
         if [[ -e $PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-7-aux.conf ]];
         then
             REVPROXY=$PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-7-aux.conf
         else
-            REVPROXY=$DEVDIR/etcsrc/apache2/scot-revproxy-rh-7-aux.conf
+            REVPROXY=$SDIR2/scot-revproxy-rh-7-aux.conf
         fi
     fi
     echo "= REVPROXY set to $REVPROXY"
@@ -592,27 +595,28 @@ function get-cent-7-proxy-config {
 
 function get-cent-6-proxy-config {
     local SARC="scot-revproxy-rh-remoteuser.conf"
+    local SDIR=$DEVDIR/install/src/apache2
     if [[ $AUTHMODE == "RemoteUser" ]];
     then
         if [[ -e $PRIVATE_SCOT_MODULES/etc/$SARC ]]
         then
             REVPROXY=$PRIVATE_SCOT_MODULES/etc/$SARC
         else 
-            REVPROXY=$DEVDIR/etcsrc/apche2/scot-revproxy-rh-remoteuser.conf
+            REVPROXY=$SDIR/scot-revproxy-rh-remoteuser.conf
         fi
     else
         if [[ -e $PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-aux.conf ]];
         then
             REVPROXY=$PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-aux.conf
         else
-            REVPROXY=$DEVDIR/etcsrc/apache2/scot-revproxy-rh-aux.conf
+            REVPROXY=$SDIR2/scot-revproxy-rh-aux.conf
         fi
     fi
     echo "= REVPROXY set to $REVPROXY"
 }
 
 function get-cent-rev-proxy-config {
-    REVPROXY=$DEVDIR/etcsrc/scot-revproxy-$MYHOSTNAME
+    REVPROXY=$DEVDIR/install/src/apache2/scot-revproxy-$MYHOSTNAME
     if [[ ! -e $REVPROXY ]];
     then
         echo -e "${red}- custom scot config for $MYHOSTNAME not found using default ${nc}"
@@ -734,38 +738,50 @@ function copy_documentation {
 }
 
 function configure_geoip {
+    local SDIR=$DEVDIR/install/src/geoip
     if [[ -e $GEODIR/GeoLiteCity.dat ]]; then 
         if [[ $OVERGEO == "yes" ]]; then
             local BCKUP=GeoLiteCity.dat.$$
             echo -e "${red}- overwriting existing GeoLiteCity.dat file (original backed to $BCKUP ${nc}"
             cp $GEODIR/GeoLiteCity.dat $GEODIR/$BCKUP
-            cp $DEVDIR/etcsrc/GeoLiteCity.dat $GEODIR/GeoLiteCity.dat
+            cp $SDIR/GeoLiteCity.dat $GEODIR/GeoLiteCity.dat
         fi
     else 
         echo -e "${green}+ copying GeoLiteCity.dat file ${nc}"
-        cp $DEVDIR/etcsrc/GeoLiteCity.dat $GEODIR/GeoLiteCity.dat
+        cp $SDIR/GeoLiteCity.dat $GEODIR/GeoLiteCity.dat
         chmod +r $GEODIR/GeoLiteCity.dat
     fi
 }
 
 function configure_ubuntu_startup {
-    if [[ $OSVERSION == "14" ]]; then
+    local SDIR=$DEVDIR/install/src/systemd
+    if [[ $OSVERSION == "16" ]]; then
+        SYSDSERVICES='
+            elasticsearch.service 
+            scot.service 
+            scfd.service 
+            scepd.service 
+            mongod.service
+        '
+        for service in $SYSDSERVICES
+        do
+            if [[ ! -e /etc/systemd/system/$service ]];
+            then
+                if [[ -e $SDIR/$service ]]; then
+                    cp $SDIR/$service /etc/systemd/system/$service
+                else
+                    echo "- warning: $SDIR/$service not present"
+                fi
+            fi
+            systemctl enable $service
+            # systemctl restart $service do this in start services
+        done
+    else
         update-rc.d elasticsearch defaults
         update-rc.d scot defaults
         update-rc.d activemq defaults
         update-rc.d scepd defaults
         update-rc.d scfd defaults
-    else
-        SYSDSERVICES='elasticsearch.service scot.service scfd.service scepd.service mongod.service'
-        for service in $SYSDSERVICES
-        do
-            if [[ ! -e /etc/systemd/system/$service ]];
-            then
-                cp $DEVDIR/etcsrc/systemd/$service /etc/systemd/system/$service
-            fi
-            systemctl enable $service
-            # systemctl restart $service do this in start services
-        done
     fi
 }
 
@@ -785,9 +801,10 @@ function configure_cent_startup {
 }
 
 function configure_startup {
+    local SDIR=$DEVDIR/install/src
     if [[ ! -e /etc/init.d/scot ]]; then
         echo -e "${yellow} adding /etc/init.d/scot ${nc}"
-        cp $DEVDIR/etcsrc/init/scot-init /etc/init.d/scot
+        cp $SDIR/scot/scot-init /etc/init.d/scot
         chmod +x /etc/init.d/scot
         sed -i 's=/instdir='$SCOTDIR'=g' /etc/init.d/scot
     fi
@@ -879,19 +896,21 @@ function install_scot {
 }
 
 function configure_scot {
+    local SDIR=$DEVDIR/install/src/scot
     if [[ $AUTHMODE == "Remoteuser" ]]; then
-        cp $DEVDIR/etcsrc/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
+        cp $SDIR/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
     else 
         if [[ ! -e $SCOTDIR/etc/scot_env.cfg ]]; then
             echo "+ copying scot_env.cfg into $SCOTDIR/etc"
-            cp $DEVDIR/etcsrc/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
+            cp $SDIR/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
         else
             echo "= scot_env.cfg already present, skipping..."
         fi
     fi
 
     CFGFILES='mongo logger imap activemq enrichments flair.app 
-             flair_logger stretch.app stretch_logger game.app elastic'
+             flair_logger stretch.app stretch_logger game.app elastic
+             backup'
 
     for file in $CFGFILES
     do
@@ -899,7 +918,7 @@ function configure_scot {
         if [[ -e $CFGDEST ]]; then
             echo "= $CFGDEST already present, skipping..."
         else
-            CFGSRC="$DEVDIR/etcsrc/$file.cfg"
+            CFGSRC="$SDIR/$file.cfg"
             echo "+ copying $CFGSRC to $CFGDEST"
             cp $CFGSRC $CFGDEST
         fi
@@ -935,13 +954,17 @@ function configure_logging {
 
     if [ ! -e /etc/logrotate.d/scot ]; then
         echo "+ installing logrotate policy"
-        cp $DEVDIR/etcsrc/logrotate.scot /etc/logrotate.d/scot
+        cp $DEVDIR/install/src/logrotate/logrotate.scot /etc/logrotate.d/scot
     else 
         echo "= logrotate policy in place"
     fi
 }
 
 function add_failIndexKeyTooLong {
+
+    echo "= checking failIndexKeyTooLong Mongod parameter"
+
+    local SDIR=$DEVDIR/install/src/mongodb
     if [[ $OSVERSION == "16" ]]; then
         FIKTL=`grep failIndexKeyTooLong /lib/systemd/system/mongod.service`
         if [ "$FIKTL" == "" ]; then
@@ -949,9 +972,9 @@ function add_failIndexKeyTooLong {
             echo "+ backing orig, and copying new into place. "
             ext=`date +%s`
             cp /lib/systemd/system/mongod.service /tmp/mongod.service.backup.$ext
-            cp $DEVDIR/etcsrc/systemd-mongod.conf /lib/systemd/system/mongod.service
+            cp $SDIR/systemd-mongod.conf /lib/systemd/system/mongod.service
             cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.$ext
-            cp $DEVDIR/etcsrc/mongod.conf $MDCDIR/mongod.conf
+            cp $SDIR/mongod.conf $MDCDIR/mongod.conf
         else 
             echo "~ appears that failIndexKeyTooLong is in /lib/systemd/system/mongod.service"
         fi
@@ -962,7 +985,9 @@ function add_failIndexKeyTooLong {
             echo "+ backing orig, and copying new into place. "
             MDCDIR="/etc/init/"
             cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.bak
-            cp $DEVDIR/etcsrc/init-mongod.conf $MDCDIR/mongod.conf
+            cp $SDIR/init-mongod.conf $MDCDIR/mongod.conf
+        else
+            echo "~ appears the parameter is set in mongod config"
         fi
     fi
 }
@@ -970,6 +995,7 @@ function add_failIndexKeyTooLong {
 function configure_mongodb {
     echo "= Configuring MongoDB"
     echo "= Stopping MongoDB"
+    local SDIR=$DEVDIR/install/src/mongodb
 
     if [[ $OSVERSION == "16" ]]; then
         systemctl stop mongod.service
@@ -977,32 +1003,27 @@ function configure_mongodb {
         service mongod stop
     fi
 
+    local COPYFILE=$SDIR/init-mongod.conf
+
     if [[ $OS == "Ubuntu" ]]; then
         if [[ $OSVERSION == "16" ]]; then
             MDCDIR="/etc"
-            if [[ $MDBREFRESH == "yes" ]]; then
-                echo "+ backing up mongod.conf"
-                cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.$$
-                cp $DEVDIR/etcsrc/mongod.conf $MDCDIR/mongod.conf
-                add_failIndexKeyTooLong
-            fi 
+            COPYFILE=$SDIR/mongod.conf
         else 
             MDCDIR="/etc/init"
-            if [[ $MDBREFRESH == "yes" ]]; then
-                echo "+ backing up mongod.conf"
-                cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.$$
-                cp $DEVDIR/etcsrc/init-mongod.conf $MDCDIR/mongod.conf
-                add_failIndexKeyTooLong
-            fi
+            COPYFILE=$SDIR/init-mongod.conf
         fi
     else
         MDCDIR="/etc/init"
-        if [[ $MDBREFRESH == "yes" ]]; then
-            echo "+ backing up mongod.conf"
-            cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.$$
-            cp $DEVDIR/etcsrc/init-mongod.conf $MDCDIR/mongod.conf
-            add_failIndexKeyTooLong
-        fi
+        COPYFILE=$SDIR/init-mongod.conf
+    fi
+
+    if [[ $MDBREFRESH == "yes" ]]; then
+        echo "+ backup up mongod.conf"
+        cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.$$
+        echo "+ coping $COPYFILE to $MCDIR"
+        cp $COPYFILE $MCDIR
+        add_failIndexKeyTooLong
     fi
 
     if [[ ! -d $DBDIR ]]; then
