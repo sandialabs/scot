@@ -3,7 +3,7 @@
 function proceed () {
     if [[ $INTERACTIVE == 'yes' ]]; then
         read -p 'continue?' FOO
-        if [[ $FOO == "Y" ]];
+        if [[ $FOO == "Y" ]]; then
             INTERACTIVE="no"
         fi
     fi
@@ -187,6 +187,7 @@ function determine_distro {
     local cmd=$SRCDIR/determine_distro.sh
     echo "running $cmd"
     local output=`$cmd`
+    echo -e "${blue} DISTRO: $output ${nc}"
     # output is of format:
     # ${OS} ${DIST} ${REV} (${PSUEDONAME} ${KERNEL} ${MACH})
     DISTRO=`echo $output | cut -d ' ' -f 2`
@@ -215,11 +216,17 @@ function get_os_version {
 }
 
 function set_ascii_colors {
+    echo "+ Setting ascii color codes"
     blue='\e[0;34m'
+    echo -e "${blue} Information"
     green='\e[0;32m'
+    echo -e "${green} Sucess message"
     yellow='\e[0;33m'
+    echo -e "${yellow} warning message"
     red='\e[0;31m'
+    echo -e "${red} error message"
     nc='\033[0m'
+    echo -e "${nc}"
 }
 
 function root_check {
@@ -232,7 +239,7 @@ function root_check {
 
 function configure_accounts {
 
-    echo -e "${yellow}= Checking for activemq user ${nc}"
+    echo -e "${blue}= Checking for activemq user ${nc}"
     AMQ_USER=`grep -c activemq: /etc/passwd`
     if [ $AMQ_USER -ne 1 ]; then
         echo -e "${green}+ adding activemq user ${nc}"
@@ -241,7 +248,7 @@ function configure_accounts {
         echo -e "${green}= activemq exists ${nc}"
     fi
 
-    echo -e "${yellow}= Checking for scot user ${nc}"
+    echo -e "${blue}= Checking for scot user ${nc}"
     SCOT_USER=`grep -c scot: /etc/passwd`
     if [ $SCOT_USER -ne 1 ]; then
         echo -e "${green}+ adding scot user ${nc}"
@@ -260,21 +267,21 @@ function apt-get-update {
 }
 
 function install_packages {
-    echo "${yellow}+ Installing Packages${nc}"
+    echo -e "${yellow}+ Installing Packages${nc}"
     if [[ $OS == "Ubuntu" ]]
     then
         if [[ $REFRESHAPT == "yes" ]]
         then
-            echo "${green}+ Refreshing APT DB Repo"
+            echo -e "${green}+ Refreshing APT DB Repo"
             apt-get-update
             if [ $? != 0 ];
             then
-                echo "${red}! Error refreshing the Apt db repository!"
+                echo -e "${red}! Error refreshing the Apt db repository!"
                 exit 2;
             fi
         fi
-        echo "${green}+ installing apt packages"
-        for pkg in `cat $DEVDIR/install/ubuntu_debs_list`
+        echo -e "${green}+ installing apt packages"
+        for pkg in `cat $DEVDIR/install/packages/ubuntu_debs_list`
         do
             apt-get -y install $pkg
         done
@@ -285,7 +292,7 @@ function install_packages {
         echo "sslverify=false" >> /etc/yum.conf
 
         echo "+ installing rpms..."
-        for pkg in `cat $DEVDIR/install/rpms_list`; do
+        for pkg in `cat $DEVDIR/install/packages/rpms_list`; do
             echo "+ package = $pkg";
             yum install $pkg -y
         done
@@ -293,8 +300,8 @@ function install_packages {
 }
 
 function install_perl_modules {
-    echo "${red}++++++++++ PERL module Installation +++++++++++${nc}"
-    echo "${green}= installing pre-compiled package perl libs${nc}"
+    echo -e "${blue}++++++++++ PERL module Installation +++++++++++${nc}"
+    echo -e "${blue}= installing pre-compiled package perl libs${nc}"
     if [[ $OS == "Ubuntu" ]]; then
         PREPACKFILES=$DEDVIR/install/perl_debs_list
     else
