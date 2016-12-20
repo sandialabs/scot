@@ -7,7 +7,6 @@ perl-CPAN
 httpd
 dialog
 mongodb-org
-GeoIP
 perl-Geo-IP
 perl-Curses
 java-1.7.0-openjdk
