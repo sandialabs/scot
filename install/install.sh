@@ -5,6 +5,7 @@ INTERACTIVE='yes'
 
 set_ascii_colors
 root_check
+perl_version_check
 set_defaults
 process_command_line
 determine_distro
@@ -17,6 +18,9 @@ proceed
 
 if [[ $INSTMODE != "SCOTONLY" ]]; then
     echo -e "${blue}+ Installing Prerequisite Packages ${nc}"
+
+    install_geoip
+    proceed
 
     install_packages
     proceed
