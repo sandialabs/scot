@@ -9,6 +9,19 @@ function proceed () {
     fi
 }
 
+function perl_version_check {
+    local PVER=`perl -e 'print $];'`
+    local PTAR="5.018"
+    local COMP=`echo $PVER'>'$PTAR | bc -l`
+    if [[ $COMP == 1 ]];then
+        echo -e "${green} Yea! A modern perl! ${nc}"
+    else 
+        echo -e "${red} Your Perl is out of date.  Upgrade to 5.18 or better ${nc}"
+        echo "== See installation docs in docs/source/install.rst for instructions on how to install new perl"
+        exit 1
+    fi
+}
+
 function set_defaults () {
     DEVDIR="$( cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
     PRIVATE_SCOT_MODULES="$DEVDIR/../Scot-Internal-Modules"
@@ -198,6 +211,7 @@ function ensure_lsb_installed {
         determine_distro
     fi
     if [[ $DISTRO == "RedHat" ]]; then
+        yum update -y
         if ! hash lsb_release 2>/dev/null
         then
             yum install redhat-lsb
@@ -393,6 +407,7 @@ function install_nodejs {
 }
 
 function ensure_mongo_apt_entry {
+    echo -e "${blue} - ensuring mongo 10gen apt entry ${nc}"
     KEYSERVERURL="hkp://keyserver.ubuntu.com:80"
     KEYNUMBER="EA312927"
     if grep --quiet mongo /etc/apt/sources.list; then
@@ -411,6 +426,10 @@ function ensure_mongo_apt_entry {
         else
             KEYOPTS="--keyserver-options http-proxy=$PROXY"
         fi
+
+        echo -e "${blue} grabbing mongo key ${nc}"
+        apt-key adv $KEYOPTS $KEYSERVERURL -recv-keys $KEYNUMBER
+
         if [[ $OSVERSION == "16" ]]
         then
             userepo="xenial"
@@ -494,6 +513,24 @@ function install_elasticsearch {
     else
         ensure_elastic_yum_entry
         yum -y install elasticsearch
+    fi
+}
+
+function install_geoip {
+    echo -e "${blue} Installing Geoip from Maxmind ${nc}"
+
+    if [[ $OS == "Ubuntu" ]]; then
+        if [[ $OSVERSION == "14" ]]; then
+            if [[ ! -e /etc/apt/sources.list.d/maxmind-ppa-trusty.list ]]; then
+                add-apt-repository -y ppa:maxmind/ppa
+            fi
+        else 
+            add-apt-repository -y ppa:maxmind/ppa
+        fi
+       apt-get-update
+       apt-get install -y libmaxminddb0 libmaxminddb-dev mmdb-bin
+    else
+        yum install -y GeoIP
     fi
 }
 
