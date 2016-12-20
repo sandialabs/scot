@@ -748,7 +748,7 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
                                 )
                             )
                         ), 
-                        React.createElement(TinyMCE, {id: tinyID, content: "", className: 'inputtext', config: {plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) {args.content += ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css'}})
+                        React.createElement(TinyMCE, {id: tinyID, content: "", className: 'inputtext', config: {plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table contextmenu directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) {args.content += ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css', height:250}})
                     )
                 )
             )
@@ -3187,7 +3187,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntryData:true});
-                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                        this.errorToggle("Error: " + result.responseText);
                     }
                 }.bind(this)
             });
@@ -3213,7 +3213,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntityData: true})
-                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                        this.errorToggle("Error: " + result.responseText);
                     }
                 }.bind(this)
             });
@@ -3246,7 +3246,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntryData:true});
-                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                        this.errorToggle("Error: " + result.responseText);
                     }
                 }.bind(this)
             }); 
@@ -3272,7 +3272,7 @@ var SelectedEntry = React.createClass({displayName: "SelectedEntry",
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntityData: true})
-                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                        this.errorToggle("Error: " + result.responseText);
                     }
                 }.bind(this)
             }); 
@@ -4209,7 +4209,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                         if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false})
                         }
-                        this.errorToggle("No data returned for main lookup (404 or another network error) Error: " + result.responseText);
+                        this.errorToggle("Error: " + result.responseText);
                     }.bind(this),
                 });
                 //entry load
@@ -4229,7 +4229,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                         if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false});
                         }
-                        this.errorToggle("No data returned for entry lookup (404 or another network error) Error: " + result.responseText);
+                        this.errorToggle("Error: " + result.responseText);
                     }
                 });
                 //entity load
@@ -4259,7 +4259,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                         if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false});
                         }
-                        this.errorToggle("No data returned for entity lookup (404 or another network error) Error: " + result.responseText);
+                        this.errorToggle("Error: " + result.responseText);
                     }.bind(this)
                 });
                 //guide load
@@ -4277,7 +4277,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                         }.bind(this),
                         error: function(result) {
                             this.setState({guideID: null})
-                            this.errorToggle("No data returned for guide lookup (404 or another network error) Error: " + result.responseText);
+                            this.errorToggle("Error: " + result.responseText);
                         }.bind(this)
                     });     
                 }
@@ -4320,7 +4320,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false})
                 }
-                this.errorToggle("No Data Returned (404 or another network error) Error: " + result.responseText);
+                this.errorToggle("Error: " + result.responseText);
             }.bind(this),
         });    
         //entry load
@@ -4340,7 +4340,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
                 if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 } 
-                this.errorToggle("No data returned for entry lookup (404 or another network error) Error: " + result.responseText);
+                this.errorToggle("Error: " + result.responseText);
             }
         });
         //entity load
