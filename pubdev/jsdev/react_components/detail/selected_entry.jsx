@@ -58,7 +58,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntryData:true});
-                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                        this.errorToggle("Error: " + result.responseText);
                     }
                 }.bind(this)
             });
@@ -84,7 +84,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntityData: true})
-                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                        this.errorToggle("Error: " + result.responseText);
                     }
                 }.bind(this)
             });
@@ -117,7 +117,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntryData:true});
-                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                        this.errorToggle("Error: " + result.responseText);
                     }
                 }.bind(this)
             }); 
@@ -143,7 +143,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntityData: true})
-                        this.errorToggle("No data returned for popup (404 or another network error) Error: " + result.responseText);
+                        this.errorToggle("Error: " + result.responseText);
                     }
                 }.bind(this)
             }); 
