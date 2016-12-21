@@ -51,6 +51,9 @@ fi
 
 proceed
 
-. ./install_activemq.sh
-install_activemq
+# . ./install_activemq.sh
+# install_activemq
+
+. ./install_elasticsearch.sh
+install_elasticsearch
 
