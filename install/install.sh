@@ -13,8 +13,8 @@ get_os_name
 get_os_version
 
 configure_accounts
-
 proceed
+
 
 if [[ $INSTMODE != "SCOTONLY" ]]; then
     echo -e "${blue}+ Installing Prerequisite Packages ${nc}"
