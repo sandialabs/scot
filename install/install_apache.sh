@@ -106,7 +106,7 @@ function install_apache {
                     -out /tmp/scot.csr \
                     -subj '/CN=localhost/O=SCOT Default Cert/C=US'
         openssl x509 -req -days 36530 \
-                     -in /tmp/scot.csr
+                     -in /tmp/scot.csr \
                      -signkey $SSLDIR/scot.key \
                      -out $SSLDIR/scot.crt
     else
