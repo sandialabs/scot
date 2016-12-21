@@ -709,9 +709,9 @@ var ReferencesBody = React.createClass({
                     if (entryResult[i].class == 'summary') {
                         summary = true;
                         if (this.isMounted) {
-                            this.setState({showSummary:true,summaryData:entryResult[i].body})
+                            this.setState({showSummary:true,summaryData:entryResult[i].body_plain})
                             $('#entityTable' + this.props.data.id).qtip({ 
-                                content: {text: $(entryResult[i].body)}, 
+                                content: {text: entryResult[i].body_plain}, 
                                 style: { classes: 'qtip-scot' }, 
                                 hide: 'unfocus', 
                                 position: { my: 'top left', at: 'right', target: $('#entitySummaryRow'+this.props.data.id)},//[position.left,position.top] }, 
