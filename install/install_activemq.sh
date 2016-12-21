@@ -2,24 +2,49 @@
 
 function install_activemq {
 
-    echo "---"
-    echo "--- Installing ActiveMQ"
-    echo "---"
-
-    echo "-- checking for activemq user and group"
-    AMQ_USER=`grep -c activemq: /etc/passwd`
-    if [[ $AMQ_USER != "1" ]]; then
-        echo "-- adding activemq user"
-        useradd -c "ActiveMQ User" -d $AMQDIR -M -s /bin/bash activemq
-    else
-        echo "-- activemq user exists"
+    if [[ "$AMQDIR" == "" ]]; then
+        AMQDIR="/opt/activemq"
     fi
 
+    if [[ "$AMQTAR" == "" ]]; then
+        AMQTAR="apache-activemq-5.13.2-bin.tar.gz"
+    fi
+
+    if [[ "$AMQURL" == "" ]]; then
+        AMQURL="https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-activemq/5.13.2/$AMQTAR"
+    fi
+    AMQ_CONFIGS=$DEVDIR/src/ActiveMQ/amq
+
+    echo "---"
+    echo "--- Installing ActiveMQ"
+    echo "--- AMQDIR = $AMQDIR"
+    echo "--- AMQTAR = $AMQTAR"
+    echo "--- AMQURL = $AMQURL"
+    echo "--- CONFIGS= $AMQ_CONFIGS"
+    echo "---"
+
+    echo "-- installing JDK"
+    if [[ $OS ==  "Ubuntu" ]]; then
+        apt-get install -y openjdk-7-jdk
+    else
+        yum install java-1.7.0-openjdk -y
+    fi
+
+    echo "-- checking for activemq user and group"
     AMQ_GROUP=`grep -c activemq: /etc/group`
     if [[ $AMQ_GROUP != "1" ]]; then
         echo "-- adding activemq group"
         groupadd activemq
     fi
+
+    AMQ_USER=`grep -c activemq: /etc/passwd`
+    if [[ $AMQ_USER != "1" ]]; then
+        echo "-- adding activemq user"
+        useradd -M -c "ActiveMQ User" -d $AMQDIR -g activemq -s /bin/bash activemq
+    else
+        echo "-- activemq user exists"
+    fi
+
 
     if [[ -e $AMQDIR/bin/activemq ]]; then
         echo "-- activemq appears to already be installed"
@@ -41,15 +66,16 @@ function install_activemq {
         fi
 
         tar xf /tmp/$AMQTAR --directory /tmp
-        mv /tmp/apche-activemq-5.13.2/* $AMQDIR
+        mv /tmp/apache-activemq-5.13.2/* $AMQDIR
     fi
 
     if [[ ! -d /var/log/activemq ]]; then
         echo "-- creating /var/log/activemq for logging"
         mkdir -p /var/log/activemq
         touch /var/log/activemq/scot.amq.log
-        chown -R activemq.activemq /var/log/activemq
-        chmod -R g+w /var/log/activmq
+        chown -R activemq /var/log/activemq
+        chgrp -R activemq /var/log/activemq
+        chmod -R g+w /var/log/activemq
     else
         echo "-- logging directory /var/log/activemq exists"
     fi
@@ -62,7 +88,6 @@ function install_activemq {
         rm -f $AMQDIR/conf/jetty.xml
     fi
 
-    AMQ_CONFIGS=$DEVDIR/src/ActiveMQ/amq
 
     if [[ ! -d /$AMQDIR/webapps/scot ]]; then
         echo "-- installing scot webapp for activemq"
@@ -87,7 +112,7 @@ function install_activemq {
     fi
 
     echo "-- installing /etc/init.d/activemq"
-    cp $AMQ_CONFIGS/activemq-init /etc/init.d/activmq
+    cp $AMQ_CONFIGS/activemq-init /etc/init.d/activemq
     chmod +x /etc/init.d/activemq
 
     echo "-- ensuring proper ownership"
