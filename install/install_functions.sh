@@ -9,6 +9,11 @@ function proceed () {
     fi
 }
 
+function backup_file {
+    local ext=`date +%s`
+    cp $1 $1.$ext
+}
+
 function perl_version_check {
     local PVER=`perl -e 'print $];'`
     local PTAR="5.018"
@@ -469,52 +474,7 @@ function install_mongodb {
     fi
 }
 
-function ensure_eleastic_apt_entry {
-    EAE="/etc/apt/sources.list.d/elasticsearch-2.x.list"
-    if [[ ! -e $EAE ]]
-    then
-        wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
-        if [ $? -gt 0 ]; then
-            echo "~ failed to grap elastic GPC-KEY, could be SSL problem"
-            wget --no-check-certificate -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
-            if [ $? -gt 0 ]; then
-                echo "${red}!!! Elasticsearch totally failed install.  "
-                echo "!!! Reason: failure to key GPG key.  You will have to manually "
-                echo "!!! fix this condition for Search to work in SCOT"
-            fi
-        fi
-        echo "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main" | sudo tee -a $EAE
-    fi
-}
 
-function ensure_elastic_yum_entry {
-    if grep --quiet eleastic /etc/yum.repos.d/elasticsearch.repo; then
-        echo "= elastic search stanza present"
-    else 
-        echo "+ adding elastic search to yum repos"
-        cat <<- EOF > /etc/yum.repos.d/elasticsearch.repo
-[elasticsearch-2.x]
-name=Elasticsearch repository for 2.x packages
-baseurl=https://packages.elastic.co/elasticsearch/2.x/centos
-gpgcheck=1
-gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch
-enabled=1
-EOF
-    fi
-}
-
-function install_elasticsearch {
-    echo "+ installing elasticsearch"
-    if [[ $OS == "Ubuntu" ]]
-    then
-        ensure_elastic_apt_entry
-        apt-get-update
-        apt-get -y install elasticsearch
-    else
-        ensure_elastic_yum_entry
-        yum -y install elasticsearch
-    fi
-}
 
 function install_geoip {
     echo -e "${blue} Installing Geoip from Maxmind ${nc}"
@@ -533,248 +493,6 @@ function install_geoip {
        apt-get install -y libmaxminddb0 libmaxminddb-dev mmdb-bin
     else
         yum install -y GeoIP
-    fi
-}
-
-function install_activemq {
-    echo -e "${yellow}+ installing ActiveMQ${nc}"
-
-    if [ -e "$AMQDIR/bin/activemq" ]; then
-        echo "= activemq already installed"
-    else
-        if [ ! -e /tmp/$AMQTAR ]; then
-            echo "= downloading $AMQURL"
-            # curl -o /tmp/apache-activemq.tar.gz $AMQTAR
-            wget -P /tmp $AMQURL 
-        fi
-        if [ ! -d $AMQDIR ];then
-            mkdir -p $AMQDIR
-            chown -R activemq.activemq $AMQDIR
-        fi
-        tar xf /tmp/$AMQTAR --directory /tmp
-        mv /tmp/apache-activemq-5.13.2/* $AMQDIR
-    fi
-
-
-    echo -e "${yellow}= checking activemq logging directories ${nc}"
-    if [ ! -d /var/log/activemq ]; then
-        echo "${green}+ creating /var/log/activemq ${nc}"
-        mkdir -p /var/log/activemq
-        touch /var/log/activemq/scot.amq.log
-        chown -R activemq.activemq /var/log/activemq
-        chmod -R g+w /var/log/activemq
-    fi
-
-    if [ $REFRESH_AMQ_CONFIG == "yes" ] || ! [ -d $AMQDIR/webapps/scot ] ; then
-        echo "+ adding/refreshing scot activemq config"
-        echo "- removing $AMQDIR/webapps/scot"
-        rm -rf $AMQDIR/webapps/scot
-
-        echo "- removing $AMQDIR/webapps/scotaq"
-        rm -rf $AMQDIR/webapps/scotaq
-
-        echo "+ copying scot xml files into $AMQDIR/conf"
-        local AMQSRC=$DEVDIR/src/ActiveMQ
-        cp $AMQSRC/amq/scotamq.xml     $AMQDIR/conf
-        cp $AMQSRC/amq/jetty.xml       $AMQDIR/conf
-
-        echo "+ copying $AMQSRC/amq/scotaq to $AMQDIR/webapps"
-        cp -R $AMQSRC/amq/scotaq       $AMQDIR/webapps
-
-        echo "+ renaming $AMQDIR/webapps/scotaq to $AMQDIR/webapps/scot"
-        mv $AMQDIR/webapps/scotaq      $AMQDIR/webapps/scot
-        cp $AMQSRC/amq//activemq-init   /etc/init.d/activemq
-        chmod +x /etc/init.d/activemq
-        chown -R activemq.activemq $AMQDIR
-    fi
-}
-
-function get-ubuntu-rev-proxy-config {
-    local SDIR=$DEVDIR/src/apache2
-    REVPROXY=$SDIR/scot-revproxy-$MYHOSTNAME
-    local SASRC="scot-revproxy-ubuntu-remoteuser.conf"
-    if [[ ! -e $REVPROXY ]]
-    then
-        echo -e "${red}- custom scot configuration for $MYHOSTNAME not found, using default ${nc}"
-        if [[ $AUTHMODE == "RemoteUser" ]];
-        then
-            if [[ -e $PRIVATE_SCOT_MODULE/etc/$SASRC ]]
-            then
-                REVPROXY=$PRIVATE_SCOT_MODULE/etc/$SASRC
-            else 
-                REVPROXY=$SDIR/$SASRC
-            fi
-        else
-            SASRC="scot-revproxy-ubuntu-aux.conf"
-            if [[ -e $PRIVATE_SCOT_MODULE/etc/$SASRC ]]
-            then
-                REVPROXY=$PRIVATE_SCOT_MODULE/etc/$SASRC
-            else 
-                REVPROXY=$SDIR/$SASRC
-            fi
-        fi
-    fi
-    echo "= REVPROXY set to $REVPROXY"
-}
-
-function get-cent-7-proxy-config {
-    local SARC="scot-revproxy-rh-7-remoteuser.conf"
-    local SDIR=$DEVDIR/src/apache2
-    if [[ $AUTHMODE == "RemoteUser" ]];
-    then
-        if [[ -e $PRIVATE_SCOT_MODULES/etc/$SARC ]]
-        then
-            REVPROXY=$PRIVATE_SCOT_MODULES/etc/$SARC
-        else 
-            REVPROXY=$SDIR/scot-revproxy-rh-7-remoteuser.conf
-        fi
-    else
-        if [[ -e $PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-7-aux.conf ]];
-        then
-            REVPROXY=$PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-7-aux.conf
-        else
-            REVPROXY=$SDIR2/scot-revproxy-rh-7-aux.conf
-        fi
-    fi
-    echo "= REVPROXY set to $REVPROXY"
-}
-
-function get-cent-6-proxy-config {
-    local SARC="scot-revproxy-rh-remoteuser.conf"
-    local SDIR=$DEVDIR/src/apache2
-    if [[ $AUTHMODE == "RemoteUser" ]];
-    then
-        if [[ -e $PRIVATE_SCOT_MODULES/etc/$SARC ]]
-        then
-            REVPROXY=$PRIVATE_SCOT_MODULES/etc/$SARC
-        else 
-            REVPROXY=$SDIR/scot-revproxy-rh-remoteuser.conf
-        fi
-    else
-        if [[ -e $PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-aux.conf ]];
-        then
-            REVPROXY=$PRIVATE_SCOT_MODULES/etc/apache2/scot-revproxy-rh-aux.conf
-        else
-            REVPROXY=$SDIR2/scot-revproxy-rh-aux.conf
-        fi
-    fi
-    echo "= REVPROXY set to $REVPROXY"
-}
-
-function get-cent-rev-proxy-config {
-    REVPROXY=$DEVDIR/src/apache2/scot-revproxy-$MYHOSTNAME
-    if [[ ! -e $REVPROXY ]];
-    then
-        echo -e "${red}- custom scot config for $MYHOSTNAME not found using default ${nc}"
-        if [[ $OSVERSION == "7" ]];
-        then
-            get-cent-7-proxy-config
-        else
-            get-cent-6-proxy-config
-        fi
-    fi
-}
-
-function generate_ssl {
-    echo -e "${green}+ creating SSL certificates (CHANGE these ASAP)"
-    SSLDIR="/etc/apache2/ssl"
-    if [[ ! -f $SSLDIR/scot.key ]]; then
-        mkdir -p $SSLDIR/ssl/
-        openssl genrsa 2048 > $SSLDIR/scot.key
-        openssl req -new -key $SSLDIR/scot.key \
-                    -out /tmp/scot.csr \
-                    -subj '/CN=localhost/O=SCOT Default Cert/C=US'
-        openssl x509 -req -days 36530 \
-                     -in /tmp/scot.csr
-                     -signkey $SSLDIR/scot.key \
-                     -out $SSLDIR/scot.crt
-    fi
-}
-
-function update_scot_apache_conf {
-    local CONFDIR=$CENT_HTTP_CONF_DIR
-    if [[ $OS == "Ubuntu" ]];
-    then
-        CONFDIR=$SITESAVAILABLE
-    fi
-    echo -e "${yellow}~ modifying scot.conf to local defaults ${nc}"
-    sed -i 's=/scot/document/root='$SCOTROOT'/public=g' $CONFDIR/scot.conf
-    sed -i 's=localport='$SCOTPORT'=g' $CONFDIR/scot.conf
-    sed -i 's=scot\.server\.tld='$MYHOSTNAME'=g' $CONFDIR/scot.conf
-}
-
-function ubuntu-apache-configure {
-    ACD="/etc/apache2"
-    SITESENABLED="$ACD/sites-enabled"
-    SITESAVAILABLE="$ACD/sites-available"
-
-    if [[ $REFRESHAPACHECONF == "yes" ]]
-    then
-        rm -f $SITESENABLED/scot.conf
-        rm -f $SITESAVAILABLE/scot.conf
-    fi
-
-    if [[ -e $SITESENABLED/000-default.conf ]]
-    then
-        rm -f $SITESENABLED/000-default.conf
-    fi
-
-    MYMODS="proxy proxy_http ssl headers rewrite authnz_ldap"
-    for m in $MYMODS
-    do
-        echo "+ enabling $m"
-        a2enmod -q $m
-    done
-
-    if [[ ! -e $SITESAVAILABLE/scot.conf ]] 
-    then
-        echo -e "${yellow}+ adding scot apache configuration ${nc}"
-        get-ubuntu-rev-proxy-config
-    fi
-    cp $REVPROXY $SITESAVAILABLE/scot.conf
-    ln -sf $SITESAVAILABLE/scot.conf $SITESENABLED/scot.conf
-
-    update_scot_apache_conf
-    generate_ssl
-}
-
-function cent-apache-configure {
-    echo "+ Enabling apache to do network connections"
-    setsebool -P httpd_can_network_connect 1
-
-    CENT_HTTP_CONF_DIR=/etc/httpd/conf.d
-
-    echo "- Renaming existing conf file in $CENT_HTTP_CONF_DIR"
-
-    for FILE in $CENT_HTTP_CONF_DIR/*.conf
-    do
-        if [[ $FILE != "$CENT_HTTP_CONF_DIR/scot.conf" ]];
-        then
-            mv $FILE $FILE.bak
-        else
-            if [[ $REFRESHAPACHECONF == "YES" ]];
-            then
-                mv $FILE $FILE.bak
-            fi
-        fi
-    done
-    get-cent-rev-proxy-config
-    echo -e "${green}+ copying scot.conf to apache ${nc}"
-    cp $REVPROXY $CENT_HTTP_CONF_DIR/scot.conf
-    
-    update_scot_apache_conf
-    generate_ssl
-}
-
-function configure_apache {
-    echo -e "${yellow}= Configuring Apache ${nc}"
-    MYHOSTNAME=`hostname`
-
-    if [[ $OS == "Ubuntu" ]]
-    then
-        ubuntu-apache-configure
-    else
-        cent-apache-configure
     fi
 }
 
@@ -1005,6 +723,7 @@ function configure_logging {
         echo "= logrotate policy in place"
     fi
 }
+
 
 function add_failIndexKeyTooLong {
 
