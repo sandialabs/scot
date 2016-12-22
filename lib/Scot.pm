@@ -222,6 +222,11 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-api#do_command')
             ->name  ('do_command');
 
+
+    $scot   ->route ('/api/v2/wall')
+            ->via   ('post')
+            ->to    ('controller-api#wall')
+            ->name  ('wall');
 =pod
 
 @api {post} /scot/api/v2/file Upload File

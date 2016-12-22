@@ -10,17 +10,22 @@ function install_apache {
         echo "--"
         echo "-- Ubuntu based system install of apache2"
         echo "--"
-        apt-get install apache2 -y
+        APACHE_PKGS="apache2 libapache2-mod-authnz-external libapache2-mod-proxy-html libapache2-mod-rpaf"
+        apt-get install -y $APACHE_PKGS
         SitesAvailable="/etc/apache2/sites-available"
         SitesEnabled="/etc/apache2/sites-enabled"
     else
         echo "--"
         echo "-- CENT/RH based system install of apache2"
         echo "--"
-
-        yum install apache2 -y
+        APACHE_PKGS="httpd mod_ssl"
+        yum install $APACHE_PKGS -y
         ApacheConfd="/etc/httpd/conf.d"
         setsebool -P httpd_can_network_connect 1
+        echo "-- adding firewalld command to allow web traffic"
+        firewall-cmd --permanent --add-port=80/tcp
+        firewall-cmd --permanent --add-port=443/tcp
+        firewall-cmd --reload
     fi
 
     echo "--"
