@@ -482,12 +482,12 @@ function install_geoip {
     if [[ $OS == "Ubuntu" ]]; then
         if [[ $OSVERSION == "14" ]]; then
             if [[ ! -e /etc/apt/sources.list.d/maxmind-ppa-trusty.list ]]; then
-                add-apt-repository 'deb http://ppa.launchpad.net/maxmind/ppa ubuntu trusty main' 
-                add-apt-repository 'deb-src http://ppa.launchpad.net/maxmind/ppa ubuntu trusty main' 
+                add-apt-repository 'deb http://ppa.launchpad.net/maxmind/ppa/ubuntu trusty main' 
+                add-apt-repository 'deb-src http://ppa.launchpad.net/maxmind/ppa/ubuntu trusty main' 
             fi
         else 
-            add-apt-repository 'deb http://ppa.launchpad.net/maxmind/ppa ubuntu xenial main' 
-            add-apt-repository 'deb-src http://ppa.launchpad.net/maxmind/ppa ubuntu xenial main' 
+            add-apt-repository 'deb http://ppa.launchpad.net/maxmind/ppa/ubuntu xenial main' 
+            add-apt-repository 'deb-src http://ppa.launchpad.net/maxmind/ppa/ubuntu xenial main' 
         fi
        apt-get-update
        apt-get install -y libmaxminddb0 libmaxminddb-dev mmdb-bin
