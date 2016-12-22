@@ -65,8 +65,11 @@ proceed
 #install_activemq
 #proceed
 
-. ./install_mongodb.sh
-install_mongodb
+#. ./install_mongodb.sh
+#install_mongodb
+
+. ./install_apache.sh
+install_apache
 
 
 
