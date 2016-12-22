@@ -51,9 +51,24 @@ fi
 
 proceed
 
-# . ./install_activemq.sh
-# install_activemq
 
-. ./install_elasticsearch.sh
-install_elasticsearch
+#. ./install_packages.sh
+#install_packages
+
+#proceed
+
+#. ./install_java.sh
+#install_java
+#proceed
+
+#. ./install_activemq.sh
+#install_activemq
+#proceed
+
+. ./install_mongodb.sh
+install_mongodb
+
+
+
+
 
