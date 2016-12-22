@@ -1,15 +1,17 @@
 #!/bin/bash
 
 . ./install_functions.sh
+set_defaults
 
 INTERACTIVE="yes"
 
-#if root_check 
-#then    
-#    echo "running as root"
-#else
-#    echo "not as root";
-#fi
+if root_check 
+then    
+    echo "running as root"
+else
+    echo "not as root"; 
+    exit 2
+fi
 
 if get_http_proxy
 then
@@ -18,7 +20,6 @@ else
     echo "not set!"
 fi
 
-proceed
 
 if get_script_src_dir
 then
@@ -50,6 +51,9 @@ fi
 
 proceed
 
-. ./install_activmq.sh
-install_activmq
+# . ./install_activemq.sh
+# install_activemq
+
+. ./install_elasticsearch.sh
+install_elasticsearch
 
