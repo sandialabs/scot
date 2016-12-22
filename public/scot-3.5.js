@@ -768,6 +768,21 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
         else {    
             if(this.props.stage == 'Reply') {
                 var data = new Object()
+                $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+                    $(y).find('img').each(function(key, value){
+                        if ($(value)[0].src.startsWith('blob')) { //Checking to see if it's a locally copied file
+                            var canvas = document.createElement('canvas');
+                            var set = new Image();
+                            set = $(value);
+                            canvas.width =  set[0].width;
+                            canvas.height = set[0].height;
+                            var ctx = canvas.getContext('2d');
+                            ctx.drawImage(set[0], 0, 0);
+                            var dataURL = canvas.toDataURL("image/png");
+                            $(value).attr('src', dataURL);
+                        }
+                    })
+                })    
                 data = JSON.stringify({parent: Number(this.props.id), body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
                 $.ajax({
                     type: 'post',
@@ -818,6 +833,21 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
             }
             else if(this.props.type == 'alert'){ 
                 var data;
+                $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+                    $(y).find('img').each(function(key, value){
+                        if ($(value)[0].src.startsWith('blob')) {   //Checking if it's a locally copied file
+                            var canvas = document.createElement('canvas');
+                            var set = new Image();
+                            set = $(value);
+                            canvas.width =  set[0].width;
+                            canvas.height = set[0].height;
+                            var ctx = canvas.getContext('2d');
+                            ctx.drawImage(set[0], 0, 0);
+                            var dataURL = canvas.toDataURL("image/png");
+                            $(value).attr('src', dataURL);
+                        }
+                    })
+                })
                 data = JSON.stringify({body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid), target_type: 'alert',  parent: 0})
                 $.ajax({
                     type: 'post', 
@@ -834,6 +864,21 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
             }	
             else {
                 var data = new Object();
+                $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+                    $(y).find('img').each(function(key, value){
+                        if ($(value)[0].src.startsWith('blob')) {   //Checking if its a locally copied file 
+                            var canvas = document.createElement('canvas');
+                            var set = new Image();
+                            set = $(value);
+                            canvas.width =  set[0].width;
+                            canvas.height = set[0].height;
+                            var ctx = canvas.getContext('2d');
+                            ctx.drawImage(set[0], 0, 0);
+                            var dataURL = canvas.toDataURL("image/png");
+                            $(value).attr('src', dataURL); 
+                        }
+                    }) 
+                }) 
                 data = {parent: 0, body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
                 $.ajax({
                     type: 'post',
@@ -852,6 +897,21 @@ var AddEntryModal = React.createClass({displayName: "AddEntryModal",
     },
     forEdit: function(set){
         if(set){
+            $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+                $(y).find('img').each(function(key, value){
+                    if ($(value)[0].src.startsWith('blob')) {   //Checking if its a lcoally copied file
+                        var canvas = document.createElement('canvas');
+                        var set = new Image();
+                        set = $(value);
+                        canvas.width =  set[0].width;
+                        canvas.height = set[0].height;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(set[0], 0, 0);
+                        var dataURL = canvas.toDataURL("image/png");
+                        $(value).attr('src', dataURL);
+                    }
+                })
+            })
             var data = {
                 parent: Number(this.props.parent), 
                 body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), 
