@@ -128,7 +128,29 @@ function configure_for_scot {
     echo "-- clearing $MONGO_LOG"
     cat /dev/null > $MONGO_LOG
 
-    
+    # not sure this is needed
+#    echo "-- configuring startup"
+#    if [[ $OS == "Ubuntu" ]]; then
+#        if [[ $OSVERSION == "16" ]]; then
+#            MDB_SYSTEMD="/etc/systemd/system/mongod.service"
+#            MDB_SYSTEMD_SRC="$DEVDIR/../install/src/mongodb/mongod.service"
+#            if [[ ! -e $MDB_SYSTEMD ]]; then
+#                echo "-- installing $MDB_SYSTEMD"
+#                cp $MDB_SYSTEMD_SRC $MDB_SYSTEMD
+#            else
+#                echo "-- $MDB_SYSTEMD already present"
+#            fi
+#            systemctl daemon-reload
+#            systemctl enable mongod.service
+#        else
+#            # echo "-- enabling mongod in defaults rc.d"
+#            # not needed
+#            echo ""
+#        fi
+#    else
+#        echo "-- adding ckconfig mongod "
+#        chkconfig --add mongod
+#    fi
 
 }
 
