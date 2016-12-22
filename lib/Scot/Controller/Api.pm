@@ -2253,8 +2253,27 @@ sub do_command {
             wall    => ""
         }
     });
-
 }
+
+sub wall { 
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+    my $user    = $self->session('user');
+    my $msg     = $self->param('msg');
+    my $now     = $env->now;
+
+    $env->mq->send("scot", {
+        action  => "wall",
+        data    => {
+            message => $msg,
+            user    => $user,
+            when    => $now,
+        }
+    });
+}
+
 
 sub get_req_value {
     my $self    = shift;
