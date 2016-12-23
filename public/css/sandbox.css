@@ -19,6 +19,7 @@ body {
   background-color: rgba(0,0,0,0);
   overflow:auto;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 11pt;
 }
 
 body:active {
@@ -119,7 +120,7 @@ blockquote {
 }
 
 .mce-content-body {
-    font-size: 12pt;
+    font-size: 11pt;
 }
 
 .noselect {
