@@ -19,21 +19,22 @@ function add_scot_user {
 
 function configure_logging {
     if [ ! -d $LOGDIR ]; then
-        echo "+ creating Log dir $LOGDIR"
+        echo "- creating Log dir $LOGDIR"
         mkdir -p $LOGDIR
     fi
 
-    echo "= ensuring proper log ownership/permissions"
-    chown scot.scot $LOGDIR
+    echo "- ensuring proper log ownership/permissions of $LOGDIR"
+    chown scot:scot $LOGDIR
     chmod g+w $LOGDIR
 
     if [ "$CLEARLOGS"  == "yes" ]; then
-        echo -e "${red}- clearing any existing scot logs${NC}"
         for i in $LOGDIR/*; do
+            echo "- clearing log $i"
             cat /dev/null > $i
         done
     fi
 
+    echo "- creating $LOGDIR/scot.log"
     touch $LOGDIR/scot.log
     chown scot:scot $LOGDIR/scot.log
 
@@ -71,6 +72,13 @@ function get_config_files {
             cp $CFGSRC $CFGDEST
         fi
     done
+
+    if [[ $AUTHMODE == "Remoteuser" ]]; then
+        cp $DEVDIR/../install/src/scot/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
+    else
+        cp $DEVDIR/../install/src/scot/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
+    fi
+
 }
 
 function copy_documentation {
@@ -88,11 +96,14 @@ function configure_startup {
     SCOTSERVICES='scot scfd scepd'
     SRCDIR="$DEVDIR/../install/src/scot/"
 
-    for $service in $SCOTSERVICES; do
+    for service in $SCOTSERVICES; do
         if [[ $OS == "Ubuntu" ]]; then
             if [[ $OSVERSION == "16" ]]; then
                 sysfile="${service}.service"
                 target="/etc/systemd/system/$sysfile"
+                if [[ "$REFRESH_INIT" == "yes" ]]; then
+                    rm -f $target
+                fi
                 if [[ ! -e $target ]]; then
                     echo "-- installing $target"
                     cp $SRCDIR/$sysfile $target
@@ -102,6 +113,21 @@ function configure_startup {
                 systemct daemon-reload
                 systemctl enable $sysfile
             else
+                if [[ "$REFRESH_INIT" == "yes" ]]; then
+                    rm -f /etc/init.d/$service
+                fi
+                if [[ ! -e /etc/init.d/$service ]]; then
+                    if [[ $service == "scot" ]]; then
+                        echo "-- installing /etc/init.d/scot"
+                        cp $SRCDIR/scot-init /etc/init.d/scot
+                        chmod +x /etc/init.d/scot
+                        sed -i 's=instdir='$SCOTDIR'=g' /etc/init.d/scot
+                    else
+                        echo "-- install /etc/init.d/$service"
+                        /opt/scot/bin/${service}.pl > /etc/init.d/$service
+                        chmod +x /etc/init.d/$service
+                    fi
+                fi
                 echo "-- updating rc.d for $service"
                 update-rc.d $service defaults
             fi
@@ -117,6 +143,7 @@ function install_scot {
     echo "---"
     echo "--- Installing SCOT software"
     echo "---"
+    add_scot_user
 
     if [[ $DELDIR == "true" ]]; then
         echo "-- removing $SCOTDIR prior to install"
@@ -131,7 +158,10 @@ function install_scot {
     fi
 
     echo "-- copying SCOT to $SCOTDIR"
-    cp -r $DEVDIR/../* $SCOTDIR
+    #cp -r $DEVDIR/.. $SCOTDIR
+    TAROPTS="--exclude=pubdev --exclude-vcs"
+    echo "-       TAROPTS are $TAROPTS"
+    (cd $DEVDIR/..; tar $TAROPTS -cf - .) | (cd $SCOTDIR; tar xvf -)
 
     echo "-- assigning owner/permissions on $SCOTDIR"
     chown -R scot:scot $SCOTDIR
