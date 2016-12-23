@@ -73,6 +73,45 @@ function get_config_files {
     done
 }
 
+function copy_documentation {
+    echo "--"
+    echo "-- Installing documentation"
+    echo "--"
+    cp -r $DEVDIR/../docs/build/html/* $SCOTDIR/public/docs
+    echo "-- Documentation now available at https://localhost/docs/index.html"
+}
+
+function configure_startup {
+    echo "--"
+    echo "-- configuring SCOT startup"
+    echo "--"
+    SCOTSERVICES='scot scfd scepd'
+    SRCDIR="$DEVDIR/../install/src/scot/"
+
+    for $service in $SCOTSERVICES; do
+        if [[ $OS == "Ubuntu" ]]; then
+            if [[ $OSVERSION == "16" ]]; then
+                sysfile="${service}.service"
+                target="/etc/systemd/system/$sysfile"
+                if [[ ! -e $target ]]; then
+                    echo "-- installing $target"
+                    cp $SRCDIR/$sysfile $target
+                else
+                    echo "-- $target exists, skipping..."
+                fi
+                systemct daemon-reload
+                systemctl enable $sysfile
+            else
+                echo "-- updating rc.d for $service"
+                update-rc.d $service defaults
+            fi
+        else
+            echo "-- chkconfig adding $service"
+            chkconfig --add $service
+        fi
+    done
+}
+
 function install_scot {
     
     echo "---"
@@ -100,5 +139,6 @@ function install_scot {
 
     get_config_files    
     configure_logging
-    
+    copy_documentation
+    configure_startup
 }

@@ -4,7 +4,7 @@ function ensure_mongo_repo {
     
     echo "-- ensuring correct mongodb repo"
 
-    MONGO_KEYSRVR="hkp://keyserver.ubuntu.com:80"
+    MONGO_KEYSRVR="--keyserver hkp://keyserver.ubuntu.com:80"
     MONGO_KEY="EA312927"
     KEY_OPTS="--keyserver-options http-proxy=$PROXY"
     MONGO_SOURCE_LIST="/etc/apt/sources.list.d/mongo-org-3.2.list"
@@ -20,7 +20,7 @@ function ensure_mongo_repo {
     if [[ $OS == "Ubuntu" ]]; then
 
         echo "-- requesting mongodb-org gpg key"
-        apt-key adv $KEY_OPTS $MONGO_KEYSRVR --recv-keys $MONGO_KEY
+        apt-key adv $KEY_OPTS $MONGO_KEYSRVR --recv $MONGO_KEY
 
         if [[ $OSVERSION == "16" ]]; then
             OS_REPO="xenial"
@@ -30,6 +30,7 @@ function ensure_mongo_repo {
 
         DEB="http://repo.mongodb.org/apt/ubuntu $OS_REPO/mongodb-org/3.2"
         echo "deb $DEB multiverse" | tee $MONGO_SOURCE_LIST
+        apt-get update
     else 
         if grep --quiet mongo /etc/yum.repos.d/mongodb.repo; then
             echo "-- mongo yum repo already present"
@@ -122,7 +123,7 @@ function configure_for_scot {
     fi
 
     echo "-- ensuring ownership"
-    chown -r mongodb:mongodb $DBDIR
+    chown -R mongodb:mongodb $DBDIR
 
     MONGO_LOG="/var/log/mongodb/mongod.log"
     echo "-- clearing $MONGO_LOG"
@@ -152,6 +153,7 @@ function configure_for_scot {
 #        chkconfig --add mongod
 #    fi
 
+    start_stop mongod start
 }
 
 function install_mongodb {
