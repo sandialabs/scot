@@ -315,7 +315,7 @@ var App = React.createClass({
             state = 0
         }
         Listener.activeMq();   //register for amq updates
-        return{id: id, id2: id2, set: state, handler: "Scot", viewMode:'default'}	
+        return{id: id, id2: id2, set: state, handler: "Scot", viewMode:'default', notificationSetting: 'on'}	
     },
     componentDidMount: function() {
 	    $.ajax({
@@ -325,21 +325,26 @@ var App = React.createClass({
 	        this.setState({handler: response.records[0].username})
 	    }.bind(this))
         Store.storeKey('wall');
-        Store.addChangeListener(this.update);
+        Store.addChangeListener(this.wall);
+        Store.storeKey('notification');
+        Store.addChangeListener(this.notification);
     },
     componentWillMount: function() {
         //Get landscape/portrait view if the cookie exists
         var viewModeSetting = checkCookie('viewMode');
-        var NotificationSetting = checkCookie('Notification');
+        var notificationSetting = checkCookie('notification');
         var listViewFilterSetting = checkCookie('listViewFilter'+this.props.params.value.toLowerCase());
         var listViewSortSetting = checkCookie('listViewSort'+this.props.params.value.toLowerCase());
         var listViewPageSetting = checkCookie('listViewPage'+this.props.params.value.toLowerCase());
-        this.setState({viewMode:viewModeSetting, Notification:NotificationSetting, listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting})
+        if (notificationSetting == undefined) {
+            notificationSetting = 'on';
+        }
+        this.setState({viewMode:viewModeSetting, notificationSetting:notificationSetting, listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting})
     },
-    update: function() {
+    notification: function() {
         //Notification display in update as it will run on every amq message matching 'main'.
         var notification = this.refs.notificationSystem
-        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api' && activemqwall != true){
+        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api' && activemqwall != true && this.state.notificationSetting == 'on'){
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
@@ -355,14 +360,38 @@ var App = React.createClass({
                     }
                 } : null
             })
-        } else if (activemqwall == true) {
+        }
+    },
+    wall: function() {
+        var notification = this.refs.notificationSystem
+        var date = new Date(activemqwhen * 1000);
+        date = date.toLocaleString();
+        if (activemqwall == true) {
             notification.addNotification({
-                message: activemqwhen + ' ' + activemqwho + ': ' + activemqmessage,
+                message: date + ' ' + activemqwho + ': ' + activemqmessage,
                 level: 'warning',
                 autoDismiss: 0,
             })
             activemqwall = false;
         }
+    },
+    errorToggle: function(string) {
+        var notification = this.refs.notificationSystem
+        notification.addNotification({
+            message: string,
+            level: 'error',
+            autoDismiss: 0,
+        });
+    },
+    notificationToggle: function() {
+        if(this.state.notificationSetting == 'off'){
+            this.setState({notificationSetting: 'on'})
+            setCookie('notification','on',1000);
+        }
+        else {
+            this.setState({notificationSetting: 'off'})
+            setCookie('notification','off',1000);
+        } 
     },
    render: function() {
         var IH = 'Incident Handler: ' + this.state.handler;
@@ -394,7 +423,7 @@ var App = React.createClass({
                     </Navbar.Collapse>
                 </Navbar>
                 <div className='mainNavPadding'>
-                    <Notification ref='notificationSystem' style={{}} />
+                    <Notification ref='notificationSystem' />
                     {this.state.set == 0 ? 
                     <div className="homePageDisplay">
                         <div className='col-md-4'>
@@ -410,39 +439,39 @@ var App = React.createClass({
                     :
                     null}
                     {this.state.set == 1 ?
-                        <ListView isalert={isalert ? 'isalert' : ''} id={this.state.id} viewMode={this.state.viewMode} type={statetype} Notification={this.state.Notification} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} />
+                        <ListView isalert={isalert ? 'isalert' : ''} id={this.state.id} viewMode={this.state.viewMode} type={statetype} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting}  listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
                     :
                     null}
                     {this.state.set == 2 ? 
-                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'event'} Notification={this.state.Notification} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} />
+                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'event'} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
                     :
                     null}
                     {this.state.set == 3 ? 
-                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'incident'}  Notification={this.state.Notification} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} />
+                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'incident'}  notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
                     :
                     null}
                     {this.state.set == 4 ?
-                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'task'} Notification={this.state.Notification} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} />
+                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'task'} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
                     :
                     null}
                     {this.state.set == 5 ?
-                        <ListView id={this.state.id} type={'guide'} viewMode={this.state.viewMode} Notification={this.state.Notification} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} />
+                        <ListView id={this.state.id} type={'guide'} viewMode={this.state.viewMode} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
                     :
                     null}
                     {this.state.set == 6 ?
-                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'intel'} Notification={this.state.Notification} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} /> 
+                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'intel'} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/> 
                     :
                     null}
                     {this.state.set == 7 ?
-                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'signature'} Notification={this.state.Notification} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} /> 
+                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'signature'} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/> 
                     :
                     null}
                     {this.state.set == 8 ?
-                        <Visualization value={this.props.params.value} type={this.props.params.id} id={this.props.params.type} depth={this.props.params.typeid} viewMode={this.state.viewMode} Notification={this.state.Notification} /> 
+                        <Visualization value={this.props.params.value} type={this.props.params.id} id={this.props.params.type} depth={this.props.params.typeid} viewMode={this.state.viewMode} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} errorToggle={this.errorToggle}/> 
                     :
                     null}
                     {this.state.set == 98 ?
-                        <EntityDetail entityid={this.state.id} entitytype={'entity'} id={this.state.id} type={'entity'} viewMode={this.state.viewMode} Notification={this.state.Notification} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} fullScreen={true} />
+                        <EntityDetail entityid={this.state.id} entitytype={'entity'} id={this.state.id} type={'entity'} viewMode={this.state.viewMode} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} fullScreen={true} errorToggle={this.errorToggle}/>
                     :
                     null}
                     {this.state.set == 99 ?
