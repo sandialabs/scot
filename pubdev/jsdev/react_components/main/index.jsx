@@ -12,15 +12,18 @@ var Route	        = require('../../../node_modules/react-router').Route
 var Link	        = require('../../../node_modules/react-router').Link
 var browserHistory  = require('../../../node_modules/react-router/').hashHistory
 var Listener        = require('../activemq/listener.jsx')
+var Store           = require('../activemq/store.jsx');
 var SelectedContainer = require('../detail/selected_container.jsx')
 var EntityDetail      = require('../modal/entity_detail.jsx')
 var AMQ             = require('../debug-components/amq.jsx');
+var Wall            = require('../debug-components/wall.jsx');
 var Search          = require('../components/esearch.jsx');
 var Visualization   = require('../components/dashboard/visualization.jsx');
 var Gamification    = require('../components/dashboard/gamification.jsx');
 var Status           = require('../components/dashboard/status.jsx');
 var Online          = require('../components/dashboard/online.jsx');
 var Stats           = require('../components/dashboard/stats.jsx');
+var Notification    = require('react-notification-system');
 var sethome = false
 var setalerts = false
 var setevents = false
@@ -30,6 +33,7 @@ var settask = false
 var setguide = false
 var setsignature = false
 var setamq = false
+var setwall = false
 var setvisualization = false
 var isalert = false
 var supertableid = [];
@@ -58,6 +62,7 @@ var App = React.createClass({
                 settask = false
                 setguide = false
                 setamq = false
+                setwall = false
                 setsignature = false
                 setvisualization = false
             }
@@ -78,6 +83,7 @@ var App = React.createClass({
                 settask = false
                 setguide = false
                 setamq = false
+                setwall = false
                 setsignature = false
                 setvisualization = false
                 //if the url is just /alert/ with no id - default to alertgroup
@@ -103,6 +109,7 @@ var App = React.createClass({
                 settask = false
                 setguide = false
                 setamq = false
+                setwall = false
                 setsignature = false
                 setvisualization = false
             }
@@ -123,6 +130,7 @@ var App = React.createClass({
                 settask = false
                 setguide = false
                 setamq = false
+                setwall = false
                 setsignature = false
                 setvisualization = false
             }
@@ -143,6 +151,7 @@ var App = React.createClass({
                 setevents = false
                 settask = false
                 setamq = false
+                setwall = false
                 setsignature = false
                 setvisualization = false
             }
@@ -157,6 +166,7 @@ var App = React.createClass({
                 setintel = false
                 settask = true
                 setamq = false
+                setwall = false
                 setsignature = false
                 setvisualization = false
             }  
@@ -169,6 +179,7 @@ var App = React.createClass({
                 setincidents = false
                 settask = false
                 setamq = false
+                setwall = false
                 setsignature = false
                 setvisualization = false
                 state = 5
@@ -197,6 +208,7 @@ var App = React.createClass({
                 setevents = false
                 settask = false
                 setamq = false
+                setwall = false
                 setsignature = false
                 setvisualization = false
             }
@@ -217,6 +229,7 @@ var App = React.createClass({
                 setevents = false
                 settask = false
                 setamq = false
+                setwall = false
                 setsignature = true
                 setvisualization = false
             }
@@ -230,6 +243,7 @@ var App = React.createClass({
                 setevents = false
                 settask = false
                 setamq = false
+                setwall = false
                 setsignature = false
                 setvisualization = true
             }
@@ -242,6 +256,7 @@ var App = React.createClass({
                 setincidents = false
                 settask = false
                 setamq = false
+                setwall = false
                 setsignature = false
                 setvisualization = false
                 if(this.props.params.id != null) {
@@ -262,6 +277,21 @@ var App = React.createClass({
                 setintel = false
                 settask = false
                 setamq = true
+                setwall = false
+                setsignature = false
+                setvisualization = false
+            }
+            else if (this.props.params.value.toLowerCase() == 'wall') {
+                state = 100
+                setguide = false
+                sethome = false
+                setalerts = false
+                setevents = false
+                setincidents = false
+                setintel = false
+                settask = false
+                setamq = false 
+                setwall = true
                 setsignature = false
                 setvisualization = false
             }
@@ -275,6 +305,7 @@ var App = React.createClass({
                 settask = false
                 setguide = false
                 setamq = false
+                setwall = false
                 setsignature = false
                 setvisualization = false
             }
@@ -292,7 +323,9 @@ var App = React.createClass({
 	        url: '/scot/api/v2/handler?current=1'
 	    }).success(function(response){
 	        this.setState({handler: response.records[0].username})
-	        }.bind(this))
+	    }.bind(this))
+        Store.storeKey('wall');
+        Store.addChangeListener(this.update);
     },
     componentWillMount: function() {
         //Get landscape/portrait view if the cookie exists
@@ -302,6 +335,34 @@ var App = React.createClass({
         var listViewSortSetting = checkCookie('listViewSort'+this.props.params.value.toLowerCase());
         var listViewPageSetting = checkCookie('listViewPage'+this.props.params.value.toLowerCase());
         this.setState({viewMode:viewModeSetting, Notification:NotificationSetting, listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting})
+    },
+    update: function() {
+        //Notification display in update as it will run on every amq message matching 'main'.
+        var notification = this.refs.notificationSystem
+        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api' && activemqwall != true){
+            notification.addNotification({
+                message: activemqwho + activemqmessage + activemqid,
+                level: 'info',
+                autoDismiss: 5,
+                action: activemqstate != 'delete' ? {
+                    label: 'View',
+                    callback: function(){
+                        if(activemqtype == 'entry' || activemqtype == 'alert'){
+                            activemqid = activemqsetentry
+                            activemqtype = activemqsetentrytype
+                        }
+                        window.open('#/' + activemqtype + '/' + activemqid)
+                    }
+                } : null
+            })
+        } else if (activemqwall == true) {
+            notification.addNotification({
+                message: activemqwhen + ' ' + activemqwho + ': ' + activemqmessage,
+                level: 'warning',
+                autoDismiss: 0,
+            })
+            activemqwall = false;
+        }
     },
    render: function() {
         var IH = 'Incident Handler: ' + this.state.handler;
@@ -333,6 +394,7 @@ var App = React.createClass({
                     </Navbar.Collapse>
                 </Navbar>
                 <div className='mainNavPadding'>
+                    <Notification ref='notificationSystem' style={{}} />
                     {this.state.set == 0 ? 
                     <div className="homePageDisplay">
                         <div className='col-md-4'>
@@ -385,6 +447,10 @@ var App = React.createClass({
                     null}
                     {this.state.set == 99 ?
                         <AMQ type='amq' />
+                    :
+                    null}
+                    {this.state.set == 100 ?
+                        <Wall />
                     :
                     null}
                 </div>
