@@ -2272,6 +2272,10 @@ sub wall {
             when    => $now,
         }
     });
+    $self->do_render({
+        action  => 'wall',
+        status  => 'ok',
+    });
 }
 
 
