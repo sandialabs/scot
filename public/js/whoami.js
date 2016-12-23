@@ -12,6 +12,8 @@ var activemqpid = ''
 var alertgroupforentity = false
 var activemqstate = ''
 var activemqsetentry = 0
+var activemqwall;
+var activemqwhen;
 var entityPopUpHeight = '';
 var entityPopUpWidth = '';
 var amqdebug = false;

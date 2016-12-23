@@ -358,6 +358,14 @@ var ActiveMQ = {
         activemqpid = payload.action.activemq.pid;
         callback.emitChange('amqdebug');
     }
+
+    if (payload.action.activemq.action == 'wall') {
+        activemqwho = payload.action.activemq.data.user;
+        activemqmessage = payload.action.activemq.data.message;
+        activemqwhen = payload.action.activemq.data.when;
+        activemqwall = true;
+        callback.emitChange('wall');
+    }
     switch (payload.action.activemq.data.type) {
     
             case 'tag': 
