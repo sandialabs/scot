@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function install_ubuntu_perl_packages {
+function install_ubuntu_packages {
 
     DEBPACKAGES='
         perl
@@ -257,7 +257,7 @@ function install_packages {
     echo "--- Installing System Perl Packages"
     echo "---"
 
-    if [[ $OS eq "Ubuntu" ]]; then
+    if [[ $OS == "Ubuntu" ]]; then
         install_ubuntu_packages
     else 
         install_cent_packages
@@ -273,7 +273,7 @@ function install_perl_modules {
         Daemon::Control
         Net::LDAP
         Net::SMTP::TLS
-        Net::STOMP
+        Net::Stomp
         Net::STOMP::Client
         Net::IDN::Encode
         Net::Works::Network
@@ -349,7 +349,7 @@ function install_perl_modules {
         Courriel
     '
 
-    for $module in $PERLMODULES; do
+    for module in $PERLMODULES; do
 
         echo "--"
         echo "-- 1st attempt at installing $module"
@@ -368,7 +368,7 @@ function install_perl_modules {
         fi
     done
 
-    for $module in $RETRY; do
+    for module in $RETRY; do
         echo "--"
         echo "-- 2nd attept to install $module"
         echo "--"
@@ -389,7 +389,7 @@ function install_perl_modules {
         echo "Unfortunately they are necessary for SCOT to work."
         echo "Try installing them by hand: \"sudo -E cpanm module_name\""
         echo "Google any error messages or contact scot-dev@sandia.gov"
-        for $module in $FAILED; do
+        for module in $FAILED; do
             echo "    => $module"
         done
     fi
