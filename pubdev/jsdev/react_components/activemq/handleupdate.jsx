@@ -18,14 +18,6 @@ function update(state, callback, payload){
         callback.emitChange('activealertgroup')
         callback.emitChange('incidentgroup')
         callback.emitChange(payload.action.activemq.data.id)
-        /* setTimeout(function(){$('.z-row').each(function(key, value){
-            $(value).find('.z-cell').each(function(r,s){
-            if($(s).attr('name') == 'id' && $(s).text() == payload.action.activemq.data.id){
-                $(value).css('background', '#FFFF76')
-                setTimeout(function(){$(value).css('background', "")}, 10000)
-                }
-        })
-        }) }, 1000) */
     }
     else if (state == 'entry'){
         activemqwho = payload.action.activemq.data.who
@@ -167,6 +159,7 @@ function update(state, callback, payload){
         callback.emitChange('incidentgroup')
         callback.emitChange('eventgroup')    
     }
+    callback.emitChange('notification');
 }
 function creation(state, callback, payload){
     activemqstate = 'create'
@@ -244,6 +237,7 @@ function creation(state, callback, payload){
         changeKey = payload.action.activemq.data.type+'listview';
         callback.emitChange(changeKey)
    }
+   callback.emitChange('notification');
 }
 
 function deletion(state, callback, payload){ 
@@ -323,6 +317,7 @@ function deletion(state, callback, payload){
         activemqtype = state
         callback.emitChange(payload.action.activemq.data.id)
    }
+   callback.emitChange('notification');
 }
 
 
