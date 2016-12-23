@@ -33,6 +33,7 @@ function install_ubuntu_packages {
         libcarp-assert-perl
         libcarp-clan-perl
         libcgi-simple-perl
+        libcgi-emulate-psgi-perl
         libclass-accessor-perl
         libclass-c3-adopt-next-perl
         libclass-c3-perl
@@ -282,7 +283,7 @@ function install_perl_modules {
         Moose::Util::TypeConstraints
         MooseX::MetaDescription::Meta::Attribute
         MooseX::Singleton
-        MooseX::Emulate::Class::Access
+        MooseX::Emulate::Class::Accessor::Fast
         MooseX::Types
         MooseX::Types::Common
         MooseX::MethodAttributes
@@ -296,7 +297,6 @@ function install_perl_modules {
         Server::Starter
         PSGI
         CGI::PSGI
-        CGI::Emulate::PSGI
         CGI::Compile
         HTTP::Server::Simple::PSGI
         JSON
@@ -335,7 +335,7 @@ function install_perl_modules {
         Config::Auto
         Data::GUID
         Redis
-        File::libMagic
+        File::LibMagic
         List::Uniq
         Domain::PublicSuffix
         Crypt::PBKDF2
