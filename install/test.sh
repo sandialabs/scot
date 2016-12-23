@@ -71,10 +71,9 @@ proceed
 #. ./install_apache.sh
 #install_apache
 
-. ./install_perl.sh
-install_perl
+#. ./install_perl.sh
+#install_perl
 
-
-
-
+. ./install_scot.sh
+install_scot
 
