@@ -18,6 +18,14 @@ function install_ubuntu_packages {
         libmagic-dev
         libmagic1
     '
+    # for some reason, maxmind ppa is foobar'ed and these packages
+    # won't install unless we force them to with allow unauth
+    FORCE='
+        libgeoip-dev
+        libmaxminddb0
+        libmaxminddb-dev
+        mmdb-bin
+    '
 
     if [[ $REFRESHAPT == "yes" ]]; then
         echo "-- refreshing apt repositories"
@@ -33,6 +41,48 @@ function install_ubuntu_packages {
         echo "-- Installing $pgk"
         apt-get -y install $pkg
     done
+
+    for pkg in $FORCE; do
+        echo ""
+        echo "-- force installing $pkg"
+        apt-get -y --allow-unauthenticated install $pkg
+    done
+}
+
+function update_apt {
+
+    echo "--"
+    echo "-- adding ppa's and updating"
+    echo "--"
+
+    echo "- reinstalling ca-certificates"
+    apt-get install --reinstall ca-certificates
+    apt-get install -y software-properties-common
+
+    UBUNTUNAME="trusty"
+    if [[ $OSVERSION == "16" ]]; then
+        UBUNTUNAME="xenial"
+    fi
+
+    if grep --quiet maxmind /etc/apt/sources.list; then
+        echo "- maxmind ppa already present"
+    else
+        echo "- trying to add maxmind ppa"
+        #add-apt-repository ppa:maxmind/ppa
+        #if [[ "$?" == "0" ]]; then
+        #    echo "- miracles never cease, ppa added."
+        #else
+            UBUNAME="trusty"
+            if [[ $OSVERSION == "16" ]]; then
+                UBUNAME="xenial"
+            fi
+            Line="deb http://ppa.launchpad.net/maxmind/ppa/ubuntu $UBUNAME main"
+            echo "- trying to add repo $Line"
+            add-apt-repository "$Line"
+        #fi
+    fi
+
+    apt-get update
 }
 
 function install_cent_packages {
@@ -51,6 +101,7 @@ function install_cent_packages {
         dialog
         krb5-libs
         krb5-devel
+        GeoIP
     '
 
     for pkg in $YUMPACKAGES; do
@@ -67,7 +118,7 @@ function install_packages {
     echo "---"
 
     if [[ $OS == "Ubuntu" ]]; then
-        apt-get-update
+        update_apt
         install_ubuntu_packages
     else 
         install_cent_packages

@@ -3,74 +3,72 @@
 
 INTERACTIVE='yes'
 
-set_ascii_colors
-root_check
-perl_version_check
-set_defaults
-process_command_line
-determine_distro
-get_os_name
-get_os_version
-
-configure_accounts
-proceed
-
-
-if [[ $INSTMODE != "SCOTONLY" ]]; then
-    echo -e "${blue}+ Installing Prerequisite Packages ${nc}"
-
-    install_geoip
-    proceed
-
-    install_packages
-    proceed
-
-    install_perl_modules
-    proceed
-
-    install_nodejs
-    proceed
-
-    install_mongodb
-    proceed
-
-    install_elasticsearch
-    proceed
-
-    install_activemq
-    proceed
-
-    configure_geoip
-    proceed
-
+if root_check 
+then    
+    echo "running as root"
+else
+    echo "not as root"; 
+    exit 2
 fi
 
-configure_apache
-proceed
+if get_http_proxy
+then
+    echo "http proxy is $PROXY"
+else
+    echo "not set!"
+fi
 
-configure_startup
-proceed
 
-configure_filestore
-proceed
+if get_script_src_dir
+then
+    echo $DIR
+else 
+    echo "get_script_src_dir failed!"
+fi
 
-configure_backup
-proceed
+if determine_distro
+then
+    echo "distro is $DISTRO"
+else
+    echo "failed getting distro"
+fi
 
+if get_os_name
+then
+    echo "osname is $OS"
+else 
+    echo "failed getting OS name"
+fi
+
+if get_os_version
+then
+    echo "osversion is $OSVERSION"
+else
+    echo "failed to get osversion"
+fi
+
+if [[ $INSTMODE != "SCOTONLY" ]]; then
+    . ./install_packages.sh
+    install_packages
+    . ./install_java.sh
+    install_java
+    . ./install_activemq.sh
+    install_activemq
+    . ./install_elasticsearch.sh
+    install_elasticsearch
+    . ./install_mongo.sh
+    install_mongo
+    . ./install_apache.sh
+    install_apache.sh
+    . ./install_perl.sh
+    install_perl
+    configure_filestore
+fi
+
+. ./install_scot.sh
 install_scot
-proceed
 
-configure_scot
-proceed
 
-install_private
-proceed
-
-configure_logging
-proceed
-
-configure_mongodb
-proceed
 
 start_services
 
