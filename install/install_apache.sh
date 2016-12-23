@@ -35,11 +35,14 @@ function install_apache {
     local CSD="$DEVDIR/src/apache2"
     local CSF="$PRIVATE_SCOT_MODULES/etc/scot-revproxy.conf"
 
+    echo "- looking for $CSF"
     if [[ ! -e $CSF ]]; then
-        CSF="$CSD/scot-revproxy-remoteuser-${OS}.conf"
+        CSF="$CSD/scot-revproxy-${OS}-remoteuser.conf"
+        echo "- looking for $CSF"
 
         if [[ ! -e $CSF ]]; then
-            CSF="$CSD/scot-revproxy-local-${OS}.conf"
+            CSF="$CSD/scot-revproxy-${OS}-local.conf"
+            echo "- looking for $CSF"
 
             if [[ ! -e $CSF ]]; then
                 echo -e "${red} FAILED to FIND revproxy config! ${nc}"
@@ -65,11 +68,9 @@ function install_apache {
 
         if [[ $REFRESHAPACHECONF == "YES" ]] || [[ ! -e $SitesEnabled/scot.conf ]]; then
             cp $CSF $SCOT_APACHE_CONFIG
-            ln -s $SSCOT_APACHE_CONFIG $SitesEnabled/scot.conf
+            ln -s $SCOT_APACHE_CONFIG $SitesEnabled/scot.conf
         fi
-
     else 
-
        echo "- clearing existing configs from $ApacheConfd"
        for FILE in $ApacheConfd/*conf
        do   
@@ -84,6 +85,10 @@ function install_apache {
        SCOT_APACHE_CONFIG=/etc/httpd/conf.d/scot.conf
        cp $CSF $SCOT_APACHE_CONFIG
     fi
+
+    if [[ "$MYHOSTNAME" == "" ]]; then
+        MYHOSTNAME=`hostname`
+    fi
     
     echo "-"
     echo "- Config in place, editing to set variables"
@@ -93,7 +98,7 @@ function install_apache {
     echo "-"
     sed -i 's=/scot/document/root='$SCOTROOT'/public=g' $SCOT_APACHE_CONFIG
     sed -i 's=/localport='$SCOTPORT'=g' $SCOT_APACHE_CONFIG
-    sed -i 's=scot\.server\.tld='$MYHOSTNAME'=g' $SCOT_APACHE_CONFIG
+    sed -i 's=scotservertld='$MYHOSTNAME'=g' $SCOT_APACHE_CONFIG
 
     SSLDIR="/etc/apache2/ssl"
 
