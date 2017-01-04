@@ -107,7 +107,7 @@ function install_cent_packages {
     for pkg in $YUMPACKAGES; do
         echo ""
         echo "-- Installing $pgk"
-        yum install $pkg -y
+        yum install -y $pkg
     done
 }
 
