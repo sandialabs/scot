@@ -247,7 +247,25 @@ function perl_version_check {
     else 
         echo -e "${red} Your Perl is out of date.  Upgrade to 5.18 or better ${nc}"
         echo "== See installation docs in docs/source/install.rst for instructions on how to install new perl"
-        exit 1
+        echo ""
+        echo "Attempting to auto install for you..."
+        CurrentDir=`pwd`
+        cd /tmp
+        wget http://www.cpan.org/src/5.0/perl-5.24.0.tar.gz
+        tar xzvf perl-5.24.0.tar.gz
+        cd perl-5.24.0
+        ./Configure -des
+        make
+        make test
+        make install
+        cd $CurrentDir
+        PVER=`/usr/local/bin/perl -e 'print $];'`
+        COMP=`echo $PVER'>'$PTAR | bc -l`
+        if [[ $COMP == 1 ]];then
+            echo "- modifying path so new perl comes first"
+            export PATH=/usr/local/bin:$PATH
+            echo "export PATH=/usr/local/bin:$PATH" > /etc/profile.d/scot.sh
+        fi
     fi
 }
 
