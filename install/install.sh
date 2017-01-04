@@ -72,7 +72,7 @@ install_scot
 
 start_services
 
-if [ $AUTHMODE == "Local"  ];then
+if [[ "$AUTHMODE" == "Local"  ]]; then
     echo "!!!!"
     echo "!!!! AUTHMODE is set to LOCAL.  Use the admin username and password"
     echo "!!!! to initially access SCOT.  Please see only documentation for "
