@@ -18,6 +18,7 @@ else
     echo "not set!"
 fi
 
+set_defaults
 
 if get_script_src_dir
 then
