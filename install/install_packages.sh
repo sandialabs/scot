@@ -91,6 +91,9 @@ function install_cent_packages {
     echo "--     you can remove this from /etc/yum.conf after install"
     echo "sslverify=false" >> /etc/yum.conf
 
+    yum --enablerepo=extras install epel-release -y
+    yum update -y
+
     YUMPACKAGES='
         redhat-lsb
         openssl-devel

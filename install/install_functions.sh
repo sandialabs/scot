@@ -416,9 +416,13 @@ function start_services {
             service scepd restart
         fi
     else
-        /etc/init.d/scot restart
-        service apache2 restart
-        service scfd restart
-        service scepd restart
+        # it appears that centos 7.3 is systemd 
+        systemctl daemon-reload
+        start_mongo
+        wait_for_mongo
+        systemctl restart scot.service
+        systemctl restart apache2.service
+        systemctl restart scfd.service
+        systemctl restart scepd.service
     fi
 }
