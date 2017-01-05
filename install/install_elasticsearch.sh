@@ -103,11 +103,6 @@ function install_elasticsearch {
     else 
         yum -y install elasticsearch
     fi
-    create_es_init
-
-    if [[ $RESET_ES_DB == "yes" ]]; then
-        . $DEVDIR/src/elasticsearch/mapping.sh
-    fi
 
 
     if [[ $OS == "Ubuntu" ]]; then
@@ -127,19 +122,14 @@ function install_elasticsearch {
             service elasticsearch restart
         fi
     else
-        # it appears that cent 7 is systemd
-        # echo "-- adding elasticsearch to rc.d"
-        # chkconfig --add elasticsearch
-        # echo "-- restarting elasticsearch"
-        # sevice elasticsearch restart
-        ES_SERVICE="/etc/systemd/system/elasticsearch.service"
-        ES_SERVICE_SRC="$DEVDIR/../install/src/elasticsearch/elasticsearch.service"
-        if [[ ! -e $ES_SERVICE ]]; then
-            echo "- installing $ES_SERVICE"
-            cp $ES_SERVICE_SRC $ES_SERVICE
-        fi
-        systemctl daemon-reload
-        systemctl restart elasticsearch.service
+        systemctl deamon-reload
+        systemctl enable elasticsearch.service
+        systemctl start elasticsearch.service
+    fi
+
+    if [[ $RESET_ES_DB == "yes" ]]; then
+        echo "-- creating elasticsearch mappings..."
+        . $DEVDIR/src/elasticsearch/mapping.sh
     fi
 
 }
