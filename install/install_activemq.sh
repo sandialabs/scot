@@ -23,12 +23,12 @@ function install_activemq {
     echo "--- CONFIGS= $AMQ_CONFIGS"
     echo "---"
 
-    echo "-- installing JDK"
-    if [[ $OS ==  "Ubuntu" ]]; then
-        apt-get install -y openjdk-7-jdk
-    else
-        yum install java-1.7.0-openjdk -y
-    fi
+#    echo "-- installing JDK"
+#    if [[ $OS ==  "Ubuntu" ]]; then
+#        apt-get install -y openjdk-7-jdk
+#    else
+#        yum install java-1.7.0-openjdk -y
+#    fi
 
     echo "-- checking for activemq user and group"
     AMQ_GROUP=`grep -c activemq: /etc/group`
@@ -117,6 +117,37 @@ function install_activemq {
 
     echo "-- ensuring proper ownership"
     chown -R activemq.activemq $AMQDIR
+
+    if [[ $OS == "Ubuntu" ]]; then
+        if [[ $OSVERSION == "16" ]]; then
+            AMQ_SYSTEMD="/etc/systemd/system/activmq.service"
+            AMQ_SYSTEMD_SRC="$DEVDIR/../install/src/ActiveMQ/activemq.service"
+            if [[ ! -e $AMQ_SYSTEMD ]]; then
+                echo "-- installing $AMQ_SYSTEMD"
+                cp $AMQ_SYSTEMD_SRC $AMQ_SYSTEMD
+            else
+                echo "-- $AMQ_SYSTEMD exists, skipping..."
+            fi
+            systemctl daemon-reload
+            systemctl enable $service
+        else
+            update-rc.d activemq defaults
+        fi
+    else
+        # although this appears to work stil
+        # chkconfig --add activemq
+        # centos 7 appears to be systemd 
+        AMQ_SYSTEMD="/etc/systemd/system/activmq.service"
+        AMQ_SYSTEMD_SRC="$DEVDIR/../install/src/ActiveMQ/activemq.service"
+        if [[ ! -e $AMQ_SYSTEMD ]]; then
+            echo "-- installing $AMQ_SYSTEMD"
+            cp $AMQ_SYSTEMD_SRC $AMQ_SYSTEMD
+        else
+            echo "-- $AMQ_SYSTEMD exists, skipping..."
+        fi
+        systemctl daemon-reload
+        systemctl enable $service
+    fi
 
     echo "-- installation of ActiveMQ complete, starting..."
     /etc/init.d/activemq start
