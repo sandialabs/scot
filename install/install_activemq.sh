@@ -134,8 +134,19 @@ function install_activemq {
             update-rc.d activemq defaults
         fi
     else
-        chkconfig --add activemq
-        # TODO: firewall-cmd rules necessary for this to work?
+        # although this appears to work stil
+        # chkconfig --add activemq
+        # centos 7 appears to be systemd 
+        AMQ_SYSTEMD="/etc/systemd/system/activmq.service"
+        AMQ_SYSTEMD_SRC="$DEVDIR/../install/src/ActiveMQ/activemq.service"
+        if [[ ! -e $AMQ_SYSTEMD ]]; then
+            echo "-- installing $AMQ_SYSTEMD"
+            cp $AMQ_SYSTEMD_SRC $AMQ_SYSTEMD
+        else
+            echo "-- $AMQ_SYSTEMD exists, skipping..."
+        fi
+        systemctl daemon-reload
+        systemctl enable $service
     fi
 
     echo "-- installation of ActiveMQ complete, starting..."

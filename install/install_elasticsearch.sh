@@ -127,10 +127,19 @@ function install_elasticsearch {
             service elasticsearch restart
         fi
     else
-        echo "-- adding elasticsearch to rc.d"
-        chkconfig --add elasticsearch
-        echo "-- restarting elasticsearch"
-        sevice elasticsearch restart
+        # it appears that cent 7 is systemd
+        # echo "-- adding elasticsearch to rc.d"
+        # chkconfig --add elasticsearch
+        # echo "-- restarting elasticsearch"
+        # sevice elasticsearch restart
+        ES_SERVICE="/etc/systemd/system/elasticsearch.service"
+        ES_SERVICE_SRC="$DEVDIR/../install/src/elasticsearch/elasticsearch.service"
+        if [[ ! -e $ES_SERVICE ]]; then
+            echo "- installing $ES_SERVICE"
+            cp $ES_SERVICE_SRC $ES_SERVICE
+        fi
+        systemctl daemon-reload
+        systemctl restart elasticsearch.service
     fi
 
 }
