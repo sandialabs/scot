@@ -98,7 +98,9 @@ function start_stop  {
             service $1 $2
         fi
     else
-        service $1 $2
+        # cent 7 is systemd
+        # service $1 $2
+        systemctl $2 ${1}.service
     fi
 }
 
