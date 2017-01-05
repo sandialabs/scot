@@ -559,6 +559,14 @@ sub get_one {
         #}
     }
 
+    my $selected_fields = $self->build_fields($req_href);
+    if ( $selected_fields ) {
+        foreach my $key (keys %$data_href) {
+            unless ( $selected_fields->{$key} ) {
+                delete $data_href->{$key};
+            }
+        }
+    }
 
     $self->do_render($data_href);
 
@@ -716,6 +724,16 @@ sub get_subthing {
     }
     else {
         @things = $cursor->all;
+        my $selected_fields = $self->build_fields($req_href);
+        if ( $selected_fields ) {
+            foreach my $thing (@things) {
+                foreach my $key (keys %$thing) {
+                    unless ( $selected_fields->{$key} ) {
+                        delete $thing->{$key};
+                    }
+                }
+            }
+        }
         $log->trace("rendering default",{filter=>\&Dumper, value=>\@things});
         $self->do_render({
             records => \@things,
