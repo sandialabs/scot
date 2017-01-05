@@ -207,21 +207,33 @@ function install_ubuntu_packages {
 
 function install_cent_perl_packages {
 
-    YUMPACKAGES='
-        perl
-        perl-devel
-        perl-CPAN
-        perl-Geo-IP
-        perl-Curses
-        perl-Net-SSLeay
-        perl-Curses
-        perl-Net-XMPP
-    '
+    # <rant> supporting cent sucks.  everything is so old that 
+    # the net no longer knows how to fix there old crappy software.
+    # we most likely just built a modern perl that won't work with
+    # these old yum packages, so I'll try to install the cpanm versions
 
-    for pkg in $YUMPACKAGES; do
+#    YUMPACKAGES='
+#        perl
+#        perl-devel
+#        perl-CPAN
+#        perl-Geo-IP
+#        perl-Net-SSLeay
+#    '
+#
+#    for pkg in $YUMPACKAGES; do
+#        echo ""
+#        echo "-- Installing $pgk"
+#        yum install $pkg -y
+#    done
+    local PPKGS='
+        CPAN
+        Net::SSLeay
+        LWP
+    '
+    for pkg in $PPKGS; do
         echo ""
-        echo "-- Installing $pgk"
-        yum install $pkg -y
+        echo "-- using cpanm to install $pkg"
+        cpanm $pkg
     done
 }
 
@@ -239,15 +251,19 @@ function install_cpanm {
 }
 
 function perl_version_check {
+
     local PVER=`perl -e 'print $];'`
     local PTAR="5.018"
     local COMP=`echo $PVER'>'$PTAR | bc -l`
+
     if [[ $COMP == 1 ]];then
         echo -e "${green} Yea! A modern perl! ${nc}"
     else 
         echo -e "${red} Your Perl is out of date.  Upgrade to 5.18 or better ${nc}"
         echo "== See installation docs in docs/source/install.rst for instructions on how to install new perl"
         echo ""
+        exit 1;
+
         echo "Attempting to auto install for you..."
         CurrentDir=`pwd`
         cd /tmp
@@ -264,7 +280,9 @@ function perl_version_check {
         if [[ $COMP == 1 ]];then
             echo "- modifying path so new perl comes first"
             export PATH=/usr/local/bin:$PATH
-            echo "export PATH=/usr/local/bin:$PATH" > /etc/profile.d/scot.sh
+            echo "export PATH=$PATH" > /etc/profile.d/scot.sh
+            export PERL5LIB=/usr/local/lib/perl5/site_perl/5.24.0/x86_64-linux:/usr/local/lib/perl5/site_perl/5.24.0:/usr/local/lib/perl5/5.24.0/x86_64-linux:/usr/local/lib/perl5/5.24.0
+            echo "export PERL5LIB=$PERL5LIB" >> /etc/profile.d/scot.sh
         fi
     fi
 }
@@ -279,6 +297,7 @@ function install_packages {
     if [[ $OS == "Ubuntu" ]]; then
         install_ubuntu_packages
     else 
+        # echo "-- cent packages suck.  allowing cpanm to build all dependencies"
         install_cent_packages
     fi
 }
@@ -419,7 +438,7 @@ function install_perl {
     echo "--- Installing Required Perl Packages and Modules"
     echo "---"
     perl_version_check
-    install_packages
     install_cpanm
+    install_packages
     install_perl_modules
 }
