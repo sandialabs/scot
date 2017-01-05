@@ -88,12 +88,12 @@ function install_elasticsearch {
     echo "--- Installing ElasticSearch"
     echo "---"
 
-    echo "-- installing JDK"
-    if [[ $OS ==  "Ubuntu" ]]; then
-        apt-get install -y openjdk-7-jdk
-    else
-        yum install java-1.7.0-openjdk -y
-    fi
+#    echo "-- installing JDK"
+#    if [[ $OS ==  "Ubuntu" ]]; then
+#        apt-get install -y openjdk-7-jdk
+#    else
+#        yum install java-1.7.0-openjdk -y
+#    fi
 
     ensure_elastic_entry
 
@@ -109,15 +109,37 @@ function install_elasticsearch {
         . $DEVDIR/src/elasticsearch/mapping.sh
     fi
 
+
     if [[ $OS == "Ubuntu" ]]; then
         if [[ $OSVERSION == "16" ]]; then
+            ES_SERVICE="/etc/systemd/system/elasticsearch.service"
+            ES_SERVICE_SRC="$DEVDIR/../install/src/elasticsearch/elasticsearch.service"
+            if [[ ! -e $ES_SERVICE ]]; then
+                echo "- installing $ES_SERVICE"
+                cp $ES_SERVICE_SRC $ES_SERVICE
+            fi
             systemctl daemon-reload
             systemctl restart elasticsearch.service
         else
+            echo "-- adding elasticsearch to rc.d"
+            update-rc.d elasticsearch defaults
+            echo "-- restarting elasticsearch"
             service elasticsearch restart
         fi
     else
-        sevice elasticsearch restart
+        # it appears that cent 7 is systemd
+        # echo "-- adding elasticsearch to rc.d"
+        # chkconfig --add elasticsearch
+        # echo "-- restarting elasticsearch"
+        # sevice elasticsearch restart
+        ES_SERVICE="/etc/systemd/system/elasticsearch.service"
+        ES_SERVICE_SRC="$DEVDIR/../install/src/elasticsearch/elasticsearch.service"
+        if [[ ! -e $ES_SERVICE ]]; then
+            echo "- installing $ES_SERVICE"
+            cp $ES_SERVICE_SRC $ES_SERVICE
+        fi
+        systemctl daemon-reload
+        systemctl restart elasticsearch.service
     fi
 
 }
