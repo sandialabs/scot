@@ -256,224 +256,9 @@ function root_check {
     return 0;
 }
 
-function configure_accounts {
-
-    echo -e "${blue}= Checking for activemq user ${nc}"
-    AMQ_USER=`grep -c activemq: /etc/passwd`
-    if [ $AMQ_USER -ne 1 ]; then
-        echo -e "${green}+ adding activemq user ${nc}"
-        useradd -c "ActiveMQ User" -d $AMQDIR -M -s /bin/bash activemq
-    else
-        echo -e "${green}= activemq exists ${nc}"
-    fi
-
-    echo -e "${blue}= Checking for scot user ${nc}"
-    SCOT_USER=`grep -c scot: /etc/passwd`
-    if [ $SCOT_USER -ne 1 ]; then
-        echo -e "${green}+ adding scot user ${nc}"
-        useradd -c "SCOT User" -d $SCOTDIR -M -s /bin/bash scot
-        if [[ $OS == "Ubuntu" ]]; then
-            usermod -a -G scot www-data
-        else
-            usermod -a -G scot apache
-        fi
-    fi
-
-}
-
 function apt-get-update {
     apt-get update 2>&1 > /dev/null
 }
-
-function install_packages {
-    echo -e "${yellow}+ Installing Packages${nc}"
-    if [[ $OS == "Ubuntu" ]]
-    then
-        if [[ $REFRESHAPT == "yes" ]]
-        then
-            echo -e "${green}+ Refreshing APT DB Repo ${nc}"
-            apt-get-update
-            if [ $? != 0 ];
-            then
-                echo -e "${red}! Error refreshing the Apt db repository!"
-                exit 2;
-            fi
-        fi
-        echo -e "${green}+ installing apt packages"
-        for pkg in `cat $DEVDIR/packages/ubuntu_debs_list`
-        do
-            apt-get -y install $pkg
-        done
-    else
-        # so later perl packages can compile
-        yum -y install openssl-devel
-        echo "+ adding line to allow unverifyed ssl in yum"
-        echo "sslverify=false" >> /etc/yum.conf
-
-        echo "+ installing rpms..."
-        for pkg in `cat $DEVDIR/packages/rpms_list`; do
-            echo "+ package = $pkg";
-            yum install $pkg -y
-        done
-    fi
-}
-
-function install_perl_modules {
-    echo -e "${blue}++++++++++ PERL module Installation +++++++++++${nc}"
-    echo -e "${blue}= installing pre-compiled package perl libs${nc}"
-    if [[ $OS == "Ubuntu" ]]; then
-        PREPACKFILES=$DEDVIR/packages/perl_debs_list
-    else
-        PREPACKFILES=$DEVDIR/packages/perl_yum_list
-    fi
-
-    for $prepack in `cat $PREPACKFILES`
-    do
-        echo -e "${green}+ adding $prepack ${nc}"
-        if [[ $OS == "Ubuntu" ]]; then
-           apt-get install $prepack -y
-        else
-            yum -y install $prepack
-        fi
-    done
-
-    echo -e "${green} Updating CPANMinus ${nc}"
-
-    echo -e "${red} removing old cpanm ${nc}"
-    if [[ $OS == "Ubuntu" ]]; then
-        apt-get remove cpanminus -y
-    else
-        yum -y remove perl-App-cpanminus
-    fi
-
-
-    CPANM="/usr/local/bin/cpanm"
-
-    if [[ ! -e $CPANM ]]; 
-    then
-        echo -e "${green} installing latest cpanminus ${nc}"
-        curl -L http://cpanmin.us | perl - --sudo App::cpanminus
-
-        if [[ ! -e $CPANM ]]; 
-        then
-            echo -e "${red}!!!! $CPANM not found!  SCOT will not install properly without $CPANM"
-            echo    "!!!! As root try: curl -L http://cpanmin.us | perl - --sudo App::cpanminus "
-            echo -e "!!!! again. Once sucessfully installed restart scot install {$nc} "
-            exit 3
-        fi
-    fi
-
-    for modules in `cat $DEVDIR/packages/perl_modules_list`
-    do
-        echo -e "${green} 1st Attempt to install $module"
-        $CPANM $module
-        if [ $? == 1]; then
-            echo -e "${red} 1st attemp to install $module failed will retry once more ${nc}"
-            RETRY="$RETRY $module"
-        fi
-        echo ""
-    done
-
-    for module in $RETRY
-    do
-        echo -e "${green} 2nd Attempt to install $module"
-        $CPANM $module
-        if [ $? == 1]; then
-            echo -e "${red} 2nd attempt to install $module failed.  You are likely to "
-            echo -e " encouter problems with SCOT until this is fixed. ${nc}"
-            FAILED="$FAILED $module"
-        fi
-        echo ""
-    done
-
-    echo -e "${red} ============ FAILED PERL MODULES ================== ";
-    for module in $FAILED
-    do
-        echo "     $module"
-    done
-    echo -e "${nc} "
-}
-
-function install_nodejs {
-    if [[ $OS == "Ubuntu" ]]
-    then
-        if [ $SKIPNODE == "no" ]; then
-            echo "+ installing nodejs"
-            curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
-            apt-get install -y nodejs
-        fi
-    else
-        if [ $SKIPNODE == "no" ]; then
-            echo "+ installing nodejs"
-            curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
-            yum -y install nodejs
-        fi
-    fi
-}
-
-function ensure_mongo_apt_entry {
-    echo -e "${blue} - ensuring mongo 10gen apt entry ${nc}"
-    KEYSERVERURL="hkp://keyserver.ubuntu.com:80"
-    KEYNUMBER="EA312927"
-    if grep --quiet mongo /etc/apt/sources.list; then
-        echo "= mongo entry in /etc/apt/sources.list already present"
-    else
-        if grep --quiet 10gen /etc/apt/sources.list
-        then
-            echo "= 10gen mongo repo already present in /etc/apt/sources.list"
-        else
-            echo "+ adding Mongo 10Gen repo to /etc/apt/sources.list"
-        fi
-        if [[ -z $PROXY ]]
-        then
-            echo "- not using proxy to add Mondo 10Gen key"
-            KEYOPTS=""
-        else
-            KEYOPTS="--keyserver-options http-proxy=$PROXY"
-        fi
-
-        echo -e "${blue} grabbing mongo key ${nc}"
-        apt-key adv $KEYOPTS $KEYSERVERURL -recv-keys $KEYNUMBER
-
-        if [[ $OSVERSION == "16" ]]
-        then
-            userepo="xenial"
-        else 
-            userepo="trusty"
-        fi
-        echo "deb http://repo.mongodb.org/apt/ubuntu $userepo/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list
-    fi
-}
-
-function ensure_mongo_yum_entry {
-    if grep --quiet mongo /etc/yum.repos.d/mongodb.repo; then
-        echo "= mongo yum stanza present"
-    else
-        echo "+ adding mongo to yum repos"
-        cat <<- EOF > /etc/yum.repos.d/mongodb.repo
-[mongodb-org-3.2]
-name=MongoDB Repository
-baseurl=http://repo.mongodb.org/yum/redhat/$OSVERSION/mongodb-org/3.2/x86_64/
-gpgcheck=0
-enabled=1
-EOF
-    fi
-}
-
-
-function install_mongodb {
-    echo "+ installing mongodb-org"
-    if [[ $OS == "Ubuntu" ]] 
-    then
-        ensure_mongo_apt_entry
-        apt-get-update
-        apt-get -y install mongodb-org
-    else 
-        ensure_mongo_yum_entry
-        yum -y insall mongodb-org
-    fi
-}
-
 
 
 function install_geoip {
@@ -490,15 +275,10 @@ function install_geoip {
             add-apt-repository 'deb-src http://ppa.launchpad.net/maxmind/ppa/ubuntu xenial main' 
         fi
        apt-get-update
-       apt-get install -y libmaxminddb0 libmaxminddb-dev mmdb-bin
+       apt-get install -y libgeoip-dev libmaxminddb0 libmaxminddb-dev mmdb-bin
     else
         yum install -y GeoIP
     fi
-}
-
-function copy_documentation {
-    echo "+ installing SCOT docmentation at https://localhost/docs/index.html"
-    cp -r $DEVDIR/docs/build/html/* $SCOTDIR/public/docs
 }
 
 function configure_geoip {
@@ -514,83 +294,6 @@ function configure_geoip {
         echo -e "${green}+ copying GeoLiteCity.dat file ${nc}"
         cp $SDIR/GeoLiteCity.dat $GEODIR/GeoLiteCity.dat
         chmod +r $GEODIR/GeoLiteCity.dat
-    fi
-}
-
-function configure_ubuntu_startup {
-    local SDIR=$DEVDIR/src/systemd
-    if [[ $OSVERSION == "16" ]]; then
-        SYSDSERVICES='
-            elasticsearch.service 
-            scot.service 
-            scfd.service 
-            scepd.service 
-            mongod.service
-        '
-        for service in $SYSDSERVICES
-        do
-            if [[ ! -e /etc/systemd/system/$service ]];
-            then
-                if [[ -e $SDIR/$service ]]; then
-                    cp $SDIR/$service /etc/systemd/system/$service
-                else
-                    echo "- warning: $SDIR/$service not present"
-                fi
-            fi
-            systemctl enable $service
-            # systemctl restart $service do this in start services
-        done
-    else
-        update-rc.d elasticsearch defaults
-        update-rc.d scot defaults
-        update-rc.d activemq defaults
-        update-rc.d scepd defaults
-        update-rc.d scfd defaults
-    fi
-}
-
-function configure_cent_startup {
-    echo "+ adding startup scripts"
-    chkconfig --add elasticsearch
-    chkconfig --add scot
-    chkconfig --add activemq
-    chkconfig --add mongod
-    chkconfig --add scepd
-    chkconfig --add scfd
-
-    echo "+ Allowing Firewalld to pass web traffic"
-    firewall-cmd --permanent --add-port=80/tcp
-    firewall-cmd --permanent --add-port=443/tcp
-    firewall-cmd --reload
-}
-
-function configure_startup {
-    local SDIR=$DEVDIR/src
-    if [[ ! -e /etc/init.d/scot ]]; then
-        echo -e "${yellow} adding /etc/init.d/scot ${nc}"
-        cp $SDIR/scot/scot-init /etc/init.d/scot
-        chmod +x /etc/init.d/scot
-        sed -i 's=/instdir='$SCOTDIR'=g' /etc/init.d/scot
-    fi
-
-    if [ ! -e /etc/init.d/scfd ]; then
-        echo -e "${red} Missing INIT for SCot Flair Daemon ${NC}"
-        echo -e "${yellow}+ adding /etc/init.d/scfd...${NC}"
-        /opt/scot/bin/scfd.pl get_init_file > /etc/init.d/scfd
-        chmod +x /etc/init.d/scfd
-    fi
-
-    if [ ! -e /etc/init.d/scepd ]; then
-        echo -e "${red} Missing INIT for SCot ES Push Daemon ${NC}"
-        echo -e "${yellow}+ adding /etc/init.d/scepd...${NC}"
-        /opt/scot/bin/scepd.pl get_init_file > /etc/init.d/scepd
-        chmod +x /etc/init.d/scepd
-    fi
-
-    if [[ $OS == "Ubuntu" ]]; then
-        configure_ubuntu_startup
-    else 
-        configure_cent_startup
     fi
 }
 
@@ -659,36 +362,6 @@ function install_scot {
 
 }
 
-function configure_scot {
-    local SDIR=$DEVDIR/src/scot
-    if [[ $AUTHMODE == "Remoteuser" ]]; then
-        cp $SDIR/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
-    else 
-        if [[ ! -e $SCOTDIR/etc/scot_env.cfg ]]; then
-            echo "+ copying scot_env.cfg into $SCOTDIR/etc"
-            cp $SDIR/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
-        else
-            echo "= scot_env.cfg already present, skipping..."
-        fi
-    fi
-
-    CFGFILES='mongo logger imap activemq enrichments flair.app 
-             flair_logger stretch.app stretch_logger game.app elastic
-             backup'
-
-    for file in $CFGFILES
-    do
-        CFGDEST="$SCOTDIR/etc/$file.cfg"
-        if [[ -e $CFGDEST ]]; then
-            echo "= $CFGDEST already present, skipping..."
-        else
-            CFGSRC="$SDIR/$file.cfg"
-            echo "+ copying $CFGSRC to $CFGDEST"
-            cp $CFGSRC $CFGDEST
-        fi
-    done
-}
-
 function install_private {
     if [ -d "$PRIVATE_SCOT_MODULES" ]; then
         echo "Private SCOT modules and config directory exist.  Installing..."
@@ -696,113 +369,6 @@ function install_private {
     fi
 }
 
-function configure_logging {
-    if [ ! -d $LOGDIR ]; then
-        echo "+ creating Log dir $LOGDIR"
-        mkdir -p $LOGDIR
-    fi
-
-    echo "= ensuring proper log ownership/permissions"
-    chown scot.scot $LOGDIR
-    chmod g+w $LOGDIR
-
-    if [ "$CLEARLOGS"  == "yes" ]; then
-        echo -e "${red}- clearing any existing scot logs${NC}"
-        for i in $LOGDIR/*; do
-            cat /dev/null > $i
-        done
-    fi
-
-    touch $LOGDIR/scot.log
-    chown scot:scot $LOGDIR/scot.log
-
-    if [ ! -e /etc/logrotate.d/scot ]; then
-        echo "+ installing logrotate policy"
-        cp $DEVDIR/src/logrotate/logrotate.scot /etc/logrotate.d/scot
-    else 
-        echo "= logrotate policy in place"
-    fi
-}
-
-
-function add_failIndexKeyTooLong {
-
-    echo "= checking failIndexKeyTooLong Mongod parameter"
-
-    local SDIR=$DEVDIR/src/mongodb
-    if [[ $OSVERSION == "16" ]]; then
-        FIKTL=`grep failIndexKeyTooLong /lib/systemd/system/mongod.service`
-        if [ "$FIKTL" == "" ]; then
-            echo "- SCOT will fail unless failIndexKeyTooLong=false in /lib/systemd/system/mongod.service"
-            echo "+ backing orig, and copying new into place. "
-            ext=`date +%s`
-            cp /lib/systemd/system/mongod.service /tmp/mongod.service.backup.$ext
-            cp $SDIR/systemd-mongod.conf /lib/systemd/system/mongod.service
-            cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.$ext
-            cp $SDIR/mongod.conf $MDCDIR/mongod.conf
-        else 
-            echo "~ appears that failIndexKeyTooLong is in /lib/systemd/system/mongod.service"
-        fi
-    else 
-        FIKTL=`grep failIndexKeyTooLong /etc/init/mongod.conf`
-        if [ "$FIKTL" == "" ]; then
-            echo "- SCOT will fail unless failIndexKeyTooLong=false in /etc/init/mongod.conf"
-            echo "+ backing orig, and copying new into place. "
-            MDCDIR="/etc/init/"
-            cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.bak
-            cp $SDIR/init-mongod.conf $MDCDIR/mongod.conf
-        else
-            echo "~ appears the parameter is set in mongod config"
-        fi
-    fi
-}
-
-function configure_mongodb {
-    echo "= Configuring MongoDB"
-    echo "= Stopping MongoDB"
-    local SDIR=$DEVDIR/src/mongodb
-
-    if [[ $OSVERSION == "16" ]]; then
-        systemctl stop mongod.service
-    else
-        service mongod stop
-    fi
-
-    local COPYFILE=$SDIR/init-mongod.conf
-
-    if [[ $OS == "Ubuntu" ]]; then
-        if [[ $OSVERSION == "16" ]]; then
-            MDCDIR="/etc"
-            COPYFILE=$SDIR/mongod.conf
-        else 
-            MDCDIR="/etc/init"
-            COPYFILE=$SDIR/init-mongod.conf
-        fi
-    else
-        MDCDIR="/etc/init"
-        COPYFILE=$SDIR/init-mongod.conf
-    fi
-
-    if [[ $MDBREFRESH == "yes" ]]; then
-        echo "+ backup up mongod.conf"
-        cp $MDCDIR/mongod.conf $MDCDIR/mongod.conf.$$
-        echo "+ coping $COPYFILE to $MCDIR"
-        cp $COPYFILE $MCDIR
-        add_failIndexKeyTooLong
-    fi
-
-    if [[ ! -d $DBDIR ]]; then
-        echo "+ creating db dir $DBDIR"
-        mkdir -p $DBDIR
-    fi
-
-    echo "+ ensuring proper ownership of $DBDIR"
-    chown -R mongodb:mongodb $DBDIR
-
-    echo "- clearing /var/log/mongod/monod.log"
-    cat /dev/null > /var/log/mongodb/mongod.log
-
-}
 
 function start_mongo {
     if [[ $OS == "Ubuntu" ]]; then
@@ -850,9 +416,13 @@ function start_services {
             service scepd restart
         fi
     else
-        /etc/init.d/scot restart
-        service apache2 restart
-        service scfd restart
-        service scepd restart
+        # it appears that centos 7.3 is systemd 
+        systemctl daemon-reload
+        start_mongo
+        wait_for_mongo
+        systemctl restart scot.service
+        systemctl restart apache2.service
+        systemctl restart scfd.service
+        systemctl restart scepd.service
     fi
 }
