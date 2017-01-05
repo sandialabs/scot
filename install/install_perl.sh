@@ -225,16 +225,30 @@ function install_cent_perl_packages {
 #        echo "-- Installing $pgk"
 #        yum install $pkg -y
 #    done
-    local PPKGS='
-        CPAN
-        Net::SSLeay
-        LWP
-    '
-    for pkg in $PPKGS; do
-        echo ""
-        echo "-- using cpanm to install $pkg"
-        cpanm $pkg
-    done
+#    local PPKGS='
+#        CPAN
+#        Net::SSLeay
+#        LWP
+#    '
+#    for pkg in $PPKGS; do
+#        echo ""
+#        echo "-- using cpanm to install $pkg"
+#        cpanm $pkg
+#    done 
+    echo "!!! are you sure you want to install on CentOS? Life is better on Ubuntu !!!"
+    echo "-- installing things that should never be pulled out of a perl install, thanks centos"
+    yum install perl-devel patch -y
+    echo "-- installing perlbrew to get around crappy centos perl version"
+    curl --insecure -L https://install.perlbrew.pl | bash
+    echo "-- adding perlbrew environment to system profile"
+    echo "source /root/perl5/perlbrew/etc/bashrc" > /etc/profile.d/perlbrew.sh
+    source /root/perl5/perlbrew/etc/bashrc
+    echo "-- installing patchperl"
+    perlbrew install-patchperl
+    echo "-- brewing 5.18.2"
+    perlbrew install perl-5.18.2
+    perlbrew switch perl-5.18.2
+
 }
 
 function install_cpanm {
@@ -262,28 +276,8 @@ function perl_version_check {
         echo -e "${red} Your Perl is out of date.  Upgrade to 5.18 or better ${nc}"
         echo "== See installation docs in docs/source/install.rst for instructions on how to install new perl"
         echo ""
-        exit 1;
-
-        echo "Attempting to auto install for you..."
-        CurrentDir=`pwd`
-        cd /tmp
-        wget http://www.cpan.org/src/5.0/perl-5.24.0.tar.gz
-        tar xzvf perl-5.24.0.tar.gz
-        cd perl-5.24.0
-        ./Configure -des
-        make
-        make test
-        make install
-        cd $CurrentDir
-        PVER=`/usr/local/bin/perl -e 'print $];'`
-        COMP=`echo $PVER'>'$PTAR | bc -l`
-        if [[ $COMP == 1 ]];then
-            echo "- modifying path so new perl comes first"
-            export PATH=/usr/local/bin:$PATH
-            echo "export PATH=$PATH" > /etc/profile.d/scot.sh
-            export PERL5LIB=/usr/local/lib/perl5/site_perl/5.24.0/x86_64-linux:/usr/local/lib/perl5/site_perl/5.24.0:/usr/local/lib/perl5/5.24.0/x86_64-linux:/usr/local/lib/perl5/5.24.0
-            echo "export PERL5LIB=$PERL5LIB" >> /etc/profile.d/scot.sh
-        fi
+        echo " this means yo uare most likely on a CentOS system, condolences."
+        echo " the install script will attempt to install a working perl for you"
     fi
 }
 
