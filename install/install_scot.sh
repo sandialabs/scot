@@ -132,8 +132,21 @@ function configure_startup {
                 update-rc.d $service defaults
             fi
         else
-            echo "-- chkconfig adding $service"
-            chkconfig --add $service
+            # echo "-- chkconfig adding $service"
+            # chkconfig --add $service
+            sysfile="${service}.service"
+            target="/etc/systemd/system/$sysfile"
+            if [[ "$REFRESH_INIT" == "yes" ]]; then
+                rm -f $target
+            fi
+            if [[ ! -e $target ]]; then
+                echo "-- installing $target"
+                cp $SRCDIR/$sysfile $target
+            else
+                echo "-- $target exists, skipping..."
+            fi
+            systemct daemon-reload
+            systemctl enable $sysfile
         fi
     done
 }
