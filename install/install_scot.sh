@@ -94,7 +94,7 @@ function configure_startup {
     echo "-- configuring SCOT startup"
     echo "--"
     SCOTSERVICES='scot scfd scepd'
-    SRCDIR="$DEVDIR/../install/src/scot/"
+    SRCDIR="$DEVDIR/../install/src/scot"
 
     for service in $SCOTSERVICES; do
         if [[ $OS == "Ubuntu" ]]; then
@@ -110,7 +110,7 @@ function configure_startup {
                 else
                     echo "-- $target exists, skipping..."
                 fi
-                systemct daemon-reload
+                systemctl daemon-reload
                 systemctl enable $sysfile
             else
                 if [[ "$REFRESH_INIT" == "yes" ]]; then
@@ -145,7 +145,7 @@ function configure_startup {
             else
                 echo "-- $target exists, skipping..."
             fi
-            systemct daemon-reload
+            systemctl daemon-reload
             systemctl enable $sysfile
         fi
     done
