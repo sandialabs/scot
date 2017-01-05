@@ -669,6 +669,18 @@ sub get_subthing {
         my $gec_total   = 0;
         my $enc_total   = 0;
 
+        # need to get groups of enclosing thing and only show entities
+        # for this thing if the user has rights to view thing
+        my $tobj            = $collection->find_iid($id);
+        my $users_groups    = $self->session('groups');
+
+        unless ( $tobj->is_permitted("read", $users_groups ) ) {
+            $log->debug("User requested entities subthing, but does not have read permission to $collection $id");
+            $self->do_error(403, { error_msg => "insufficient permissions" });
+            $self->audit("failed get_subthing", $req_href);
+            return;
+        }
+
         while ( my $entity = $cursor->next ) {
 
             $log->debug("Entity : ".$entity->value);
