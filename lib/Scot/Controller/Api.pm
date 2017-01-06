@@ -559,6 +559,14 @@ sub get_one {
         #}
     }
 
+    my $selected_fields = $self->build_fields($req_href);
+    if ( $selected_fields ) {
+        foreach my $key (keys %$data_href) {
+            unless ( $selected_fields->{$key} ) {
+                delete $data_href->{$key};
+            }
+        }
+    }
 
     $self->do_render($data_href);
 
@@ -669,6 +677,18 @@ sub get_subthing {
         my $gec_total   = 0;
         my $enc_total   = 0;
 
+        # need to get groups of enclosing thing and only show entities
+        # for this thing if the user has rights to view thing
+        my $tobj            = $collection->find_iid($id);
+        my $users_groups    = $self->session('groups');
+
+        unless ( $tobj->is_permitted("read", $users_groups ) ) {
+            $log->debug("User requested entities subthing, but does not have read permission to $collection $id");
+            $self->do_error(403, { error_msg => "insufficient permissions" });
+            $self->audit("failed get_subthing", $req_href);
+            return;
+        }
+
         while ( my $entity = $cursor->next ) {
 
             $log->debug("Entity : ".$entity->value);
@@ -704,6 +724,16 @@ sub get_subthing {
     }
     else {
         @things = $cursor->all;
+        my $selected_fields = $self->build_fields($req_href);
+        if ( $selected_fields ) {
+            foreach my $thing (@things) {
+                foreach my $key (keys %$thing) {
+                    unless ( $selected_fields->{$key} ) {
+                        delete $thing->{$key};
+                    }
+                }
+            }
+        }
         $log->trace("rendering default",{filter=>\&Dumper, value=>\@things});
         $self->do_render({
             records => \@things,

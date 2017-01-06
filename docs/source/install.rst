@@ -30,9 +30,9 @@ Fortunately, is is pretty easy to update Perl using the following::
 
     $ su
     password:
-    # wget http://www.cpan.org/src/5.0/perl-5.24.0.tar.gz
-    # tar xzvf perl-5.24.0.tar.gz
-    # cd perl-5.24.0
+    # wget http://www.cpan.org/src/5.0/perl-5.18.2.tar.gz
+    # tar xzvf perl-5.18.2.tar.gz
+    # cd perl-5.18.2
     # ./Configure -des
     # make
     # make test
