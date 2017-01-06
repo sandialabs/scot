@@ -27,7 +27,7 @@ function install_ubuntu_packages {
         mmdb-bin
     '
 
-    if [[ $REFRESHAPT == "yes" ]]; then
+    if [[ $REFRESHREPOS == "yes" ]]; then
         echo "-- refreshing apt repositories"
         apt-get-update
         if [[ $? != 0 ]]; then
@@ -92,7 +92,9 @@ function install_cent_packages {
     echo "sslverify=false" >> /etc/yum.conf
 
     yum --enablerepo=extras install epel-release -y
-    yum update -y
+    if [[ $REFRESHREPOS == "yes" ]];
+        yum update -y
+    fi
 
     YUMPACKAGES='
         redhat-lsb
