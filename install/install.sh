@@ -1,52 +1,76 @@
 #!/bin/bash
+
+### TODO: move up to main directory and make all source command work
+
+
 . ./install_functions.sh
 
 INTERACTIVE='yes'
 
+echo "==================== SCOT 3.5 Installer ======================="
+
 if root_check 
 then    
-    echo "running as root"
+    echo "Running as root: Yes"
 else
-    echo "not as root"; 
+    echo "Running as root: NO (can not proceed)"
     exit 2
 fi
 
 if get_http_proxy
 then
-    echo "http proxy is $PROXY"
+    echo "http_proxy    : $PROXY"
 else
-    echo "not set!"
+    echo "http_proxy    : not set!"
+fi
+
+if get_https_proxy 
+then
+    echo "https_proxy   : $SPROXY"
+else
+    echo "https_proxy   : not set!"
 fi
 
 set_defaults
 
 if get_script_src_dir
 then
-    echo $DIR
+    echo "Install Src Dir: $DIR"
 else 
-    echo "get_script_src_dir failed!"
+    echo "Install Src Dir: unknown (can not proceed)"
+    exit 2
 fi
 
 if determine_distro
 then
-    echo "distro is $DISTRO"
+    echo "Linux distro   : $DISTRO"
 else
-    echo "failed getting distro"
+    echo "Linux distro   :failed getting distro (can not proceed)"
+    exit 2
 fi
 
 if get_os_name
 then
-    echo "osname is $OS"
+    echo "Operating Sys  : $OS"
 else 
-    echo "failed getting OS name"
+    echo "Operating Sys  : unknown (can not proceed)"
+    exit 2
 fi
 
 if get_os_version
 then
-    echo "osversion is $OSVERSION"
+    echo "OS Version     : $OSVERSION"
 else
-    echo "failed to get osversion"
+    echo "OS Version     : unknown (can not proceed)"
+    exit 2
 fi
+
+. ./comandline.sh
+default_variables
+
+process_commandline 
+
+show_variables
 
 if [[ $INSTMODE != "SCOTONLY" ]]; then
     . ./install_packages.sh
