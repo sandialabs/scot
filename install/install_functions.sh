@@ -219,7 +219,7 @@ function ensure_lsb_installed {
         yum update -y
         if ! hash lsb_release 2>/dev/null
         then
-            yum install redhat-lsb
+            yum install redhat-lsb -y
         fi
     fi
 }
