@@ -1,11 +1,13 @@
 #!/bin/bash
 
+DEVDIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
 . ./install/install_functions.sh
 
 INTERACTIVE='yes'
 
 echo "==================== SCOT 3.5 Installer ======================="
+echo "DEVDIR is $DEVDIR"
 
 if root_check 
 then    
