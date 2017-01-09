@@ -44,7 +44,7 @@ function configure_logging {
 
     if [ ! -e /etc/logrotate.d/scot ]; then
         echo "+ installing logrotate policy"
-        cp $DEVDIR/src/logrotate/logrotate.scot /etc/logrotate.d/scot
+        cp $DEVDIR/install/src/logrotate/logrotate.scot /etc/logrotate.d/scot
     else 
         echo "= logrotate policy in place"
     fi
@@ -216,7 +216,7 @@ function configure_filestore {
         echo "- ensuring ownership and permissions on $FILESTORE"
         chown scot $FILESTORE
         chgrp scot $FILESTORE
-        chmdo g+w  $FILESTORE
+        chmod g+w  $FILESTORE
     fi
 }
 
