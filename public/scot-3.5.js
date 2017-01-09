@@ -4482,7 +4482,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             type: 'GET',
             url: '/scot/api/v2/alertgroup/'+this.props.id
         }).success(function(response){
-            var win = window.open('viewSource.html') //, '_blank')
+            var win = window.open('/libs/viewSource.html') //, '_blank')
             var html =  response.body;
             var plain = response.body_plain;
             win.onload = function() {   
