@@ -92,7 +92,7 @@ function install_cent_packages {
     echo "sslverify=false" >> /etc/yum.conf
 
     yum --enablerepo=extras install epel-release -y
-    if [[ $REFRESHREPOS == "yes" ]];
+    if [[ "$REFRESHREPOS" == "yes" ]];
         yum update -y
     fi
 

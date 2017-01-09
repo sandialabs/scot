@@ -29,8 +29,6 @@ else
     echo "https_proxy   : not set!"
 fi
 
-set_defaults
-
 if get_script_src_dir
 then
     echo "Install Src Dir: $DIR"
@@ -63,7 +61,7 @@ else
     exit 2
 fi
 
-. ./install/comandline.sh
+. ./install/commandline.sh
 default_variables
 
 process_commandline 
