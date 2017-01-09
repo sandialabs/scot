@@ -403,7 +403,7 @@ var EntityBody = React.createClass({
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='tabs'>
                 <Tab eventKey={1} className='entityPopUpButtons' style={{overflow:'auto'}} title={this.state.appearances}>{entityEnrichmentLinkArr}<span><br/><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><a href={href} style={{color:'#c400ff'}} target='_blank'>List truncated due to large amount of references. Click to view the whole entity</a></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton}/><br/></Tab>
                 <Tab eventKey={2} className='entityPopUpButtons' style={{overflow:'auto'}} title="Entry"><Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
-                {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'entity'} id={this.props.entityid}/></Tab>
+                {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'entity'} id={this.props.entityid} errorToggle={this.props.errorToggle}/></Tab>
                 {entityEnrichmentGeoArr}
                 {entityEnrichmentDataArr}
             </Tabs>
@@ -815,7 +815,7 @@ var GuideBody = React.createClass ({
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='pills'>
                 <Tab eventKey={1} style={{overflow:'auto'}}><Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
-                {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} /></Tab>
+                {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} errorToggle={this.props.errorToggle}/></Tab>
             </Tabs>
         )
     }
