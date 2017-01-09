@@ -1,7 +1,6 @@
 #!/bin/bash
 
 function default_variables {
-    DEVDIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
     PRIVATE_SCOT_MODULES="$DEVDIR/../Scot-Internal-Modules"
     FILESTORE="/opt/scotfiles"
     SCOTDIR="/opt/scot"
