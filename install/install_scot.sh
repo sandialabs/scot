@@ -283,6 +283,40 @@ function start_scot {
     fi
 }
 
+function setup_scot_admin {
+    MONGOADMIN=$(mongo scot-prod --eval "printjson(db.user.count({username:'admin'}))" --quiet)
+    
+    if [[ "$MONGOADMIN" == "0" ]] || [[ "$RESETDB" == "yes" ]]; then
+        echo "-------"
+        echo "------- USER INPUT NEEDED"
+        echo "-------"
+        echo "------- Choose a SCOT Admin login Password "
+        set='$set'
+        HASH=`$SCOT_CONFIG_SRC/mongodb/passwd.pl`
+
+        mongo scot-prod $SCOT_CONF_SRC/mongodb/admin_user.js
+        mongo scot-prod --eval "db.user.update({username:'admin'}, {$set:{pwhash:'$HASH'}})"
+    fi
+}
+
+function restart_daemons {
+
+    if [[ "$SCOT_RESTART_DAEMONS" == "yes" ]] || [[ "$INSTMODE" != "SCOTONLY" ]]; then
+            if [[ $OS == "Ubuntu" ]]; then
+                if [[ $OSVERSION == "14" ]]; then
+                    service scfd restart
+                    service scepd restart
+                else
+                    systemctl restart scfd.service
+                    systemctl restart scepd.service
+                fi
+            else
+                systemctl restart scfd.service
+                systemctl restart scepd.service
+            fi
+    fi
+}
+
 function install_scot {
     
     echo "---"
@@ -324,8 +358,10 @@ function install_scot {
     copy_documentation
     configure_filestore
     configure_backup
+    setup_scot_admin
     install_private_modules
     configure_startup
+    restart_daemons
     start_scot
     start_apache
 }
