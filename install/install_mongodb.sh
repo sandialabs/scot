@@ -4,15 +4,25 @@ function ensure_mongo_repo {
     
     echo "-- ensuring correct mongodb repo"
 
-    MONGO_KEYSRVR="--keyserver hkp://keyserver.ubuntu.com:80"
-    MONGO_KEY="EA312927"
-    KEY_OPTS="--keyserver-options http-proxy=$PROXY"
-    MONGO_SOURCE_LIST="/etc/apt/sources.list.d/mongo-org-3.2.list"
-    YUM_REPO="/etc/yum.repos.d/mongodb.repo"
+    if [[ "$MONGO_KEYSRVR" == "" ]]; then
+        MONGO_KEYSRVR="--keyserver hkp://keyserver.ubuntu.com:80"
+    fi
+    if [[ "$MONGO_KEY" == "" ]]; then
+        MONGO_KEY="EA312927"
+    fi
+    if [[ "$MONGO_KEY_OPTS" == "" ]]; then
+        MONGO_KEY_OPTS="--keyserver-options http-proxy=$PROXY"
+    fi
+    if [[ "$MONGO_SOURCE_LIST" == "" ]]; then
+        MONGO_SOURCE_LIST="/etc/apt/sources.list.d/mongo-org-3.2.list"
+    fi
+    if [[ "$MONGO_YUM_REPO" == "" ]]; then
+        MONGO_YUM_REPO="/etc/yum.repos.d/mongodb.repo"
+    fi
 
     if [[ -z $PROXY ]]; then
         echo "-- proxy not detected"
-        KEY_OPTS=""
+        MONGO_KEY_OPTS=""
     else
         echo "-- using $PROXY to get key"
     fi
@@ -20,7 +30,7 @@ function ensure_mongo_repo {
     if [[ $OS == "Ubuntu" ]]; then
 
         echo "-- requesting mongodb-org gpg key"
-        apt-key adv $KEY_OPTS $MONGO_KEYSRVR --recv $MONGO_KEY
+        apt-key adv $MONGO_KEY_OPTS $MONGO_KEYSRVR --recv $MONGO_KEY
 
         if [[ $OSVERSION == "16" ]]; then
             OS_REPO="xenial"
@@ -36,7 +46,7 @@ function ensure_mongo_repo {
             echo "-- mongo yum repo already present"
         else
             echo "-- adding mongo yum repo stanza"
-            cat <<- EOF > $YUM_REPO
+            cat <<- EOF > $MONGO_YUM_REPO
 [mongodb-org-3.2]
 name=MongoDB Repository
 baseurl=http://repo.mongodb.org/yum/redhat/$OSVERSION/mongodb-org/3.2/x86_64/
@@ -131,31 +141,20 @@ function configure_for_scot {
     echo "-- clearing $MONGO_LOG"
     cat /dev/null > $MONGO_LOG
 
-    # not sure this is needed
-#    echo "-- configuring startup"
-#    if [[ $OS == "Ubuntu" ]]; then
-#        if [[ $OSVERSION == "16" ]]; then
-#            MDB_SYSTEMD="/etc/systemd/system/mongod.service"
-#            MDB_SYSTEMD_SRC="$DEVDIR/../install/src/mongodb/mongod.service"
-#            if [[ ! -e $MDB_SYSTEMD ]]; then
-#                echo "-- installing $MDB_SYSTEMD"
-#                cp $MDB_SYSTEMD_SRC $MDB_SYSTEMD
-#            else
-#                echo "-- $MDB_SYSTEMD already present"
-#            fi
-#            systemctl daemon-reload
-#            systemctl enable mongod.service
-#        else
-#            # echo "-- enabling mongod in defaults rc.d"
-#            # not needed
-#            echo ""
-#        fi
-#    else
-#        echo "-- adding ckconfig mongod "
-#        chkconfig --add mongod
-#    fi
+    initialize_database("reset")
 
     start_stop mongod start
+}
+
+function initialize_database {
+
+    if [[ "$RESETDB" == "yes" ]] || [[ "$1" == "reset" ]]; then
+        echo "-- initializing SCOT database"
+        mongo scot-prod ./src/database/reset.js
+    else
+        echo "-- skipping SCOT DB initialization"
+    fi
+
 }
 
 function install_mongodb {
