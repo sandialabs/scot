@@ -92,7 +92,7 @@ function install_cent_packages {
     echo "sslverify=false" >> /etc/yum.conf
 
     yum --enablerepo=extras install epel-release -y
-    if [[ "$REFRESHREPOS" == "yes" ]];
+    if [[ "$REFRESHREPOS" == "yes" ]];then
         yum update -y
     fi
 
@@ -119,7 +119,7 @@ function install_cent_packages {
 function install_packages {
 
     echo "---"
-    echo "--- Installing System Package Prerequisites"
+    echo "--- Installing System Package Prerequisites for $OS"
     echo "---"
 
     if [[ $OS == "Ubuntu" ]]; then
