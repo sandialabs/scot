@@ -2,14 +2,26 @@
 
 function ensure_elastic_entry {
 
-    APT_ES_LIST="/etc/apt/sources.list.d/elasticsearch-2.x.list"
-    ES_GPG="https://packages.elastic.co/GPG-KEY-elasticsearch"
-    YUM_REPO="/etc/yum.repos.d/elasticsearch.repo"
+    if [[ "$SCOT_CONFIG_SRC" == "" ]];then
+        SCOT_CONFIG_SRC="$DEVDIR/install/src"
+    fi
+
+    if [[ "$ES_APT_LIST" == "" ]]; then
+        ES_APT_LIST="/etc/apt/sources.list.d/elasticsearch-2.x.list"
+    fi
+
+    if [[ "$ES_GPG" == "" ]]; then
+        ES_GPG="https://packages.elastic.co/GPG-KEY-elasticsearch"
+    fi
+
+    if [[ "$ES_YUM_REPO" == "" ]]; then
+        ES_YUM_REPO="/etc/yum.repos.d/elasticsearch.repo"
+    fi
 
     echo "-- ensuring elastic repo entries"
 
     if [[ $OS == "Ubuntu" ]]; then
-        if [[ ! -e $APT_ES_LIST ]]; then
+        if [[ ! -e $ES_APT_LIST ]]; then
             wget -qO - $ES_GPG | sudo apt-key add -
             if [[ $? -gt 0 ]]; then
                 wget --no-check-certificate -qO - $ES_GPG | sudo apt-key add -
@@ -23,16 +35,16 @@ function ensure_elastic_entry {
                 fi
             fi
             echo "-- grabbed ElasticSearch GPG key"
-            echo "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main" | sudo tee $APT_ES_LIST
+            echo "deb http://packages.elastic.co/elasticsearch/2.x/debian stable main" | sudo tee $ES_APT_LIST
         else
-            echo "-- $APT_ES_LIST exists"
+            echo "-- $ES_APT_LIST exists"
         fi
     else
-        if grep --quiet elastic $YUM_REPO; then
-            echo "-- $YUM_REPO exists"
+        if grep --quiet elastic $ES_YUM_REPO; then
+            echo "-- $ES_YUM_REPO exists"
         else
-            echo "-- creating $YUM_REPO"
-            cat <<-EOF > $YUM_REPO
+            echo "-- creating $ES_YUM_REPO"
+            cat <<-EOF > $ES_YUM_REPO
 [elasticsearch-2.x]
 name=Elasticsearch repository for 2.x packages
 baseurl=https://packages.elastic.co/elasticsearch/2.x/centos
@@ -88,13 +100,6 @@ function install_elasticsearch {
     echo "--- Installing ElasticSearch"
     echo "---"
 
-#    echo "-- installing JDK"
-#    if [[ $OS ==  "Ubuntu" ]]; then
-#        apt-get install -y openjdk-7-jdk
-#    else
-#        yum install java-1.7.0-openjdk -y
-#    fi
-
     ensure_elastic_entry
 
     if [[ $OS == "Ubuntu" ]]; then
@@ -108,7 +113,7 @@ function install_elasticsearch {
     if [[ $OS == "Ubuntu" ]]; then
         if [[ $OSVERSION == "16" ]]; then
             ES_SERVICE="/etc/systemd/system/elasticsearch.service"
-            ES_SERVICE_SRC="$DEVDIR/../install/src/elasticsearch/elasticsearch.service"
+            ES_SERVICE_SRC="$SCOT_CONFIG_SRC/elasticsearch/elasticsearch.service"
             if [[ ! -e $ES_SERVICE ]]; then
                 echo "- installing $ES_SERVICE"
                 cp $ES_SERVICE_SRC $ES_SERVICE
@@ -127,7 +132,7 @@ function install_elasticsearch {
         systemctl start elasticsearch.service
     fi
 
-    if [[ $RESET_ES_DB == "yes" ]]; then
+    if [[ $ES_RESET_DB == "yes" ]]; then
         echo "-- creating elasticsearch mappings..."
         . $DEVDIR/src/elasticsearch/mapping.sh
     fi
