@@ -141,9 +141,9 @@ function configure_for_scot {
     echo "-- clearing $MONGO_LOG"
     cat /dev/null > $MONGO_LOG
 
+    start_stop mongod start
     initialize_database reset
 
-    start_stop mongod start
 }
 
 function initialize_database {
