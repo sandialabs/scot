@@ -270,6 +270,10 @@ function perl_version_check {
     local PTAR="5.018"
     local COMP=`echo $PVER'>'$PTAR | bc -l`
 
+    echo "PERL reports version as $PVER"
+    echo "want $PTAR or greater"
+    ecoh "COMP is $COMP"
+
     if [[ $COMP == 1 ]];then
         echo -e "${green} Yea! A modern perl! ${nc}"
     else 
