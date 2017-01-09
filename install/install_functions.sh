@@ -62,7 +62,7 @@ function get_script_src_dir () {
 
 function determine_distro {
     get_script_src_dir
-    local cmd=$SRCDIR/determine_distro.sh
+    local cmd=$SRCDIR/install/determine_distro.sh
     echo "running $cmd"
     local output=`$cmd`
     echo -e "${blue} DISTRO: $output ${nc}"
