@@ -3,7 +3,6 @@
 
 var React                   = require('react')
 var SelectedContainer       = require('../detail/selected_container.jsx')
-var Notificationactivemq    = require('../../../node_modules/react-notification-system')
 var Search                  = require('../components/esearch.jsx')
 var Store                   = require('../activemq/store.jsx')
 var Page                    = require('../components/paging.jsx')
@@ -68,7 +67,7 @@ module.exports = React.createClass({
 
         return {
             splitter: true, 
-            Notification: this.props.Notification, selectedColor: '#AEDAFF',
+            selectedColor: '#AEDAFF',
             sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: this.props.listViewPage,
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             alldetail : true, viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
@@ -101,9 +100,6 @@ module.exports = React.createClass({
         if (this.state.filter != null) {
             var filter = JSON.parse(this.state.filter);
             this.setState({filter:filter}); 
-        }
-        if (this.state.Notification == undefined) {
-            this.setState({Notification:'off'});
         }
     },
     componentDidMount: function(){
@@ -262,24 +258,6 @@ module.exports = React.createClass({
     
     //Callback for AMQ updates
     reloadactive: function(){    
-        var notification = this.refs.notificationSystem
-        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api'){
-            notification.addNotification({
-                message: activemqwho + activemqmessage + activemqid,
-                level: 'info',
-                autoDismiss: 5,
-                action: activemqstate != 'delete' ? {
-                    label: 'View',
-                    callback: function(){
-                        if(activemqtype == 'entry' || activemqtype == 'alert'){
-                            activemqid = activemqsetentry
-                            activemqtype = activemqsetentrytype
-                        } 
-                        window.open('#/' + activemqtype + '/' + activemqid)
-                    }
-                } : null
-            })
-        }  
         this.getNewData() 
     },
 
@@ -323,13 +301,12 @@ module.exports = React.createClass({
         return (
             <div key={this.state.listViewKey} className="allComponents">
                 <div className="black-border-line">
-                    {this.state.Notification == 'on' ? <Notificationactivemq ref='notificationSystem' /> : null}
                     <div className='mainview'>
                         <div>
                            <div style={{display: 'inline-flex'}}>
-                                {this.state.Notification == 'on'?
-                                    <Button eventKey='1' onClick={this.Notification} bsSize='xsmall'>Mute Notifications</Button> :
-                                    <Button eventKey='2' onClick={this.Notification} bsSize='xsmall'>Turn On Notifications</Button>
+                                {this.props.notificationSetting == 'on'?
+                                    <Button eventKey='1' onClick={this.props.notificationToggle} bsSize='xsmall'>Mute Notifications</Button> :
+                                    <Button eventKey='2' onClick={this.props.notificationToggle} bsSize='xsmall'>Turn On Notifications</Button>
                                 }
                                 {this.props.type == 'event' || this.props.type == 'intel' ? <Button onClick={this.createNewThing} eventKey='6' bsSize='xsmall'>Create {this.state.typeCapitalized}</Button> : null}
                                 <Button eventKey='5' bsSize='xsmall' onClick={this.exportCSV}>Export to CSV</Button> 
@@ -356,7 +333,7 @@ module.exports = React.createClass({
                                     <Page pagefunction={this.getNewData} defaultPageSize={50} count={this.state.totalcount} pagination={true} type={this.props.type} defaultpage={this.state.activepage.page}/>
                                     <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
                                 </div>
-                            {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter}/> : null}
+                            {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter} errorToggle={this.props.errorToggle}/> : null}
                         </div>
                     </div>
                 </div>
@@ -457,16 +434,6 @@ module.exports = React.createClass({
         deleteCookie('listViewFilter'+this.props.type) //clear filter cookie
         deleteCookie('listViewSort'+this.props.type) //clear sort cookie
         deleteCookie('listViewPage'+this.props.type) //clear page cookie
-    },
-    Notification: function(){
-        if(this.state.Notification == 'off'){
-            this.setState({Notification: 'on'})
-            setCookie('Notification','on',1000);       
-        }
-        else {
-            this.setState({Notification: 'off'})
-            setCookie('Notification','off',1000);
-        }
     },
     selected: function(type,rowid,taskid){
         if (taskid == null) {

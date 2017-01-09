@@ -2,6 +2,9 @@
 
 function install_activemq {
 
+    if [[ "$SCOT_CONFIG_SRC" == "" ]];then
+        SCOT_CONFIG_SRC="$DEVDIR/install/src"
+    fi
     if [[ "$AMQDIR" == "" ]]; then
         AMQDIR="/opt/activemq"
     fi
@@ -13,7 +16,10 @@ function install_activemq {
     if [[ "$AMQURL" == "" ]]; then
         AMQURL="https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-activemq/5.13.2/$AMQTAR"
     fi
-    AMQ_CONFIGS=$DEVDIR/src/ActiveMQ/amq
+
+    if [[ "$AMQ_CONFIGS" == "" ]]; then
+        AMQ_CONFIGS=$SCOT_CONFIG_SRC/ActiveMQ/amq
+    fi
 
     echo "---"
     echo "--- Installing ActiveMQ"
@@ -22,13 +28,6 @@ function install_activemq {
     echo "--- AMQURL = $AMQURL"
     echo "--- CONFIGS= $AMQ_CONFIGS"
     echo "---"
-
-#    echo "-- installing JDK"
-#    if [[ $OS ==  "Ubuntu" ]]; then
-#        apt-get install -y openjdk-7-jdk
-#    else
-#        yum install java-1.7.0-openjdk -y
-#    fi
 
     echo "-- checking for activemq user and group"
     AMQ_GROUP=`grep -c activemq: /etc/group`
@@ -121,7 +120,7 @@ function install_activemq {
     if [[ $OS == "Ubuntu" ]]; then
         if [[ $OSVERSION == "16" ]]; then
             AMQ_SYSTEMD="/etc/systemd/system/activmq.service"
-            AMQ_SYSTEMD_SRC="$DEVDIR/../install/src/ActiveMQ/activemq.service"
+            AMQ_SYSTEMD_SRC="$SCOT_CONFIG_SRC/ActiveMQ/activemq.service"
             if [[ ! -e $AMQ_SYSTEMD ]]; then
                 echo "-- installing $AMQ_SYSTEMD"
                 cp $AMQ_SYSTEMD_SRC $AMQ_SYSTEMD
@@ -138,7 +137,7 @@ function install_activemq {
         # chkconfig --add activemq
         # centos 7 appears to be systemd 
         AMQ_SYSTEMD="/etc/systemd/system/activmq.service"
-        AMQ_SYSTEMD_SRC="$DEVDIR/../install/src/ActiveMQ/activemq.service"
+        AMQ_SYSTEMD_SRC="$SCOT_CONFIG_SRC/ActiveMQ/activemq.service"
         if [[ ! -e $AMQ_SYSTEMD ]]; then
             echo "-- installing $AMQ_SYSTEMD"
             cp $AMQ_SYSTEMD_SRC $AMQ_SYSTEMD
