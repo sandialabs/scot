@@ -682,11 +682,15 @@ sub get_subthing {
         my $tobj            = $collection->find_iid($id);
         my $users_groups    = $self->session('groups');
 
-        unless ( $tobj->is_permitted("read", $users_groups ) ) {
-            $log->debug("User requested entities subthing, but does not have read permission to $collection $id");
-            $self->do_error(403, { error_msg => "insufficient permissions" });
-            $self->audit("failed get_subthing", $req_href);
-            return;
+        if ( $tobj->meta->does_role('Scot::Role::Permittable') ) {
+            unless ( $tobj->is_permitted("read", $users_groups ) ) {
+                $log->debug("User requested entities subthing, ".
+                            "but does not have read permission to ".
+                            "$collection $id");
+                $self->do_error(403, { error_msg => "insufficient permissions" });
+                $self->audit("failed get_subthing", $req_href);
+                return;
+            }
         }
 
         while ( my $entity = $cursor->next ) {
@@ -1931,9 +1935,11 @@ sub build_limit {
 
 
     my $limit   = $params->{limit} // $json->{limit};
-    if ( $limit ) {
-        $log->debug("LIMIT of $limit detected");
-        return $limit;
+    if ( defined $limit ) {
+        if ( $limit+0 ) {
+            $log->debug("LIMIT of $limit detected");
+            return $limit;
+        }
     }
     return undef;
 }
