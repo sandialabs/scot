@@ -32,7 +32,6 @@ var SelectedEntry = React.createClass({
             entityobj:null,
             key:this.props.id,
             flairToolbar:false,
-            errorDisplay:false,
             notificationType:null,
             notificationMessage: '',
             height: null,
@@ -58,7 +57,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntryData:true});
-                        this.errorToggle("Error: " + result.responseText);
+                        this.props.errorToggle("Error: " + result.responseText);
                     }
                 }.bind(this)
             });
@@ -84,7 +83,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntityData: true})
-                        this.errorToggle("Error: " + result.responseText);
+                        this.props.errorToggle("Error: " + result.responseText);
                     }
                 }.bind(this)
             });
@@ -117,7 +116,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntryData:true});
-                        this.errorToggle("Error: " + result.responseText);
+                        this.props.errorToggle("Error: " + result.responseText);
                     }
                 }.bind(this)
             }); 
@@ -143,7 +142,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntityData: true})
-                        this.errorToggle("Error: " + result.responseText);
+                        this.props.errorToggle("Error: " + result.responseText);
                     }
                 }.bind(this)
             }); 
@@ -166,15 +165,6 @@ var SelectedEntry = React.createClass({
                 this.setState({linkWarningToolbar:true,link:href})
             } else {
                 this.setState({linkWarningToolbar:false})
-            }
-        }
-    },
-    errorToggle: function(string) {
-        if (this.isMounted()) {
-            if (this.state.errorDisplay == false) {
-                this.setState({notificationMessage:string,notificationType:'error',errorDisplay:true})
-            } else {
-                this.setState({errorDisplay:false})
             }
         }
     },
@@ -315,7 +305,6 @@ var SelectedEntry = React.createClass({
                 {this.props.fileUploadToolbar ? <div>{this.props.isAlertSelected == false ? <FileUpload type={this.props.type} targetid={this.props.id} id={'file_upload'} fileUploadToggle={this.props.fileUploadToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
                 {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} aID={this.props.aID} aType={this.props.aType} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
-                {this.state.errorDisplay ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} buttons="CLOSE MESSAGE" onDismiss={this.errorToggle}/> : null} 
             </div>       
         );
     }
@@ -759,14 +748,14 @@ var AlertRowBlank = React.createClass({
         var showFileUploadToolbar = this.props.showFileUploadToolbar;
         var DisplayValue = 'none';
         var arr = [];
-        arr.push(<SelectedEntry type={this.props.type} id={this.props.id} />)
+        arr.push(<SelectedEntry type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/>)
         if (showEntry == true) {
             DisplayValue = 'table-row';
         } 
         return (
             <tr className='not_selectable' style={{display:DisplayValue}}>
                 <td colSpan="50">
-                    {showEntry ? <div>{<SelectedEntry type={this.props.type} id={this.props.id} />}</div> : null}
+                    {showEntry ? <div>{<SelectedEntry type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/>}</div> : null}
                     {showAddEntryToolbar ? <AddEntry title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.toggleOffAddEntry} updated={this.props.updated} errorToggle={this.props.errorToggle}/> : null}
                     {showFileUploadToolbar ? <FileUpload type={this.props.aType} targetid={this.props.id} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.toggleOffFileUpload}/> : null} 
                 </td>

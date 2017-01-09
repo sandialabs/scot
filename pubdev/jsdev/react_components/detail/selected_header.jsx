@@ -18,7 +18,6 @@ var DebounceInput           = require('react-debounce-input');
 var SelectedEntry           = require('./selected_entry.jsx');
 var Tag                     = require('../components/tag.jsx');
 var Source                  = require('../components/source.jsx');
-var Crouton                 = require('react-crouton');
 var Store                   = require('../activemq/store.jsx');
 var Notification            = require('react-notification-system');
 var AddFlair                = require('../components/add_flair.jsx').AddFlair;
@@ -65,7 +64,6 @@ var SelectedHeader = React.createClass({
             aStatus:null,
             aID:0,
             guideID: null,
-            errorDisplay: false,
             fileUploadToolbar: false,
             isNotFound: false,
             runWatcher: false,
@@ -96,7 +94,7 @@ var SelectedHeader = React.createClass({
                         if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false})
                         }
-                        this.errorToggle("Error: " + result.responseText);
+                        this.props.errorToggle("Error: " + result.responseText);
                     }.bind(this),
                 });
                 //entry load
@@ -116,7 +114,7 @@ var SelectedHeader = React.createClass({
                         if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false});
                         }
-                        this.errorToggle("Error: " + result.responseText);
+                        this.props.errorToggle("Error: " + result.responseText);
                     }
                 });
                 //entity load
@@ -146,7 +144,7 @@ var SelectedHeader = React.createClass({
                         if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false});
                         }
-                        this.errorToggle("Error: " + result.responseText);
+                        this.props.errorToggle("Error: " + result.responseText);
                     }.bind(this)
                 });
                 //guide load
@@ -164,7 +162,7 @@ var SelectedHeader = React.createClass({
                         }.bind(this),
                         error: function(result) {
                             this.setState({guideID: null})
-                            this.errorToggle("Error: " + result.responseText);
+                            this.props.errorToggle("Error: " + result.responseText);
                         }.bind(this)
                     });     
                 }
@@ -207,7 +205,7 @@ var SelectedHeader = React.createClass({
                 if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false})
                 }
-                this.errorToggle("Error: " + result.responseText);
+                this.props.errorToggle("Error: " + result.responseText);
             }.bind(this),
         });    
         //entry load
@@ -227,7 +225,7 @@ var SelectedHeader = React.createClass({
                 if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 } 
-                this.errorToggle("Error: " + result.responseText);
+                this.props.errorToggle("Error: " + result.responseText);
             }
         });
         //entity load
@@ -257,19 +255,12 @@ var SelectedHeader = React.createClass({
                 if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 } 
-                this.errorToggle("No data returned for entity lookup (404 or another network error) Error: " + result.responseText);
+                this.props.errorToggle("Error: " + result.responseText);
             }.bind(this)
         });
         //error popup if an error occurs
         if (_type!= undefined && _message != undefined) {
-            this.errorToggle(_message);
-        }
-    },
-    errorToggle: function(string) {
-        if (this.state.errorDisplay == false) {
-            this.setState({notificationMessage:string,notificationType:'error',errorDisplay:true})
-        } else {
-            this.setState({errorDisplay:false})
+            this.props.errorToggle(_message);
         }
     },
     flairToolbarToggle: function(id,value,type,entityoffset,entityobj){
@@ -526,8 +517,6 @@ var SelectedHeader = React.createClass({
                         </div>
                     </div>
                     <Notification ref="notificationSystem" /> 
-                    {this.state.errorDisplay ? <Crouton type={this.state.notificationType} id={Date.now()} message={this.state.notificationMessage} buttons="CLOSE MESSAGE" onDismiss={this.errorToggle}/> : null}
-                    
                     {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
                     {this.state.viewedByHistoryToolbar ? <ViewedByHistory viewedByHistoryToggle={this.viewedByHistoryToggle} id={id} type={type} subjectType={subjectType} viewedby={viewedby}/> : null}
                     {this.state.changeHistoryToolbar ? <ChangeHistory changeHistoryToggle={this.changeHistoryToggle} id={id} type={type} subjectType={subjectType}/> : null} 
@@ -536,8 +525,8 @@ var SelectedHeader = React.createClass({
                     {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} guideRedirectToAlertListWithFilter={this.guideRedirectToAlertListWithFilter}/> : null} 
                     {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
                 </div>
-                {this.state.showEventData ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar}/> : null}
-            {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} errorToggle={this.errorToggle} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj}/> : null}    
+                {this.state.showEventData ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.props.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar}/> : null}
+            {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj}/> : null}    
             </div>
             }
             </div>
