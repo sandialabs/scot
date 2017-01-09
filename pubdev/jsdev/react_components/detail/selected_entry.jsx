@@ -748,14 +748,14 @@ var AlertRowBlank = React.createClass({
         var showFileUploadToolbar = this.props.showFileUploadToolbar;
         var DisplayValue = 'none';
         var arr = [];
-        arr.push(<SelectedEntry type={this.props.type} id={this.props.id} />)
+        arr.push(<SelectedEntry type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/>)
         if (showEntry == true) {
             DisplayValue = 'table-row';
         } 
         return (
             <tr className='not_selectable' style={{display:DisplayValue}}>
                 <td colSpan="50">
-                    {showEntry ? <div>{<SelectedEntry type={this.props.type} id={this.props.id} />}</div> : null}
+                    {showEntry ? <div>{<SelectedEntry type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/>}</div> : null}
                     {showAddEntryToolbar ? <AddEntry title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.toggleOffAddEntry} updated={this.props.updated} errorToggle={this.props.errorToggle}/> : null}
                     {showFileUploadToolbar ? <FileUpload type={this.props.aType} targetid={this.props.id} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.toggleOffFileUpload}/> : null} 
                 </td>
