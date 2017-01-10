@@ -251,6 +251,15 @@ function install_cent_perl_packages {
 
     echo "- PERL VERSION IS NOW -"
     perl -V
+    local PVER=`perl -e 'print $];'`
+    local PTAR="5.018"
+    local COMP=`echo $PVER'>'$PTAR | bc -l`
+    if [[ $COMP != 1 ]]; then
+        echo "failed to upgrade perl, manual intervention required"
+        exit 1;
+    fi
+
+    
 
 }
 
@@ -278,9 +287,9 @@ function perl_version_check {
     ecoh "COMP is $COMP"
 
     if [[ $COMP == 1 ]];then
-        echo -e "${green} Yea! A modern perl! ${nc}"
+        echo "Yea! A modern perl! "
     else 
-        echo -e "${red} Your Perl is out of date.  Upgrade to 5.18 or better ${nc}"
+        echo "Your Perl is out of date.  Upgrade to 5.18 or better "
         echo "== See installation docs in docs/source/install.rst for instructions on how to install new perl"
         echo ""
         echo " this means yo uare most likely on a CentOS system, condolences."
@@ -304,6 +313,7 @@ function install_packages {
 }
 
 function install_perl_modules {
+    perlbrew switch perl-5.18.2
     PERLMODULES='
         Data::Dumper
         Data::Dumper::HTML
