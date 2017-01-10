@@ -2,9 +2,9 @@
 Description=SCOT (Sandia Cyber Omni Tracker)
 
 [Service]
-ExecStart=hypnotoad /opt/scot/script/Scot
-StandardOutput=/var/log/scot/scot.log
-StandardError=/var/log/scot/scot.log
+ExecStart=/usr/local/bin/hypnotoad /opt/scot/script/Scot
+StandardOutput=syslog
+StandardError=syslog
 
 [Install]
 WantedBy=multi-user.target
