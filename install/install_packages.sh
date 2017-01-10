@@ -17,6 +17,8 @@ function install_ubuntu_packages {
         libimlib2
         libmagic-dev
         libmagic1
+        apache2
+        apache2-utils
     '
     # for some reason, maxmind ppa is foobar'ed and these packages
     # won't install unless we force them to with allow unauth
