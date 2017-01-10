@@ -1,7 +1,6 @@
 #!/bin/bash
 
 function default_variables {
-    DEVDIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
     PRIVATE_SCOT_MODULES="$DEVDIR/../Scot-Internal-Modules"
     FILESTORE="/opt/scotfiles"
     SCOTDIR="/opt/scot"
@@ -11,6 +10,7 @@ function default_variables {
     LOGDIR="/var/log/scot"
     SCOT_CONFIG_SRC="$DEVDIR/install/src"
     SCOT_DOCS_SRC="$DEVDIR/docs/build/html"
+    SCOT_RESTART_DAEMONS="no"
 
     AMQDIR="/opt/activemq"
     AMQTAR="apache-activemq-5.13.2-bin.tar.gz"
@@ -33,18 +33,22 @@ function default_variables {
     RESETDB="no"
     REFRESHREPOS="yes"
     DELDIR="no"
+
 }
 
 
 function process_commandline {
-    options="A:M:dprs"
+    options="A:M:Ddprsu"
     while getopts $options opt; do
         case $opt in
             A)
                 AUTHMODE=$OPTARG
                 ;;
-            d) 
+            D) 
                 DELDIR="yes"
+                ;;
+            d)
+                SCOT_RESTART_DEAMONS="yes"
                 ;;
             e)
                 ES_RESET_DB="no"
@@ -96,7 +100,8 @@ function usage {
 
         -A mode     where mode = (default) "Local", "Ldap", or "Remoteuser" 
         -M path     where to locate installer for scot private modules
-        -d          delete target install directory before beginning install
+        -D          delete target install directory before beginning install
+        -d          restart scot daemons (scepd and scfd)
         -e          reset the Elasticsearch DB
         -r          delete existing SCOT Database (DATA LOSS POTENTIAL)
         -s          Install SCOT only, skip prerequisites (upgrade SCOT)

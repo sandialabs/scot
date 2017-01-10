@@ -4482,7 +4482,7 @@ var SelectedHeader = React.createClass({displayName: "SelectedHeader",
             type: 'GET',
             url: '/scot/api/v2/alertgroup/'+this.props.id
         }).success(function(response){
-            var win = window.open('viewSource.html') //, '_blank')
+            var win = window.open('/libs/viewSource.html') //, '_blank')
             var html =  response.body;
             var plain = response.body_plain;
             win.onload = function() {   
@@ -5720,9 +5720,9 @@ module.exports = React.createClass({displayName: "exports",
             columns = ['id', 'subject', 'applies_to']
             columnsClassName = ['id', 'subject', 'applies_to']
         } else if (this.props.type == 'intel') {
-            columnsDisplay =['ID', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
-            columns = ['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
-            columnsClassName = ['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
+            columnsDisplay =['ID', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
+            columns = ['id', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
+            columnsClassName = ['id', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
         }
         if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; alertPreSelectedId=id;};
 

@@ -59,9 +59,9 @@ module.exports = React.createClass({
             columns = ['id', 'subject', 'applies_to']
             columnsClassName = ['id', 'subject', 'applies_to']
         } else if (this.props.type == 'intel') {
-            columnsDisplay =['ID', 'Status', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
-            columns = ['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
-            columnsClassName = ['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
+            columnsDisplay =['ID', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
+            columns = ['id', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
+            columnsClassName = ['id', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
         }
         if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; alertPreSelectedId=id;};
 
