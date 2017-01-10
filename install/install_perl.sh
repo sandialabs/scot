@@ -249,6 +249,9 @@ function install_cent_perl_packages {
     perlbrew install perl-5.18.2
     perlbrew switch perl-5.18.2
 
+    echo "- PERL VERSION IS NOW -"
+    perl -V
+
 }
 
 function install_cpanm {
@@ -269,6 +272,10 @@ function perl_version_check {
     local PVER=`perl -e 'print $];'`
     local PTAR="5.018"
     local COMP=`echo $PVER'>'$PTAR | bc -l`
+
+    echo "PERL reports version as $PVER"
+    echo "want $PTAR or greater"
+    ecoh "COMP is $COMP"
 
     if [[ $COMP == 1 ]];then
         echo -e "${green} Yea! A modern perl! ${nc}"
@@ -292,7 +299,7 @@ function install_packages {
         install_ubuntu_packages
     else 
         # echo "-- cent packages suck.  allowing cpanm to build all dependencies"
-        install_cent_packages
+        install_cent_perl_packages 
     fi
 }
 
@@ -432,7 +439,7 @@ function install_perl {
     echo "--- Installing Required Perl Packages and Modules"
     echo "---"
     perl_version_check
-    install_cpanm
     install_packages
+    install_cpanm
     install_perl_modules
 }
