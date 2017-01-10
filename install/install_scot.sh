@@ -68,6 +68,7 @@ function get_config_files {
         game.app
         elastic
         backup
+        scot_server
     '
     for file in $CFGFILES; do
         CFGDEST="$SCOTDIR/etc/${file}.cfg"
