@@ -249,6 +249,9 @@ function install_cent_perl_packages {
     perlbrew install perl-5.18.2
     perlbrew switch perl-5.18.2
 
+    echo "- PERL VERSION IS NOW -"
+    perl -V
+
 }
 
 function install_cpanm {
@@ -436,7 +439,7 @@ function install_perl {
     echo "--- Installing Required Perl Packages and Modules"
     echo "---"
     perl_version_check
-    install_cpanm
     install_packages
+    install_cpanm
     install_perl_modules
 }
