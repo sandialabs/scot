@@ -313,6 +313,7 @@ function install_packages {
 }
 
 function install_perl_modules {
+    perlbrew switch perl-5.18.2
     PERLMODULES='
         Data::Dumper
         Data::Dumper::HTML
