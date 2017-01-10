@@ -386,6 +386,7 @@ function install_perl_modules {
         File::LibMagic
         List::Uniq
         Domain::PublicSuffix
+        Mozilla::PublicSuffix
         Crypt::PBKDF2
         Config::Crontab
         Test::JSON

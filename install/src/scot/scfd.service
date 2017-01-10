@@ -5,8 +5,8 @@ Description=SCot Flair Daemon
 ExecStart=/opt/scot/bin/flairer.pl
 Restart=always
 RestartSec=10
-StandardOutput=/var/log/scot/scot.flair.log
-StandardError=/var/log/scot/scot.flair.log
+StandardOutput=syslog
+StandardError=syslog
 
 [Install]
 WantedBy=multi-user.target

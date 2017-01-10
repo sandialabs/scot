@@ -5,8 +5,8 @@ Description=SCot Elasticsearch Push Daemon
 ExecStart=/opt/scot/bin/stretch.pl
 Restart=always
 RestartSec=10
-StandardOutput=/var/log/scot/scot.stretch.log
-StandardError=/var/log/scot/scot.stretch.log
+StandardOutput=syslog
+StandardError=syslog
 
 [Install]
 WantedBy=multi-user.target
