@@ -119,7 +119,7 @@ function install_activemq {
 
     if [[ $OS == "Ubuntu" ]]; then
         if [[ $OSVERSION == "16" ]]; then
-            AMQ_SYSTEMD="/etc/systemd/system/activmq.service"
+            AMQ_SYSTEMD="/etc/systemd/system/activemq.service"
             AMQ_SYSTEMD_SRC="$SCOT_CONFIG_SRC/ActiveMQ/activemq.service"
             if [[ ! -e $AMQ_SYSTEMD ]]; then
                 echo "-- installing $AMQ_SYSTEMD"

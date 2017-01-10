@@ -7,6 +7,10 @@ function install_java {
     echo "---"
 
     if [[ $OS == "Ubuntu" ]]; then
+        if [[ $OSVERSION == "16" ]]; then
+            add-apt-repository ppa:openjdk-r/ppa
+            apt-get update
+        fi
         apt-get install -y openjdk-7-jdk -y
     else
         yum install java-1.7.0-openjdk -y
