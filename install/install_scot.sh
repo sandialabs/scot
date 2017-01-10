@@ -295,7 +295,7 @@ function setup_scot_admin {
         set='$set'
         HASH=`$SCOT_CONFIG_SRC/mongodb/passwd.pl`
 
-        mongo scot-prod $SCOT_CONF_SRC/mongodb/admin_user.js
+        mongo scot-prod $SCOT_CONFIG_SRC/mongodb/admin_user.js
         mongo scot-prod --eval "db.user.update({username:'admin'}, {$set:{pwhash:'$HASH'}})"
     fi
 }
