@@ -296,7 +296,7 @@ function install_packages {
         install_ubuntu_packages
     else 
         # echo "-- cent packages suck.  allowing cpanm to build all dependencies"
-        install_cent_packages
+        install_cent_perl_packages 
     fi
 }
 
