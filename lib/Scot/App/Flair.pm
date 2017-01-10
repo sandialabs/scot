@@ -355,6 +355,7 @@ sub flair_record {
 
         if ( $column =~ /^message_id$/i ) {
             # the data is telling us that this is a email message_id, so flair
+            $value = lc($value);
             push @entity, { value => $value, type => "message_id" };
             $flair{$column}  = $self->genspan($value, "message_id");
             next COLUMN;
