@@ -239,10 +239,11 @@ function install_cent_perl_packages {
     echo "-- installing things that should never be pulled out of a perl install, thanks centos"
     yum install perl-devel patch -y
     echo "-- installing perlbrew to get around crappy centos perl version"
+    export PERLBREW_ROOT=/opt/perl5
     curl --insecure -L https://install.perlbrew.pl | bash
     echo "-- adding perlbrew environment to system profile"
-    echo "source /root/perl5/perlbrew/etc/bashrc" > /etc/profile.d/perlbrew.sh
-    source /root/perl5/perlbrew/etc/bashrc
+    echo "source $PERLBREW_ROOT/etc/bashrc" > /etc/profile.d/perlbrew.sh
+    source $PERLBREW_ROOT/etc/bashrc
     echo "-- installing patchperl"
     perlbrew install-patchperl
     echo "-- brewing 5.18.2"
@@ -398,6 +399,11 @@ function install_perl_modules {
         Courriel
     '
 
+    # test has probles with proxy and ssl 
+    # -n skips the test and installs anyway.  
+    # should not be a problem (until it is)
+    cpanm -n LWP::Protocol::https
+
     for module in $PERLMODULES; do
 
         echo "--"
@@ -439,7 +445,12 @@ function install_perl_modules {
         echo "Try installing them by hand: \"sudo -E cpanm module_name\""
         echo "Google any error messages or contact scot-dev@sandia.gov"
         for module in $FAILED; do
-            echo "    => $module"
+            if [[ $module == "AnyEvent::ForkManager" ]]; then
+                echo "- forcing the install of AnyEvent::ForkManager"
+                cpanm -f AnyEvent::ForkManager
+            else 
+                echo "    => $module"
+            fi
         done
     fi
     

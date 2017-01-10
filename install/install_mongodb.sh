@@ -150,7 +150,9 @@ function initialize_database {
 
     if [[ "$RESETDB" == "yes" ]] || [[ "$1" == "reset" ]]; then
         echo "-- initializing SCOT database"
-        mongo scot-prod ./src/database/reset.js
+        cd $DEVDIR/install
+        mongo scot-prod ./src/mongodb/reset.js
+        cd $DEVDIR
     else
         echo "-- skipping SCOT DB initialization"
     fi
