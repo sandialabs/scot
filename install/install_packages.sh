@@ -87,6 +87,32 @@ function update_apt {
     apt-get update
 }
 
+function manually_build_libmaxmind {
+    LIBMMVER="libmaxminddb-1.2.0"
+    LIBMMDB="libmaxminddb-1.2.0.tar.gz"
+    LIBMMRELEASE="releases/download/1.2.0"
+    LIBMMURL="https://github.com/maxmind/libmaxminddb/$LIBMMRELEASE/$LIBMM"
+    wget -P /tmp $LIBMMURL
+
+    if [[ ! -e "/tmp/$LIBMMDB" ]]; then
+        echo "-- download may have failed.  Using packaged tar file"
+        cp $DEVDIR/install/src/maxmind/$LIBMMDB /tmp
+    fi
+
+    echo "-- extracting libmaxminddb source files"
+    tar xf /tmp/$LIBMMDB --directory /tmp
+
+    echo "-- changing to /tmp/$LIBMMVER to compile"
+    cd /tmp/$LIBMMVER
+    ./configure
+    make 
+    make install
+
+    echo "-- changing dir back to $DEVDIR"
+    cd $DEVDIR
+}
+
+
 function install_cent_packages {
 
     echo "-- adding config to allow unverified ssl in yum "
@@ -116,6 +142,12 @@ function install_cent_packages {
         echo "-- Installing $pgk"
         yum install -y $pkg
     done
+
+    # need to install libmaxminddb by hand, because again
+    # cent sux
+    manually_build_libmaxmind
+
+
 }
 
 function install_packages {
