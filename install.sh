@@ -73,18 +73,25 @@ show_variables
 if [[ $INSTMODE != "SCOTONLY" ]]; then
     . ./install/install_packages.sh
     install_packages
+
     . ./install/install_java.sh
     install_java
+
+    . ./install/install_apache.sh
+    install_apache
+
     . ./install/install_activemq.sh
     install_activemq
+
     . ./install/install_elasticsearch.sh
     install_elasticsearch
+    
     . ./install/install_mongodb.sh
     install_mongodb
-    . ./install/install_apache.sh
-    install_apache.sh
+    
     . ./install/install_perl.sh
     install_perl
+    
     configure_filestore
 fi
 
@@ -118,8 +125,18 @@ echo "---- Install completed"
 echo "----"
 echo "----"
 
+. ./install/status.sh
 
-
+echo "========= "
+echo "========= Please let us know you are using SCOT"
+echo "========= it helps us convince our management to continue work on it."
+echo "========= "
+echo "========= ways to communicate with us:"
+echo "========= follow us on twitter: @scotincresp "
+echo "========= subscribe to        : majordomo@sandia.gov "
+echo "=========             with body "subscribe scot-users"
+echo "========= email the dev team  : scot-dev@sandia.gov "
+echo "========= "
 
 
 
