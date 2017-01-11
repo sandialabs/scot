@@ -132,15 +132,15 @@ function configure_for_scot {
     echo "-- ensuring failIndexKeyTooLong is set"
     add_failIndexKeyTooLong 
 
-    if [[ ! -d $DBDIR ]]; then
-        echo "-- $DBDIR not present, creating..."
-        mkdir -p $DBDIR
+    if [[ ! -d $MONGO_DB_DIR ]]; then
+        echo "-- $MONGO_DB_DIR not present, creating..."
+        mkdir -p $MONGO_DB_DIR
     else
-        echo "-- $DBDIR present"
+        echo "-- $MONGO_DB_DIR present"
     fi
 
     echo "-- ensuring ownership"
-    chown -R mongodb:mongodb $DBDIR
+    chown -R mongodb:mongodb $MONGO_DB_DIR
 
     MONGO_LOG="/var/log/mongodb/mongod.log"
     echo "-- clearing $MONGO_LOG"
