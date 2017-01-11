@@ -73,18 +73,25 @@ show_variables
 if [[ $INSTMODE != "SCOTONLY" ]]; then
     . ./install/install_packages.sh
     install_packages
+
     . ./install/install_java.sh
     install_java
-    . ./install/install_activemq.sh
-    install_activemq
-    . ./install/install_elasticsearch.sh
-    install_elasticsearch
-    . ./install/install_mongodb.sh
-    install_mongodb
+
     . ./install/install_apache.sh
     install_apache
+
+    . ./install/install_activemq.sh
+    install_activemq
+
+    . ./install/install_elasticsearch.sh
+    install_elasticsearch
+    
+    . ./install/install_mongodb.sh
+    install_mongodb
+    
     . ./install/install_perl.sh
     install_perl
+    
     configure_filestore
 fi
 
