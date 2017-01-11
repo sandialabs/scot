@@ -57,6 +57,7 @@ EOF
     fi
 }
 
+
 function add_failIndexKeyTooLong {
 
     MONGO_SRC_DIR=$DEVDIR/src/mongodb
@@ -66,16 +67,9 @@ function add_failIndexKeyTooLong {
 
     if [[ $OS == "Ubuntu" ]]; then
 
+
         if [[ $OSVERSION == "16" ]]; then
-            echo "- ubuntu 16 locations"
-            if grep --quiet failIndexKeyTooLong $MONGO_SYSTEMD_INIT; then
-                echo "- failIndexKeyTooLong is present"
-            else
-                echo "- backing up $MONGO_SYSTEMD_INIT"
-                backup_file $MONGO_SYSTEMD_INIT
-                echo "- installing $MONGO_SRC_DIR/mongod.service"
-                cp $MONGO_SRC_DIR/mongod.service $MONGO_SYSTEMD_INIT
-            fi
+            echo "-- scot installed config files will include failIndexKeyTooLong paramter set to false"
         else
             echo "- ubuntu 14 locations"
             if grep --quiet failIndexKeyTooLong $MONGO_INIT; then
@@ -88,15 +82,7 @@ function add_failIndexKeyTooLong {
             fi
         fi
     else
-        echo "- cent locations"
-        if grep --quiet failIndexKeyTooLong $MONGO_INIT;then
-            echo "- failIndexKeyTooLong is present"
-        else
-            echo "- backing up $MONGO_INIT"
-            backup_file $MONGO_INIT
-            echo "- installing $MONGO_INIT_SRC"
-            cp $MONGO_INIT_SRC $MONGO_INIT
-        fi
+        echo "-- scot installed config files will include failIndexKeyTooLong paramter set to false"
     fi
 }
 
@@ -123,6 +109,25 @@ function configure_for_scot {
 
     echo "-- stopping mongodb if it is running"
     start_stop mongod stop
+
+    if [[ $MONGO_REFRESH_CONFIG == "yes" ]]; then
+        echo "-- copying scot mongo config into place"
+        MONGO_CONF_SRC=$DEVDIR/src/mongodb
+        MONGO_SYSTEMD_SERVICE=/lib/systemd/system/mongod.service
+
+        if [[ $OS == "Ubuntu" ]]; then
+            if [[ $OSVERSION == "16" ]]; then
+                echo "- installing $MONGO_INIT_SRC"
+                backup_file $MONGO_SYSTEMD_SERVICE
+                cp $MONGO_CONF_SRC/mongod.service $MONGO_SYSTEMD_SERVICE
+                cp $MONGO_CONF_SRC/mongod.conf /etc/mongod.conf
+            fi
+        else
+            backup_file $MONGO_SYSTEMD_SERVICE
+            cp $MONGO_CONF_SRC/mongod.service $MONGO_SYSTEMD_SERVICE
+            cp $MONGO_CONF_SRC/mongod.conf /etc/mongod.conf
+        fi
+    fi
 
     echo "-- ensuring failIndexKeyTooLong is set"
     add_failIndexKeyTooLong 
