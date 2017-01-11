@@ -32,8 +32,11 @@ function install_apache {
     echo "-- configuring apache2"
     echo "--"
 
-    local CSD="$DEVDIR/src/apache2"
+    local CSD="$DEVDIR/install/src/apache2"
     local CSF="$PRIVATE_SCOT_MODULES/etc/scot-revproxy.conf"
+
+    echo "-- DEVDIR is $DEVDIR"
+    echo "-- CSD    is $CSD"
 
     echo "- looking for $CSF"
     if [[ ! -e $CSF ]]; then
