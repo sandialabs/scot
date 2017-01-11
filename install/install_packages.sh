@@ -124,6 +124,9 @@ function install_cent_packages {
         yum update -y
     fi
 
+    echo "-- installing development tools"
+    yum groupinstall "Development Tools" -y
+
     YUMPACKAGES='
         redhat-lsb
         openssl-devel
@@ -135,6 +138,8 @@ function install_cent_packages {
         krb5-libs
         krb5-devel
         GeoIP
+        libmaxminddb.x86_64
+        libmaxminddb-devel.x86_64
     '
 
     for pkg in $YUMPACKAGES; do
@@ -143,10 +148,8 @@ function install_cent_packages {
         yum install -y $pkg
     done
 
-    # need to install libmaxminddb by hand, because again
-    # cent sux
-    manually_build_libmaxmind
-
+    # manually_build_libmaxmind
+    # might not be necessary with the last two packages above
 
 }
 
