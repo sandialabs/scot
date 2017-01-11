@@ -142,7 +142,7 @@ function start_services {
     if [[ $OS == "Ubuntu" ]]; then
         if [[ $OSVERSION == "16" ]]; then
             systemctl daemon-reload
-            start_mongo
+            systemctl restart mongod.service
             wait_for_mongo
             systemctl restart scot.service
             systemctl restart apache2.service
@@ -157,7 +157,7 @@ function start_services {
     else
         # it appears that centos 7.3 is systemd 
         systemctl daemon-reload
-        start_mongo
+        systemctl restart mongod.service
         wait_for_mongo
         systemctl restart scot.service
         systemctl restart apache2.service
