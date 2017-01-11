@@ -10,7 +10,7 @@ function install_apache {
         echo "--"
         echo "-- Ubuntu based system install of apache2"
         echo "--"
-        APACHE_PKGS="apache2 libapache2-mod-authnz-external libapache2-mod-proxy-html libapache2-mod-rpaf"
+        APACHE_PKGS="apache2 libapache2-mod-authnz-external libapache2-mod-rpaf"
         apt-get install -y $APACHE_PKGS
         SitesAvailable="/etc/apache2/sites-available"
         SitesEnabled="/etc/apache2/sites-enabled"
