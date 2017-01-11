@@ -134,7 +134,7 @@ echo "========= "
 echo "========= ways to communicate with us:"
 echo "========= follow us on twitter: @scotincresp "
 echo "========= subscribe to        : majordomo@sandia.gov "
-echo "=========             with body "subscribe scot-users"
+echo "=========             with body subscribe scot-users"
 echo "========= email the dev team  : scot-dev@sandia.gov "
 echo "========= "
 
