@@ -285,7 +285,7 @@ function perl_version_check {
 
     echo "PERL reports version as $PVER"
     echo "want $PTAR or greater"
-    ecoh "COMP is $COMP"
+    echo "COMP is $COMP"
 
     if [[ $COMP == 1 ]];then
         echo "Yea! A modern perl! "

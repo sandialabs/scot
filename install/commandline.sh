@@ -27,6 +27,7 @@ function default_variables {
     MONGO_KEY_OPTS="--keyserver-options http-proxy=$PROXY"
     MONGO_SOURCE_LIST="/etc/apt/sources.list.d/mongo-org-3.2.list"
     MONGO_YUM_REPO="/etc/yum.repos.d/mongodb.repo"
+    MONGO_REFESH_CONF="yes"
 
     AUTHMODE="Local"
     INSTMODE="ALL"
@@ -66,11 +67,13 @@ function process_commandline {
                 INSTMODE="SCOTONLY"
                 RESETDB="no"
                 REFRESHREPOS="no"
+                MONGO_REFRESH_CONFIG="no"
                 ;;
             s)
                 INSTMODE="SCOTONLY"
                 RESETDB="no"
                 REFRESHREPOS="no"
+                MONGO_REFRESH_CONFIG="no"
                 ;;
             \?)
                 usage
