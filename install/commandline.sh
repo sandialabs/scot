@@ -1,38 +1,69 @@
 #!/bin/bash
 
 function default_variables {
+    # location of private Scot modules
     PRIVATE_SCOT_MODULES="$DEVDIR/../Scot-Internal-Modules"
+    # location where to store uploaded files
     FILESTORE="/opt/scotfiles"
+    # location where to install SCOT
     SCOTDIR="/opt/scot"
+    # SCOT's root
     SCOTROOT="/opt/scot"
+    # Port for the hypnotoad scot server
     SCOTPORT=3000
+    # location where to build and store SCOT backups
     BACKUPDIR="/opt/scotbackup"
+    # location for the log files
     LOGDIR="/var/log/scot"
+    # where to find config files used in install
     SCOT_CONFIG_SRC="$DEVDIR/install/src"
+    #  where to get the html docs built from the markdown sources
     SCOT_DOCS_SRC="$DEVDIR/docs/build/html"
+    # restart SCOT daemons scfd and scep whe installing/upgrading
     SCOT_RESTART_DAEMONS="no"
 
+    # where to install activemq
     AMQDIR="/opt/activemq"
+    # the activemq tar package to use
     AMQTAR="apache-activemq-5.13.2-bin.tar.gz"
+    # where to get it
     AMQURL="https://repository.apache.org/content/repositories/releases/org/apache/activemq/apache-activemq/5.13.2/$AMQTAR"
-    AMQ_CONFIGS="$DEVDIR/src/ActiveMQ/amq"
+    # install time location of the configs
+    AMQ_CONFIGS="$SCOT_CONFIG_SRC/ActiveMQ/amq"
 
+    # apt repor for elasticsearch
     ES_APT_LIST="/etc/apt/sources.list.d/elasticsearch-2.x.list"
+    # apt key
     ES_GPG="https://packages.elastic.co/GPG-KEY-elasticsearch"
+    # the repo
     ES_YUM_REPO="/etc/yum.repos.d/elasticsearch.repo"
+    # reset the DB at install
     ES_RESET_DB="yes"
 
+    # mongo package keyserver
     MONGO_KEYSRVR="--keyserver hkp://keyserver.ubuntu.com:80"
+    # the key
     MONGO_KEY="EA312927"
+    # options to use the proxy
     MONGO_KEY_OPTS="--keyserver-options http-proxy=$PROXY"
+    # the repo list
     MONGO_SOURCE_LIST="/etc/apt/sources.list.d/mongo-org-3.2.list"
+    # and for cent/rh
     MONGO_YUM_REPO="/etc/yum.repos.d/mongodb.repo"
+    # refresh the config?
     MONGO_REFESH_CONF="yes"
+    # where to install the database data files
+    MONGO_DB_DIR="/var/lib/mongodb"
 
+    # mode Local/Remoteuser/Ldap
     AUTHMODE="Local"
+    # install all prerequisites or just the scot code "SCOTONLY"
     INSTMODE="ALL"
+    # wipe out existing SCOT data in monog db
     RESETDB="no"
+    # do yum update or apt-get update
     REFRESHREPOS="yes"
+    # wipe the $SCOT_ROOT prior to install
     DELDIR="no"
 
 }

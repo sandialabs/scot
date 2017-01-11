@@ -92,7 +92,6 @@ if [[ $INSTMODE != "SCOTONLY" ]]; then
     . ./install/install_perl.sh
     install_perl
     
-    configure_filestore
 fi
 
 . ./install/install_scot.sh
