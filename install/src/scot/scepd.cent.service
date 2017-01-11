@@ -1,9 +1,9 @@
 [Unit]
-Description=SCot Flair Daemon
+Description=SCot Elasticsearch Push Daemon
 
 [Service]
-EnvironmentFile=/opt/scot/etc/scfd.env
-ExecStart=/opt/scot/bin/flairer.pl
+EnvironmentFile=/opt/scot/etc/scepd.env
+ExecStart=/opt/scot/bin/stretch.pl
 Restart=always
 RestartSec=10
 StandardOutput=syslog

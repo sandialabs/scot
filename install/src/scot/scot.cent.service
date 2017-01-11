@@ -1,0 +1,11 @@
+[Unit]
+Description=SCOT (Sandia Cyber Omni Tracker)
+
+[Service]
+EnvironmentFile=/opt/scot/etc/hypnotoad.env
+ExecStart=/usr/local/bin/hypnotoad /opt/scot/script/Scot
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

@@ -244,7 +244,7 @@ function stop_apache {
             systemctl stop apache2.service
         fi
     else
-        systemctl stop apache2.service
+        systemctl stop httpd.service
     fi
 }
 
@@ -256,7 +256,7 @@ function start_apache {
             systemctl start apache2.service
         fi
     else
-        systemctl start apache2.service
+        systemctl start httpd.service
     fi
 }
 
