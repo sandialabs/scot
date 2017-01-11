@@ -40,18 +40,14 @@ function install_apache {
 
     echo "- looking for $CSF"
     if [[ ! -e $CSF ]]; then
-        CSF="$CSD/scot-revproxy-${OS}-remoteuser.conf"
+
+        CSF="$CSD/scot-revproxy-${OS}-${AUTHMODE}.conf"
         echo "- looking for $CSF"
 
         if [[ ! -e $CSF ]]; then
-            CSF="$CSD/scot-revproxy-${OS}-local.conf"
-            echo "- looking for $CSF"
-
-            if [[ ! -e $CSF ]]; then
-                echo -e "${red} FAILED to FIND revproxy config! ${nc}"
-                echo "Installation can not proceed until fixed!"
-                exit 1;
-            fi
+            echo -e "${red} FAILED to FIND revproxy config! ${nc}"
+            echo "Installation can not proceed until fixed!"
+            exit 1;
         fi
     fi
 
@@ -96,12 +92,20 @@ function install_apache {
     echo "-"
     echo "- Config in place, editing to set variables"
     echo "- document root = $SCOTROOT"
-    echo "- revproxy port = $SCOTPORT"
-    echo "- hostname      = $MYHOSTNAME"
-    echo "-"
     sed -i 's=/scot/document/root='$SCOTROOT'/public=g' $SCOT_APACHE_CONFIG
+    echo "- revproxy port = $SCOTPORT"
     sed -i 's=/localport='$SCOTPORT'=g' $SCOT_APACHE_CONFIG
+    echo "- hostname      = $MYHOSTNAME"
     sed -i 's=scotservertld='$MYHOSTNAME'=g' $SCOT_APACHE_CONFIG
+    echo "-"
+
+    echo "-- checking that sed worked"
+    if grep "$SCOTROOT" $SCOT_APACHE_CONFIG; then
+        echo "looks ok..."
+    else
+        echo "FAILED TO update config!"
+        exit 1
+    fi
 
     SSLDIR="/etc/apache2/ssl"
 

@@ -5,6 +5,7 @@ function install_activemq {
     if [[ "$SCOT_CONFIG_SRC" == "" ]];then
         SCOT_CONFIG_SRC="$DEVDIR/install/src"
     fi
+
     if [[ "$AMQDIR" == "" ]]; then
         AMQDIR="/opt/activemq"
     fi
@@ -18,7 +19,7 @@ function install_activemq {
     fi
 
     if [[ "$AMQ_CONFIGS" == "" ]]; then
-        AMQ_CONFIGS=$SCOT_CONFIG_SRC/ActiveMQ/amq
+        AMQ_CONFIGS="$SCOT_CONFIG_SRC/ActiveMQ/amq"
     fi
 
     echo "---"
