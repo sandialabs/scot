@@ -147,8 +147,9 @@ function configure_startup {
         else
             # echo "-- chkconfig adding $service"
             # chkconfig --add $service
-            sysfile="${service}.service"
-            target="/etc/systemd/system/$sysfile"
+            sysfile="${service}.cent.service"
+            tsysfile="${service}.service"
+            target="/etc/systemd/system/$tsysfile"
             if [[ "$REFRESH_INIT" == "yes" ]]; then
                 rm -f $target
             fi
