@@ -42,7 +42,7 @@ function ensure_mongo_repo {
         echo "deb $DEB multiverse" | tee $MONGO_SOURCE_LIST
         apt-get update
     else 
-        if grep --quiet mongo /etc/yum.repos.d/mongodb.repo; then
+        if grep --quiet mongo $MONGO_YUM_REPO; then
             echo "-- mongo yum repo already present"
         else
             echo "-- adding mongo yum repo stanza"
