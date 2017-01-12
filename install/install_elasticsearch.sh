@@ -128,7 +128,7 @@ function install_elasticsearch {
             service elasticsearch restart
         fi
     else
-        systemctl deamon-reload
+        systemctl daemon-reload
         systemctl enable elasticsearch.service
         systemctl start elasticsearch.service
     fi
