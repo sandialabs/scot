@@ -6,7 +6,7 @@
 
 function add_scot_user {
     echo "- checking for existing scot user"
-    if grep --quiet -c scot: /etc/password; then
+    if grep --quiet -c scot: /etc/passwd; then
         echo "- scot user exists"
     else
         useradd -c "SCOT User" -d $SCOTDIR -M -s /bin/bash scot

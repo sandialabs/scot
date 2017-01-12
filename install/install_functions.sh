@@ -123,7 +123,7 @@ function apt-get-update {
 
 function wait_for_mongo {
     COUNTER=0
-    grep -q 'waiting for connections on port' /var/log/mongod.log
+    grep -q 'waiting for connections on port' /var/log/mongodb/mongod.log
     while [[ $? -ne 0 && $COUNTER -lt 50 ]]; do
         sleep 1
         let COUNTER+=1
