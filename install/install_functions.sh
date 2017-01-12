@@ -160,7 +160,7 @@ function start_services {
         systemctl restart mongod.service
         wait_for_mongo
         systemctl restart scot.service
-        systemctl restart apache2.service
+        systemctl restart httpd.service
         systemctl restart scfd.service
         systemctl restart scepd.service
     fi

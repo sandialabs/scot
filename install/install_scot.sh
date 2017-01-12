@@ -110,6 +110,7 @@ function configure_startup {
     SRCDIR="$SCOT_CONFIG_SRC/scot"
 
     for service in $SCOTSERVICES; do
+        echo "-- SERVICE $service"
         if [[ $OS == "Ubuntu" ]]; then
             if [[ $OSVERSION == "16" ]]; then
                 sysfile="${service}.service"
@@ -118,7 +119,7 @@ function configure_startup {
                     rm -f $target
                 fi
                 if [[ ! -e $target ]]; then
-                    echo "-- installing $target"
+                    echo "-- installing $target from $SRCDIR/$sysfile"
                     cp $SRCDIR/$sysfile $target
                 else
                     echo "-- $target exists, skipping..."
@@ -154,7 +155,7 @@ function configure_startup {
                 rm -f $target
             fi
             if [[ ! -e $target ]]; then
-                echo "-- installing $target"
+                echo "-- installing $target from $SRCDIR/$sysfile"
                 cp $SRCDIR/$sysfile $target
             else
                 echo "-- $target exists, skipping..."
@@ -319,6 +320,10 @@ function restart_daemons {
     fi
 }
 
+function selinux_to_permissive {
+    setenforce 0
+}
+
 function install_scot {
     
     echo "---"
@@ -327,6 +332,10 @@ function install_scot {
 
     stop_scot
     stop_apache
+
+    if [[ $OS != "Ubuntu" ]]; then
+        selinux_to_permissive
+    fi
 
     if [[ "$SCOTDIR" == "" ]]; then
         SCOTDIR="/opt/scot"
