@@ -112,12 +112,13 @@ function install_elasticsearch {
 
     if [[ $OS == "Ubuntu" ]]; then
         if [[ $OSVERSION == "16" ]]; then
-            ES_SERVICE="/etc/systemd/system/elasticsearch.service"
-            ES_SERVICE_SRC="$SCOT_CONFIG_SRC/elasticsearch/elasticsearch.service"
-            if [[ ! -e $ES_SERVICE ]]; then
-                echo "- installing $ES_SERVICE"
-                cp $ES_SERVICE_SRC $ES_SERVICE
-            fi
+            # looks like this happens from the installer
+            # ES_SERVICE="/etc/systemd/system/elasticsearch.service"
+            # ES_SERVICE_SRC="$SCOT_CONFIG_SRC/elasticsearch/elasticsearch.service"
+            # if [[ ! -e $ES_SERVICE ]]; then
+            #     echo "- installing $ES_SERVICE"
+            #     cp $ES_SERVICE_SRC $ES_SERVICE
+            # fi
             systemctl daemon-reload
             systemctl restart elasticsearch.service
         else
@@ -134,7 +135,7 @@ function install_elasticsearch {
 
     if [[ $ES_RESET_DB == "yes" ]]; then
         echo "-- creating elasticsearch mappings..."
-        . $DEVDIR/src/elasticsearch/mapping.sh
+        . $DEVDIR/install/src/elasticsearch/mapping.sh
     fi
 
 }
