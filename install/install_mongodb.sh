@@ -140,7 +140,12 @@ function configure_for_scot {
     fi
 
     echo "-- ensuring ownership"
-    chown -R mongodb:mongodb $MONGO_DB_DIR
+    # sigh, why cant we settle on one username for mongo
+    if [[ $OS == "Ubuntu" ]]; then
+        chown -R mongodb:mongodb $MONGO_DB_DIR
+    else
+        chown -R mongod:mongod $MONGO_DB_DIR
+    fi
 
     MONGO_LOG="/var/log/mongodb/mongod.log"
     echo "-- clearing $MONGO_LOG"
