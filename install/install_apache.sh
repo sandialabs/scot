@@ -100,7 +100,7 @@ function install_apache {
     echo "-"
 
     echo "-- checking that sed worked"
-    if grep "localhost:localport"; then
+    if grep "localhost:localport" $SCOT_APACHE_CONFIG; then
         echo "!!!! Oh no! sed failed to edit $SCOT_APACHE_CONFIG"
     else
         echo "looks ok"
