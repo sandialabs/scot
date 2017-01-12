@@ -90,22 +90,22 @@ function install_apache {
     fi
     
     echo "-"
-    echo "- Config in place, editing to set variables"
+    echo "- Modifying $SCOT_APACHE_CONFIG"
     echo "- document root = $SCOTROOT"
     sed -i 's=/scot/document/root='$SCOTROOT'/public=g' $SCOT_APACHE_CONFIG
     echo "- revproxy port = $SCOTPORT"
-    sed -i 's=/localport='$SCOTPORT'=g' $SCOT_APACHE_CONFIG
+    sed -i 's=localport='$SCOTPORT'=g' $SCOT_APACHE_CONFIG
     echo "- hostname      = $MYHOSTNAME"
-    sed -i 's=scotservertld='$MYHOSTNAME'=g' $SCOT_APACHE_CONFIG
+    sed -i 's=scot\.server\.tld='$MYHOSTNAME'=g' $SCOT_APACHE_CONFIG
     echo "-"
 
     echo "-- checking that sed worked"
-    if grep "$SCOTROOT" $SCOT_APACHE_CONFIG; then
-        echo "looks ok..."
+    if grep --quiet "localhost:localport"; then
+        echo "!!!! Oh no! sed failed to edit $SCOT_APACHE_CONFIG"
     else
-        echo "FAILED TO update config!"
-        exit 1
+        echo "looks ok"
     fi
+        
 
     SSLDIR="/etc/apache2/ssl"
 
