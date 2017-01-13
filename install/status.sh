@@ -2,6 +2,7 @@
 
 SERVICES='
     mongod
+    activemq
     scot
     apache2
     httpd
