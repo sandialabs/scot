@@ -150,7 +150,15 @@ function install_activemq {
     fi
 
     echo "-- installation of ActiveMQ complete, starting..."
-    /etc/init.d/activemq start
+    if [[ $OS == "Ubuntu" ]]; then
+        if [[ $OSVERSION == "16" ]]; then
+            systemctl start activemq.service
+        else
+            /etc/init.d/activemq start
+        fi
+    else
+        systemctl start activemq.service
+    fi
 
     echo "-- you will need to verify that process is running"
     echo "-- ps -ef | grep activemq"
