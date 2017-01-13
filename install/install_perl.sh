@@ -244,8 +244,8 @@ function install_cent_perl_packages {
     echo "-- adding perlbrew environment to system profile"
     echo "source $PERLBREW_ROOT/etc/bashrc" > /etc/profile.d/perlbrew.sh
     source $PERLBREW_ROOT/etc/bashrc
-    echo "-- installing patchperl"
-    perlbrew install-patchperl
+    #echo "-- installing patchperl"
+    #perlbrew install-patchperl
     echo "-- brewing 5.18.2"
     perlbrew install perl-5.18.2
     perlbrew switch perl-5.18.2

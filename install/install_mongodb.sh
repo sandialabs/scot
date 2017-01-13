@@ -100,6 +100,39 @@ function start_stop  {
     fi
 }
 
+function wait_for_mongo {
+    local COUNTER=0
+    local WAITFOR=10
+    local REMAIN=10
+    grep -q 'waiting for connections on port' /var/log/mongodb/mongod.log
+    while [[ $? -ne 0 && $COUNTER -lt $WAITFOR ]]; do
+        sleep 1
+        let COUNTER+=1
+        let REMAIN-=1
+        echo "~ waiting for mongo to init ($REMAIN secs)"
+        grep -q 'waiting for connections on port' /var/log/mongodb/mongod.log
+    done
+}
+
+function initialize_database {
+
+    if [[ "$RESETDB" == "yes" ]] || [[ "$1" == "reset" ]]; then
+        echo "-- initializing SCOT database"
+        # subshell
+        (cd $DEVDIR/install; mongo scot-prod ./src/mongodb/reset.js)
+        if [[ $? -ne 0 ]];then
+            echo "!!!!!"
+            echo "!!!!! SCOT initialization of database failed!"
+            echo "!!!!!"
+        else
+            echo "-- SCOT DB initialized"
+        fi
+    else
+        echo "-- skipping SCOT DB initialization"
+    fi
+
+}
+
 
 function configure_for_scot {
 
@@ -153,20 +186,8 @@ function configure_for_scot {
     chown mongodb:mongodb $MONGO_LOG
 
     start_stop mongod start
+    wait_for_mongo
     initialize_database reset
-
-}
-
-function initialize_database {
-
-    if [[ "$RESETDB" == "yes" ]] || [[ "$1" == "reset" ]]; then
-        echo "-- initializing SCOT database"
-        cd $DEVDIR/install
-        mongo scot-prod ./src/mongodb/reset.js
-        cd $DEVDIR
-    else
-        echo "-- skipping SCOT DB initialization"
-    fi
 
 }
 
