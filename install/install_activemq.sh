@@ -129,7 +129,7 @@ function install_activemq {
                 echo "-- $AMQ_SYSTEMD exists, skipping..."
             fi
             systemctl daemon-reload
-            systemctl enable $service
+            systemctl enable activemq.service
         else
             update-rc.d activemq defaults
         fi
@@ -146,7 +146,7 @@ function install_activemq {
             echo "-- $AMQ_SYSTEMD exists, skipping..."
         fi
         systemctl daemon-reload
-        systemctl enable $service
+        systemctl enable activemq.service
     fi
 
     echo "-- installation of ActiveMQ complete, starting..."
