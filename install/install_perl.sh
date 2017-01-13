@@ -271,8 +271,10 @@ function install_cpanm {
     echo "--"
 
     if hash cpanm 2>/dev/null; then
+        echo "-- using existing cpanm to refresh"
         cpanm App::cpanminus
     else
+        echo "-- downloading cpanm"
         curl -L http://cpanmin.us | perl - --sudo App::cpanminus
     fi
 }
@@ -314,7 +316,12 @@ function install_packages {
 }
 
 function install_perl_modules {
-    perlbrew switch perl-5.18.2
+
+    if [[ $OS != "Ubuntu" ]]; then 
+        echo "-- Cent/RH system, invoking perlbrew to modernize the perl"
+        perlbrew switch perl-5.18.2
+    fi
+
     PERLMODULES='
         Data::Dumper
         Data::Dumper::HTML
@@ -398,6 +405,8 @@ function install_perl_modules {
         Term::ANSIColor
         Courriel
     '
+
+    # install_cpanm
 
     # test has probles with proxy and ssl 
     # -n skips the test and installs anyway.  
