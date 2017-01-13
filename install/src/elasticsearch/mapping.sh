@@ -1,3 +1,5 @@
+no_proxy=localhost
+
 echo "Deleting Existing SCOT index";
 curl -XDELETE localhost:9200/scot
 
