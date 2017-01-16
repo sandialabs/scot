@@ -24,6 +24,25 @@ Documentation and Install
 -------------------------
 Read our [documentation](http://scot.readthedocs.org/en/latest/install.html) at Read The Docs.
 
+Install It!
+-----------
+
+SCOT has an installer that will work with Ubuntu 16.04 and CentOS 7.  While there should be nothing preventing SCOT to work on other Linux's, you will have to do a lot more work by hand to get SCOT installed.  (Please post your successes for others)
+
+To install on Ubuntu 16.04 or CentOS 7:
+
+* clone the SCOT repo: 
+
+    git clone git@baltig.sandia.gov:scot/SCOT.git
+
+* run the installer as root:
+
+    $ sudo -E bash
+    # cd SCOT
+    # ./install.sh 2>&1 | tee ../scot.install.log
+
+The install can take a while.  Be sure to set your proxy environment variables.  the installer output is very verbose and saving it to a log is recommended to help with debugging any issues that might arise.
+
 Overview
 --------
 

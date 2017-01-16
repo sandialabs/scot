@@ -1,0 +1,259 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installing SCOT &#8212; SCOT 3.5.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '3.5.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="POST Install Procedures" href="postinstall.html" />
+    <link rel="prev" title="License" href="license.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="postinstall.html" title="POST Install Procedures"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="license.html" title="License"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="installing-scot">
+<h1>Installing SCOT<a class="headerlink" href="#installing-scot" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="minimum-system-requirements">
+<h2>Minimum System Requirements<a class="headerlink" href="#minimum-system-requirements" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Ubuntu 14.04 LTS (best tested), 16.04 LTS, or CentOS 7.</li>
+<li>2 Quad Core CPU</li>
+<li>16 GB RAM</li>
+<li>1 TB Disk</li>
+</ul>
+</div>
+<div class="section" id="system-preparation">
+<h2>System Preparation<a class="headerlink" href="#system-preparation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="centos-7-only">
+<h3>CENTOS 7 (only)<a class="headerlink" href="#centos-7-only" title="Permalink to this headline">¶</a></h3>
+<p>If you built your system from the minimal ISO, you will need to do the following first:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ su
+password:
+# yum update
+# yum -y install net-tools
+# yum -y install git
+# yum -y groupinstall &quot;Development Tools&quot;
+# yum -y install wget
+</pre></div>
+</div>
+<p>Perl on CENT/RedHat is pretty ancient and will not work with SCOT.  SCOT requires at least Perl 5.18.
+Fortunately, is is pretty easy to update Perl using the following:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ su
+password:
+# wget http://www.cpan.org/src/5.0/perl-5.24.0.tar.gz
+# tar xzvf perl-5.24.0.tar.gz
+# cd perl-5.24.0
+# ./Configure -des
+# make
+# make test
+# make install
+</pre></div>
+</div>
+</div>
+<div class="section" id="ubuntu-and-cent">
+<h3>Ubuntu and CENT<a class="headerlink" href="#ubuntu-and-cent" title="Permalink to this headline">¶</a></h3>
+<p># Now you are ready to pull the SCOT source from GitHub:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ git clone https://github.com/sandialabs/scot.git scot
+</pre></div>
+</div>
+<p># cd into the SCOT directory:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ cd /home/user/scot
+</pre></div>
+</div>
+<p># Are you upgrading from SCOT 3.4?  If so, you should do the following</p>
+<blockquote>
+<div><ul>
+<li><p class="first">Backup you existing SCOT database:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ mongodump scotng-prod
+$ tar czvf scotng-backup.tgz ./dump
+</pre></div>
+</div>
+</li>
+<li><p class="first">delete SCOT init script and crontab entries:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># rm /etc/init.d/scot3</span>
+<span class="c1"># crontab -e</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+<p># go ahead and become root:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ sudo bash
+</pre></div>
+</div>
+<p># Make sure that the http_proxy and https_proxy variables are set if needed:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># echo $http_proxy</span>
+<span class="c1"># export http_proxy=http://yourproxy.domain.com:80</span>
+<span class="c1"># export https_proxy=https://yourproxy.domain.com:88</span>
+</pre></div>
+</div>
+<p># You are now ready to begin the install:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># ./install.sh</span>
+</pre></div>
+</div>
+<p>Go get a cup of cofee.  Initial install will download and install all the dependencies for SCOT.  If any errors should
+occurr, it is OK to re-run the installer after those problems are resolved.</p>
+</div>
+</div>
+<div class="section" id="install-sh-options">
+<h2>install.sh Options<a class="headerlink" href="#install-sh-options" title="Permalink to this headline">¶</a></h2>
+<p>SCOT&#8217;s installer, install.sh,  is designed to automate many of the tasks need to install and
+upgrade SCOT.  The installer takes the following flags to modify its installtion behavior:</p>
+<p>Usage: ./install.sh [-abigmsrflq] [-A mode]</p>
+<blockquote>
+<div><table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group">
+<kbd><span class="option">-a</span></kbd></td>
+<td>do not attempt to perform an &#8220;apt-get update&#8221;</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-d</span></kbd></td>
+<td>do not delete /opt/scot before installation</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-i</span></kbd></td>
+<td>do not overwrite an existing /etc/init.d/scot file</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-g</span></kbd></td>
+<td>Overwrite existing GeoCitiy DB</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-m</span></kbd></td>
+<td>Overwrite mongodb config and restart mongo service</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-s</span></kbd></td>
+<td>SAFE SCOT. Only instal SCOT software, do not refresh apt, do not
+overwrite /etc/init.d/scot, do not reset db, and
+do not delete /opt/scotfiles</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-r</span></kbd></td>
+<td>delete SCOT database (will result in data loss!)</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-f</span></kbd></td>
+<td>delete /opt/scotfiles directory and contents ( again, data loss!)</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-l</span></kbd></td>
+<td>truncate logs in /var/log/scot (potential data loss)</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-q</span></kbd></td>
+<td>install new activemq config, apps, initfiles and restart service</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-w</span></kbd></td>
+<td>overwrite existing SCOT apache config files</td></tr>
+<tr><td class="option-group">
+<kbd><span class="option">-A <var>mode</var></span></kbd></td>
+<td>mode = Local | Ldap | Remoteuser
+default is Remoteuser (see docs for details)</td></tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installing SCOT</a><ul>
+<li><a class="reference internal" href="#minimum-system-requirements">Minimum System Requirements</a></li>
+<li><a class="reference internal" href="#system-preparation">System Preparation</a><ul>
+<li><a class="reference internal" href="#centos-7-only">CENTOS 7 (only)</a></li>
+<li><a class="reference internal" href="#ubuntu-and-cent">Ubuntu and CENT</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#install-sh-options">install.sh Options</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="license.html"
+                        title="previous chapter">License</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="postinstall.html"
+                        title="next chapter">POST Install Procedures</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/install.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="postinstall.html" title="POST Install Procedures"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="license.html" title="License"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SCOT 3.5.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2011-2016, Sandia National Laboratories.
+    </div>
+  </body>
+</html>

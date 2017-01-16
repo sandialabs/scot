@@ -1,400 +1,371 @@
 package Scot::Env;
 
-=head1 Scot::Env
-
-OPEN SOURCE Version.
-
-this module is glue to hold SCOT together.
-Bots can include this to get the entire scot environment
-Mojolicious controllers can include this to do the same
-This will replace a bunch of helpers in Scot.pm and
-the Tasker.pm module.
-
-=cut
-
-use lib '../lib';
+use v5.18;
 use lib '../../lib';
+use lib '../../../Scot-Internal-Modules/lib';
 use strict;
 use warnings;
-use v5.10;
 
-use File::Slurp;
 use Time::HiRes qw(gettimeofday tv_interval);
-use Log::Log4perl qw(:easy);
-use Log::Log4perl::Layout;
-use Log::Log4perl::Layout::PatternLayout;
-use Log::Log4perl::Level;
-use Log::Log4perl::Appender;
-use JSON;
+use Module::Runtime qw(require_module compose_module_name);
 use Data::Dumper;
-use Config::Auto;
-use DateTime;
-
-use Scot::Types;
-use Scot::Util::ActiveMQ;
-use Scot::Util::Mongo;
-use Scot::Util::Redis3;
-use Scot::Util::Aaa;
-use Scot::Util::Imap;
-use Scot::Util::Ldap;
-use Scot::Util::EntityExtractor;
-# use Scot::Util::Sep;
-
+use File::Find;
+use Safe;
 use namespace::autoclean;
+use Scot::Util::MongoQueryMaker;
+
 use Moose;
+use MooseX::Singleton;
 
-=head2 Attributes
+has version => (
+    is          => 'ro',
+    isa         => 'Str',
+    lazy        => 1,
+    required    => 1,
+    default     => '3.5',
+);
 
-=over 4
-
-=item C<config_file>
-
-the full path to the SCOT config file. (perl format)
-
-=cut
-
-has 'config_file'   => (
+has configfile  => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default     => "../../scot.conf",
+    builder     => '_get_configfile',
 );
 
-=item C<config>
+sub _get_configfile {
+    my $self    = shift;
+    if ( $ENV{'scot_env_configfile'} ) {
+        return $ENV{'scot_env_configfile'};
+    }
+    return '/opt/scot/etc/scot_env.cfg';
+}
 
-the parsed hash ref generated from the config_file
-
-=cut
-
-has 'config'    => (
+has config      => (
     is          => 'rw',
     isa         => 'HashRef',
     required    => 1,
     lazy        => 1,
-    builder     => '_parse_config_file',
+    traits      => ['Hash'],
+    builder     => '_get_environment_config',
 );
 
-sub _parse_config_file {
-    my $self        = shift;
-    my $filename    = $self->config_file;
+sub _get_environment_config {
+    my $self    = shift;
+    my $file    = $self->configfile;
 
-    if ( $filename =~ /\.json$/ ) {
-        my $json        = JSON->new->relaxed(1);
-        my $contents    = read_file($filename);
-        return $json->decode($contents);
+    unless ( $file ) {
+        die "configfile NOT SET!";
     }
-    my $conf = Config::Auto::parse($filename, format => 'perl');
-    return $conf;
+    unless ( -e $file ) {
+        die "configfile $file does not exist!";
+    }
+
+    no strict 'refs'; # I know, this smells, but...
+    my $container   = new Safe 'CONFIG';
+    my $ret         = $container->rdo($file);
+    my $hname       = "CONFIG::environment";
+    my $href        = \%$hname;
+
+    return $href;
 }
 
-=item C<mode>
+# mainly for testing
+has cachedconfigs => (
+    is          => 'rw',
+    isa         => 'HashRef',
+);
 
-SCOT can run in various modes which controls what databases, etc.
-it accesses.
+has servername => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    predicate   => 'has_servername',
+    builder     => '_get_servername',
+);
 
-=cut
+sub _get_servername {
+    my $self    = shift;
+    return $self->config->{servername};
+}
 
-has 'mode'      => (
+has mojo    => (
+    is          => 'rw',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_get_mojo_defaults',
+    predicate   => 'has_mojo',
+);
+
+sub _get_mojo_defaults {
+    my $self    = shift;
+    my $config  = $self->config;
+    return $config->{mojo_defaults};
+}
+
+has mode    => (
     is          => 'rw',
     isa         => 'Str',
     required    => 1,
     lazy        => 1,
     builder     => '_get_mode',
+    predicate   => 'has_mode',
 );
 
 sub _get_mode {
     my $self    = shift;
-    my $config  = $self->config;
-    return $config->{mode};
+    # Env then Config then default
+    my $mode    = $self->config->{mode};
+    if ( $ENV{'scot_mode'} ) {
+        $mode   = $ENV{'scot_mode'};
+    }
+    unless ($mode) {
+        $mode   = 'prod';
+    }
+    return $mode;
 }
 
-=item C<interactive>
-
-for bots, do we want interactivity?
-
-=cut
-
-has 'interactive'   => (
+has authmode    => (
     is          => 'rw',
-    isa         => 'Bool',
-    traits      => [ 'Bool' ],
-    required    => 1,
-    default     => 0,
-);
-
-=item C<log>
-
-reference to the Scot logging object;
-
-=cut
-
-has 'log'  => (
-    is          => 'ro',
-    isa         => 'Log::Log4perl::Logger',
+    isa         => 'Str',
     required    => 1,
     lazy        => 1,
-    builder     => '_build_logger',
+    builder     => '_get_authmode',
+    predicate   => 'has_authmode',
 );
 
-sub _build_logger {
+sub _get_authmode {
+    return $ENV{'scot_authmode'} // 'prod';
+}
+
+has group_mode  => (
+    is          => 'rw',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    predicate   => 'has_group_mode',
+    builder     => '_get_group_mode',
+);
+
+sub _get_group_mode {
+    my $self    = shift;
+    my $config  = $self->config;
+    return $config->{group_mode};
+}
+
+has default_owner   => (
+    is              => 'rw',
+    isa             => 'Str',
+    required        => 1,
+    lazy            => 1,
+    builder         => '_get_default_owner',
+    predicate       => 'has_default_owner',
+);
+
+sub _get_default_owner {
+    my $self    = shift;
+    my $config  = $self->config;
+    return $config->{default_owner} // "scot-admin";
+}
+
+has default_groups  => ( 
+    is              => 'rw',
+    isa             => 'HashRef',
+    required        => 1,
+    lazy            => 1,
+    builder         => '_get_default_groups',
+    predicate       => 'has_default_groups',
+);
+
+sub _get_default_groups {
+    my $self    = shift;
+    my $config  = $self->config;
+    return $config->{default_groups};
+    
+}
+
+has admin_group => (
+    is                  => 'rw',
+    isa                 => 'Str',
+    required            => 1,
+    lazy                => 1,
+    builder             => '_get_admin_group',
+    predicate           => 'has_admin_group',
+);
+
+sub _get_admin_group {
+    my $self    = shift;
+    my $item    = $self->config->{admin_group};
+    if ( $item ) {
+        return $item;
+    } 
+    else {
+        return "wg-scot-admin";
+    }
+}
+
+sub get_test_groups {
+    return [ qw(wg-scot-ir) ];
+}
+
+has authtype    => (
+    is              => 'rw',
+    isa             => 'Str',
+    lazy            => 1,
+    required        => 1,
+    builder         => '_get_authtype',
+    predicate       => 'has_authtype',
+);
+
+sub _get_authtype {
+    my $self    = shift;
+    # ENV then Config then default
+    my $type    = $ENV{'SCOT_AUTH_TYPE'};
+
+    if ( $type ) {
+        return $type;
+    }
+
+    $type = $self->config->{authtype};
+
+    if ( $type) { 
+        return $type;
+    }
+
+    return 'RemoteUser';
+
+}
+
+has authclass => (
+    is          => 'rw',
+    isa         => 'Str',
+    lazy        => 1,
+    required    => 1,
+    builder     => '_get_authclass',
+    predicate   => 'has_authclass',
+);
+
+sub _get_authclass {
+    my $self        = shift;
+    my $authtype    = $self->authtype;
+    my $route       = 'controller-auth-'.lc($authtype);
+    $self->log->debug("Setting Authclass to $route");
+    return $route;
+}
+
+has 'filestorage'   => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    predicate   => 'has_filestorage',
+    builder     => '_get_filestorage',
+);
+
+sub _get_filestorage {
+    my $self    = shift;
+    return $self->config->{file_store_root};
+}
+
+has 'mongoquerymaker'   => (
+    is          => 'ro',
+    isa         => 'Scot::Util::MongoQueryMaker',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_get_mqm',
+);
+
+sub _get_mqm {
+    my $self    = shift;
+    return Scot::Util::MongoQueryMaker->new();
+}
+
+sub BUILD {
     my $self    = shift;
     my $conf    = $self->config;
-    my $mode    = $self->mode;
-    my $logfile = $conf->{$mode}->{logfile};
+    my $paths   = $conf->{config_path};
+    my $meta    = $self->meta;
+    $meta->make_mutable;
 
-    my $log     = Log::Log4perl->get_logger("Scot");
-    my $layout  = Log::Log4perl::Layout::PatternLayout->new(
-        '%d [%P] %15F{1}: %4L %m%n'
-    );
-    my $appender    = Log::Log4perl::Appender->new(
-        "Log::Log4perl::Appender::File",
-        name        => "scot_log",
-        filename    => $logfile,
-        autoflush   => 1,
-    );
-    $appender->layout($layout);
-    $log->add_appender($appender);
-    $log->level($DEBUG);
+    # first build Logger
+    my $logmodule       = delete $conf->{modules}->{log}; # delete it so we don't repeat building later
+    my $logconfigfile   = $conf->{configs}->{log};
+    my $logconfig       = $self->get_config('log', $logconfigfile);
 
-    return $log;
+    # say Dumper($logconfig);
+
+    require_module($logmodule);
+    my $log             = $logmodule->new($logconfig);
+    
+    $meta->add_attribute(
+        'log'   => ( 
+            is      => 'rw',
+            isa     => 'Log::Log4perl::Logger',
+        )
+    );
+    $self->log($log);
+
+    $log->debug("Starting Env.pm");
+    $log->debug("Config is ",{ filter=>\&Dumper, value=> $conf});
+
+    my %cacheconfs;
+
+    foreach my $name (keys %{$conf->{modules}} ) {
+        $log->debug("Creating attribute $name");
+        my $class           = $conf->{modules}->{$name};
+        my $configfile      = $conf->{configs}->{$name};
+        my $confhref        = $self->get_config($name, $configfile);
+        $cacheconfs{$name}  = $confhref;
+        $confhref->{log}    = $log;
+        require_module($class);
+        my $instance    = $class->new($confhref);
+        unless ( $instance ) {
+            die "Creating $class instance Failed!";
+        }
+        my $ctype       = ref($instance); # some these may be factories returning a different type
+        
+        $meta->add_attribute(
+            $name   => (
+                is      => 'rw',
+                isa     => $ctype,
+            )
+        );
+        $self->$name($instance);
+    }
+    $self->cachedconfigs(\%cacheconfs);
 }
 
-
-=item C<mongo>
-
-The link to the Scot::Util::Mongo object that talks to SCOT's datastore
-
-=cut
-
-has 'mongo' => (
-    is          => 'ro',
-    isa         => 'Scot::Util::Mongo',
-    lazy        => 1,
-    required    => 1,
-    builder     => '_build_mongo',
-);
-
-sub _build_mongo {
+sub get_config {
     my $self    = shift;
-    my $config  = $self->config;
-    my $mode    = $self->mode;
-    my $mongo   = Scot::Util::Mongo->new(
-        'log'       => $self->log,
-        'config'    => $config->{$mode},
-    );
-    return $mongo;
-}
-
-=item C<phantom>
-
-link to Scot::Util::Phantom
-
-=cut
-
-has 'phantom'   => (
-    is          => 'ro',
-    isa         => 'Scot::Util::Phantom',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_phantom',
-);
-
-sub _build_phantom {
-    my $self    = shift;
+    my $name    = shift;
+    my $file    = shift;
     my $conf    = $self->config;
-    my $mode    = $self->mode;
-    my $phantom = Scot::Util::Phantom->new(
-        'log'       => $self->log,
-        'config'    => $conf->{$mode},
-    );
-    return $phantom;
+    my $paths   = $conf->{config_path};
+
+    # say "looking for $file in ".join(',',@$paths);
+
+    my $fqname;
+    find(sub {
+        if ( $_ eq $file ) {
+            $fqname = $File::Find::name;
+            return;
+        }
+    }, @$paths);
+
+    # say "found $fqname";
+
+    no strict 'refs'; # I know, but...
+    my $cont    = new Safe 'MCONFIG';
+    my $r       = $cont->rdo($fqname);
+    my $hname   = 'MCONFIG::environment';
+    my %copy    = %$hname;
+    my $href    = \%copy;
+
+    # say "loaded $name config: ", Dumper($href);
+
+    return $href;
 }
-
-=item C<activemq>
-
-the activemq helper object.  sends updates to all stomp clients
-
-=cut
-
-has 'activemq'  => (
-    is          => 'ro',
-    isa         => 'Scot::Util::ActiveMQ',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_activemq',
-);
-
-sub _build_activemq {
-    my $self    = shift;
-    my $log     = $self->log;
-    my $config  = $self->config;
-    my $mode    = $self->mode;
-
-    my $amq     = Scot::Util::ActiveMQ->new({
-        config  => $config->{$mode},
-        'log'   => $log,
-    });
-    return $amq;
-}
-
-=item C<redis>
-
-link to the redis helper object
-
-=cut
-
-has 'redis' => (
-    is          => 'ro',
-    isa         => 'Scot::Util::Redis3',
-    required    => 1,
-    builder     => '_build_redis',
-    lazy        => 1,
-);
-
-sub _build_redis {
-    my $self    = shift;
-    my $config  = $self->config;
-    my $log     = $self->log;
-    my $mode    = $self->mode;
-    my $redis   = Scot::Util::Redis3->new({
-        config  => $config->{$mode},
-        'log'   => $log,
-    });
-    return $redis;
-}
-
-=item C<ldap>
-
-The ldap attribute holds a reference to a Scot::Util::Ldap object.
-Not always needed.  going to make this lazy, so should instantiate unless needed.
-Might want to profile this behavior though to be sure.
-
-=cut
-
-has ldap        => (
-    is          => 'rw',
-    isa         => 'Scot::Util::Ldap',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_ldap',
-);
-
-sub _build_ldap {
-    my $self    = shift;
-    my $config  = $self->config;
-    my $mode    = $self->mode;
-    my $ldap    = Scot::Util::Ldap->new({
-        config  => $config->{$mode},
-        log     => $self->log,
-    });
-    return $ldap;
-}
-
-
-=item C<test_clock>
-
-this attribute allows us to control timing in test scenarios
-
-=cut
-
-has test_clock  => (
-    is          => 'rw',
-    isa         => 'Epoch',
-    required    => 1,
-    coerce      => 1,
-    builder     => '_init_test_clock',
-);
-
-sub _init_test_clock {
-    my $self    = shift;
-    return time();  # if not set use current time
-}
-
-=item C<imap>
-
-link to the Scot::Util::Imap helper object
-
-=cut
-
-has 'imap'  => (
-    is          => 'ro',
-    isa         => 'Scot::Util::Imap',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_imap',
-);
-
-sub _build_imap {
-    my $self    = shift;
-    my $config  = $self->config;
-    my $mode    = $self->mode;
-    my $user    = $config->{$mode}->{imap}->{username};
-    my $account = $config->{email_accounts}->{$user};
-    my $mongo   = $self->mongo;
-    my $imap    = Scot::Util::Imap->new(
-        config      => $config->{$mode},
-        log         => $self->log,
-        email_acct  => $account,
-        mongo       => $mongo,
-        env         => $self,
-    );
-    return $imap;
-}
-
-=item C<geoip>
-
-link to the Scot::Util::Geoip helper object
-
-=cut
-
-has 'geoip' => (
-    is          => 'ro',
-    isa         => 'Scot::Util::Geoip',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_geoip',
-);
-
-sub _build_geoip {
-    my $self    = shift;
-    my $config  = $self->config;
-    my $mode    = $self->mode;
-    my $geo     = Scot::Util::Geoip->new(
-        config  => $config->{$mode},
-        log     => $self->log,
-    );
-    return $geo;
-}
-
-
-=item C<entity_extractor>
-
-experimental replacement of phantomjs
-
-=cut
-
-has 'entity_extractor'      => (
-    is          => 'rw',
-    isa         => 'Scot::Util::EntityExtractor',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_get_entity_extractor',
-);
-
-sub _get_entity_extractor {
-    my $self    = shift;
-    my $config  = $self->config;
-    my $extractor   = Scot::Util::EntityExtractor->new({
-        suffixfile  => "../../etc/effective_tld_names.dat",
-        log         => $self->log,
-    });
-    return $extractor;
-}
-
-
-=back
-
-=head2 Methods
 
 =item C<get_timer(I<$title>)>
 
@@ -404,7 +375,7 @@ my $timer = $env->timer("foo")
 ...later...
 my $elapsed_seconds = &$timer;
 
- who says perl can't do cool things.
+ who says perl can't do cool things.  
 
 =cut
 
@@ -414,276 +385,79 @@ sub get_timer {
     my $start   = [ gettimeofday ];
     my $log     = $self->log;
 
-    $log->debug("Setting Timer for $title");
+    # $log->debug("Setting Timer for $title");
 
     return sub {
         my $begin   = $start;
         my $elapsed = tv_interval($begin, [ gettimeofday ]);
-        $log->debug("====\n".
-        " "x56 ."==== Timer   : $title\n".
-        " "x56 ."==== Elapsed : $elapsed\n".
-        " "x56 ."===="
-        );
+        $log->debug("$title Elapsed Time: $elapsed");
         return $elapsed;
     };
 }
 
-=item C<set_test_clock(I<$dt>)>
-
-pass the same params that you would to create a DateTime object
-and this will set the test_clock to that number of seconds since the epoch
-
-=cut
-
-sub set_test_clock {
-    my $self    = shift;
-    my $dt      = DateTime->new(@_);
-    $self->test_clock($dt->epoch);
-}
-
-=item C<advance_test_clock(I<$unit,$quantity>)>
-
-advance the test clock by $quantity $units of time
-
-=cut
-
-sub advance_test_clock {
-    my $self        = shift;
-    my $unit        = shift;
-    my $quantity    = shift;
-    my $test_clcok  = $self->test_clock;
-    my $multiplier  = 1;
-
-    $multiplier = (60*60*24)    if ($unit =~ /day/i);
-    $multiplier = (60*60)       if ($unit =~ /hour/i);
-    $multiplier = 60            if ($unit =~ /minute/i);
-
-    my $seconds_to_advance  = $quantity * $multiplier;
-    my $test_now            = $self->test_clock;
-    $self->test_clock($test_now + $seconds_to_advance);
-}
-
-=item C<now>
-
-return the current time in seconds since the epoch.  In test mode,
-return the epoch time according to the test_clock
-
-=cut
-
 sub now {
-    my $self    = shift;
-
-    if ( $self->config->{use_test_clock} ) {
-        $self->logger->debug("USING TEST CLOCK");
-        return $self->test_clock;
-    }
     return time();
 }
 
-=item C<fmt_time>
-
-convert seconds epoch to the users timezone
-
-=cut
-
-sub fmt_time {
+sub get_user {
     my $self    = shift;
-    my $secs    = shift;
-    my $utz     = $self->session('tz') // 'UTC';
-    my $tz      = shift // $utz;
+    my $api     = shift;
+    my $user    = $api->session('user');
 
-    return '' unless $secs;
-
-    my $dt  = DateTime->from_epoch(epoch=>$secs);
-    $dt->set_time_zone($tz);
-
-    return sprintf("%s", $dt);
-}
-
-=item C<deplural>
-
-english is fun and non logical.  take stuff like vulnerabilities and return
-vulnerability.
-
-=cut
-
-sub deplural {
-    my $self    = shift;
-    my $plural  = shift;
-    my $singular;
-
-    if ( $plural =~ /ies$/ ) {
-        $singular   = substr($plural,0,-3) . "y";
-    }
-    elsif ( $plural =~ /es$/ ) {
-        $singular   = substr($plural,0,-2);
-    }
-    elsif ( $plural =~ /s$/ ) {
-        $singular   = substr($plural,0,-1);
-    }
-    else {
-        # not dealing with fungus, and other non standards
-        $singular   = $plural; # punt
-    }
-    return $singular;
-}
-
-=item C<get_model_class_from_collection>
-
-give it a collection and get the Scot::Model::Class
-
-Here's the rule:
-    Collection names are plural and all lowercase
-    the corresponding model is Ucfirst and singular
-
-=cut
-
-sub get_model_class {
-    my $self        = shift;
-    my $collection  = shift;
-    my $colname     = ucfirst($self->deplural($collection));
-    my $class       = "Scot::Model::$colname";
-    return $class;
-}
-
-=item C<update_activity_log(I<$href>)>
-
-this function allows you to update the audits collection in
-a consistent way.   The href is expected to contain:
-{
-    data    => {
-        target_type => $a,
-        target_id   => $b,
-        is_task     => $c,
-        type        => $d,
-        original_obj    => $obj1,
-    }
-
-=cut
-
-sub update_activity_log {
-    my $self    = shift;
-    my $href    = shift;
-    my $mongo   = $self->mongo;
-    my $log     = $self->log;
-
-    $log->trace(" - Updating Activity Log - ");
-
-    my $audit_obj   = Scot::Model::Audit->new($href);
-    my $audit_id    = $mongo->create_document($audit_obj);
-
-    if ($audit_id) {
-
-        $self->send_amq_message($href);
-
-    }
-    else {
-        $log->error("Failed to create audit entry from ".Dumper($href));
-        return undef;
-    }
-    return 1;
-}
-
-sub send_amq_message {
-    my $self    = shift;
-    my $href    = shift;
-    my $amq     = $self->activemq;
-    my $log     = $self->log;
-    my $mongo   = $self->mongo;
-
-    #   short circuiting because this does nothing currently
-    #  this is the way we would like to do it, but it confuses the
-    # stomp clients for some reason.
-    return;
-
-    my $target_type = $href->{data}->{target_type} // "none";
-    my $target_id   = $href->{data}->{target_id};
-    my $is_task     = $href->{is_task};
-
-    my $amq_msg = {
-        type    => $target_type,
-        id      => $target_id,
-        action  => $href->{type},
-    };
-
-    if ( $is_task) {
-        $amq_msg->{is_task} = $is_task;
-    }
-
-    my $viewcount   = $href->{data}->{view_count};
-    if ( $viewcount ) {
-        $amq_msg->{view_count} = $viewcount;
-    }
-
-    if ( $target_type eq "alert" ) {
-
-        if ( $target_id ) {
-
-            my $alert_obj = $mongo->read_one_document({
-                collection  => "alerts",
-                match_ref   => { alert_id => $target_id },
-            });
-
-            unless ($alert_obj) {
-                $log->error("Audit for Alert $target_id failed to find");
-            }
-            else {
-                $amq_msg->{alertgroup} = $alert_obj->alertgroup;
-            }
-
+    unless ( defined $user ) {
+        if ( $self->authmode eq "test" ) {
+            $self->log->debug("In authmod of test, setting username to test");
+            $user   = "test";
         }
         else {
-            $log->error("Audit had no target_id...");
+            my $msg = "Error: Owner not provided by session variable, did you log in?";
+            $self->log->error($msg);
+            return undef;
         }
     }
-
-    my $orig_hash = $href->{data}->{original_obj};
-
-    if ( defined $orig_hash->{target_id} ) {
-        $amq_msg->{target_type} = $orig_hash->{target_type};
-        $amq_msg->{target_id}   = $orig_hash->{target_id};
-    }
-    # disabled, need to use once refactor sorts out message inconsistancies
-    # so currently this whole function does nothing!
-    # $activemq->send("activity", $amq_msg);
+    return $user;
 }
 
-=item C<map_thing_to_collection>
+sub get_epoch_cols {
+    my $self    = shift;
+    my @cols    = qw(
+        when
+        updated
+        created
+        occurred
+    );
+    return wantarray ? @cols : \@cols;
+}
 
-give it a thing (alert, event, etc.) name and get the
-mongo collection that stores it.
+sub get_int_cols {
+    my $self    = shift;
+    my @cols    = qw(
+        views
+    );
+    return wantarray ? @cols : \@cols;
+}
 
-in future, consider making this a class method on the model.
+sub get_req_array {
+    my $self    = shift;
+    my $json    = shift;
+    my $type    = shift;
+    my @tags    = ();
 
-=cut
+    if ( defined $json->{$type} ) {
+        push @tags, @{$json->{$type}};
+    }
+    return @tags;
+}
 
-sub map_thing_to_collection {
+sub get_config_item {
     my $self        = shift;
-    my $thing       = shift;
-    my $map_href    = {
-        alert           => "alerts",
-        event           => "events",
-        incident        => "incidents",
-        intel           => "intels",
-        entry           => "entries",
-        guide           => "guides",
-        alertgroup      => "alertgroups",
-        audit           => "audits",
-        file            => "files",
-        tag             => "tags",
-        user            => "users",
-        checklist       => "checklists",
-        plugin          => "plugins",
-        plugininstance  => "plugininstances",
-    };
-    my $collection  = $map_href->{$thing};
-
-    unless ( defined $collection ) {
-        $self->log->error("Thing $thing has no collection mapping!");
-        return undef;
-    }
-    return $collection;
+    my $module      = shift;
+    my $attribute   = shift;
+    my $mongo       = $self->mongo;
+    my $col         = $mongo->collection('Config');
+    my $obj         = $col->find_one({ module => $module });
+    my $item        = $obj->item;
+    return $item->{$attribute};
 }
-
 
 1;

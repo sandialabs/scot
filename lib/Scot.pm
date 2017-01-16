@@ -2,30 +2,14 @@ package Scot;
 
 use strict;
 use warnings;
-use v5.10;
-use Readonly;
+use v5.18;
 
 use Carp qw(cluck longmess shortmess);
 use Mojo::Base 'Mojolicious';
 use Mojo::Cache;
-use Time::HiRes qw(gettimeofday tv_interval);
-use JSON;
-
 use Scot::Env;
-
-#use Scot::Util::Redis3;
-#use Scot::Util::Mongo;
-#use Scot::Util::ActiveMQ;
-#use Scot::Util::Phantom;
-#use Scot::Util::Ldap;
-
-use Scot::Model::Audit;
-use DateTime;
-use DateTime::Format::Strptime;
 use Data::Dumper;
 
-no warnings 'redefine';
-sub DateTime::_stringify { shift->strftime('%Y-%m-%d %H:%M:%S %Z') }
 
 =head1 Scot.pm 
 
@@ -39,71 +23,56 @@ It is a child of Mojo::Base and therefore is a Mojolicious based app.
 
 sub startup {
     my $self    = shift;
+    $self->mode('development'); # remove when in prod
 
-    $| = 1;
 
-    my $env     = Scot::Env->new( config_file => "../scot.conf" );
+    my $env     = Scot::Env->new();
     $self->attr     ( env => sub { $env } );
     $self->helper   ( env => sub { shift->app->env } );
-
-    my $log = $env->log;
-
-    # get config
-    my $config  = $env->{config};
-    my $mode    = $env->mode;
-    my $version = $config->{version};
+    $| = 1;
 
     my $cache   = Mojo::Cache->new(max_keys => 100);
     $self->helper   ('cache'  => sub { $cache } );
 
-    # session set up
-    my $secret =    $config->{'session_secrets'};
-
-    #Check Mojolicious Secret password (used to secure cookies) isn't the default
-    if($secret eq 'scotpassword!') {       my @values = ("A".."Z", "a".."z", '0..9', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_');
-      #generate a new secret password 20 characters long
-      my $secret = '';
-      $secret .= $values[rand @values] for 1..20;
-
-      #Update the config file with the new secret
-      $config->{'session_secrets'} = $secret;
-      my $instdir     = $config->{'install_directory'};
-      my $savePath = $instdir . "/scot.conf";
-      $Data::Dumper::Terse = 1;
-      open(FILE, ">$savePath") || die "Can not change Mojolicious session secret from default, error writing config file ($savePath): $!";
-      print FILE Dumper($config);
-      close(FILE) || die "Error closing config file: $!";
-
-    }
-    $self->secrets([$secret]);    
-
-    $self->sessions->default_expiration ($config->{'session_expiration'});
-    $self->helper   ('fs_root'    => sub { $config->{$mode}->{file_store}});
-    $self->sessions->secure             (1);
-
-
+    my $log = $env->log;
     $self->log($log);
+    $self->log_startup($log);
 
-    $log->info(          "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n".
-                " "x55 . "| Starting SCOT   ". $version     ."\n".
-                " "x55 . "| Mode:           ". $mode        ."\n".
-                " "x55 . "| Config:         ". Dumper($config->{$mode}) . "\n".
-                " "x55 . "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+    $self->secrets( $env->mojo->{secrets} );
+    $self->sessions->default_expiration( $env->mojo->{default_expiration} );
+    $self->sessions->secure(1);
 
-    
-    $SIG{'__WARN__'} = sub {
-        do {
-            no warnings 'uninitialized';
-            $log->warn(@_);
-            unless ( grep { /uninitialized/ } @_ ) {
-                $log->warn(longmess());
-            }
-        }
-    };
-    $SIG{'__DIE__'} = sub {
-        $log->error(@_);
-        $log->warn(longmess());
-    };
+
+    # Note to future maintainer: 
+    # hypnotoad performs preforking.  This can cause problems with DB
+    # connections created in Env, IF the DB client can't handle reconnections
+    # after forking.  Meerkat for mongo can, but if we have any DBI connection
+    # we might have problems.
+    $self->config(
+        hypnotoad   => {
+            listen  => ['http://localhost:3000?reuse=1'],
+            workers => 75,
+            clients => 1,
+            proxy   => 1,
+            pidfile => '/var/run/hypno.pid',
+            heartbeat_timeout => 40,
+        },
+    );
+
+    # capture stuff that normally would go to STDERR and put in log
+    #$SIG{'__WARN__'} = sub {
+    #    do {
+    #        no warnings 'uninitialized';
+    #        $log->warn(@_);
+    #        unless ( grep { /uninitialized/ } @_ ) {
+    #            $log->warn(longmess());
+    #        }
+    #    }
+    #};
+    #$SIG{'__DIE__'} = sub {
+    #    $log->error(@_);
+    #    $log->warn(longmess());
+    #};
 
 
 =head2 Scot Application Attributes and Helpers
@@ -111,1192 +80,454 @@ sub startup {
 =over 4 
 
 
-=item B<is_admin>
-
-calling this will tell you if the user is the SCOT admin LDAP group
-
-=cut
-
-    $self->helper( 'is_admin'   => sub {
-        my $self    = shift;
-        my $groups  = $self->session('groups');
-        if ( grep { /admin/ } @{$groups} ) {
-            return 1;
-        }
-        return undef;
-    });
-
-    
-
-    
-=item B<get_json>
+=item B<get_req_json>
 
 get JSON that was submitted with the web request
 
 =cut
 
-    $self->helper( 'get_json'   => sub {
+    # convenience helper to get the json out of a request
+    $self->helper('get_req_json'    => sub {
         my $self    = shift;
         my $req     = $self->req;
         return $req->json;
     });
 
-=item B<parse_json_param(I<parm_name>)>
+=pod
 
-in GET requests, submitted JSON must be in a url parameter.
-e.g. http://foo.com/doit?myjson={foo: "bar"}
-this function will parse it out.
-
-=cut
-
-    $self->helper( 'parse_json_param'   => sub {
-        my $self    = shift;
-        my $param   = shift;
-        my $req     = $self->req;
-        my $href    = {};
-        my $value   = $req->param($param);
-        my $log     = $self->app->log;
-
-        $log->trace("parsing json param $param");
-
-        if ( defined $value ) {
-            my $json    = JSON->new->relaxed(1);
-            $href       = $json->decode($value);
-            $log->debug(Dumper($href));
-            return $href;
-        }
-        $log->error("Param $param not defined!");
-        return undef;
-    });
-
-=item B<parse_grid_settings>
-
-this function will return a href of the grid settings passed in to 
-the web app.  
+@apiDefine SearchRecord
+@apiSuccess {Number} id         The unique integer id of the matching thing
+@apiSuccess {String} type       The name of the thing. e.g. alertgroup
+@apiSuccess {Number} score      ElasticSearch scoring of match
+@apiSuccess {String} snippet    The Snippet around the match
 
 =cut
 
-    $self->helper( 'parse_grid_settings'    => sub {
-        my $self    = shift;
-        my $request = $self->req;
-        my $setting = {};
-        my $grid    = $request->param('grid');
 
-        $log->trace("parsing grid settings");
+=head2 SCOT Routes
 
-        if ( defined $grid ) {
-            my $json    = JSON->new->relaxed(1);
-            $setting    = $json->decode($grid);
-            return $setting;
-        }
-        return undef;
-    });
+=over 4
 
-    $self->helper( 'parse_cols_requested'   => sub {
-        my $self    = shift;
-        my $request = $self->req;
-        my @columns = $request->param('columns');
-        return \@columns;
-    });
+=cut
 
-    $self->helper( 'parse_match_ref'        => sub {
-        my $self    = shift;
-        my $request = $self->req;
-
-        $log->trace("parsing match_ref");
-
-        my $match_ref   = {};
-        my @ignore      = qw(columns grid);
-        my @availparams = $request->param;
-
-        foreach my $param ( @availparams ) {
-            next if ( grep { /^$param$/ } @ignore );
-            next if ( $param eq '' );
-
-            $log->debug("Examining param: $param");
-            my @match_values    = $request->param($param);
-            $log->debug("Has values ".Dumper(\@match_values));
-
-            if ( scalar(@match_values) > 1 ) {
-                $match_ref->{$param} = { '$all' => \@match_values };
-            }
-            else {
-                $match_ref->{$param} = $match_values[0];
-            }
-        }
-        return $match_ref;
-    });
-
+    my $authclass   = $env->authclass;
 
     # routes
     my $r       = $self->routes;
 
-    # this will catch visits to https://scotng.sandia.gov/ and 
-    # direct it to /scot/home
+    $r  ->route ( '/login' )   
+        ->to    ( $authclass.'#login' ) 
+        ->name  ( 'login' );
 
-    $r->route( '/' )      ->to( 'util-a3#login' )  ->name( 'login' );
-    $r->route( '/scot' )  ->to( 'util-a3#login' )  ->name( 'login' );
+=pod
 
+@api {post} /auth Request Authentication
+@apiName AuthenticateUser
+@apiGroup Auth
+@apiVersion 2.0.0
+@apiDescription submit credentials for authentication
+This route is only works on Local and LDAP authentication.  RemoteUser authentication
+relies on the browser BasicAuth popup.
+
+@apiParam {String} user     username of the person attempting to authenticate
+@apiParam {string} pass     password of the person attempting authentication
+
+@apiSuccess (200) {Cookie}  Encrypted Session Cookie
+
+=cut
+
+    $r  ->route ( '/auth' )    
+        ->via   ('post') 
+        ->to    ($authclass.'#auth') 
+        ->name  ('auth');
+    
     # make sure that we have passed authentication
 
-    my $scot    = $r->under('/scot')->to('util-a3#check');
+    my $auth    = $r->under('/')->to($authclass.'#check');
 
-=back
+    # necessary to get default index.html from /opt/scot/public
+    # and have it remain so that only authenticated users can see
+    $auth   ->get('/')
+            ->to( cb => sub {
+                my $c = shift;
+                $log->debug("Hitting Static /");
+                $c->reply->static('index.html');
+            });
 
-=head1 API doc
+    # prepends /scot to the routes below
+    my $scot    = $auth->any('/scot');
 
- params = CGI params on the URL e.g. /scot/foobar?B<param1>=1
- input  = naked json pulled from the put or post request
- returns= what is returned via http
- notifications = what is sent out view activemq
+    $scot   ->route ('/api/v2/search')
+            ->to    ('controller-search#search')
+            ->name  ('search');
 
-=cut
-    $scot   ->route ( '/login')
-            ->via   ( 'post' )
-            ->to    ( 'util-a3#login')
-            ->name  ( 'login' );
+=pod
 
-    $scot   ->route ( '/home' ) 
-            ->via   ( 'get' )
-            ->to    ( 'controller-home#home' )
-            ->name   ( 'homestats');
-
-    $scot   ->route ( '/flair' )
-            ->via   ( 'post' )
-            ->to    ( 'controller-flair#scratchpad' )
-            ->name  ( 'scratchpad' );
-
-    $scot   ->route ( '/game/:type' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-home#game' )
-            ->name  ( 'game');
-
-    $scot   ->route ( '/chat' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#chat' )
-            ->name  ( 'chat' );
-
-    $scot   ->route ( '/chat/:room' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#candy' )
-            ->name  ( 'chat_candy' );
-
-    $scot   ->route ( '/unauthorized' )
-            ->to    ( 'controller-handler#unauthorized' )
-            ->name  ( 'unauthorized' );
-
-    $scot   ->route ( '/meta/get_avail_reports' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-reports#get_avail_reports' )
-            ->name  ( 'get_avail_reports');
-
-    $scot   ->route ( '/meta/report' ) 
-            ->via   ( 'put' ) 
-            ->to    ( 'controller-reports#get_report' )
-            ->name  ( 'get_named_report');
-
-    $scot   ->route ( '/meta/aei_by_time' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-reports#aei_by_time' )
-            ->name  ( 'get_aei_by_time' );
-
-    $scot   ->route ( '/meta/ee_graph' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-reports#event_entity_connection_graph' )
-            ->name  ( 'ee_graph' );
-
-    $scot   ->route ( '/neighbors' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-reports#neighbor_graph' ) 
-            ->name  ( 'neighbor_graph' );
-
-=over 4 
-
-=item B<GET /scot/ihcalendar>
-
- params:        values:
- start          integer seconds since the unix epoch
- end            integer seconds since the unix epoch
- ---
- returns:       JSON
- [  {
-        id      :   integer event_id,
-        title   :   "username",
-        allDay  :   js boolean, always true
-        starg   :   string representation of date
-    }, ...
- ]
+@api {get} /scot/api/v2/game SCOT Gamefication
+@apiName game
+@apiGroup Game
+@apiVersion 2.0.0
+@apiDescription provide fun? stats on analyst behavior
+@apiSuccess {Object}    -
 
 =cut
 
-    $scot   ->route ( '/ihcalendar' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#ihcalendar' )
-            ->name  ( 'ihcalendar' );
+    $scot   ->route ('/api/v2/game')
+            ->to    ('controller-api#get_game_data')
+            ->name  ('game');
 
-=item B<GET /scot/current_handler>
+    $scot   ->route ('/api/v2/graph/:thing/:id/:depth')
+            ->to    ('controller-graph#get_graph')
+            ->name  ('get_graph');
 
- params:        values:
- ---
- returns:       JSON
- {
-        incident_handler   :   "username"
- }, ...
+    $scot   ->route ('/api/v2/status')
+            ->to    ('controller-api#get_status')
+            ->name  ('get_status');
 
-=cut
+    $scot   ->route ('/api/v2/who')
+            ->to    ('controller-api#get_who_online')
+            ->name  ('get_who_online');
 
-    $scot   ->route ( '/current_handler' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#current_handler' )
-            ->name  ( 'get_current_incident_handler' );
+=pod
 
-=item B<PUT /scot/ihcalendar/new>
-
- params:        values:
- handler        "username" string,
- start_date     "MM/DD/YYYY 00:00:00.00",
- end_date       "MM/DD/YYYY 00:00:00.00",
- ---
- returns:       redirect to /ng/incident_handler.html
-
-=cut
-
-    $scot   ->route ( '/ihcalendar/new' )
-            ->via   ( 'put' )
-            ->to    ( 'controller-handler#create_ihcal_entry' )
-            ->name  ( 'ihcalendar_create' );
-
-=item B<GET /scot/alertgroup/refresh/:id>
-
- input:         
- id             integer id value of alertgroup we are refreshing display of
- params:        values:
- ---
- returns:       JSON
- { title : "Alertgroup Status Refresh",
-   action: "get",
-   thing:  "alertgroup",
-   id   :  id of the alertgroup being refreshed,
-   stime:  time the server took to process request,
-   data : {
-        views       :   integer count of number of views
-        viewed_by   :   {
-                            username : { 
-                                when    : seconds since unix epoch,
-                                count   : number of views by username,
-                                from    : ip addr last viewed from,
-                            }, ...
-                        },
-        alertcount  :   integer number of alerts in alertgroup,
-        alertgroup_id : integer alertgroup_id
-        message_id  :   string of email Message-Id header,
-        when        :   int secs since unix epoch,
-        created     :   int secs since unix epoch,
-        updated     :   int secs since unix epoch,
-        alert_ids   :   [ int_alert_id1, inte_alert_id2, ... ],
-        status      :   string of a valid status (see Scot::Model::Alertgroup)
-        open        :   int number of open alerts in alertgroup,
-        closed      :   int number of closed alerts in alertgroup,
-        promoted    :   int number of promoted alerts in alertgroup,
-        total       :   int number of total alerts in alertgroup,
-        subject     :   string representation of the subject
-        guide_id    :   int id of the guide for this alert
-        source      :   string describing the source
-    }
+@api {get} /scot/api/v2/esearch Search Scot
+@apiName esearch
+@apiGroup Search
+@apiVersion 2.0.0
+@apiDescription search SCOT data in ElasticSearch 
+@apiParam {String} qstring  String to Search for in Alert and Entry records 
+@apiSuccess {Object}    -
+@apiSuccess {Number}    -.queryRecordCount    Number of Records Returned
+@apiSuccess {Number}    -.totalRecordCount    Number of all Matching Records
+@apiSuccess {Object[]}  -.records             SearchRecords returned
 
 =cut
 
-    $scot   ->route ( '/alertgroup/refresh/:id' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#refresh_alertgroup_status' )
-            ->name  ( 'refresh_alertgroup_status' );
+    $scot   ->route ('/api/v2/esearch')
+            ->to    ('controller-search#newsearch')
+            ->name  ('esearch');
 
+=pod
 
-=item B<POST /scot/ssearch>
-
- NOTE: this is a simplistic mongo string search
- params:        values:
- query          string
- ---
- returns:   ( slowly :-) ) JSON
- {
-    title   :   "Search Results",
-    action  :   "post",
-    thing   :   "multiple",
-    status  :   status of the search
-    data    :   {
-        tags    : {
-            hits    : int,
-            data    : [ {
-                            tag_id  : int,
-                            snippet : string,
-                            tagees  : [
-                                        { type: string, id: int }, ...
-                                      ],
-                            matched_on: "tag",
-                        },...
-                       ]
-        },
-        entries : {
-            hits    : int,
-            data    : [
-                        {
-                            entry_id    : int,
-                            target_type : string,
-                            target_id   : int,
-                            snippet     : string,
-                            matched_on  : 'entry body',
-                        },...
-                      ]
-        },
-        // not implemented yet...
-        alerts:  {
-            hits    : int,
-            data    : ....
-        }
-    }
- }
+@api {put} /scot/api/v2/command/:action Send Queue Command
+@apiName send command to queue
+@apiGroup Queue
+@apiVersion 2.0.0
+@apiDescription send the the string :command to the scot activemq topic queue
 
 =cut
 
-    $scot   ->route ( '/ssearch' )
-            ->via   ( 'post' )
-            ->to    ( 'controller-search#scot_search' )
-            ->name  ( 'search_scot' );
+    $scot   ->route ('/api/v2/command/:action')
+            ->via   ('put')
+            ->to    ('controller-api#do_command')
+            ->name  ('do_command');
 
-=item B<PUT /scot/promote>
 
- params:        values:
- none, but JSON is sent of the form:
- {
-    thing   : string, // alert, event,
-    id      : [int1, int2,...],
- }
- ---
- returns:       JSON
- {
-    title   : "Promote $thing to $target_type",
-    action  : "put",
-    thing   : $target_type,     // event, incident
-    id      : id of promoted thing,
-    status  : "ok" | "failed",
-    data    : [ 
-                {
-                    initial     => object type,
-                    initial_id  => id of the initial object,
-                    final       => object type,
-                    final_id    => id of final object,
-                },...
-              ],
-    stimer  : time server took to promote,
- }, ...
- Notifications:
- active_mq: {
-    action  : "promotion",
-    type    : type of the promotion, // promote an alert, this will be event.
-    id      : id of the new promotion object,
- }
+    $scot   ->route ('/api/v2/wall')
+            ->via   ('post')
+            ->to    ('controller-api#wall')
+            ->name  ('wall');
+=pod
+
+@api {post} /scot/api/v2/file Upload File
+@apiName File_Uploader
+@apiGroup File
+@apiVersion 2.0.0
+@apiDescription Upload a file to the SCOT system
+@apiParam {File} upload     User selected file to upload
 
 =cut
 
-    $scot   ->route ( '/promote' )
-            ->via   ( 'put' )
-            ->to    ( 'controller-handler#promote' )
-            ->name  ( 'promote_thing' );
+    $scot   ->route ('/api/v2/file')
+            ->via   ('post')
+            ->to    ('controller-file#upload')
+            ->name  ('create');
 
-=item B<GET /scot/task >
+=pod
 
-    params:
-        grid={
-            start       : int,
-            limit       : int,
-            sort_ref    : { colname : -1|1 }
-        },
-        columns=[ col1, col2,...  ],
-    input:
-    none
-    ---
-    returns:            JSON:
+@api {post} /scot/api/v2/:thing Create thing
+@apiName Create :thing
+@apiGroup CRUD
+@apiVersion 2.0.0
+@apiDescription Create a :thing
+@apiParam {Object} -     The JSON of object to create
+
+=cut
+
+    $scot   ->route ('/api/v2/:thing')
+            ->via   ('post')
+            ->to    ('controller-api#create')
+            ->name  ('create');
+
+    $scot   ->route ('/api/v2/whoami')
+            ->via   ('get')
+            ->to    ('controller-api#whoami')
+            ->name  ('whoami');
+
+    $scot   ->route ('/api/v2/ac/:thing/:search')
+            ->via   ('get')
+            ->to    ('controller-api#autocomplete')
+            ->name  ('autocomplete');
+
+=pod
+
+@api {get} /scot/api/v2/:thing/:id View Record
+@apiName Display :thing :id
+@apiVersion 2.0.0
+@apiGroup CRUD
+@apiDescription Display the :thing with matching :id
+
+@apiParam {String} thing         The collection you are trying to access
+@apiParam {Number} id            The integer id of the :thing to display
+
+@apiSuccess {Object}    -       The JSON representation of the thing
+
+@apiExample Example Usage
+    curl https://scotserver/scot/api/v2/alert/123
+
+@apiSuccessExample {json} Success-Response:
+    HTTP/1.1 200 OK
     {
-        title   : "Task List",
-        action  : "get",
-        thing   : "tasks",
-        status  : "ok" | "fail",
-        total_records   : int,
-        data    : [ 
-                    { 
-                        entry_id    : id,
-                        task        : {
-                            when    :   int seconds since epoch,
-                            who     :   "username" assigned to task,
-                            status  :   "open|assigned|completed",
-                        },
-                        is_task     : boolean,
-                        body        : string,
-                        body_flaired    : flaired string,
-                        body_plaintext  : plain jane,
-                    },...
-                  ]
-    notifications:
-    none
-
-=cut
-
-    $scot   ->route ( '/task' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-tasks#get' )
-            ->name  ( 'get_list_of_tasks' );
-
-=item B<GET /scot/entity >
-
-    params:
-        match={
-            entity_value: "string" or [ "string1", "string2",... ],
-            entity_type:  "string" // optional...
-        }
-    input:
-    ---
-    returns:
-    json:   {
-        title       : "SCOT Entity INFO",
-        action      : "get",
-        thing       : "entity",
-        status      : "ok",
-        data        : [
-                        {
-                            entity_id   : int,
-                            entity_type : "string",
-                            value       : "string",  the entity itself
-                            notes       : [
-                                            {
-                                                who  => "username",
-                                                when => int secs,
-                                                text => string,
-                                            },...
-                                          ],
-                            alerts      : [ alert_id1, alert_id2,... ],
-                            events      : [ event_id1, event_id2,... ],
-                            incidents   : [ incident_id1, ... ],
-                            geo_data    : {
-
-                            },
-                            reputation  : {
-
-                            },
-                            block_data  : {
-
-                            },
-                        },...
-                      ]
+        key1: value1,
+        ...
     }
-    notifications:
-    none
 
 =cut
 
-    $scot   ->route ( '/entity' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#get_entity_info' )
-            ->name  ( 'get_entity_info' );
+    $scot   ->route ('/api/v2/:thing/#id')
+            ->via   ('get')
+            ->to    ('controller-api#get_one')
+            ->name  ('get_one');
 
-=item B<PUT /scot/entity >
+=pod
 
-    params:
-    none    
-    input:      JSON:
+@api {get} /scot/api/v2/:thing List Records
+@apiName List :thing
+@apiGroup CRUD
+@apiVersion 2.0.0
+@apiDescription List set of :thing objects that match provided params
+The params passed to this route allow you to filter the list returned to you.
+* If the column_name is a string column, the value of the param is placed within a / / regex search
+* If the column_name is tag or source, comma seperated strings can be sent and matching records will have to have ALL tags, or sources, listed.
+* If the column_name is tag or source, pipe '|' seperated strings can be sent and matching records will have to have AT Least One tags, or sources, listed.
+* If the column_name is a date field, the field assumes an array of values and will search for datetimes between the least value and the greatest value of the provided array
+* If the column_name is a numeric column, the following can be can sent:
+
+  | value       | Explanation |
+  | ----------- | ----------- |
+  |    x        |value of column name must equal number x
+  |    >=x      |value of column name must be greater or equal to x
+  |    >x       |value of column name must be greater than x
+  |    <=x      |value of column name must be less than or equal to x
+  |    <x       |value of column name must be less than x
+  |    <x\|>y    |value of column name must be less than x or greater than y
+  |    >x\|<y    |value of column name must be less than y and greater than x
+  |    =x\|=y\|=z  |value of column name must be equal to x or y or z
+
+@apiParam {String} thing            The collection you are trying to access
+@apiParam {String} column_name_1    condition, see above
+@apiParam {String} column_name_x    condition, see above
+@apiParam {Array}  columns          Array of Column Names to return
+@apiParam {Number} limit            Return no more than this number of records
+@apiParam {Number} offset           Start returned records after this number of records
+
+@apiSuccess {Object}    -
+@apiSuccess {Number}    -.queryRecordCount    Number of Records Returned
+@apiSuccess {Number}    -.totalRecordCount    Number of all Matching Records
+@apiSuccess {Object[]}  -.records             Records of type requested
+
+@apiExample Example Usage
+    curl -XGET https://scotserver/scot/api/v2/alert 
+
+@apiSuccessExample {json} Success-Response:
+    HTTP/1.1 200 OK
     {
-        entity_value:   string,
-        note        :   string,  "user notes"
-    }
-    ---
-    returns:    JSON
-    {
-        title   : "SCOT Entity Update",
-        action  : "put",
-        thing   : "entity",
-        status  : "ok" | "fail,
-        data    : "reason for fail", # only if status is fail
-    }
-    notifications:
-    none
-
-=cut
-
-    $scot   ->route ( '/entity' )
-            ->via   ( 'put' )
-            ->to    ( 'controller-handler#put_entity_info' )
-            ->name  ( 'put_entity_info' );
-
-=item B<GET /scot/entity/entry/:id >
-
-    params:
-    none
-    input:
-    none
-    ---
-    returns:    JSON:
-    {
-        title   : "Entity Data for $thing $id",
-        thing   : "entity_data",
-        target  : $thing,
-        id      : $id,
-        status  : 'ok',
-        stime   : int,
-        data    : {
-            "entity_value1"  : {
-                entity_id   : int,
-                entity_type : "string",
-                notes       : [ {
-                                    who     => username,
-                                    when    => secs since epoch,
-                                    text    => string,
-                                },...
-                              ],
-                geo_data    : {
-
-                },
-                block_data  : {
-
-                },
-                reputation  : {
-
-                },
-                alerts      : int,
-                events      : int,
-                incidents   : int,
-            },...
-        }
-    }
-    notifications:
-    none
-
-=cut
-
-    $scot   ->route ( '/entity/entry/:id' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#get_entity_data_for_entry' )
-            ->name  ( 'get_entity_data_for_entry' );
-
-=item B<GET /scot/groups>
-
-    params:
-    none
-    input:
-    none
-    ---
-    returns:    json:
-    {
-        title   : "SCOT Group List",
-        action  : "get",
-        thing   : "scotgroups",
-        status  : "ok",
-        data    : {
-            groups  : [ group1, group2, ... ],
-        }
-    }
-    notifications:
-    none
-
-=cut
-
-    $scot   ->route ( '/groups' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#getgroups' )
-            ->name  ( 'get_list_of_groups' );
-
-=item B<GET /scot/whoami >
-
-    params:
-    none
-    input:
-    none
-    ---
-    returns: json:
-    {
-        title   : "whoami",
-        action  : "whoami",
-        user    : $user,
-        status  : "no matching user", # if user doesn't exist, else
-        data    : {
-            user_id     : int,
-            username    : string,
-            tzpref      : string,
-            lastvisit   : int secs since epoch
-            theme       : string,
-            flair       : href of flair prefs,
-            display_orientation : string,
-        }
-    }
-    notifications:
-    none
-
-=cut
-
-    $scot   ->route ( '/whoami' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#whoami' )
-            ->name  ( 'whoami' );
-
-=item B<GET /scot/file/:id >
-
-    params:
-        (optional) download=1
-        grid={start:x, limit:y, sort_ref: { col : -1 }}
-        columns=[col1,col2,...]
-    input:
-        none
-    ---
-    returns:
-        if param download=1, then the file is downloaded, else
-        {
-            title   : "File List",
-            action  : "get",
-            thing   : "file",
-            status  : "ok",
-            data    : [ {
-                            file_id     : int,
-                            scot2_id    : int,
-                            notes       : string,
-                            entry_id    : int,
-                            size        : int,
-                            filename    : string,
-                            dir         : string,
-                            fullname    : string = dir + / + filename
-                            md5         : string,
-                            sha1        : string,
-                            sha256      : string,
-                        },...
-                    ]
-        }
-    notifications:
-    none
-
-=cut
-
-    $scot   ->route ( '/file/:id' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-files#get' )
-            ->name  ( 'get_files' );
-
-=item B<POST /file/upload >
-
-    params:
-        target_type=string
-        target_id=int
-        entry_id=int
-        notes=string
-        readgroups=x,readgroups=y,...
-        modifygroups=a,modifygroups=b,...
-    input:
-    ---
-    returns:    json:
-    [
-        { file: string, status: "ok" | "failed", reason : string if fail },...
-    ]
-    notifications:
-    none
-
-=cut
-
-    $scot   ->route ( '/file/upload' )
-            ->via   ( 'post' )
-            ->to    ( 'controller-files#receive' )
-            ->name  ( 'receive_upload' );
-
-=item B<PUT /scot/file/:id >
-
-    params:
-    input:
-    json of attributes to update
-    ---
-    returns:
-    {
-        action  : "put"
-        thing   : "files",
-        id      : $id,
-        status  : $status,
-    }
-    notifications:
-    none
-
-=cut
-
-    $scot   ->route ( '/file/:id' )
-            ->via   ( 'put' )
-            ->to    ( 'controller-files#update' )
-            ->name  ( 'update_meta' );
-
-=item B<GET /scot/health >
-
-    params:
-    none
-    input:
-    none
-    ---
-    returns:
-    {
-        title   : "Health Check",
-        action  : "get",
-        thing   : "health",
-        status  : "ok",
-        data    : {'alert_bot':int, 'etc':int, ... ],
-        stimer  : int,
-    }
-    notifications:
-    none
-
-=cut
-
-    $scot   ->route ( '/health' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-health#check' )
-            ->name  ( 'health' );
-
-=item B<GET /scot/tags >
-
-    params:
-    none
-    input:
-    none
-    ---
-    returns:
-    {
-        title   : "Tag Autocomplete List",
-        action  : "get",
-        thing   : "tags",
-        status  : "ok",
-        data    : [ tag1, tag2, ... ],
-        stimer  : int,
-    }
-    notifications:
-    none
-
-=cut
-
-    $scot   ->route ( '/tags' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#get_tags_autocomplete' )
-            ->name  ( 'get_list_of_tags' );
-
-=item B</scot/admin/backup/:id>
-
-  Download a specific SCOT Backup
-
-=cut
-    $scot   ->route ( '/admin/backup/:id' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-admin#download_backup' )
-            ->name  ( 'download_backup' );
-
-            
-=item B</scot/admin/backup/:id>
-
-  Delete a specific SCOT Backup
-
-=cut
-    $scot   ->route ( '/admin/backup/:id' )
-            ->via   ( 'delete' )
-            ->to    ( 'controller-admin#delete_backup' )
-            ->name  ( 'delete_backup' );
-            
-            
-=item B</scot/admin/backup/>
-
-  list SCOT backups
-
-=cut
-    $scot   ->route ( '/admin/backup' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-admin#list_backups' )
-            ->name  ( 'list_backups' );            
-          
-          
-=item B</scot/admin/backup/>
-
-  Start a SCOT backup
-
-=cut
-    $scot   ->route ( '/admin/backup' )
-            ->via   ( 'POST' )
-            ->to    ( 'controller-admin#create_backup' )
-            ->name  ( 'create_backup' );            
-            
-            
-=item B</scot/admin/backup/schedule>
-
-  Schedule backups
-
-=cut
-    $scot   ->route ( '/admin/backup/schedule' )
-            ->via   ( 'POST' )
-            ->to    ( 'controller-admin#schedule_backup' )
-            ->name  ( 'schedule_backup' );  
-            
-=item B</scot/admin/backup/:id>
-
-  Download a specific SCOT Backup
-
-=cut
-    $scot   ->route ( '/admin/backup/:id' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-admin#download_backup' )
-            ->name  ( 'download_backup' );            
-
-=item B</scot/admin/restore>
-
-  scot restore from backup bundle
-
-=cut
-    $scot   ->route ( '/admin/restore' )
-            ->via   ( 'post' )
-            ->to    ( 'controller-admin#restore_backup' )
-            ->name  ( 'restore_backup' );            
-            
-=item B</scot/admin/alerts/:collector>
-
-  Scot alerts input configuration
-
-=cut
-
-  $scot   ->route ( '/admin/alerts/:setortest/:collector' )
-          ->via   ( 'POST' )
-          ->to    ( 'controller-admin#test_set_collector' )
-          ->name  ( 'test_set_collector');
-
-  $scot   ->route ( '/admin/alerts' )
-          ->via   ( 'GET' )
-          ->to    ( 'controller-admin#get_email_settings' )
-          ->name  ( 'get_alert_collectors' );
-
-=item B</scot/admin/stats>
-
-Gets system stats
-
-=cut
-    $scot   ->route ( '/admin/stats/' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#get_stats' )
-            ->name  ( 'get_stats' );
-
-
-=item B</scot/admin/auth>
-
-Get / set auth settings
-
-=cut
-
-    $scot   ->route ( '/admin/auth/' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#get_auth_settings' )
-            ->name  ( 'get_auth_settings' );
-
-
-=item B</scot/admin/auth/:X>
-
-Get / set users and groups for local auth
-
-=cut
-
-    $scot   ->route ( '/admin/auth/user/:username' )
-            ->via   ( 'put' )
-            ->to    ( 'controller-admin#edit_local_user' )
-            ->name  ( 'edit_local_user' );
-
-    $scot   ->route ( '/admin/auth/user/:username' )
-            ->via   ( 'post' )
-            ->to    ( 'controller-admin#add_local_user' )
-            ->name  ( 'add_local_user' );            
-
-    $scot   ->route ( '/admin/auth/group/:groupname' )
-            ->via   ( 'put' )
-            ->to    ( 'controller-admin#edit_local_group' )
-            ->name  ( 'edit_local_group' );
-
-=item B<GET /scot/admin/auth/ldap> 
-
-  Get LDAP settings
-
-=cut
-
-    $scot   ->route ( '/admin/auth/ldap/' )
- 	    ->via   ( 'get' )
-	    ->to    ( 'controller-admin#get_ldap' )
-	    ->name  ( 'get_ldap' );
-
-=item B<POST /scot/admin/auth/ldap> 
-
-  Set LDAP settings.  This should only be called, after testing the LDAP settings with the test API call.
-
-=cut
-
-    $scot   ->route ( '/admin/auth/ldap' )
- 	    ->via   ( 'post' )
-	    ->to    ( 'controller-admin#set_ldap' )
-	    ->name  ( 'set_ldap' );
-
-=item B<POST /scot/admin/auth/ldap/test> 
-
-  Test LDAP settings
-
-=cut
-
-    $scot   ->route ( '/admin/auth/ldap/test' )
- 	    ->via   ( 'post' )
-	    ->to    ( 'controller-admin#test_ldap' )
-	    ->name  ( 'test_ldap' );
-
-=item B<GET /scot/confirm/*url>
-
-  for confirming if the user wants to go to the URL
-
-=cut
-
-    $scot   ->route( '/confirm/*url' )
-	    ->via  ( 'get' )
-	    ->to   ( 'controller-handler#confirm') 
-	    ->name ( 'confirm' );
-
-
-=item B<GET /scot/:thing >
-
-    $collection = $thing . "s"
-
-    params:
-        grid={start:x, limit:y, sort_ref: { col : -1 }}
-        columns=[col1,col2,...]
-        filter={col: matchstring},
-    input:
-    none
-    ---
-    returns:
-    {
-        title   : "$collection list",
-        actiont : "get",
-        thing   : $thing,
-        status  : "ok" | "fail"
-        stime   : int,
-        data    : [ { object1 }, ... ],
-        columns : [ col1, col2, ... ],
-        total_records : int,
-    }
-    notifications:
-    {
-        action  : "view",
-        type    : $collection
-    }
-
-=cut
-
-    $scot   ->route ( '/:thing' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#get' )
-            ->name  ( 'get_list_of_things' );
-
-=item B<POST /scot/:thing >
-
-    params:
-        none    
-    input:
-    { json object with params listed in thing model }
-    ---
-    returns:
-    {
-        action  : "post",
-        thing   : $thing,
-        id      : new object id
-        status  : $status
-        reason  : string,
-        stime   : int
-    }
-    notifications:
-    {
-        action  : "creation"
-        type    : $thing
-        id      : object id
-        target_type : string,   # if entry
-        target_id   : int,   # if entry
-        is_task     : boolean,   # if entry
-    }
-
-=cut
-
-    $scot   ->route ( '/:thing' )
-            ->via   ( 'post' )
-            ->to    ( 'controller-handler#create' )
-            ->name  ( 'create_thing' );
-
-=item B<GET /scot/:thing/:id >
-
-    params:
-        grid={start:x, limit:y, sort_ref: { col : -1 }}
-        columns=[col1,col2,...]
-        filter={col: matchstring},
-    input:
-    none
-    ---
-    returns: 
-    {
-        title   : "View One $thing $id",
-        status  : "ok",
-        action  : "get_one",
-        thing   : $thing,
-        id      : $id,
-        data    : { hash of object requested }
-    }
-    notifications:
-    none 
-
-=cut
-
-    $scot   ->route ( '/:thing/:id' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#get_one' )
-            ->name  ( 'get_one_thing' );
-
-=item B<DEL /scot/:thing/:id >
-
-    params:
-    input:
-    ---
-    returns:
-    {
-        title   : "Delete $thing",
-        action  : "delete",
-        thing   : $thing,
-        status  : $status,
-        reason  : $reason,
-        stime   : int,
-    }
-    notifications:
-    {   
-        action      : "deletion",
-        type        : $thing,
-        id          : $id
-        target_type : string,   # if entry
-        target_id   : int,   # if entry
-        is_task     : boolean,   # if entry
-    }
-
-=cut
-
-    $scot   ->route ( '/:thing/:id' )
-            ->via   ( 'delete' )
-            ->to    ( 'controller-handler#delete' )
-            ->name  ( 'delete_thing' );
-
-=item B<PUT /scot/:thing/:id >
-
-    params:
-    input:
-    { json object with params listed in thing model }
-    ---
-    returns:
-    notifications:
-    {
-        action  : "update",
-        type    : $thing,
-        id      : $id,
-    }
-
-=cut
-
-    $scot   ->route ( '/:thing/:id' ) 
-            ->via   ( 'put' )
-            ->to    ( 'controller-handler#update' )
-            ->name  ( 'update_thing' );
-
-=item B<GET /scot/viewed/:thing/:id >
-
-    params:
-        none
-    input:
-        none
-    ---
-    returns:
-    {
-        title   : "update view count",
-        action  : "update_viewcount",
-        target  : $thing,
-        id      : $id,
-        view_count  : new view count int,
-        status  : "ok",
-    }
-    notifications:
-    {
-        action  : "view",
-        viewcount   : int,
-        type        : $thing,
-        id          : $id,
-    }
-
-=cut
-
-=back
-
-=cut 
-
-    $scot   ->route ( '/viewed/:thing/:id' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#update_viewcount' )
-            ->name  ( 'update_viewcount' );
-
-=item B<GET /scot/plugin/:type/:value >
-
-    params:
-        none
-    input:
-        none
-    ---
-    returns:
-    {
-        data : [
-            { 
-
-            },
-            {
-
-            }, ...
+        "records":  [
+            { key1: value1, ..., keyx: valuex },
+            ...
         ],
+        "queryRecordCount": 25,
+        "totalRecordCount": 102323
     }
 
 =cut
 
-    $scot   ->route ( '/plugin/:type/:value' ) 
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#get_plugins_list' ) 
-            ->name  ( 'get_plugin_list');
+    $scot   ->route ('/api/v2/:thing')
+            ->via   ('get')
+            ->to    ('controller-api#list')
+            ->name  ('list');
+
+=pod
+
+@api {post} /scot/api/v2/:thing/:id/:subthing List Related Records
+@apiName Get related information
+@apiVersion 2.0.0
+@apiGroup CRUD
+@apiDescription Retrieve subthings related to the thing
 
 
-    $scot   ->route ( '/sync/:collection/:since' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#sync' )
-            ->name  ( 'get_triage_updates' );
 
-    $scot   ->route ( '/get_updated/:collection/:since' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#get_updated' )
-            ->name  ( 'get_triage_updated' );
+Alertgroup subthings
+----------
+* alert
+* entity
+* entry
+* tag
+* source
 
-    $scot   ->route ( '/get_updated/:collection/:since/:until' )
-            ->via   ( 'get' )
-            ->to    ( 'controller-handler#get_updated' )
-            ->name  ( 'get_triage_updated' );
+Alert subthings
+-----
+* alertgroup
+* entity
+* entry
+* tag
+* source
 
-    # catch all error route
-    $scot   ->route ( '/(*)' )
-            ->via   ( 'get' )
-            ->to    ( 'util-error#route_not_found' )
-            ->name  ( 'route_not_found');
+Event subthings
+-----
+* entity
+* entry
+* tag
+* source
 
+
+@apiParam {String} thing The "alert", "event", "incident", "intel", etc. you wish to retrieve
+
+@apiExample Example Usage
+    curl -XGET https://scotserver/scot/api/v2/event/123/entry
+
+@apiSuccessExample {json} Success-Response:
+    HTTP/1.1 200 OK
+    {
+        "queryRecordCount": 25,
+        "totalRecordCount": 102,
+        [
+            { key1: value1, ... },
+            ...
+        ]
+    }
+
+=cut
+
+    $scot   ->route ('/api/v2/:thing/:id/:subthing')
+            ->via   ('get')
+            ->to    ('controller-api#get_subthing')
+            ->name  ('get_subthing');
+
+=pod
+
+@api {put} /scot/api/v2/:thing/:id Update thing
+@apiName Updated thing
+@apiVersion 2.0.0
+@apiGroup CRUD
+@apiDescription update thing 
+@apiParam {String} thing The "alert", "event", "incident", "intel", etc. you wish to retrieve
+
+@apiExample Example Usage
+    curl -XPUT https://scotserver/scot/api/v2/event/123 -d '{"key1": "value1", ...}'
+
+@apiSuccessExample {json} Success-Response:
+    HTTP/1.1 200 OK
+    {
+        id : 123,
+        status : "successfully updated",
+    }
+
+=cut
+
+    $scot   ->route ('/api/v2/:thing/:id')
+            ->via   ('put')
+            ->to    ('controller-api#update')
+            ->name  ('update');
+
+=pod
+
+@api {delete} /scot/api/v2/:thing/:id/:subthing/:subid Break Link
+@apiName Delete a thing related to a thing
+@apiVersion 2.0.0
+@apiGroup CRUD
+@apiDescription Delete a linkage between a thing and a related subthing.
+For example, a tag "foo" may be applied to many events.  You wish to 
+disassociate "foo" with event 123, but retain the tag "foo" for use with
+other events.
+
+@apiParam {String} thing The "alert", "event", "incident", "intel", etc. you wish to retrieve
+
+@apiExample Example Usage
+    curl -XDELETE https://scotserver/scot/api/v2/event/123/tag/11 
+
+@apiSuccessExample {json} Success-Response:
+    HTTP/1.1 200 OK
+    {
+        id : 123,
+        thing: "event",
+        subthing: "tag",
+        subid: 11,
+        status : "ok",
+        action: "delete"
+    }
+
+=cut
+
+    $scot   ->route ('/api/v2/:thing/:id/:subthing/:subid')
+            ->via   ('delete')
+            ->to    ('controller-api#breaklink')
+            ->name  ('delete');
+
+=pod
+
+@api {delete} /scot/api/v2/:thing/:id Delete Record
+@apiName Delete thing
+@apiVersion 2.0.0
+@apiGroup CRUD
+@apiDescription Delete thing 
+@apiParam {String} thing The "alert", "event", "incident", "intel", etc. you wish to retrieve
+
+@apiExample Example Usage
+    curl -X DELETE https://scotserver/scot/api/v2/event/123 
+
+@apiSuccessExample {json} Success-Response:
+    HTTP/1.1 200 OK
+    {
+        id : 123,
+        thing: "event",
+        status : "ok",
+        action: "delete"
+    }
+
+=cut
+
+    $scot   ->route ('/api/v2/:thing/:id')
+            ->via   ('delete')
+            ->to    ('controller-api#delete')
+            ->name  ('delete');
+
+}
+
+sub log_startup {
+    my $self    = shift;
+    my $log     = shift;
+
+    $log->info(
+                "============================================================\n".
+        " "x55 ."| SCOT  ". $self->env->version . "\n".
+        " "x55 ."| mode: ". $self->env->mode. "\n".
+        " "x55 ."| db:   ". 
+                    Dumper($self->env->config) . "\n".
+        " "x55 ."============================================================\n"
+    );
+    # $self->env->dump_env;
 }
 
 1;   
 
 __END__
 
+=back
+
 =head1 COPYRIGHT
 
-Copyright (c) 2013.  Sandia National Laboratories
+Copyright (c) 2015.  Sandia National Laboratories
 
 =cut
 
@@ -1312,9 +543,9 @@ Todd Bruner.  tbruner@sandia.gov.  505-844-9997.
 
 =over 4
 
-=item L<Scot::Controller::Handler>
+=item L<Scot::Controller::API>
 
-=item L<Scot::Util::Mongo>
+=item L<Scot::Env>
 
 =back
 
