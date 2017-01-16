@@ -15,6 +15,7 @@ sub will_parse {
     if ( $subject =~ /splunk alert/i ) {
         return 1;
     }
+    # TODO remove email address to config
     if ( $from =~ /splunk\@sandia.gov/i ) {
         return 1;
     }
