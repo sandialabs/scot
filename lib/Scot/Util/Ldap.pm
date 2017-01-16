@@ -17,22 +17,6 @@ has config  => (
     isa         => 'HashRef',
     required    => 1,
     default     => sub { 
-        {
-            servername  => 'sec-ldap-nm.sandia.gov',
-            scheme      => 'ldap',
-            dn          => 'cn=snlldapproxy,ou=local config,dc=gov',
-            password    => 'snlldapproxy',
-            group_search    => {
-                base    => 'ou=groups,ou=snl,dc=nnsa,dc=doe,dc=gov',
-                filter  => '(| (cn=wg-scot*))',
-                attrs   => [ 'cn' ],
-            },
-            user_groups => {
-                base    => 'ou=accounts,ou=snl,dc=nnsa,dc=doe,dc=gov',
-                filter  => 'uid=%s',
-                attrs   => [ 'memberOf' ],
-            },
-        }; 
     },
 );
 
