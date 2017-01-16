@@ -1,61 +1,90 @@
 Installing SCOT
-================================
-
-We've made installing SCOT a snap; follow these simple instructions and you'll be running in no time.
+===============
 
 Minimum System Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Ubuntu 12.04LTS or Newer (14.04 preferred)
-* 2CPU 
-* 4GB Ram
-* 100GB Disk
+* Ubuntu 14.04 LTS (best tested), 16.04 LTS, or CentOS 7.
+* 2 Quad Core CPU
+* 16 GB RAM
+* 1 TB Disk
 
-Docker (beta)
+System Preparation
+^^^^^^^^^^^^^^^^^^
 
-* RHEL 6/7
-* MacOSX (boot2docker)
-* Windows (boot2docker) 
+Ubuntu 16.04 and CENT 7
+-----------------------
 
-Initial Installation
-^^^^^^^^^^^^^^^^^^^^
+# Now you are ready to pull the SCOT source from GitHub::
 
-You can install via Source or Docker(beta)
+    $ git clone https://github.com/sandialabs/scot.git scot
 
-* Source (Ubuntu only)
+# cd into the SCOT directory::
 
-  * git clone https://github.com/sandialabs/scot.git scot 
-  * cd scot
-  * bash install_scot3
+    $ cd /home/user/scot
 
-* Docker (beta)
+# Are you upgrading from SCOT 3.4?  It is recommended to install on a clean system, however, if that is not possible you should do the following
 
-  * docker pull sandialabs/scot
-  * docker run sandialabs/scot
+    * Backup you existing SCOT database::
+    
+        $ mongodump scotng-prod
+        $ tar czvf scotng-backup.tgz ./dump
 
-.. _upgrade:
+    * delete SCOT init script and crontab entries::
 
-Upgrading
-^^^^^^^^^
+        # rm /etc/init.d/scot3
+        # crontab -e 
 
-* Source
-   * git pull
-   * bash install_scot3
+# go ahead and become root::
 
-* Docker (beta)
-   * docker pull sandialabs/scot
-   * docker reload sandialabs/scot
-   
-   NOTE: you will need to manual backup the SCOT database, move the backup file out of the container, and then move
-   the backup file back into the container after upgrading and then perform an manual restore.
+    $ sudo -E bash
+    
+# Make sure that the http_proxy and https_proxy variables are set if needed::
+  
+    # echo $http_proxy
+    # export http_proxy=http://yourproxy.domain.com:80
+    # export https_proxy=https://yourproxy.domain.com:88
 
-Uninstallation
-^^^^^^^^^^^^^^
+# You are now ready to begin the install::
 
-* Source
-   * rm -rf /opt/sandia/webapps/scot3/
-   * sudo crontab -e #remove all the scot stuff
-   * a bunch of other stuff....
+   # ./install.sh 2>&1 | tee ../scot.install.log
 
-* Docker (beta)
-   * docker destroy sandialabs/scot
+Go get a cup of cofee.  Initial install will download and install all the dependencies for SCOT.  At the end of the install, you will be asked for a password for the admin account.  Then the install script will output the status of the following processes:
+
+* mongod
+* activemq
+* scot
+* elasticsearch
+* scfd
+* scepd
+
+If any of the above are not running, you will need to debug why.  Often, the following will help: (using scfd as an example)
+
+    # systemctl start scfd.service
+    # systemctl status -l scfd.service
+
+The messages in the stats call will be useful in determining what is causing the problem.
+
+
+install.sh Options
+^^^^^^^^^^^^^^^^^^
+
+SCOT's installer, install.sh,  is designed to automate many of the tasks need to install and upgrade SCOT.  The installer takes the following flags to modify its installtion behavior::
+
+    Usage: $0 [-A mode] [-M path] [-dersu]
+
+        -A mode     where mode = (default) "Local", "Ldap", or "Remoteuser" 
+        -M path     where to locate installer for scot private modules
+        -D          delete target install directory before beginning install
+        -d          restart scot daemons (scepd and scfd)
+        -e          reset the Elasticsearch DB
+        -r          delete existing SCOT Database (DATA LOSS POTENTIAL)
+        -s          Install SCOT only, skip prerequisites (upgrade SCOT)
+        -u          same as -s
+
+The default install with no options will attempt to install all prerequisites or upgrade them if they are already installed.  Once sucessfully installed, this should be rarely needed.  
+
+Using install.sh to upgrade
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes you just want to refresh the SCOT software to get the latest fix or new feature.  This is when you should use the -s or -u flag.  If the fix or feature is in the flairing engine (scfd) or the elasticsearch push module (scepd) you will want to give the -d flag to restart those daemons.

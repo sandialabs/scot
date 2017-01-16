@@ -1,0 +1,17 @@
+body {
+  padding-top: 15px;
+  padding-left: 65px;
+}
+
+.shared {
+  z-index: 101;
+}
+
+.navbar-inverse {
+  z-index: 100;
+
+}
+
+div.tooltip{
+z-index: 1;
+}
