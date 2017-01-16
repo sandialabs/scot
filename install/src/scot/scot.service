@@ -1,0 +1,16 @@
+[Unit]
+Description=SCOT (Sandia Cyber Omni Tracker)
+
+[Service]
+Type=simple
+RemainAfterExit=yes
+SyslogIdentifier=SCOT
+PIDFile=/var/run/scot.pid
+ExecStart=/usr/local/bin/hypnotoad /opt/scot/script/Scot
+ExecReload=/usr/local/bin/hypnotoad /opt/scot/script/Scot
+ExecStop=/usr/local/bin/hypnotoad -s /opt/scot/script/Scot
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

@@ -4,172 +4,197 @@ use lib '../../../lib';
 use lib '../lib';
 use strict;
 use warnings;
-use v5.10;
+use v5.18;
 
 use Data::Dumper;
-use Geo::IP;
-use Moose;
+use GeoIP2::Database::Reader;
 use namespace::autoclean;
+use Try::Tiny;
 
-has 'log'   => (
+use Moose;
+
+has log => (
     is          => 'ro',
-    isa         => 'Object',
+    isa         => 'Log::Log4perl::Logger',
     required    => 1,
 );
 
-has geoip_city => (
-    is          => 'rw',
-    isa         => 'Maybe[Geo::IP]',
+has citydb      => (
+    is          => 'ro',
+    isa         => 'GeoIP2::Database::Reader',
+    lazy        => 1,
     required    => 1,
-    builder     => '_build_city_handle',
+    builder     => '_get_city_reader',
 );
 
-has geoip_org => (
-    is          => 'rw',
-    isa         => 'Maybe[Geo::IP]',
-    required    => 1,
-    builder     => '_build_org_handle',
-);
-
-has geoip_v6 => (
-    is          => 'rw',
-    isa         => 'Maybe[Geo::IP]',
-    required    => 1,
-    builder     => '_build_v6_handle',
-);
-
-has geoip_v6asn => (
-    is          => 'rw',
-    isa         => 'Maybe[Geo::IP]',
-    required    => 1,
-    builder     => '_build_v6_handle',
-);
-
-
-sub _build_city_handle {
+sub _get_city_reader {
     my $self    = shift;
-    my $geoip;
-    if( -R '/usr/local/share/GeoIP/GeoIPCity.dat') { 
-       $geoip   = Geo::IP->open('/usr/local/share/GeoIP/GeoIPCity.dat');
-    }
-    if( -R '/usr/local/share/GeoIP/GeoLiteCity.dat' ) {
-       $geoip   = Geo::IP->open('/usr/local/share/GeoIP/GeoLiteCity.dat');
-    }
-    return $geoip;
+    my $dbfile  = "/usr/share/GeoIP/GeoIP2-City.mmdb";
+    my $locales = ["en"];
+
+    return GeoIP2::Database::Reader->new(
+        file    => $dbfile,
+        locales => $locales,
+    );
 }
 
-sub _build_org_handle {
+has countrydb      => (
+    is          => 'ro',
+    isa         => 'GeoIP2::Database::Reader',
+    lazy        => 1,
+    required    => 1,
+    builder     => '_get_country_reader',
+);
+
+sub _get_country_reader {
     my $self    = shift;
-    my $geoip;
-    if( -R '/usr/local/share/GeoIP/GeoIPOrg.dat') {
-       $geoip   = Geo::IP->open('/usr/local/share/GeoIP/GeoIPOrg.dat');
-    }
-    return $geoip;
+    my $dbfile  = "/usr/share/GeoIP/GeoIP2-Country.mmdb";
+    my $locales = ["en"];
+
+    return GeoIP2::Database::Reader->new(
+        file    => $dbfile,
+        locales => $locales,
+    );
 }
 
-sub _build_v6_handle {
+has ispdb      => (
+    is          => 'ro',
+    isa         => 'GeoIP2::Database::Reader',
+    lazy        => 1,
+    required    => 1,
+    builder     => '_get_isp_reader',
+);
+
+sub _get_isp_reader {
     my $self    = shift;
-    my $geoip;
-    if( -R '/usr/local/share/GeoIP/GeoIPv6.dat') { 
-       $geoip   = Geo::IP->open('/usr/local/share/GeoIP/GeoIPv6.dat');
-    }
-    if( -R '/usr/share/GeoIP/GeoIPv6.dat') {
-       my $geoip   = Geo::IP->open('/usr/share/GeoIP/GeoIPv6.dat');
-    } 
-    return $geoip;
+    my $dbfile  = "/usr/share/GeoIP/GeoIP2-ISP.mmdb";
+    my $locales = ["en"];
+
+    return GeoIP2::Database::Reader->new(
+        file    => $dbfile,
+        locales => $locales,
+    );
 }
 
-sub _build_v6asn_handle {
+sub get_city_data {
     my $self    = shift;
-    my $geoip;
-    if( -R '/usr/local/share/GeoIP/GeoIPASNnum6.dat') {
-        $geoip   = Geo::IP->open('/usr/local/share/GeoIP/GeoIPASNumv6.dat');
+    my $ip      = shift;
+    my $log     = $self->log;
+    my $city;
+    my $href    = {};
+
+    $log->debug("attempint city data grab");
+
+    try {
+        $city   = $self->citydb->city(ip=>$ip);
+        $href   = {
+            city        => $city->city->name,
+            country     => $city->country->name,
+            isocode     => $city->country->iso_code,
+            continent   => $city->continent->name,
+            latitude    => $city->location->latitude,
+            longitude   => $city->location->longitude,
+            timezone    => $city->location->time_zone,
+        };
     }
-    return $geoip;
+    catch {
+        $log->error(
+            sprintf("GEOIP error: %s", 
+                     $_->message));
+        if ( $_->message =~ /not a public IP/ ) {
+            $href   = {
+                city    => 'rfc1918',
+                country => 'rfc1918',
+                isocode => 'rfc1918',
+                continent => 'rfc1918',
+                latitude  => '31.030488',
+                longitude => '-75.275650',
+            };
+            return $href;
+        }
+    };
+    return $href;
 }
 
-sub get_geo_data {
+sub get_country_data {
+    my $self    = shift;
+    my $ip      = shift;
+    my $log     = $self->log;
+    my $href    = {};
+
+    return $self->countrydb->country( ip => $ip );
+}
+
+sub get_isp_data {
+    my $self    = shift;
+    my $ip      = shift;
+    my $log     = $self->log;
+    my $href    = {};
+    my $isp;
+
+    try {
+        $isp    = $self->ispdb->isp(ip=>$ip);
+        $href   = {
+            asorg       => $isp->autonomous_system_organization,
+            asn         => $isp->autonomous_system_number,
+            isp         => $isp->isp,
+            org         => $isp->organization,
+        };
+    }
+    catch {
+        my $message = $_->message;
+        $log->error(
+            sprintf("GEOIP error: %s ",
+                    $message));
+        if ( $message =~ /not a public IP/ ) {
+            $log->error("non routable ip!");
+            $href   = {
+                asorg   => 'rfc1918',
+                asn     => 'rfc1918',
+                isp     => 'rfc1918',
+                org     => 'rfc1918',
+            };
+            return $href;
+        }
+        $log->debug("fuck this");
+    };
+    return $href;
+}
+
+sub get_scot_geo_record {
+    my $self    = shift;
+    my $ip      = shift;
+    my $city    = $self->get_city_data($ip);
+    my $isp     = $self->get_isp_data($ip);
+    my $log     = $self->log;
+
+    $log->debug("city is ",{filter=>\&Dumper, value=>$city});
+    $log->debug("isp  is ",{filter=>\&Dumper, value=>$isp});
+
+    my %data    = (%$city, %$isp);
+
+    $log->debug("scot geo is : ",{filter=>\&Dumper, value=>\%data});
+
+    return wantarray ? %data : \%data;
+}
+
+# necessary for entity_enrichers
+sub get_data {
     my $self    = shift;
     my $type    = shift;
-    my $ipaddr  = shift;
-    my $data    = {};
+    my $value   = shift;
 
-    if ( $type  eq  "ipaddr" ) {
+    $self->log->debug("getting data for $type $value");
 
-        if ( $ipaddr ne '' and defined $ipaddr ) {
-            if(defined($self->geoip_city)) {
-               my $gi  = $self->geoip_city;
-               my $rec = $gi->record_by_addr($ipaddr);
-
-               if ( $rec ) {
-                   $data   = $self->get_v4_info($rec, $ipaddr);
-               }
-               else {
-                   $data   = $self->get_v6_info($ipaddr);
-               }
-            }
-        }
-    }
-    return $data;
-}
-
-sub get_v4_info {
-    my $self    = shift;
-    my $rec     = shift;
-    my $ipaddr  = shift;
-    my $cc      = $rec->country_code;
-    my $orgdb   = $self->geoip_org;
-  
-    my $org;
-    if(defined($orgdb)) {
-       $org     = $orgdb->name_by_addr($ipaddr);
-
-       if ( $org   =~ /Sandia/ or
-            $org   =~ /Los Alamos/ or
-            $org   =~ /Department of Energy/ ) {
-           $cc = $org;
-       }
-    }
-    my $data    = {
-        country_code    => $cc,
-        country_name    => $rec->country_name,
-        region          => $rec->region,
-        org             => $org,
-        city            => $rec->city,
-    };
-    return $data;
-}
-
-sub get_v6_info {
-    my $self    = shift;
-    my $ipaddr  = shift;
-    my $gdb     = $self->geoip_v6;
-    my $asn     = $self->geoip_v6asn;
-    my $result  = {};
-
-    my $cc;
-    if(defined($gdb)) {
-       $cc  = $gdb->country_code_by_addr_v6($ipaddr);
+    if ($type ne "ipaddr") {
+        # nothing to do here...
+        return undef;
     }
 
-    if ( defined $cc ) {
-        $result = { country_code => $cc };
-    }
-    my $ipasn;
-    if(defined($asn)) {
-       $ipasn   = $asn->name_by_addr_v6($ipaddr);
-    }
-
-    if ( defined $ipasn ) {
-        $result->{asn} = $ipasn;
-
-        if ( $ipasn =~ /Sandia National Laboratories/ ) {
-            $result->{country_code} = "Sandia National Laboratories";
-        }
-    }
-    return $result;
+    my $href    = $self->get_scot_geo_record($value);
+    return $href;
 }
 
 
-__PACKAGE__->meta->make_immutable;
+
 1;

@@ -1,456 +1,472 @@
 package Scot::Util::Imap;
 
 use lib '../../../lib';
-use lib '../../lib';
-use lib '../lib';
+
 use strict;
 use warnings;
-use v5.10;
+use v5.18;
 
 use Readonly;
-Readonly my $MESSAGE_ID_FMT => qr/\A\d+\z/;
+Readonly my $MSG_ID_FMT => qr/\A\d+\z/;
 
 use Data::Dumper;
-use Scot::Util::Mongo;
-use Net::LDAP;
 use Courriel;
+use Try::Tiny::Retry qw/:all/;
+use Mail::IMAPClient;
+use Scot::Util::Imap::Cursor;
+
 use Moose;
-use namespace::autoclean;
 
-
-has config      => (
+has log     => (
     is          => 'ro',
-    isa         => 'HashRef',
+    isa         => 'Log::Log4perl::Logger',
     required    => 1,
-);
-
-has 'log'       => (
-    is          => 'ro',
-    isa         => 'Object',
-    required    => 1,
-);
-
-has 'env'       => (
-    is          => 'ro',
-    isa         => 'Scot::Env',
-    required    => 1,
-);
-
-has minutes_ago => (
-    is          => 'rw',
-    isa         => 'Int',
-    required    => 1,
-    default     => 60,
 );
 
 has mailbox => (
-    is          => 'rw',
+    is          => 'ro',
     isa         => 'Str',
     required    => 1,
     default     => 'INBOX',
 );
 
-has 'imap_client'   => (
-    is          => 'rw',
+has hostname    => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'localhost',
+);
+
+has port        => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    default     => 993,
+);
+
+has username    => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'scot-alerts',
+);
+
+has password    => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'needpwhere',
+);
+
+has ssl         => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    required    => 1,
+    # default     => sub {[ 'SSL_verify_mode', 'SSL_VERIFY_NONE' ]},
+    # default     => sub {[ 'SSL_verify_mode', SSL_VERIFY_NONE ]},
+    default     => sub {[ 'SSL_verify_mode', 0 ]},
+);
+
+has uid         => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    default     => 1,
+);
+
+has ignore_size_errors   => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    default     => 1,
+);
+
+has minutes_ago => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    default     => 60,
+);
+
+has client => (
+    is          => 'ro',
     isa         => 'Mail::IMAPClient',
     required    => 1,
     lazy        => 1,
-    builder     => 'connect_to_imap',
+    builder     => '_connect_to_imap',
+    clearer     => 'clear_client_connection',
 );
 
-has 'mongo' => (
-    is          => 'ro',
-    isa         => 'Scot::Util::Mongo',
-    required    => 1,
+has _client_pid => (
+    is          => 'rw',
+    isa         => 'Num',
+    default     => sub { $$ },
 );
 
-sub connect_to_imap {
+sub _connect_to_imap {
     my $self    = shift;
-    my $href    = shift;
     my $log     = $self->log;
-    my @options = $self->build_options($href);
-
-    $log->debug("++++ Building IMAP connection ");
-    $log->debug("++++ OPTS  : ".Dumper(@options));
-
-    my $imap_alerts = Mail::IMAPClient->new(@options);
-    $log->debug("++++ IMAP connection made");
-    unless ($imap_alerts) {
-        $log->error("Problem with imap connection!");
-    }
-    return $imap_alerts;
-}
-
-sub build_options {
-    my $self    = shift;
-    my $href    = shift;
-    my $config  = $self->config;
-    my $ihref   = $config->{imap};
-    my $user    = $config->{imap}->{username};
-    my $pw      = $config->{email_accounts}->{$user};
-    my $ise     = $config->{imap}->{ignoresizeerrors};
 
     my @options = (
-        Server              => $href->{hostname} // $ihref->{hostname},
-        Port                => $href->{port}     // $ihref->{port},
-        User                => $href->{user}     // $user,
-        Password            => $href->{passwd}   // $pw,
-        Ssl                 => $href->{ssl}      // $ihref->{ssl},
-        Uid                 => $href->{uid}      // $ihref->{uid},
-        Ignoresizeerrors    => $href->{ignoresizeerrors} // $ise,
-        SSL_verify_mode     => "SSL_VERIFY_NONE",
+        Server              => $self->hostname,
+        Port                => $self->port,
+        User                => $self->username,
+        Password            => $self->password,
+        Ssl                 => $self->ssl,
+        Uid                 => $self->uid,
+        Ignoresizeerrors    => $self->ignore_size_errors,
     );
-    return @options;
+
+    $log->debug("Initializing IMAP client w/ options: ", 
+                {filter =>\&Dumper, value => \@options});
+    
+    my $client = retry {
+        Mail::IMAPClient->new(@options);
+    }
+    delay_exp {
+        5, 1e6
+    }
+    catch {
+        $log->error("Failed to connect to IMAP server!");
+        $log->error($_);
+        # undef $client;
+    };
+    $log->debug("Imap connected...");
+    $log->debug("client ",{filter=>\&Dumper, value=> $client});
+    return $client;
 }
 
-sub get_unseen_messages_aref {
-    my $self        = shift;
-    my $opts_href   = shift;
-    my $log         = $self->log;
-    my $imap        = $self->imap_client;
+sub reconnect_if_forked {
+    my $self    = shift;
+    my $log     = $self->log;
 
-    if ( $opts_href->{mail_box} ) {
-        $self->mailbox($opts_href->{mail_box});
+    if ( $$ != $self->_client_pid ) {
+        $log->trace("Fork detected.  attempting reconnect.");
+        $self->_client_pid($$);
+        $self->clear_client_connection;
     }
-    my $box     = $self->mailbox;
+    return;
+}
 
-    unless ( $imap->select($box) ) {
-        $log->error("Failed to select $box!");
-        return undef;
+sub get_mail_since {
+    my $self    = shift;
+    my $epoch   = shift;
+    my $log     = $self->log;
+    $self->reconnect_if_forked;
+    my $client  = $self->client;
+    my $since_epoch = $epoch;
+
+    unless ($since_epoch) {
+        my $age = $self->minutes_ago;
+        $log->trace("Getting mail from the past $age minutes");
+        my $seconds_ago = $age * 60;
+        $since_epoch = time() - $seconds_ago;
     }
 
-    my @unseen_uids = $imap->unseen;
+    retry {
+        $client->select($self->mailbox);
+    }
+    on_retry {
+        $self->clear_client_connection;
+    }
+    catch {
+        $log->error("Failed to reconnect to IMAP server to perform select");
+        $log->error($_);
+        die "Failed to reconnect to IMAP server for select operation\n";
+    };
+    $client->Peek(1);   # do not mark messages as read
+
+    my @uids;
+    $self->log->debug("Lookin for messages since $since_epoch");
+
+    foreach my $message_id ($client->since($since_epoch)) {
+        if ( $message_id =~ $MSG_ID_FMT ) {
+            push @uids, $message_id;
+        }
+    }
+    return wantarray ? @uids : \@uids;
+}
+
+sub get_unseen_mail {
+    my $self    = shift;
+    my $log     = $self->log;
+    $self->reconnect_if_forked;
+    my $client  = $self->client;
+
+    $log->trace("Retrieving unseen mail");
+
+    my @unseen_uids;
+    retry {
+        $client->select($self->mailbox);
+        @unseen_uids = $client->unseen; 
+        $log->debug("Unseen Mail: ",{filter=>\&Dumper, value=>\@unseen_uids});
+    }
+    on_retry {
+        $self->clear_client_connection;
+    }
+    catch {
+        $log->error("Failed to get unseen messages: $_");
+        die "Failed to get unseen messages\n";
+    };
 
     if ( scalar(@unseen_uids) == 0 ) {
-        $log->warn("no unseen messages...");
+        $log->warn("No unseen messages...");
     }
     else {
-        $log->debug(scalar(@unseen_uids)." unread messages found");
+        $log->trace(scalar(@unseen_uids)." unread messages found.");
     }
-
     return wantarray ? @unseen_uids : \@unseen_uids;
 }
 
-
-sub get_messages_aref {
-    my $self        = shift;
-    my $opts_href   = shift;
-    my $log         = $self->log;
-    my $imap        = $self->imap_client;
-
-    $log->debug("building message aref...");
-    $log->debug("Retrieving messages with opts: ".Dumper($opts_href));
-    $log->debug("imap is ".ref($imap));
-    $log->debug("isConnected: ".$imap->IsConnected);
-    $log->debug("isAuthenitcated: ".$imap->IsAuthenticated);
-
-    if ( $opts_href->{mail_box} ) {
-        $self->mailbox($opts_href->{mail_box});
-    }
-    my $box     = $self->mailbox;
-
-    unless ( $imap->select($box) ) {
-        $log->error("Failed to select $box!");
-        return undef;
-    }
-
-    unless ( $opts_href->{mark_as_read} ) {
-        $log->debug("Leaving Mail messages marked UNread");
-        $imap->Peek(1);
-    }
-
-    if ( $opts_href->{minutes_ago} and $opts_href->{minutes_ago} > 0  ) {
-        $self->minutes_ago($opts_href->{minutes_ago});
-    }
-
-    my $seconds_ago     = time() - (60 * $self->minutes_ago);
-
-    $log->debug("Retrieving messages received since $seconds_ago seconds");
-
-    my @messages;
-    foreach my $message_id ( $imap->since($seconds_ago) ) {
-        if ( $message_id =~ $MESSAGE_ID_FMT ) {
-            push @messages, $message_id;
-        }
-    }
-    return \@messages;
-}
-
-sub get_message {
-    my $self        = shift;
-    my $id          = shift;
-    my $hid         = shift;
-    my $msg_href    = $self->build_message_href($id);
-
-    my %data    = (
-        message_id          => $id,
-        header_message_id   => $hid,
-        parser              => $self->select_parser($msg_href),
-        msg_href            => $msg_href,
-    );
-    return \%data;
-}
-
-sub get_header_msg_id {
+sub get_unseen_cursor {
     my $self    = shift;
-    my $id      = shift;
-    my $imap    = $self->imap_client;
-    my $log     = $self->log;
-    my $msgid   = $imap->get_header($id, "Message-Id");
-    $log->debug("retrieved message-id of ".Dumper($msgid));
-    return $msgid;
+    my @uids    = $self->get_unseen_mail;
+    my $cursor  = Scot::Util::Imap::Cursor->new({uids => \@uids});
+    return $cursor;
 }
 
-sub build_message_href  {
+sub see {
     my $self    = shift;
-    my $id      = shift;
-    my $imap    = $self->imap_client;
+    my $uid     = shift;
     my $log     = $self->log;
-
-    my $msg_id      = $imap->get_header($id, "Message-Id");
-    my $envelope    = $imap->get_envelope($id);
-    my $when        = $self->get_when($id);
-    my $bodyhref    = $self->extract_body($id);
-
-    my $href    = {
-        imap_id     => $id,
-        envelope    => $envelope,
-        subject     => $self->get_subject($id),
-        from        => $self->get_from($envelope),
-        to          => join(', ', $envelope->to_addresses),
-        when        => $when,
-        sources     => $self->get_source($envelope, $id),
-        created     => $when,
-        message_id  => $msg_id,
-        body_html   => $bodyhref->{html},
-        body_plain  => $bodyhref->{plain},
+    retry {
+        $self->client->see($uid);
+    }
+    on_retry {
+        $self->clear_client_connection;
+    }
+    catch {
+        $log->error("Failed to mark message $uid as seen");
     };
-    $log->debug("Message href is ".Dumper($href));
-    return $href;
 }
 
-sub get_from {
-    my $self        = shift;
-    my $envelope    = shift;
-    my $log         = $self->log;
-    my $address     = $envelope->from_addresses;
-    return $address;
-}
-
-sub get_when {
-    my $self    = shift;
-    my $id      = shift;
-    my $imap    = $self->imap_client;
-    my $log     = $self->log;
-
-    $log->debug("Getting Message timestamp");
-
-    my $message_string  = $imap->message_string($id);
-    my $courriel        = Courriel->parse( text => $message_string );
-    my $dt              = $courriel->datetime();
-    my $epoch           = $dt->epoch;
-
-    $log->debug("GET_WHEN");
-    $log->debug("Message received @ : ".$dt->ymd." ".$dt->hms);
-    $log->debug("Message received @ epoch: ".$epoch);
-    $log->debug("NOW is                    ".time());
-    return $epoch;
-}
-
-sub get_source {
-    my $self        = shift;
-    my $envelope    = shift;
-    my $id          = shift;
-    my $log         = $self->log;
-    my $from        = $envelope->from_addresses;
-    $from           =~ m/[<]+(.*)@/;
-    my $source      = $1;
-
-    $log->debug("getting source");
-    $log->debug("$source obtained from $from");
-
-    if ($source eq '') {
-        $from       = m/(.*)@/;
-        $source     = $1;
-    }
-
-    if ( $source eq "do-not-reply" ) {
-        my $from    = $self->get_from($envelope);
-        if ( $from =~ /fireeye/i ) {
-            $source = "FireEye";
-        }
-    }
-
-    if ( $source eq "NIL" ) {
-        # See if Courriel can find it
-        my $subject = $self->get_subject($id);
-        if ( $subject eq "Ascan Daily Report") {
-            $source = "ascan";
-        }
-    }
-    $log->debug("Message has source of : ".Dumper($source));
-    return [$source];
-}
-
-sub get_subject {
-    my $self    = shift;
-    my $id      = shift;
-    my $imap    = $self->imap_client;
-    my $log     = $self->log;
-
-    my $string  = $imap->message_string($id);
-    my $msg     = Courriel->parse( text => $string );
-    my $subject = $msg->subject();
-    
-    $log->debug("Message has subject of ".Dumper($subject));
-
-    return $subject;
-}
-
-sub select_parser {
-    my $self        = shift;
-    my $msg_href    = shift;
-    my $class       = "Scot::Bot::Parser::";
-    my $log         = $self->log;
-    my $mongo       = $self->mongo;
-
-#     $log->debug("Selecting parser based on ".Dumper($msg_href));
-
-    my $source      = join(' ',@{$msg_href->{sources}});
-    my $subject     = $msg_href->{subject};
-    my $from        = $msg_href->{from};
-
-    $log->debug("SOURCE is $source");
-
-    my @parsers = $mongo->read_documents({
-       collection => 'parsers',
-       match_ref  => {},
-       sort_ref   => {'plugin_id' => 1},
-       all => 1
-    });
-
-      foreach my $js_parser (@parsers) {
-      my $parser_id = $js_parser->parser_id;
-      my $match_against = $source;
-      if($js_parser->condition_type eq 'subject') {
-          $match_against = $subject;
-      }
-          if($js_parser->condition_comparator eq 'equals') {
-              if($js_parser->condition_match eq $match_against) {
-		$class = 'js::'.$parser_id;
-		return $class;
-              }
-          }elsif($js_parser->condition_comparator eq 'contains') {
-              if($js_parser->condition_match =~ /$match_against/) {
-		$class = 'js::'.$parser_id;
-		return $class;
-              }
-          }
-    }
-
-    unless (defined $source ) { 
-        $log->debug("Source in null! ".Dumper($msg_href));
-    }
-
-    if ( $source =~ /splunk/ or
-         $subject =~ /splunk alert/i ) {
-        $msg_href->{source} = "splunk" if ($source eq "NIL");
-        $class  .= "Splunk";
-    }
-    elsif ( $source =~ /workflow/i ) {
-        $class  .= "Sep";
-    }
-    elsif ( $from   =~ /Symantec/i ) {
-        $class  .= "Sep2";
-    }
-    elsif ( $subject =~ /sophos/i ) {
-        $class  .= "Sophos";
-    }
-    elsif ( $subject =~ /auto generated email/i ) {
-        $class  .= "Sourcefire";
-    }
-    elsif ( $subject  =~ /microsoft forefront/i ) {
-        $class  .= "Forefront";
-    }
-    elsif ( $source =~ /fireeye/i or $from =~ /fireeye/i) {
-        $class  .= "FireEye";
-    }
-    else {
-        $class  .= "Generic";
-    }
-
-    $log->debug("Message class is $class");
-    return $class;
-}
-
-sub permitted_sender {
+sub get_since_cursor {
     my $self    = shift;
     my $href    = shift;
+    my ($unit,$amount)  = each %$href;
+    my $seconds_ago;
+
+    $self->log->debug("unit $unit amount $amount");
+
+    if ( $unit eq "day" ) {
+        $seconds_ago = $amount * 24 * 60 * 60;
+    }
+    elsif ( $unit eq "hour" ) {
+        $seconds_ago = $amount * 60 * 60;
+    }
+    elsif ( $unit eq "minute" ) {
+        $seconds_ago = $amount * 60;
+    }
+    elsif ( $unit eq "second" ) {
+        $seconds_ago = $amount;
+    }
+    $self->log->debug("seconds ago is $seconds_ago");
+
+    my $since_epoch = time() - $seconds_ago;
+
+    $self->log->debug("Lookin for messages since $since_epoch");
+
+    my @uids    = $self->get_mail_since($since_epoch);
+    my $cursor  = Scot::Util::Imap::Cursor->new({uids => \@uids});
+    return $cursor;
+}
+
+sub mark_uid_unseen {
+    my $self    = shift;
+    my $uid     = shift;
     my $log     = $self->log;
+    $self->reconnect_if_forked;
+    my $client  = $self->client;
+    my @usuid   = ( $uid );
 
-    $log->debug("Permitted sender?");
+    $log->trace("marking message $uid as unseen");
 
-    my $from    = $href->{from};
-    (my $addr = $from)  =~ s/.*<(\S+)>/$1/;
-    my ($sender, $domain) = split(/\@/, $addr, 2);
-
-    $log->debug("Checking to see if $sender from $domain is permitted");
-
-
-    my $mongo   = $self->env->mongo;
-    my $cursor  = $mongo->read_documents({
-        collection  => "permittedsenders",
-        match_ref   => {},
-    });
-    # if no permitted sender list, allow everybody
-    if ( $cursor->count == 0 ) {
-        return 1;
+    retry {
+        $client->unset_flag('\Seen', @usuid);
+    } 
+    on_retry {
+        $self->clear_client_connection;
     }
-
-    while ( my $permitted_obj = $cursor->next ) {
-        my $p_sender    = $permitted_obj->sender;
-        my $p_domain    = $permitted_obj->domain;
-
-        if ( defined $p_sender && $p_sender != '' ) {
-            if ( $sender =~ m/$p_sender/ ) {
-                if ( $domain =~ m/$p_domain/ ) {
-                    return 1;
-                }
-            }
-        }
-        else {
-            if ( $domain =~ m/$p_domain/ ) {
-                return 1;
-            }
-        }
+    catch {
+        $log->error("Failed to mark $uid as unseen");
     }
-    return undef;
+}
+
+sub delete_message {
+    my $self    = shift;
+    my $uid     = shift;
+    my $log     = $self->log;
+    $self->reconnect_if_forked;
+    my $client  = $self->client;
+    my $usuid   = [ $uid ];
+
+    retry {
+        $client->delete_message($usuid);
+    }
+    on_retry {
+        $self->clear_client_connection;
+    }
+    catch {
+        $log->error("Error deleting $uid");
+    };
+}
+
+
+sub get_message {
+    my $self    = shift;
+    my $uid     = shift;
+    my $peek    = shift;
+    my $log     = $self->log;
+    $self->reconnect_if_forked;
+    my $client  = $self->client;
+
+    $log->trace("Getting Message uid=$uid");
+
+    my $envelope;
+    retry {
+        $envelope    = $client->get_envelope($uid);
+        $log->trace("Envelope is ",{filter=>\&Dumper,value=>$envelope});
+    }
+    on_retry {
+        $self->clear_client_connection;
+    }
+    catch {
+        $log->error("Error from IMAP: $_");
+    };
+
+    $log->trace("Envelope is ",{filter=>\&Dumper,value=>$envelope});
+    $self->client->Peek($peek);
+
+    my %message = (
+        imap_uid    => $uid,
+        envelope    => $envelope,
+        subject     => $self->get_subject($uid),
+        from        => $self->get_from($envelope),
+        to          => $self->get_to($envelope),
+        when        => $self->get_when($uid),
+        message_id  => $self->get_message_id($uid),
+    );
+
+    ($message{body_html}, 
+     $message{body_plain}) = $self->extract_body($uid,$peek);
+
+    return wantarray ? %message : \%message;
 }
 
 sub extract_body {
     my $self    = shift;
-    my $imap_id = shift;
+    my $uid     = shift;
+
     my $log     = $self->log;
 
-    $log->debug("Extracting Body from message $imap_id");
+    $log->trace("Extracting body from uid = $uid");
 
-    my $msgstring   = $self->imap_client->message_string($imap_id);
+
+    my $msgstring   = $self->client->message_string($uid);
     my $email       = Courriel->parse( text => $msgstring );
     my $htmlpart    = $email->html_body_part();
     my $plainpart   = $email->plain_body_part();
-    my $bodyhref;
+
+    my ($html, $plain);
+
     if ( $htmlpart ) {
-        $bodyhref->{html}    = $htmlpart->content();
+        $html   = $htmlpart->content();
     }
     if ( $plainpart ) {
-        $bodyhref->{plain}   = $plainpart->content();
+        $plain  = $plainpart->content();
     }
-    $log->debug("Got these bodyparts: ".Dumper($bodyhref));
-    return $bodyhref;
+    return $html, $plain;
 }
 
 
+sub get_subject {
+    my $self    = shift;
+    my $uid     = shift;
+    $self->reconnect_if_forked;
+    my $client  = $self->client;
+    my $log     = $self->log;
 
-__PACKAGE__->meta->make_immutable;
+    my $subject = retry {
+        $client->subject($uid);
+    }
+    on_retry{
+        $self->clear_client_connection;
+    }
+    delay_exp {
+        5, 1e6
+    }
+    catch {
+        $log->error("Failed to get subject");
+        $log->error($_);
+    };
+
+    return $subject;
+}
+
+sub get_from {
+    my $self    = shift;
+    my $envelope= shift;
+    # my $client  = $self->client;
+    my $log     = $self->log;
+
+    return $envelope->from_addresses;
+}
+
+sub get_to {
+    my $self    = shift;
+    my $envelope= shift;
+    my $log     = $self->log;
+
+    return join(', ', $envelope->to_addresses);
+}
+
+sub get_when {
+    my $self    = shift;
+    my $uid     = shift;
+    $self->reconnect_if_forked;
+    my $client  = $self->client;
+    my $log     = $self->log;
+    my $msgstring   = retry {
+        $client->message_string($uid);
+    }
+    on_retry {
+        $self->clear_client_connection;
+    }
+    delay_exp {
+        5, 1e6
+    }
+    catch {
+        $log->error("failed to get message string");
+    };
+
+    my $courriel    = Courriel->parse( text => $msgstring );
+    my $dt          = $courriel->datetime();
+    my $epoch       = $dt->epoch;
+
+    return $epoch;
+}
+
+sub get_message_id {
+    my $self    = shift;
+    my $uid     = shift;
+    $self->reconnect_if_forked;
+    my $client  = $self->client;
+    my $log     = $self->log;
+
+    my $msg_id  = retry {
+        $client->get_header($uid, "Message-Id");
+    }
+    on_retry {
+        $self->clear_client_connection;
+    }
+    delay_exp {
+        5, 1e6
+    }
+    catch {
+        $log->error("failed to get Message-Id header");
+    };
+
+    return $msg_id;
+}
 
 1;

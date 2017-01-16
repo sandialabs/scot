@@ -1,0 +1,33 @@
+Started with:
+
+http://bay.uchicago.edu/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso
+
+su 
+
+# yum update
+# yum -y install net-tools
+# yum -y install git
+# yum groupinstall "Development Tools"
+# yum install wget
+
+Need to update Perl to 5.18 or later.
+
+# wget http://www.cpan.org/src/5.0/perl-5.24.0.tar.gz
+# tar xzvf perl-5.24.0.tar.gz
+# cd perl-5.24.0
+# ./Configure -des
+# make
+# make test
+# make install
+
+exit root
+
+git clone 
+
+cd SCOT
+
+go back to root
+
+# 
+
+
