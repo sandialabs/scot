@@ -39,7 +39,7 @@ has servername  => (
     isa         => 'Str',
     required    => 1,
     # default     => 'www.virustotal.com/vtapi',
-    default     => 'vt-proxy.sandia.gov',
+    default     => 'vproxy',
 );
 
 has ua          => (
