@@ -132,6 +132,7 @@ function install_cent_packages {
         redhat-lsb
         openssl-devel
         openssl
+        net-tools
         wget
         git
         file-devel
