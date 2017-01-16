@@ -2,18 +2,16 @@
 <html lang="en"  >
     <head>
         <link href="/favicon.png"   rel="icon" type="image/png"></link>
-	<!-- API documented at /admin/api -->
-        <link rel="stylesheet"      href="/bootstrap/css/bootstrap.css"></link>
-	<link rel="stylesheet" href="style.css"></link>
-        <link rel="stylesheet"      href="/libs/jquery-ui-1.10.3.custom/css/ui-darkness/jquery-ui-1.10.3.custom.min.css"></link>
-        <link rel="stylesheet"  href="/bootstrap/css/bootstrap-responsive.css" media="screen"></link>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- API documented at /api/index.html -->
+        <link rel="stylesheet"      href="../libs/bootstrap/css/bootstrap.css"></link>
+        <link rel="stylesheet"      href="style.css"></link>
+        <link rel="stylesheet"      href="../css/jquery-ui.css"></link>
+        <meta name="viewport"       content="width=device-width, initial-scale=1.0">
 
-        <script src="/libs/jquery.min.js"></script>
-        <script src="/libs/jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.min.js"></script>
-
-        <script src="/bootstrap/js/bootstrap.js"></script>
-	<script src="/libs/jquery.progressbar.min.js"></script>
+        <script src="../libs/jquery-2.2.0/jquery.min.js"></script>
+        <script src="../libs/jquery-ui-1.10.3.custom.min.js"></script>
+        <script src="../libs/bootstrap/js/bootstrap.js"></script>
+	    <script src="../libs/jquery.progressbar.min.js"></script>
     </head>
 
 <script>
@@ -70,7 +68,7 @@ function fullDateFormat(dateObject) {
 
 function restore_confirm() {
         $('#restore_btn').find('img').remove();
-        $('#restore_btn').prop('disabled', true).append('<img src="/loading.gif" style="width:20px;"></img>');
+        $('#restore_btn').prop('disabled', true).append('<img src="./loading.gif" style="width:20px;"></img>');
         var fd = new FormData();
         fd.append("upload", document.getElementById('restore_file').files[0]);
 	$('#progress_restoring').show();
@@ -220,8 +218,9 @@ function offline_update() {
 
 }
 
-function group_modal(groupname, group_members, all_users, group_type) {
+function group_modal(groupname, group_members, all_users, group_type, id) {
    $('.loading').remove();
+   $('#group_modal').find('input[name=id]').val(id);
    $('#group_modal').find('input[name=groupname]').val(groupname);
    $('#users option').remove();
    $('#all_users option').remove();
@@ -229,93 +228,125 @@ function group_modal(groupname, group_members, all_users, group_type) {
    $(group_members).each(function(user_index, user) {
       var fullname = user.fullname;
       var username = user.username;
-      var user_option = $('<option></option>').val(username).text(fullname).attr('name', 'users');
+      var userid   = user.userid;
+      var user_option = $('<option></option>').val(username).text(fullname).attr('name', 'users').attr('id',userid);
       $('#users').append(user_option);
       group_members_by_user.push(username);
    });
-   $(Object.keys(all_users)).each(function(user_index, username) {
-      if($.inArray(username, group_members_by_user) < 0 && all_users[username].local_acct) {
-         var fullname = all_users[username].fullname;
-         var user_option = $('<option></option>').val(username).text(fullname).attr('name', 'all_users');
-         $('#all_users').append(user_option);
-      }
-   });
+    for (i=0; i < all_users.length; i++) {
+        // $(Object.keys(all_users)).each(function(user_index, username) {
+            if($.inArray(all_users[i].username, group_members_by_user) < 0) {
+                var fullname = all_users[i].fullname;
+                var user_option = $('<option></option>').val(all_users[i].username).text(all_users[i].fullname).attr('name', 'all_users').attr('id',all_users[i].id);
+                $('#all_users').append(user_option);
+            }
+        //});
+    }
    $('#users option:selected').removeAttr("selected");
    $('#group_modal').data('group_type', group_type);
    $('#group_label').text(group_type + ' Group');
    $('#group_modal').modal('show'); 
 }
 
-function user_modal(username, fullname, active, locked, user_groups, all_groups, user_type) {
-   $('.loading').remove();
-   $('#user_modal').find('input[name=fullname]').val(fullname);
-   $('#user_modal').find('input[name=username]').val(username);
-   $('#user_modal').find('input[type=password]').val('');
-   $('#user_modal').find('input[name=active]').prop('checked', (active && (!(locked))));
-   $('#groups option').remove();
-   $('#all_groups option').remove();
-   $(user_groups).each(function(group_index, groupname) {
-      var group_option = $('<option></option>').val(groupname).text(groupname).attr('name', 'groups');
-      $('#groups').append(group_option);
-   });
-   $(Object.keys(all_groups)).each(function(group_index, groupname) {
-      if($.inArray(groupname, user_groups) < 0) {
-         var group_option = $('<option></option>').val(groupname).text(groupname).attr('name', 'all_groups');
-         $('#all_groups').append(group_option);
-      }
-   });
-   if(locked) {
-      $('#user_locked').show();
-   } else {
-      $('#user_locked').hide();
-   }
-   $('#groups option:selected').removeAttr("selected");
-   $('#user_modal').data('user_type', user_type);
-   $('#user_label').text(user_type + ' User');
-   $('#user_modal').modal('show'); 
+function user_modal(username, fullname, active, locked, user_groups, all_groups, user_type, id) {
+    $('.loading').remove();
+    $('#user_modal').find('input[name=id]').val(id);
+    $('#user_modal').find('input[name=fullname]').val(fullname);
+    $('#user_modal').find('input[name=username]').val(username);
+    $('#user_modal').find('input[type=password]').val('');
+    $('#user_modal').find('input[name=active]').prop('checked', (active && (!(locked))));
+    $('#groups option').remove();
+    $('#all_groups option').remove();
+    $(user_groups).each(function(group_index, groupname) {
+        var group_option = $('<option></option>').val(groupname).text(groupname).attr('name', 'groups');
+        $('#groups').append(group_option);
+    });
+    for (i=0; i < all_groups.length; i++) {
+        //$(Object.keys(all_groups)).each(function(group_index, groupname) {
+            if($.inArray(all_groups[i].name, user_groups) < 0) {
+                var group_option = $('<option></option>').val(all_groups[i].name).text(all_groups[i].name).attr('name', 'all_groups');
+                $('#all_groups').append(group_option);
+            }
+        //});
+    }
+    if(locked) {
+        $('#user_locked').show();
+    } else {
+        $('#user_locked').hide();
+    }
+    $('#groups option:selected').removeAttr("selected");
+    $('#user_modal').data('user_type', user_type);
+    $('#user_label').text(user_type + ' User');
+    $('#user_modal').modal('show'); 
 }
 
 
 function populate_local_users_n_groups() {
+            var allGroups;
+            var users;
 			$.ajax({
 			   type:'GET',
-			   url: '/scot/admin/auth'
-			}).done(function(response) {
-			   var auth_method = response.data.method;
-			   if(auth_method == 'local') {
-			      var users = response.data.users;
-			      var groups = response.data.groups;
+			   url: '/scot/api/v2/user',
+			   data: {limit:0}
+            }).done(function(response) {
+			   //var auth_method = response.data.method;
+			   var auth_method = 'local';
+               if(auth_method == 'local') {
+			      users = response.records;
+			      //var groups = response.data.groups;
 			      $('#users_table').html('<tr><th></th><th></th><th>User</th><th>Full Name</th><th>Active</th></tr>');
-			      $(Object.keys(users).sort()).each(function(index, username) {
-			         if(!(users[username].local_acct))
-				    return true;
-				 var active_img = '/images/close_toolbar.png';
-				 if(users[username].active != undefined && users[username].active && ( users[username].lockouts == undefined || (users[username].lockouts == 0) )) {
-				    active_img = '/images/ok.png';
-				 }
-				 var trow = $('<tr class="row"><td><img src="/images/edit.png" style="max-width:inherit;"></img></td><td>'+username+'</td><td>'+users[username].fullname+'</td><td><img src="'+active_img+'" style="width:15px;"></img></td></tr>');
-				 $(trow).data('username', username).on("click", function() {
-				   var user = users[username];
-				   user_modal(username, user.fullname, user.active, (user.lockouts > 0), user.groups, groups, 'Edit');
-				 });
-				 $('#users_table').append(trow); 
-			      });
-			      $('#groups_table').html('<tr><th></th><th></th><th>Group Name</th><th>Num Users</th></tr>');
-			      $(Object.keys(groups).sort()).each(function(index, groupname) {
-			         var count = groups[groupname].length;
-			         var trow = $('<tr class="row"><td><img src="/images/edit.png" style="max-width:inherit;"></img></td><td>'+groupname+'</td><td>'+count+'</td></tr>');
-			    	 $(trow).data('groupname', groupname).on("click", function() {
-				   var group = groups[groupname];
-				   var group_users = new Array();
-			           $(group).each(function(usr_idx, username) {
-					group_users.push({username : username, fullname: users[username].fullname});
-				   });
-				   group_modal(groupname, group_users, users, 'Edit');
-				 });
-				 $('#groups_table').append(trow);
-			      });
-			   }
+			      for (i=0; i < users.length; i++) {
+                        //if(!(users[username].local_acct))
+                        //   return true;
+                        var active_img = '/images/close_toolbar.png';
+                        if(users[i].active != undefined && users[i].active == 1 && ( users[i].lockouts == undefined || (users[i].lockouts == 0) )) {
+                            active_img = '/images/ok.png';
+                        }
+                        var trow = $('<tr class="row"><td><img src="/images/edit.png" style="max-width:inherit;"></img></td><td>'+users[i].username+'</td><td>'+users[i].fullname+'</td><td><img src="'+active_img+'" style="width:15px;"></img></td></tr>');
+                        var user = users[i];
+                        $(trow).data('username', users[i].username).click({param1:user}, function(event){
+                            var active = event.data.param1.active;
+                            if (active == 1) {active = true} else {active = false}
+                            user_modal(event.data.param1.username, event.data.param1.fullname, active, (event.data.param1.lockouts > 0), event.data.param1.group, allGroups, 'Edit', event.data.param1.id);
+                        });
+                        $('#users_table').append(trow); 
+                    }
+                }
 			});
+            $.ajax({
+                type:'GET',
+                url: '/scot/api/v2/group',
+                data: {limit:0}
+            }).done(function(response) {
+                allGroups = response.records;
+                var auth_method = 'local';
+                if (auth_method == 'local') {
+                    //var group = response.records;
+                    $('#groups_table').html('<tr><th></th><th></th><th>Group Name</th><th>Num Users</th></tr>');
+                    for (j=0; j < response.records.length; j++) {                  
+                        //var count = groups[groupname].length;
+                        var count = 'n/a'
+                        var trow = $('<tr class="row"><td><img src="/images/edit.png" style="max-width:inherit;"></img></td><td>'+response.records[j].name+'</td><td>'+count+'</td></tr>');
+                        var group = response.records[j];
+                        $(trow).data('groupname', group.name).click({param1:group}, function(event) {
+                            //var group = groups[j].name;
+                            var group_users = new Array();
+                            var groupname = event.data.param1.name;
+                            $.ajax({
+                                type:'GET',
+                                url: '/scot/api/v2/group/' + event.data.param1.id + '/user',
+                            }).done(function(response){
+                                for (z=0; z < response.records.length; z++) {
+                                    group_users.push({username : response.records[z].username, fullname: response.records[z].fullname, userid: response.records[z].id});    
+                                }
+                                group_modal(groupname, group_users, users, 'Edit', event.data.param1.id);
+                            })
+                        });
+                        $('#groups_table').append(trow);
+                    }
+ 
+                }
+            })
 }
 
         function text2html(text) {
@@ -367,7 +398,7 @@ $.ajax({
 	   	   //$('#method_tabs').tab();
 		   populate_local_users_n_groups();
 		  // $('#method_tabs a:first').tab('show');
-		  $('#permitted_senders').append(render_permitted_sender('', '*.*'));
+		  //$('#permitted_senders').append(render_permitted_sender('', '*.*'));
 		//  check_for_updates();
 
  		});
@@ -375,12 +406,12 @@ $.ajax({
 		   $('.section').hide();
 		   var hash = location.hash;
 		   $('#admin_nav').find('.active').removeClass('active');
-		   $('#admin_nav').find('a[href='+hash+']').addClass('active').parent().addClass('active');
+		   $('#admin_nav').find(hash).addClass('active').parent().addClass('active');
 		   $(hash).fadeIn({duration:200});
  		   if(hash == '#auth') {
-		      load_ldap_settings();
+		      //load_ldap_settings();
 		   } else if (hash == '#alerts') {
-                      load_alert_settings();
+                      //load_alert_settings();
                    }
         	}
 
@@ -414,7 +445,7 @@ $.ajax({
 		   location.hash = '#info';
 		}
 		$('#collector_form input:checkbox').change(function() {
-		  var control_group = $(this).parents('.control-group');
+		  var control_group = $(this).parents('.form-group');
 		  if($(this).prop('checked')) {
 		     
 		     control_group.find('.options').slideDown();
@@ -446,14 +477,14 @@ $.ajax({
 		     });
         }
 
-         list_backups(true);
-        setInterval(list_backups, 2000);
+         //list_backups(true);
+        //setInterval(list_backups, 2000);
 		$('#email_options input').change(function() {
 		   $('#email_options').find('button').first().show();
 		   $('#email_options').find('button').last().hide();
 
 		});
-	   update_stats();
+	   //update_stats();
 	   //setInterval(update_stats, 5000);
         
 
@@ -477,13 +508,13 @@ $.ajax({
            });
 	}
 
-	function add_option_to_select(selector, value, text) {
-	   var new_option = $('<option></option>').val(value).text(text).attr('name', 'groups');
+	function add_option_to_select(selector, value, text, id) {
+	   var new_option = $('<option></option>').val(value).text(text).attr('name', 'groups').attr('id',id);
 	   $(selector).append(new_option);
         }
 
-        function remove_option_from_select(selector, value) {
-	   $(selector).find('option[value='+value+']').remove();
+        function remove_option_from_select(selector, value, id) {
+	   $(selector).find('option[value='+'"'+value+'"'+']').remove();
      	}
 
         function add_users() {
@@ -507,8 +538,8 @@ $.ajax({
 
 	function move_options(from, to) {
 	   $(from).find("option:selected").each(function(selected_group_index, selected_group) {
-	      add_option_to_select(to, $(selected_group).val(), $(selected_group).text());
-	      remove_option_from_select(from, $(selected_group).val());
+	      add_option_to_select(to, $(selected_group).val(), $(selected_group).text(), $(selected_group)[0].id);
+	      remove_option_from_select(from, $(selected_group).val(), $(selected_group)[0].id);
 	   });
 	 
         }
@@ -538,7 +569,8 @@ $.ajax({
 		  $('.loading').remove();
 		  var user_type = $('#user_modal').data('user_type');
 		  var ajax_type = 'PUT';
-		  if(user_type == 'New') {
+		  var url;
+          if(user_type == 'New') {
 		    //TODO: make sure this username isn't already taken
 		    var username_input = $('#user_form').find('input[name=username]'); 
 		    var password_input = $('#user_form').find('input[type=password]'); 
@@ -546,33 +578,47 @@ $.ajax({
 		    if(empty(password_input, 'password')) {  return 1;}
 		    //TODO: make sure password isn't empty
 		    ajax_type = 'POST';
-		  }
-		  $(button).append('<img class="loading" src="/loading.gif"></img>');
-		  var form_data = new Object();
-		  form_data.username = $('#user_modal').find('input[name=username]').val();
-		  form_data.fullname = $('#user_modal').find('input[name=fullname]').val();
-		  form_data.active   = $('#user_modal').find('input[name=active]').prop('checked');
+		    url = '/scot/api/v2/user/';
+          }
+		  $(button).append('<img class="loading" src="./loading.gif"></img>');
+          var id             = $('#user_modal').find('input[name=id]').val();
+		  var username = $('#user_modal').find('input[name=username]').val();
+		  var fullname = $('#user_modal').find('input[name=fullname]').val();
+		  var active   = $('#user_modal').find('input[name=active]').prop('checked');
 		  var password = $('#user_modal').find('input[name=password]').val();
 		  if(password.length > 0) {
-		     form_data.password = password;
+		     password = password;
 		  }
-		  form_data.groups   = $('#user_form').find('select[name=groups]').find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from each option (selected or not) in the groups select into array 
-		  $.ajax({
-		     type: ajax_type,
-		     async: true,
-		     url:  '/scot/admin/auth/user/'+form_data.username,
-		     data: JSON.stringify(form_data)
-		  }).done(function(response) {
-		     $('#user_modal').modal('hide');
-		     populate_local_users_n_groups();
-		  }).error(function(response) {
-		     $('.loading').attr('src', '/images/close_toolbar.png');
-		  });
-		  return false;
+          if (active == true) {
+            active = 1;
+          } else {
+            acitve = 0;
+          }
+		  var group   = $('#user_form').find('select[name=groups]').find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from each option (selected or not) in the groups select into array 
+            if (id != undefined) {
+                url = '/scot/api/v2/user/' + id;
+            }
+            var json = {'username':username,'fullname':fullname, 'active':active, 'password':password, 'group':group}
+            $.ajax({
+                type: ajax_type,
+                async: true,
+                url:  url,
+                data: JSON.stringify(json),
+                contentType: 'application/json; charset=UTF-8',
+            }).done(function(response) {
+                $('#user_modal').modal('hide');
+                populate_local_users_n_groups();
+            }).error(function(response) {
+                $('.loading').attr('src', '/images/close_toolbar.png');
+            });
+            
+          return false;
 		}
 
 		function save_group_changes(button) {
 		  $('.loading').remove();
+          var ajax_type = 'PUT';
+          var url;
 		  var group_type = $('#group_modal').data('group_type');
 		  if(group_type == 'New') {
 		    //TODO: make sure this username isn't already taken
@@ -582,43 +628,109 @@ $.ajax({
 			return 1;
 		    } 
 		    if(empty(groupname_input, 'groupname')) {  return 1;}
-		    //TODO: make sure password isn't empty
-		  }
-		  $(button).append('<img class="loading" src="/loading.gif"></img>');
-		  var form_data = new Object();
-		  form_data.groupname = $('#group_modal').find('input[name=groupname]').val();
-		  form_data.users   = $('#group_form').find('select[name=users]').find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from each option (selected or not) in the users select into array 
-		  $.ajax({
-		     type: 'PUT',
+            ajax_type = 'POST'  		  
+            url = '/scot/api/v2/group/';
+          }
+		  $(button).append('<img class="loading" src="./loading.gif"></img>');
+		  var id = $('#group_modal').find('input[name=id]').val();
+          var groupname = $('#group_modal').find('input[name=groupname]').val();
+		  var selectedusers   = $('#group_form').find('select')[0];
+          selectedusers = $(selectedusers).find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from the left (selected) side in the users select into array 
+		  var unselectedusers = $('#group_form').find('select')[1];
+          unselectedusers = $(unselectedusers).find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from the right (unselected) side in the users select into array
+          var selectedusersid = $('#group_form').find('select')[0];
+          selectedusersid = $(selectedusersid).find('option').map(function() { return parseInt($(this).attr('id')); }).toArray();
+          var unselectedusersid = $('#group_form').find('select')[1]
+          unselectedusersid = $(unselectedusersid).find('option').map(function() { return parseInt($(this).attr('id')); }).toArray();
+          if (id != undefined) {
+            url = '/scot/api/v2/group/' + id;
+          }
+          var json = {'name':groupname}
+          $.ajax({
+		     type: ajax_type,
 		     async: true,
-		     url:  '/scot/admin/auth/group/'+form_data.groupname,
-		     data: JSON.stringify(form_data)
-		  }).done(function(response) {
-		     $('#group_modal').modal('hide');
-		     populate_local_users_n_groups();
-		  }).error(function(response) {
+		     url:  url,
+		     data: JSON.stringify(json),
+		     contentType: 'application/json; charset=UTF-8',
+          }).done(function(response) {
+            $.ajax({
+              type: 'get',
+              url:  '/scot/api/v2/user',
+              data: {limit:0},
+            }).done(function(response) {
+                for (i=0; i < response.records.length; i++) {
+                    if (selectedusersid.indexOf(response.records[i].id) !== -1) {
+                        if (response.records[i].group.indexOf(groupname) === -1) {
+                            var currentGroup = response.records[i].group;
+                            currentGroup.push(groupname);
+                            //todo check if group is already there and skip if it is. 
+                            var url = '/scot/api/v2/user/' + response.records[i].id;
+                            var json = {'group':currentGroup};
+                            $.ajax({
+                                type: 'put',
+                                async: true,
+                                url:  url,
+                                data: JSON.stringify(json),
+                                contentType: 'application/json; charset=UTF-8',
+                            }).done(function(response) {
+                                populate_local_users_n_groups();
+                            }).error(function(response) {
+                                $('.loading').attr('src', '/images/close_toolbar.png');
+                            });
+                        }
+                    }
+                    if (unselectedusersid.indexOf(response.records[i].id) !== -1) {
+                        console.log(i);
+                        if (response.records[i].group.indexOf(groupname) !== -1) { 
+                            var currentGroup = response.records[i].group;
+                            var index = currentGroup.indexOf(groupname);
+                            if (index !== -1) {
+                                currentGroup.splice(index,1)
+                                var url = '/scot/api/v2/user/' + response.records[i].id;
+                                var json = {'group':currentGroup}
+                                $.ajax({
+                                    type: 'put',
+                                    asynx: true,
+                                    url: url,
+                                    data: JSON.stringify(json),
+                                    contentType: 'application/json; charset=UTF-8'
+                                }).done(function(response) {
+                                    console.log('removing from group')
+                                }).error(function(response) {
+                                    $('.loading').attr('src','/images/close_toolbar.png');
+                                });
+                            }
+                        }
+                    }
+                }
+                    
+            $('#group_modal').modal('hide');
+		    populate_local_users_n_groups();
+          }).error(function(response) {
 		     $('.loading').attr('src', '/images/close_toolbar.png');
 		  });
 		  return false;
-		}
+		})
+        }
 
 		
 		function new_user() {
 		   $.ajax({
 		      type: 'GET',
-		      url:  '/scot/admin/auth'
+		      url:  '/scot/api/v2/group',
+              data: {limit:0}
 		   }).done(function(response) {
-		      user_modal('', '', true, false, [], response.data.groups, 'New'); 
+		      user_modal('', '', true, false, [], response.records, 'New'); 
 		   });
 
 		}
 
 		function options(options_img) {
-		  $(options_img).parents('.control-group').find('.details').slideToggle();
+		  $(options_img).parents('.form-group').find('.details').slideToggle();
 		}
 
 		function help(question_img) {
-		  $(question_img).parents('.control-group').find('.details').slideToggle();
+		  $(question_img).parents('.form-group').find('.details').slideToggle();
 		}
 
 	 	function restore_selected() {
@@ -632,9 +744,11 @@ $.ajax({
 		function new_group() {
 		   $.ajax({
 		      type: 'GET',
-		      url:  '/scot/admin/auth'
-		   }).done(function(response) {
-		      group_modal('', '', response.data.users, 'New'); 
+		      url:  '/scot/api/v2/user',
+              data: {limit:0}
+            }).done(function(response) {
+              users = response.records;		
+		      group_modal('', '', users, 'New'); 
 		   });
 
 		}
@@ -655,7 +769,7 @@ $.ajax({
 	
 		function create_backup() {
         $('#create_btn').find('img').remove();
-        $('#create_btn').prop('disabled', true).append('<img src="/loading.gif" style="width:20px;"></img>');
+        $('#create_btn').prop('disabled', true).append('<img src="./loading.gif" style="width:20px;"></img>');
         $.ajax({
 			type: 'post',
 		        url:  '/scot/admin/backup'
@@ -677,7 +791,7 @@ $.ajax({
 
 	function update_backup_schedule() {
           $('#schedule_btn').find('img').remove();
-	  $('#schedule_btn').append('<img  style="width:20px;" src="/loading.gif"></img>');
+	  $('#schedule_btn').append('<img  style="width:20px;" src="./loading.gif"></img>');
 	  var data = {'schedule' : $('#schedule').val(), 'max_disk' : $('#max_disk').val(), 'enable_backups' : $('#enable_backups').prop('checked')};
 	  $.ajax({
 	    type: 'POST',
@@ -700,7 +814,7 @@ $.ajax({
 
     function email_settings(type) {
           $('#'+type+'_email_btn').find('img').remove();
-	  $('#'+type+'_email_btn').append('<img  style="width:20px;" src="/loading.gif"></img>');
+	  $('#'+type+'_email_btn').append('<img  style="width:20px;" src="./loading.gif"></img>');
       var form = $('#email_options');
       var email_hostname = form.find('input[name=address]').val();
       var email_port = form.find('input[name=port]').val();
@@ -737,18 +851,18 @@ $.ajax({
 	    <div  class="container">
 
 	      <div class="masthead">
-		<span class="muted" style="line-height:150%; font-weight:bold; font-size:200%;">SCOT Admin Pannel</span>
+		<span class="muted" style="line-height:150%; font-weight:bold; font-size:200%;">SCOT Admin Panel</span>
 		<div class="navbar" style="margin-bottom:1%;">
 		  <div class="navbar-inner">
 		    <div class="container">
 		      <ul class="nav" id="admin_nav">
 			<li class="active"><a href="#info">Info</a></li>
-                <li><a href="#backup">Backup</a></li>
+                <!--<li><a href="#backup">Backup</a></li>-->
                 <li><a href="#auth">Auth</a></li>
-                <li><a href="#alerts">Alerts</a></li>
+                <!--<li><a href="#alerts">Alerts</a></li>-->
                 <li><a href="#logs">Logs</a></li>
-                <li><a href="#ssl">SSL</a></li>
-                <li><a href="#geoip">GeoIP</a></li>
+                <!--<li><a href="#ssl">SSL</a></li>
+                <li><a href="#geoip">GeoIP</a></li>-->
               </ul>
             </div>
           </div>
@@ -769,7 +883,7 @@ $.ajax({
         <div class="section" id="info">
                  <span style="font-size:150%; font-weight:bold">Version</span>
                  <div class="nwell well">
-        SCOT Version: 3.4.0 - Hindenberg &nbsp; &nbsp;
+        SCOT Version: 3.5.1 - Donner Party &nbsp; &nbsp;
         <button class="btn" style="display:none;" disabled>Check for SCOT update</button>
         &nbsp; &nbsp;<button class="btn" style='display:none;' onclick="offline_update()" disabled>Offline SCOT update</button>
 	<div id="offline_upload_input" style="display:none;"><hr><b>Select SCOT Update File</b><br><input type="file" id="update_file" name="update_file" onchange="upload_file_changed()" style="margin-bottom:0px;"><button class="btn btn-warning" id="update_warn_btn" style="display:none;" onclick="update_warn()" >Apply Update</button>
@@ -778,10 +892,10 @@ $.ajax({
 	   </div>
 	</div>
            </div>
-           <h3>System Health</h3>
+           <!--<h3>System Health</h3>
            <div id="stats" style="font-family:monospace;" class="nwell">
               
-           </div>
+           </div>-->
         </div>
         <div class="section" id="backup" style="overflow:hidden;">
               <h3>Backup</h3>
@@ -809,19 +923,19 @@ $.ajax({
 
 
 	     	<form id="schedule_backup_form" class="form-horizontal" role="form">
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="schedule">Cron Schedule:</label>
 		      <div class="controls">
 		         <input type="input" name="schedule" id="schedule" placeholder="e.x. 0 */2 * * *" ></input>
 		      </div>
 		   </div>
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="max_disk">Max Disk Space:</label>
 		      <div class="controls">
 		         <input type="number" name="max_disk" style="width:40px;" id="max_disk" ></input>GB
 		      </div>
 		   </div>
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="enable_backups">Enable Backups:</label>
 		      <div class="controls">
 		         <input type="checkbox" name="enable_backups" id="enable_backups" ></input>
@@ -835,12 +949,12 @@ $.ajax({
         <div class="section" id="auth">
 
 	  <h3>User Authentication:</h3>
-	  If you have Active Directory or OpenLDAP, put in the deets below. 
+	  <!--If you have Active Directory or OpenLDAP, put in the deets below.--> 
 	<hr>
-	<div >
+	<div>
 	  <ul class="nav nav-tabs" id="method_tabs">
-	     <li class="active"><a href="#local" data-toggle="tab">Local Users/Groups</a></li> 
-             <li><a href="#ldap" data-toggle="tab">LDAP</a></li>
+	     <li class="active"><a href="#local" data-toggle="tab">Users/Groups</a></li> 
+             <!--<li><a href="#ldap" data-toggle="tab">LDAP</a></li>-->
 	 </ul> 
 
 	<div class="tab-content">
@@ -869,7 +983,7 @@ $.ajax({
           </div>
 	  <div id="ldap" class="tab-pane" style="padding-top:20px;">
 		<form name="ldap_form" id="ldap_form" class="form-horizontal" role="form">
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="scheme">LDAP Server:<img src="/images/question.png" onclick="help(this)"></img></label>
 		      <div class="controls">
 			<select name="ldap_type">
@@ -881,42 +995,42 @@ $.ajax({
 	   	        <div class="details">The hostname or IP Address of the Active Directory or LDAP server. Use LDAPS for encrypted connection, LDAP or un-encrypted<br> e.x. ldap.yourCompany.com</div> 
 		      </div>
 		   </div>
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="scheme">Base Domain:<img src="/images/question.png" onclick="help(this)"></img></label>
 		      <div class="controls">
    		        <input type="text" name="basedn" placeholder="" style="width:365px;"></input>
 	   	        <div class="details">Where in Active Directory or LDAP to search for users.<br>e.x. 'ou=accounts,ou=org,dc=yourCompany,dc=parentCompany,dc=com</div>
 		      </div>
 		   </div>
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="scheme">User ID Attribute:<img src="/images/question.png" onclick="help(this)"></img></label>
 		      <div class="controls">
    		        <input type="text" name="uid" placeholder="" style="width:365px;"></input>
 	   	        <div class="details">Where in Active Directory or LDAP to search for users/groups.<br>e.x. 'ou=accounts,ou=org,dc=yourCompany,dc=parentCompany,dc=com</div>
 		      </div>
 		   </div>
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="attr">Membership Attr:<img src="/images/question.png" onclick="help(this)"></img></label>
 		      <div class="controls">
    		        <input type="text" name="attr" placeholder="" style="width:365px;"></input>
 	   	        <div class="details">What attribute in the LDAP user object do we check for a list of their groups?<br>This is usually 'memberOf'.</div>
 		      </div>
 		   </div>
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="scheme">Bind DN:<img src="/images/question.png" onclick="help(this)"></img></label>
 		      <div class="controls">
    		        <input type="text" name="binddn" placeholder="" style="width:365px;"></input>
 	   	    	<div class="details">This is the full path for the user used to search the domain.  This is also referred to as the 'Bind Domain' or 'BindDN'<br>e.x. '<span style="color:red;">uid</span>=<span style="color:green;">usernameHere</span>,<span style="color:blue;">ou=accounts,ou=org,dc=yourCompany,dc=parentCompany,dc=com</span><br>This is usually constructed from 3 parts, <span style="color:red;">the User ID Attribute</span>, the <span style="color:green;">Username of Active Directory / LDAP user authorized to perform searches</span> and the <span style="color: blue;">Base Domain</span></div>
 		      </div>
 		   </div>
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="scheme">Bind Password:<img src="/images/question.png" onclick="help(this)"></img></label>
 		      <div class="controls">
    		        <input type="text" name="bindpassword" placeholder="" style="width:365px;"></input>
 	   	        <div class="details">(optional) password used in conjunction with 'Account' to login and search for users/groups.</div>
 		      </div>
 		   </div>
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="scheme">Test User:<img src="/images/question.png" onclick="help(this)"></img></label>
 		      <div class="controls">
    		        <input type="text" name="testuser" placeholder="" style="width:365px;"></input>
@@ -938,7 +1052,7 @@ $.ajax({
 	      <p>There are multiple ways to get alerts into SCOT.  On this page you can enable/disable any of these methods</p>
 	      <hr>
 	      <form id="collector_form" name="collector_form" class="form-horizontal" role="form">
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="email">Email<img src="/images/question.png" onclick="help(this)"></img></label>
 		      <div class="controls">
 	      		 <input type="checkbox" name="email"></input>
@@ -992,7 +1106,7 @@ $.ajax({
 			</div>
 		   </div>
 		   <hr>
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="syslog">Syslog<img src="/images/question.png" onclick="help(this)"></img></label>
 		      <div class="controls">
 	      		 <input type="checkbox" name="syslog"></input>
@@ -1004,7 +1118,7 @@ $.ajax({
 		     </div>
 		   </div>
 		  <hr>
-		   <div class="control-group collector_on">
+		   <div class="form-group collector_on">
 		      <label class="control-label" for="http">HTTP<img src="/images/question.png" onclick="help(this)"></img></label>
 		      <div class="controls">
 	      		 <input type="checkbox" name="http" checked disabled></input>
@@ -1059,25 +1173,25 @@ $.ajax({
 	     SCOT comes with a self-signed SSL cert, but please replace it with a trusted CA cert.
 	     <hr>
 	     	<form id="ssl_form" class="form-horizontal" role="form">
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="privatekey">Private Key:</label>
 		      <div class="controls">
 		         <input type="file" name="privatekey" id="privatekey" ></input>
 		      </div>
 		   </div>
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="sslcert">SSL Certificate:</label>
 		      <div class="controls">
 		         <input type="file" name="sslcert" id="sslcert" ></input>
 		      </div>
 		   </div>
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="intermediate">Intermediate CA Certificate:</label>
 		      <div class="controls">
 		         <input type="file" name="intermediate" id="intermediate" ></input>
 		      </div>
 		   </div>
-		   <div class="control-group">
+		   <div class="form-group">
 		      <div class="controls">
 		         <button class="btn btn-primary" onclick="ssl_upload_warn()">Update SSL Cert</button>
 		      </div>
@@ -1091,25 +1205,25 @@ $.ajax({
 		Update your <a href="https://www.maxmind.com/en/geolocation_landing">MaxMind GeoIP</a> and <a href="https://www.maxmind.com/en/organization">Organization</a> databases
 		<hr>
 		<form name="maxmind_form" id="maxmind_form" class="comming_soon form-horizontal" role="form">
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="city">GeoIP City</label>
 		      <div class="controls">
 		         <input type="file" name="city" id="city" ></input>
 		      </div>
 		   </div>
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="country">GeoIP Country</label>
 		      <div class="controls">
 		         <input type="file" name="country" id="country" ></input>
 		      </div>
 		   </div>
-		   <div class="control-group">
+		   <div class="form-group">
 		      <label class="control-label" for="organization">GeoIP Organization</label>
 		      <div class="controls">
 		         <input type="file" name="oranization" id="organization" ></input>
 		      </div>
 		   </div>
-		   <div class="control-group">
+		   <div class="form-group">
 		     <div class="controls">
 		        <button class="btn btn-primary">Upload GeoIP Databases</button>
 		     </div>
@@ -1182,75 +1296,89 @@ $.ajax({
         </div>
 
 	<!-- Group Modal -->
-        <div id="group_modal" class="modal hide " tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h3 id="group_label">Group</h3>
-            </div>
-            <div class="modal-body">
-		<form name="group_form" id="group_form" class="form-horizontal" role="form">
-		   <div class="control-group">
-		      <label class="control-label" for="groupname">Group</label>
-		      <div class="controls">
-		         <input type="text" name="groupname" id="groupname" ></input>
-		      </div>
-		   </div>
-		  <table style="margin:auto;">
-		     <tr><th>Group Members</th><th></th><th>Available Users</th></tr>
-			     <tr><td><select name="users" class="select_swap" id="users" multiple></select></td><td><span style="display:block;"><button type="button" style="font-size:150%;" onclick="add_users()">&larr;</button><br><button type="button" style="font-size:150%;" onclick="remove_users()">&rarr;</button></span></td><td><select style="width:inherit;" class="select_swap" id="all_users" multiple></select></td></tr>
-		  </table>
-		</form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-                <button class="btn btn-primary" id="save_changes_btn" onclick="save_group_changes(this)">Save</button>
+        <div id="group_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class='modal-dialog' role='document'> 
+                <div class='modal-content'>
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h3 id="group_label">Group</h3>
+                    </div>
+                    <div class="modal-body">
+                        <form name="group_form" id="group_form" class="form-horizontal" role="form">
+                            <div class="form-group" style='display:none'>
+                                <input type="text" name="id" id="id" readonly></input>
+                            </div>  
+                            <div class="form-group">
+                                <label class="control-label" for="groupname">Group</label>
+                                <div class="controls">
+                                    <input type="text" name="groupname" id="groupname" ></input>
+                                </div>
+                            </div>
+                            <table style="margin:auto;">
+                                <tr><th>Group Members</th><th></th><th>Available Users</th></tr>
+                                    <tr><td><select name="users" class="select_swap" id="users" multiple></select></td><td><span style="display:block;"><button type="button" style="font-size:150%;" onclick="add_users()">&larr;</button><br><button type="button" style="font-size:150%;" onclick="remove_users()">&rarr;</button></span></td><td><select name="all_users" style="width:inherit;" class="select_swap" id="all_users" multiple></select></td></tr>
+                            </table>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                        <button class="btn btn-primary" id="save_changes_btn" onclick="save_group_changes(this)">Save</button>
+                    </div>
+                </div>
             </div>
         </div>
       <!-- / Group Modal -->
 
-        <div id="user_modal" class="modal hide " tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                <h3 id="user_label">User</h3>
-            </div>
-            <div class="modal-body">
-		<form name="user_form" id="user_form" class="form-horizontal" role="form">
-		   <div class="control-group">
-		      <label class="control-label" for="username">Username</label>
-		      <div class="controls">
-		         <input type="text" name="username" id="username" ></input>
-		      </div>
-		   </div>
-		    <div class="control-group">
-		      <label class="control-label" for="fullname">Full Name</label>
-		      <div class="controls">
-		         <input type="text" name="fullname" id="fullname"></input>
-		      </div>
-		   </div>
-           <div id="user_locked" style="display:none; color: red;">
-             <b>User account temporarly inactive because of too many password attempts. Check 'active' and save to unlock.</b>
-           </div>
-		    <div class="control-group">
-		      <label class="control-label" for="active">Active</label>
-		      <div class="controls">
-		         <input type="checkbox" name="active" id="active"></input>
-		      </div>
-		   </div>
-		    <div class="control-group">
-		      <label class="control-label" for="password">Password</label>
-		      <div class="controls">
-		         <input type="password" name="password" id="password" placeholder="********"></input>
-		      </div>
-		   </div>
-		  <table style="margin:auto;">
-		     <tr><th>User's groups</th><th></th><th>Available Groups</th></tr>
-			     <tr><td><select class="select_swap" name="groups" id="groups" multiple></select></td><td><span style="display:block;"><button type="button" style="font-size:150%;" onclick="add_groups()">&larr;</button><br><button type="button" style="font-size:150%;" onclick="remove_groups()">&rarr;</button></span></td><td><select class="select_swap" id="all_groups" multiple></select></td></tr>
-		  </table>
-		</form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-                <button class="btn btn-primary" id="save_changes_btn" onclick="save_user_changes(this)">Save</button>
+        <div id="user_modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class='modal-dialog' role='document'>
+                <div class='modal-content'>
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                        <h3 id="user_label">User</h3>
+                    </div>
+                    <div class="modal-body">
+                    <form name="user_form" id="user_form" class="form-horizontal" role="form">
+                       <div class="form-group" style='display:none'>
+                            <input type="text" name="id" id="id" readonly></input> 
+                       </div>
+                       <div class="form-group">
+                            <label class="control-label" for="username">Username</label>
+                            <div class="controls">
+                                <input type="text" name="username" id="username" ></input>
+                            </div>
+                        </div>
+                            <div class="form-group">
+                            <label class="control-label" for="fullname">Full Name</label>
+                            <div class="controls">
+                                <input type="text" name="fullname" id="fullname"></input>
+                            </div>
+                        </div>
+                        <div id="user_locked" style="display:none; color: red;">
+                            <b>User account temporarly inactive because of too many password attempts. Check 'active' and save to unlock.</b>
+                        </div>
+                            <div class="form-group">
+                            <label class="control-label" for="active">Active</label>
+                            <div class="controls">
+                                <input type="checkbox" name="active" id="active"></input>
+                            </div>
+                        </div>
+                            <div class="form-group">
+                            <label class="control-label" for="password">Password</label>
+                            <div class="controls">
+                                <input type="password" name="password" id="password" placeholder="********"></input>
+                            </div>
+                        </div>
+                        <table style="margin:auto;">
+                            <tr><th>User's groups</th><th></th><th>Available Groups</th></tr>
+                                <tr><td><select class="select_swap" name="groups" id="groups" multiple></select></td><td><span style="display:block;"><button type="button" style="font-size:150%;" onclick="add_groups()">&larr;</button><br><button type="button" style="font-size:150%;" onclick="remove_groups()">&rarr;</button></span></td><td><select class="select_swap" id="all_groups" multiple></select></td></tr>
+                        </table>
+                    </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                        <button class="btn btn-primary" id="save_changes_btn" onclick="save_user_changes(this)">Save</button>
+                    </div>
+                </div>
             </div>
         </div>
 </body>
