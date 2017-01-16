@@ -53,7 +53,7 @@ sub _get_config {
     return $obj->item // {
         url             => 'http://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.169.194.86',
         proxy_protos    => [ 'http', 'https' ],
-        proxy_url       => 'http://wwwproxy.sandia.gov:80',
+        proxy_url       => 'http://proxy.host.tld:80',
         ssl_opts        => { verify_hostname    => 0 },
     };
 }
@@ -63,12 +63,14 @@ sub run {
     my $env     = $self->env;
     my $log     = $env->log;
     my $mongo   = $env->mongo;
+    my $config  = $self->config;
 
     $log->trace("Beginning Tor Node Processing...");
 
     my $url     = $env->tor_url;
     my $ua      = LWP::UserAgent->new(ssl_opts => {verify_hostname => 0});
-    $ua->proxy([ 'http', 'https' ], 'http://wwwproxy.sandia.gov:80');
+
+    $ua->proxy($config->proxy_protos, $config->proxy_url);
     my $response = $ua->get($url);
     my $content = $response->content;
 
