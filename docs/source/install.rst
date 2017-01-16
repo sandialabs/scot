@@ -15,6 +15,8 @@ System Preparation
 Ubuntu 16.04 and CENT 7
 -----------------------
 
+# Install the OS.  Make sure that git is installed.
+
 # Now you are ready to pull the SCOT source from GitHub::
 
     $ git clone https://github.com/sandialabs/scot.git scot
