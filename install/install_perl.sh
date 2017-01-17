@@ -326,6 +326,7 @@ function install_perl_modules {
         Data::Dumper
         Data::Dumper::HTML
         Data::Dumper::Concise
+        Data::Clean@0.48
         Data::Clean::FromJSON
         Daemon::Control
         Net::LDAP
@@ -374,6 +375,7 @@ function install_perl_modules {
         HTML::StripTags
         HTML::TreeBuilder
         HTML::FromText
+        HTML::FormatText
         MIME::Base64
         IPC::Run
         IO::Prompt
