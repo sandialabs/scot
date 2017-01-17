@@ -17,6 +17,7 @@ has config  => (
     isa         => 'HashRef',
     required    => 1,
     default     => sub { 
+        return {}
     },
 );
 
