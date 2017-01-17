@@ -101,6 +101,7 @@ function process_commandline {
                 MONGO_REFRESH_CONFIG="no"
                 ;;
             s)
+                echo "SCOT only Install"
                 INSTMODE="SCOTONLY"
                 RESETDB="no"
                 REFRESHREPOS="no"
