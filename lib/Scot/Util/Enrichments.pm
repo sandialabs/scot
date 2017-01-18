@@ -112,8 +112,13 @@ sub enrich {
 
     my $eset    = $self->mappings->{$etype};
 
-    $log->debug("Enrichments available for type: ".
-                join(', ',@$eset));
+    unless ($eset) {
+        $log->error("ERROR enity set is not defined!");
+        $eset = [];
+    }
+    else {
+        $log->debug("Enrichments available for type: ".  join(', ',@$eset));
+    }
 
     NAME:
     foreach my $enricher_name (@{$eset}) {
