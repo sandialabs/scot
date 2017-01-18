@@ -311,7 +311,17 @@ sub reprocess_alertgroup {
     my $log     = $self->log;
     my $scot    = $self->scot;
 
-    my $alertgroup  = $self->get_alertgoup_by_id($agid); # ... returns href not obj
+    $log->debug("Fetching alertgroup $agid");
+    # ... returns href not obj
+    my $alertgroup  = $self->get_alertgroup_by_id($agid); 
+
+    unless (defined $alertgroup) {
+        $log->error("Alertgroup not found!");
+        return;
+    }
+
+    $log->debug("Alertgroup dump: ", {filter=>\&Dumper, value=>$alertgroup});
+
     my $msghref    = {
         subject     => $alertgroup->{subject},
         message_id  => $alertgroup->{message_id},
@@ -323,6 +333,7 @@ sub reprocess_alertgroup {
     };
 
     my $parser                  = $self->get_parser($msghref);
+    $log->debug("Message will be parsed by ".ref($parser));
     my $received                = DateTime->from_epoch(epoch=>$msghref->{when});
     my $json_to_post            = $parser->parse_message($msghref);
     my $path                    = "alertgroup";
@@ -577,7 +588,7 @@ sub get_alertgroup_by_id {
         my $col     = $mongo->collection('Alertgroup');
         my $obj     = $col->find_iid($id);
         if ( $obj ) {
-            return $obj->as_href;
+            return $obj->as_hash;
         }
     }
     return { error => 1};
