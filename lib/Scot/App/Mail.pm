@@ -349,6 +349,8 @@ sub reprocess_alertgroup {
     $log->debug("posting to $path");
 
     my $json_returned = $self->post_alertgroup($json_to_post);
+    # use this when update is implemented
+    # my $json_returned = $self->put_alertgroup($agid, $json_to_post);
 
     unless (defined $json_returned) {
         $log->error("ERROR! Undefined transaction object $path ",
@@ -474,6 +476,29 @@ sub process_message {
     $log->trace("Created alertgroup ". $json_returned->{id});
     $imap->see($msghref->{imap_uid});
     return 1;
+}
+
+# TODO: so reprocessing updated existing alertgroup not create a new one
+sub put_alertgroup {
+    my $self    = shift;
+    my $id      = shift;
+    my $data    = shift;
+    my $log     = $self->log;
+    my $response;
+
+    if ( $self->get_method eq "scot_api" ) {
+        $response = $self->scot->put({
+            type    => "alertgroup",
+            id      => $id,
+            data    => $data,
+        });
+    }
+    else {
+        $log->debug("Posting via direct mongo access");
+        my $mongo   = $self->env->mongo;
+        my $agcol   = $mongo->collection('Alertgroup');
+        my $agobj   = $agcol->find_iid($agid);
+    }
 }
 
 sub post_alertgroup {
