@@ -588,10 +588,12 @@ sub check_entity_enrichments {
     my $log     = $env->log;
     my $timer   = $env->get_timer("checking entity enrichments");
 
-    $log->trace("checking entity enrichments");
+    $log->debug("checking entity enrichments");
 
     my $enricher         = $env->enrichments;
     my ($updates, $data) = $enricher->enrich($entity);
+
+    $log->debug("ENRICHMENT of ".$entity->value." is ".{filter=>\&Dumper, value=>$data});
 
     if ( $updates > 0 ) {
         $log->debug("updating cache of entity enrichments");
