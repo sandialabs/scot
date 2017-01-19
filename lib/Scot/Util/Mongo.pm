@@ -6,7 +6,7 @@ use Data::Dumper;
 sub new {
     my $class   = shift;
     my $config  = shift; # href of config items
-    my $c       = $config->{conf};
+    my $c       = $config; # ->{conf};
 
     my $mongo   = Meerkat->new(
         model_namespace         => 'Scot::Model',
