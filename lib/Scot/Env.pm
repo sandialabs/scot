@@ -319,11 +319,11 @@ sub BUILD {
         $cacheconfs{$name}  = $confhref;
         $confhref->{log}    = $log;
         require_module($class);
-        my $instance    = $class->new($confhref);
-        #my $instance    = $class->new({
-        #    conf    => $confhref,
-        #    log     => $log
-        #});
+        # my $instance    = $class->new($confhref);
+        my $instance    = $class->new({
+            conf    => $confhref,
+            log     => $log
+        });
         unless ( $instance ) {
             die "Creating $class instance Failed!";
         }
