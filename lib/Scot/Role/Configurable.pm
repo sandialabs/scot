@@ -17,6 +17,7 @@ use warnings;
 use v5.18;
 use File::Find;
 use Safe;
+use Data::Dumper;
 
 use Moose::Role;
 
@@ -45,6 +46,7 @@ sub _build_config_file {
     if ( defined $config ) {
         # config was passed in fully formed, and no config file sent.
         # clear indication to use the passed in config
+        print "Configurion passed in as hash_ref\n";
         return ' ';
     }
     $self->log->error("Failed to provide config file!");
@@ -75,12 +77,16 @@ has paths   => (
 
 sub _build_paths {
     my $self    = shift;
-
     my $default = $ENV{'scot_config_path'};
+
+    print "\t\t paths not passed in, attempting defaults\n";
+
     unless ( defined $default ) {
-        return [ '/opt/scot/etc' ]; # a reasonable default
+        print "\t\tusing default path of /opt/scot/etc\n";
+        return [ '../..' ]; # a reasonable default
     }
     my @paths   = split(/:/, $default);
+    print "\t\tusing default path ".join(':',@paths)."\n";
     return \@paths;
 }
 
@@ -104,6 +110,12 @@ sub _build_config {
     my $paths   = $self->paths;
     my $fqname;
 
+    unless (defined $file) {
+        die "Config file not provided!\n";
+    }
+
+    print "building ".ref($self)." config from $file in ".join(':',@$paths)."\n";
+
     # File::Find does the hard work of locating the file
     find(
         sub {
@@ -122,6 +134,8 @@ sub _build_config {
         die   "Config File $file not found!\n";
     }
 
+    print "Reading config file: $fqname\n";
+
     no strict 'refs'; # just for this code scope
     my $cont    = new Safe 'MCONFIG';
     my $r       = $cont->rdo($fqname);
@@ -130,12 +144,30 @@ sub _build_config {
     my $href    = \%copy;
 
     if ( defined $href->{include} ) {
+        print "processing includes...\n";
         my $include_href    = delete $href->{include};
         foreach my $attr ( keys %{ $include_href } ) {
             $href->{$attr} = $self->_build_config($include_href->{$attr});
         }
     }
+    #print "got config: ".Dumper($href)."\n";
     return $href;
+}
+
+sub get_config_value {
+    my $self    = shift;
+    my $attr    = shift;
+    my $default = shift;
+    print "Getting $attr\n";
+    my $config  = $self->config;
+    if ( defined $config ) {
+        if ( defined $config->{$attr} ) {
+            print "\tFrom config: ".Dumper($config->{$attr})."\n";
+            return $config->{$attr};
+        }
+    }
+    print "\tFrom default: ".Dumper($default)."\n";
+    return $default;
 }
 
 1;
