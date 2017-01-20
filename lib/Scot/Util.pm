@@ -17,7 +17,7 @@ use v5.18;
 use strict;
 use warnings;
 
-use Scot::Util::Logger;
+use Scot::Util::LoggerFactory;
 use Moose;
 
 with qw(Scot::Role::Configurable);
