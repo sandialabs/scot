@@ -5,28 +5,40 @@ use Module::Runtime qw(require_module compose_module_name);
 use Data::Dumper;
 use Try::Tiny;
 use Moose;
+extends 'Scot::Util';
 
-# config is passed in the new call
-
-has log         => (
-    is          => 'ro',
-    isa         => 'Log::Log4perl::Logger',
-    required    => 1,
-);
 
 has mappings    => (
     is          => 'ro',
     isa         => 'HashRef',
     required    => 1,
-    default     => sub { {} },
+    # default     => sub { {} },
+    builder     => '_build_mappings',
 );
+
+sub _build_mappings {
+    my $self    = shift;
+    my $config  = $self->config;
+    my $attr    = 'mappings';
+    my $default = {};
+    return $self->get_config_value($attr,$default);
+}
 
 has configs     => (
     is          => 'ro',
     isa         => 'HashRef',
     required    => 1,
-    default     => sub { {} },
+    # default     => sub { {} },
+    builder     => '_build_configs',
 );
+
+sub _build_configs {
+    my $self    = shift;
+    my $config  = $self->config;
+    my $attr    = 'configs';
+    my $default = {};
+    return $self->get_config_value($attr,$default);
+}
 
 sub BUILD {
     my $self    = shift;
