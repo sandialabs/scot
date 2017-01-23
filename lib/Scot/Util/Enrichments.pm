@@ -11,6 +11,7 @@ extends 'Scot::Util';
 has mappings    => (
     is          => 'ro',
     isa         => 'HashRef',
+    lazy        => 1,
     required    => 1,
     # default     => sub { {} },
     builder     => '_build_mappings',
@@ -18,24 +19,23 @@ has mappings    => (
 
 sub _build_mappings {
     my $self    = shift;
-    my $config  = $self->config;
     my $attr    = 'mappings';
     my $default = {};
     return $self->get_config_value($attr,$default);
 }
 
-has configs     => (
+has enrichers     => (
     is          => 'ro',
     isa         => 'HashRef',
     required    => 1,
+    lazy        => 1,
     # default     => sub { {} },
-    builder     => '_build_configs',
+    builder     => '_build_enrichers',
 );
 
-sub _build_configs {
+sub _build_enrichers {
     my $self    = shift;
-    my $config  = $self->config;
-    my $attr    = 'configs';
+    my $attr    = 'enrichers';
     my $default = {};
     return $self->get_config_value($attr,$default);
 }
@@ -43,7 +43,7 @@ sub _build_configs {
 sub BUILD {
     my $self    = shift;
     my $maps    = $self->mappings;
-    my $confs   = $self->configs;
+    my $confs   = $self->enrichers;
     my $meta    = $self->meta;
     my $log     = $self->log;
     $meta->make_mutable;
