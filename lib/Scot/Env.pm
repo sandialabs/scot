@@ -169,18 +169,18 @@ sub _build_admin_group {
     return $self->get_config_value($attr,$default);
 }
 
-has authtype    => (
+has auth_type    => (
     is          => 'ro',
     isa         => 'Str',
     lazy        => 1,
     required    => 1,
-    builder     => '_build_authtype',
-    predicate   => 'has_authtype',
+    builder     => '_build_auth_type',
+    predicate   => 'has_auth_type',
 );
 
-sub _build_authtype {
+sub _build_auth_type {
     my $self    = shift;
-    my $attr    = "authtype";
+    my $attr    = "auth_type";
     my $default = "Local";
     return $self->get_config_value($attr,$default);
 }
@@ -197,7 +197,7 @@ has authclass    => (
 sub _build_authclass {
     my $self    = shift;
     my $attr    = "authclass";
-    my $default = "controller-auth-".lc($self->authtype);
+    my $default = "controller-auth-".lc($self->auth_type);
     return $self->get_config_value($attr,$default);
 }
 
@@ -267,18 +267,21 @@ sub _build_modules {
     return $self->get_config_value($attr,$default);
 }
 
-has scot_config_paths => (
+has config_paths => (
     is              => 'ro',
     isa             => 'ArrayRef',
     lazy            => 1,
     required        => 1,
-    builder         => '_build_scot_config_paths',
+    builder         => '_build_config_paths',
 );
 
-sub _build_scot_config_paths {
+sub _build_config_paths {
     my $self    = shift;
-    my $attr    = "scot_config_paths";
+    my $attr    = "config_paths";
     my $default = [qw(/opt/scot/etc)];
+
+    print "building config_paths\n";
+
     return $self->get_config_value($attr,$default);
 }
 
@@ -298,7 +301,7 @@ sub _build_log {
     my $cfile   = $self->get_config_value($attr, $default);
     my $logfactory = Scot::Util::LoggerFactory->new(
         config_file => $cfile,
-        paths       => $self->scot_config_paths,
+        paths       => $self->config_paths,
     );
     return $logfactory->get_logger;
 }
@@ -317,7 +320,7 @@ sub BUILD {
 
     $log->debug("Env.pm is building Util Modules");
 
-    my $paths = $self->scot_config_paths;
+    my $paths = $self->config_paths;
 
     foreach my $href (@{ $modules }) {
         my $name    = $href->{attr};
@@ -338,7 +341,7 @@ sub BUILD {
         require_module($class);
         # print "instantiating $class\n";
         my $instance_vars = {
-            paths       => $self->scot_config_paths,
+            paths       => $self->config_paths,
             log         => $log,
             config_file => $config,
         };
@@ -407,7 +410,7 @@ sub get_user {
     my $user    = $api->session('user');
 
     unless ( defined $user ) {
-        if ( $self->authtype eq "testing" ) {
+        if ( $self->auth_type eq "testing" ) {
             $self->log->debug("In authmod of test, setting username to test");
             $user   = "test";
         }
