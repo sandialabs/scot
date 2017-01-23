@@ -10,7 +10,7 @@ use v5.18;
 
 
 my $configfile  = 'scot_env.cfg';
-my $paths       = [ qw(.) ];
+my $paths       = [ qw(./configs) ];
 
 my $env     = Scot::Env2->new(
     config_file              => $configfile,
