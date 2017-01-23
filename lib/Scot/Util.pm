@@ -28,6 +28,7 @@ has log => (
     required    => 1,
     lazy        => 1,
     builder     => '_get_log',
+    predicate   => 'has_log',
 );
 
 sub _get_log {
