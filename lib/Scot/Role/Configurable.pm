@@ -174,6 +174,9 @@ sub get_config_value {
     if ( defined $ENV{$env_var} ) {
         $self->feedback("Setting $attr = ".Dumper($ENV{$env_var}).
                         " from env_var $env_var");
+        if ( $attr =~ /config_paths/i ) {
+            return [ split(':',$ENV{$env_var}) ];
+        }
         return $ENV{$env_var};
     }
     my $config  = $self->config;
