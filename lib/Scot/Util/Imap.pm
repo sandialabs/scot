@@ -22,6 +22,7 @@ extends 'Scot::Util';
 has mailbox => (
     is          => 'ro',
     isa         => 'Str',
+    lazy        => 1,
     required    => 1,
     # default     => 'INBOX',
     builder     => '_build_mailbox',
@@ -38,6 +39,7 @@ sub _build_mailbox {
 has hostname    => (
     is          => 'ro',
     isa         => 'Str',
+    lazy        => 1,
     required    => 1,
     # default     => 'localhost',
     builder     => '_build_hostname',
@@ -55,6 +57,7 @@ has port        => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
+    lazy        => 1,
     # default     => 993,
     builder     => '_build_port',
 );
@@ -70,6 +73,7 @@ sub _build_port {
 has username    => (
     is          => 'ro',
     isa         => 'Str',
+    lazy        => 1,
     required    => 1,
     # default     => 'scot-alerts',
     builder     => '_build_username',
@@ -86,6 +90,7 @@ sub _build_username {
 has password    => (
     is          => 'ro',
     isa         => 'Str',
+    lazy        => 1,
     required    => 1,
     # default     => 'needpwhere',
     builder     => '_build_password'
@@ -102,6 +107,7 @@ sub _build_password {
 has ssl         => (
     is          => 'ro',
     isa         => 'ArrayRef',
+    lazy        => 1,
     required    => 1,
     # default     => sub {[ 'SSL_verify_mode', 'SSL_VERIFY_NONE' ]},
     # default     => sub {[ 'SSL_verify_mode', SSL_VERIFY_NONE ]},
@@ -120,6 +126,7 @@ sub _build_ssl {
 has uid         => (
     is          => 'ro',
     isa         => 'Int',
+    lazy        => 1,
     required    => 1,
     # default     => 1,
     builder     => 'build_uid',
@@ -136,6 +143,7 @@ sub _build_uid {
 has ignore_size_errors   => (
     is          => 'ro',
     isa         => 'Int',
+    lazy        => 1,
     required    => 1,
     # default     => 1,
     builder     => '_build_ignore_size_errors',
@@ -152,6 +160,7 @@ sub _build_ignore_size_errors {
 has minutes_ago => (
     is          => 'ro',
     isa         => 'Int',
+    lazy        => 1,
     required    => 1,
     default     => 60,
 );
