@@ -1,373 +1,372 @@
 package Scot::Env;
 
 use v5.18;
-use lib '../../lib';
-use lib '../../../Scot-Internal-Modules/lib';
 use strict;
 use warnings;
+
+use lib '../../lib';
+#use lib '../../../lib';
+#use lib '../../../Scot-Internal-Modules/lib';
+#use lib '../../../../Scot-Internal-Modules/lib';
 
 use Time::HiRes qw(gettimeofday tv_interval);
 use Module::Runtime qw(require_module compose_module_name);
 use Data::Dumper;
-use File::Find;
-use Safe;
+use Scot::Util::LoggerFactory;
 use namespace::autoclean;
-use Scot::Util::MongoQueryMaker;
 
 use Moose;
 use MooseX::Singleton;
+
+with qw(Scot::Role::Configurable);
+
+# for debugging
+#around BUILDARGS => sub {
+#    my $orig    = shift;
+#    my $class   = shift;
+#
+#    print "$class $orig ".Dumper(@_)."\n";
+#    foreach my $k (keys %ENV) {
+#        next unless ($k =~ /scot/);
+#        print "$k = $ENV{$k}\n";
+#    }
+#
+#    return $class->$orig(@_);
+#};
 
 has version => (
     is          => 'ro',
     isa         => 'Str',
     lazy        => 1,
     required    => 1,
-    default     => '3.5',
+    builder     => '_build_version',
 );
 
-has configfile  => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    builder     => '_get_configfile',
-);
-
-sub _get_configfile {
+sub _build_version {
     my $self    = shift;
-    if ( $ENV{'scot_env_configfile'} ) {
-        return $ENV{'scot_env_configfile'};
-    }
-    return '/opt/scot/etc/scot_env.cfg';
+    my $attr    = 'version';
+    my $default = '3.5.1';
+    return $self->get_config_value($attr,$default);
 }
 
-has config      => (
-    is          => 'rw',
-    isa         => 'HashRef',
-    required    => 1,
-    lazy        => 1,
-    traits      => ['Hash'],
-    builder     => '_get_environment_config',
-);
-
-sub _get_environment_config {
-    my $self    = shift;
-    my $file    = $self->configfile;
-
-    unless ( $file ) {
-        die "configfile NOT SET!";
-    }
-    unless ( -e $file ) {
-        die "configfile $file does not exist!";
-    }
-
-    no strict 'refs'; # I know, this smells, but...
-    my $container   = new Safe 'CONFIG';
-    my $ret         = $container->rdo($file);
-    my $hname       = "CONFIG::environment";
-    my $href        = \%$hname;
-
-    return $href;
-}
-
-# mainly for testing
-has cachedconfigs => (
-    is          => 'rw',
-    isa         => 'HashRef',
-);
 
 has servername => (
     is          => 'ro',
     isa         => 'Str',
-    required    => 1,
     lazy        => 1,
+    required    => 1,
+    builder     => '_build_servername',
     predicate   => 'has_servername',
-    builder     => '_get_servername',
 );
 
-sub _get_servername {
+sub _build_servername {
     my $self    = shift;
-    return $self->config->{servername};
+    my $attr    = "servername";
+    my $default = "scot";
+    return $self->get_config_value($attr,$default);
 }
 
-has mojo    => (
-    is          => 'rw',
+has mojo_defaults    => (
+    is          => 'ro',
     isa         => 'HashRef',
-    required    => 1,
     lazy        => 1,
-    builder     => '_get_mojo_defaults',
-    predicate   => 'has_mojo',
+    required    => 1,
+    builder     => '_build_mojo_defaults',
+    predicate   => 'has_mojo_defaults',
 );
 
-sub _get_mojo_defaults {
+sub _build_mojo_defaults {
     my $self    = shift;
-    my $config  = $self->config;
-    return $config->{mojo_defaults};
+    my $attr    = "mojo_defaults";
+    my $default = {
+        secrets => [ qw(scot1sfun sc0t1sc00l) ],
+        default_expiration  => 14400,
+    };
+    return $self->get_config_value($attr,$default);
 }
 
 has mode    => (
-    is          => 'rw',
+    is          => 'ro',
     isa         => 'Str',
-    required    => 1,
     lazy        => 1,
-    builder     => '_get_mode',
+    required    => 1,
+    builder     => '_build_mode',
     predicate   => 'has_mode',
 );
 
-sub _get_mode {
+sub _build_mode {
     my $self    = shift;
-    # Env then Config then default
-    my $mode    = $self->config->{mode};
-    if ( $ENV{'scot_mode'} ) {
-        $mode   = $ENV{'scot_mode'};
-    }
-    unless ($mode) {
-        $mode   = 'prod';
-    }
-    return $mode;
+    my $attr    = "mode";
+    my $default = "prod";
+    return $self->get_config_value($attr,$default);
 }
 
-has authmode    => (
-    is          => 'rw',
+has group_mode    => (
+    is          => 'ro',
     isa         => 'Str',
-    required    => 1,
     lazy        => 1,
-    builder     => '_get_authmode',
-    predicate   => 'has_authmode',
-);
-
-sub _get_authmode {
-    return $ENV{'scot_authmode'} // 'prod';
-}
-
-has group_mode  => (
-    is          => 'rw',
-    isa         => 'Str',
     required    => 1,
-    lazy        => 1,
+    builder     => '_build_group_mode',
     predicate   => 'has_group_mode',
-    builder     => '_get_group_mode',
 );
 
-sub _get_group_mode {
+sub _build_group_mode {
     my $self    = shift;
-    my $config  = $self->config;
-    return $config->{group_mode};
+    my $attr    = "mode";
+    my $default = "Local";
+    return $self->get_config_value($attr,$default);
 }
 
-has default_owner   => (
-    is              => 'rw',
+has default_owner    => (
+    is              => 'ro',
     isa             => 'Str',
     required        => 1,
     lazy            => 1,
-    builder         => '_get_default_owner',
+    builder         => '_build_default_owner',
     predicate       => 'has_default_owner',
 );
 
-sub _get_default_owner {
+sub _build_default_owner {
     my $self    = shift;
-    my $config  = $self->config;
-    return $config->{default_owner} // "scot-admin";
+    my $attr    = "default_owner";
+    my $default = "scot-admin";
+    return $self->get_config_value($attr,$default);
 }
 
-has default_groups  => ( 
-    is              => 'rw',
+has default_groups    => (
+    is              => 'ro',
     isa             => 'HashRef',
     required        => 1,
     lazy            => 1,
-    builder         => '_get_default_groups',
+    builder         => '_build_default_groups',
     predicate       => 'has_default_groups',
 );
 
-sub _get_default_groups {
+sub _build_default_groups {
     my $self    = shift;
-    my $config  = $self->config;
-    return $config->{default_groups};
-    
+    my $attr    = "default_groups";
+    my $default = { 
+        read    => [qw(wg-scot-ir)],
+        modify  => [qw(wg-scot-ir)],
+
+    };
+    return $self->get_config_value($attr,$default);
 }
 
-has admin_group => (
-    is                  => 'rw',
-    isa                 => 'Str',
-    required            => 1,
-    lazy                => 1,
-    builder             => '_get_admin_group',
-    predicate           => 'has_admin_group',
+has admin_group    => (
+    is              => 'ro',
+    isa             => 'Str',
+    required        => 1,
+    lazy            => 1,
+    builder         => '_build_admin_group',
+    predicate       => 'has_admin_group',
 );
 
-sub _get_admin_group {
+sub _build_admin_group {
     my $self    = shift;
-    my $item    = $self->config->{admin_group};
-    if ( $item ) {
-        return $item;
-    } 
-    else {
-        return "wg-scot-admin";
-    }
-}
-
-sub get_test_groups {
-    return [ qw(wg-scot-ir) ];
+    my $attr    = "admin_group";
+    my $default = "wg-scot-admin";
+    return $self->get_config_value($attr,$default);
 }
 
 has authtype    => (
-    is              => 'rw',
-    isa             => 'Str',
-    lazy            => 1,
-    required        => 1,
-    builder         => '_get_authtype',
-    predicate       => 'has_authtype',
-);
-
-sub _get_authtype {
-    my $self    = shift;
-    # ENV then Config then default
-    my $type    = $ENV{'SCOT_AUTH_TYPE'};
-
-    if ( $type ) {
-        return $type;
-    }
-
-    $type = $self->config->{authtype};
-
-    if ( $type) { 
-        return $type;
-    }
-
-    return 'RemoteUser';
-
-}
-
-has authclass => (
-    is          => 'rw',
+    is          => 'ro',
     isa         => 'Str',
     lazy        => 1,
     required    => 1,
-    builder     => '_get_authclass',
+    builder     => '_build_authtype',
+    predicate   => 'has_authtype',
+);
+
+sub _build_authtype {
+    my $self    = shift;
+    my $attr    = "authtype";
+    my $default = "Local";
+    return $self->get_config_value($attr,$default);
+}
+
+has authclass    => (
+    is          => 'ro',
+    isa         => 'Str',
+    lazy        => 1,
+    required    => 1,
+    builder     => '_build_authclass',
     predicate   => 'has_authclass',
 );
 
-sub _get_authclass {
-    my $self        = shift;
-    my $authtype    = $self->authtype;
-    my $route       = 'controller-auth-'.lc($authtype);
-    $self->log->debug("Setting Authclass to $route");
-    return $route;
+sub _build_authclass {
+    my $self    = shift;
+    my $attr    = "authclass";
+    my $default = "controller-auth-".lc($self->authtype);
+    return $self->get_config_value($attr,$default);
 }
 
-has 'filestorage'   => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    lazy        => 1,
-    predicate   => 'has_filestorage',
-    builder     => '_get_filestorage',
+has file_store_root     => (
+    is                  => 'ro',
+    isa                 => 'Str',
+    lazy                => 1,
+    required            => 1,
+    builder             => '_build_file_store_root',
 );
 
-sub _get_filestorage {
+sub _build_file_store_root {
     my $self    = shift;
-    return $self->config->{file_store_root};
+    my $attr    = "file_store_root";
+    my $default = "/opt/scotfiles";
+    return $self->get_config_value($attr,$default);
 }
 
-has 'mongoquerymaker'   => (
+has modules =>  (
     is          => 'ro',
-    isa         => 'Scot::Util::MongoQueryMaker',
-    required    => 1,
+    isa         => 'ArrayRef',
     lazy        => 1,
-    builder     => '_get_mqm',
+    required    => 1,
+    builder     => '_build_modules',
 );
 
-sub _get_mqm {
+sub _build_modules {
     my $self    = shift;
-    return Scot::Util::MongoQueryMaker->new();
+    my $attr    = "modules";
+    my $default = [
+        {
+            attr    => "mongoquerymaker",
+            class   => "Scot::Util::MongoQueryMaker",
+            config  => "",
+        },
+        {
+            attr    => "imap",
+            class   => "Scot::Util::Imap",
+            config  => "imap.cfg",
+        },
+        {
+            attr    => "enrichments",
+            class   => "Scot::Util::Enrichments",
+            config  => "enrichments.cfg",
+        },
+        {
+            attr    => "mongo",
+            class   => "Scot::Util::Mongo",
+            config  => "mongo.cfg",
+        },
+        {
+            attr    => "log",
+            class   => "Scot::Util::LoggerFactory",
+            config  => "logger.cfg",
+        },
+        {
+            attr    => "ldap",
+            class   => "Scot::Util::Ldap",
+            config  => "ldap.cfg",
+        },
+        {
+            attr    => "es",
+            class   => "Scot::Util::ESProxy",
+            config  => "es.cfg",
+        },
+    ];
+    return $self->get_config_value($attr,$default);
 }
+
+has scot_config_paths => (
+    is              => 'ro',
+    isa             => 'ArrayRef',
+    lazy            => 1,
+    required        => 1,
+    builder         => '_build_scot_config_paths',
+);
+
+sub _build_scot_config_paths {
+    my $self    = shift;
+    my $attr    = "scot_config_paths";
+    my $default = [qw(/opt/scot/etc)];
+    return $self->get_config_value($attr,$default);
+}
+
+has log => (
+    is          => 'ro',
+    isa         => 'Log::Log4perl::Logger',
+    lazy        => 1,
+    required    => 1,
+    builder     => '_build_log',
+    predicate   => 'has_log',
+);
+
+sub _build_log {
+    my $self    = shift;
+    my $attr    = "log_config";
+    my $default = "/opt/scot/etc/log.cfg";
+    my $cfile   = $self->get_config_value($attr, $default);
+    my $logfactory = Scot::Util::LoggerFactory->new(
+        config_file => $cfile,
+        paths       => $self->scot_config_paths,
+    );
+    return $logfactory->get_logger;
+}
+
 
 sub BUILD {
     my $self    = shift;
-    my $conf    = $self->config;
-    my $paths   = $conf->{config_path};
+
+    print "loading ENV config from ".$self->config_file."\n";
+    print "   in path: ". join(":", @{$self->paths})."\n";
+    my $config  = $self->config; # force the lazy to do the work
+    my $modules = $self->modules;
     my $meta    = $self->meta;
+    my $log     = $self->log;
     $meta->make_mutable;
 
-    # first build Logger
-    my $logmodule       = delete $conf->{modules}->{log}; # delete it so we don't repeat building later
-    my $logconfigfile   = $conf->{configs}->{log};
-    my $logconfig       = $self->get_config('log', $logconfigfile);
+    $log->debug("Env.pm is building Util Modules");
 
-    # say Dumper($logconfig);
+    my $paths = $self->scot_config_paths;
 
-    require_module($logmodule);
-    my $log             = $logmodule->new($logconfig);
-    
-    $meta->add_attribute(
-        'log'   => ( 
-            is      => 'rw',
-            isa     => 'Log::Log4perl::Logger',
-        )
-    );
-    $self->log($log);
+    foreach my $href (@{ $modules }) {
+        my $name    = $href->{attr};
+        my $class   = $href->{class};
+        my $config  = $href->{config};
 
-    $log->debug("Starting Env.pm");
-    $log->debug("Config is ",{ filter=>\&Dumper, value=> $conf});
+        # print "===================\n";
+        # print "Building Module...\n";
+        # print "\tmodule = $name\n";
+        # print "\tclass  = $class\n";
+        # print "\tfile   = $config\n";
+        # print "\tpaths  = ".Dumper($paths)."\n";
+        # print "\n";
 
-    my %cacheconfs;
+        $log->debug("creating attribute $name as $class from $config");
 
-    foreach my $name (keys %{$conf->{modules}} ) {
-        $log->debug("Creating attribute $name");
-        my $class           = $conf->{modules}->{$name};
-        my $configfile      = $conf->{configs}->{$name};
-        my $confhref        = $self->get_config($name, $configfile);
-        $cacheconfs{$name}  = $confhref;
-        $confhref->{log}    = $log;
+        # print "requireing $class\n";
         require_module($class);
-        my $instance    = $class->new({
-            conf    => $confhref,
-            log     => $log
-        });
-        unless ( $instance ) {
-            die "Creating $class instance Failed!";
+        # print "instantiating $class\n";
+        my $instance_vars = {
+            paths       => $self->scot_config_paths,
+            log         => $log,
+            config_file => $config,
+        };
+
+        $log->debug("instance_vars = ", 
+                    {filter=>\&Dumper, value=>$instance_vars});
+
+        my $instance    = $class->new($instance_vars);
+        # print "instantiated\n";
+
+        unless (defined $instance) {
+            die "Creating $class instance FAILED!\n";
         }
-        my $ctype       = ref($instance); # some these may be factories returning a different type
-        
-        $meta->add_attribute(
-            $name   => (
-                is      => 'rw',
-                isa     => $ctype,
-            )
-        );
+
+        if ( $class =~ /Factory/ ) {
+            my $get_method = "get_".$name;
+            $instance = $instance->$get_method;
+        }
+
+        # some modules are factory types so we need to inspect what is returned
+        my $module_type = ref($instance);
+
+        $meta->add_attribute( $name => ( is => 'rw', isa => $module_type ) );
         $self->$name($instance);
+
+#         print "\t...$module_type built\n";
+        undef($instance);
     }
-    $self->cachedconfigs(\%cacheconfs);
-}
-
-sub get_config {
-    my $self    = shift;
-    my $name    = shift;
-    my $file    = shift;
-    my $conf    = $self->config;
-    my $paths   = $conf->{config_path};
-
-    # say "looking for $file in ".join(',',@$paths);
-
-    my $fqname;
-    find(sub {
-        if ( $_ eq $file ) {
-            $fqname = $File::Find::name;
-            return;
-        }
-    }, @$paths);
-
-    # say "found $fqname";
-
-    no strict 'refs'; # I know, but...
-    my $cont    = new Safe 'MCONFIG';
-    my $r       = $cont->rdo($fqname);
-    my $hname   = 'MCONFIG::environment';
-    my %copy    = %$hname;
-    my $href    = \%copy;
-
-    # say "loaded $name config: ", Dumper($href);
-
-    return $href;
 }
 
 =item C<get_timer(I<$title>)>
@@ -408,7 +407,7 @@ sub get_user {
     my $user    = $api->session('user');
 
     unless ( defined $user ) {
-        if ( $self->authmode eq "test" ) {
+        if ( $self->authtype eq "testing" ) {
             $self->log->debug("In authmod of test, setting username to test");
             $user   = "test";
         }
@@ -451,16 +450,4 @@ sub get_req_array {
     }
     return @tags;
 }
-
-sub get_config_item {
-    my $self        = shift;
-    my $module      = shift;
-    my $attribute   = shift;
-    my $mongo       = $self->mongo;
-    my $col         = $mongo->collection('Config');
-    my $obj         = $col->find_one({ module => $module });
-    my $item        = $obj->item;
-    return $item->{$attribute};
-}
-
 1;

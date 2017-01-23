@@ -1935,11 +1935,14 @@ sub build_limit {
 
 
     my $limit   = $params->{limit} // $json->{limit};
-    $self->env->log->debug("limit is ". $limit);
     if ( defined $limit ) {
         $log->debug("LIMIT of $limit detected");
         return $limit;
     }
+    else {
+        $self->env->log->debug("limit is undefined");
+    }
+
     return undef;
 }
 
