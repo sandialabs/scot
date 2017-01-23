@@ -25,8 +25,13 @@ sub startup {
     my $self    = shift;
     $self->mode('development'); # remove when in prod
 
+    my $config_paths = [split(':',$ENV{'scot_config_paths'})] //['../../etc/'];
+    my $config_file  = $ENV{'scot_config_file'} // "scot_env.cfg";
 
-    my $env     = Scot::Env->new();
+    my $env     = Scot::Env->new(
+        config_file => $config_file,
+        paths       => $config_paths,
+    );
     $self->attr     ( env => sub { $env } );
     $self->helper   ( env => sub { shift->app->env } );
     $| = 1;
@@ -38,8 +43,10 @@ sub startup {
     $self->log($log);
     $self->log_startup($log);
 
-    $self->secrets( $env->mojo->{secrets} );
-    $self->sessions->default_expiration( $env->mojo->{default_expiration} );
+    $self->secrets( $env->mojo_defaults->{secrets} );
+    $self->sessions->default_expiration( 
+        $env->mojo_defaults->{default_expiration} 
+    );
     $self->sessions->secure(1);
 
 
