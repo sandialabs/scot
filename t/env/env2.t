@@ -4,7 +4,7 @@ use lib '../../lib';
 
 use Test::More;
 use Test::Deep;
-use Scot::Env2;
+use Scot::Env;
 use Data::Dumper;
 use v5.18;
 
@@ -12,7 +12,7 @@ use v5.18;
 my $configfile  = 'scot_env.cfg';
 my $paths       = [ qw(./configs) ];
 
-my $env     = Scot::Env2->new(
+my $env     = Scot::Env->new(
     config_file              => $configfile,
     paths                    => $paths,
 );
