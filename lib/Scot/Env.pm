@@ -245,7 +245,7 @@ sub _build_modules {
         },
         {
             attr    => "mongo",
-            class   => "Scot::Util::Mongo",
+            class   => "Scot::Util::MongoFactory",
             config  => "mongo.cfg",
         },
         {
