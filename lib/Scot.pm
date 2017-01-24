@@ -25,7 +25,10 @@ sub startup {
     my $self    = shift;
     $self->mode('development'); # remove when in prod
 
-    my $config_paths = [split(':',$ENV{'scot_config_paths'})] //['../../etc/'];
+    my $config_paths = [ '../../etc' ];
+    if ( defined $ENV{'scot_config_paths'} ) {
+        $config_paths = [ split(':', $ENV{'scot_config_paths'}) ];
+    }
     my $config_file  = $ENV{'scot_config_file'} // "scot_env.cfg";
 
     my $env     = Scot::Env->new(
