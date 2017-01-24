@@ -89,7 +89,7 @@ sub _build_paths {
 
     unless ( defined $default ) {
         $self->feedback("using default path of /opt/scot/etc");
-        return [ '../..' ]; # a reasonable default
+        return [ '/opt/scot/etc' ]; # a reasonable default
     }
     my @paths   = split(/:/, $default);
     $self->feedback("using env scot_config_paths ".join(':',@paths));
