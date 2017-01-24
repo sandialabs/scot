@@ -18,7 +18,7 @@ var EntityDetail      = require('../modal/entity_detail.jsx')
 var AMQ             = require('../debug-components/amq.jsx');
 var Wall            = require('../debug-components/wall.jsx');
 var Search          = require('../components/esearch.jsx');
-var Visualization   = require('../components/dashboard/visualization.jsx');
+var Revl            = require('../components/visualization/js/revl.js');
 var Gamification    = require('../components/dashboard/gamification.jsx');
 var Status           = require('../components/dashboard/status.jsx');
 var Online          = require('../components/dashboard/online.jsx');
@@ -413,7 +413,7 @@ var App = React.createClass({
                             <NavItem eventKey={5} href="#/guide" active={setguide}>Guide</NavItem>
                             <NavItem eventKey={6} href="#/intel" active={setintel}>Intel</NavItem>
                             {/*<NavItem eventKey={7} href="#/signature" active={setsignature} disabled>Signature</NavItem>*/}
-                            {/*<NavItem eventKey={8} href="#/visualization" active={setvisualization}>Visualization</NavItem>*/}
+                            <NavItem eventKey={8} href="#/visualization" active={setvisualization}>Visualization</NavItem>
                             <NavItem eventKey={9} href="incident_handler">{IH}</NavItem>
                         </Nav>
                             <span id='ouo_warning' className='ouo-warning'>{sensitivity}</span>
@@ -467,7 +467,7 @@ var App = React.createClass({
                     :
                     null}
                     {this.state.set == 8 ?
-                        <Visualization value={this.props.params.value} type={this.props.params.id} id={this.props.params.type} depth={this.props.params.typeid} viewMode={this.state.viewMode} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} errorToggle={this.errorToggle}/> 
+                        <Revl value={this.props.params.value} type={this.props.params.id} id={this.props.params.type} depth={this.props.params.typeid} viewMode={this.state.viewMode} Notification={this.state.Notification} />
                     :
                     null}
                     {this.state.set == 98 ?
