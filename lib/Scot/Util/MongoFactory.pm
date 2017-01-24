@@ -69,6 +69,7 @@ sub _build_find_master {
 }
     
 # this is a factory object, returns a Meerkat, not a Scot::Util::Mongo
+# Env.pm detects Factory in the package name and looks for get_{attr_name}
 sub get_mongo {
     my $self    = shift;
     my $meerkat = Meerkat->new(
