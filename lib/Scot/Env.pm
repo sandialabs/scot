@@ -112,7 +112,7 @@ has group_mode    => (
 
 sub _build_group_mode {
     my $self    = shift;
-    my $attr    = "mode";
+    my $attr    = "group_mode";
     my $default = "Local";
     return $self->get_config_value($attr,$default);
 }
@@ -297,7 +297,7 @@ has log => (
 sub _build_log {
     my $self    = shift;
     my $attr    = "log_config";
-    my $default = "/opt/scot/etc/log.cfg";
+    my $default = "logger.cfg";
     my $cfile   = $self->get_config_value($attr, $default);
     my $logfactory = Scot::Util::LoggerFactory->new(
         config_file => $cfile,
