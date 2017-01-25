@@ -244,7 +244,7 @@ sub get_users_groups {
     my $ldap    = $self->ldap; 
     my @groups  = ();
     
-    my $server          = $self->hostname;
+    my $server          = $self->servername;
     my $binddn          = $self->dn;
     my $bindpassword    = $self->password;
     my $scheme          = $self->scheme;
