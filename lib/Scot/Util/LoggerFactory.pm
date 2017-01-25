@@ -85,6 +85,11 @@ sub _build_log_level {
     return $self->get_config_value($attr,$default);
 }
 
+sub get_log {
+    # not being consistent sux`
+    my $self    = shift;
+    return $self->get_logger;
+}
 # factory object, creates a Log::Log4perl not a Scot::Util::Log
 sub get_logger {
     my $self    = shift;
