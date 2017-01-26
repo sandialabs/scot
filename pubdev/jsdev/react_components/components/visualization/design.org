@@ -1,0 +1,259 @@
+* About it
+  REVL (Read-Eval-Viz-Loop) is a tool to help users explore SCOT data
+  visually. Its purpose is mainly to make it easy to define a mapping
+  between data from SCOT and some kind of useful presentation of that
+  data that might reveal something intersting. REVL provides a lot of
+  visualization primitives, and provides a lot of combinators and
+  tools to frob the data into a form that fits in the visualizations.
+
+* Visualizations
+  The purpose of a visualization is to take a lot of data and put it
+  into a format that reveals some kind of relationship or pattern that
+  would be hard to see otherwise. A lot of the time, this will boil
+  down to "I want to graph f(event) against g(system_state) as a line
+  chart..." or "I want to see how many X's happened per minute for the
+  last month..." 
+
+  The visualizations are interactive data views that have simple input
+  requirements and provide simple outputs based on user
+  interactions. Visualization inputs are unaware of the source data
+  used to populate them. Instead, the user has a collection of
+  combinators that can be applied to the data in order to transform it
+  into something the viz can work with. For example, a line chart viz
+  wants to have a set of (x,y) coordinates with attached data. A user
+  might want to do the following: 
+  1. Bin the events for a given host IP by the day they occurred on
+  2. Count the events for each day
+  3. make a line chart for each host, where the event count is the y
+     axis and the day is the x axis
+
+  This should be as easy as writing a combinator like this:
+
+  traces = {}
+  for host in get_events().group(\e -> e.hostname):
+      trace = ((day_of_year(day.name), len(day.items)) for day in host.items.group(\e -> e.day))
+      traces[host.name] = trace
+
+** List of visualization primitives
+*** DONE barchart
+*** DONE linechart
+*** DONE polygon grid
+*** DONE voronoi diagram
+*** voronoi treemap
+*** venn diagram
+*** DONE nodes and links network
+*** scatter plot
+*** DONE heatmap
+*** GIS basics
+* Interactivity
+  The visualizations will be much more useful if they can be used in a
+  back-and-forth way with the data stream. The system needs to have a
+  concept of a selection set, which is the source for the data going
+  in to the visualization. I want the user to be able to use the
+  visualization itself as a filter that can be piped back into the
+  analysis pipeline. The reason for this is that it allows the user to
+  quickly identify patterns that are apparent in gestalt but are
+  either hard to encode in a simple filter expression or are not
+  apparent without the visual representation.
+
+  The system doesn't have to manually track this stuff, for now I can
+  leave it up to the users to add breadcrumbs for themselves to the
+  data packets that are sent to the visualizations. The vizualizations
+  then only have to make it possible to get their inputs back out as a
+  new selection set. That way a user could select two of the host
+  traces, run the events contained through a new filter, and generate
+  a treemap of event types for just those hosts, for example.
+
+  The treemap would then let the user select some subset of regions
+  and use that for the next viz, etc etc. 
+
+  The real trick is going to be in coming up with a concise, intuitive
+  way to express the data transformation operations so that it's not a
+  huge pain to play with it.
+
+** Practical approach
+   The graphics area has a graphics object associated with it. The
+   graphics object contains a set of polygons, images, axes, and
+   labels, and it also has the input data that was used to generate
+   it. Each polygon keeps its own input data reference as well.
+
+   The visualizations should allow the user to manipulate the visual
+   model, whcih should be kept in that graphics object format. The
+   visual model object should be accessible from the command shell, so
+   that after the user has manipulated it graphically, they can
+   transform it back into data and process it further. This approach
+   will give users quite a bit of back-and-forth flexibility to filter
+   and arrange the data.
+
+* Data transformations
+  Here are some basic types of operations that will need to happen
+  frequently:
+  1. Transform some data atom into some other format (e.g. parse a
+     date into a day-of-year integer) - this is basically a library of
+     parsers
+  2. Filter elements out of a list
+  3. Group elements in a list into sublists by arbitrary expression
+  4. map a transformation across every element of a list
+  5. reduce a list into something else by consuming the list and
+     building up an accumulator
+  7. sort a list by an arbitrary expression
+
+  I need to have some kind of intermediate visualization that can show
+  the user what they have so far as they build up a full
+  transformation chain. The continuous feedback about what is included
+  and what is removed will be very helpful for making the filter work
+  right.
+
+#+begin_src coffee
+  isArray = Array.isArray || (value) -> return {}.toString.call(value) is '[object Array]'
+
+  retn = (x) -> if isArray x then new Listish x else new Structish x
+
+  class Structish
+      constructor: (@items) ->
+      map: (proc) ->
+          result = proc @item
+          retn result
+    
+  class Listish
+      constructor: (@items) ->
+      map: (proc) -> retn (proc item for item in @items)
+            
+      filter: (proc) -> retn (item for item in @items when proc item)
+            
+      foldl: (val, proc) ->
+          acc = val
+          for item in @items
+              console.log acc
+              acc = proc item,acc
+          retn acc
+        
+      foldr: (val, proc) ->
+          acc = val
+          for item in @items.reverse()
+              acc = proc item,acc
+          retn acc
+        
+      group: (proc) ->
+          grps = @foldl {},((item,groups)->
+              if groups[proc item]
+                  groups[proc item].push item
+              else
+                  groups[proc item] = [item]
+              groups)
+          retn ({name: k, items:v} for k,v of grps.items)
+        
+      zip: (other) ->
+          acc = []
+          l1 = @items
+          l2 = other
+          if l1.length > other.length
+              l1 = other
+              l2 = @items
+          for item in [0...l1.length]
+              acc.push [l1[item],other[item]]
+          retn acc
+
+      flatten: -> @foldl [], (val,acc) -> acc.concat val
+        
+  foo = retn [[1,1,1],[2,2,2],[3,3,3]]
+  vals = foo.map ((l) -> (n*2 for n in l))
+      .map ((l)->(n*2 for n in l))
+      .group ((n) -> n[0])
+      .map ((g) -> g.items)
+      .filter ((l) -> l[0].length > 1)
+      .flatten()
+      .zip ['a','b','c']
+      .flatten()
+    
+  console.log vals
+  console.log vals.items
+#+end_src
+
+  This syntax seems to work pretty well. What the user will want is a
+  way to incrementally build up these transformation chains while
+  being able to see the results as they work. The coffeescript REPL
+  works well for this, and it would be even better if it was connected
+  to a constantly-updating display of the output, pretty-printed to
+  make it easy for the user to see what the data looks like at each
+  stage of the pipeline. At the end, they should have an expression
+  that massages the data into what they want to send to the
+  visualization (which they will know because the viz will tell
+  them). They can then apply the expression for real and view the
+  result. If it's useful, they can save it with a name and reuse it
+  later.
+
+* Snapshots
+  It would be nice to be able to save selection sets for future reuse,
+  so that new threads of investigation can be taken up and then
+  returned from. It would also be very useful to have basic set
+  operations on selection sets - union, difference, etc. 
+
+  Set operations will be drastically complicated by the fact that the
+  elements of the sets will have different structure based on the pipe
+  they passed through on the way to being in the set. The set
+  operations should therefore accept an expression or closure as the
+  test for equality between elements, so that the user can say "union
+  these sets as if they are keyed by host name".
+
+* Streaming
+  There are two cases where I'd want to support lazy evaluation or
+  streaming.
+  1. Real-time data - if I want a viz to show me things as they are
+     happening I need something that can block until something
+     happens. Lazy evaluation would make this easy.
+  2. Very large queries - if a user wants to distill a billion events
+     down to a visualization like a heatmap, it would be crazy to try
+     to put all of the events in memory at the same time. They should
+     be streamed through.
+
+  I think I could implement the entire combinator/transform/viz
+  platform in terms of iterators that return futures, and the data
+  would then be lazy by default. The input query functions that fetch
+  from the database woudl have to do batch-queries in the background,
+  but from that point forward the futures would just handle the
+  situation without the user having to worry about it.
+
+* Windowing
+  For some visualizations, it would be extremely useful to be able to
+  apply a window function to the data that is displayed. In
+  particular, if the window is configurable through the data pipeline,
+  then the visualization could be set up to keep up with real time
+  data or focus in on particular sub-ranges as the user chooses. This
+  suggests that a visualization should have some metadata beyond just
+  what the actual displayed data needs to be. 
+
+* type-based integration
+  It looks like most of the data coming in is from a relatively fixed
+  set of event detectors. There will be a number of hits with the same
+  title that differ only on interior content. These seem like good
+  candidates for a summary visualization, especially if it can operate
+  in real time.
+
+  The idea is that the events are organized by kind, and within each
+  kind there is a visualization of the relevant data that the analyst
+  uses to classify the events. For example, say there is a server that
+  is constantly setting off SQL injection alerts on a particular
+  endpoint. This would show up as a concise region of the viz, and the
+  user would be able to handle these events in bulk. If they are all
+  within the parameters defined as an "ignore" event, they would all
+  be linked together and closed with a single user action. Further
+  instances would accumulate again in the viz, but would not require
+  individual attention. Later, this set of criteria could be encoded
+  into an automatic rule so that no user intervention is required.
+
+  Clustering events by type seems to be a piece of low hanging fruit
+  here, particularly if they coudl be further broken down recursively
+  according to interior data in a way that the analyst chooses. A
+  treemap interface seems appropraite for this example, maybe with a
+  windowed line-graph showing the activity for each cell over time to
+  detect spikes or lulls.
+
+  A plain hierarchical list like a file tree would probably work just
+  as well as a graphical visualization here, at least for categorizing
+  the data by headline. The only advantage of a graphical version is
+  that it could be left running in real-time mode and likely give a
+  more sensible idea of the current state of things. The sub-classes
+  could have their own multi-dimensional time traces to highlight
+  things like the number of distinct hosts involved over time, or the
+  frequency of events over time.
