@@ -45,13 +45,17 @@ sub check {
     }
 
 
-    # $log->debug("headers = ".Dumper($headers));
+    $log->debug("headers = ".Dumper($headers));
 
     my $basicauth   = $headers->header('authorization');
     my $authuser    = $headers->header('authuser');
+    my $user        = $self->session('user');
+    $log->debug("Session user is         ", {filter =>\&Dumper, value =>$user});
+    $log->debug("Header authuser is      ", {filter =>\&Dumper, value =>$authuser});
+    $log->debug("Header authorization is ", {filter => \&Dumper, value => $basicauth});
 
-    my $user    = $self->session('user');
-    $log->debug("Session user is ", {filter =>\&Dumper, value =>$user});
+
+
     my $groups  = $self->session('groups');
 
     unless (ref($groups) eq "ARRAY") {
