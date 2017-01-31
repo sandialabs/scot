@@ -47,10 +47,10 @@ var SafeAnchor = function (_React$Component) {
   }
 
   SafeAnchor.prototype.handleClick = function handleClick(event) {
-    var _props = this.props;
-    var disabled = _props.disabled;
-    var href = _props.href;
-    var onClick = _props.onClick;
+    var _props = this.props,
+        disabled = _props.disabled,
+        href = _props.href,
+        onClick = _props.onClick;
 
 
     if (disabled || isTrivialHref(href)) {
@@ -68,17 +68,16 @@ var SafeAnchor = function (_React$Component) {
   };
 
   SafeAnchor.prototype.render = function render() {
-    var _props2 = this.props;
-    var Component = _props2.componentClass;
-    var disabled = _props2.disabled;
-
-    var props = _objectWithoutProperties(_props2, ['componentClass', 'disabled']);
+    var _props2 = this.props,
+        Component = _props2.componentClass,
+        disabled = _props2.disabled,
+        props = _objectWithoutProperties(_props2, ['componentClass', 'disabled']);
 
     if (isTrivialHref(props.href)) {
       props.role = props.role || 'button';
       // we want to make sure there is a href attribute on the node
       // otherwise, the cursor incorrectly styled (except with role='button')
-      props.href = props.href || '';
+      props.href = props.href || '#';
     }
 
     if (disabled) {

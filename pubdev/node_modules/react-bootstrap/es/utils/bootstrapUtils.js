@@ -148,8 +148,8 @@ function isBsProp(propName) {
 export function splitBsProps(props) {
   var elementProps = {};
   _Object$entries(props).forEach(function (_ref) {
-    var propName = _ref[0];
-    var propValue = _ref[1];
+    var propName = _ref[0],
+        propValue = _ref[1];
 
     if (!isBsProp(propName)) {
       elementProps[propName] = propValue;
@@ -167,8 +167,8 @@ export function splitBsPropsAndOmit(props, omittedPropNames) {
 
   var elementProps = {};
   _Object$entries(props).forEach(function (_ref2) {
-    var propName = _ref2[0];
-    var propValue = _ref2[1];
+    var propName = _ref2[0],
+        propValue = _ref2[1];
 
     if (!isBsProp(propName) && !isOmittedProp[propName]) {
       elementProps[propName] = propValue;

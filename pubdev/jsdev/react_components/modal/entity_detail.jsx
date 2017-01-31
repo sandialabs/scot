@@ -9,6 +9,11 @@ var SelectedEntry           = require('../detail/selected_entry.jsx');
 var AddEntry                = require('../components/add_entry.jsx');
 var Draggable               = require('react-draggable');
 
+var startX;
+var startY;
+var startWidth;
+var startHeight;
+
 
 var EntityDetail = React.createClass({
     getInitialState: function() {
@@ -157,7 +162,7 @@ var EntityDetail = React.createClass({
                                 } else {
                                     var array = this.state.processedIds;
                                     var addEntity = true;
-                                    for (i=0; i < array.length; i++) {
+                                    for (var i=0; i < array.length; i++) {
                                         if (array[i] == nextPropsEntityIdInt) { // Check if entity is already being processed so we don't show it twice
                                             addEntity = false;
                                         } 
@@ -259,7 +264,7 @@ var EntityDetail = React.createClass({
             }
             tabsArr.push(<Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} valueClicked={this.state.tabs[i].valueClicked} i={z} key={z} errorToggle={this.props.errorToggle}/></Tab>)
         }
-        if (this.state.defaultEntityOffset) {
+        if (this.state.defaultEntityOffset && this.state.entityobj) {
             var positionBottomBoundsValue = this.positionBottomBoundsCheck();
             var positionRightBoundsValue = this.positionRightBoundsCheck();
             if (positionBottomBoundsValue < 0 ) {
@@ -279,8 +284,8 @@ var EntityDetail = React.createClass({
             }
             
         } else {
-            defaultOffsetY = '50';
-            defaultOffsetX = '0';
+            defaultOffsetY = 50;
+            defaultOffsetX = 0;
         }
         return (
             <Draggable handle="#handle" onMouseDown={this.moveDivInit} key={this.props.key} defaultPosition={{x:defaultOffsetX, y:defaultOffsetY}}>
@@ -309,7 +314,7 @@ var TabContents = React.createClass({
             return (
                 <div className='tab-content'>
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
-                        <h4 id="myModalLabel">{this.props.data != null ? <EntityValue value={this.props.valueClicked}/> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>
+                        <h4 id="myModalLabel">{this.props.data != null ? <EntityValue value={this.props.valueClicked} data={this.props.data}/> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>
                     </div>
                     <div style={{height:'100%',display:'flex', flex:'1 1 auto', marginLeft:'10px', flexFlow:'inherit', minHeight:'1px'}}>
                     {this.props.data != null ? <EntityBody data={this.props.data} entityid={this.props.entityid} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/> : <div>Loading...</div>}
@@ -334,9 +339,15 @@ var TabContents = React.createClass({
 
 var EntityValue = React.createClass({
     render: function() {
-        return (
-            <div className='flair_header'>{this.props.value}</div>
-        )
+        if (this.props.data != undefined) {  //Entity Detail Popup showing the entity type
+            return (
+                <div className='flair_header'>{this.props.data.type}: {this.props.value}</div>
+            )
+        } else {                            //Guide Detail Popup showing the name of the guide that is being applied to
+            return (
+                <div className='flair_header'>{this.props.value}</div>
+            )
+        }
     }
 });
 
@@ -705,7 +716,7 @@ var ReferencesBody = React.createClass({
             success: function(result) {
                 var entryResult = result.records;
                 var summary = false;
-                for (i=0; i < entryResult.length; i++) {
+                for (var i=0; i < entryResult.length; i++) {
                     if (entryResult[i].class == 'summary') {
                         summary = true;
                         if (this.isMounted) {

@@ -276,23 +276,21 @@ var Modal = function (_React$Component) {
   Modal.prototype.render = function render() {
     var _this2 = this;
 
-    var _props = this.props;
-    var backdrop = _props.backdrop;
-    var animation = _props.animation;
-    var show = _props.show;
-    var Dialog = _props.dialogComponentClass;
-    var className = _props.className;
-    var style = _props.style;
-    var children = _props.children;
-    var onEntering = _props.onEntering;
-    var onExited = _props.onExited;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['backdrop', 'animation', 'show', 'dialogComponentClass', 'className', 'style', 'children', 'onEntering', 'onExited']);
+    var _props = this.props,
+        backdrop = _props.backdrop,
+        animation = _props.animation,
+        show = _props.show,
+        Dialog = _props.dialogComponentClass,
+        className = _props.className,
+        style = _props.style,
+        children = _props.children,
+        onEntering = _props.onEntering,
+        onExited = _props.onExited,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['backdrop', 'animation', 'show', 'dialogComponentClass', 'className', 'style', 'children', 'onEntering', 'onExited']);
 
-    var _splitComponentProps = (0, _splitComponentProps3['default'])(props, _Modal2['default']);
-
-    var baseModalProps = _splitComponentProps[0];
-    var dialogProps = _splitComponentProps[1];
-
+    var _splitComponentProps = (0, _splitComponentProps3['default'])(props, _Modal2['default']),
+        baseModalProps = _splitComponentProps[0],
+        dialogProps = _splitComponentProps[1];
 
     var inClassName = show && !animation && 'in';
 

@@ -28,19 +28,16 @@ var ModalDialog = function (_React$Component) {
   ModalDialog.prototype.render = function render() {
     var _extends2;
 
-    var _props = this.props;
-    var dialogClassName = _props.dialogClassName;
-    var className = _props.className;
-    var style = _props.style;
-    var children = _props.children;
+    var _props = this.props,
+        dialogClassName = _props.dialogClassName,
+        className = _props.className,
+        style = _props.style,
+        children = _props.children,
+        props = _objectWithoutProperties(_props, ['dialogClassName', 'className', 'style', 'children']);
 
-    var props = _objectWithoutProperties(_props, ['dialogClassName', 'className', 'style', 'children']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var bsClassName = prefix(bsProps);
 

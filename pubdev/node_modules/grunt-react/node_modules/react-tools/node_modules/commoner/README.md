@@ -1,4 +1,4 @@
-Commoner [![Build Status](https://travis-ci.org/reactjs/commoner.png?branch=master)](https://travis-ci.org/reactjs/commoner)
+Commoner [![Build Status](https://travis-ci.org/benjamn/commoner.png?branch=master)](https://travis-ci.org/benjamn/commoner)
 ---
 
 Commoner makes it easy to write scripts that flexibly and efficiently
