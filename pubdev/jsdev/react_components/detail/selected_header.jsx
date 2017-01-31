@@ -1,5 +1,5 @@
 var React                   = require('react');
-var ReactTime               = require('react-time');
+var ReactTime               = require('react-time').default;
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
 var DeleteEvent             = require('../modal/delete.jsx').DeleteEvent;
 var Owner                   = require('../modal/owner.jsx');
@@ -282,7 +282,7 @@ var SelectedHeader = React.createClass({
     viewedbyfunc: function(headerData) {
         var viewedbyarr = [];
         if (headerData != null) {
-            for (prop in headerData.view_history) {
+            for (var prop in headerData.view_history) {
                 viewedbyarr.push(prop);
             };
         }
@@ -536,7 +536,7 @@ var SelectedHeader = React.createClass({
 
 var EntryDataUpdated = React.createClass({
     render: function() {
-        data = this.props.data;
+        var data = this.props.data;
         return (
             <div><ReactTime value={data * 1000} format="MM/DD/YY hh:mm:ss a" /></div>
         )
@@ -750,7 +750,7 @@ var PromotedData = React.createClass({
             promotedFromType = 'event'
         }
         //makes large array for modal
-        for (i=0; i < this.props.data.length; i++) {
+        for (var i=0; i < this.props.data.length; i++) {
             if (i > 0) {fullarr.push(<div> , </div>)}
             var link = '/#/' + promotedFromType + '/' + this.props.data[i];
             fullarr.push(<div><a href={link}>{this.props.data[i]}</a></div>)
@@ -759,7 +759,7 @@ var PromotedData = React.createClass({
         if (this.props.data.length < 3 ) {
             shortforlength = this.props.data.length;
         }
-        for (i=0; i < shortforlength; i++) {
+        for (var i=0; i < shortforlength; i++) {
             if (i > 0) {shortarr.push(<div> , </div>)}
             var link = '/#/' + promotedFromType + '/' + this.props.data[i];
             shortarr.push(<div><a href={link}>{this.props.data[i]}</a></div>)

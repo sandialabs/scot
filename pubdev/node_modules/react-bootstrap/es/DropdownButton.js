@@ -33,19 +33,16 @@ var DropdownButton = function (_React$Component) {
   }
 
   DropdownButton.prototype.render = function render() {
-    var _props = this.props;
-    var bsSize = _props.bsSize;
-    var bsStyle = _props.bsStyle;
-    var title = _props.title;
-    var children = _props.children;
+    var _props = this.props,
+        bsSize = _props.bsSize,
+        bsStyle = _props.bsStyle,
+        title = _props.title,
+        children = _props.children,
+        props = _objectWithoutProperties(_props, ['bsSize', 'bsStyle', 'title', 'children']);
 
-    var props = _objectWithoutProperties(_props, ['bsSize', 'bsStyle', 'title', 'children']);
-
-    var _splitComponentProps = splitComponentProps(props, Dropdown.ControlledComponent);
-
-    var dropdownProps = _splitComponentProps[0];
-    var toggleProps = _splitComponentProps[1];
-
+    var _splitComponentProps = splitComponentProps(props, Dropdown.ControlledComponent),
+        dropdownProps = _splitComponentProps[0],
+        toggleProps = _splitComponentProps[1];
 
     return React.createElement(
       Dropdown,

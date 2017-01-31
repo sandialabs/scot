@@ -70,10 +70,6 @@ var Panel = function (_React$Component) {
     }
   };
 
-  Panel.prototype.shouldRenderFill = function shouldRenderFill(child) {
-    return React.isValidElement(child) && child.props.fill != null;
-  };
-
   Panel.prototype.renderHeader = function renderHeader(collapsible, header, id, role, expanded, bsProps) {
     var titleClassName = prefix(bsProps, 'title');
 
@@ -110,7 +106,8 @@ var Panel = function (_React$Component) {
         onClick: this.handleClickTitle,
         'aria-controls': id,
         'aria-expanded': expanded,
-        'aria-selected': expanded
+        'aria-selected': expanded,
+        className: expanded ? null : 'collapsed'
       },
       header
     );
@@ -174,30 +171,27 @@ var Panel = function (_React$Component) {
   };
 
   Panel.prototype.render = function render() {
-    var _props = this.props;
-    var collapsible = _props.collapsible;
-    var header = _props.header;
-    var id = _props.id;
-    var footer = _props.footer;
-    var propsExpanded = _props.expanded;
-    var headerRole = _props.headerRole;
-    var panelRole = _props.panelRole;
-    var className = _props.className;
-    var children = _props.children;
-    var onEnter = _props.onEnter;
-    var onEntering = _props.onEntering;
-    var onEntered = _props.onEntered;
-    var onExit = _props.onExit;
-    var onExiting = _props.onExiting;
-    var onExited = _props.onExited;
+    var _props = this.props,
+        collapsible = _props.collapsible,
+        header = _props.header,
+        id = _props.id,
+        footer = _props.footer,
+        propsExpanded = _props.expanded,
+        headerRole = _props.headerRole,
+        panelRole = _props.panelRole,
+        className = _props.className,
+        children = _props.children,
+        onEnter = _props.onEnter,
+        onEntering = _props.onEntering,
+        onEntered = _props.onEntered,
+        onExit = _props.onExit,
+        onExiting = _props.onExiting,
+        onExited = _props.onExited,
+        props = _objectWithoutProperties(_props, ['collapsible', 'header', 'id', 'footer', 'expanded', 'headerRole', 'panelRole', 'className', 'children', 'onEnter', 'onEntering', 'onEntered', 'onExit', 'onExiting', 'onExited']);
 
-    var props = _objectWithoutProperties(_props, ['collapsible', 'header', 'id', 'footer', 'expanded', 'headerRole', 'panelRole', 'className', 'children', 'onEnter', 'onEntering', 'onEntered', 'onExit', 'onExiting', 'onExited']);
-
-    var _splitBsPropsAndOmit = splitBsPropsAndOmit(props, ['defaultExpanded', 'eventKey', 'onSelect']);
-
-    var bsProps = _splitBsPropsAndOmit[0];
-    var elementProps = _splitBsPropsAndOmit[1];
-
+    var _splitBsPropsAndOmit = splitBsPropsAndOmit(props, ['defaultExpanded', 'eventKey', 'onSelect']),
+        bsProps = _splitBsPropsAndOmit[0],
+        elementProps = _splitBsPropsAndOmit[1];
 
     var expanded = propsExpanded != null ? propsExpanded : this.state.expanded;
 

@@ -19,7 +19,7 @@ var Source = React.createClass({
         var type = this.props.type;
         var data = this.props.data;
         if (data != undefined) {
-            for (i=0; i < data.length; i++) {
+            for (var i=0; i < data.length; i++) {
                 rows.push(<SourceDataIterator data={data} dataOne={data[i]} id={id} type={type} updated={this.props.updated} />);
             }
         }
@@ -37,7 +37,7 @@ var SourceDataIterator = React.createClass({
     sourceDelete: function() {
         var data = this.props.data;
         var newSourceArr = [];
-        for (i=0; i < data.length; i++) {
+        for (var i=0; i < data.length; i++) {
             if (data[i] != undefined) {
                 if (typeof(data[i]) == 'string') {
                     if (data[i] != this.props.dataOne) {
@@ -63,7 +63,7 @@ var SourceDataIterator = React.createClass({
         });
     },
     render: function() {
-        dataOne = this.props.dataOne;
+        var dataOne = this.props.dataOne;
         var value;
         if (typeof(dataOne) == 'string') {
             value = dataOne;
@@ -87,7 +87,7 @@ var NewSource = React.createClass({
     handleAddition: function(source) {
         var newSourceArr = [];
         var data = this.props.data;
-        for (i=0; i < data.length; i++) {
+        for (var i=0; i < data.length; i++) {
             if (data[i] != undefined) {
                 if(typeof(data[i]) == 'string') {
                     newSourceArr.push(data[i]);
@@ -116,7 +116,7 @@ var NewSource = React.createClass({
         var arr = [];
         this.serverRequest = $.get('/scot/api/v2/ac/source/' + input, function (result) {
             var result = result.records;
-            for (i=0; i < result.length; i++) {
+            for (var i=0; i < result.length; i++) {
                 arr.push(result[i].value)
             }
             this.setState({suggestions:arr})

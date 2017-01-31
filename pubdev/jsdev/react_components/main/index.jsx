@@ -24,6 +24,7 @@ var Status           = require('../components/dashboard/status.jsx');
 var Online          = require('../components/dashboard/online.jsx');
 var Stats           = require('../components/dashboard/stats.jsx');
 var Notification    = require('react-notification-system');
+var SignatureTable  = require('../components/signature_table.jsx');
 var sethome = false
 var setalerts = false
 var setevents = false
@@ -412,7 +413,7 @@ var App = React.createClass({
                             <NavItem eventKey={4} href="#/task" active={settask}>Task</NavItem>
                             <NavItem eventKey={5} href="#/guide" active={setguide}>Guide</NavItem>
                             <NavItem eventKey={6} href="#/intel" active={setintel}>Intel</NavItem>
-                            {/*<NavItem eventKey={7} href="#/signature" active={setsignature} disabled>Signature</NavItem>*/}
+                            <NavItem eventKey={7} href="#/signature" active={setsignature} disabled>Signature</NavItem>
                             <NavItem eventKey={8} href="#/visualization" active={setvisualization}>Visualization</NavItem>
                             <NavItem eventKey={9} href="incident_handler">{IH}</NavItem>
                         </Nav>
@@ -463,7 +464,7 @@ var App = React.createClass({
                     :
                     null}
                     {this.state.set == 7 ?
-                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'signature'} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/> 
+                        <SignatureTable type={'signature'} id={1}/> 
                     :
                     null}
                     {this.state.set == 8 ?

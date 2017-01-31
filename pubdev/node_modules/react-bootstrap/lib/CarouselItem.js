@@ -125,13 +125,13 @@ var CarouselItem = function (_React$Component) {
   };
 
   CarouselItem.prototype.render = function render() {
-    var _props = this.props;
-    var direction = _props.direction;
-    var active = _props.active;
-    var animateIn = _props.animateIn;
-    var animateOut = _props.animateOut;
-    var className = _props.className;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['direction', 'active', 'animateIn', 'animateOut', 'className']);
+    var _props = this.props,
+        direction = _props.direction,
+        active = _props.active,
+        animateIn = _props.animateIn,
+        animateOut = _props.animateOut,
+        className = _props.className,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['direction', 'active', 'animateIn', 'animateOut', 'className']);
 
 
     delete props.onAnimateOutEnd;
