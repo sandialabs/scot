@@ -19,16 +19,13 @@ var Well = function (_React$Component) {
   }
 
   Well.prototype.render = function render() {
-    var _props = this.props;
-    var className = _props.className;
+    var _props = this.props,
+        className = _props.className,
+        props = _objectWithoutProperties(_props, ['className']);
 
-    var props = _objectWithoutProperties(_props, ['className']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = getClassSet(bsProps);
 

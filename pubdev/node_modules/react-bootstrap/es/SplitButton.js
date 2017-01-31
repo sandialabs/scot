@@ -43,20 +43,17 @@ var SplitButton = function (_React$Component) {
   }
 
   SplitButton.prototype.render = function render() {
-    var _props = this.props;
-    var bsSize = _props.bsSize;
-    var bsStyle = _props.bsStyle;
-    var title = _props.title;
-    var toggleLabel = _props.toggleLabel;
-    var children = _props.children;
+    var _props = this.props,
+        bsSize = _props.bsSize,
+        bsStyle = _props.bsStyle,
+        title = _props.title,
+        toggleLabel = _props.toggleLabel,
+        children = _props.children,
+        props = _objectWithoutProperties(_props, ['bsSize', 'bsStyle', 'title', 'toggleLabel', 'children']);
 
-    var props = _objectWithoutProperties(_props, ['bsSize', 'bsStyle', 'title', 'toggleLabel', 'children']);
-
-    var _splitComponentProps = splitComponentProps(props, Dropdown.ControlledComponent);
-
-    var dropdownProps = _splitComponentProps[0];
-    var buttonProps = _splitComponentProps[1];
-
+    var _splitComponentProps = splitComponentProps(props, Dropdown.ControlledComponent),
+        dropdownProps = _splitComponentProps[0],
+        buttonProps = _splitComponentProps[1];
 
     return React.createElement(
       Dropdown,

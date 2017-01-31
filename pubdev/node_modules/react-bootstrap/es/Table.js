@@ -36,21 +36,18 @@ var Table = function (_React$Component) {
   Table.prototype.render = function render() {
     var _extends2;
 
-    var _props = this.props;
-    var striped = _props.striped;
-    var bordered = _props.bordered;
-    var condensed = _props.condensed;
-    var hover = _props.hover;
-    var responsive = _props.responsive;
-    var className = _props.className;
+    var _props = this.props,
+        striped = _props.striped,
+        bordered = _props.bordered,
+        condensed = _props.condensed,
+        hover = _props.hover,
+        responsive = _props.responsive,
+        className = _props.className,
+        props = _objectWithoutProperties(_props, ['striped', 'bordered', 'condensed', 'hover', 'responsive', 'className']);
 
-    var props = _objectWithoutProperties(_props, ['striped', 'bordered', 'condensed', 'hover', 'responsive', 'className']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = _extends({}, getClassSet(bsProps), (_extends2 = {}, _extends2[prefix(bsProps, 'striped')] = striped, _extends2[prefix(bsProps, 'bordered')] = bordered, _extends2[prefix(bsProps, 'condensed')] = condensed, _extends2[prefix(bsProps, 'hover')] = hover, _extends2));
 

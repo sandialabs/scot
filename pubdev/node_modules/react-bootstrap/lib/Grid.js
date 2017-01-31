@@ -65,17 +65,15 @@ var Grid = function (_React$Component) {
   }
 
   Grid.prototype.render = function render() {
-    var _props = this.props;
-    var fluid = _props.fluid;
-    var Component = _props.componentClass;
-    var className = _props.className;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['fluid', 'componentClass', 'className']);
+    var _props = this.props,
+        fluid = _props.fluid,
+        Component = _props.componentClass,
+        className = _props.className,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['fluid', 'componentClass', 'className']);
 
-    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = (0, _bootstrapUtils.prefix)(bsProps, fluid && 'fluid');
 

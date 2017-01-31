@@ -1,5 +1,6 @@
 module.exports = {
   'ary': require('../ary'),
+  'assign': require('../_baseAssign'),
   'clone': require('../clone'),
   'curry': require('../curry'),
   'forEach': require('../_arrayEach'),
@@ -8,6 +9,6 @@ module.exports = {
   'iteratee': require('../iteratee'),
   'keys': require('../_baseKeys'),
   'rearg': require('../rearg'),
-  'spread': require('../spread'),
+  'toInteger': require('../toInteger'),
   'toPath': require('../toPath')
 };

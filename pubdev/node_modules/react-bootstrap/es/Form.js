@@ -31,19 +31,16 @@ var Form = function (_React$Component) {
   }
 
   Form.prototype.render = function render() {
-    var _props = this.props;
-    var horizontal = _props.horizontal;
-    var inline = _props.inline;
-    var Component = _props.componentClass;
-    var className = _props.className;
+    var _props = this.props,
+        horizontal = _props.horizontal,
+        inline = _props.inline,
+        Component = _props.componentClass,
+        className = _props.className,
+        props = _objectWithoutProperties(_props, ['horizontal', 'inline', 'componentClass', 'className']);
 
-    var props = _objectWithoutProperties(_props, ['horizontal', 'inline', 'componentClass', 'className']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = [];
     if (horizontal) {

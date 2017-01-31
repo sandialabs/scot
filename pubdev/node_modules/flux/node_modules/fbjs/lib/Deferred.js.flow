@@ -21,7 +21,7 @@
  * the same semantics excluding those methods.
  */
 class Deferred<Tvalue, Treason> {
-  _settled: bool;
+  _settled: boolean;
   _promise: Promise<any>;
   _resolve: (value: Tvalue) => void;
   _reject: (reason: Treason) => void;
@@ -67,7 +67,7 @@ class Deferred<Tvalue, Treason> {
     });
   }
 
-  isSettled(): bool {
+  isSettled(): boolean {
     return this._settled;
   }
 }

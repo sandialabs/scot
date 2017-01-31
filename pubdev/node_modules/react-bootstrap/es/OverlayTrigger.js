@@ -250,17 +250,16 @@ var OverlayTrigger = function (_React$Component) {
   };
 
   OverlayTrigger.prototype.render = function render() {
-    var _props = this.props;
-    var trigger = _props.trigger;
-    var overlay = _props.overlay;
-    var children = _props.children;
-    var onBlur = _props.onBlur;
-    var onClick = _props.onClick;
-    var onFocus = _props.onFocus;
-    var onMouseOut = _props.onMouseOut;
-    var onMouseOver = _props.onMouseOver;
-
-    var props = _objectWithoutProperties(_props, ['trigger', 'overlay', 'children', 'onBlur', 'onClick', 'onFocus', 'onMouseOut', 'onMouseOver']);
+    var _props = this.props,
+        trigger = _props.trigger,
+        overlay = _props.overlay,
+        children = _props.children,
+        onBlur = _props.onBlur,
+        onClick = _props.onClick,
+        onFocus = _props.onFocus,
+        onMouseOut = _props.onMouseOut,
+        onMouseOver = _props.onMouseOver,
+        props = _objectWithoutProperties(_props, ['trigger', 'overlay', 'children', 'onBlur', 'onClick', 'onFocus', 'onMouseOut', 'onMouseOver']);
 
     delete props.delay;
     delete props.delayShow;
