@@ -62,7 +62,14 @@ var _bootstrapUtils = require('./utils/bootstrapUtils');
 
 var _StyleConfig = require('./utils/StyleConfig');
 
+var _createChainedFunction = require('./utils/createChainedFunction');
+
+var _createChainedFunction2 = _interopRequireDefault(_createChainedFunction);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+// TODO: Remove this pragma once we upgrade eslint-config-airbnb.
+/* eslint-disable react/no-multi-comp */
 
 var propTypes = {
   /**
@@ -101,7 +108,36 @@ var propTypes = {
    * @controllable navExpanded
    */
   onToggle: _react2['default'].PropTypes.func,
-
+  /**
+   * A callback fired when a descendant of a child `<Nav>` is selected. Should
+   * be used to execute complex closing or other miscellaneous actions desired
+   * after selecting a descendant of `<Nav>`. Does nothing if no `<Nav>` or `<Nav>`
+   * descendants exist. The callback is called with an eventKey, which is a
+   * prop from the selected `<Nav>` descendant, and an event.
+   *
+   * ```js
+   * function (
+   * 	Any eventKey,
+   * 	SyntheticEvent event?
+   * )
+   * ```
+   *
+   * For basic closing behavior after all `<Nav>` descendant onSelect events in
+   * mobile viewports, try using collapseOnSelect.
+   *
+   * Note: If you are manually closing the navbar using this `OnSelect` prop,
+   * ensure that you are setting `expanded` to false and not *toggling* between
+   * true and false.
+   */
+  onSelect: _react2['default'].PropTypes.func,
+  /**
+   * Sets `expanded` to `false` after the onSelect event of a descendant of a
+   * child `<Nav>`. Does nothing if no `<Nav>` or `<Nav>` descendants exist.
+   *
+   * The onSelect callback should be used instead for more complex operations
+   * that need to be executed after the `select` event of `<Nav>` descendants.
+   */
+  collapseOnSelect: _react2['default'].PropTypes.bool,
   /**
    * Explicitly set the visiblity of the navbar body
    *
@@ -110,8 +146,7 @@ var propTypes = {
   expanded: _react2['default'].PropTypes.bool,
 
   role: _react2['default'].PropTypes.string
-}; // TODO: Remove this pragma once we upgrade eslint-config-airbnb.
-/* eslint-disable react/no-multi-comp */
+};
 
 var defaultProps = {
   componentClass: 'nav',
@@ -119,14 +154,16 @@ var defaultProps = {
   fixedBottom: false,
   staticTop: false,
   inverse: false,
-  fluid: false
+  fluid: false,
+  collapseOnSelect: false
 };
 
 var childContextTypes = {
   $bs_navbar: _react.PropTypes.shape({
     bsClass: _react.PropTypes.string,
     expanded: _react.PropTypes.bool,
-    onToggle: _react.PropTypes.func.isRequired
+    onToggle: _react.PropTypes.func.isRequired,
+    onSelect: _react.PropTypes.func
   })
 };
 
@@ -139,28 +176,43 @@ var Navbar = function (_React$Component) {
     var _this = (0, _possibleConstructorReturn3['default'])(this, _React$Component.call(this, props, context));
 
     _this.handleToggle = _this.handleToggle.bind(_this);
+    _this.handleCollapse = _this.handleCollapse.bind(_this);
     return _this;
   }
 
   Navbar.prototype.getChildContext = function getChildContext() {
-    var _props = this.props;
-    var bsClass = _props.bsClass;
-    var expanded = _props.expanded;
+    var _props = this.props,
+        bsClass = _props.bsClass,
+        expanded = _props.expanded,
+        onSelect = _props.onSelect,
+        collapseOnSelect = _props.collapseOnSelect;
 
 
     return {
       $bs_navbar: {
         bsClass: bsClass,
         expanded: expanded,
-        onToggle: this.handleToggle
+        onToggle: this.handleToggle,
+        onSelect: (0, _createChainedFunction2['default'])(onSelect, collapseOnSelect ? this.handleCollapse : null)
       }
     };
   };
 
+  Navbar.prototype.handleCollapse = function handleCollapse() {
+    var _props2 = this.props,
+        onToggle = _props2.onToggle,
+        expanded = _props2.expanded;
+
+
+    if (expanded) {
+      onToggle(false);
+    }
+  };
+
   Navbar.prototype.handleToggle = function handleToggle() {
-    var _props2 = this.props;
-    var onToggle = _props2.onToggle;
-    var expanded = _props2.expanded;
+    var _props3 = this.props,
+        onToggle = _props3.onToggle,
+        expanded = _props3.expanded;
 
 
     onToggle(!expanded);
@@ -169,25 +221,25 @@ var Navbar = function (_React$Component) {
   Navbar.prototype.render = function render() {
     var _extends2;
 
-    var _props3 = this.props;
-    var Component = _props3.componentClass;
-    var fixedTop = _props3.fixedTop;
-    var fixedBottom = _props3.fixedBottom;
-    var staticTop = _props3.staticTop;
-    var inverse = _props3.inverse;
-    var fluid = _props3.fluid;
-    var className = _props3.className;
-    var children = _props3.children;
-    var props = (0, _objectWithoutProperties3['default'])(_props3, ['componentClass', 'fixedTop', 'fixedBottom', 'staticTop', 'inverse', 'fluid', 'className', 'children']);
+    var _props4 = this.props,
+        Component = _props4.componentClass,
+        fixedTop = _props4.fixedTop,
+        fixedBottom = _props4.fixedBottom,
+        staticTop = _props4.staticTop,
+        inverse = _props4.inverse,
+        fluid = _props4.fluid,
+        className = _props4.className,
+        children = _props4.children,
+        props = (0, _objectWithoutProperties3['default'])(_props4, ['componentClass', 'fixedTop', 'fixedBottom', 'staticTop', 'inverse', 'fluid', 'className', 'children']);
 
-    var _splitBsPropsAndOmit = (0, _bootstrapUtils.splitBsPropsAndOmit)(props, ['expanded', 'onToggle']);
-
-    var bsProps = _splitBsPropsAndOmit[0];
-    var elementProps = _splitBsPropsAndOmit[1];
+    var _splitBsPropsAndOmit = (0, _bootstrapUtils.splitBsPropsAndOmit)(props, ['expanded', 'onToggle', 'onSelect', 'collapseOnSelect']),
+        bsProps = _splitBsPropsAndOmit[0],
+        elementProps = _splitBsPropsAndOmit[1];
 
     // will result in some false positives but that seems better
     // than false negatives. strict `undefined` check allows explicit
     // "nulling" of the role if the user really doesn't want one
+
 
     if (elementProps.role === undefined && Component !== 'nav') {
       elementProps.role = 'navigation';
@@ -225,13 +277,13 @@ var UncontrollableNavbar = (0, _uncontrollable2['default'])(Navbar, { expanded: 
 
 function createSimpleWrapper(tag, suffix, displayName) {
   var Wrapper = function Wrapper(_ref, _ref2) {
-    var Component = _ref.componentClass;
-    var className = _ref.className;
-    var pullRight = _ref.pullRight;
-    var pullLeft = _ref.pullLeft;
-    var props = (0, _objectWithoutProperties3['default'])(_ref, ['componentClass', 'className', 'pullRight', 'pullLeft']);
-    var _ref2$$bs_navbar = _ref2.$bs_navbar;
-    var navbarProps = _ref2$$bs_navbar === undefined ? { bsClass: 'navbar' } : _ref2$$bs_navbar;
+    var _ref2$$bs_navbar = _ref2.$bs_navbar,
+        navbarProps = _ref2$$bs_navbar === undefined ? { bsClass: 'navbar' } : _ref2$$bs_navbar;
+    var Component = _ref.componentClass,
+        className = _ref.className,
+        pullRight = _ref.pullRight,
+        pullLeft = _ref.pullLeft,
+        props = (0, _objectWithoutProperties3['default'])(_ref, ['componentClass', 'className', 'pullRight', 'pullLeft']);
     return _react2['default'].createElement(Component, (0, _extends4['default'])({}, props, {
       className: (0, _classnames2['default'])(className, (0, _bootstrapUtils.prefix)(navbarProps, suffix), pullRight && (0, _bootstrapUtils.prefix)(navbarProps, 'right'), pullLeft && (0, _bootstrapUtils.prefix)(navbarProps, 'left'))
     }));

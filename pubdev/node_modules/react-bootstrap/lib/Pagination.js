@@ -119,8 +119,8 @@ var Pagination = function (_React$Component) {
 
     if (maxButtons) {
       var hiddenPagesBefore = activePage - parseInt(maxButtons / 2, 10);
-      startPage = hiddenPagesBefore > 2 ? hiddenPagesBefore : 1;
-      hasHiddenPagesAfter = startPage + maxButtons < items;
+      startPage = Math.max(hiddenPagesBefore, 1);
+      hasHiddenPagesAfter = items >= startPage + maxButtons;
 
       if (!hasHiddenPagesAfter) {
         endPage = items;
@@ -206,26 +206,24 @@ var Pagination = function (_React$Component) {
   };
 
   Pagination.prototype.render = function render() {
-    var _props = this.props;
-    var activePage = _props.activePage;
-    var items = _props.items;
-    var maxButtons = _props.maxButtons;
-    var boundaryLinks = _props.boundaryLinks;
-    var ellipsis = _props.ellipsis;
-    var first = _props.first;
-    var last = _props.last;
-    var prev = _props.prev;
-    var next = _props.next;
-    var onSelect = _props.onSelect;
-    var buttonComponentClass = _props.buttonComponentClass;
-    var className = _props.className;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['activePage', 'items', 'maxButtons', 'boundaryLinks', 'ellipsis', 'first', 'last', 'prev', 'next', 'onSelect', 'buttonComponentClass', 'className']);
+    var _props = this.props,
+        activePage = _props.activePage,
+        items = _props.items,
+        maxButtons = _props.maxButtons,
+        boundaryLinks = _props.boundaryLinks,
+        ellipsis = _props.ellipsis,
+        first = _props.first,
+        last = _props.last,
+        prev = _props.prev,
+        next = _props.next,
+        onSelect = _props.onSelect,
+        buttonComponentClass = _props.buttonComponentClass,
+        className = _props.className,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['activePage', 'items', 'maxButtons', 'boundaryLinks', 'ellipsis', 'first', 'last', 'prev', 'next', 'onSelect', 'buttonComponentClass', 'className']);
 
-    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = (0, _bootstrapUtils.getClassSet)(bsProps);
 

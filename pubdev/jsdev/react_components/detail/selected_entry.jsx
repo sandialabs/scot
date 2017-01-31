@@ -1,6 +1,6 @@
 var React                   = require('react');
 var ReactDOM                = require('react-dom');
-var ReactTime               = require('react-time');
+var ReactTime               = require('react-time').default;
 var SplitButton             = require('react-bootstrap/lib/SplitButton.js');
 var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
@@ -47,7 +47,7 @@ var SelectedEntry = React.createClass({
                     var entryResult = result.records;
                     if (this.isMounted()) {
                         this.setState({showEntryData:true, entryData:entryResult})
-                        for (i=0; i < result.records.length; i++) {
+                        for (var i=0; i < result.records.length; i++) {
                             Store.storeKey(result.records[i].id)
                             Store.addChangeListener(this.updatedCB);
                         }
@@ -106,7 +106,7 @@ var SelectedEntry = React.createClass({
                     var entryResult = result.records;
                     if (this.isMounted()) {
                         this.setState({showEntryData:true, entryData:entryResult})
-                        for (i=0; i < result.records.length; i++) {
+                        for (var i=0; i < result.records.length; i++) {
                             Store.storeKey(result.records[i].id)
                             Store.addChangeListener(this.updatedCB);
                         }
@@ -400,11 +400,11 @@ var AlertParent = React.createClass({
                 /*while (min--) {
                     range[min]=max--;
                 }*/
-                for (q=min; q <= max; q++) {
+                for (var q=min; q <= max; q++) {
                     range.push(q)
                 }
-                for (i=0; i < range.length; i++) {
-                    for (prop in keyObj) {
+                for (var i=0; i < range.length; i++) {
+                    for (var prop in keyObj) {
                         if (keyObj[prop] == range[i]) {
                             activeIdArray.push(parseInt(prop));
                         }
@@ -525,9 +525,7 @@ var AlertParent = React.createClass({
                                 {header}
                             </tr>
                         </thead>
-                        <tbody>
                             {body}
-                        </tbody>
                     </table>
                 </div>
                 {search != undefined ? <div className='alertTableHorizontal' dangerouslySetInnerHTML={{ __html: search}}/> : null}
@@ -713,7 +711,7 @@ var AlertBody = React.createClass({
         }
         var id = 'alert_'+data.id+'_status';
         return (
-            <div>
+            <tbody>
                 <tr index={index} id={data.id} className={selected} style={{cursor: 'pointer'}} onClick={this.onClick}>
                     <td valign='top' style={{marginRight:'4px'}}>{data.id}</td>
                     <td valign='top' style={{marginRight:'4px'}}>{data.status != 'promoted' ? <span style={{color:buttonStyle}}>{data.status}</span> : <Button bsSize='xsmall' bsStyle={buttonStyle} id={id} onClick={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{data.status}</Button>}</td>
@@ -721,7 +719,7 @@ var AlertBody = React.createClass({
                     {rowReturn}
                 </tr>
                 <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} showAddEntryToolbar={this.state.showAddEntryToolbar} toggleOffAddEntry={this.toggleOffAddEntry} showFileUploadToolbar={this.state.showFileUploadToolbar} toggleOffFileUpload={this.toggleOffFileUpload} errorToggle={this.props.errorToggle}/>
-            </div>
+            </tbody>
         )
     }
 });

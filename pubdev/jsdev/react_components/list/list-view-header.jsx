@@ -24,7 +24,7 @@ var ListViewHeader = React.createClass({
         var handleFilter = this.props.handleFilter;
         var arr = [];
         var className = 'wrapper table-row header';
-        for (i=0; i < columns.length; i++) {
+        for (var i=0; i < columns.length; i++) {
             arr.push(<ListViewHeaderEach columnsOne={columns[i]} columnsDisplayOne={columnsDisplay[i]} columnsClassName={columnsClassName[i]} sort={sort} filter={filter} handleSort={handleSort} handleFilter={handleFilter} />)
         }
         return (

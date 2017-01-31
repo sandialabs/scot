@@ -94,7 +94,7 @@ export function hover(targetIds, { clientOffset = null } = {}) {
     'Cannot call hover after drop.'
   );
 
-  const draggedItemType = monitor.getItemType();
+  // First check invariants.
   for (let i = 0; i < targetIds.length; i++) {
     const targetId = targetIds[i];
     invariant(
@@ -107,11 +107,26 @@ export function hover(targetIds, { clientOffset = null } = {}) {
       target,
       'Expected targetIds to be registered.'
     );
+  }
 
+  const draggedItemType = monitor.getItemType();
+
+  // Remove those targetIds that don't match the targetType.  This
+  // fixes shallow isOver which would only be non-shallow because of
+  // non-matching targets.
+  for (let i = targetIds.length - 1; i >= 0; i--) {
+    const targetId = targetIds[i];
     const targetType = registry.getTargetType(targetId);
-    if (matchesType(targetType, draggedItemType)) {
-      target.hover(monitor, targetId);
+    if (!matchesType(targetType, draggedItemType)) {
+      targetIds.splice(i, 1);
     }
+  }
+
+  // Finally call hover on all matching targets.
+  for (let i = 0; i < targetIds.length; i++) {
+    const targetId = targetIds[i];
+    const target = registry.getTarget(targetId);
+    target.hover(monitor, targetId);
   }
 
   return {
