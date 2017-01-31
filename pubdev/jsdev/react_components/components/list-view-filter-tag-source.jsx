@@ -34,7 +34,7 @@ var TagSourceFilter = React.createClass({
     handleDelete: function(e) {
         var newFilterButtonArr = this.state.filterButtonArr;
         var newFilterButtonText = this.state.filterButtonText;
-        for (i=0; i < this.state.filterButtonText.length; i++) {
+        for (var i=0; i < this.state.filterButtonText.length; i++) {
             if ($(e.target.parentElement).text() == this.state.filterButtonText[i]) {
                 newFilterButtonArr.splice(i,1);
                 newFilterButtonText.splice(i,1);
@@ -49,7 +49,7 @@ var TagSourceFilter = React.createClass({
         var inputSearch = tagSplit.pop();
         this.serverRequest = $.get('/scot/api/v2/ac/'+ this.props.columnsOne  + '/' + inputSearch, function (result) {
             var result = result.records;
-            for (i=0; i < result.length; i++) {
+            for (var i=0; i < result.length; i++) {
                 arr.push(result[i].value)
             }
             this.setState({suggestions:arr})

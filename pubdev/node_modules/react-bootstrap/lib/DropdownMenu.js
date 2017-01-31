@@ -63,7 +63,8 @@ var propTypes = {
   pullRight: _react2['default'].PropTypes.bool,
   onClose: _react2['default'].PropTypes.func,
   labelledBy: _react2['default'].PropTypes.oneOfType([_react2['default'].PropTypes.string, _react2['default'].PropTypes.number]),
-  onSelect: _react2['default'].PropTypes.func
+  onSelect: _react2['default'].PropTypes.func,
+  rootCloseEvent: _react2['default'].PropTypes.oneOf(['click', 'mousedown'])
 };
 
 var defaultProps = {
@@ -118,10 +119,9 @@ var DropdownMenu = function (_React$Component) {
   };
 
   DropdownMenu.prototype.focusNext = function focusNext() {
-    var _getItemsAndActiveInd = this.getItemsAndActiveIndex();
-
-    var items = _getItemsAndActiveInd.items;
-    var activeIndex = _getItemsAndActiveInd.activeIndex;
+    var _getItemsAndActiveInd = this.getItemsAndActiveIndex(),
+        items = _getItemsAndActiveInd.items,
+        activeIndex = _getItemsAndActiveInd.activeIndex;
 
     if (items.length === 0) {
       return;
@@ -132,10 +132,9 @@ var DropdownMenu = function (_React$Component) {
   };
 
   DropdownMenu.prototype.focusPrevious = function focusPrevious() {
-    var _getItemsAndActiveInd2 = this.getItemsAndActiveIndex();
-
-    var items = _getItemsAndActiveInd2.items;
-    var activeIndex = _getItemsAndActiveInd2.activeIndex;
+    var _getItemsAndActiveInd2 = this.getItemsAndActiveIndex(),
+        items = _getItemsAndActiveInd2.items,
+        activeIndex = _getItemsAndActiveInd2.activeIndex;
 
     if (items.length === 0) {
       return;
@@ -149,21 +148,20 @@ var DropdownMenu = function (_React$Component) {
     var _extends2,
         _this2 = this;
 
-    var _props = this.props;
-    var open = _props.open;
-    var pullRight = _props.pullRight;
-    var onClose = _props.onClose;
-    var labelledBy = _props.labelledBy;
-    var onSelect = _props.onSelect;
-    var className = _props.className;
-    var children = _props.children;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['open', 'pullRight', 'onClose', 'labelledBy', 'onSelect', 'className', 'children']);
+    var _props = this.props,
+        open = _props.open,
+        pullRight = _props.pullRight,
+        onClose = _props.onClose,
+        labelledBy = _props.labelledBy,
+        onSelect = _props.onSelect,
+        className = _props.className,
+        rootCloseEvent = _props.rootCloseEvent,
+        children = _props.children,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['open', 'pullRight', 'onClose', 'labelledBy', 'onSelect', 'className', 'rootCloseEvent', 'children']);
 
-    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = (0, _extends4['default'])({}, (0, _bootstrapUtils.getClassSet)(bsProps), (_extends2 = {}, _extends2[(0, _bootstrapUtils.prefix)(bsProps, 'right')] = pullRight, _extends2));
 
@@ -171,7 +169,8 @@ var DropdownMenu = function (_React$Component) {
       _RootCloseWrapper2['default'],
       {
         disabled: !open,
-        onRootClose: onClose
+        onRootClose: onClose,
+        event: rootCloseEvent
       },
       _react2['default'].createElement(
         'ul',

@@ -19,7 +19,7 @@ var Tag = React.createClass({
         var type = this.props.type;
         var data = this.props.data;
         if (data != undefined) {
-            for (i=0; i < data.length; i++) {
+            for (var i=0; i < data.length; i++) {
                 rows.push(<TagDataIterator data={data} dataOne={data[i]} id={id} type={type} updated={this.props.updated} />);
             }
         }
@@ -38,7 +38,7 @@ var TagDataIterator = React.createClass({
     tagDelete: function() {
         var data = this.props.data;
         var newTagArr = [];
-        for (i=0; i < data.length; i++) {
+        for (var i=0; i < data.length; i++) {
             if (data[i] != undefined) {
                 if (typeof(data[i]) == 'string') {
                     if (data[i] != this.props.dataOne) {
@@ -64,7 +64,7 @@ var TagDataIterator = React.createClass({
         });
     },
     render: function() {
-        dataOne = this.props.dataOne;
+        var dataOne = this.props.dataOne;
         var value;
         if (typeof(dataOne) == 'string') {
             value = dataOne;
@@ -88,7 +88,7 @@ var NewTag = React.createClass({
     handleAddition: function(tag) {
         var newTagArr = [];
         var data = this.props.data;
-        for (i=0; i < data.length; i++) {
+        for (var i=0; i < data.length; i++) {
             if (data[i] != undefined) {
                 if (typeof(data[i]) == 'string') {
                     newTagArr.push(data[i]);
@@ -117,7 +117,7 @@ var NewTag = React.createClass({
         var arr = [];
         this.serverRequest = $.get('/scot/api/v2/ac/tag/' + input, function (result) {
             var result = result.records;
-            for (i=0; i < result.length; i++) {
+            for (var i=0; i < result.length; i++) {
                 arr.push(result[i].value)
             }
             this.setState({suggestions:arr})

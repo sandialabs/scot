@@ -189,17 +189,14 @@ var Col = function (_React$Component) {
   }
 
   Col.prototype.render = function render() {
-    var _props = this.props;
-    var Component = _props.componentClass;
-    var className = _props.className;
+    var _props = this.props,
+        Component = _props.componentClass,
+        className = _props.className,
+        props = _objectWithoutProperties(_props, ['componentClass', 'className']);
 
-    var props = _objectWithoutProperties(_props, ['componentClass', 'className']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = [];
 

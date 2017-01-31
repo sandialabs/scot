@@ -627,7 +627,7 @@ module.exports = React.createClass({
                 var newFilter = [];
                 //if no filter applied
                 if (currentFilter == undefined) {
-                    for (i=0; i < array.length; i++) {
+                    for (var i=0; i < array.length; i++) {
                         inProgressFilter.push(array[i]);
                     }
                     newFilterObj[column] = inProgressFilter;
@@ -635,13 +635,13 @@ module.exports = React.createClass({
                 } else {
                     //already filtered column being modified
                     if (currentFilter[column] != undefined) {
-                        for (i=0; i < array.length; i++) {
+                        for (var i=0; i < array.length; i++) {
                             inProgressFilter.push(array[i]);
                         }
                         delete currentFilter[column]
                         newFilterObj[column] = inProgressFilter;
                     } else {  //column not yet filtered, so append it to the existing filters
-                        for (i=0; i < array.length; i++) {
+                        for (var i=0; i < array.length; i++) {
                             inProgressFilter.push(array[i]);
                         }
                         newFilterObj[column] = inProgressFilter;

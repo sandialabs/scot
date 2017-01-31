@@ -30,9 +30,21 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
+var _elementType = require('react-prop-types/lib/elementType');
+
+var _elementType2 = _interopRequireDefault(_elementType);
+
 var _bootstrapUtils = require('./utils/bootstrapUtils');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var propTypes = {
+  componentClass: _elementType2['default']
+};
+
+var defaultProps = {
+  componentClass: 'div'
+};
 
 var ModalFooter = function (_React$Component) {
   (0, _inherits3['default'])(ModalFooter, _React$Component);
@@ -43,25 +55,27 @@ var ModalFooter = function (_React$Component) {
   }
 
   ModalFooter.prototype.render = function render() {
-    var _props = this.props;
-    var className = _props.className;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['className']);
+    var _props = this.props,
+        Component = _props.componentClass,
+        className = _props.className,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['componentClass', 'className']);
 
-    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = (0, _bootstrapUtils.getClassSet)(bsProps);
 
-    return _react2['default'].createElement('div', (0, _extends3['default'])({}, elementProps, {
+    return _react2['default'].createElement(Component, (0, _extends3['default'])({}, elementProps, {
       className: (0, _classnames2['default'])(className, classes)
     }));
   };
 
   return ModalFooter;
 }(_react2['default'].Component);
+
+ModalFooter.propTypes = propTypes;
+ModalFooter.defaultProps = defaultProps;
 
 exports['default'] = (0, _bootstrapUtils.bsClass)('modal-footer', ModalFooter);
 module.exports = exports['default'];

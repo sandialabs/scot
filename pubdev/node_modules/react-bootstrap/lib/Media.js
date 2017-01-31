@@ -79,16 +79,14 @@ var Media = function (_React$Component) {
   }
 
   Media.prototype.render = function render() {
-    var _props = this.props;
-    var Component = _props.componentClass;
-    var className = _props.className;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['componentClass', 'className']);
+    var _props = this.props,
+        Component = _props.componentClass,
+        className = _props.className,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['componentClass', 'className']);
 
-    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = (0, _bootstrapUtils.getClassSet)(bsProps);
 

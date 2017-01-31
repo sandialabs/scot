@@ -33,15 +33,14 @@ var DropdownToggle = function (_React$Component) {
   }
 
   DropdownToggle.prototype.render = function render() {
-    var _props = this.props;
-    var noCaret = _props.noCaret;
-    var open = _props.open;
-    var useAnchor = _props.useAnchor;
-    var bsClass = _props.bsClass;
-    var className = _props.className;
-    var children = _props.children;
-
-    var props = _objectWithoutProperties(_props, ['noCaret', 'open', 'useAnchor', 'bsClass', 'className', 'children']);
+    var _props = this.props,
+        noCaret = _props.noCaret,
+        open = _props.open,
+        useAnchor = _props.useAnchor,
+        bsClass = _props.bsClass,
+        className = _props.className,
+        children = _props.children,
+        props = _objectWithoutProperties(_props, ['noCaret', 'open', 'useAnchor', 'bsClass', 'className', 'children']);
 
     delete props.bsRole;
 
