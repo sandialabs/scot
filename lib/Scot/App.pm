@@ -4,7 +4,7 @@ use lib '../../lib';
 use v5.18;
 use strict;
 use warnings;
-use Scot::Util::Logger;
+use Scot::Util::LoggerFactory;
 use Scot::Util::Config;
 use DateTime;
 use Moose;
@@ -45,6 +45,21 @@ sub _build_config {
     return $confobj->get_config;
 }
 
+has env => (
+    is          => 'ro',
+    isa         => 'Scot::Env',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_get_env',
+);
+
+sub _get_env {
+    my $self    = shift;
+    return Scot::Env->new({
+        config_file => $self->configuration_file,
+        paths       => $self->paths,
+    });
+}
 
 has log => (
     is          => 'ro',
@@ -57,7 +72,8 @@ has log => (
 sub _get_logger {
     my $self    = shift;
     my $chref   = $self->config->{log};
-    return Scot::Util::Logger->new($chref);
+    my $lfactory = Scot::Util::LoggerFactory->new($chref);
+    return $lfactory->get_logger;
 }
 
 has base_url    => (
