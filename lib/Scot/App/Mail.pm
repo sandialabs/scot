@@ -497,7 +497,7 @@ sub put_alertgroup {
         $log->debug("Posting via direct mongo access");
         my $mongo   = $self->env->mongo;
         my $agcol   = $mongo->collection('Alertgroup');
-        my $agobj   = $agcol->find_iid($agid);
+        my $agobj   = $agcol->find_iid($id);
     }
 }
 
