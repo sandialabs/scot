@@ -125,6 +125,9 @@ sub _get_base_url {
     my $proto       = $self->proto;
     my $servername  = $self->servername;
     my $port        = $self->serverport;
+    my $log         = $self->log;
+
+    $log->debug("$proto $servername $port");
     
     if ( $port != 443 ) {
         return sprintf("%s://%s:%s/_search", $proto, $servername, $port);
@@ -147,6 +150,10 @@ sub _get_useragent {
     my $log     = $self->log;
 
     $log->trace("No Authentication.");
+    IO::Socket::SSL::set_defaults(
+        SSL_verify_mode => 0,
+        SSL_version => "SSLv3"
+    );
     $ua = Mojo::UserAgent->new();
 
     return $ua;
@@ -224,7 +231,7 @@ sub do_request_new {
     $eshref->{size}  = undef unless ($eshref->{size});
 
     my $json    = encode_json($eshref);
-    $log->debug("GET to ES: ", { filter=>\&Dumper, value => $json });
+    $log->debug("GET to ES: $url ", { filter=>\&Dumper, value => $json });
 
     my $tx      = $ua->get($url => json => $eshref);
     if ( my $res    = $tx->success ) {
