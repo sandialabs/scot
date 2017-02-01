@@ -479,27 +479,27 @@ sub process_message {
 }
 
 # TODO: so reprocessing updated existing alertgroup not create a new one
-#sub put_alertgroup {
-#    my $self    = shift;
-#    my $id      = shift;
-#    my $data    = shift;
-#    my $log     = $self->log;
-#    my $response;
-#
-#    if ( $self->get_method eq "scot_api" ) {
-#        $response = $self->scot->put({
-#            type    => "alertgroup",
-#            id      => $id,
-##            data    => $data,
-#        });
-#    }
-#    else {
-#        $log->debug("Posting via direct mongo access");
-#        my $mongo   = $self->env->mongo;
-#        my $agcol   = $mongo->collection('Alertgroup');
-#        my $agobj   = $agcol->find_iid($agid);
-#    }
-#}
+sub put_alertgroup {
+    my $self    = shift;
+    my $id      = shift;
+    my $data    = shift;
+    my $log     = $self->log;
+    my $response;
+
+    if ( $self->get_method eq "scot_api" ) {
+        $response = $self->scot->put({
+            type    => "alertgroup",
+            id      => $id,
+            data    => $data,
+        });
+    }
+    else {
+        $log->debug("Posting via direct mongo access");
+        my $mongo   = $self->env->mongo;
+        my $agcol   = $mongo->collection('Alertgroup');
+        my $agobj   = $agcol->find_iid($id);
+    }
+}
 
 sub post_alertgroup {
     my $self    = shift;
