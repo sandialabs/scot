@@ -45,7 +45,7 @@ sub check {
     }
 
 
-    # $log->debug("headers = ".Dumper($headers));
+    $log->debug("headers = ".Dumper($headers));
 
     my $basicauth   = $headers->header('authorization');
     my $authuser    = $headers->header('authuser');
