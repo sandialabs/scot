@@ -342,19 +342,21 @@ module.exports = React.createClass({
     },
     componentDidUpdate: function() {
         //auto scrolls to selected id
-        if (this.state.id != null) {
-            if ($('#'+this.state.id).offset() != undefined && $('.list-view-table-data').offset() != undefined) {
-                var cParentTop =  $('.list-view-table-data').offset().top;
-                var cTop = $('#'+this.state.id).offset().top - cParentTop;
-                var cHeight = $('#'+this.state.id).outerHeight(true);
-                var windowTop = $('#list-view-data-div').offset().top;
-                var visibleHeight = $('#list-view-data-div').height();
+        for (var i=0; i < this.state.objectarray.length; i++){          //Iterate through all of the items in the list to verify that the current id still matches the rows in the list. If not, don't scroll
+            if (this.state.id != null && this.state.id == this.state.objectarray[i].id) {
+                if ($('#'+this.state.id).offset() != undefined && $('.list-view-table-data').offset() != undefined) {
+                    var cParentTop =  $('.list-view-table-data').offset().top;
+                    var cTop = $('#'+this.state.id).offset().top - cParentTop;
+                    var cHeight = $('#'+this.state.id).outerHeight(true);
+                    var windowTop = $('#list-view-data-div').offset().top;
+                    var visibleHeight = $('#list-view-data-div').height();
 
-                var scrolled = $('#list-view-data-div').scrollTop();
-                if (cTop < (scrolled)) {
-                    $('#list-view-data-div').animate({'scrollTop': cTop-(visibleHeight/2)}, 'fast', '');
-                } else if (cTop + cHeight + cParentTop> windowTop + visibleHeight) {
-                    $('#list-view-data-div').animate({'scrollTop': (cTop + cParentTop) - visibleHeight + scrolled + cHeight}, 'fast', 'swing');
+                    var scrolled = $('#list-view-data-div').scrollTop();
+                    if (cTop < (scrolled)) {
+                        $('#list-view-data-div').animate({'scrollTop': cTop-(visibleHeight/2)}, 'fast', '');
+                    } else if (cTop + cHeight + cParentTop> windowTop + visibleHeight) {
+                        $('#list-view-data-div').animate({'scrollTop': (cTop + cParentTop) - visibleHeight + scrolled + cHeight}, 'fast', 'swing');
+                    }
                 }
             }
         }
