@@ -343,7 +343,13 @@ module.exports = React.createClass({
     componentDidUpdate: function() {
         //auto scrolls to selected id
         for (var i=0; i < this.state.objectarray.length; i++){          //Iterate through all of the items in the list to verify that the current id still matches the rows in the list. If not, don't scroll
-            if (this.state.id != null && this.state.id == this.state.objectarray[i].id) {
+            var idReference = this.state.objectarray[i].id;
+            if (this.state.type == 'task') {
+                if (this.state.objectarray[i].target) {
+                    idReference = this.state.objectarray[i].target.id; //task uses target.id for id because its id is the entry.
+                }
+            }
+            if (this.state.id != null && this.state.id == idReference) {
                 if ($('#'+this.state.id).offset() != undefined && $('.list-view-table-data').offset() != undefined) {
                     var cParentTop =  $('.list-view-table-data').offset().top;
                     var cTop = $('#'+this.state.id).offset().top - cParentTop;
