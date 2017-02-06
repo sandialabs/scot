@@ -57,50 +57,43 @@ sub check {
                 " authuser      = $authuser \n".
                 " remote user   = $remoteuser \n".
                 " session user  = $user \n");
-    #unless ( defined $user ) {
-    #    $log->warn("User not set in session, using authuser value $authuser");
-    #    $user = $authuser;
-    #}
+
+    unless ( defined $user ) {
+        $log->warn("No Session User present, will look for alternatives");
+        if ( defined $remoteuser ) {
+            $log->warn("Using value of header remote-user as username");
+            $user   = $remoteuser;
+        }
+        else {
+            if ( defined $authuser ) {
+                $log->warn("using vale of header authuser as username");
+                $user = $authuser;
+            }
+            else {
+                $log->error("I don not know who is attempting access!");
+                return undef;
+            }
+        }
+    }
 
     $log->debug("Session user is ", {filter =>\&Dumper, value =>$user});
-    my $groups  = $self->session('groups');
+    $self->session('user'   => $user);
 
+    my $groups  = $self->session('groups');
     unless (ref($groups) eq "ARRAY") {
         $log->debug("groups not set in session, fetching");
         my $garef	= $self->get_groups($user);
         $self->session('groups'	=> $garef);
         $groups	= $garef;
     }
-    # $log->debug("Session groups is ", {filter =>\&Dumper, value =>$groups});
+    $log->debug("Session groups is ", {filter =>\&Dumper, value =>$groups});
 
-    if ( defined $user ) {
-        if ( scalar( @{$groups} ) >0 ) {
-            return 1;
-        }
-        # sometimes, rarely, groups session gets lost
-        # so reset it
-        my $garef   = $self->get_groups($user);
-        $self->session('groups' => $garef);
+    # user must be in at least 1 "scot" group
+    if ( scalar( @{$groups} ) >0 ) {
+        $log->debug("User appears legit");
         return 1;
     }
-
-    $log->debug("user not previously authenticated");
-
-    my $remote_user = $headers->header('remote-user');
-
-    $log->debug("Remote user is set to: ".$remote_user);
-
-    if ( $remote_user ) {
-        # TODO: can do look ups of user groups here
-        $self->session( 'user'  => $remote_user );
-        my $groups = $self->session('groups');
-        unless ($groups) {
-            my $garef   = $self->get_groups($remote_user);
-            $self->session('groups' => $garef);
-        }
-        return 1;
-    }
-
+    $log->error("User $user failed auth check");
     return undef;
 }
 
