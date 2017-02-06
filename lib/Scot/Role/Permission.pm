@@ -54,7 +54,7 @@ sub is_permitted {
     # $log->debug("Users groups are ". join(',', @{$users_groups}));
 
     foreach my $group ( @$users_groups ) {
-        if ( grep { /^$group$/ } @{$self->groups->{$operation}} ) {
+        if ( grep { /^$group$/i } @{$self->groups->{$operation}} ) {
             return 1;
         }
     }
