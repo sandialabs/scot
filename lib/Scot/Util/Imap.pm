@@ -17,76 +17,161 @@ use Scot::Util::Imap::Cursor;
 
 use Moose;
 
-has log     => (
-    is          => 'ro',
-    isa         => 'Log::Log4perl::Logger',
-    required    => 1,
-);
+extends 'Scot::Util';
 
 has mailbox => (
     is          => 'ro',
     isa         => 'Str',
+    lazy        => 1,
     required    => 1,
-    default     => 'INBOX',
+    # default     => 'INBOX',
+    builder     => '_build_mailbox',
 );
+
+sub _build_mailbox {
+    my $self    = shift;
+    my $config  = $self->config;
+    my $attr    = 'mailbox';
+    my $default = 'INBOX';
+    return $self->get_config_value($attr,$default);
+}
 
 has hostname    => (
     is          => 'ro',
     isa         => 'Str',
+    lazy        => 1,
     required    => 1,
-    default     => 'localhost',
+    # default     => 'localhost',
+    builder     => '_build_hostname',
 );
+
+sub _build_hostname {
+    my $self    = shift;
+    my $config  = $self->config;
+    my $attr    = 'hostname';
+    my $default = 'localhost';
+    return $self->get_config_value($attr,$default);
+}
 
 has port        => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
-    default     => 993,
+    lazy        => 1,
+    # default     => 993,
+    builder     => '_build_port',
 );
+
+sub _build_port {
+    my $self    = shift;
+    my $config  = $self->config;
+    my $attr    = 'port';
+    my $default = 993;
+    return $self->get_config_value($attr,$default);
+}
 
 has username    => (
     is          => 'ro',
     isa         => 'Str',
+    lazy        => 1,
     required    => 1,
-    default     => 'scot-alerts',
+    # default     => 'scot-alerts',
+    builder     => '_build_username',
 );
+
+sub _build_username {
+    my $self    = shift;
+    my $config  = $self->config;
+    my $attr    = 'username';
+    my $default = "scot-alerts";
+    return $self->get_config_value($attr,$default);
+}
 
 has password    => (
     is          => 'ro',
     isa         => 'Str',
+    lazy        => 1,
     required    => 1,
-    default     => 'needpwhere',
+    # default     => 'needpwhere',
+    builder     => '_build_password'
 );
+
+sub _build_password {
+    my $self    = shift;
+    my $config  = $self->config;
+    my $attr    = 'password';
+    my $default = "changemenow";
+    return $self->get_config_value($attr,$default);
+}
 
 has ssl         => (
     is          => 'ro',
     isa         => 'ArrayRef',
+    lazy        => 1,
     required    => 1,
     # default     => sub {[ 'SSL_verify_mode', 'SSL_VERIFY_NONE' ]},
     # default     => sub {[ 'SSL_verify_mode', SSL_VERIFY_NONE ]},
-    default     => sub {[ 'SSL_verify_mode', 0 ]},
+    # default     => sub {[ 'SSL_verify_mode', 0 ]},
+    builder     => '_build_ssl',
 );
+
+sub _build_ssl {
+    my $self    = shift;
+    my $config  = $self->config;
+    my $attr    = 'ssl';
+    my $default = [ 'SSL_verify_mode', 0 ];
+    return $self->get_config_value($attr,$default);
+}
 
 has uid         => (
     is          => 'ro',
     isa         => 'Int',
+    lazy        => 1,
     required    => 1,
-    default     => 1,
+    # default     => 1,
+    builder     => 'build_uid',
 );
+
+sub _build_uid {
+    my $self    = shift;
+    my $config  = $self->config;
+    my $attr    = 'uid';
+    my $default = 1;
+    return $self->get_config_value($attr,$default);
+}
 
 has ignore_size_errors   => (
     is          => 'ro',
     isa         => 'Int',
+    lazy        => 1,
     required    => 1,
-    default     => 1,
+    # default     => 1,
+    builder     => '_build_ignore_size_errors',
 );
+
+sub _build_ignore_size_errors {
+    my $self    = shift;
+    my $config  = $self->config;
+    my $attr    = 'ignore_size_errors';
+    my $default = 1;
+    return $self->get_config_value($attr,$default);
+}
 
 has minutes_ago => (
     is          => 'ro',
     isa         => 'Int',
+    lazy        => 1,
     required    => 1,
     default     => 60,
 );
+
+sub _build_minutes_ago {
+    my $self    = shift;
+    my $config  = $self->config;
+    my $attr    = 'minutes_ago';
+    my $default = 60;
+    return $self->get_config_value($attr,$default);
+}
 
 has client => (
     is          => 'ro',

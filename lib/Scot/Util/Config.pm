@@ -9,6 +9,9 @@ use Safe;
 
 use Moose 2;
 
+## sample code
+## do not use
+
 has file => (
     is          => 'ro',
     isa         => 'Str',

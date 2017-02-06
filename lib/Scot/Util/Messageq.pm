@@ -5,7 +5,6 @@ use strict;
 use warnings;
 use v5.18;
 
-use Moose;
 use Mojo::JSON qw/decode_json encode_json/;
 use Data::GUID;
 use Net::Stomp;
@@ -17,6 +16,60 @@ use Try::Tiny;
 use Try::Tiny::Retry;
 use namespace::autoclean;
 
+use Moose;
+extends 'Scot::Util';
+
+has stomp_host  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    # default     => 'localhost',
+    builder     => '_build_stomp_host',
+);
+
+sub _build_stomp_host {
+    my $self    = shift;
+    my $config  = $self->config;
+    my $attr    = "stomp_host";
+    my $default = "localhost";
+    return $self->get_config_value($attr,$default);
+}
+
+has stomp_port  => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    # default     => 61613,
+    builder     => '_build_stomp_port',
+);
+
+sub _build_stomp_port {
+    my $self    = shift;
+    my $config  = $self->config;
+    my $attr    = "stomp_port";
+    my $default = 61613;
+    return $self->get_config_value($attr,$default);
+}
+
+# this is the part after /topic
+# having this as a "variable" allows us to set a different queue
+# for running tests and won't pollute any listeners to the topic
+has destination => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    # default     => 'scot',
+    builder     => '_build_destination',
+);
+
+sub _build_destination {
+    my $self    = shift;
+    my $config  = $self->config;
+    my $attr    = "destination";
+    my $default = "scot";
+    return $self->get_config_value($attr,$default);
+}
+
 has stomp   => (
     is      => 'ro',
     isa     => 'Maybe[Net::Stomp]',
@@ -26,40 +79,9 @@ has stomp   => (
     clearer => '_clear_stomp',
 );
 
-has env     => (
-    is      => 'ro',
-    isa     => 'Scot::Env',
-    required    => 1,
-    default => sub { Scot::Env->instance },
-);
-
-has stomp_host  => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    default     => 'localhost',
-);
-
-has stomp_port  => (
-    is          => 'ro',
-    isa         => 'Int',
-    required    => 1,
-    default     => 61613,
-);
-
-# this is the part after /topic
-# having this as a "variable" allows us to set a different queue
-# for running tests and won't pollute any listeners to the topic
-has destination => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    default     => 'scot',
-);
-
 sub _build_stomp {
     my $self    = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my $stomp;
 
     $log->debug("Creating STOMP client");
@@ -94,7 +116,7 @@ sub send {
     my $self    = shift;
     my $dest    = shift;
     my $href    = shift;
-    my $log     = $self->env->log;
+    my $log     = $self->log;
     my $stomp   = $self->stomp;
 
     # TODO: refactor to remove $dest as parameter
