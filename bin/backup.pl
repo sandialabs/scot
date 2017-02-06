@@ -149,7 +149,8 @@ else {
 
 my $esdir   = $config->{es_backup_location};
 my $dt  = DateTime->now();
-my $ts  = $dt->year . $dt->month . $dt->day . $dt->hour . $dt->minute;
+# my $ts  = $dt->year . $dt->month . $dt->day . $dt->hour . $dt->minute;
+my $ts  = $dt->strftime("%Y%m%d%H%M");
 
 print "TARing up backups to $tarloc.$ts.tgz\n";
 system("tar cvzf $tarloc.$ts.tgz $dumpdir $esdir");
