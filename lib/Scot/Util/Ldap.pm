@@ -243,6 +243,8 @@ sub get_users_groups {
     my $log     = $self->log;
     my $ldap    = $self->ldap; 
     my @groups  = ();
+
+    $log->debug("Attempting to find user = $user = groups");
     
     my $server          = $self->servername;
     my $binddn          = $self->dn;
