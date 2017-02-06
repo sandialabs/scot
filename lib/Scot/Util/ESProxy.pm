@@ -27,32 +27,22 @@ this module is used to proxy "searchkit" queries to the ES cluster
 
 =cut
 
-has config => (
-    is          => 'ro',
-    isa         => 'HashRef',
-    required    => 1,
-    default     => sub { {} },
-);
-
-has log => (
-    is          => 'ro',
-    isa         => 'Log::Log4perl::Logger',
-    required    => 1,
-);
+use Moose;
+extends 'Scot::Util';
 
 has proto       => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
     lazy        => 1,
-    builder     => '_get_protocol',
+    builder     => '_build_protocol',
 );
 
-sub _get_protocol {
+sub _build_protocol {
     my $self    = shift;
-    my $proto   = $self->config->{proto};
-    my $default = $ENV{'scot_es_proto'} // 'http';
-    return defined($proto) ? $proto : $default;
+    my $attr    = "proto";
+    my $default = "https";
+    return $self->get_config_value($attr,$default);
 }
 
 has servername  => (
@@ -60,14 +50,14 @@ has servername  => (
     isa         => 'Str',
     required    => 1,
     lazy        => 1,
-    builder     => '_get_servername',
+    builder     => '_build_servername',
 );
 
-sub _get_servername {
+sub _build_servername {
     my $self    = shift;
-    my $name    = $self->config->{servername};
-    my $default = $ENV{'scot_es_servername'} // 'localhost';
-    return defined($name) ? $name : $default;
+    my $attr    = "servername";
+    my $default = "localhost";
+    return $self->get_config_value($attr,$default);
 }
 
 has serverport  => (
@@ -75,14 +65,14 @@ has serverport  => (
     isa         => 'Int',
     required    => 1,
     lazy        => 1,
-    builder     => '_get_serverport',
+    builder     => '_build_serverport',
 );
 
-sub _get_serverport {
+sub _build_serverport {
     my $self    = shift;
-    my $port    = $self->config->{serverport};
-    my $default =  $ENV{'scot_es_serverport'} // 9200;
-    return defined($port) ? $port : $default;
+    my $attr    = "servername";
+    my $default = 9200;
+    return $self->get_config_value($attr,$default);
 }
 
 has username    => (
@@ -90,14 +80,14 @@ has username    => (
     isa         => 'Str',
     required    => 1,
     lazy        => 1,
-    builder     => '_get_username',
+    builder     => '_build_username',
 );
 
-sub _get_username {
+sub _build_username {
     my $self    = shift;
-    my $name    = $self->config->{username};
-    my $default = $ENV{'scot_ua_username'} // 'scot-alerts';
-    return defined($name) ? $name : $default;
+    my $attr    = "username";
+    my $default = "scot-alerts";
+    return $self->get_config_value($attr,$default);
 }
 
 has password    => ( 
@@ -105,14 +95,14 @@ has password    => (
     isa         => 'Str',
     required    => 1,
     lazy        => 1,
-    builder     => '_get_password',
+    builder     => '_build_password',
 );
 
-sub _get_password {
+sub _build_password {
     my $self    = shift;
-    my $pass    = $self->config->{password};
-    my $default = $ENV{'scot_ua_password'} // 'changeme';
-    return defined($pass) ? $pass : $default;
+    my $attr    = "password";
+    my $default = "changemenow";
+    return $self->get_config_value($attr,$default);
 }
 
 has uapid   => (

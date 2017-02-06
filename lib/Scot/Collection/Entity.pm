@@ -205,6 +205,12 @@ sub get_by_value {
     my $self    = shift;
     my $value   = shift;
     my $object  = $self->find_one({ value => $value });
+    if ( defined $object ) {
+        my $data = $object->data;
+        unless (defined $data) {
+            # enrichment failed at some point, let's try again
+        }
+    }
     return $object;
 }
 

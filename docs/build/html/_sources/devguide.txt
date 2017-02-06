@@ -195,6 +195,7 @@ The message format is::
     }
 
 :unique_guid_string:  is a requirement of the STOMP protocol and is generated
+
 :action_string:       is a member of the following: 
                        *  "created"  = something was created
                        *  "updated"  = something was updated
@@ -212,8 +213,8 @@ The message format is::
                     or in the case of a "message" it can be any string
                         that your client is listening for.
 
-:id:                is an integer id for the "type" above.  if sending a message, 
-                        this could be the an epoch time.
+:id:                is an integer id for the "type" above.  
+                    if sending a message, this could be the an epoch time.
 
 :data:              is a json structure that you are free to put stuff in.
 
@@ -225,4 +226,17 @@ will discuss how to work in the Perl base server.  Perldocs will be linked here 
 SCOT UI
 -------
 
-will discuss how to create/modify the React.js based UI.
+SCOT'S front end is primarily developed using React JS. See https://facebook.github.io/react/ to read more about it.
+
+:pubdev/:           Contains files necessary to modify the React-based front end
+*Note: Not all of the front end of SCOT is developed in React. Currently, the Incident Handler calendar and administration pages are written using jQuery and HTML, without React.*
+
+SCOT has been written using the JSX format. See https://facebook.github.io/react/docs/introducing-jsx.html to read more about it. 
+
+:JSX Libraries:         Most libraries that the SCOT JSX components (found in /pubdev/jsdev/react_components/) rely on are found in /pubdev/node_modules and can be installed/updated using npm.
+
+:JSX Compiling:         Compiling the JSX files into a single javascript file is done by using Grunt. The file that specifies the compiling directories is /pubdev/gruntfile.js. The final file that is ultimately compiled and used is /public/scot-3.5.js
+
+:JSX Dev:               If you would like to contribute to, or modify the front end of SCOT, you can do so by creating/modifying files in /pubdev/ and then compile your changes using grunt.
+
+:Final HTML/JS:         The files ultimately used to display and control the front end are found in /public/
