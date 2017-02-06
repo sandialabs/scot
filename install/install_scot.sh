@@ -81,9 +81,14 @@ function get_config_files {
         fi
     done
 
+    echo "***"
+    echo "*** installing scot config fiile "
+    echo "***"
     if [[ $AUTHMODE == "Remoteuser" ]]; then
+        echo "*** installing REMOTEUSER version of env.cfg"
         cp $SCOT_CONFIG_SRC/scot/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
     else
+        echo "*** installing LOCAL version of env.cfg"
         cp $SCOT_CONFIG_SRC/scot/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
     fi
 
@@ -358,7 +363,7 @@ function install_scot {
     echo "-- copying SCOT to $SCOTDIR"
     TAROPTS="--exclude=pubdev --exclude-vcs"
     echo "-       TAROPTS are $TAROPTS"
-    (cd $DEVDIR; tar $TAROPTS -cf - .) | (cd $SCOTDIR; tar xvf -)
+    (cd $DEVDIR; tar $TAROPTS -cf - .) | (cd $SCOTDIR; tar xf -)
 
     echo "-- assigning owner/permissions on $SCOTDIR"
     chown -R scot:scot $SCOTDIR
