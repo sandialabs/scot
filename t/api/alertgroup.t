@@ -10,14 +10,20 @@ use Scot::Collection::Alertgroup;
 use Mojo::JSON qw(encode_json decode_json);
 
 $ENV{'scot_mode'}           = "testing";
-$ENV{'SCOT_AUTH_TYPE'}      = "Testing";
-$ENV{'scot_log_file'}       = "/var/log/scot/scot.test.log";
-$ENV{'scot_env_configfile'} = '../../../Scot-Internal-Modules/etc/scot_env_test.cfg';
+$ENV{'scot_auth_type'}      = "Testing";
+$ENV{'scot_logfile'}        = "/var/log/scot/scot.test.log";
+$ENV{'scot_config_paths'}   = '../../../Scot-Internal-Modules/etc';
+$ENV{'scot_config_file'}    = 'scot_env_test.cfg';
 
 print "Resetting test db...\n";
-system("mongo scot-testing <../../etcsrc/database/reset.js 2>&1 > /dev/null");
+system("mongo scot-testing <../../install/src/mongodb/reset.js 2>&1 > /dev/null");
 
 @defgroups = ( 'ir', 'test' );
+
+foreach my $k (keys %ENV) {
+    next unless $k =~ /scot/;
+    print "$k = $ENV{$k}\n";
+}
 
 my $t = Test::Mojo->new('Scot');
 my $env = Scot::Env->instance;
