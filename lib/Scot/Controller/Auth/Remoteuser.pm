@@ -49,16 +49,24 @@ sub check {
 
     my $basicauth   = $headers->header('authorization');
     my $authuser    = $headers->header('authuser');
+    my $remoteuser  = $headers->header('remote-user');
     my $user        = $self->session('user');
-    $log->debug("Session user is         ", {filter =>\&Dumper, value =>$user});
-    $log->debug("Header authuser is      ", {filter =>\&Dumper, value =>$authuser});
-    $log->debug("Header authorization is ", {filter => \&Dumper, value => $basicauth});
 
+    $log->debug("\n".
+                " authorization = $basicauth \n".
+                " authuser      = $authuser \n".
+                " remote user   = $remoteuser \n".
+                " session user  = $user \n");
+    #unless ( defined $user ) {
+    #    $log->warn("User not set in session, using authuser value $authuser");
+    #    $user = $authuser;
+    #}
 
-
+    $log->debug("Session user is ", {filter =>\&Dumper, value =>$user});
     my $groups  = $self->session('groups');
 
     unless (ref($groups) eq "ARRAY") {
+        $log->debug("groups not set in session, fetching");
         my $garef	= $self->get_groups($user);
         $self->session('groups'	=> $garef);
         $groups	= $garef;
@@ -121,6 +129,7 @@ sub get_groups {
     my @groups;
 
     $log->debug("getting $user groups");
+    $log->debug("Group mode is $gmode");
 
     if ( $gmode eq "ldap" ) {
         $log->debug("group mode is ldap");
