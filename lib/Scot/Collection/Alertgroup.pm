@@ -419,7 +419,8 @@ sub update_alertgroup_with_bundled_alert {
         if ( $alert_obj->update({'$set' => $alert}) ) {
             $log->debug("updated alert $alert_id");
             if ( defined $entities and scalar(@$entities) > 0 ) {
-                $mongo->collection('Entity')->update_entities($alert_obj, $entities);
+                $mongo->collection('Entity')
+                      ->update_entities($alert_obj, $entities);
             }
         }
         else {
