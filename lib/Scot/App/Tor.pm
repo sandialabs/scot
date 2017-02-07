@@ -23,41 +23,6 @@ use warnings;
 
 use Moose;
 
-has env => (
-    is          => 'rw',
-    isa         => 'Scot::Env',
-    required    => 1,
-    builder     => '_get_env',
-);
-
-sub _get_env {
-    return Scot::Env->instance;
-}
-
-has config => (
-    is          => 'rw',
-    isa         => 'HashRef',
-    lazy        => 1,
-    required    => 1,
-    builder     => '_get_config',
-);
-
-sub _get_config {
-    my $self    = shift;
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
-
-    my $obj     = $mongo->collection('Config')->find_one({
-        module  => "Scot::Controller::Tor",
-    });
-    return $obj->item // {
-        url             => 'http://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.169.194.86',
-        proxy_protos    => [ 'http', 'https' ],
-        proxy_url       => 'http://proxy.host.tld:80',
-        ssl_opts        => { verify_hostname    => 0 },
-    };
-}
-
 sub run {
     my $self    = shift;
     my $env     = $self->env;

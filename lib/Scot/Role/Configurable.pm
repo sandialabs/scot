@@ -210,7 +210,7 @@ has quiet => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
-    default     => 0,
+    default     => 1,
 );
 
 1;

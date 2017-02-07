@@ -44,7 +44,7 @@ my $paths   = [qw(/opt/scot/etc)];
 
 my $loop    = Scot::App::Stretch->new( 
     paths              => $paths,
-    configuration_file => $configfile,
+    config_file        => $configfile,
     interactive        => $interactive ? 1 : 0,
     max_workers        => $maxworkers,
 );
