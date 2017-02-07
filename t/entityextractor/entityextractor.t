@@ -6,14 +6,13 @@ use Test::Deep;
 use Data::Dumper;
 use Scot::Util::EntityExtractor;
 use Scot::Util::Config;
-use Scot::Util::Logger;
-my $confobj = Scot::Util::Config->new({
-    paths   => ['../../../Scot-Internal-Modules/etc/'],
-    file    => 'logger_test.cfg',
-});
-my $loghref = $confobj->get_config();
-my $log     = Scot::Util::Logger->new($loghref);
 
+use Scot::Util::LoggerFactory;
+my $logfactory = Scot::Util::LoggerFactory->new({
+    config_file => 'logger_test.cfg',
+    paths       => [ '../../../Scot-Internal-Modules/etc' ],
+});
+my $log = $logfactory->get_logger;
 my $source   = <<EOF;
 <html>  Attack originated from <a href="www.attacker.com/asdf">www.attacker.com/asdf</a> </html>
 EOF
