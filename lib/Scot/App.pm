@@ -6,6 +6,7 @@ use strict;
 use warnings;
 use Scot::Util::LoggerFactory;
 use Scot::Util::Config;
+use Data::Dumper;
 use DateTime;
 use Moose;
 use namespace::autoclean;
@@ -73,7 +74,8 @@ has log => (
 sub _get_logger {
     my $self    = shift;
     my $chref   = $self->config->{log};
-    my $lfactory = Scot::Util::LoggerFactory->new($chref);
+    print "Logger config is " . Dumper($chref)."\n";
+    my $lfactory = Scot::Util::LoggerFactory->new(config => $chref);
     return $lfactory->get_logger;
 }
 
