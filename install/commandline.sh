@@ -40,7 +40,7 @@ function default_variables {
     # the repo
     ES_YUM_REPO="/etc/yum.repos.d/elasticsearch.repo"
     # reset the DB at install
-    ES_RESET_DB="yes"
+    ES_RESET_DB="no"
 
     # mongo package keyserver
     MONGO_KEYSRVR="--keyserver hkp://keyserver.ubuntu.com:80"
@@ -71,7 +71,7 @@ function default_variables {
 
 
 function process_commandline {
-    options="A:M:CDdprsu"
+    options="A:M:CDEdprsu"
     while getopts $options opt; do
         case $opt in
             A)
@@ -83,11 +83,11 @@ function process_commandline {
             D) 
                 DELDIR="yes"
                 ;;
+            E)
+                ES_RESET_DB="yes"
+                ;;
             d)
                 SCOT_RESTART_DEAMONS="yes"
-                ;;
-            e)
-                ES_RESET_DB="no"
                 ;;
             M)
                 SCOT_PRIVATE_MODULES=$OPTARG
@@ -135,13 +135,13 @@ function show_variables {
 function usage {
     cat << EOF
 
-    Usage: $0 [-A mode] [-M path] [-dersu]
+    Usage: $0 [-A mode] [-M path] [-dDErsu]
 
         -A mode     where mode = (default) "Local", "Ldap", or "Remoteuser" 
         -M path     where to locate installer for scot private modules
         -D          delete target install directory before beginning install
         -d          restart scot daemons (scepd and scfd)
-        -e          reset the Elasticsearch DB
+        -E          reset the Elasticsearch DB
         -r          delete existing SCOT Database (DATA LOSS POTENTIAL)
         -s          Install SCOT only, skip prerequisites (upgrade SCOT)
         -u          same as -s
