@@ -55,8 +55,9 @@ has env => (
 
 sub _get_env {
     my $self    = shift;
+    my $file    = $self->configuration_file;
     return Scot::Env->new({
-        config_file => $self->configuration_file,
+        config_file => $file,
         paths       => $self->paths,
     });
 }
