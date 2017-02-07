@@ -11,7 +11,9 @@ $ENV{https_proxy}   = "https://wwwproxy.sandia.gov:80";
 $ENV{http_proxy}   = "http://wwwproxy.sandia.gov:80";
 $ENV{HTTPS_DEBUG}  = 1;
 my $env         = Scot::Env->new();
-my $imgmunger   = Scot::Util::ImgMunger->new();
+my $imgmunger   = Scot::Util::ImgMunger->new({
+    config_file => "scot_env_test.cfg",
+});
 
 my $html    = <<EOF;
     <img src="https://my.sandia.gov/local/techweb/images/common_inside_logo.gif">

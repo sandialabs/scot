@@ -36,12 +36,6 @@ use Moose;
 
 extends 'Scot::App';
 
-has env         => (
-    is          => 'ro',
-    isa         => 'Scot::Env',
-    required    => 1,
-    default     => sub { Scot::Env->instance },
-);
 
 has thishostname    =>  (
     is          => 'ro',
