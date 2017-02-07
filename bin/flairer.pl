@@ -11,7 +11,7 @@ use Scot::App::Flair;
 
 
 my $loop    = Scot::App::Flair->new( 
-    configuration_file  => 'flair.app.cfg',
+    config_file  => 'flair.app.cfg',
     interactive  => 1,
 );
 $loop->run();
