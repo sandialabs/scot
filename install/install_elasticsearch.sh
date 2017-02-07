@@ -133,6 +133,13 @@ function install_elasticsearch {
         systemctl start elasticsearch.service
     fi
 
+    if curl -i -XHEAD http://localhost:9200/scot | grep -q 404; then
+        echo "-- need to init elastic search DB"
+        ES_RESET_DB="yes"
+    else
+        echo "-- index for scot already works"
+    fi
+
     if [[ $ES_RESET_DB == "yes" ]]; then
         echo "-- creating elasticsearch mappings..."
         . $DEVDIR/install/src/elasticsearch/mapping.sh
