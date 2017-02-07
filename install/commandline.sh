@@ -21,6 +21,8 @@ function default_variables {
     SCOT_DOCS_SRC="$DEVDIR/docs/build/html"
     # restart SCOT daemons scfd and scep whe installing/upgrading
     SCOT_RESTART_DAEMONS="no"
+    # overwrite config files
+    SCOT_ENV_OVERWRITE="no"
 
     # where to install activemq
     AMQDIR="/opt/activemq"
@@ -65,16 +67,18 @@ function default_variables {
     REFRESHREPOS="yes"
     # wipe the $SCOT_ROOT prior to install
     DELDIR="no"
-
 }
 
 
 function process_commandline {
-    options="A:M:Ddprsu"
+    options="A:M:CDdprsu"
     while getopts $options opt; do
         case $opt in
             A)
                 AUTHMODE=$OPTARG
+                ;;
+            C)
+                SCOT_ENV_OVERWRITE="yes"
                 ;;
             D) 
                 DELDIR="yes"
