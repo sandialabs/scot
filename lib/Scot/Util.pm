@@ -18,8 +18,9 @@ use strict;
 use warnings;
 
 use Scot::Util::LoggerFactory;
-use Moose;
+use Data::Dumper;
 
+use Moose;
 with qw(Scot::Role::Configurable);
 
 has log => (
@@ -27,16 +28,20 @@ has log => (
     isa         => 'Log::Log4perl::Logger',
     required    => 1,
     lazy        => 1,
-    builder     => '_get_log',
+    builder     => '_build_log',
     predicate   => 'has_log',
 );
 
-sub _get_log {
+sub _build_log {
     my $self        = shift;
     my $config      = $self->config;    # from scot::role::configurable
     my $logconfig   = $config->{log};
 
+    print "in Scot::Util config is ".Dumper($logconfig)."\n";
+
+
     unless ( $logconfig ) {
+        print "no logconfig, using defaults...\n";
         $logconfig  = {
             logger_name     => 'SCOT',
             layout          => '%d %7p [%P] %15F{1}: %4L %m%n',
@@ -45,7 +50,8 @@ sub _get_log {
             log_level       => 'DEBUG',
         };
     }
-    return Scot::Util::Logger->new($logconfig);
+    my $logfactory = Scot::Util::LoggerFactory->new($logconfig);
+    return $logfactory->get_logger;
 }
 
 1;
