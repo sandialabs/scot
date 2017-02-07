@@ -8,7 +8,7 @@ use Log::Log4perl::Level;
 use Log::Log4perl::Appender;
 
 use Moose;
-extends 'Scot::Util';
+with qw(Scot::Role::Configurable);
 
 has logger_name => (
     is          => 'ro',
@@ -118,5 +118,11 @@ sub get_logger {
 
     return $log;
 }
+
+has log => (
+    is          => 'ro',
+    isa         => 'Log::Log4perl::Logger',
+    predicate   => 'has_log',
+);
 
 1;
