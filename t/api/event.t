@@ -14,7 +14,7 @@ $ENV{'scot_config_paths'}   = '../../../Scot-Internal-Modules/etc';
 $ENV{'scot_config_file'}    = 'scot_env_test.cfg';
 
 print "Resetting test db...\n";
-system("mongo scot-testing <../../etcsrc/database/reset.js 2>&1 > /dev/null");
+system("mongo scot-testing <../../install/src/mongodb/reset.js 2>&1 > /dev/null");
 
 my $defgroups       = [ 'wg-scot-ir', 'testing' ];
 
