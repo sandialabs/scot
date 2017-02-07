@@ -8,43 +8,10 @@ use Scot::Util::LoggerFactory;
 use Scot::Util::Config;
 use Data::Dumper;
 use DateTime;
-use Moose;
 use namespace::autoclean;
 
-has configuration_file  => (
-    is              => 'ro',
-    isa             => 'Str',
-    required        => 1,
-);
-
-has paths   => (
-    is              => 'ro',
-    isa             => 'ArrayRef',
-    required        => 1,
-    default         => sub { ['/opt/scot/etc' ]; },
-);
-
-has config  => (
-    is              => 'ro',
-    isa             => 'HashRef',
-    required        => 1,
-    lazy            => 1,
-    builder         => '_build_config',
-);
-
-sub _build_config { 
-    my $self    = shift;
-    my $file    = $self->configuration_file;
-    unless ( $file ) {
-        die "Error: configuration file attribute not set!";
-    }
-    print "Loading $file\n";
-    my $confobj = Scot::Util::Config->new({
-        file    => $file,
-        paths   => $self->paths,
-    });
-    return $confobj->get_config;
-}
+use Moose;
+with qw(Scot::Role::Configurable);
 
 has env => (
     is          => 'ro',
@@ -68,13 +35,16 @@ has log => (
     isa         => 'Log::Log4perl::Logger',
     required    => 1,
     lazy        => 1,
-    builder     => '_get_logger',
+    builder     => '_build_log',
 );
 
-sub _get_logger {
+sub _build_log {
     my $self    = shift;
-    my $chref   = $self->config->{log};
-    print "Logger config is " . Dumper($chref)."\n";
+    my $config  = $self->config;
+    my $chref   = $config->{log};
+
+    print "in App.pm Logger config is " . Dumper($chref)."\n";
+
     my $lfactory = Scot::Util::LoggerFactory->new(config => $chref);
     return $lfactory->get_logger;
 }

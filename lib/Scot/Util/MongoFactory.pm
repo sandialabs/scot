@@ -6,7 +6,7 @@ use Data::Dumper;
 # not to self tomorrow:  adapt this to the new config style 
 
 use Moose;
-extends 'Scot::Util';
+with qw(Scot::Role::Configurable);
 
 has db_name => (
     is          => 'ro',
@@ -85,5 +85,11 @@ sub get_mongo {
 
     return $meerkat;
 }
+
+has log => (
+    is          => 'ro',
+    isa         => 'Log::Log4perl::Logger',
+    predicate   => 'has_log',
+);
 
 1;
