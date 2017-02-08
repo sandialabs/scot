@@ -123,12 +123,27 @@ sub _build_config {
         die "Config file not provided!\n";
     }
 
-    #print "building ".ref($self)." config from $file in ".join(':',@$paths)."\n";
+    my $href    = $self->get_config_href($file, $paths);
 
-    # File::Find does the hard work of locating the file
+    if ( defined $href->{include} ) {
+        # print "processing includes...\n";
+        my $include_href    = delete $href->{include};
+        foreach my $attr ( keys %{ $include_href } ) {
+            $href->{$attr} = $self->get_config_href($include_href->{$attr}, 
+                                                    $paths);
+        }
+    }
+    #print "got config: ".Dumper($href)."\n";
+    return $href;
+}
+
+sub get_config_href {
+    my $self    = shift;
+    my $file    = shift;
+    my $paths   = shift;
+    my $fqname;
     find(
         sub {
-            # print "looking for $file in $File::Find::dir\n";
             if ( $_ eq $file ) {
                 $fqname = $File::Find::name;
                 return;
@@ -144,23 +159,13 @@ sub _build_config {
         die   "Config File $file not found!\n";
     }
 
-    # print "Reading config file: $fqname\n";
-
-    no strict 'refs'; # just for this code scope
+    no strict 'refs';
     my $cont    = new Safe 'MCONFIG';
     my $r       = $cont->rdo($fqname);
     my $hname   = 'MCONFIG::environment';
     my %copy    = %$hname;
     my $href    = \%copy;
 
-    if ( defined $href->{include} ) {
-        # print "processing includes...\n";
-        my $include_href    = delete $href->{include};
-        foreach my $attr ( keys %{ $include_href } ) {
-            $href->{$attr} = $self->_build_config($include_href->{$attr});
-        }
-    }
-    #print "got config: ".Dumper($href)."\n";
     return $href;
 }
 
