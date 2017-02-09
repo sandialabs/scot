@@ -15,6 +15,7 @@ Scot::Role::Configurable
 use strict;
 use warnings;
 use v5.18;
+use Carp qw(cluck longmess shortmess);
 use File::Find;
 use Safe;
 use Data::Dumper;
@@ -61,6 +62,8 @@ sub _build_config_file {
 
 =item B<paths>
 
+SIMPLIFYING: config_file is now fully qualified path
+
 this is an array ref of paths to be seached for the config_file
 testing has revealed that the last location found is the file that
 will be used.  In other words, if paths = [ '/etc', '/home/tbruner' ] 
@@ -72,6 +75,7 @@ consulted and the colon seperated (:) path string is used.  Otherwise,
 the path will default to /opt/scot/etc
 
 =cut
+
 
 has paths   => (
     is          => 'ro',
@@ -95,6 +99,7 @@ sub _build_paths {
     $self->feedback("using env scot_config_paths ".join(':',@paths));
     return \@paths;
 }
+
 
 =item B<config>
 
@@ -120,19 +125,22 @@ sub _build_config {
     $self->feedback("path: ".join(':',@$paths));
 
     unless (defined $file) {
-        die "Config file not provided!\n";
+        print longmess;
+        confess "Config file not provided!\n";
     }
 
     my $href    = $self->get_config_href($file, $paths);
 
-    if ( defined $href->{include} ) {
-        # print "processing includes...\n";
-        my $include_href    = delete $href->{include};
-        foreach my $attr ( keys %{ $include_href } ) {
-            $href->{$attr} = $self->get_config_href($include_href->{$attr}, 
-                                                    $paths);
-        }
-    }
+    # simplifying
+
+    #if ( defined $href->{include} ) {
+    #    # print "processing includes...\n";
+    #    my $include_href    = delete $href->{include};
+    #    foreach my $attr ( keys %{ $include_href } ) {
+    #        $href->{$attr} = $self->get_config_href($include_href->{$attr}, 
+    #                                                $paths);
+    #    }
+    #}
     #print "got config: ".Dumper($href)."\n";
     return $href;
 }
