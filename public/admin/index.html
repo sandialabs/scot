@@ -660,8 +660,8 @@ $.ajax({
             }).done(function(response) {
                 for (i=0; i < response.records.length; i++) {
                     if (selectedusersid.indexOf(response.records[i].id) !== -1) {
-                        if (response.records[i].group.indexOf(groupname) === -1) {
-                            var currentGroup = response.records[i].group;
+                        if (response.records[i].groups.indexOf(groupname) === -1) {
+                            var currentGroup = response.records[i].groups;
                             currentGroup.push(groupname);
                             //todo check if group is already there and skip if it is. 
                             var url = '/scot/api/v2/user/' + response.records[i].id;
