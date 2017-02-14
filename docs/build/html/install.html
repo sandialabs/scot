@@ -151,6 +151,10 @@ $ tar czvf scotng-backup.tgz ./dump
 <h2>Using install.sh to upgrade<a class="headerlink" href="#using-install-sh-to-upgrade" title="Permalink to this headline">¶</a></h2>
 <p>Sometimes you just want to refresh the SCOT software to get the latest fix or new feature.  This is when you should use the -s or -u flag.  If the fix or feature is in the flairing engine (scfd) or the elasticsearch push module (scepd) you will want to give the -d flag to restart those daemons.</p>
 </div>
+<div class="section" id="configuration-files">
+<h2>Configuration Files<a class="headerlink" href="#configuration-files" title="Permalink to this headline">¶</a></h2>
+<p>Configuration templates are in SCOT/install/src/scot.  The files end in &#8220;cfg.pl&#8221;.  You may edit them prior to install to suite your environment, or you may edit them post install in /opt/scot/etc.  All changes to config files after installation will require a restart of the service for changes to take place.</p>
+</div>
 </div>
 
 
@@ -170,6 +174,7 @@ $ tar czvf scotng-backup.tgz ./dump
 </li>
 <li><a class="reference internal" href="#install-sh-options">install.sh Options</a></li>
 <li><a class="reference internal" href="#using-install-sh-to-upgrade">Using install.sh to upgrade</a></li>
+<li><a class="reference internal" href="#configuration-files">Configuration Files</a></li>
 </ul>
 </li>
 </ul>
