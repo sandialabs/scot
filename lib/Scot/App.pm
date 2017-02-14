@@ -23,7 +23,7 @@ has env => (
 
 sub _get_env {
     my $self    = shift;
-    my $file    = $self->configuration_file;
+    my $file    = $self->config_file;
     return Scot::Env->new({
         config_file => $file,
         paths       => $self->paths,
@@ -36,6 +36,7 @@ has log => (
     required    => 1,
     lazy        => 1,
     builder     => '_build_log',
+    predicate   => 'has_log',
 );
 
 sub _build_log {
