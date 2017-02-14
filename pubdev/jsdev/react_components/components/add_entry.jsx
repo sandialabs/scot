@@ -3,23 +3,20 @@ var React       = require('react')
 var TinyMCE     = require('react-tinymce')
 var Dropzone    = require('../../../node_modules/react-dropzone')
 var Button      = require('react-bootstrap/lib/Button.js');
-var marksave = false
-var addentrydata = true
 
 var recently_updated = 0
-
 var reply = false
-var timestamp = new Date()
-var output = "By You ";
-timestamp = new Date(timestamp.toString())
-output  = output + timestamp.toLocaleString()
+
 var AddEntryModal = React.createClass({
 	getInitialState: function(){
-	return {
-	    edit: false, stagecolor: '#000',enable: true, addentry: true, saved: true, enablesave: true}
+        var key = new Date();
+        key = key.getTime();
+        return {
+            originalContent: '', key: key, 
+        }
 	},
 	componentWillMount: function(){
-        if(this.props.stage == 'Edit'){
+        if(this.props.entryAction == 'Edit'){
             reply = false;
             $.ajax({
                 type: 'GET',
@@ -27,40 +24,40 @@ var AddEntryModal = React.createClass({
                 }).success(function(response){
                     recently_updated = response.updated
                     if(response.body == ""){
-                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body_plain)
+                        $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").html(response.body_plain)
                     }
                     else{
-                        $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(response.body)
+                        $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").html(response.body)
                     }
                 }.bind(this))
         }
-        else if (this.props.title == 'Add Entry'){
+        else if (this.props.entryAction == 'Add'){
             reply = false
-            $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text('')
+            $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").text('')
         }
-        else if(this.props.title == 'Reply Entry'){
+        else if(this.props.entryAction == 'Reply'){
             reply = true
             $.ajax({
                 type: 'GET',
                 url:  '/scot/api/v2/entry/'+ this.props.id
         }).success(function(response){
-            if (response.body_flair == '') {
+            /*if (response.body_flair == '') {
                 this.setState({subitem: response.body});
             } else {
                 this.setState({subitem: response.body_flair});
-            }
+            }*/
         }.bind(this))
-        var newheight;
-        newheight= document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+        /*var newheight;
+        newheight= document.getElementById('iframe_'+this.state.key).contentWindow.document.body.scrollHeight;
         newheight = newheight + 'px'
-        this.setState({height: newheight})
+        this.setState({height: newheight}) */
         } 
     },
     componentDidMount: function() {
         //$('#tiny_' + this.props.id + '_ifr').css('height', '100px')
-        $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top)
-        if(this.props.title == 'CopyToEntry') {
-            $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(this.props.content)
+        $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.state.key).position().top)
+        if(this.props.entryAction == 'Copy To Entry') {
+            $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").html(this.props.content)
         }
     },
     shouldComponentUpdate: function() {
@@ -68,8 +65,8 @@ var AddEntryModal = React.createClass({
     },
 	render: function() {
         var item = this.state.subitem
-        var not_saved_entry_id = 'not_saved_entry_'+this.props.id
-        var tinyID = 'tiny_'+this.props.id
+        var not_saved_entry_id = 'not_saved_entry_'+this.state.key
+        var tinyID = 'tiny_'+this.state.key
             return (
                 <div id={not_saved_entry_id} className={'not_saved_entry'}>
                     <div className={'row-fluid entry-outer'} style={{border: '3px solid blue',marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
@@ -95,13 +92,13 @@ var AddEntryModal = React.createClass({
         }
     },
 	submit: function(){
-        if($('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").text() == "" && $('#' + this.props.id + '_ifr').contents().find("#tinymce").find('img').length == 0) {
+        if($('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").text() == "" && $('#' + this.state.key + '_ifr').contents().find("#tinymce").find('img').length == 0) {
             alert("Please Add Some Text")
         }
         else {    
-            if(this.props.stage == 'Reply') {
+            if(this.props.entryAction == 'Reply') {
                 var data = new Object()
-                $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+                $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").each(function(x,y){
                     $(y).find('img').each(function(key, value){
                         if ($(value)[0].src.startsWith('blob')) { //Checking to see if it's a locally copied file
                             var canvas = document.createElement('canvas');
@@ -116,7 +113,7 @@ var AddEntryModal = React.createClass({
                         }
                     })
                 })    
-                data = JSON.stringify({parent: Number(this.props.id), body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
+                data = JSON.stringify({parent: Number(this.props.id), body: $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").html(), target_id:Number(this.props.targetid) , target_type: this.props.type})
                 $.ajax({
                     type: 'post',
                     url: '/scot/api/v2/entry',
@@ -130,7 +127,7 @@ var AddEntryModal = React.createClass({
                 })               
                 this.props.addedentry()
             }
-            else if (this.props.stage == 'Edit'){
+            else if (this.props.entryAction == 'Edit'){
                 $.ajax({
                     type: 'GET',
                     url: '/scot/api/v2/entry/'+this.props.id
@@ -166,7 +163,7 @@ var AddEntryModal = React.createClass({
             }
             else if(this.props.type == 'alert'){ 
                 var data;
-                $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+                $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").each(function(x,y){
                     $(y).find('img').each(function(key, value){
                         if ($(value)[0].src.startsWith('blob')) {   //Checking if it's a locally copied file
                             var canvas = document.createElement('canvas');
@@ -181,7 +178,7 @@ var AddEntryModal = React.createClass({
                         }
                     })
                 })
-                data = JSON.stringify({body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid), target_type: 'alert',  parent: 0})
+                data = JSON.stringify({body: $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid), target_type: 'alert',  parent: 0})
                 $.ajax({
                     type: 'post', 
                     url: '/scot/api/v2/entry',
@@ -197,7 +194,7 @@ var AddEntryModal = React.createClass({
             }	
             else {
                 var data = new Object();
-                $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+                $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").each(function(x,y){
                     $(y).find('img').each(function(key, value){
                         if ($(value)[0].src.startsWith('blob')) {   //Checking if its a locally copied file 
                             var canvas = document.createElement('canvas');
@@ -212,7 +209,7 @@ var AddEntryModal = React.createClass({
                         }
                     }) 
                 }) 
-                data = {parent: 0, body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
+                data = {parent: 0, body: $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").html(), target_id: Number(this.props.targetid) , target_type: this.props.type}
                 $.ajax({
                     type: 'post',
                     url: '/scot/api/v2/entry',
@@ -230,7 +227,7 @@ var AddEntryModal = React.createClass({
     },
     forEdit: function(set){
         if(set){
-            $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").each(function(x,y){
+            $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").each(function(x,y){
                 $(y).find('img').each(function(key, value){
                     if ($(value)[0].src.startsWith('blob')) {   //Checking if its a lcoally copied file
                         var canvas = document.createElement('canvas');
@@ -247,7 +244,7 @@ var AddEntryModal = React.createClass({
             })
             var data = {
                 parent: Number(this.props.parent), 
-                body: $('#tiny_' + this.props.id + '_ifr').contents().find("#tinymce").html(), 
+                body: $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").html(), 
                 target_id: Number(this.props.targetid) , 
                 target_type: this.props.type
             }
