@@ -18,17 +18,28 @@ var Source = React.createClass({
         var id = this.props.id;
         var type = this.props.type;
         var data = this.props.data;
+        
+        //Don't show if guide
+        if (this.props.type == 'guide') {
+            return (<th/>);
+        } 
+        
         if (data != undefined) {
             for (var i=0; i < data.length; i++) {
                 rows.push(<SourceDataIterator data={data} dataOne={data[i]} id={id} type={type} updated={this.props.updated} />);
             }
         }
         return (
-            <div>
-                {rows}
-                {this.state.sourceEntry ? <NewSource data={data} type={type} id={id} toggleSourceEntry={this.toggleSourceEntry} updated={this.props.updated}/>: null}
-                {this.state.sourceEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-minus' ariaHidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>} 
-            </div>
+            <th>
+                <th>
+                Sources:
+                </th>
+                <td>
+                    {rows}
+                    {this.state.sourceEntry ? <NewSource data={data} type={type} id={id} toggleSourceEntry={this.toggleSourceEntry} updated={this.props.updated}/>: null}
+                    {this.state.sourceEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-minus' ariaHidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>} 
+                </td>
+            </th>
         )
     }
 });
