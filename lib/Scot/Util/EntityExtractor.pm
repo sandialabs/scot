@@ -20,19 +20,14 @@ use Log::Log4perl::Level;
 use Log::Log4perl::Appender;
 use Net::IDN::Encode ':all';
 use Try::Tiny;
+use namespace::autoclean;
 
 use Moose;
-use namespace::autoclean;
+extends 'Scot::Util';
 
             # 
 my @ss = (); # global necessitated by the nature of processing regexes
             # see Mastering Regular Expressions, 3rd Edition Chpt 7.
-
-has log         => (
-    is          => 'ro',
-    isa         => 'Log::Log4perl::Logger',
-    required    => 1,
-);
 
 has 'regexmap'  => (
     is          => 'rw',
@@ -53,17 +48,26 @@ has     'suffix'   => (
     builder     => '_build_suffix',
 );
 
-has 'suffixfile'    => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => '1',
-    default     => '/opt/scot/etc/effective_tld_names.dat',
-);
-
 sub _build_suffix {
     my $self    = shift;
     return        Domain::PublicSuffix->new({ data_file => $self->suffixfile});
 }
+
+has 'suffixfile'    => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => '1',
+    builder     => '_build_suffixfile',
+);
+
+sub _build_suffixfile {
+    my $self    = shift;
+    my $attr    = "suffixfile";
+    my $default = "/opt/scot/etc/effective_tld_names.dat";
+    my $envname = "scot_util_entityextractor_suffixfile";
+    return $self->get_config_value($attr, $default, $envname);
+}
+
 
 Readonly my $DOMAIN_REGEX_2 => qr{
     \b                                  # word boundary
