@@ -17,7 +17,7 @@ use Try::Tiny::Retry;
 use namespace::autoclean;
 
 use Moose;
-extends 'Scot::Util';
+extends qw(Scot::Util);
 
 has stomp_host  => (
     is          => 'ro',

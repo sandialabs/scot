@@ -129,7 +129,7 @@ has uid         => (
     lazy        => 1,
     required    => 1,
     # default     => 1,
-    builder     => 'build_uid',
+    builder     => '_build_uid',
 );
 
 sub _build_uid {
