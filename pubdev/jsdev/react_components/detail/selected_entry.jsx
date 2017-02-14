@@ -301,7 +301,7 @@ var SelectedEntry = React.createClass({
                 {(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
                 {(type == 'signature' && this.props.headerData != null) ? <SignatureTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar}/> : <span>Loading...</span>} 
-                {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
+                {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry entryAction={'Add'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
                 {this.props.fileUploadToolbar ? <div>{this.props.isAlertSelected == false ? <FileUpload type={this.props.type} targetid={this.props.id} id={'file_upload'} fileUploadToggle={this.props.fileUploadToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
                 {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} aID={this.props.aID} aType={this.props.aType} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
@@ -754,7 +754,7 @@ var AlertRowBlank = React.createClass({
             <tr className='not_selectable' style={{display:DisplayValue}}>
                 <td colSpan="50">
                     {showEntry ? <div>{<SelectedEntry type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/>}</div> : null}
-                    {showAddEntryToolbar ? <AddEntry title={'Add Entry'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.toggleOffAddEntry} updated={this.props.updated} errorToggle={this.props.errorToggle}/> : null}
+                    {showAddEntryToolbar ? <AddEntry entryAction={'Add'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.toggleOffAddEntry} updated={this.props.updated} errorToggle={this.props.errorToggle}/> : null}
                     {showFileUploadToolbar ? <FileUpload type={this.props.aType} targetid={this.props.id} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.toggleOffFileUpload}/> : null} 
                 </td>
             </tr>
@@ -893,7 +893,7 @@ var EntryParent = React.createClass({
                         </div>
                     </div>
                 {itemarr}
-                {this.state.replyEntryToolbar ? <AddEntry title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid={id} id={items.id} addedentry={this.replyEntryToggle} errorToggle={this.props.errorToggle} /> : null}
+                {this.state.replyEntryToolbar ? <AddEntry entryAction={'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid={id} id={items.id} addedentry={this.replyEntryToggle} errorToggle={this.props.errorToggle} /> : null}
                 {this.state.fileUploadToolbar ? <FileUpload type={this.props.type} targetid={this.props.id} entryid={this.props.items.id} fileUploadToggle={this.fileUploadToggle} errorToggle={this.props.errorToggle}/> : null}
                 </div> 
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} errorToggle={this.props.errorToggle} /> : null}     
@@ -953,7 +953,7 @@ var EntryData = React.createClass({
         return (
             <div key={this.props.id} className={'row-fluid entry-body'}>
                 <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
-                    {this.props.editEntryToolbar ? <AddEntry title='Edit Entry' stage={'Edit'} type={this.props.type} targetid={this.props.targetid} id={id} addedentry={this.props.editEntryToggle} parent={this.props.subitem.parent} errorToggle={this.props.errorToggle} /> : 
+                    {this.props.editEntryToolbar ? <AddEntry entryAction={'Edit'} type={this.props.type} targetid={this.props.targetid} id={id} addedentry={this.props.editEntryToggle} parent={this.props.subitem.parent} errorToggle={this.props.errorToggle} /> : 
                     <Frame frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}> 
                         <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
                     </Frame>}
