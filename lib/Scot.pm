@@ -25,7 +25,7 @@ sub startup {
     my $self    = shift;
     $self->mode('development'); # remove when in prod
 
-    my $config_file  = $ENV{'scot_config_file'} // "../etc/scot.cfg.pl";
+    my $config_file  = $ENV{'scot_config_file'} // "/opt/scot/etc/scot.cfg.pl";
 
     my $env     = Scot::Env->new(
         config_file => $config_file,
