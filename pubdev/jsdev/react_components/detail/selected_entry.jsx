@@ -896,7 +896,7 @@ var EntryParent = React.createClass({
                 {this.state.replyEntryToolbar ? <AddEntry title='Reply Entry' stage = {'Reply'} type = {type} header1={header1} header2={header2} header3={header3} createdTime={createdTime} updatedTime={updatedTime} targetid={id} id={items.id} addedentry={this.replyEntryToggle} errorToggle={this.props.errorToggle} /> : null}
                 {this.state.fileUploadToolbar ? <FileUpload type={this.props.type} targetid={this.props.id} entryid={this.props.items.id} fileUploadToggle={this.fileUploadToggle} errorToggle={this.props.errorToggle}/> : null}
                 </div> 
-                {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} /> : null}     
+                {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} errorToggle={this.props.errorToggle} /> : null}     
             </div>
         );
     }
