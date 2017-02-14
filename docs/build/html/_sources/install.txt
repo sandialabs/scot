@@ -100,3 +100,9 @@ Using install.sh to upgrade
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sometimes you just want to refresh the SCOT software to get the latest fix or new feature.  This is when you should use the -s or -u flag.  If the fix or feature is in the flairing engine (scfd) or the elasticsearch push module (scepd) you will want to give the -d flag to restart those daemons.
+
+Configuration Files
+^^^^^^^^^^^^^^^^^^^
+
+Configuration templates are in SCOT/install/src/scot.  The files end in "cfg.pl".  You may edit them prior to install to suite your environment, or you may edit them post install in /opt/scot/etc.  All changes to config files after installation will require a restart of the service for changes to take place.
+
