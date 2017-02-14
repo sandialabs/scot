@@ -25,15 +25,10 @@ sub startup {
     my $self    = shift;
     $self->mode('development'); # remove when in prod
 
-    my $config_paths = [ '/opt/scot/etc' ];
-    if ( defined $ENV{'scot_config_paths'} ) {
-        $config_paths = [ split(':', $ENV{'scot_config_paths'}) ];
-    }
-    my $config_file  = $ENV{'scot_config_file'} // "scot_env.cfg";
+    my $config_file  = $ENV{'scot_config_file'} // "../etc/scot.cfg.pl";
 
     my $env     = Scot::Env->new(
         config_file => $config_file,
-        paths       => $config_paths,
     );
     $self->attr     ( env => sub { $env } );
     $self->helper   ( env => sub { shift->app->env } );
@@ -522,8 +517,6 @@ sub log_startup {
                 "============================================================\n".
         " "x55 ."| SCOT  ". $self->env->version . "\n".
         " "x55 ."| mode: ". $self->env->mode. "\n".
-        " "x55 ."| db:   ". 
-                    Dumper($self->env->config) . "\n".
         " "x55 ."============================================================\n"
     );
     # $self->env->dump_env;

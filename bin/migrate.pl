@@ -26,7 +26,8 @@ unless ( grep {/$colname/} @validcols ) {
 
 
 
-my $env     = Scot::Env->new({ });
+
+my $env     = Scot::Env->new({config_file => '/opt/scot/etc/migrate.cfg.pl' });
 my $mover   = Scot::App::Migrate->new({env=>$env});
 
 
