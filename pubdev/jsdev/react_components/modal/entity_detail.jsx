@@ -19,21 +19,22 @@ var EntityDetail = React.createClass({
     getInitialState: function() {
         var tabs = [];
         var processedIdsArray = [];
-        var entityHeightint = 400;
-        var entityWidthint = 600;
-        var entityHeight = entityHeightint + 'px';
+        var entityHeight = '100%' //test
+        var entityWidthint = 700;
         var entityWidth = entityWidthint + 'px';
+        var entityMaxHeight = '70vh';
         if (this.props.fullScreen == true) {
-            entityHeight = '95vh'
-            entityWidth = '95%'
+            entityHeight = '95vh';
+            entityWidth = '95%';
+            entityMaxHeight = '95vh';
         }
         return {
             entityData:null,
             entityid: this.props.entityid,
             entityHeight: entityHeight,
             entityWidth: entityWidth,
-            entityHeightint: entityHeightint,
             entityWidthint: entityWidthint,
+            entityMaxHeight: entityMaxHeight,
             tabs: tabs,
             initialLoad:false,
             processedIds:processedIdsArray,
@@ -227,9 +228,6 @@ var EntityDetail = React.createClass({
     handleSelectTab(key) {
         this.setState({currentKey:key});
     },
-    positionBottomBoundsCheck: function() {
-        return ($(document).height() - this.state.defaultEntityOffset.top - this.state.entityHeightint);
-    },
     positionRightBoundsCheck: function(e) {
         if (!e) {
             return ($(document).width() - this.state.defaultEntityOffset.left - this.state.entityWidthint);
@@ -265,39 +263,27 @@ var EntityDetail = React.createClass({
             tabsArr.push(<Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} valueClicked={this.state.tabs[i].valueClicked} i={z} key={z} errorToggle={this.props.errorToggle}/></Tab>)
         }
         if (this.state.defaultEntityOffset && this.state.entityobj) {
-            var positionBottomBoundsValue = this.positionBottomBoundsCheck();
             var positionRightBoundsValue = this.positionRightBoundsCheck();
-            if (positionBottomBoundsValue < 0 ) {
-                defaultOffsetY = this.state.defaultEntityOffset.top + positionBottomBoundsValue;
                 if (this.positionRightBoundsCheck($(this.state.entityobj).width()) < 0) {
-                    defaultOffsetX = this.state.defaultEntityOffset.left - this.state.entityWidthint;
+                    defaultOffsetX = this.state.defaultEntityOffset.left - this.state.entityWidth;
                 } else {
                     defaultOffsetX = this.state.defaultEntityOffset.left + $(this.state.entityobj).width();
                 }
-            } else {
-                defaultOffsetY = this.state.defaultEntityOffset.top + 20;
-                if (positionRightBoundsValue < 0 ) {
-                    defaultOffsetX = this.state.defaultEntityOffset.left + positionRightBoundsValue;
-                } else {
-                    defaultOffsetX = this.state.defaultEntityOffset.left;
-                }
-            }
-            
         } else {
             defaultOffsetY = 50;
             defaultOffsetX = 0;
         }
         return (
-            <Draggable handle="#handle" onMouseDown={this.moveDivInit} key={this.props.key} defaultPosition={{x:defaultOffsetX, y:defaultOffsetY}}>
-                <div id="dragme" className={DragmeClass} style={{height:this.state.entityHeight,width:this.state.entityWidth}}>
+            <Draggable handle="#handle" onMouseDown={this.moveDivInit} key={this.props.key}>
+                <div id="dragme" className={DragmeClass} style={{width:this.state.entityWidth, left:defaultOffsetX, maxHeight:'90vh'}}>
                     <div id='popup-flex-container' style={{height: '100%', display:'flex', flexFlow:'row'}}>
-                        <div id="entity_detail_container" style={{height: '100%', flexFlow: 'column', display: 'flex', width:'100%'}}>
+                        <div id="entity_detail_container" style={{flexFlow: 'column', display: 'flex', width:'100%'}}>
                             <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarOff}/></span></div></div>
                             <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills'>
                                 {tabsArr}                     
                             </Tabs>
                         </div>
-                        <div id='sidebar' onMouseDown={this.initDrag} style={{flex:'0 1 auto', height: '100%', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}}/>
+                        <div id='sidebar' onMouseDown={this.initDrag} style={{flex:'0 1 auto', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}}/>
                     </div>
                     <div id='footer' onMouseDown={this.initDrag} style={{display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}>
                     </div>
@@ -412,9 +398,21 @@ var EntityBody = React.createClass({
         var href = '/#/entity/'+this.props.entityid;
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='tabs'>
-                <Tab eventKey={1} className='entityPopUpButtons' style={{overflow:'auto'}} title={this.state.appearances}>{entityEnrichmentLinkArr}<span><br/><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><a href={href} style={{color:'#c400ff'}} target='_blank'>List truncated due to large amount of references. Click to view the whole entity</a></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton}/><br/></Tab>
-                <Tab eventKey={2} className='entityPopUpButtons' style={{overflow:'auto'}} title="Entry"><Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
-                {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'entity'} id={this.props.entityid} errorToggle={this.props.errorToggle}/></Tab>
+                <Tab eventKey={1} className='entityPopUpButtons' title={this.state.appearances} style={{height:'100%'}}>
+                    <div>
+                    {entityEnrichmentLinkArr}
+                    </div>
+                    <div style={{maxHeight: '30vh', overflowY: 'auto'}}>
+                        <span><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><a href={href} style={{color:'#c400ff'}} target='_blank'>List truncated due to large amount of references. Click to view the whole entity</a></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton}/><br/>
+                    </div>
+                    <hr style={{marginTop:'.5em', marginBottom:'.5em'}}/>
+                    <div style={{maxHeight:'50vh', overflowY:'auto'}}>
+                        <div>
+                            <Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
+                        </div>
+                        {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'entity'} id={this.props.entityid} errorToggle={this.props.errorToggle}/>
+                    </div>
+                </Tab>
                 {entityEnrichmentGeoArr}
                 {entityEnrichmentDataArr}
             </Tabs>
@@ -476,8 +474,8 @@ var EntityEnrichmentButtons = React.createClass({
     render: function() { 
         var dataSource = this.props.dataSource; 
         return (
-            <div style={{position:'relative'}}>
-                <div style={{overflow:'auto'}}> 
+            <div style={{overflowY:'auto'}}>
+                <div> 
                     <Inspector.default data={dataSource} expandLevel={4} />
                 </div>
             </div>
@@ -825,8 +823,12 @@ var GuideBody = React.createClass ({
         var SelectedEntry = require('../detail/selected_entry.jsx');
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='pills'>
-                <Tab eventKey={1} style={{overflow:'auto'}}><Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
-                {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} errorToggle={this.props.errorToggle}/></Tab>
+                <Tab eventKey={1} style={{overflow:'auto'}}>
+                    <div>
+                        <Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
+                    </div>
+                    {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} errorToggle={this.props.errorToggle}/>
+                </Tab>
             </Tabs>
         )
     }
