@@ -240,18 +240,22 @@ var SelectedHeaderOptions = React.createClass({
     },
     componentDidMount: function() {
         //open, close SELECTED alerts
-        $('#main-detail-container').keydown(function(event){
-            if($('input').is(':focus')) {return}
-            if (event.keyCode == 79 && (event.ctrlKey != true && event.metaKey != true)) {
-                this.alertOpenSelected();
-            }
-            if (event.keyCode == 67 && (event.ctrlKey != true && event.metaKey != true)) {
-                this.alertCloseSelected();
-            }
-        }.bind(this))
+       if (this.props.type == 'alertgroup' || this.props.type == 'alert') { 
+            $('#main-detail-container').keydown(function(event){
+                if($('input').is(':focus')) {return}
+                if (event.keyCode == 79 && (event.ctrlKey != true && event.metaKey != true)) {
+                    this.alertOpenSelected();
+                }
+                if (event.keyCode == 67 && (event.ctrlKey != true && event.metaKey != true)) {
+                    this.alertCloseSelected();
+                }
+            }.bind(this))
+       }
     },
     componentWillUnmount: function() {
-        $('#main-detail-container').unbind('keydown');
+        if (this.props.type == 'alertgroup' || this.props.type == 'alert') {
+            $('#main-detail-container').unbind('keydown');
+        }
     },
     guideToggle: function() {
         var entityoffset = {top: 0, left: 0} //set to 0 so it appears in a default location.
