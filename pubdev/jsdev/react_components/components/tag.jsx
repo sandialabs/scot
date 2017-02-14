@@ -18,18 +18,28 @@ var Tag = React.createClass({
         var id = this.props.id;
         var type = this.props.type;
         var data = this.props.data;
+        
+        //Don't show if guide
+        if (this.props.type == 'guide') {
+            return (<th/>);
+        }
+
         if (data != undefined) {
             for (var i=0; i < data.length; i++) {
                 rows.push(<TagDataIterator data={data} dataOne={data[i]} id={id} type={type} updated={this.props.updated} />);
             }
         }
         return (
-            <div>
-                {rows}
-                {this.state.tagEntry ? <NewTag data={data} type={type} id={id} toggleTagEntry={this.toggleTagEntry} updated={this.props.updated}/>: null}
-                {this.state.tagEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-minus' ariaHidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>}
-                
-            </div>
+            <th>
+                <th>
+                Tags:
+                </th>
+                <td>
+                    {rows}
+                    {this.state.tagEntry ? <NewTag data={data} type={type} id={id} toggleTagEntry={this.toggleTagEntry} updated={this.props.updated}/>: null}
+                    {this.state.tagEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-minus' ariaHidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>}
+                </td>
+            </th>
         )
     }
 });
