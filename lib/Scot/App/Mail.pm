@@ -36,9 +36,8 @@ has imap    => (
 
 sub _build_imap {
     my $self    = shift;
-    my $imapcfg = $self->config->{imap};
-    $imapcfg->{log} = $self->log;
-    return Scot::Util::Imap->new($imapcfg);
+    my $env     = $self->env;
+    return $env->imap;
 }
 
 has max_processes => (
@@ -51,10 +50,10 @@ has max_processes => (
 
 sub _build_max_processes {
     my $self    = shift;
-    if ( $self->config->{max_processes} ) {
-        return $self->config->{max_processes};
-    }
-    return 0;
+    my $attr    = "max_processes";
+    my $default = 0;
+    my $envname = "scot_app_mail_max_processes";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has interactive => (
@@ -67,10 +66,10 @@ has interactive => (
 
 sub _build_interactive {
     my $self    = shift;
-    if ( $self->config->{interactive} ) {
-        return $self->config->{interactive};
-    }
-    return 'no';
+    my $attr    = "interactive";
+    my $default = "no";
+    my $envname = "scot_app_mail_interactive";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has verbose => (
@@ -83,10 +82,10 @@ has verbose => (
 
 sub _build_verbose {
     my $self    = shift;
-    if ( $self->config->{verbose} ) {
-        return $self->config->{verbose};
-    }
-    return 0;
+    my $attr    = "verbose";
+    my $default = 0;
+    my $envname = "scot_app_mail_verbose";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has approved_accounts   => (
@@ -99,8 +98,10 @@ has approved_accounts   => (
 
 sub _get_approved_accounts {
     my $self    = shift;
-    my $value   = $self->config->{approved_accounts};
-    return $value;
+    my $attr    = "approved_accounts";
+    my $default = [ ];
+    my $envname = "scot_app_mail_approved_accounts";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has approved_alert_domains  => (
@@ -113,8 +114,10 @@ has approved_alert_domains  => (
 
 sub _get_approved_alert_domains {
     my $self    = shift;
-    my $value   = $self->config->{approved_alert_domains};
-    return $value;
+    my $attr    = "approved_alert_domains";
+    my $default = [ ];
+    my $envname = "scot_app_mail_approved_alert_domains";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has scot => (
@@ -127,13 +130,8 @@ has scot => (
 
 sub _build_scot_scot {
     my $self    = shift;
-    return Scot::Util::Scot2->new({
-        log         => $self->log,
-        servername  => $self->config->{scot}->{servername},
-        username    => $self->config->{scot}->{username},
-        password    => $self->config->{scot}->{password},
-        authtype    => $self->config->{scot}->{authtype},
-    });
+    my $env     = $self->env;
+    return $env->scot;
 }
 
 has fetch_mode  => (
@@ -146,10 +144,10 @@ has fetch_mode  => (
 
 sub _build_fetch_mode {
     my $self    = shift;
-    if ( $self->config->{fetch_mode} ) {
-        return $self->config->{fetch_mode};
-    }
-    return 'unseen';
+    my $attr    = "fetch_mode";
+    my $default = 'unseen';
+    my $envname = "scot_app_mail_fetch_mode";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has since       => (
@@ -162,10 +160,10 @@ has since       => (
 
 sub _build_since {
     my $self    = shift;
-    if ( $self->config->{since} ) {
-        return $self->config->{since};
-    }
-    return { hour => 2 };
+    my $attr    = "since";
+    my $default = { hour => 2};
+    my $envname = "scot_app_since";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has parsermap   => (
