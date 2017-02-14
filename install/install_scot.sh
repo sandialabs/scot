@@ -75,11 +75,26 @@ function get_config_files {
         CFGSRC="$SCOT_CONFIG_SRC/scot/${file}.cfg"
         if [[ -e $CFGDEST ]]; then
             echo "- config file $file already exists"
+            if [[ $SCOT_ENV_OVERWRITE == "yes" ]]; then
+                echo "overwrite requested..."
+                cp $CFGSRC $CFGDEST
+            else
+                echo "- skipping..."
+            fi
         else
             echo "- copying $CFGSRC to $CFGDEST"
             cp $CFGSRC $CFGDEST
         fi
     done
+
+    if [[ -e $SCOTDIR/etc/scot_env.cfg ]]; then
+        echo "Scot Config scot_env.cfg exists!";
+        if [[ $SCOT_ENV_OVERWRITE == "yes" ]]; then
+            echo "overwrite requested..."
+        else
+            return
+        fi
+    fi
 
     echo "***"
     echo "*** installing scot config fiile "
