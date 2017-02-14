@@ -11,8 +11,7 @@ use Scot::Env;
 ##
 
 my $env = Scot::Env->new({
-    logfile => "./foo.log",
-    mode    => "prod",
+    config_file => "/opt/scot/etc/scot.cfg.pl",
 });
 
 my $collection = $env->mongo->collection("Alert");
