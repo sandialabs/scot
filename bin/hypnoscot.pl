@@ -3,7 +3,7 @@ use Mojo::Server::Hypnotoad;
 use Data::Dumper;
 
 ## this script starts the hypnotoad app server
-## I believe the settings in Scot.pm override these settings
+## the settings in Scot.pm override these settings
 
 my $port    = 5000;
 my %params = (
