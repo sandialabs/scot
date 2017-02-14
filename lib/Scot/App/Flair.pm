@@ -39,7 +39,6 @@ use warnings;
 use v5.18;
 
 use Moose;
-
 extends 'Scot::App';
 
 has get_method  => (
@@ -66,9 +65,8 @@ has extractor   => (
 
 sub _get_entity_extractor {
     my $self    = shift;
-    return Scot::Util::EntityExtractor->new({
-        log => $self->log,
-    });
+    my $env     = $self->env;
+    return $env->extractor;
 };
 
 has imgmunger   => (
@@ -81,9 +79,8 @@ has imgmunger   => (
 
 sub _get_img_munger {
     my $self    = shift;
-    return Scot::Util::ImgMunger->new({
-        log => $self->log,
-    });
+    my $env     = $self->env;
+    return $env->img_munger;
 };
 
 has scot        => (
@@ -96,14 +93,8 @@ has scot        => (
 
 sub _build_scot_scot {
     my $self    = shift;
-    # say Dumper($self->config);
-    return Scot::Util::Scot2->new({
-        log         => $self->log,
-        servername  => $self->config->{scot}->{servername},
-        username    => $self->config->{scot}->{username},
-        password    => $self->config->{scot}->{password},
-        authtype    => $self->config->{scot}->{authtype},
-    });
+    my $env     = shift;
+    return $env->scot;
 }
 
 has interactive => (
@@ -114,6 +105,14 @@ has interactive => (
     default     => 0,
 );
 
+sub _build_interactive {
+    my $self    = shift;
+    my $attr    = "interactive";
+    my $default = 0;
+    my $envname = "scot_util_entityextractor_interactive";
+    return $self->get_config_value($attr, $default, $envname);
+}
+
 has enrichers   => (
     is              => 'ro',
     isa             => 'Scot::Util::Enrichments',
@@ -123,18 +122,25 @@ has enrichers   => (
 );
 
 sub _get_enrichers {
-    my $self            = shift;
-    my $enrichconfig    = $self->config->{enrichments};
-    $enrichconfig->{log} = $self->log;
-    return Scot::Util::Enrichments->new($enrichconfig);
+    my $self    = shift;
+    my $env     = $self->env;
+    return $env->enrichments;
 }
 
 has max_workers => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
-    default     => 20,
+    builder     => '_build_max_workers',
 );
+
+sub _build_max_workers {
+    my $self    = shift;
+    my $attr    = "max_workers";
+    my $default = 20;
+    my $envname = "scot_util_max_workers";
+    return $self->get_config_value($attr, $default, $envname);
+}
 
 sub out {
     my $self    = shift;
