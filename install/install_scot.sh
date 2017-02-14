@@ -84,7 +84,7 @@ function get_config_files {
         fi
     done
 
-    if [[ -e $SCOTDIR/etc/scot_env.cfg ]]; then
+    if [[ -e $SCOTDIR/etc/scot.cfg.pl ]]; then
         echo "Scot Config scot_env.cfg exists!";
         if [[ $SCOT_ENV_OVERWRITE == "yes" ]]; then
             echo "overwrite requested..."

@@ -143,7 +143,7 @@ sub BUILD {
         my $module_type = ref($instance);
         $meta->add_attribute( $name => ( is => 'rw', isa => $module_type ) );
         $self->$name($instance);
-        undef($instance);
+        # undef($instance);
     }
     $meta->make_immutable;
 }

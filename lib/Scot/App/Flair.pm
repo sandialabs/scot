@@ -131,6 +131,7 @@ has max_workers => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
+    lazy        => 1,
     builder     => '_build_max_workers',
 );
 
