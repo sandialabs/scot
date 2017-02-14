@@ -14,15 +14,18 @@ use DateTime;
 
 # Sample code on how to mark a certain number of days of email messages as unread
 
-say "--- Starting Mail Ingester ---";
+my $config_file = $ENV{'scot_mail_config_file'} // '/opt/scot/etc/alert.cfg.pl';
+my $env         = Scot::Env->new({
+    config_file => $config_file,
+});
+
+
+say "--- Starting Mail Marker ---";
 
 my $processor   = Scot::App::Mail->new({
-    configuration_file         => "mail.app.cfg",
-    interactive                 => "no",
+    env => $env
 });
 
 # $processor->mark_all_read();
-
-
 
 $processor->mark_some_unread({'day', 3});

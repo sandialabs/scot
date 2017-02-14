@@ -3,8 +3,7 @@
 $ENV{'scot_mode'}           = "testing";
 $ENV{'scot_auth_type'}      = "Testing";
 $ENV{'scot_logfile'}        = "/var/log/scot/scot.test.log";
-$ENV{'scot_config_paths'}   = '../../../Scot-Internal-Modules/etc';
-$ENV{'scot_config_file'}    = 'scot_env_test.cfg';
+$ENV{'scot_config_file'}    = '../../../Scot-Internal-Modules/scot.test.cfg.pl';
 
 print "Resetting test db...\n";
 system("mongo scot-testing <../../install/src/mongodb/reset.js 2>&1 > /dev/null");
