@@ -410,7 +410,7 @@ var EntityBody = React.createClass({
                         <div>
                             <Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
                         </div>
-                        {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'entity'} id={this.props.entityid} errorToggle={this.props.errorToggle}/>
+                        {this.state.entryToolbar ? <AddEntry entryAction={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'entity'} id={this.props.entityid} errorToggle={this.props.errorToggle}/>
                     </div>
                 </Tab>
                 {entityEnrichmentGeoArr}
@@ -458,8 +458,8 @@ var GeoView = React.createClass({
             <div>
                 <Button bsSize='xsmall' onClick={this.copyToEntity}>Copy to <b>{"entity"}</b> entry</Button>
                 {this.props.type != 'alertgroup' ? <Button bsSize='xsmall' onClick={this.copyToEntry}>Copy to <b>{this.props.type} {this.props.id}</b> entry</Button> : null}
-                {this.state.copyToEntryToolbar ? <AddEntry title='CopyToEntry' type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.copyToEntry} content={copy} errorToggle={this.props.errorToggle}/> : null}
-                {this.state.copyToEntityToolbar ? <AddEntry title='CopyToEntry' type={'entity'} targetid={this.props.entityData.id} id={this.props.entityData.id} addedentry={this.copyToEntity} content={copy} errorToggle={this.props.errorToggle}/> : null}
+                {this.state.copyToEntryToolbar ? <AddEntry entryAction='Copy To Entry' type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.copyToEntry} content={copy} errorToggle={this.props.errorToggle}/> : null}
+                {this.state.copyToEntityToolbar ? <AddEntry entryAction='Copy To Entry' type={'entity'} targetid={this.props.entityData.id} id={this.props.entityData.id} addedentry={this.copyToEntity} content={copy} errorToggle={this.props.errorToggle}/> : null}
                 <div className="entityTableWrapper">
                     <table className="tablesorter entityTableHorizontal" id={'sortableentitytable'} width='100%'>
                         {trArr}    
@@ -827,7 +827,7 @@ var GuideBody = React.createClass ({
                     <div>
                         <Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
                     </div>
-                    {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} errorToggle={this.props.errorToggle}/>
+                    {this.state.entryToolbar ? <AddEntry entryAction={'Add Entry'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} errorToggle={this.props.errorToggle}/>
                 </Tab>
             </Tabs>
         )
