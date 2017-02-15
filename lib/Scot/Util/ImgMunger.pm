@@ -15,39 +15,58 @@ use LWP::UserAgent;
 use LWP::Protocol::https;
 use File::Slurp;
 use Digest::MD5 qw(md5_hex);
-
-use Moose;
 use namespace::autoclean;
 
-has log => (
-    is      => 'ro',
-    isa     => 'Log::Log4perl::Logger',
-    required    => 1,
-);
+use Moose;
+extends 'Scot::Util';
 
-has conf => (
+has html_root   => (
     is          => 'ro',
-    isa         => 'HashRef',
+    isa         => 'Str',
     required    => 1,
     lazy        => 1,
-    builder     => '_get_conf',
+    builder     => '_build_html_root',
 );
 
-sub _get_conf {
+sub _build_html_root {
     my $self    = shift;
-    # {
-    #   html_root   => 'the / where the webserver finds the cached_images dir
-    #   image_dir   => the real dir on the server where to store the file
-    #   storage     => local | api
-    # }
-    my $href = {
-            html_root   => "/cached_images",
-            image_dir   => "/opt/scot/public/cached_images",
-            storage     => "local",
-        };
-    return $href;
+    my $attr    = "html_root";
+    my $default = "/cached_images";
+    my $envname = "scot_util_imgmunger_html_root";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
+has img_dir   => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_img_dir',
+);
+
+sub _build_img_dir {
+    my $self    = shift;
+    my $attr    = "img_dir";
+    my $default = "/opt/scot/public/cached_images";
+    my $envname = "scot_util_imgmunger_img_dir";
+    return $self->get_config_value($attr, $default, $envname);
+}
+
+has storage   => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_storage',
+);
+
+sub _build_storage {
+    my $self    = shift;
+    my $attr    = "storage";
+    my $default = "local";
+    my $envname = "scot_util_imgmunger_storage";
+    return $self->get_config_value($attr, $default, $envname);
+}
 
 sub process_html { 
     my $self    = shift;
@@ -151,8 +170,8 @@ sub create_file {
     my $name        = shift;
     my $ext         = shift; 
     my $log         = $self->log;
-    my $dir         = $self->conf->{image_dir} // "/opt/scot/public/cached_images";
-    my $storage     = $self->conf->{storage} // 'local';
+    my $dir         = $self->image_dir;
+    my $storage     = $self->storage;
 
     $log->debug("Creating File: $name");
 
@@ -184,10 +203,10 @@ sub update_html {
     my $fname   = shift;
     my $log     = $self->log;
 
-    $log->debug("html root is ".$self->conf->{html_root});
+    $log->debug("html root is ".$self->html_root);
     $log->debug("fname is ".$fname);
 
-    my $source  = $self->conf->{html_root} . "/". $fname;
+    my $source  = $self->html_root . "/". $fname;
     my $alt     = $element->attr('alt');
     if ( $alt ) {
         $alt    = "ScotCopy of $alt";
