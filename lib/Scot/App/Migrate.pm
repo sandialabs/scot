@@ -14,6 +14,7 @@ to a SCOT 3.5 database
 =cut
 
 use Scot::Env;
+use Scot::App;
 use Scot::Util::EntityExtractor;
 use Scot::Util::ElasticSearch;
 use MongoDB;
@@ -30,17 +31,7 @@ use warnings;
 
 
 use Moose;
-
-has env => (
-    is       => 'rw',
-    isa      => 'Scot::Env',
-    required => 1,
-    builder  => '_get_env',
-);
-
-sub _get_env {
-    return Scot::Env->instance;
-}
+extends 'Scot::App';
 
 has es => (
     is       => 'ro',
@@ -52,13 +43,8 @@ has es => (
 
 sub _get_es {
     my $self = shift;
-    my $log  = $self->env->log;
-    return Scot::Util::ElasticSearch->new({
-        log     => $log,
-        config  => {
-            nodes   => [ qw(localhost:9200 127.0.0.1:9200) ],
-        },
-    });
+    my $env  = $self->env;
+    return $env->es;
 }
 
 
@@ -72,8 +58,8 @@ has extractor   => (
 
 sub _get_ee {
     my $self    = shift;
-    my $log     = $self->env->log;
-    return Scot::Util::EntityExtractor->new({log=>$log});
+    my $env     = $self->env;
+    return $env->extractor;
 }
 
 has legacy_client   => (
