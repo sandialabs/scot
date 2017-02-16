@@ -605,7 +605,7 @@ sub is_summary {
     my $target_id   = $href->{target}->{id};
 
     if ( $target_type ne "event" ) {
-        $log->debug("Target of entry is not an event.");
+        $log->warn("Target of entry is not an event.");
         return 0;
     }
 
@@ -613,18 +613,18 @@ sub is_summary {
     my $obj = $col->find_one({ event_id => $target_id });
 
     if ( $obj ) {
-        $log->debug("Found the target event");
+        $log->trace("Found the target event");
         if ( $obj->{summary_entry_id} ) {
-            $log->debug("summary entry id is ".$obj->{summary_entry_id});
+            $log->trace("summary entry id is ".$obj->{summary_entry_id});
             if ( $obj->{summary_entry_id} == $href->{id} ) {
-                $log->debug("yes this is a summary");
+                $log->trace("yes this is a summary");
                 return 1;
             }
-            $log->debug("not a summary");
+            $log->trace("not a summary");
         }
-        $log->debug("no summary_entry_id!");
+        $log->trace("no summary_entry_id!");
     }
-    $log->debug("target event not found!");
+    $log->trace("target event not found!");
     return 0;
 }
 
@@ -637,7 +637,7 @@ sub xform_event {
     my $log     = $env->log;
     my $id      = $href->{id};
 
-    $log->debug("[Event $id] transformation");
+    $log->trace("[Event $id] transformation");
 
     my @links;
 
@@ -683,7 +683,7 @@ sub xform_incident {
     my $log     = $env->log;
     my $id      = $href->{id};
 
-    $log->debug("[Incident $id] transformation ");
+    $log->trace("[Incident $id] transformation ");
 
     my @links;
     $href->{promoted_from} = delete $href->{events} // [];
@@ -1141,7 +1141,7 @@ sub flair_alert_data {
     die "unknown alert id! ".Dumper($alert) unless ($id);
 
     # $log->debug("flairing: ",{filter=>\&Dumper, value=>$alert});
-    $log->debug("[Alert $id] Flairing: ");
+    $log->trace("[Alert $id] Flairing: ");
 
     my $timer = $self->env->get_timer("[Alert $id] Flair");
 
