@@ -751,7 +751,7 @@ var PromotedData = React.createClass({
         for (var i=0; i < this.props.data.length; i++) {
             if (i > 0) {fullarr.push(<div> , </div>)}
             var link = '/#/' + promotedFromType + '/' + this.props.data[i];
-            fullarr.push(<div><a href={link}>{this.props.data[i]}</a></div>)
+            fullarr.push(<div key={this.props.data[i]}><a href={link}>{this.props.data[i]}</a></div>)
         }
         //makes small array for quick display in header
         if (this.props.data.length < 3 ) {
@@ -760,23 +760,24 @@ var PromotedData = React.createClass({
         for (var i=0; i < shortforlength; i++) {
             if (i > 0) {shortarr.push(<div> , </div>)}
             var link = '/#/' + promotedFromType + '/' + this.props.data[i];
-            shortarr.push(<div><a href={link}>{this.props.data[i]}</a></div>)
+            shortarr.push(<div key={this.props.data[i]}><a href={link}>{this.props.data[i]}</a></div>)
         } 
         if (this.props.data.length > 3) {shortarr.push(<div onClick={this.showAllPromotedDataToggle}>,<a href='javascript:;'>...more</a></div>)}
         return (
-            <td><span id='promoted_from' style={{display:'flex'}}>{shortarr}</span> 
-            {this.state.showAllPromotedDataToolbar ? <Modal isOpen={true} onRequestClose={this.showAllPromotedDataToggle} style={customStyles}>
-                <div className='modal-header'>
-                    <img src='images/close_toolbar.png' className='close_toolbar' onClick={this.showAllPromotedDataToggle} />
-                    <h3 id='myModalLabel'>Promoted From</h3>
-                </div>
-                <div className='modal-body promoted-from-full'>
-                    {fullarr}    
-                </div>
-                <div className='modal-footer'>
-                    <Button id='cancel-modal' onClick={this.showAllPromotedDataToggle}>Close</Button>
-                </div>
-            </Modal> : null }
+            <td>
+                <span id='promoted_from' style={{display:'flex'}}>{shortarr}</span> 
+                {this.state.showAllPromotedDataToolbar ? <Modal isOpen={true} onRequestClose={this.showAllPromotedDataToggle} style={customStyles}>
+                    <div className='modal-header'>
+                        <img src='images/close_toolbar.png' className='close_toolbar' onClick={this.showAllPromotedDataToggle} />
+                        <h3 id='myModalLabel'>Promoted From</h3>
+                    </div>
+                    <div className='modal-body promoted-from-full'>
+                        {fullarr}    
+                    </div>
+                    <div className='modal-footer'>
+                        <Button id='cancel-modal' onClick={this.showAllPromotedDataToggle}>Close</Button>
+                    </div>
+                </Modal> : null }
             </td>
         )
     }   
