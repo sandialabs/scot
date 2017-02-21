@@ -278,7 +278,7 @@ var EntityDetail = React.createClass({
                 <div id="dragme" className={DragmeClass} style={{width:this.state.entityWidth, left:defaultOffsetX, maxHeight:'90vh'}}>
                     <div id='popup-flex-container' style={{height: '100%', display:'flex', flexFlow:'row'}}>
                         <div id="entity_detail_container" style={{flexFlow: 'column', display: 'flex', width:'100%'}}>
-                            <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarOff}/></span></div></div>
+                            <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" aria-hidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarOff}/></span></div></div>
                             <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills'>
                                 {tabsArr}                     
                             </Tabs>
@@ -792,14 +792,14 @@ var ReferencesBody = React.createClass({
             updatedTimeHumanReadable = new Date(1000 * updatedTime).toLocaleString()
         }
         return (
-            <tr id={trId} index={this.props.index}>
-                <td valign='top' style={{textAlign:'center',cursor: 'pointer'}} onClick={this.onClick} id={tdId}><i className="fa fa-eye fa-1" aria-hidden="true"></i></td>
-                {this.props.data.status == 'promoted' ? <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}><Button bsSize='xsmall' bsStyle={'warning'} id={this.props.data.id} href={promotedHref} target="_blank" style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{this.props.data.status}</Button></td> : <td valign='top' style={{color: statusColor, paddingRight:'4px', paddingLeft:'4px'}}>{this.props.data.status}</td>}
-                <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}><a href={aHref} target="_blank">{this.props.data.id}</a></td>
-                <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}>{this.props.type}</td>
-                <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px', textAlign:'center'}}>{this.props.data.entry_count}</td>
-                <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}>{subject}</td>
-                <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}} title={updatedTimeHumanReadable}>{daysSince} days ago</td>
+            <tr id={trId}>
+                <td style={{textAlign:'center',cursor: 'pointer', verticalAlign: 'top'}} onClick={this.onClick} id={tdId}><i className="fa fa-eye fa-1" aria-hidden="true"></i></td>
+                {this.props.data.status == 'promoted' ? <td style={{paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}><Button bsSize='xsmall' bsStyle={'warning'} id={this.props.data.id} href={promotedHref} target="_blank" style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{this.props.data.status}</Button></td> : <td style={{color: statusColor, paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}>{this.props.data.status}</td>}
+                <td style={{paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}><a href={aHref} target="_blank">{this.props.data.id}</a></td>
+                <td style={{paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}>{this.props.type}</td>
+                <td style={{paddingRight:'4px', paddingLeft:'4px', textAlign:'center', verticalAlign: 'top'}}>{this.props.data.entry_count}</td>
+                <td style={{paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}>{subject}</td>
+                <td style={{paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}} title={updatedTimeHumanReadable}>{daysSince} days ago</td>
             </tr>
         )    
     }
