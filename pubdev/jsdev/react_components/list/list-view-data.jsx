@@ -14,7 +14,7 @@ var ListViewData = React.createClass({
         var arr = [];
         var className = 'list-data-pane';
             for (var z=0; z < data.length; z++) {
-                arr.push(<ListViewDataEach columns={columns} columnsClassName={columnsClassName} dataOneRow={data[z]} z={z} type={this.props.type} selected={this.props.selected} selectedId={this.props.selectedId}/>)
+                arr.push(<ListViewDataEach key={z} columns={columns} columnsClassName={columnsClassName} dataOneRow={data[z]} z={z} type={this.props.type} selected={this.props.selected} selectedId={this.props.selectedId}/>)
             }
         return (
             <tbody className='list-view-table-data'>
@@ -65,7 +65,7 @@ var ListViewDataEach = React.createClass({
         if (!isEven(this.props.z)) { evenOdd = 'odd' };
         var subClassName = 'table-row list-view-row'+evenOdd;
         for (var i=0; i < columns.length; i++) {
-            arr.push(<ListViewDataEachColumn dataOneRow={dataOneRow} columnsOne={columns[i]} columnsOneClassName={columnsClassName[i]} type={this.props.type}/>)
+            arr.push(<ListViewDataEachColumn key={i} dataOneRow={dataOneRow} columnsOne={columns[i]} columnsOneClassName={columnsClassName[i]} type={this.props.type}/>)
         }
         //process id for the row
         for (var i=0; i < this.props.columns.length; i++) {
