@@ -7,7 +7,6 @@ use v5.18;
 
 use Mojo::UserAgent;
 use Data::Dumper;
-use Moose;
 use Try::Tiny::Retry ':all';
 use Log::Log4perl;
 use Log::Log4perl::Level;
@@ -24,34 +23,9 @@ this module simplifies talking rest to the SCOT API
 
 =cut
 
-has log => (
-    is          => 'ro',
-    isa         => 'Log::Log4perl::Logger',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_logger',
-);
+use Moose;
+extends 'Scot::Util';
 
-sub _build_logger {
-    my $self    = shift;
-    my $logfile = $ENV{'scot_ua_logfile'} // '/var/log/scot/scot.ua.log';
-
-    my $log     = Log::Log4perl->get_logger("ScotUA");
-    my $layout  = Log::Log4perl::Layout::PatternLayout->new(
-        '%d %7p [%P] %15F{1}: %4L %m%n'
-    );
-    my $appender    = Log::Log4perl::Appender->new(
-        "Log::Log4perl::Appender::File",
-        name        => "scot_log",
-        filename    => $logfile,
-        autoflush   => 1,
-    );
-    $appender->layout($layout);
-    $log->add_appender($appender);
-    $log->level($TRACE);
-    return $log;
-}
-    
 
 has servername  => (
     is          => 'ro',
@@ -63,7 +37,10 @@ has servername  => (
 
 sub _get_servername {
     my $self    = shift;
-    return  $ENV{'scot_ua_servername'} // 'localhost';
+    my $attr    = "servername";
+    my $default = "localhost";
+    my $envname = "scot_util_scot2_servername";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has serverport  => (
@@ -76,7 +53,10 @@ has serverport  => (
 
 sub _get_serverport {
     my $self    = shift;
-    return $ENV{'scot_ua_serverport'} // 443;
+    my $attr    = "serverport";
+    my $default = 443;
+    my $envname = "scot_util_scot2_serverport";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has username    => (
@@ -89,7 +69,10 @@ has username    => (
 
 sub _get_username {
     my $self    = shift;
-    return $ENV{'scot_ua_username'} // 'scot-alerts';
+    my $attr    = "username";
+    my $default = "scot-alerts";
+    my $envname = "scot_util_scot2_username";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has password    => ( 
@@ -102,7 +85,10 @@ has password    => (
 
 sub _get_password {
     my $self    = shift;
-    return $ENV{'scot_ua_password'} // 'changeme';
+    my $attr    = "password";
+    my $default = "changemenow";
+    my $envname = "scot_util_scot2_password";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has authtype   => (
@@ -115,13 +101,17 @@ has authtype   => (
 
 sub _get_authtype {
     my $self    = shift;
-    return $ENV{'scot_ua_authtype'} // 'RemoteUser';
+    my $attr    = "authtype";
+    my $default = "RemoteUser";
+    my $envname = "scot_util_scot2_authtype";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has api_version    => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
+    lazy        => 1,
     default     => 'v2',
 );
 
