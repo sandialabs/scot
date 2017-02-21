@@ -37,7 +37,7 @@ var Source = React.createClass({
                 <td>
                     {rows}
                     {this.state.sourceEntry ? <NewSource data={data} type={type} id={id} toggleSourceEntry={this.toggleSourceEntry} updated={this.props.updated}/>: null}
-                    {this.state.sourceEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-minus' ariaHidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>} 
+                    {this.state.sourceEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-minus' aria-hidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-plus' aria-hidden='true'></span></Button>} 
                 </td>
             </th>
         )
@@ -84,7 +84,7 @@ var SourceDataIterator = React.createClass({
             }
         }
         return (
-            <Button id="event_source" bsSize={'xsmall'}>{value} <span onClick={this.sourceDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></Button>
+            <Button id="event_source" bsSize={'xsmall'}>{value} <span onClick={this.sourceDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" aria-hidden="true"></span></Button>
         )
     }
 });
