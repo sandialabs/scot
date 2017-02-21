@@ -83,19 +83,19 @@ sub _get_img_munger {
     return $env->img_munger;
 };
 
-has scot        => (
-    is          => 'ro',
-    isa         => 'Scot::Util::Scot2',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_scot_scot',
-);
+#has scot        => (
+#    is          => 'ro',
+#    isa         => 'Scot::Util::Scot2',
+#    required    => 1,
+#    lazy        => 1,
+#    builder     => '_build_scot_scot',
+#);
 
-sub _build_scot_scot {
-    my $self    = shift;
-    my $env     = shift;
-    return $env->scot;
-}
+#sub _build_scot_scot {
+#    my $self    = shift;
+#    my $env     = shift;
+#    return $env->scot;
+#}
 
 has interactive => (
     is          => 'ro',
@@ -131,6 +131,7 @@ has max_workers => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
+    lazy        => 1,
     builder     => '_build_max_workers',
 );
 
@@ -244,8 +245,8 @@ sub get_alertgroup {
     my $href;
     
     if ( $self->get_method eq "scot_api" ) {
-        my $scot    = $self->scot;
-        $href       = $scot->get({ type => "alertgroup/$id/alert" } );
+#        my $scot    = $self->scot;
+#        $href       = $scot->get({ type => "alertgroup/$id/alert" } );
     }
     else {
         my $mongo       = $self->env->mongo;
@@ -258,7 +259,6 @@ sub get_alertgroup {
 sub process_alertgroup {
     my $self    = shift;
     my $id      = shift;
-    my $scot    = $self->scot;
     my @update  = ();
     my $log     = $self->log;
 
@@ -305,7 +305,7 @@ sub update_alertgroup {
     $self->log->debug("update alertgroup");
 
     if ( $self->get_method eq "scot_api" ) {
-        my $response = $self->scot->put($putdata);
+#        my $response = $self->scot->put($putdata);
     }
     else {
         $self->log->debug("doing mongo update");
@@ -396,8 +396,8 @@ sub get_entry {
     $self->log->debug("Getting entry $id");
 
     if ( $self->get_method eq "scot_api" ) {
-        my $scot    = $self->scot;
-        $href       = $scot->get({ id => $id, type => "entry" } );
+#        my $scot    = $self->scot;
+#        $href       = $scot->get({ id => $id, type => "entry" } );
     }
     else {
         my $mongo       = $self->env->mongo;
@@ -412,7 +412,7 @@ sub get_entry {
 sub process_entry {
     my $self    = shift;
     my $id      = shift;
-    my $scot    = $self->scot;
+#    my $scot    = $self->scot;
     my $update;
     my $log     = $self->log;
 
@@ -444,7 +444,7 @@ sub update_entry {
     $log->debug("updating entry");
 
     if ( $self->get_method eq "scot_api" ) {
-        my $response = $self->scot->put($putdata);
+#        my $response = $self->scot->put($putdata);
     }
     else {
         my $id    = delete $putdata->{id};
