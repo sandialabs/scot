@@ -18,10 +18,9 @@ my @validcols   = (qw(alertgroup event incident entry handler guide user file al
 my $colname = $ARGV[0];
 my $multi   = $ARGV[1];
 
-
-
 unless ( grep {/$colname/} @validcols ) {
-    die "Invalid colllection name: $colname.  Valid choices are ".join(',',@validcols);
+    die "Invalid colllection name: $colname.  Valid choices are ".
+        join(',',@validcols);
 }
 
 
