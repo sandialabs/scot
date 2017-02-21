@@ -265,7 +265,7 @@ var EntityDetail = React.createClass({
         if (this.state.defaultEntityOffset && this.state.entityobj) {
             var positionRightBoundsValue = this.positionRightBoundsCheck();
                 if (this.positionRightBoundsCheck($(this.state.entityobj).width()) < 0) {
-                    defaultOffsetX = this.state.defaultEntityOffset.left - this.state.entityWidth;
+                    defaultOffsetX = this.state.defaultEntityOffset.left - this.state.entityWidthint;
                 } else {
                     defaultOffsetX = this.state.defaultEntityOffset.left + $(this.state.entityobj).width();
                 }
