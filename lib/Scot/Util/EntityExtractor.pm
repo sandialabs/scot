@@ -34,6 +34,7 @@ has 'regexmap'  => (
     isa         => 'ArrayRef',
     traits      => [ 'Array' ],
     required    => 1,
+    lazy        => 1,
     builder     => '_build_regexes',
     handles     => {
         get_regexes   => 'elements',
@@ -57,6 +58,7 @@ has 'suffixfile'    => (
     is          => 'ro',
     isa         => 'Str',
     required    => '1',
+    lazy        => 1,
     builder     => '_build_suffixfile',
 );
 
