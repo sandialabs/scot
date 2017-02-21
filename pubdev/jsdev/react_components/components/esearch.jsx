@@ -91,7 +91,7 @@ var Search = React.createClass({
                     <Draggable handle="#handle1" onMouseDown={this.moveDivInit}>
                         <div id="dragme1" className='box react-draggable searchPopUp' style={{height:this.state.entityHeight,maxWidth:'80vw', maxHeight:'75vh', display:'flex', flexFlow:'column', right:'0px',top:'70px'}}>
                             <div id='search_container' style={{height: '100%', display:'flex', flexFlow:'column'}}>
-                                <div id='handle1' style={{width:'100%',background:'#7a8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.close}/></span></div></div>
+                                <div id='handle1' style={{width:'100%',background:'#7a8092', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" aria-hidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.close}/></span></div></div>
                                 <div style={{display:'flex', flexFlow:'row', overflowY:'auto'}}>
                                     <div id='container1' style={{overflowY:'auto'}}>
                                         <SearchDataEachHeader />
