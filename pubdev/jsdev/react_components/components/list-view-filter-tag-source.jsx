@@ -7,7 +7,7 @@ var TagSourceFilter = React.createClass({
         var filterButtonArr = [];
         var filterButtonText = [];
         if (this.props.defaultValue != undefined) {
-            filterButtonArr.push(<div id='filterButton' className='btn btn-xs btn-default'>{this.props.defaultValue}<span onClick={this.handleDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></div>);
+            filterButtonArr.push(<div id='filterButton' className='btn btn-xs btn-default'>{this.props.defaultValue}<span onClick={this.handleDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" aria-hidden="true"></span></div>);
             filterButtonText.push(this.props.defaultValue);
             this.props.handleFilter(this.props.defaultValue);
         }
@@ -26,7 +26,7 @@ var TagSourceFilter = React.createClass({
     handleAddition: function(tag) {
         var currentButtons = this.state.filterButtonArr;
         var currentText = this.state.filterButtonText;
-        currentButtons.push(<div id='filterButton' className='btn btn-xs btn-default'>{tag}<span onClick={this.handleDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></div>);
+        currentButtons.push(<div id='filterButton' className='btn btn-xs btn-default'>{tag}<span onClick={this.handleDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" aria-hidden="true"></span></div>);
         currentText.push(tag)
         this.setState({filterButtonArr:currentButtons, filterButtonText:currentText});
         this.props.handleFilter(currentText);
