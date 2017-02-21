@@ -122,6 +122,10 @@ sub BUILD {
 
         print "Building module $class\n" if $self->debug;
 
+        unless (defined $config) {
+            warn "No Config for  $class!\n";
+        }
+
         require_module($class);
 
         my $instance_vars = {
@@ -141,9 +145,10 @@ sub BUILD {
 
         # some modules are factory types so we need to inspect what is returned
         my $module_type = ref($instance);
+        print "Adding attribute $name type $module_type\n" if $self->debug;
         $meta->add_attribute( $name => ( is => 'rw', isa => $module_type ) );
         $self->$name($instance);
-        undef($instance);
+        # undef($instance);
     }
     $meta->make_immutable;
 }
