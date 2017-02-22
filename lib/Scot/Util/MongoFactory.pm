@@ -6,7 +6,8 @@ use Data::Dumper;
 # not to self tomorrow:  adapt this to the new config style 
 
 use Moose;
-with qw(Scot::Role::Configurable);
+extends qw(Scot::Util);
+
 
 has db_name => (
     is          => 'ro',

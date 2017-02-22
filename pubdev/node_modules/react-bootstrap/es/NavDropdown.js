@@ -54,24 +54,22 @@ var NavDropdown = function (_React$Component) {
   NavDropdown.prototype.render = function render() {
     var _this3 = this;
 
-    var _props = this.props;
-    var title = _props.title;
-    var activeKey = _props.activeKey;
-    var activeHref = _props.activeHref;
-    var className = _props.className;
-    var style = _props.style;
-    var children = _props.children;
-
-    var props = _objectWithoutProperties(_props, ['title', 'activeKey', 'activeHref', 'className', 'style', 'children']);
+    var _props = this.props,
+        title = _props.title,
+        activeKey = _props.activeKey,
+        activeHref = _props.activeHref,
+        className = _props.className,
+        style = _props.style,
+        children = _props.children,
+        props = _objectWithoutProperties(_props, ['title', 'activeKey', 'activeHref', 'className', 'style', 'children']);
 
     var active = this.isActive(this, activeKey, activeHref);
     delete props.active; // Accessed via this.isActive().
     delete props.eventKey; // Accessed via this.isActive().
 
-    var _splitComponentProps = splitComponentProps(props, Dropdown.ControlledComponent);
-
-    var dropdownProps = _splitComponentProps[0];
-    var toggleProps = _splitComponentProps[1];
+    var _splitComponentProps = splitComponentProps(props, Dropdown.ControlledComponent),
+        dropdownProps = _splitComponentProps[0],
+        toggleProps = _splitComponentProps[1];
 
     // Unlike for the other dropdowns, styling needs to go to the `<Dropdown>`
     // rather than the `<Dropdown.Toggle>`.

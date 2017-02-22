@@ -1,5 +1,5 @@
 var React           = require('react');
-var ReactTime       = require('react-time');
+var ReactTime       = require('react-time').default;
 var Modal           = require('react-modal');
 var Button          = require('react-bootstrap/lib/Button');
 var type;
@@ -52,7 +52,7 @@ var ViewedByHistory = React.createClass({
 var ViewedByHistoryData = React.createClass({
     render: function() {
         var rows = [];
-        data = this.props.data;
+        var data = this.props.data;
         for (var prop in data.view_history) {
             rows.push(<ViewedByHistoryDataIterator data={data.view_history[prop]} prop={prop}/>); 
         }
@@ -67,11 +67,11 @@ var ViewedByHistoryData = React.createClass({
 
 var ViewedByHistoryDataIterator = React.createClass({
     render: function() {
-    data = this.props.data;
-    prop = this.props.prop;
-    return (
-        <div><b>{prop}</b> at <ReactTime value={data.when * 1000} format="MM/DD/YYYY hh:mm:ss a" /> from IP: {data.where}</div>
-    )}
+        var data = this.props.data;
+        var prop = this.props.prop;
+        return (
+            <div><b>{prop}</b> at <ReactTime value={data.when * 1000} format="MM/DD/YYYY hh:mm:ss a" /> from IP: {data.where}</div>
+        )}
 });
 
 

@@ -118,17 +118,20 @@ function initialize_database {
 
     DBS=`mongo --quiet --eval  "printjson(db.adminCommand('listDatabases'))"`
     if echo $DBS | grep -w 'scot-prod'; then
+        echo "-- scot-prod EXISTS.  "
+        if [[ $RESETDB == "yes" ]]; then
+            echo "!!!!! Are you sure you want to destroy the db?"
+            read -p "type YES to wipe all data from scot-prod.\nAny other input will preserve scot-prod : " WIPE
+            if [[ "$WIPE" == "YES" ]]; then
+                RESETDB="yes";
+            else
+                return;
+            fi
+        fi
+    else
         echo "-- appears this is a first time install"
         echo "-- initializing mongodb scot-prod"
         RESETDB="yes"
-    else
-        echo "-- scot-prod EXISTS.  Are you sure you want to destroy the db?"
-        read -p "type YES to wipe all data from scot-prod.\nAny other input will preserve scot-prod : " WIPE
-        if [[ "$WIPE" == "YES" ]]; then
-            RESETDB="yes";
-        else
-            return;
-        fi
     fi
 
     if [[ "$RESETDB" == "yes" ]] ; then

@@ -25,18 +25,15 @@ var Pager = function (_React$Component) {
   }
 
   Pager.prototype.render = function render() {
-    var _props = this.props;
-    var onSelect = _props.onSelect;
-    var className = _props.className;
-    var children = _props.children;
+    var _props = this.props,
+        onSelect = _props.onSelect,
+        className = _props.className,
+        children = _props.children,
+        props = _objectWithoutProperties(_props, ['onSelect', 'className', 'children']);
 
-    var props = _objectWithoutProperties(_props, ['onSelect', 'className', 'children']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = getClassSet(bsProps);
 

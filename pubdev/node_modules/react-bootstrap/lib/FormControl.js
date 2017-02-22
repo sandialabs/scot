@@ -59,7 +59,15 @@ var propTypes = {
   /**
    * Uses `controlId` from `<FormGroup>` if not explicitly specified.
    */
-  id: _react2['default'].PropTypes.string
+  id: _react2['default'].PropTypes.string,
+  /**
+   * Attaches a ref to the `<input>` element. Only functions can be used here.
+   *
+   * ```js
+   * <FormControl inputRef={ref => { this.input = ref; }} />
+   * ```
+   */
+  inputRef: _react2['default'].PropTypes.func
 };
 
 var defaultProps = {
@@ -82,19 +90,18 @@ var FormControl = function (_React$Component) {
     var formGroup = this.context.$bs_formGroup;
     var controlId = formGroup && formGroup.controlId;
 
-    var _props = this.props;
-    var Component = _props.componentClass;
-    var type = _props.type;
-    var _props$id = _props.id;
-    var id = _props$id === undefined ? controlId : _props$id;
-    var className = _props.className;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['componentClass', 'type', 'id', 'className']);
+    var _props = this.props,
+        Component = _props.componentClass,
+        type = _props.type,
+        _props$id = _props.id,
+        id = _props$id === undefined ? controlId : _props$id,
+        inputRef = _props.inputRef,
+        className = _props.className,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['componentClass', 'type', 'id', 'inputRef', 'className']);
 
-    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     process.env.NODE_ENV !== 'production' ? (0, _warning2['default'])(controlId == null || id === controlId, '`controlId` is ignored on `<FormControl>` when `id` is specified.') : void 0;
 
@@ -107,6 +114,7 @@ var FormControl = function (_React$Component) {
     return _react2['default'].createElement(Component, (0, _extends3['default'])({}, elementProps, {
       type: type,
       id: id,
+      ref: inputRef,
       className: (0, _classnames2['default'])(className, classes)
     }));
   };

@@ -41,7 +41,19 @@ var propTypes = {
   defaultActiveIndex: React.PropTypes.number,
   direction: React.PropTypes.oneOf(['prev', 'next']),
   prevIcon: React.PropTypes.node,
-  nextIcon: React.PropTypes.node
+  /**
+   * Label shown to screen readers only, can be used to show the previous element
+   * in the carousel.
+   * Set to null to deactivate.
+   */
+  prevLabel: React.PropTypes.string,
+  nextIcon: React.PropTypes.node,
+  /**
+   * Label shown to screen readers only, can be used to show the next element
+   * in the carousel.
+   * Set to null to deactivate.
+   */
+  nextLabel: React.PropTypes.string
 };
 
 var defaultProps = {
@@ -52,7 +64,9 @@ var defaultProps = {
   indicators: true,
   controls: true,
   prevIcon: React.createElement(Glyphicon, { glyph: 'chevron-left' }),
-  nextIcon: React.createElement(Glyphicon, { glyph: 'chevron-right' })
+  prevLabel: 'Previous',
+  nextIcon: React.createElement(Glyphicon, { glyph: 'chevron-right' }),
+  nextLabel: 'Next'
 };
 
 var Carousel = function (_React$Component) {
@@ -222,10 +236,10 @@ var Carousel = function (_React$Component) {
   };
 
   Carousel.prototype.waitForNext = function waitForNext() {
-    var _props = this.props;
-    var slide = _props.slide;
-    var interval = _props.interval;
-    var activeIndexProp = _props.activeIndex;
+    var _props = this.props,
+        slide = _props.slide,
+        interval = _props.interval,
+        activeIndexProp = _props.activeIndex;
 
 
     if (!this.isPaused && slide && interval && activeIndexProp == null) {
@@ -275,7 +289,16 @@ var Carousel = function (_React$Component) {
     );
   };
 
-  Carousel.prototype.renderControls = function renderControls(wrap, children, activeIndex, prevIcon, nextIcon, bsProps) {
+  Carousel.prototype.renderControls = function renderControls(properties) {
+    var wrap = properties.wrap,
+        children = properties.children,
+        activeIndex = properties.activeIndex,
+        prevIcon = properties.prevIcon,
+        nextIcon = properties.nextIcon,
+        bsProps = properties.bsProps,
+        prevLabel = properties.prevLabel,
+        nextLabel = properties.nextLabel;
+
     var controlClassName = prefix(bsProps, 'control');
     var count = ValidComponentChildren.count(children);
 
@@ -286,7 +309,12 @@ var Carousel = function (_React$Component) {
         className: classNames(controlClassName, 'left'),
         onClick: this.handlePrev
       },
-      prevIcon
+      prevIcon,
+      prevLabel && React.createElement(
+        'span',
+        { className: 'sr-only' },
+        prevLabel
+      )
     ), (wrap || activeIndex !== count - 1) && React.createElement(
       SafeAnchor,
       {
@@ -294,35 +322,39 @@ var Carousel = function (_React$Component) {
         className: classNames(controlClassName, 'right'),
         onClick: this.handleNext
       },
-      nextIcon
+      nextIcon,
+      nextLabel && React.createElement(
+        'span',
+        { className: 'sr-only' },
+        nextLabel
+      )
     )];
   };
 
   Carousel.prototype.render = function render() {
     var _this4 = this;
 
-    var _props2 = this.props;
-    var slide = _props2.slide;
-    var indicators = _props2.indicators;
-    var controls = _props2.controls;
-    var wrap = _props2.wrap;
-    var prevIcon = _props2.prevIcon;
-    var nextIcon = _props2.nextIcon;
-    var className = _props2.className;
-    var children = _props2.children;
+    var _props2 = this.props,
+        slide = _props2.slide,
+        indicators = _props2.indicators,
+        controls = _props2.controls,
+        wrap = _props2.wrap,
+        prevIcon = _props2.prevIcon,
+        prevLabel = _props2.prevLabel,
+        nextIcon = _props2.nextIcon,
+        nextLabel = _props2.nextLabel,
+        className = _props2.className,
+        children = _props2.children,
+        props = _objectWithoutProperties(_props2, ['slide', 'indicators', 'controls', 'wrap', 'prevIcon', 'prevLabel', 'nextIcon', 'nextLabel', 'className', 'children']);
 
-    var props = _objectWithoutProperties(_props2, ['slide', 'indicators', 'controls', 'wrap', 'prevIcon', 'nextIcon', 'className', 'children']);
-
-    var _state = this.state;
-    var previousActiveIndex = _state.previousActiveIndex;
-    var direction = _state.direction;
+    var _state = this.state,
+        previousActiveIndex = _state.previousActiveIndex,
+        direction = _state.direction;
 
     var _splitBsPropsAndOmit = splitBsPropsAndOmit(props, ['interval', 'pauseOnHover', 'onSelect', 'onSlideEnd', 'activeIndex', // Accessed via this.getActiveIndex().
-    'defaultActiveIndex', 'direction']);
-
-    var bsProps = _splitBsPropsAndOmit[0];
-    var elementProps = _splitBsPropsAndOmit[1];
-
+    'defaultActiveIndex', 'direction']),
+        bsProps = _splitBsPropsAndOmit[0],
+        elementProps = _splitBsPropsAndOmit[1];
 
     var activeIndex = this.getActiveIndex();
 
@@ -355,7 +387,16 @@ var Carousel = function (_React$Component) {
           });
         })
       ),
-      controls && this.renderControls(wrap, children, activeIndex, prevIcon, nextIcon, bsProps)
+      controls && this.renderControls({
+        wrap: wrap,
+        children: children,
+        activeIndex: activeIndex,
+        prevIcon: prevIcon,
+        prevLabel: prevLabel,
+        nextIcon: nextIcon,
+        nextLabel: nextLabel,
+        bsProps: bsProps
+      })
     );
   };
 
