@@ -128,7 +128,7 @@
 
                 # foreach enrichment listed above place any 
                 # config info for it here
-                configs => {
+                enrichers => {
                     geoip   => {
                         type    => 'native',
                         module  => 'Scot::Util::Geoip',
@@ -151,7 +151,7 @@
                         field   => 'value',
                         title   => 'Search on Splunk',
                     },
-                }, # end enrichment module configs
+                }, # end enrichment module enrichers
             }, # end ennrichmenst config stanza
         }, # end enrichments stanza
         {
