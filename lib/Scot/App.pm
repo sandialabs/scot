@@ -4,14 +4,13 @@ use lib '../../lib';
 use v5.18;
 use strict;
 use warnings;
+use Try::Tiny;
 use Scot::Util::LoggerFactory;
-use Scot::Util::Config;
 use Data::Dumper;
 use DateTime;
 use namespace::autoclean;
 
 use Moose;
-with qw(Scot::Role::Configurable);
 
 has env => (
     is          => 'ro',
@@ -23,10 +22,9 @@ has env => (
 
 sub _get_env {
     my $self    = shift;
-    my $file    = $self->configuration_file;
+    my $file    = $self->config_file;
     return Scot::Env->new({
         config_file => $file,
-        paths       => $self->paths,
     });
 }
 
@@ -36,17 +34,31 @@ has log => (
     required    => 1,
     lazy        => 1,
     builder     => '_build_log',
+    predicate   => 'has_log',
 );
 
 sub _build_log {
     my $self    = shift;
-    my $config  = $self->config;
-    my $chref   = $config->{log};
+    my $env     = $self->env;
+    return $env->log;
+}
 
-    print "in App.pm Logger config is " . Dumper($chref)."\n";
+sub get_config_value {
+    my $self    = shift;
+    my $attr    = shift;
+    my $default = shift;
+    my $envname = shift;
+    my $env     = $self->env;
 
-    my $lfactory = Scot::Util::LoggerFactory->new(config => $chref);
-    return $lfactory->get_logger;
+    if ( defined $envname ) {
+        if ( defined $ENV{$envname} ) {
+            return $ENV{$envname};
+        }
+    }
+    if ( defined $env->$attr ) {
+        return $env->$attr;
+    }
+    return $default;
 }
 
 has base_url    => (

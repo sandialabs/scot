@@ -43,16 +43,14 @@ var PageHeader = function (_React$Component) {
   }
 
   PageHeader.prototype.render = function render() {
-    var _props = this.props;
-    var className = _props.className;
-    var children = _props.children;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['className', 'children']);
+    var _props = this.props,
+        className = _props.className,
+        children = _props.children,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['className', 'children']);
 
-    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = (0, _bootstrapUtils.getClassSet)(bsProps);
 

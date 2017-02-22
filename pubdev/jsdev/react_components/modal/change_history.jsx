@@ -1,5 +1,5 @@
 var React           = require('react');
-var ReactTime       = require('react-time');
+var ReactTime       = require('react-time').default;
 var Modal           = require('react-modal');
 var Button          = require('react-bootstrap/lib/Button');
 var type;
@@ -53,7 +53,7 @@ var ChangeHistory = React.createClass({
 var ChangeHistoryData = React.createClass({
     render: function() {
         var rows = [];
-        data = this.props.data;
+        var data = this.props.data;
         for (var prop in data) {
             rows.push(<ChangeHistoryDataIterator data={data[prop]} />); 
         }
@@ -68,10 +68,10 @@ var ChangeHistoryData = React.createClass({
 
 var ChangeHistoryDataIterator = React.createClass({
     render: function() {
-    data = this.props.data;
-    return (
-        <div>ID: {data.id} - <ReactTime value={data.when * 1000} format="MM/DD/YYYY hh:mm:ss a" /> - {data.who} - {data.what}</div>
-    )}
+        var data = this.props.data;
+        return (
+            <div>ID: {data.id} - <ReactTime value={data.when * 1000} format="MM/DD/YYYY hh:mm:ss a" /> - {data.who} - {data.what}</div>
+        )}
 });
 
 

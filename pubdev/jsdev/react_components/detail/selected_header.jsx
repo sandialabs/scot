@@ -1,5 +1,5 @@
 var React                   = require('react');
-var ReactTime               = require('react-time');
+var ReactTime               = require('react-time').default;
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
 var DeleteEvent             = require('../modal/delete.jsx').DeleteEvent;
 var Owner                   = require('../modal/owner.jsx');
@@ -282,7 +282,7 @@ var SelectedHeader = React.createClass({
     viewedbyfunc: function(headerData) {
         var viewedbyarr = [];
         if (headerData != null) {
-            for (prop in headerData.view_history) {
+            for (var prop in headerData.view_history) {
                 viewedbyarr.push(prop);
             };
         }
@@ -502,15 +502,13 @@ var SelectedHeader = React.createClass({
                                         <th></th>
                                         <td><div style={{marginLeft:'5px'}}>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData} id={id} type={type} updated={this.updated} />: null}</div></td>
                                         <th>Owner: </th>
-                                        <td><span>{this.state.showEventData ? <Owner key={id} data={this.state.headerData.owner} type={type} id={id} updated={this.updated} />: null}</span></td>
+                                        <td><span>{this.state.showEventData ? <Owner key={id} data={this.state.headerData.owner} type={type} id={id} updated={this.updated} errorToggle={this.props.errorToggle}/>: null}</span></td>
                                         <th>Updated: </th>
                                         <td><span id='event_updated'>{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
                                         {(type == 'event' || type == 'incident') && this.state.showEventData ? <th>Promoted From:</th> : null}
                                         {(type == 'event' || type == 'incident') && this.state.showEventData ? <PromotedData data={this.state.headerData.promoted_from} type={type} id={id} /> : null}
-                                        <th>Tags: </th>
-                                        <td>{this.state.showEventData ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}</td>
-                                        <th>Source: </th>
-                                        <td>{this.state.showEventData ? <Source data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }</td>
+                                        {this.state.showEventData ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}
+                                        {this.state.showEventData ? <Source data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }
                                     </tr>
                                 </tbody>
                             </table>
@@ -536,7 +534,7 @@ var SelectedHeader = React.createClass({
 
 var EntryDataUpdated = React.createClass({
     render: function() {
-        data = this.props.data;
+        var data = this.props.data;
         return (
             <div><ReactTime value={data * 1000} format="MM/DD/YY hh:mm:ss a" /></div>
         )
@@ -750,35 +748,36 @@ var PromotedData = React.createClass({
             promotedFromType = 'event'
         }
         //makes large array for modal
-        for (i=0; i < this.props.data.length; i++) {
+        for (var i=0; i < this.props.data.length; i++) {
             if (i > 0) {fullarr.push(<div> , </div>)}
             var link = '/#/' + promotedFromType + '/' + this.props.data[i];
-            fullarr.push(<div><a href={link}>{this.props.data[i]}</a></div>)
+            fullarr.push(<div key={this.props.data[i]}><a href={link}>{this.props.data[i]}</a></div>)
         }
         //makes small array for quick display in header
         if (this.props.data.length < 3 ) {
             shortforlength = this.props.data.length;
         }
-        for (i=0; i < shortforlength; i++) {
+        for (var i=0; i < shortforlength; i++) {
             if (i > 0) {shortarr.push(<div> , </div>)}
             var link = '/#/' + promotedFromType + '/' + this.props.data[i];
-            shortarr.push(<div><a href={link}>{this.props.data[i]}</a></div>)
+            shortarr.push(<div key={this.props.data[i]}><a href={link}>{this.props.data[i]}</a></div>)
         } 
         if (this.props.data.length > 3) {shortarr.push(<div onClick={this.showAllPromotedDataToggle}>,<a href='javascript:;'>...more</a></div>)}
         return (
-            <td><span id='promoted_from' style={{display:'flex'}}>{shortarr}</span> 
-            {this.state.showAllPromotedDataToolbar ? <Modal isOpen={true} onRequestClose={this.showAllPromotedDataToggle} style={customStyles}>
-                <div className='modal-header'>
-                    <img src='images/close_toolbar.png' className='close_toolbar' onClick={this.showAllPromotedDataToggle} />
-                    <h3 id='myModalLabel'>Promoted From</h3>
-                </div>
-                <div className='modal-body promoted-from-full'>
-                    {fullarr}    
-                </div>
-                <div className='modal-footer'>
-                    <Button id='cancel-modal' onClick={this.showAllPromotedDataToggle}>Close</Button>
-                </div>
-            </Modal> : null }
+            <td>
+                <span id='promoted_from' style={{display:'flex'}}>{shortarr}</span> 
+                {this.state.showAllPromotedDataToolbar ? <Modal isOpen={true} onRequestClose={this.showAllPromotedDataToggle} style={customStyles}>
+                    <div className='modal-header'>
+                        <img src='images/close_toolbar.png' className='close_toolbar' onClick={this.showAllPromotedDataToggle} />
+                        <h3 id='myModalLabel'>Promoted From</h3>
+                    </div>
+                    <div className='modal-body promoted-from-full'>
+                        {fullarr}    
+                    </div>
+                    <div className='modal-footer'>
+                        <Button id='cancel-modal' onClick={this.showAllPromotedDataToggle}>Close</Button>
+                    </div>
+                </Modal> : null }
             </td>
         )
     }   

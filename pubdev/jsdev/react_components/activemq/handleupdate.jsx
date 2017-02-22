@@ -1,4 +1,5 @@
 var set;
+
 function update(state, callback, payload){
     activemqstate = 'update'
     if (state == 'event') {

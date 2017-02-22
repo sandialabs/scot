@@ -21,7 +21,15 @@ var propTypes = {
   /**
    * Uses `controlId` from `<FormGroup>` if not explicitly specified.
    */
-  id: React.PropTypes.string
+  id: React.PropTypes.string,
+  /**
+   * Attaches a ref to the `<input>` element. Only functions can be used here.
+   *
+   * ```js
+   * <FormControl inputRef={ref => { this.input = ref; }} />
+   * ```
+   */
+  inputRef: React.PropTypes.func
 };
 
 var defaultProps = {
@@ -45,20 +53,18 @@ var FormControl = function (_React$Component) {
     var formGroup = this.context.$bs_formGroup;
     var controlId = formGroup && formGroup.controlId;
 
-    var _props = this.props;
-    var Component = _props.componentClass;
-    var type = _props.type;
-    var _props$id = _props.id;
-    var id = _props$id === undefined ? controlId : _props$id;
-    var className = _props.className;
+    var _props = this.props,
+        Component = _props.componentClass,
+        type = _props.type,
+        _props$id = _props.id,
+        id = _props$id === undefined ? controlId : _props$id,
+        inputRef = _props.inputRef,
+        className = _props.className,
+        props = _objectWithoutProperties(_props, ['componentClass', 'type', 'id', 'inputRef', 'className']);
 
-    var props = _objectWithoutProperties(_props, ['componentClass', 'type', 'id', 'className']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     process.env.NODE_ENV !== 'production' ? warning(controlId == null || id === controlId, '`controlId` is ignored on `<FormControl>` when `id` is specified.') : void 0;
 
@@ -71,6 +77,7 @@ var FormControl = function (_React$Component) {
     return React.createElement(Component, _extends({}, elementProps, {
       type: type,
       id: id,
+      ref: inputRef,
       className: classNames(className, classes)
     }));
   };
