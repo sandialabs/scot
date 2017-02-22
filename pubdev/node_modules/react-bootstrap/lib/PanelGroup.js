@@ -93,18 +93,16 @@ var PanelGroup = function (_React$Component) {
   PanelGroup.prototype.render = function render() {
     var _this2 = this;
 
-    var _props = this.props;
-    var accordion = _props.accordion;
-    var propsActiveKey = _props.activeKey;
-    var className = _props.className;
-    var children = _props.children;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['accordion', 'activeKey', 'className', 'children']);
+    var _props = this.props,
+        accordion = _props.accordion,
+        propsActiveKey = _props.activeKey,
+        className = _props.className,
+        children = _props.children,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['accordion', 'activeKey', 'className', 'children']);
 
-    var _splitBsPropsAndOmit = (0, _bootstrapUtils.splitBsPropsAndOmit)(props, ['defaultActiveKey', 'onSelect']);
-
-    var bsProps = _splitBsPropsAndOmit[0];
-    var elementProps = _splitBsPropsAndOmit[1];
-
+    var _splitBsPropsAndOmit = (0, _bootstrapUtils.splitBsPropsAndOmit)(props, ['defaultActiveKey', 'onSelect']),
+        bsProps = _splitBsPropsAndOmit[0],
+        elementProps = _splitBsPropsAndOmit[1];
 
     var activeKey = void 0;
     if (accordion) {

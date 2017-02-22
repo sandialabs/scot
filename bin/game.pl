@@ -14,7 +14,13 @@ use Data::Dumper;
 
 say "--- Starting Game Tally ---";
 
+my $config_file = $ENV{'scot_game_config_file'} // '/opt/scot/etc/game.cfg.pl';
+
+my $env = Scot::Env->new({
+    config_file => $config_file,
+});
+
 my $processor   = Scot::App::Game->new({
-    config_file         => "game.app.cfg",
+    env => $env,
 });
 $processor->run();

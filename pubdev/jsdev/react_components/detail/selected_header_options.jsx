@@ -6,16 +6,18 @@ var DropdownButton  = require('react-bootstrap/lib/DropdownButton.js');
 var Promote         = require('../components/promote.jsx');
 
 var SelectedHeaderOptions = React.createClass({
-    toggleFlair: function() { 
-        if (typeof globalFlairState === 'undefined') {
-            globalFlairState = true;
+    getInitialState: function() {
+        return {
+            globalFlairState: true
         }
+    },
+    toggleFlair: function() { 
         $('iframe').each(function(index, ifr) {
             if(ifr.contentDocument != null) {
                 var ifrContents = $(ifr).contents();
                 var off = ifrContents.find('.entity-off');
                 var on = ifrContents.find('.entity');
-                if (globalFlairState == false) {
+                if (this.state.globalFlairState == false) {
                     ifrContents.find('.extras').show();
                     ifrContents.find('.flair-off').hide();
                     off.each(function(index, entity) {
@@ -33,11 +35,11 @@ var SelectedHeaderOptions = React.createClass({
                 }
 
             }
-        });
+        }.bind(this));
         var off = $('.entity-off');
         var on = $('.entity');
-        if (!globalFlairState) {
-            globalFlairState = true;
+        if (!this.state.globalFlairState) {
+            this.setState({globalFlairState:true});
             $('.extras').show();
             $('.flair-off').hide();
             off.each(function(index, entity) {
@@ -47,7 +49,7 @@ var SelectedHeaderOptions = React.createClass({
         } else {
             $('.extras').hide();
             $('.flair-off').show();
-            globalFlairState = false;
+            this.setState({globalFlairState:false});
             on.each(function(index, entity) {
                 $(entity).addClass('entity-off');
                 $(entity).removeClass('entity');
@@ -114,7 +116,7 @@ var SelectedHeaderOptions = React.createClass({
                 var promoteTo = {
                     promote:response.pid
                 }
-                for (i=1; i < array.length; i++) {
+                for (var i=1; i < array.length; i++) {
                     $.ajax({
                         type:'put',
                         url: '/scot/api/v2/alert/'+array[i],
@@ -166,7 +168,7 @@ var SelectedHeaderOptions = React.createClass({
                 var id = $(tr).attr('id');
                 array.push(id);
             }.bind(this));
-            for (i=0; i < array.length; i++) {
+            for (var i=0; i < array.length; i++) {
                 if ($.isNumeric(text)) {
                     var data = {
                         promote:parseInt(text)
@@ -222,7 +224,7 @@ var SelectedHeaderOptions = React.createClass({
                 var id = $(tr).attr('id');
                 array.push(id);
             }.bind(this));
-            for (i=0; i < array.length; i++) {
+            for (var i=0; i < array.length; i++) {
                 $.ajax({
                     type:'delete',
                     url: '/scot/api/v2/alert/'+array[i],
@@ -238,21 +240,26 @@ var SelectedHeaderOptions = React.createClass({
     },
     componentDidMount: function() {
         //open, close SELECTED alerts
-        $('#main-detail-container').keydown(function(event){
-            if($('input').is(':focus')) {return}
-            if (event.keyCode == 79 && (event.ctrlKey != true && event.metaKey != true)) {
-                this.alertOpenSelected();
-            }
-            if (event.keyCode == 67 && (event.ctrlKey != true && event.metaKey != true)) {
-                this.alertCloseSelected();
-            }
-        }.bind(this))
+       if (this.props.type == 'alertgroup' || this.props.type == 'alert') { 
+            $('#main-detail-container').keydown(function(event){
+                if($('input').is(':focus')) {return}
+                if (event.keyCode == 79 && (event.ctrlKey != true && event.metaKey != true)) {
+                    this.alertOpenSelected();
+                }
+                if (event.keyCode == 67 && (event.ctrlKey != true && event.metaKey != true)) {
+                    this.alertCloseSelected();
+                }
+            }.bind(this))
+       }
     },
     componentWillUnmount: function() {
-        $('#main-detail-container').unbind('keydown');
+        if (this.props.type == 'alertgroup' || this.props.type == 'alert') {
+            $('#main-detail-container').unbind('keydown');
+        }
     },
     guideToggle: function() {
-        this.props.flairToolbarToggle(this.props.guideID,null,'guide')
+        var entityoffset = {top: 0, left: 0} //set to 0 so it appears in a default location.
+        this.props.flairToolbarToggle(this.props.guideID,null,'guide', entityoffset, null)
     },
     createGuide: function() {
        var data = JSON.stringify({subject: 'ENTER A GUIDE NAME',applies_to:[this.props.subjectName],entry:[]})

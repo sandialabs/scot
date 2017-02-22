@@ -25,19 +25,16 @@ var Thumbnail = function (_React$Component) {
   }
 
   Thumbnail.prototype.render = function render() {
-    var _props = this.props;
-    var src = _props.src;
-    var alt = _props.alt;
-    var className = _props.className;
-    var children = _props.children;
+    var _props = this.props,
+        src = _props.src,
+        alt = _props.alt,
+        className = _props.className,
+        children = _props.children,
+        props = _objectWithoutProperties(_props, ['src', 'alt', 'className', 'children']);
 
-    var props = _objectWithoutProperties(_props, ['src', 'alt', 'className', 'children']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var Component = elementProps.href ? SafeAnchor : 'div';
     var classes = getClassSet(bsProps);
