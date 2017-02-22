@@ -178,7 +178,7 @@ sub load_parsers  {
     my $self    = shift;
     my $log     = $self->log;
 
-    my $parser_dir  = $self->config->{parser_dir} //
+    my $parser_dir  = $self->env->parser_dir //
                       "/opt/scot/lib/Scot/Parser";
     try {
         opendir(DIR, $parser_dir);
@@ -278,7 +278,7 @@ sub run {
         $proc_count++;
         $log->trace("[UID $uid] Child process $pid finishes");
 
-        if ( $self->config->{leave_unseen} ) {
+        if ( $self->env->leave_unseen ) {
             $imap->mark_uid_unseed($uid);
         }
 
