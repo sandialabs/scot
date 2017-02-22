@@ -8,7 +8,36 @@ use Log::Log4perl::Level;
 use Log::Log4perl::Appender;
 
 use Moose;
-with qw(Scot::Role::Configurable);
+
+has config  => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    lazy        => 1,
+    required    => 1,
+    builder     => '_build_config',
+    predicate   => 'has_config',
+);
+
+sub _build_config {
+    return {};
+}
+
+sub get_config_value {
+    my $self    = shift;
+    my $attr    = shift;
+    my $default = shift;
+    my $envname = shift;
+
+    if ( defined $envname ) {
+        if ( defined $ENV{$envname} ) {
+            return $ENV{$envname};
+        }
+    }
+    if ( defined $self->config->{$attr} ) {
+        return $self->config->{$attr};
+    }
+    return $default;
+}
 
 has logger_name => (
     is          => 'ro',
@@ -22,6 +51,7 @@ sub _build_logger_name {
     my $self    = shift;
     my $attr    = "logger_name";
     my $default = "SCOT";
+    my $envname = "scot_util_loggerfactory_logger_name";
     return $self->get_config_value($attr,$default);
 }
 
@@ -37,6 +67,7 @@ sub _build_layout {
     my $self    = shift;
     my $attr    = "layout";
     my $default = "%d %7p [%P] %15F{1}: %4L %m%n";
+    my $envname = "scot_util_loggerfactory_layout";
     return $self->get_config_value($attr,$default);
 }
 
@@ -52,6 +83,7 @@ sub _build_appender_name {
     my $self    = shift;
     my $attr    = "appender_name";
     my $default = "scot_log";
+    my $envname = "scot_util_loggerfactory_appender_name";
     return $self->get_config_value($attr,$default);
 }
 
@@ -67,6 +99,7 @@ sub _build_logfile {
     my $self    = shift;
     my $attr    = "logfile";
     my $default = "/var/log/scot/scot.log";
+    my $envname = "scot_util_loggerfactory_logfile";
     return $self->get_config_value($attr,$default);
 }
 
@@ -82,6 +115,7 @@ sub _build_log_level {
     my $self    = shift;
     my $attr    = "log_level";
     my $default = "DEBUG";
+    my $envname = "scot_util_loggerfactory_loglevel";
     return $self->get_config_value($attr,$default);
 }
 

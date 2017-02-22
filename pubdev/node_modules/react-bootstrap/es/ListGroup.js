@@ -46,19 +46,16 @@ var ListGroup = function (_React$Component) {
   }
 
   ListGroup.prototype.render = function render() {
-    var _props = this.props;
-    var children = _props.children;
-    var _props$componentClass = _props.componentClass;
-    var Component = _props$componentClass === undefined ? getDefaultComponent(children) : _props$componentClass;
-    var className = _props.className;
+    var _props = this.props,
+        children = _props.children,
+        _props$componentClass = _props.componentClass,
+        Component = _props$componentClass === undefined ? getDefaultComponent(children) : _props$componentClass,
+        className = _props.className,
+        props = _objectWithoutProperties(_props, ['children', 'componentClass', 'className']);
 
-    var props = _objectWithoutProperties(_props, ['children', 'componentClass', 'className']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = getClassSet(bsProps);
 

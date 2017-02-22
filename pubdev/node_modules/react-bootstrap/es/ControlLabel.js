@@ -38,19 +38,16 @@ var ControlLabel = function (_React$Component) {
     var formGroup = this.context.$bs_formGroup;
     var controlId = formGroup && formGroup.controlId;
 
-    var _props = this.props;
-    var _props$htmlFor = _props.htmlFor;
-    var htmlFor = _props$htmlFor === undefined ? controlId : _props$htmlFor;
-    var srOnly = _props.srOnly;
-    var className = _props.className;
+    var _props = this.props,
+        _props$htmlFor = _props.htmlFor,
+        htmlFor = _props$htmlFor === undefined ? controlId : _props$htmlFor,
+        srOnly = _props.srOnly,
+        className = _props.className,
+        props = _objectWithoutProperties(_props, ['htmlFor', 'srOnly', 'className']);
 
-    var props = _objectWithoutProperties(_props, ['htmlFor', 'srOnly', 'className']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     process.env.NODE_ENV !== 'production' ? warning(controlId == null || htmlFor === controlId, '`controlId` is ignored on `<ControlLabel>` when `htmlFor` is specified.') : void 0;
 

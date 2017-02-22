@@ -17,8 +17,8 @@ function splitComponentProps(props, Component) {
   var childProps = {};
 
   (0, _entries2["default"])(props).forEach(function (_ref) {
-    var propName = _ref[0];
-    var propValue = _ref[1];
+    var propName = _ref[0],
+        propValue = _ref[1];
 
     if (componentPropTypes[propName]) {
       parentProps[propName] = propValue;

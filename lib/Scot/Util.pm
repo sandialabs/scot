@@ -21,7 +21,29 @@ use Scot::Util::LoggerFactory;
 use Data::Dumper;
 
 use Moose;
-with qw(Scot::Role::Configurable);
+
+has config  => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+);
+
+sub get_config_value {
+    my $self    = shift;
+    my $attr    = shift;
+    my $default = shift;
+    my $envname = shift;
+
+    if ( defined $envname ) {
+        if ( defined $ENV{$envname} ) {
+            return $ENV{$envname};
+        }
+    }
+    if ( defined $self->config->{$attr} ) {
+        return $self->config->{$attr};
+    }
+    return $default;
+}
 
 has log => (
     is          => 'ro',

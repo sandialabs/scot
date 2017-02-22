@@ -34,13 +34,13 @@ use warnings;
 use v5.18;
 
 use Moose;
-
 extends 'Scot::App';
 
 has thishostname    => (
     is              => 'ro',
     isa             => 'Str',
     required        => 1,
+    lazy            => 1,
     default         => sub { hostname; },
 );
 
@@ -54,15 +54,8 @@ has scot    => (
 
 sub _build_scot_scot {
     my $self    = shift;
-    my $log     = $self->log;
-    $log->debug("Config is : ",{filter=>\&Dumper,value=>$self->config});
-    return Scot::Util::Scot2->new({
-        log         => $self->log,
-        servername  => $self->config->{scot}->{servername},
-        username    => $self->config->{scot}->{username},
-        password    => $self->config->{scot}->{password},
-        authtype    => $self->config->{scot}->{authtype},
-    });
+    my $env     = $self->env;
+    return $env->scot;
 }
 
 has es      => (
@@ -75,23 +68,24 @@ has es      => (
 
 sub _build_es {
     my $self    = shift;
-    return Scot::Util::ElasticSearch->new({
-        log     => $self->log,
-        config  => $self->config->{elasticsearch},
-    });
+    my $env     = $self->env;
+    return $env->es;
 }
 
 has max_workers => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
+    lazy        => 1,
     builder     => '_get_max_workers',
 );
 
 sub _get_max_workers {
     my $self    = shift;
-    my $conf    = $self->config;
-    return $conf->{max_workers} // 1;
+    my $attr    = "max_workers";
+    my $default = 1;
+    my $envname = "scot_app_stretch_max_workers";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 =head2 Autonomous

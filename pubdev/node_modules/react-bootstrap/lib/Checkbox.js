@@ -44,7 +44,7 @@ var propTypes = {
   /**
    * Only valid if `inline` is not set.
    */
-  validationState: _react2['default'].PropTypes.oneOf(['success', 'warning', 'error']),
+  validationState: _react2['default'].PropTypes.oneOf(['success', 'warning', 'error', null]),
   /**
    * Attaches a ref to the `<input>` element. Only functions can be used here.
    *
@@ -69,21 +69,19 @@ var Checkbox = function (_React$Component) {
   }
 
   Checkbox.prototype.render = function render() {
-    var _props = this.props;
-    var inline = _props.inline;
-    var disabled = _props.disabled;
-    var validationState = _props.validationState;
-    var inputRef = _props.inputRef;
-    var className = _props.className;
-    var style = _props.style;
-    var children = _props.children;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['inline', 'disabled', 'validationState', 'inputRef', 'className', 'style', 'children']);
+    var _props = this.props,
+        inline = _props.inline,
+        disabled = _props.disabled,
+        validationState = _props.validationState,
+        inputRef = _props.inputRef,
+        className = _props.className,
+        style = _props.style,
+        children = _props.children,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['inline', 'disabled', 'validationState', 'inputRef', 'className', 'style', 'children']);
 
-    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var input = _react2['default'].createElement('input', (0, _extends3['default'])({}, elementProps, {
       ref: inputRef,

@@ -71,9 +71,10 @@ EOF
 
 =cut
 
+my $config_file = $ENV{'scot_reports_config_file'} // '/opt/scot/etc/scot.cfg.pl';
+
 my $env  = Scot::Env->new(
-    config_file => '../scot.conf',
-    mode        => 'production',
+    config_file => $config_file,
 );
 
 $env->log->debug("-----------------");
@@ -81,7 +82,6 @@ $env->log->debug(" $0 Begins");
 $env->log->debug("-----------------");
 
 my $mongo   = $env->mongo;
-
 
 my $stptime = DateTime::Format::Strptime->new(
     pattern => '%m/%d/%Y %T',

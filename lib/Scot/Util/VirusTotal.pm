@@ -12,35 +12,56 @@ use Mojo::UserAgent;
 use namespace::autoclean;
 
 use Moose;
-
-has env         => (
-    is          => 'ro',
-    isa         => 'Scot::Env',
-    required    => 1,
-    default     => sub { Scot::Env->instance; },
-);
+extends 'Scot::Util';
 
 has username    => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default     => ' ',
+    lazy        => 1,
+    builder     => '_build_username',
+    # default     => ' ',
 );
+
+sub _build_username {
+    my $self    = shift;
+    my $attr    = "username";
+    my $default = " ";
+    my $envname = "scot_util_virustotal_username";
+    return $self->get_config_value($attr, $default, $envname);
+}
 
 has password    => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default     => ' ',
+    lazy        => 1,
+    builder     => '_build_password',
 );
+sub _build_password {
+    my $self    = shift;
+    my $attr    = "password";
+    my $default = " ";
+    my $envname = "scot_util_virustotal_password";
+    return $self->get_config_value($attr, $default, $envname);
+}
 
 has servername  => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
+    lazy        => 1,
+    builder     => "_build_servername",
     # default     => 'www.virustotal.com/vtapi',
-    default     => 'vproxy',
+    # default     => 'vproxy',
 );
+sub _build_servername {
+    my $self    = shift;
+    my $attr    = "servername";
+    my $default = "www.virustotal.com/vtapi";
+    my $envname = "scot_util_virustotal_servername";
+    return $self->get_config_value($attr, $default, $envname);
+}
 
 has ua          => (
     is          => 'ro',
@@ -54,7 +75,19 @@ has ua          => (
 has api_key     => (
     is          => 'rw',
     isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => "_build_api_key",
 );
+sub _build_api_key {
+    my $self    = shift;
+    my $attr    = "api_key";
+    my $default = " ";
+    my $envname = "scot_util_virustotal_api_key";
+    return $self->get_config_value($attr, $default, $envname);
+}
+
+
 
 
 sub _build_useragent {
