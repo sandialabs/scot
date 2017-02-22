@@ -164,11 +164,10 @@ var ListViewHeaderEach = React.createClass({
                 </th>
             )
         } else if (columnsOne == 'status'){
-            if (this.state.statusInputValue != '') {
-                statusInputValue = this.state.statusInputValue
-            }
             if (filterValue != undefined) {
                 statusInputValue = filterValue;
+            } else {
+                statusInputValue = '';
             }
             return (
                 <th className={this.state.className}>
