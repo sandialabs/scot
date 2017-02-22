@@ -12,19 +12,21 @@ import { getBidiPartAt, getOrder } from "../util/bidi"
 import { gecko, ie_version } from "../util/browser"
 import { contains, range, removeChildrenAndAdd, selectInput } from "../util/dom"
 import { on, signalDOMEvent } from "../util/event"
-import { copyObj, Delayed, lst, nothing, sel_dontScroll } from "../util/misc"
+import { Delayed, lst, sel_dontScroll } from "../util/misc"
 
 // CONTENTEDITABLE INPUT STYLE
 
-export default function ContentEditableInput(cm) {
-  this.cm = cm
-  this.lastAnchorNode = this.lastAnchorOffset = this.lastFocusNode = this.lastFocusOffset = null
-  this.polling = new Delayed()
-  this.gracePeriod = false
-}
+export default class ContentEditableInput {
+  constructor(cm) {
+    this.cm = cm
+    this.lastAnchorNode = this.lastAnchorOffset = this.lastFocusNode = this.lastFocusOffset = null
+    this.polling = new Delayed()
+    this.composing = null
+    this.gracePeriod = false
+    this.readDOMTimeout = null
+  }
 
-ContentEditableInput.prototype = copyObj({
-  init: function(display) {
+  init(display) {
     let input = this, cm = input.cm
     let div = input.div = display.lineDiv
     disableBrowserMagic(div, cm.options.spellcheck)
@@ -38,39 +40,22 @@ ContentEditableInput.prototype = copyObj({
     })
 
     on(div, "compositionstart", e => {
-      let data = e.data
-      input.composing = {sel: cm.doc.sel, data: data, startData: data}
-      if (!data) return
-      let prim = cm.doc.sel.primary()
-      let line = cm.getLine(prim.head.line)
-      let found = line.indexOf(data, Math.max(0, prim.head.ch - data.length))
-      if (found > -1 && found <= prim.head.ch)
-        input.composing.sel = simpleSelection(Pos(prim.head.line, found),
-                                              Pos(prim.head.line, found + data.length))
+      this.composing = {data: e.data, done: false}
     })
-    on(div, "compositionupdate", e => input.composing.data = e.data)
+    on(div, "compositionupdate", e => {
+      if (!this.composing) this.composing = {data: e.data, done: false}
+    })
     on(div, "compositionend", e => {
-      let ours = input.composing
-      if (!ours) return
-      if (e.data != ours.startData && !/\u200b/.test(e.data))
-        ours.data = e.data
-      // Need a small delay to prevent other code (input event,
-      // selection polling) from doing damage when fired right after
-      // compositionend.
-      setTimeout(() => {
-        if (!ours.handled)
-          input.applyComposition(ours)
-        if (input.composing == ours)
-          input.composing = null
-      }, 50)
+      if (this.composing) {
+        if (e.data != this.composing.data) this.readFromDOMSoon()
+        this.composing.done = true
+      }
     })
 
     on(div, "touchstart", () => input.forceCompositionEnd())
 
     on(div, "input", () => {
-      if (input.composing) return
-      if (cm.isReadOnly() || !input.pollContent())
-        runInOp(input.cm, () => regChange(cm))
+      if (!this.composing) this.readFromDOMSoon()
     })
 
     function onCopyCut(e) {
@@ -114,21 +99,21 @@ ContentEditableInput.prototype = copyObj({
     }
     on(div, "copy", onCopyCut)
     on(div, "cut", onCopyCut)
-  },
+  }
 
-  prepareSelection: function() {
+  prepareSelection() {
     let result = prepareSelection(this.cm, false)
     result.focus = this.cm.state.focused
     return result
-  },
+  }
 
-  showSelection: function(info, takeFocus) {
+  showSelection(info, takeFocus) {
     if (!info || !this.cm.display.view.length) return
     if (info.focus || takeFocus) this.showPrimarySelection()
     this.showMultipleSelections(info)
-  },
+  }
 
-  showPrimarySelection: function() {
+  showPrimarySelection() {
     let sel = window.getSelection(), prim = this.cm.doc.sel.primary()
     let curAnchor = domToPos(this.cm, sel.anchorNode, sel.anchorOffset)
     let curFocus = domToPos(this.cm, sel.focusNode, sel.focusOffset)
@@ -169,44 +154,48 @@ ContentEditableInput.prototype = copyObj({
       else if (gecko) this.startGracePeriod()
     }
     this.rememberSelection()
-  },
+  }
 
-  startGracePeriod: function() {
+  startGracePeriod() {
     clearTimeout(this.gracePeriod)
     this.gracePeriod = setTimeout(() => {
       this.gracePeriod = false
       if (this.selectionChanged())
         this.cm.operation(() => this.cm.curOp.selectionChanged = true)
     }, 20)
-  },
+  }
 
-  showMultipleSelections: function(info) {
+  showMultipleSelections(info) {
     removeChildrenAndAdd(this.cm.display.cursorDiv, info.cursors)
     removeChildrenAndAdd(this.cm.display.selectionDiv, info.selection)
-  },
+  }
 
-  rememberSelection: function() {
+  rememberSelection() {
     let sel = window.getSelection()
     this.lastAnchorNode = sel.anchorNode; this.lastAnchorOffset = sel.anchorOffset
     this.lastFocusNode = sel.focusNode; this.lastFocusOffset = sel.focusOffset
-  },
+  }
 
-  selectionInEditor: function() {
+  selectionInEditor() {
     let sel = window.getSelection()
     if (!sel.rangeCount) return false
     let node = sel.getRangeAt(0).commonAncestorContainer
     return contains(this.div, node)
-  },
+  }
 
-  focus: function() {
-    if (this.cm.options.readOnly != "nocursor") this.div.focus()
-  },
-  blur: function() { this.div.blur() },
-  getField: function() { return this.div },
+  focus() {
+    if (this.cm.options.readOnly != "nocursor") {
+      if (!this.selectionInEditor())
+        this.showSelection(this.prepareSelection(), true)
+      this.div.focus()
+    }
+  }
+  blur() { this.div.blur() }
+  getField() { return this.div }
 
-  supportsTouch: function() { return true },
+  supportsTouch() { return true }
 
-  receivedFocus: function() {
+  receivedFocus() {
     let input = this
     if (this.selectionInEditor())
       this.pollSelection()
@@ -220,16 +209,16 @@ ContentEditableInput.prototype = copyObj({
       }
     }
     this.polling.set(this.cm.options.pollInterval, poll)
-  },
+  }
 
-  selectionChanged: function() {
+  selectionChanged() {
     let sel = window.getSelection()
     return sel.anchorNode != this.lastAnchorNode || sel.anchorOffset != this.lastAnchorOffset ||
       sel.focusNode != this.lastFocusNode || sel.focusOffset != this.lastFocusOffset
-  },
+  }
 
-  pollSelection: function() {
-    if (!this.composing && !this.gracePeriod && this.selectionChanged()) {
+  pollSelection() {
+    if (!this.composing && this.readDOMTimeout == null && !this.gracePeriod && this.selectionChanged()) {
       let sel = window.getSelection(), cm = this.cm
       this.rememberSelection()
       let anchor = domToPos(cm, sel.anchorNode, sel.anchorOffset)
@@ -239,11 +228,20 @@ ContentEditableInput.prototype = copyObj({
         if (anchor.bad || head.bad) cm.curOp.selectionChanged = true
       })
     }
-  },
+  }
 
-  pollContent: function() {
+  pollContent() {
+    if (this.readDOMTimeout != null) {
+      clearTimeout(this.readDOMTimeout)
+      this.readDOMTimeout = null
+    }
+
     let cm = this.cm, display = cm.display, sel = cm.doc.sel.primary()
     let from = sel.from(), to = sel.to()
+    if (from.ch == 0 && from.line > cm.firstLine())
+      from = Pos(from.line - 1, getLine(cm.doc, from.line - 1).length)
+    if (to.ch == getLine(cm.doc, to.line).text.length && to.line < cm.lastLine())
+      to = Pos(to.line + 1, 0)
     if (from.line < display.viewFrom || to.line > display.viewTo - 1) return false
 
     let fromIndex, fromLine, fromNode
@@ -264,6 +262,7 @@ ContentEditableInput.prototype = copyObj({
       toNode = display.view[toIndex + 1].node.previousSibling
     }
 
+    if (!fromNode) return false
     let newText = cm.doc.splitLines(domTextBetween(cm, fromNode, toNode, fromLine, toLine))
     let oldText = getBetween(cm.doc, Pos(fromLine, 0), Pos(toLine, getLine(cm.doc, toLine).text.length))
     while (newText.length > 1 && oldText.length > 1) {
@@ -283,8 +282,8 @@ ContentEditableInput.prototype = copyObj({
            newBot.charCodeAt(newBot.length - cutEnd - 1) == oldBot.charCodeAt(oldBot.length - cutEnd - 1))
       ++cutEnd
 
-    newText[newText.length - 1] = newBot.slice(0, newBot.length - cutEnd)
-    newText[0] = newText[0].slice(cutFront)
+    newText[newText.length - 1] = newBot.slice(0, newBot.length - cutEnd).replace(/^\u200b+/, "")
+    newText[0] = newText[0].slice(cutFront).replace(/\u200b+$/, "")
 
     let chFrom = Pos(fromLine, cutFront)
     let chTo = Pos(toLine, oldText.length ? lst(oldText).length - cutEnd : 0)
@@ -292,47 +291,54 @@ ContentEditableInput.prototype = copyObj({
       replaceRange(cm.doc, newText, chFrom, chTo, "+input")
       return true
     }
-  },
+  }
 
-  ensurePolled: function() {
+  ensurePolled() {
     this.forceCompositionEnd()
-  },
-  reset: function() {
+  }
+  reset() {
     this.forceCompositionEnd()
-  },
-  forceCompositionEnd: function() {
-    if (!this.composing || this.composing.handled) return
-    this.applyComposition(this.composing)
-    this.composing.handled = true
+  }
+  forceCompositionEnd() {
+    if (!this.composing) return
+    clearTimeout(this.readDOMTimeout)
+    this.composing = null
+    if (!this.pollContent()) regChange(this.cm)
     this.div.blur()
     this.div.focus()
-  },
-  applyComposition: function(composing) {
-    if (this.cm.isReadOnly())
-      operation(this.cm, regChange)(this.cm)
-    else if (composing.data && composing.data != composing.startData)
-      operation(this.cm, applyTextInput)(this.cm, composing.data, 0, composing.sel)
-  },
+  }
+  readFromDOMSoon() {
+    if (this.readDOMTimeout != null) return
+    this.readDOMTimeout = setTimeout(() => {
+      this.readDOMTimeout = null
+      if (this.composing) {
+        if (this.composing.done) this.composing = null
+        else return
+      }
+      if (this.cm.isReadOnly() || !this.pollContent())
+        runInOp(this.cm, () => regChange(this.cm))
+    }, 80)
+  }
 
-  setUneditable: function(node) {
+  setUneditable(node) {
     node.contentEditable = "false"
-  },
+  }
 
-  onKeyPress: function(e) {
+  onKeyPress(e) {
     e.preventDefault()
     if (!this.cm.isReadOnly())
       operation(this.cm, applyTextInput)(this.cm, String.fromCharCode(e.charCode == null ? e.keyCode : e.charCode), 0)
-  },
+  }
 
-  readOnlyChanged: function(val) {
+  readOnlyChanged(val) {
     this.div.contentEditable = String(val != "nocursor")
-  },
+  }
 
-  onContextMenu: nothing,
-  resetPosition: nothing,
+  onContextMenu() {}
+  resetPosition() {}
+}
 
-  needsContentAttribute: true
-  }, ContentEditableInput.prototype)
+ContentEditableInput.prototype.needsContentAttribute = true
 
 function posToDOM(cm, pos) {
   let view = findViewForLine(cm, pos.line)
@@ -359,8 +365,8 @@ function domTextBetween(cm, from, to, fromLine, toLine) {
     if (node.nodeType == 1) {
       let cmText = node.getAttribute("cm-text")
       if (cmText != null) {
-        if (cmText == "") cmText = node.textContent.replace(/\u200b/g, "")
-        text += cmText
+        if (cmText == "") text += node.textContent.replace(/\u200b/g, "")
+        else text += cmText
         return
       }
       let markerID = node.getAttribute("cm-marker"), range

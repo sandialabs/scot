@@ -31,10 +31,6 @@ export default function dragOperation(state = initialState, action) {
     return Object.assign({}, state, {
       targetIds: action.targetIds
     });
-  case PUBLISH_DRAG_SOURCE:
-    return Object.assign({}, state, {
-      isSourcePublic: true
-    });
   case REMOVE_TARGET:
     if (state.targetIds.indexOf(action.targetId) === -1) {
       return state;
