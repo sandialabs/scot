@@ -147,12 +147,16 @@ else {
 }
 
 my $esdir   = $env->es_backup_location;
+my $cacheimgdir = $env->cacheimg;
 my $dt  = DateTime->now();
 # my $ts  = $dt->year . $dt->month . $dt->day . $dt->hour . $dt->minute;
 my $ts  = $dt->strftime("%Y%m%d%H%M");
 
+# back up cached images
+system("cp -r /opt/scot/public/cached_images $cacheimgdir");
+
 print "TARing up backups to $tarloc.$ts.tgz\n";
-system("tar cvzf $tarloc.$ts.tgz $dumpdir $esdir");
+system("tar cvzf $tarloc.$ts.tgz $dumpdir $esdir $cachimgdir");
 
 if ( $env->cleanup ) {
     system("rm -rf $dumpdir/*");
