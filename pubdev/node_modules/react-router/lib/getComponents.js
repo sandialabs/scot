@@ -4,13 +4,20 @@ exports.__esModule = true;
 
 var _AsyncUtils = require('./AsyncUtils');
 
-function getComponentsForRoute(location, route, callback) {
+var _PromiseUtils = require('./PromiseUtils');
+
+function getComponentsForRoute(nextState, route, callback) {
   if (route.component || route.components) {
     callback(null, route.component || route.components);
-  } else if (route.getComponent) {
-    route.getComponent(location, callback);
-  } else if (route.getComponents) {
-    route.getComponents(location, callback);
+    return;
+  }
+
+  var getComponent = route.getComponent || route.getComponents;
+  if (getComponent) {
+    var componentReturn = getComponent.call(route, nextState, callback);
+    if ((0, _PromiseUtils.isPromise)(componentReturn)) componentReturn.then(function (component) {
+      return callback(null, component);
+    }, callback);
   } else {
     callback();
   }
@@ -24,10 +31,10 @@ function getComponentsForRoute(location, route, callback) {
  * asynchronous getComponents method.
  */
 function getComponents(nextState, callback) {
-  _AsyncUtils.mapAsync(nextState.routes, function (route, index, callback) {
-    getComponentsForRoute(nextState.location, route, callback);
+  (0, _AsyncUtils.mapAsync)(nextState.routes, function (route, index, callback) {
+    getComponentsForRoute(nextState, route, callback);
   }, callback);
 }
 
-exports['default'] = getComponents;
+exports.default = getComponents;
 module.exports = exports['default'];
