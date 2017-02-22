@@ -392,7 +392,6 @@ function install_perl_modules {
         XML::Smart
         Config::Auto
         Data::GUID
-        Redis
         File::LibMagic
         List::Uniq
         Domain::PublicSuffix
