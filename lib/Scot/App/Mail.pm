@@ -279,7 +279,7 @@ sub run {
         $log->trace("[UID $uid] Child process $pid finishes");
 
         if ( $self->env->leave_unseen ) {
-            $imap->mark_uid_unseed($uid);
+            $imap->mark_uid_unseen($uid);
         }
 
         $taskmgr->finish;
