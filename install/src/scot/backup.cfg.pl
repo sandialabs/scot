@@ -12,6 +12,7 @@
     dbname      => 'scot-prod',
     pidfile     => '/var/run/scot/backup.pid',
     location    => '/opt/scotbackup/mongo',
+    cacheimg    => '/opt/scotbackup/cached_images',
     tarloc      => '/opt/scotbackup/scotback',
     cleanup     => 1,
     es_server   => 'localhost:9200',
