@@ -93,7 +93,21 @@ var propTypes = {
    * If `'menuitem'`, causes the dropdown to behave like a menu item rather than
    * a menu button.
    */
-  role: React.PropTypes.string
+  role: React.PropTypes.string,
+
+  /**
+   * Which event when fired outside the component will cause it to be closed
+   */
+  rootCloseEvent: React.PropTypes.oneOf(['click', 'mousedown']),
+
+  /**
+   * @private
+   */
+  onMouseEnter: React.PropTypes.func,
+  /**
+   * @private
+   */
+  onMouseLeave: React.PropTypes.func
 };
 
 var defaultProps = {
@@ -240,11 +254,11 @@ var Dropdown = function (_React$Component) {
   Dropdown.prototype.renderMenu = function renderMenu(child, _ref) {
     var _this3 = this;
 
-    var id = _ref.id;
-    var onClose = _ref.onClose;
-    var onSelect = _ref.onSelect;
-
-    var props = _objectWithoutProperties(_ref, ['id', 'onClose', 'onSelect']);
+    var id = _ref.id,
+        onClose = _ref.onClose,
+        onSelect = _ref.onSelect,
+        rootCloseEvent = _ref.rootCloseEvent,
+        props = _objectWithoutProperties(_ref, ['id', 'onClose', 'onSelect', 'rootCloseEvent']);
 
     var ref = function ref(c) {
       _this3.menu = c;
@@ -261,7 +275,8 @@ var Dropdown = function (_React$Component) {
       labelledBy: id,
       bsClass: prefix(props, 'menu'),
       onClose: createChainedFunction(child.props.onClose, onClose, this.handleClose),
-      onSelect: createChainedFunction(child.props.onSelect, onSelect, this.handleClose)
+      onSelect: createChainedFunction(child.props.onSelect, onSelect, this.handleClose),
+      rootCloseEvent: rootCloseEvent
     }));
   };
 
@@ -269,21 +284,21 @@ var Dropdown = function (_React$Component) {
     var _classes,
         _this4 = this;
 
-    var _props = this.props;
-    var Component = _props.componentClass;
-    var id = _props.id;
-    var dropup = _props.dropup;
-    var disabled = _props.disabled;
-    var pullRight = _props.pullRight;
-    var open = _props.open;
-    var onClose = _props.onClose;
-    var onSelect = _props.onSelect;
-    var role = _props.role;
-    var bsClass = _props.bsClass;
-    var className = _props.className;
-    var children = _props.children;
-
-    var props = _objectWithoutProperties(_props, ['componentClass', 'id', 'dropup', 'disabled', 'pullRight', 'open', 'onClose', 'onSelect', 'role', 'bsClass', 'className', 'children']);
+    var _props = this.props,
+        Component = _props.componentClass,
+        id = _props.id,
+        dropup = _props.dropup,
+        disabled = _props.disabled,
+        pullRight = _props.pullRight,
+        open = _props.open,
+        onClose = _props.onClose,
+        onSelect = _props.onSelect,
+        role = _props.role,
+        bsClass = _props.bsClass,
+        className = _props.className,
+        rootCloseEvent = _props.rootCloseEvent,
+        children = _props.children,
+        props = _objectWithoutProperties(_props, ['componentClass', 'id', 'dropup', 'disabled', 'pullRight', 'open', 'onClose', 'onSelect', 'role', 'bsClass', 'className', 'rootCloseEvent', 'children']);
 
     delete props.onToggle;
 
@@ -310,7 +325,7 @@ var Dropdown = function (_React$Component) {
             });
           case MENU_ROLE:
             return _this4.renderMenu(child, {
-              id: id, open: open, pullRight: pullRight, bsClass: bsClass, onClose: onClose, onSelect: onSelect
+              id: id, open: open, pullRight: pullRight, bsClass: bsClass, onClose: onClose, onSelect: onSelect, rootCloseEvent: rootCloseEvent
             });
           default:
             return child;

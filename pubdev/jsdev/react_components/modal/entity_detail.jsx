@@ -9,26 +9,32 @@ var SelectedEntry           = require('../detail/selected_entry.jsx');
 var AddEntry                = require('../components/add_entry.jsx');
 var Draggable               = require('react-draggable');
 
+var startX;
+var startY;
+var startWidth;
+var startHeight;
+
 
 var EntityDetail = React.createClass({
     getInitialState: function() {
         var tabs = [];
         var processedIdsArray = [];
-        var entityHeightint = 400;
-        var entityWidthint = 600;
-        var entityHeight = entityHeightint + 'px';
+        var entityHeight = '100%' //test
+        var entityWidthint = 700;
         var entityWidth = entityWidthint + 'px';
+        var entityMaxHeight = '70vh';
         if (this.props.fullScreen == true) {
-            entityHeight = '95vh'
-            entityWidth = '95%'
+            entityHeight = '95vh';
+            entityWidth = '95%';
+            entityMaxHeight = '95vh';
         }
         return {
             entityData:null,
             entityid: this.props.entityid,
             entityHeight: entityHeight,
             entityWidth: entityWidth,
-            entityHeightint: entityHeightint,
             entityWidthint: entityWidthint,
+            entityMaxHeight: entityMaxHeight,
             tabs: tabs,
             initialLoad:false,
             processedIds:processedIdsArray,
@@ -157,7 +163,7 @@ var EntityDetail = React.createClass({
                                 } else {
                                     var array = this.state.processedIds;
                                     var addEntity = true;
-                                    for (i=0; i < array.length; i++) {
+                                    for (var i=0; i < array.length; i++) {
                                         if (array[i] == nextPropsEntityIdInt) { // Check if entity is already being processed so we don't show it twice
                                             addEntity = false;
                                         } 
@@ -222,9 +228,6 @@ var EntityDetail = React.createClass({
     handleSelectTab(key) {
         this.setState({currentKey:key});
     },
-    positionBottomBoundsCheck: function() {
-        return ($(document).height() - this.state.defaultEntityOffset.top - this.state.entityHeightint);
-    },
     positionRightBoundsCheck: function(e) {
         if (!e) {
             return ($(document).width() - this.state.defaultEntityOffset.left - this.state.entityWidthint);
@@ -259,40 +262,28 @@ var EntityDetail = React.createClass({
             }
             tabsArr.push(<Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} valueClicked={this.state.tabs[i].valueClicked} i={z} key={z} errorToggle={this.props.errorToggle}/></Tab>)
         }
-        if (this.state.defaultEntityOffset) {
-            var positionBottomBoundsValue = this.positionBottomBoundsCheck();
+        if (this.state.defaultEntityOffset && this.state.entityobj) {
             var positionRightBoundsValue = this.positionRightBoundsCheck();
-            if (positionBottomBoundsValue < 0 ) {
-                defaultOffsetY = this.state.defaultEntityOffset.top + positionBottomBoundsValue;
                 if (this.positionRightBoundsCheck($(this.state.entityobj).width()) < 0) {
                     defaultOffsetX = this.state.defaultEntityOffset.left - this.state.entityWidthint;
                 } else {
                     defaultOffsetX = this.state.defaultEntityOffset.left + $(this.state.entityobj).width();
                 }
-            } else {
-                defaultOffsetY = this.state.defaultEntityOffset.top + 20;
-                if (positionRightBoundsValue < 0 ) {
-                    defaultOffsetX = this.state.defaultEntityOffset.left + positionRightBoundsValue;
-                } else {
-                    defaultOffsetX = this.state.defaultEntityOffset.left;
-                }
-            }
-            
         } else {
-            defaultOffsetY = '50';
-            defaultOffsetX = '0';
+            defaultOffsetY = 50;
+            defaultOffsetX = 0;
         }
         return (
-            <Draggable handle="#handle" onMouseDown={this.moveDivInit} key={this.props.key} defaultPosition={{x:defaultOffsetX, y:defaultOffsetY}}>
-                <div id="dragme" className={DragmeClass} style={{height:this.state.entityHeight,width:this.state.entityWidth}}>
+            <Draggable handle="#handle" onMouseDown={this.moveDivInit} key={this.props.key}>
+                <div id="dragme" className={DragmeClass} style={{width:this.state.entityWidth, left:defaultOffsetX, maxHeight:'90vh'}}>
                     <div id='popup-flex-container' style={{height: '100%', display:'flex', flexFlow:'row'}}>
-                        <div id="entity_detail_container" style={{height: '100%', flexFlow: 'column', display: 'flex', width:'100%'}}>
-                            <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" ariaHidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarOff}/></span></div></div>
+                        <div id="entity_detail_container" style={{flexFlow: 'column', display: 'flex', width:'100%'}}>
+                            <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" aria-hidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarOff}/></span></div></div>
                             <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills'>
                                 {tabsArr}                     
                             </Tabs>
                         </div>
-                        <div id='sidebar' onMouseDown={this.initDrag} style={{flex:'0 1 auto', height: '100%', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}}/>
+                        <div id='sidebar' onMouseDown={this.initDrag} style={{flex:'0 1 auto', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}}/>
                     </div>
                     <div id='footer' onMouseDown={this.initDrag} style={{display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}>
                     </div>
@@ -309,7 +300,7 @@ var TabContents = React.createClass({
             return (
                 <div className='tab-content'>
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
-                        <h4 id="myModalLabel">{this.props.data != null ? <EntityValue value={this.props.valueClicked}/> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>
+                        <h4 id="myModalLabel">{this.props.data != null ? <EntityValue value={this.props.valueClicked} data={this.props.data}/> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>
                     </div>
                     <div style={{height:'100%',display:'flex', flex:'1 1 auto', marginLeft:'10px', flexFlow:'inherit', minHeight:'1px'}}>
                     {this.props.data != null ? <EntityBody data={this.props.data} entityid={this.props.entityid} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/> : <div>Loading...</div>}
@@ -334,9 +325,15 @@ var TabContents = React.createClass({
 
 var EntityValue = React.createClass({
     render: function() {
-        return (
-            <div className='flair_header'>{this.props.value}</div>
-        )
+        if (this.props.data != undefined) {  //Entity Detail Popup showing the entity type
+            return (
+                <div className='flair_header'>{this.props.data.type}: {this.props.value}</div>
+            )
+        } else {                            //Guide Detail Popup showing the name of the guide that is being applied to
+            return (
+                <div className='flair_header'>{this.props.value}</div>
+            )
+        }
     }
 });
 
@@ -401,9 +398,21 @@ var EntityBody = React.createClass({
         var href = '/#/entity/'+this.props.entityid;
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='tabs'>
-                <Tab eventKey={1} className='entityPopUpButtons' style={{overflow:'auto'}} title={this.state.appearances}>{entityEnrichmentLinkArr}<span><br/><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><a href={href} style={{color:'#c400ff'}} target='_blank'>List truncated due to large amount of references. Click to view the whole entity</a></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton}/><br/></Tab>
-                <Tab eventKey={2} className='entityPopUpButtons' style={{overflow:'auto'}} title="Entry"><Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
-                {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'entity'} id={this.props.entityid} errorToggle={this.props.errorToggle}/></Tab>
+                <Tab eventKey={1} className='entityPopUpButtons' title={this.state.appearances} style={{height:'100%'}}>
+                    <div>
+                    {entityEnrichmentLinkArr}
+                    </div>
+                    <div style={{maxHeight: '30vh', overflowY: 'auto'}}>
+                        <span><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><a href={href} style={{color:'#c400ff'}} target='_blank'>List truncated due to large amount of references. Click to view the whole entity</a></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton}/><br/>
+                    </div>
+                    <hr style={{marginTop:'.5em', marginBottom:'.5em'}}/>
+                    <div style={{maxHeight:'50vh', overflowY:'auto'}}>
+                        <div>
+                            <Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
+                        </div>
+                        {this.state.entryToolbar ? <AddEntry entryAction={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'entity'} id={this.props.entityid} errorToggle={this.props.errorToggle}/>
+                    </div>
+                </Tab>
                 {entityEnrichmentGeoArr}
                 {entityEnrichmentDataArr}
             </Tabs>
@@ -449,8 +458,8 @@ var GeoView = React.createClass({
             <div>
                 <Button bsSize='xsmall' onClick={this.copyToEntity}>Copy to <b>{"entity"}</b> entry</Button>
                 {this.props.type != 'alertgroup' ? <Button bsSize='xsmall' onClick={this.copyToEntry}>Copy to <b>{this.props.type} {this.props.id}</b> entry</Button> : null}
-                {this.state.copyToEntryToolbar ? <AddEntry title='CopyToEntry' type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.copyToEntry} content={copy} errorToggle={this.props.errorToggle}/> : null}
-                {this.state.copyToEntityToolbar ? <AddEntry title='CopyToEntry' type={'entity'} targetid={this.props.entityData.id} id={this.props.entityData.id} addedentry={this.copyToEntity} content={copy} errorToggle={this.props.errorToggle}/> : null}
+                {this.state.copyToEntryToolbar ? <AddEntry entryAction='Copy To Entry' type={this.props.type} targetid={this.props.id} id={this.props.id} addedentry={this.copyToEntry} content={copy} errorToggle={this.props.errorToggle}/> : null}
+                {this.state.copyToEntityToolbar ? <AddEntry entryAction='Copy To Entry' type={'entity'} targetid={this.props.entityData.id} id={this.props.entityData.id} addedentry={this.copyToEntity} content={copy} errorToggle={this.props.errorToggle}/> : null}
                 <div className="entityTableWrapper">
                     <table className="tablesorter entityTableHorizontal" id={'sortableentitytable'} width='100%'>
                         {trArr}    
@@ -465,8 +474,8 @@ var EntityEnrichmentButtons = React.createClass({
     render: function() { 
         var dataSource = this.props.dataSource; 
         return (
-            <div style={{position:'relative'}}>
-                <div style={{overflow:'auto'}}> 
+            <div style={{overflowY:'auto'}}>
+                <div> 
                     <Inspector.default data={dataSource} expandLevel={4} />
                 </div>
             </div>
@@ -705,7 +714,7 @@ var ReferencesBody = React.createClass({
             success: function(result) {
                 var entryResult = result.records;
                 var summary = false;
-                for (i=0; i < entryResult.length; i++) {
+                for (var i=0; i < entryResult.length; i++) {
                     if (entryResult[i].class == 'summary') {
                         summary = true;
                         if (this.isMounted) {
@@ -783,14 +792,14 @@ var ReferencesBody = React.createClass({
             updatedTimeHumanReadable = new Date(1000 * updatedTime).toLocaleString()
         }
         return (
-            <tr id={trId} index={this.props.index}>
-                <td valign='top' style={{textAlign:'center',cursor: 'pointer'}} onClick={this.onClick} id={tdId}><i className="fa fa-eye fa-1" aria-hidden="true"></i></td>
-                {this.props.data.status == 'promoted' ? <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}><Button bsSize='xsmall' bsStyle={'warning'} id={this.props.data.id} href={promotedHref} target="_blank" style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{this.props.data.status}</Button></td> : <td valign='top' style={{color: statusColor, paddingRight:'4px', paddingLeft:'4px'}}>{this.props.data.status}</td>}
-                <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}><a href={aHref} target="_blank">{this.props.data.id}</a></td>
-                <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}>{this.props.type}</td>
-                <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px', textAlign:'center'}}>{this.props.data.entry_count}</td>
-                <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}}>{subject}</td>
-                <td valign='top' style={{paddingRight:'4px', paddingLeft:'4px'}} title={updatedTimeHumanReadable}>{daysSince} days ago</td>
+            <tr id={trId}>
+                <td style={{textAlign:'center',cursor: 'pointer', verticalAlign: 'top'}} onClick={this.onClick} id={tdId}><i className="fa fa-eye fa-1" aria-hidden="true"></i></td>
+                {this.props.data.status == 'promoted' ? <td style={{paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}><Button bsSize='xsmall' bsStyle={'warning'} id={this.props.data.id} href={promotedHref} target="_blank" style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{this.props.data.status}</Button></td> : <td style={{color: statusColor, paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}>{this.props.data.status}</td>}
+                <td style={{paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}><a href={aHref} target="_blank">{this.props.data.id}</a></td>
+                <td style={{paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}>{this.props.type}</td>
+                <td style={{paddingRight:'4px', paddingLeft:'4px', textAlign:'center', verticalAlign: 'top'}}>{this.props.data.entry_count}</td>
+                <td style={{paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}>{subject}</td>
+                <td style={{paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}} title={updatedTimeHumanReadable}>{daysSince} days ago</td>
             </tr>
         )    
     }
@@ -814,8 +823,12 @@ var GuideBody = React.createClass ({
         var SelectedEntry = require('../detail/selected_entry.jsx');
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='pills'>
-                <Tab eventKey={1} style={{overflow:'auto'}}><Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
-                {this.state.entryToolbar ? <AddEntry title={'Add Entry'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} errorToggle={this.props.errorToggle}/></Tab>
+                <Tab eventKey={1} style={{overflow:'auto'}}>
+                    <div>
+                        <Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
+                    </div>
+                    {this.state.entryToolbar ? <AddEntry entryAction={'Add Entry'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} errorToggle={this.props.errorToggle}/>
+                </Tab>
             </Tabs>
         )
     }

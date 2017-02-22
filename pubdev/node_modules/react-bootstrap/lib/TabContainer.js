@@ -103,11 +103,11 @@ var TabContainer = function (_React$Component) {
   }
 
   TabContainer.prototype.getChildContext = function getChildContext() {
-    var _props = this.props;
-    var activeKey = _props.activeKey;
-    var onSelect = _props.onSelect;
-    var generateChildId = _props.generateChildId;
-    var id = _props.id;
+    var _props = this.props,
+        activeKey = _props.activeKey,
+        onSelect = _props.onSelect,
+        generateChildId = _props.generateChildId,
+        id = _props.id;
 
 
     var getId = generateChildId || function (key, type) {
@@ -129,9 +129,9 @@ var TabContainer = function (_React$Component) {
   };
 
   TabContainer.prototype.render = function render() {
-    var _props2 = this.props;
-    var children = _props2.children;
-    var props = (0, _objectWithoutProperties3['default'])(_props2, ['children']);
+    var _props2 = this.props,
+        children = _props2.children,
+        props = (0, _objectWithoutProperties3['default'])(_props2, ['children']);
 
 
     delete props.generateChildId;
