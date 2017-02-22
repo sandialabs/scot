@@ -7,7 +7,7 @@ use v5.18;
 use lib '../../Scot-Internal-Modules/lib';
 # use lib '/opt/scot/lib';
 use lib '../lib';
-# use lib '/opt/scot/lib';
+use lib '/opt/scot/lib';
 use Scot::App::Game;
 use Scot::Env;
 use Data::Dumper;
