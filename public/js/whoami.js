@@ -12,10 +12,12 @@ var activemqpid = ''
 var alertgroupforentity = false
 var activemqstate = ''
 var activemqsetentry = 0
+var activemqsetentrytype = '';
 var activemqwall;
 var activemqwhen;
 var entityPopUpHeight = '';
 var entityPopUpWidth = '';
+var changeKey;
 var amqdebug = false;
 $.ajax({
     type: 'get',

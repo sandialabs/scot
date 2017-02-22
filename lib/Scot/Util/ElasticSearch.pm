@@ -5,7 +5,6 @@ use strict;
 use warnings;
 use v5.18;
 
-use Moose;
 use Mojo::JSON qw/decode_json encode_json/;
 use Search::Elasticsearch;
 # use Search::Elasticsearch::Client::1_0::Direct::Snapshot;
@@ -15,6 +14,25 @@ use Try::Tiny;
 use Try::Tiny::Retry;
 use namespace::autoclean;
 
+use Moose;
+extends 'Scot::Util';
+
+has nodes   => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_nodes',
+    predicate   => 'has_nodes',
+);
+
+sub _build_nodes {
+    my $self    = shift;
+    my $attr    = "nodes";
+    my $default = [ qw(localhost:9200) ];
+    my $envname = "scot_util_elasticsearch_nodes";
+    return $self->get_config_value($attr, $default, $envname);
+}
 
 has es   => (
     is          => 'ro',
@@ -22,22 +40,6 @@ has es   => (
     required    => 1,
     lazy        => 1,
     builder     => '_build_es',
-);
-
-has log => (
-    is          => 'ro',
-    isa         => 'Log::Log4perl::Logger',
-    required    => 1,
-);
-
-has config  => (
-    is          => 'ro',
-    isa         => 'HashRef',
-    required    => 1,
-    default     => sub {
-        {
-        };
-    },
 );
 
 sub _build_es {

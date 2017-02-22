@@ -49,9 +49,9 @@ var NavbarHeader = function (_React$Component) {
   }
 
   NavbarHeader.prototype.render = function render() {
-    var _props = this.props;
-    var className = _props.className;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['className']);
+    var _props = this.props,
+        className = _props.className,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['className']);
 
     var navbarProps = this.context.$bs_navbar || { bsClass: 'navbar' };
 

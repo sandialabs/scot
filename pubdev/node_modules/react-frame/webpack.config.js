@@ -7,12 +7,12 @@ module.exports = {
   },
   module: {
     loaders: [
-      {test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader'}
+      { test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader' }
     ]
   },
   externals: {
     'react': 'React',
     'react-dom': 'ReactDOM'
   },
-  devtool: "source-map"
+  devtool: 'source-map'
 };

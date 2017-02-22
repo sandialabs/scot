@@ -25,10 +25,9 @@ var NavbarCollapse = function (_React$Component) {
   }
 
   NavbarCollapse.prototype.render = function render() {
-    var _props = this.props;
-    var children = _props.children;
-
-    var props = _objectWithoutProperties(_props, ['children']);
+    var _props = this.props,
+        children = _props.children,
+        props = _objectWithoutProperties(_props, ['children']);
 
     var navbarProps = this.context.$bs_navbar || { bsClass: 'navbar' };
 

@@ -26,17 +26,14 @@ var MediaLeft = function (_React$Component) {
   }
 
   MediaLeft.prototype.render = function render() {
-    var _props = this.props;
-    var align = _props.align;
-    var className = _props.className;
+    var _props = this.props,
+        align = _props.align,
+        className = _props.className,
+        props = _objectWithoutProperties(_props, ['align', 'className']);
 
-    var props = _objectWithoutProperties(_props, ['align', 'className']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = getClassSet(bsProps);
 
