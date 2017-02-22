@@ -70,7 +70,7 @@ has serverport  => (
 
 sub _build_serverport {
     my $self    = shift;
-    my $attr    = "servername";
+    my $attr    = "serverport";
     my $default = 9200;
     return $self->get_config_value($attr,$default);
 }
