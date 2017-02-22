@@ -68,10 +68,10 @@ var PagerItem = function (_React$Component) {
   }
 
   PagerItem.prototype.handleSelect = function handleSelect(e) {
-    var _props = this.props;
-    var disabled = _props.disabled;
-    var onSelect = _props.onSelect;
-    var eventKey = _props.eventKey;
+    var _props = this.props,
+        disabled = _props.disabled,
+        onSelect = _props.onSelect,
+        eventKey = _props.eventKey;
 
 
     if (onSelect || disabled) {
@@ -88,14 +88,14 @@ var PagerItem = function (_React$Component) {
   };
 
   PagerItem.prototype.render = function render() {
-    var _props2 = this.props;
-    var disabled = _props2.disabled;
-    var previous = _props2.previous;
-    var next = _props2.next;
-    var onClick = _props2.onClick;
-    var className = _props2.className;
-    var style = _props2.style;
-    var props = (0, _objectWithoutProperties3['default'])(_props2, ['disabled', 'previous', 'next', 'onClick', 'className', 'style']);
+    var _props2 = this.props,
+        disabled = _props2.disabled,
+        previous = _props2.previous,
+        next = _props2.next,
+        onClick = _props2.onClick,
+        className = _props2.className,
+        style = _props2.style,
+        props = (0, _objectWithoutProperties3['default'])(_props2, ['disabled', 'previous', 'next', 'onClick', 'className', 'style']);
 
 
     delete props.onSelect;

@@ -56,23 +56,20 @@ function get_config_files {
     fi
     echo "-- examining config files"
     CFGFILES='
-        mongo
-        logger
-        imap
-        activemq
-        enrichments
-        flair.app
-        flair_logger
-        stretch.app
-        stretch_logger
-        game.app
-        elastic
+        alert
+        apicli
         backup
-        scot_server
+        flair
+        game
+        migrate
+        replicate
+        scot
+        scot.test
+        stretch
     '
     for file in $CFGFILES; do
-        CFGDEST="$SCOTDIR/etc/${file}.cfg"
-        CFGSRC="$SCOT_CONFIG_SRC/scot/${file}.cfg"
+        CFGDEST="$SCOTDIR/etc/${file}.cfg.pl"
+        CFGSRC="$SCOT_CONFIG_SRC/scot/${file}.cfg.pl"
         if [[ -e $CFGDEST ]]; then
             echo "- config file $file already exists"
             if [[ $SCOT_ENV_OVERWRITE == "yes" ]]; then
@@ -87,7 +84,7 @@ function get_config_files {
         fi
     done
 
-    if [[ -e $SCOTDIR/etc/scot_env.cfg ]]; then
+    if [[ -e $SCOTDIR/etc/scot.cfg.pl ]]; then
         echo "Scot Config scot_env.cfg exists!";
         if [[ $SCOT_ENV_OVERWRITE == "yes" ]]; then
             echo "overwrite requested..."
@@ -101,10 +98,10 @@ function get_config_files {
     echo "***"
     if [[ $AUTHMODE == "Remoteuser" ]]; then
         echo "*** installing REMOTEUSER version of env.cfg"
-        cp $SCOT_CONFIG_SRC/scot/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
+        cp $SCOT_CONFIG_SRC/scot/scot.remoteuser.cfg.pl $SCOTDIR/etc/scot.cfg.pl
     else
         echo "*** installing LOCAL version of env.cfg"
-        cp $SCOT_CONFIG_SRC/scot/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
+        cp $SCOT_CONFIG_SRC/scot/scot.local.cfg.pl $SCOTDIR/etc/scot.cfg.pl
     fi
 
 }

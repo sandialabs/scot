@@ -223,26 +223,24 @@ var TabPane = function (_React$Component) {
   };
 
   TabPane.prototype.render = function render() {
-    var _props = this.props;
-    var eventKey = _props.eventKey;
-    var className = _props.className;
-    var onEnter = _props.onEnter;
-    var onEntering = _props.onEntering;
-    var onEntered = _props.onEntered;
-    var onExit = _props.onExit;
-    var onExiting = _props.onExiting;
-    var onExited = _props.onExited;
-    var propsUnmountOnExit = _props.unmountOnExit;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['eventKey', 'className', 'onEnter', 'onEntering', 'onEntered', 'onExit', 'onExiting', 'onExited', 'unmountOnExit']);
-    var _context = this.context;
-    var tabContent = _context.$bs_tabContent;
-    var tabContainer = _context.$bs_tabContainer;
+    var _props = this.props,
+        eventKey = _props.eventKey,
+        className = _props.className,
+        onEnter = _props.onEnter,
+        onEntering = _props.onEntering,
+        onEntered = _props.onEntered,
+        onExit = _props.onExit,
+        onExiting = _props.onExiting,
+        onExited = _props.onExited,
+        propsUnmountOnExit = _props.unmountOnExit,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['eventKey', 'className', 'onEnter', 'onEntering', 'onEntered', 'onExit', 'onExiting', 'onExited', 'unmountOnExit']);
+    var _context = this.context,
+        tabContent = _context.$bs_tabContent,
+        tabContainer = _context.$bs_tabContainer;
 
-    var _splitBsPropsAndOmit = (0, _bootstrapUtils.splitBsPropsAndOmit)(props, ['animation']);
-
-    var bsProps = _splitBsPropsAndOmit[0];
-    var elementProps = _splitBsPropsAndOmit[1];
-
+    var _splitBsPropsAndOmit = (0, _bootstrapUtils.splitBsPropsAndOmit)(props, ['animation']),
+        bsProps = _splitBsPropsAndOmit[0],
+        elementProps = _splitBsPropsAndOmit[1];
 
     var active = this.isActive();
     var animation = this.getAnimation();

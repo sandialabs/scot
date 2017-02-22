@@ -41,14 +41,13 @@ var BreadcrumbItem = function (_React$Component) {
   }
 
   BreadcrumbItem.prototype.render = function render() {
-    var _props = this.props;
-    var active = _props.active;
-    var href = _props.href;
-    var title = _props.title;
-    var target = _props.target;
-    var className = _props.className;
-
-    var props = _objectWithoutProperties(_props, ['active', 'href', 'title', 'target', 'className']);
+    var _props = this.props,
+        active = _props.active,
+        href = _props.href,
+        title = _props.title,
+        target = _props.target,
+        className = _props.className,
+        props = _objectWithoutProperties(_props, ['active', 'href', 'title', 'target', 'className']);
 
     // Don't try to render these props on non-active <span>.
 

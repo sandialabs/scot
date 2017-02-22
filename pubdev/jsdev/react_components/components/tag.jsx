@@ -18,18 +18,28 @@ var Tag = React.createClass({
         var id = this.props.id;
         var type = this.props.type;
         var data = this.props.data;
+        
+        //Don't show if guide
+        if (this.props.type == 'guide') {
+            return (<th/>);
+        }
+
         if (data != undefined) {
-            for (i=0; i < data.length; i++) {
+            for (var i=0; i < data.length; i++) {
                 rows.push(<TagDataIterator data={data} dataOne={data[i]} id={id} type={type} updated={this.props.updated} />);
             }
         }
         return (
-            <div>
-                {rows}
-                {this.state.tagEntry ? <NewTag data={data} type={type} id={id} toggleTagEntry={this.toggleTagEntry} updated={this.props.updated}/>: null}
-                {this.state.tagEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-minus' ariaHidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>}
-                
-            </div>
+            <th>
+                <th>
+                Tags:
+                </th>
+                <td>
+                    {rows}
+                    {this.state.tagEntry ? <NewTag data={data} type={type} id={id} toggleTagEntry={this.toggleTagEntry} updated={this.props.updated}/>: null}
+                    {this.state.tagEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-minus' aria-hidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-plus' aria-hidden='true'></span></Button>}
+                </td>
+            </th>
         )
     }
 });
@@ -38,7 +48,7 @@ var TagDataIterator = React.createClass({
     tagDelete: function() {
         var data = this.props.data;
         var newTagArr = [];
-        for (i=0; i < data.length; i++) {
+        for (var i=0; i < data.length; i++) {
             if (data[i] != undefined) {
                 if (typeof(data[i]) == 'string') {
                     if (data[i] != this.props.dataOne) {
@@ -64,7 +74,7 @@ var TagDataIterator = React.createClass({
         });
     },
     render: function() {
-        dataOne = this.props.dataOne;
+        var dataOne = this.props.dataOne;
         var value;
         if (typeof(dataOne) == 'string') {
             value = dataOne;
@@ -74,7 +84,7 @@ var TagDataIterator = React.createClass({
             }
         }
         return (
-            <Button id="event_tag" bsSize={'xsmall'}>{value} <span onClick={this.tagDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></Button>
+            <Button id="event_tag" bsSize={'xsmall'}>{value} <span onClick={this.tagDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" aria-hidden="true"></span></Button>
         )
     }
 });
@@ -88,7 +98,7 @@ var NewTag = React.createClass({
     handleAddition: function(tag) {
         var newTagArr = [];
         var data = this.props.data;
-        for (i=0; i < data.length; i++) {
+        for (var i=0; i < data.length; i++) {
             if (data[i] != undefined) {
                 if (typeof(data[i]) == 'string') {
                     newTagArr.push(data[i]);
@@ -117,7 +127,7 @@ var NewTag = React.createClass({
         var arr = [];
         this.serverRequest = $.get('/scot/api/v2/ac/tag/' + input, function (result) {
             var result = result.records;
-            for (i=0; i < result.length; i++) {
+            for (var i=0; i < result.length; i++) {
                 arr.push(result[i].value)
             }
             this.setState({suggestions:arr})

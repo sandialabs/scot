@@ -17,9 +17,13 @@ use Data::Dumper;
 
 say "--- Starting Mail Reprocessor ---";
 
+my $config_file = $ENV{'scot_mail_config_file'} // '/opt/scot/etc/alert.cfg.pl';
+my $env         = Scot::Env->new({
+    config_file => $config_file
+});
+
 my $processor   = Scot::App::Mail->new({
-    configuration_file         => "mail.app.cfg",
-    interactive                 => "no",
+    env => $env,
 });
 
 my $id = $ARGV[0];

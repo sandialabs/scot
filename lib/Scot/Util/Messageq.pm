@@ -17,13 +17,13 @@ use Try::Tiny::Retry;
 use namespace::autoclean;
 
 use Moose;
-extends 'Scot::Util';
+extends qw(Scot::Util);
 
 has stomp_host  => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    # default     => 'localhost',
+    lazy        => 1,
     builder     => '_build_stomp_host',
 );
 
@@ -39,7 +39,7 @@ has stomp_port  => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
-    # default     => 61613,
+    lazy        => 1,
     builder     => '_build_stomp_port',
 );
 
@@ -58,7 +58,7 @@ has destination => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    # default     => 'scot',
+    lazy        => 1,
     builder     => '_build_destination',
 );
 

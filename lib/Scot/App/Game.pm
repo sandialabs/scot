@@ -1,7 +1,7 @@
 package Scot::App::Game;
 
 use lib '../../../lib';
-use lib '/opt/scot/lib';
+# use lib '/opt/scot/lib';
 
 =head1 Name
 
@@ -33,7 +33,6 @@ use warnings;
 use v5.18;
 
 use Moose;
-
 extends 'Scot::App';
 
 
