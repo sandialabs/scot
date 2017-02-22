@@ -72,7 +72,7 @@ sub run {
     my $self    = shift;
     my $log     = $self->log;
     my $now     = time();
-    my $ago     = $now - ( 30 * 24 * 60 * 60 );
+    my $ago     = $now - ( 7 * 24 * 60 * 60 );
 
     my $when    = [$now , $ago];
 
