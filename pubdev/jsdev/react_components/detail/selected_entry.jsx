@@ -367,6 +367,9 @@ var AlertParent = React.createClass({
     componentWillUnmount: function() {
         $('#main-detail-container').unbind('keydown');
     },
+    componentDidUpdate: function() {
+        $('#sortabletable'+this.props.id).trigger('update');
+    },
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();
         var activeIdArray = this.state.activeId.slice();
