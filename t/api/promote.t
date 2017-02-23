@@ -8,24 +8,18 @@ use Data::Dumper;
 use Scot::Collection;
 use Scot::Collection::Alertgroup;
 
-$ENV{'scot_mode'}   = "testing";
-$ENV{'SCOT_AUTH_TYPE'}   = "Testing";
-$ENV{'scot_env_configfile'} = '../../../Scot-Internal-Modules/etc/scot_env_test.cfg';
+$ENV{'scot_mode'}           = "testing";
+$ENV{'scot_auth_type'}      = "Testing";
+$ENV{'scot_logfile'}        = "/var/log/scot/scot.test.log";
+$ENV{'scot_config_file'}    = '../../../Scot-Internal-Modules/etc/scot.test.cfg.pl';
 
 print "Resetting test db...\n";
-system("mongo scot-testing <../../etcsrc/database/reset.js 2>&1 > /dev/null");
+system("mongo scot-testing <../../install/src/mongodb/reset.js 2>&1 > /dev/null");
 
 @defgroups = ( 'wg-scot-ir', 'test' );
 
 my $t = Test::Mojo->new('Scot');
 my $env = Scot::Env->instance;
-#my $amq = $env->amq;
-#$amq->subscribe("alert", "alert_queue");
-#$amq->get_message(sub{
-#    my ($self, $frame) = @_;
-#    print "AMQ received: ". Dumper($frame). "\n";
-#});
-
 
 $t->post_ok(
     '/scot/api/v2/alertgroup'   => json => {

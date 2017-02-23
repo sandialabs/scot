@@ -52,16 +52,14 @@ var Glyphicon = function (_React$Component) {
   Glyphicon.prototype.render = function render() {
     var _extends2;
 
-    var _props = this.props;
-    var glyph = _props.glyph;
-    var className = _props.className;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['glyph', 'className']);
+    var _props = this.props,
+        glyph = _props.glyph,
+        className = _props.className,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['glyph', 'className']);
 
-    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = (0, _extends4['default'])({}, (0, _bootstrapUtils.getClassSet)(bsProps), (_extends2 = {}, _extends2[(0, _bootstrapUtils.prefix)(bsProps, glyph)] = true, _extends2));
 

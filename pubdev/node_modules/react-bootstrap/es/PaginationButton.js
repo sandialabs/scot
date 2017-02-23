@@ -43,10 +43,10 @@ var PaginationButton = function (_React$Component) {
   }
 
   PaginationButton.prototype.handleClick = function handleClick(event) {
-    var _props = this.props;
-    var disabled = _props.disabled;
-    var onSelect = _props.onSelect;
-    var eventKey = _props.eventKey;
+    var _props = this.props,
+        disabled = _props.disabled,
+        onSelect = _props.onSelect,
+        eventKey = _props.eventKey;
 
 
     if (disabled) {
@@ -59,15 +59,14 @@ var PaginationButton = function (_React$Component) {
   };
 
   PaginationButton.prototype.render = function render() {
-    var _props2 = this.props;
-    var Component = _props2.componentClass;
-    var active = _props2.active;
-    var disabled = _props2.disabled;
-    var onClick = _props2.onClick;
-    var className = _props2.className;
-    var style = _props2.style;
-
-    var props = _objectWithoutProperties(_props2, ['componentClass', 'active', 'disabled', 'onClick', 'className', 'style']);
+    var _props2 = this.props,
+        Component = _props2.componentClass,
+        active = _props2.active,
+        disabled = _props2.disabled,
+        onClick = _props2.onClick,
+        className = _props2.className,
+        style = _props2.style,
+        props = _objectWithoutProperties(_props2, ['componentClass', 'active', 'disabled', 'onClick', 'className', 'style']);
 
     if (Component === SafeAnchor) {
       // Assume that custom components want `eventKey`.

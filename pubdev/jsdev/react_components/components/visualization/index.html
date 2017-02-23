@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>REVL</title>
+    <script src="packages/coffeescript/coffee-script.js" type="text/javascript"></script>
+    <script src="packages/d3/d3.min.js" type="text/javascript"></script>
+    <script src="packages/d3/d3-voronoi.v1.min.js" type="text/javascript"></script>
+    <script src="packages/polybooljs/dist/polybool.min.js" type="text/javascript"></script>
+    <script src="js/result.js" type="text/javascript"></script>
+    <script src="js/list.js" type="text/javascript"></script>
+    <script src="js/struct.js" type="text/javascript"></script>
+    <script src="js/utils.js" type="text/javascript"></script>
+    <script src="js/base-commands.js" type="text/javascript"></script>
+    <script src="js/editor.js" type="text/javascript"></script>
+    <script src="js/history.js" type="text/javascript"></script>
+    <script src="js/shell.js" type="text/javascript"></script>
+    <script src="js/barchart.js" type="text/javascript"></script>
+    <script src="js/linechart.js" type="text/javascript"></script>
+    <script src="js/forcegraph.js" type="text/javascript"></script>
+    <script src="js/geometry/boundingbox.js" type="text/javascript"></script>
+    <script src="js/geometry/vec.js" type="text/javascript"></script>
+    <script src="js/geometry/edge.js" type="text/javascript"></script>
+    <script src="js/geometry/eps.js" type="text/javascript"></script>
+    <script src="js/geometry/polygon.js" type="text/javascript"></script>
+    <script src="js/geometry/voronoi.js" type="text/javascript"></script>
+    <script src="js/space/nspace.js" type="text/javascript"></script>
+    <script src="js/poly.js" type="text/javascript"></script>
+    <script src="js/http.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="style.css"></link>
+  </head>
+  <body>
+    <div id="preview"></div>
+    <div id="vizbox"></div>
+    <div id="shell-panel" tabindex="0" class="term"> </div>
+  </body>
+  <script language="javascript">
+    var editor = new window.Shell.Editor(document.getElementById("revl-shell-panel"));
+    var shell = new window.Shell.Shell(editor);
+    editor.setCommandHandler(shell.doCommand.bind(shell));
+    editor.setCompletionHandler(shell.doCompletion.bind(shell));
+    shell.addCommands(BaseCommands);
+    shell.addCommands(Viz.Barchart.commands);
+    shell.addCommands(Viz.Linechart.commands);
+    shell.addCommands(Viz.Forcegraph.commands);
+    shell.addCommands(Poly.commands);
+    shell.addCommands(Http.commands);
+    shell.addCommands(Nspace.commands);
+  </script>
+</html>
+  

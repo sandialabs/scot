@@ -225,6 +225,11 @@ body {
     min-height: 1px;
 }
 
+.entityPopUpButtons.active {
+    display: flex !important;
+    flex-flow: column !important;
+}
+
 .swatch {
   width:10px; 
   height:10px; 
@@ -771,10 +776,10 @@ border-radius: 4px 4px 4px 4px;
     border:1px solid black;    
     display:flex;
     flex-flow:column;
-    top:0px;
-    bottom:0px;
+    //top:0px;
+    bottom:5px;
     left:0px;
-    right:0px;
+    //right:0px;
 }
 
 .entityPopUpButtons {
@@ -1442,6 +1447,7 @@ a:active {
 .not_saved_entry {
     width: 99vw;
     display: table-cell;
+    height: 400px;
 }
 
 .dashboard {

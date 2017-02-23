@@ -1,19 +1,18 @@
-var React               = require('react');
-var ReactDateTime       = require('react-datetime');
-var AceEditor           = require('react-ace');
+import React from 'react';
+import { render } from 'react-dom';
+import brace from 'brace';
+import AceEditor from 'react-ace';
+
+import 'brace/mode/java';
+import 'brace/mode/c_cpp';
+import 'brace/theme/github';
+import 'brace/keybinding/vim'
 
 var SignatureTable = React.createClass({
-    getInitialState: function() {
-        return {
-            
-        }
-    },
-    onChange: function(event) {
-        var k  = event.target.id;
-        var v = event.target.value;
+    onChange: function(signature) {
         var json = {};
-        json[k] = v;
-        $.ajax({
+        json[this.props.id] = signature;
+        /*$.ajax({
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
             data: JSON.stringify(json),
@@ -24,21 +23,19 @@ var SignatureTable = React.createClass({
             error: function() {
                 this.props.errorToggle('Failed to updated incident data') 
             }.bind(this)
-        })
-    },
-    inputOnChange: function(event) {
-        this.setState({reportValue:event.target.value});
+        })*/
     },
     render: function() {
         return (
-            <div className='signatureTable'>
+            <div id={'signatureTable'} className='signatureTable'>
                 Test Signature Ace Editor
                 <AceEditor
-                    mode        = "java"
+                    mode        = "c_cpp"
                     theme       = "github"
                     onChange    = {this.onChange}
-                    name        = "unique_id_of_div"
+                    name        = "signatureTable"
                     editorProps = {{$blockScrolling: true}}
+                    keyboardHandler = 'vim'
                 />
             </div>
         )

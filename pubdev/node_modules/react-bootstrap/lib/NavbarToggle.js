@@ -63,11 +63,11 @@ var NavbarToggle = function (_React$Component) {
   }
 
   NavbarToggle.prototype.render = function render() {
-    var _props = this.props;
-    var onClick = _props.onClick;
-    var className = _props.className;
-    var children = _props.children;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['onClick', 'className', 'children']);
+    var _props = this.props,
+        onClick = _props.onClick,
+        className = _props.className,
+        children = _props.children,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['onClick', 'className', 'children']);
 
     var navbarProps = this.context.$bs_navbar || { bsClass: 'navbar' };
 

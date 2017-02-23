@@ -5,33 +5,45 @@ use Module::Runtime qw(require_module compose_module_name);
 use Data::Dumper;
 use Try::Tiny;
 use Moose;
+extends 'Scot::Util';
 
-# config is passed in the new call
-
-has log         => (
-    is          => 'ro',
-    isa         => 'Log::Log4perl::Logger',
-    required    => 1,
-);
 
 has mappings    => (
     is          => 'ro',
     isa         => 'HashRef',
+    lazy        => 1,
     required    => 1,
-    default     => sub { {} },
+    # default     => sub { {} },
+    builder     => '_build_mappings',
 );
 
-has configs     => (
+sub _build_mappings {
+    my $self    = shift;
+    my $attr    = 'mappings';
+    my $default = {};
+    return $self->get_config_value($attr,$default);
+}
+
+has enrichers     => (
     is          => 'ro',
     isa         => 'HashRef',
     required    => 1,
-    default     => sub { {} },
+    lazy        => 1,
+    # default     => sub { {} },
+    builder     => '_build_enrichers',
 );
+
+sub _build_enrichers {
+    my $self    = shift;
+    my $attr    = 'enrichers';
+    my $default = {};
+    return $self->get_config_value($attr,$default);
+}
 
 sub BUILD {
     my $self    = shift;
     my $maps    = $self->mappings;
-    my $confs   = $self->configs;
+    my $confs   = $self->enrichers;
     my $meta    = $self->meta;
     my $log     = $self->log;
     $meta->make_mutable;
@@ -112,8 +124,13 @@ sub enrich {
 
     my $eset    = $self->mappings->{$etype};
 
-    $log->debug("Enrichments available for type: ".
-                join(', ',@$eset));
+    unless ($eset) {
+        $log->error("ERROR enity set is not defined!");
+        $eset = [];
+    }
+    else {
+        $log->debug("Enrichments available for type: ".  join(', ',@$eset));
+    }
 
     NAME:
     foreach my $enricher_name (@{$eset}) {
