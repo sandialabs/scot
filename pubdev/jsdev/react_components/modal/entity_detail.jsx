@@ -410,7 +410,7 @@ var EntityBody = React.createClass({
                         <div>
                             <Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
                         </div>
-                        {this.state.entryToolbar ? <AddEntry entryAction={'Add Entry'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'entity'} id={this.props.entityid} errorToggle={this.props.errorToggle}/>
+                        {this.state.entryToolbar ? <AddEntry entryAction={'Add'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'entity'} id={this.props.entityid} errorToggle={this.props.errorToggle}/>
                     </div>
                 </Tab>
                 {entityEnrichmentGeoArr}
@@ -827,7 +827,7 @@ var GuideBody = React.createClass ({
                     <div>
                         <Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
                     </div>
-                    {this.state.entryToolbar ? <AddEntry entryAction={'Add Entry'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} errorToggle={this.props.errorToggle}/>
+                    {this.state.entryToolbar ? <AddEntry entryAction={'Add'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} errorToggle={this.props.errorToggle}/>
                 </Tab>
             </Tabs>
         )
