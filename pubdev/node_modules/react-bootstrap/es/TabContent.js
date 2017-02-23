@@ -71,10 +71,10 @@ var TabContent = function (_React$Component) {
   }
 
   TabContent.prototype.getChildContext = function getChildContext() {
-    var _props = this.props;
-    var bsClass = _props.bsClass;
-    var animation = _props.animation;
-    var unmountOnExit = _props.unmountOnExit;
+    var _props = this.props,
+        bsClass = _props.bsClass,
+        animation = _props.animation,
+        unmountOnExit = _props.unmountOnExit;
 
 
     var stateActiveKey = this.state.activeKey;
@@ -150,17 +150,14 @@ var TabContent = function (_React$Component) {
   };
 
   TabContent.prototype.render = function render() {
-    var _props2 = this.props;
-    var Component = _props2.componentClass;
-    var className = _props2.className;
+    var _props2 = this.props,
+        Component = _props2.componentClass,
+        className = _props2.className,
+        props = _objectWithoutProperties(_props2, ['componentClass', 'className']);
 
-    var props = _objectWithoutProperties(_props2, ['componentClass', 'className']);
-
-    var _splitBsPropsAndOmit = splitBsPropsAndOmit(props, ['animation', 'unmountOnExit']);
-
-    var bsProps = _splitBsPropsAndOmit[0];
-    var elementProps = _splitBsPropsAndOmit[1];
-
+    var _splitBsPropsAndOmit = splitBsPropsAndOmit(props, ['animation', 'unmountOnExit']),
+        bsProps = _splitBsPropsAndOmit[0],
+        elementProps = _splitBsPropsAndOmit[1];
 
     return React.createElement(Component, _extends({}, elementProps, {
       className: classNames(className, prefix(bsProps, 'content'))

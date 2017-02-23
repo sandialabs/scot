@@ -80,11 +80,11 @@ var Tabs = function (_React$Component) {
   }
 
   Tabs.prototype.renderTab = function renderTab(child) {
-    var _child$props = child.props;
-    var title = _child$props.title;
-    var eventKey = _child$props.eventKey;
-    var disabled = _child$props.disabled;
-    var tabClassName = _child$props.tabClassName;
+    var _child$props = child.props,
+        title = _child$props.title,
+        eventKey = _child$props.eventKey,
+        disabled = _child$props.disabled,
+        tabClassName = _child$props.tabClassName;
 
     if (title == null) {
       return null;
@@ -102,19 +102,18 @@ var Tabs = function (_React$Component) {
   };
 
   Tabs.prototype.render = function render() {
-    var _props = this.props;
-    var id = _props.id;
-    var onSelect = _props.onSelect;
-    var animation = _props.animation;
-    var unmountOnExit = _props.unmountOnExit;
-    var bsClass = _props.bsClass;
-    var className = _props.className;
-    var style = _props.style;
-    var children = _props.children;
-    var _props$activeKey = _props.activeKey;
-    var activeKey = _props$activeKey === undefined ? getDefaultActiveKey(children) : _props$activeKey;
-
-    var props = _objectWithoutProperties(_props, ['id', 'onSelect', 'animation', 'unmountOnExit', 'bsClass', 'className', 'style', 'children', 'activeKey']);
+    var _props = this.props,
+        id = _props.id,
+        onSelect = _props.onSelect,
+        animation = _props.animation,
+        unmountOnExit = _props.unmountOnExit,
+        bsClass = _props.bsClass,
+        className = _props.className,
+        style = _props.style,
+        children = _props.children,
+        _props$activeKey = _props.activeKey,
+        activeKey = _props$activeKey === undefined ? getDefaultActiveKey(children) : _props$activeKey,
+        props = _objectWithoutProperties(_props, ['id', 'onSelect', 'animation', 'unmountOnExit', 'bsClass', 'className', 'style', 'children', 'activeKey']);
 
     return React.createElement(
       TabContainer,

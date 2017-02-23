@@ -2,6 +2,7 @@ package Scot::Parser::Splunk;
 
 use lib '../../../lib';
 use HTML::TreeBuilder;
+use Data::Dumper;
 use Moose;
 
 extends 'Scot::Parser';
@@ -26,6 +27,7 @@ sub parse_message {
     my $self    = shift;
     my $href    = shift;
     my $log     = $self->log;
+
     my %json    = (
         subject     => $href->{subject},
         message_id  => $href->{message_id},
@@ -35,17 +37,23 @@ sub parse_message {
         source      => [ qw(email splunk) ],
     );
 
-    $log->trace("Parsing SPLUNK email");
+    $log->debug("Parsing SPLUNK email", {filter=>\&Dumper, value=>$href});
 
-    my $body    = $href->{body_html} // $href->{body_plain};
+    my $body    = $href->{body_html} // $href->{body};
+    $body = $href->{body_plain} unless defined $body;
 
-    unless ($body =~ /\<html\>/i or $body =~ /DOCTYPE html/) {
+    $log->debug("body is $body");
+
+    unless ($body =~ /\<html.*\>/i or $body =~ /DOCTYPE html/) {
         # someone forgot to tell splunk to send html email!
         # parsing of plain email not supported, but this 
         # keeps it from blowing up.
         $log->warn("Splunk message was not in HTML.");
         $log->warn("wrapping in html, but parsing will not work!");
         $body   = "<html>".$body."</html>"; 
+    }
+    else {
+        $log->debug("detected html");
     }
 
     my $tree    = $self->build_html_tree($body);
@@ -71,6 +79,8 @@ sub parse_message {
         # so if a user forwards something into SCOT, TH's become TD's
         @columns    = map { $_->as_text; } $header->look_down('_tag','td');
     }
+    # strip periods from column names, because this breaks mongo
+    s/\./-/g for @columns;
 
     my @results             = ();
     my @msg_id_entities     = ();

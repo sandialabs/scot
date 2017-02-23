@@ -74,19 +74,17 @@ var Image = function (_React$Component) {
   Image.prototype.render = function render() {
     var _classes;
 
-    var _props = this.props;
-    var responsive = _props.responsive;
-    var rounded = _props.rounded;
-    var circle = _props.circle;
-    var thumbnail = _props.thumbnail;
-    var className = _props.className;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['responsive', 'rounded', 'circle', 'thumbnail', 'className']);
+    var _props = this.props,
+        responsive = _props.responsive,
+        rounded = _props.rounded,
+        circle = _props.circle,
+        thumbnail = _props.thumbnail,
+        className = _props.className,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['responsive', 'rounded', 'circle', 'thumbnail', 'className']);
 
-    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = (_classes = {}, _classes[(0, _bootstrapUtils.prefix)(bsProps, 'responsive')] = responsive, _classes[(0, _bootstrapUtils.prefix)(bsProps, 'rounded')] = rounded, _classes[(0, _bootstrapUtils.prefix)(bsProps, 'circle')] = circle, _classes[(0, _bootstrapUtils.prefix)(bsProps, 'thumbnail')] = thumbnail, _classes);
 

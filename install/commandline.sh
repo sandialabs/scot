@@ -21,6 +21,8 @@ function default_variables {
     SCOT_DOCS_SRC="$DEVDIR/docs/build/html"
     # restart SCOT daemons scfd and scep whe installing/upgrading
     SCOT_RESTART_DAEMONS="no"
+    # overwrite config files
+    SCOT_ENV_OVERWRITE="no"
 
     # where to install activemq
     AMQDIR="/opt/activemq"
@@ -38,7 +40,7 @@ function default_variables {
     # the repo
     ES_YUM_REPO="/etc/yum.repos.d/elasticsearch.repo"
     # reset the DB at install
-    ES_RESET_DB="yes"
+    ES_RESET_DB="no"
 
     # mongo package keyserver
     MONGO_KEYSRVR="--keyserver hkp://keyserver.ubuntu.com:80"
@@ -65,25 +67,27 @@ function default_variables {
     REFRESHREPOS="yes"
     # wipe the $SCOT_ROOT prior to install
     DELDIR="no"
-
 }
 
 
 function process_commandline {
-    options="A:M:Ddprsu"
+    options="A:M:CDEdprsu"
     while getopts $options opt; do
         case $opt in
             A)
                 AUTHMODE=$OPTARG
                 ;;
+            C)
+                SCOT_ENV_OVERWRITE="yes"
+                ;;
             D) 
                 DELDIR="yes"
                 ;;
+            E)
+                ES_RESET_DB="yes"
+                ;;
             d)
                 SCOT_RESTART_DEAMONS="yes"
-                ;;
-            e)
-                ES_RESET_DB="no"
                 ;;
             M)
                 SCOT_PRIVATE_MODULES=$OPTARG
@@ -101,6 +105,7 @@ function process_commandline {
                 MONGO_REFRESH_CONFIG="no"
                 ;;
             s)
+                echo "SCOT only Install"
                 INSTMODE="SCOTONLY"
                 RESETDB="no"
                 REFRESHREPOS="no"
@@ -130,13 +135,13 @@ function show_variables {
 function usage {
     cat << EOF
 
-    Usage: $0 [-A mode] [-M path] [-dersu]
+    Usage: $0 [-A mode] [-M path] [-dDErsu]
 
         -A mode     where mode = (default) "Local", "Ldap", or "Remoteuser" 
         -M path     where to locate installer for scot private modules
         -D          delete target install directory before beginning install
         -d          restart scot daemons (scepd and scfd)
-        -e          reset the Elasticsearch DB
+        -E          reset the Elasticsearch DB
         -r          delete existing SCOT Database (DATA LOSS POTENTIAL)
         -s          Install SCOT only, skip prerequisites (upgrade SCOT)
         -u          same as -s
