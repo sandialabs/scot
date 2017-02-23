@@ -4,22 +4,19 @@ use strict;
 use warnings;
 use v5.18;
 use lib '../lib';
-use lib '/opt/scot/lib';
+#use lib '/opt/scot/lib';
 
-use Scot::Util::Config;
 use Scot::Env;
 use DateTime;
 use Mojo::JSON qw(decode_json);
 
-my $cfgobj  = Scot::Util::Config->new({
-    file    => "backup.cfg",
-    paths   => [ '/opt/scot/etc' ],
-    location    => '/opt/scotbackup' ,
+my $config_file = $ENV{'scot_backup_config_file'} // '/opt/scot/etc/backup.cfg.pl';
+
+my $env  = Scot::Env->new({
+    config_file => $config_file,
 });
-my $config  = $cfgobj->get_config();
 
-
-# $config is
+# $env has
 #   
 #   pidfile  = the pid file for runnign dump
 #   location = directory to dump the mongodump
@@ -32,7 +29,7 @@ my $config  = $cfgobj->get_config();
 #   es_backup_location = the directory to create the repo snapshots
 #
 
-my $pidfile = $config->{pidfile};
+my $pidfile = $env->pidfile;
 if ( -s $pidfile ) {
     die "$pidfile exists and is non-zero length, implies another backup is running";
 }
@@ -41,7 +38,7 @@ open my $pidfh, ">", $pidfile or die "Unable to create PID file $pidfile!";
 print $pidfh "$$";
 close $pidfh;
 
-my $dumpdir = $config->{location};
+my $dumpdir = $env->location;
 unless ($dumpdir) {
     warn "$dumpdir is missing! Setting to /tmp/dump";
     $dumpdir = "/tmp/dump";
@@ -56,12 +53,14 @@ system("rm -rf $dumpdir/mongo");
 
 my $cmd = "/usr/bin/mongodump ";
 
-if ( $config->{user} and $config->{pass} ) {
-    $cmd .= "-u $config->user -p $config->pass ";
+if ( defined $env->auth->{user} ) {
+    if ( $env->auth->{user} and $env->auth->{pass} ) {
+        $cmd .= "-u $env->user -p $env->pass ";
+    }
 }
 
-if ( $config->{dbname} ) {
-    $cmd .= "--db ". $config->{dbname}." ";
+if ( $env->dbname ) {
+    $cmd .= "--db ". $env->dbname." ";
 }
 else {
     $cmd .= "--db scot-prod ";
@@ -78,11 +77,11 @@ system($cmd);
 #exit 0;
 
 my $tarloc = "/tmp";
-if ( $config->{tarloc} ) {
-    unless ( -d $config->{tarloc} ) {
+if ( $env->tarloc ) {
+    unless ( -d $env->tarloc ) {
         system ("mkdir -p $tarloc" );
     }
-    $tarloc = $config->{tarloc};
+    $tarloc = $env->tarloc;
 }
 
 # now backup elasticsearch
@@ -91,9 +90,9 @@ print "Backing up ElasticSearch...\n";
 
 my $curl    = "curl -s";
 
-my $repo_cmd        = $config->{es_server} . "/_snapshot/scot_backup";
+my $repo_cmd        = $env->es_server . "/_snapshot/scot_backup";
 my $repo_status     = `curl -XGET $repo_cmd`;
-my $repo_loc        = "location\": ".$config->{es_backup_location};
+my $repo_loc        = "location\": ".$env->es_backup_location;
 
 if ( $repo_status !~ /$repo_loc/ ) {
     print "\nElasticSearch Repo back up is not storing snapshots in ".
@@ -117,14 +116,14 @@ if ( $repo_status =~ /repository_missing_exception/ ) {
 EOF
 
     my $create_repo_string = sprintf($create_repo_template, 
-                                    $config->{es_server},
-                                    $config->{es_backup_location});
+                                    $env->es_server,
+                                    $env->es_backup_location);
 
     print "Creating Repo with: $create_repo_string\n";
     my $repocreatestat = `$curl -XPUT $create_repo_string`;
 }
 
-my $escmd   = $config->{es_server}."/_snapshot/scot_backup/snapshot_1";
+my $escmd   = $env->es_server."/_snapshot/scot_backup/snapshot_1";
 
 print "Deleting existing snapshot...\n";
 my $del_stat = `$curl -XDELETE $escmd`;
@@ -147,14 +146,19 @@ else {
     }
 }
 
-my $esdir   = $config->{es_backup_location};
+my $esdir   = $env->es_backup_location;
+my $cacheimgdir = $env->cacheimg;
 my $dt  = DateTime->now();
-my $ts  = $dt->year . $dt->month . $dt->day . $dt->hour . $dt->minute;
+# my $ts  = $dt->year . $dt->month . $dt->day . $dt->hour . $dt->minute;
+my $ts  = $dt->strftime("%Y%m%d%H%M");
+
+# back up cached images
+system("cp -r /opt/scot/public/cached_images $cacheimgdir");
 
 print "TARing up backups to $tarloc.$ts.tgz\n";
-system("tar cvzf $tarloc.$ts.tgz $dumpdir $esdir");
+system("tar cvzf $tarloc.$ts.tgz $dumpdir $esdir $cachimgdir");
 
-if ( $config->{cleanup} ) {
+if ( $env->cleanup ) {
     system("rm -rf $dumpdir/*");
     my $status = `curl -XDELETE $escmd`;
     unless ( $status =~ /acknowledged\":true/ ) {
@@ -162,5 +166,9 @@ if ( $config->{cleanup} ) {
     }
     system("rm -rf $esdir/*");
 }
-system("find $config->{location} -ctime 7 -print0 | xargs -0 /bin/rm -f");
+system("find $env->location -ctime 7 -print0 | xargs -0 /bin/rm -f");
 system("rm -f $pidfile");
+
+END{
+    system("rm -f $pidfile");
+}

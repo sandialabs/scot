@@ -19,8 +19,8 @@ var propTypes = {
    * @type {bool}
    */
   block: all(React.PropTypes.bool, function (_ref) {
-    var block = _ref.block;
-    var vertical = _ref.vertical;
+    var block = _ref.block,
+        vertical = _ref.vertical;
     return block && !vertical ? new Error('`block` requires `vertical` to be set to have any effect') : null;
   })
 };
@@ -43,19 +43,16 @@ var ButtonGroup = function (_React$Component) {
   ButtonGroup.prototype.render = function render() {
     var _extends2;
 
-    var _props = this.props;
-    var block = _props.block;
-    var justified = _props.justified;
-    var vertical = _props.vertical;
-    var className = _props.className;
+    var _props = this.props,
+        block = _props.block,
+        justified = _props.justified,
+        vertical = _props.vertical,
+        className = _props.className,
+        props = _objectWithoutProperties(_props, ['block', 'justified', 'vertical', 'className']);
 
-    var props = _objectWithoutProperties(_props, ['block', 'justified', 'vertical', 'className']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = _extends({}, getClassSet(bsProps), (_extends2 = {}, _extends2[prefix(bsProps)] = !vertical, _extends2[prefix(bsProps, 'vertical')] = vertical, _extends2[prefix(bsProps, 'justified')] = justified, _extends2[prefix(Button.defaultProps, 'block')] = block, _extends2));
 

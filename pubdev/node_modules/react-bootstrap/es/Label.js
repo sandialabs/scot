@@ -36,17 +36,14 @@ var Label = function (_React$Component) {
   };
 
   Label.prototype.render = function render() {
-    var _props = this.props;
-    var className = _props.className;
-    var children = _props.children;
+    var _props = this.props,
+        className = _props.className,
+        children = _props.children,
+        props = _objectWithoutProperties(_props, ['className', 'children']);
 
-    var props = _objectWithoutProperties(_props, ['className', 'children']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = _extends({}, getClassSet(bsProps), {
 

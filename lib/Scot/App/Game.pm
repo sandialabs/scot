@@ -1,7 +1,7 @@
 package Scot::App::Game;
 
 use lib '../../../lib';
-use lib '/opt/scot/lib';
+# use lib '/opt/scot/lib';
 
 =head1 Name
 
@@ -33,15 +33,8 @@ use warnings;
 use v5.18;
 
 use Moose;
-
 extends 'Scot::App';
 
-has env         => (
-    is          => 'ro',
-    isa         => 'Scot::Env',
-    required    => 1,
-    default     => sub { Scot::Env->instance },
-);
 
 has thishostname    =>  (
     is          => 'ro',
@@ -78,7 +71,7 @@ sub run {
     my $self    = shift;
     my $log     = $self->log;
     my $now     = time();
-    my $ago     = $now - ( 30 * 24 * 60 * 60 );
+    my $ago     = $now - ( 7 * 24 * 60 * 60 );
 
     my $when    = [$now , $ago];
 

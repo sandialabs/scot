@@ -47,14 +47,13 @@ var NavItem = function (_React$Component) {
   };
 
   NavItem.prototype.render = function render() {
-    var _props = this.props;
-    var active = _props.active;
-    var disabled = _props.disabled;
-    var onClick = _props.onClick;
-    var className = _props.className;
-    var style = _props.style;
-
-    var props = _objectWithoutProperties(_props, ['active', 'disabled', 'onClick', 'className', 'style']);
+    var _props = this.props,
+        active = _props.active,
+        disabled = _props.disabled,
+        onClick = _props.onClick,
+        className = _props.className,
+        style = _props.style,
+        props = _objectWithoutProperties(_props, ['active', 'disabled', 'onClick', 'className', 'style']);
 
     delete props.onSelect;
     delete props.eventKey;
