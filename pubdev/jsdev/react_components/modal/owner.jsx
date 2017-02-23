@@ -43,7 +43,7 @@ var Owner = React.createClass({
                 var key = this.state.key;
             }.bind(this),
             error: function() {
-                this.props.updated('error','Failed to change owner');
+                this.props.errorToggle('Failed to change owner');
             }.bind(this)
         }); 
         this.ownerToggle();

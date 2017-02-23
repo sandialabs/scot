@@ -49,9 +49,8 @@ var Button = function (_React$Component) {
   };
 
   Button.prototype.renderButton = function renderButton(_ref, className) {
-    var componentClass = _ref.componentClass;
-
-    var elementProps = _objectWithoutProperties(_ref, ['componentClass']);
+    var componentClass = _ref.componentClass,
+        elementProps = _objectWithoutProperties(_ref, ['componentClass']);
 
     var Component = componentClass || 'button';
 
@@ -64,18 +63,15 @@ var Button = function (_React$Component) {
   Button.prototype.render = function render() {
     var _extends2;
 
-    var _props = this.props;
-    var active = _props.active;
-    var block = _props.block;
-    var className = _props.className;
+    var _props = this.props,
+        active = _props.active,
+        block = _props.block,
+        className = _props.className,
+        props = _objectWithoutProperties(_props, ['active', 'block', 'className']);
 
-    var props = _objectWithoutProperties(_props, ['active', 'block', 'className']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = _extends({}, getClassSet(bsProps), (_extends2 = {
       active: active

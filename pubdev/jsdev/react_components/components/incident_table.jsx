@@ -110,7 +110,7 @@ var IncidentTable = React.createClass({
         var incidentProps = Object.getOwnPropertyNames(incidentData);
         $(Object.getOwnPropertyNames(this.state.dropdownOptions)).each(function(index, dropdown_name) {
             var arr = [];
-            for (i=0; i < this.state.dropdownOptions[dropdown_name].length; i++){
+            for (var i=0; i < this.state.dropdownOptions[dropdown_name].length; i++){
                 var item = this.state.dropdownOptions[dropdown_name][i];
                 arr.push(<option>{item}</option>)
             }
@@ -119,7 +119,7 @@ var IncidentTable = React.createClass({
             var dropdownTitle = dropdown_name+':'
             dropdownArr.push(<div><span className='incidentTableWidth'>{dropdownTitle}</span><span><select id={datetype} value={selectValue} onChange={this.onChange}>{arr}</select></span></div>)
         }.bind(this))
-        for (i=0; i < this.state.date_types.length; i++) {
+        for (var i=0; i < this.state.date_types.length; i++) {
             var datetype = this.state.date_types[i];
             var typeLower = this.state.date_types[i].toLowerCase();
             var typeTitle = datetype + ':';

@@ -4,60 +4,61 @@ use lib '../../lib';
 use v5.18;
 use strict;
 use warnings;
-use Scot::Util::Logger;
-use Scot::Util::Config;
+use Try::Tiny;
+use Scot::Util::LoggerFactory;
+use Data::Dumper;
 use DateTime;
-use Moose;
 use namespace::autoclean;
 
-has configuration_file  => (
-    is              => 'ro',
-    isa             => 'Str',
-    required        => 1,
+use Moose;
+
+has env => (
+    is          => 'ro',
+    isa         => 'Scot::Env',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_get_env',
 );
 
-has paths   => (
-    is              => 'ro',
-    isa             => 'ArrayRef',
-    required        => 1,
-    default         => sub { ['/opt/scot/etc' ]; },
-);
-
-has config  => (
-    is              => 'ro',
-    isa             => 'HashRef',
-    required        => 1,
-    lazy            => 1,
-    builder         => '_build_config',
-);
-
-sub _build_config { 
+sub _get_env {
     my $self    = shift;
-    my $file    = $self->configuration_file;
-    unless ( $file ) {
-        die "Error: configuration file attribute not set!";
-    }
-    print "Loading $file\n";
-    my $confobj = Scot::Util::Config->new({
-        file    => $file,
-        paths   => $self->paths,
+    my $file    = $self->config_file;
+    return Scot::Env->new({
+        config_file => $file,
     });
-    return $confobj->get_config;
 }
-
 
 has log => (
     is          => 'ro',
     isa         => 'Log::Log4perl::Logger',
     required    => 1,
     lazy        => 1,
-    builder     => '_get_logger',
+    builder     => '_build_log',
+    predicate   => 'has_log',
 );
 
-sub _get_logger {
+sub _build_log {
     my $self    = shift;
-    my $chref   = $self->config->{log};
-    return Scot::Util::Logger->new($chref);
+    my $env     = $self->env;
+    return $env->log;
+}
+
+sub get_config_value {
+    my $self    = shift;
+    my $attr    = shift;
+    my $default = shift;
+    my $envname = shift;
+    my $env     = $self->env;
+
+    if ( defined $envname ) {
+        if ( defined $ENV{$envname} ) {
+            return $ENV{$envname};
+        }
+    }
+    if ( defined $env->$attr ) {
+        return $env->$attr;
+    }
+    return $default;
 }
 
 has base_url    => (
