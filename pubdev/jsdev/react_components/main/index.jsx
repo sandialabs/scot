@@ -18,12 +18,13 @@ var EntityDetail      = require('../modal/entity_detail.jsx')
 var AMQ             = require('../debug-components/amq.jsx');
 var Wall            = require('../debug-components/wall.jsx');
 var Search          = require('../components/esearch.jsx');
-var Visualization   = require('../components/dashboard/visualization.jsx');
+var Revl            = require('../components/visualization/js/revl.js');
 var Gamification    = require('../components/dashboard/gamification.jsx');
 var Status           = require('../components/dashboard/status.jsx');
 var Online          = require('../components/dashboard/online.jsx');
 var Stats           = require('../components/dashboard/stats.jsx');
 var Notification    = require('react-notification-system');
+var SignatureTable  = require('../components/signature_table.jsx');
 var sethome = false
 var setalerts = false
 var setevents = false
@@ -315,7 +316,7 @@ var App = React.createClass({
             state = 0
         }
         Listener.activeMq();   //register for amq updates
-        return{id: id, id2: id2, set: state, handler: "Scot", viewMode:'default', notificationSetting: 'on'}	
+        return{id: id, id2: id2, set: state, handler: "Scot", viewMode:'default', notificationSetting: 'on', eestring: ''}	
     },
     componentDidMount: function() {
 	    $.ajax({
@@ -328,6 +329,38 @@ var App = React.createClass({
         Store.addChangeListener(this.wall);
         Store.storeKey('notification');
         Store.addChangeListener(this.notification);
+       
+        //ee
+        if (this.state.set == 0) {
+            $(document.body).keydown(function(e) {
+                this.ee(e);
+            }.bind(this))   
+        }
+    },
+    ee: function(e) {
+        var ee = '837279877769847269697171';
+        if (ee.includes(this.state.eestring)) {
+            if (this.state.eestring + e.keyCode == ee) {
+                this.eedraw();
+                setTimeout(this.eeremove,2000);    
+            } else {
+                if ($('input').is(':focus')) {return};
+                if (e.ctrlKey != true && e.metaKey != true) {
+                    var eestring = this.state.eestring + e.keyCode;
+                    this.setState({eestring: eestring});
+                }
+            }
+        } else {
+            this.setState({eestring: ''});
+        }
+    },
+    eedraw: function() {
+        $('#content').css('transform','rotateX(20deg)');
+        $(document.body).prepend('<span id="ee">Lbh sbhaq gur egg. Cbfg gb gur jnyy "V sbhaq gur rtt, pna lbh?"</span>');
+    },
+    eeremove: function() {
+        $('#content').css('transform','rotateX(0deg)');
+        $('#ee').remove();
     },
     componentWillMount: function() {
         //Get landscape/portrait view if the cookie exists
@@ -413,7 +446,7 @@ var App = React.createClass({
                             <NavItem eventKey={5} href="#/guide" active={setguide}>Guide</NavItem>
                             <NavItem eventKey={6} href="#/intel" active={setintel}>Intel</NavItem>
                             {/*<NavItem eventKey={7} href="#/signature" active={setsignature} disabled>Signature</NavItem>*/}
-                            {/*<NavItem eventKey={8} href="#/visualization" active={setvisualization}>Visualization</NavItem>*/}
+                            <NavItem eventKey={8} href="#/visualization" active={setvisualization}>Visualization</NavItem>
                             <NavItem eventKey={9} href="incident_handler">{IH}</NavItem>
                         </Nav>
                             <span id='ouo_warning' className='ouo-warning'>{sensitivity}</span>
@@ -463,11 +496,11 @@ var App = React.createClass({
                     :
                     null}
                     {this.state.set == 7 ?
-                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'signature'} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/> 
+                        <SignatureTable type={'signature'} id={1}/> 
                     :
                     null}
                     {this.state.set == 8 ?
-                        <Visualization value={this.props.params.value} type={this.props.params.id} id={this.props.params.type} depth={this.props.params.typeid} viewMode={this.state.viewMode} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} errorToggle={this.errorToggle}/> 
+                        <Revl value={this.props.params.value} type={this.props.params.id} id={this.props.params.type} depth={this.props.params.typeid} viewMode={this.state.viewMode} Notification={this.state.Notification} />
                     :
                     null}
                     {this.state.set == 98 ?

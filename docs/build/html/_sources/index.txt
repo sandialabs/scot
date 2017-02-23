@@ -29,6 +29,7 @@ Contents:
     User Guide <userguide>
     Admin Guide <adminguide>
     Developer Guide <devguide>
+    REVL Visualization Framework <visualization>
 
 Indicies and Tables
 ===================

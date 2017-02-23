@@ -44,18 +44,15 @@ var Badge = function (_React$Component) {
   };
 
   Badge.prototype.render = function render() {
-    var _props = this.props;
-    var pullRight = _props.pullRight;
-    var className = _props.className;
-    var children = _props.children;
+    var _props = this.props,
+        pullRight = _props.pullRight,
+        className = _props.className,
+        children = _props.children,
+        props = _objectWithoutProperties(_props, ['pullRight', 'className', 'children']);
 
-    var props = _objectWithoutProperties(_props, ['pullRight', 'className', 'children']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = _extends({}, getClassSet(bsProps), {
       'pull-right': pullRight,

@@ -56,7 +56,7 @@ sub upload {
         my $size    = $upload->size;
         my $name    = $upload->filename;
         my $dir     = join('/',
-                           $env->filestorage,
+                           $env->file_store_root,
                            $year,
                            $target_type,
                            $target_id);

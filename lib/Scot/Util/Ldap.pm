@@ -10,21 +10,107 @@ use Data::Dumper;
 use Net::LDAP;
 use Try::Tiny;
 use Try::Tiny::Retry ':all';
-use Moose;
 
-has config  => (
+use Moose;
+extends 'Scot::Util';
+
+has servername    => (
+    is          => 'ro',
+    isa         => 'Str',
+    lazy        => 1,
+    required    => 1,
+    builder     => '_build_servername',
+);
+
+sub _build_servername {
+    my $self    = shift;
+    my $attr    = "servername";
+    my $default = "localhost";
+    return $self->get_config_value($attr,$default);
+}
+
+has dn          => (
+    is          => 'ro',
+    isa         => 'Str',
+    lazy        => 1,
+    required    => 1,
+    builder     => '_build_dn',
+);
+
+sub _build_dn {
+    my $self    = shift;
+    my $attr    = "dn";
+    my $default = "cn=cname,ou=ouname config,dc=dcname";
+    return $self->get_config_value($attr, $default);
+}
+
+has password    => (
+    is          => 'ro',
+    isa         => 'Str',
+    lazy        => 1,
+    required    => 1,
+    builder     => '_build_password',
+);
+
+sub _build_password {
+    my $self    = shift;
+    my $attr    = "password";
+    my $default = "changemenow";
+    return $self->get_config_value($attr, $default);
+}
+
+has scheme      => (
+    is          => 'ro',
+    isa         => 'Str',
+    lazy        => 1,
+    required    => 1,
+    builder     => '_build_scheme',
+);
+
+sub _build_scheme {
+    my $self    = shift;
+    my $attr    = "scheme";
+    my $default = "ldap";
+    return $self->get_config_value($attr, $default);
+}
+
+has group_search      => (
     is          => 'ro',
     isa         => 'HashRef',
+    lazy        => 1,
     required    => 1,
-    default     => sub { 
-    },
+    builder     => '_build_group_search',
 );
 
-has log     => (
+sub _build_group_search {
+    my $self    = shift;
+    my $attr    = "group_search";
+    my $default = {
+        base    => 'ou=groups,ou=ouname,dc=dcname1,dc=dcname2,dc=dcname3',
+        filter  => '(| (cn=wg-scot*))',
+        attrs   => [ 'cn' ],
+    };
+    return $self->get_config_value($attr, $default);
+}
+
+has user_groups      => (
     is          => 'ro',
-    isa         => 'Log::Log4perl::Logger',
+    isa         => 'HashRef',
+    lazy        => 1,
     required    => 1,
+    builder     => '_build_user_groups',
 );
+
+sub _build_user_groups {
+    my $self    = shift;
+    my $attr    = "user_groups";
+    my $default = {
+        base    => 'ou=accounts,ou=ouname,dc=dcname1,dc=dcname2,dc=dcname3',
+        filter  => 'uid=%s',
+        attrs   => [ 'memberOf' ],
+    };
+    return $self->get_config_value($attr, $default);
+}
 
 has ldap    => (
     is          => 'ro',
@@ -38,9 +124,8 @@ has ldap    => (
 sub _build_ldap_connection {
     my $self    = shift;
     my $log     = $self->log;
-    my $conf    = $self->config;
-    my $server  = $conf->{servername} // 'localhost';
-    my $scheme  = $conf->{scheme} // 'ldap';
+    my $server  = $self->servername;
+    my $scheme  = $self->scheme;
 
     $log->debug("Connecting to LDAP server $server");
 
@@ -72,7 +157,7 @@ sub get_scot_groups  {
     $log->debug("Retrieving Scot Groups");
 
     
-    my $searchconf    = $self->config->{group_search};
+    my $searchconf    = $self->group_search;
     my %searchparams  = (
             'base'   => $searchconf->{base},
             'filter' => $searchconf->{filter},
@@ -156,15 +241,16 @@ sub get_users_groups {
     my $self    = shift;
     my $user    = shift;
     my $log     = $self->log;
-    my $conf    = $self->config;
     my $ldap    = $self->ldap; 
     my @groups  = ();
+
+    $log->debug("Attempting to find user = $user = groups");
     
-    my $server          = $conf->{hostname};
-    my $binddn          = $conf->{dn};
-    my $bindpassword    = $conf->{password};
-    my $scheme          = $conf->{scheme};
-    my $searchconf      = $conf->{user_groups};
+    my $server          = $self->servername;
+    my $binddn          = $self->dn;
+    my $bindpassword    = $self->password;
+    my $scheme          = $self->scheme;
+    my $searchconf      = $self->user_groups;
     my $filter          = sprintf($searchconf->{filter}, $user);
 
     my $loglevel    = $log->level;

@@ -39,16 +39,7 @@ use warnings;
 use v5.18;
 
 use Moose;
-
 extends 'Scot::App';
-
-has env         => (
-    is          => 'ro',
-    isa         => 'Scot::Env',
-    required    => 1,
-    default     => sub { Scot::Env->instance },
-);
-
 
 has get_method  => (
     is          => 'ro',
@@ -74,9 +65,8 @@ has extractor   => (
 
 sub _get_entity_extractor {
     my $self    = shift;
-    return Scot::Util::EntityExtractor->new({
-        log => $self->log,
-    });
+    my $env     = $self->env;
+    return $env->extractor;
 };
 
 has imgmunger   => (
@@ -89,30 +79,23 @@ has imgmunger   => (
 
 sub _get_img_munger {
     my $self    = shift;
-    return Scot::Util::ImgMunger->new({
-        log => $self->log,
-    });
+    my $env     = $self->env;
+    return $env->img_munger;
 };
 
-has scot        => (
-    is          => 'ro',
-    isa         => 'Scot::Util::Scot2',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_scot_scot',
-);
+#has scot        => (
+#    is          => 'ro',
+#    isa         => 'Scot::Util::Scot2',
+#    required    => 1,
+#    lazy        => 1,
+#    builder     => '_build_scot_scot',
+#);
 
-sub _build_scot_scot {
-    my $self    = shift;
-    # say Dumper($self->config);
-    return Scot::Util::Scot2->new({
-        log         => $self->log,
-        servername  => $self->config->{scot}->{servername},
-        username    => $self->config->{scot}->{username},
-        password    => $self->config->{scot}->{password},
-        authtype    => $self->config->{scot}->{authtype},
-    });
-}
+#sub _build_scot_scot {
+#    my $self    = shift;
+#    my $env     = shift;
+#    return $env->scot;
+#}
 
 has interactive => (
     is          => 'ro',
@@ -121,6 +104,14 @@ has interactive => (
     lazy        => 1,
     default     => 0,
 );
+
+sub _build_interactive {
+    my $self    = shift;
+    my $attr    = "interactive";
+    my $default = 0;
+    my $envname = "scot_util_entityextractor_interactive";
+    return $self->get_config_value($attr, $default, $envname);
+}
 
 has enrichers   => (
     is              => 'ro',
@@ -131,18 +122,26 @@ has enrichers   => (
 );
 
 sub _get_enrichers {
-    my $self            = shift;
-    my $enrichconfig    = $self->config->{enrichments};
-    $enrichconfig->{log} = $self->log;
-    return Scot::Util::Enrichments->new($enrichconfig);
+    my $self    = shift;
+    my $env     = $self->env;
+    return $env->enrichments;
 }
 
 has max_workers => (
     is          => 'ro',
     isa         => 'Int',
     required    => 1,
-    default     => 20,
+    lazy        => 1,
+    builder     => '_build_max_workers',
 );
+
+sub _build_max_workers {
+    my $self    = shift;
+    my $attr    = "max_workers";
+    my $default = 20;
+    my $envname = "scot_util_max_workers";
+    return $self->get_config_value($attr, $default, $envname);
+}
 
 sub out {
     my $self    = shift;
@@ -246,8 +245,8 @@ sub get_alertgroup {
     my $href;
     
     if ( $self->get_method eq "scot_api" ) {
-        my $scot    = $self->scot;
-        $href       = $scot->get({ type => "alertgroup/$id/alert" } );
+#        my $scot    = $self->scot;
+#        $href       = $scot->get({ type => "alertgroup/$id/alert" } );
     }
     else {
         my $mongo       = $self->env->mongo;
@@ -260,7 +259,6 @@ sub get_alertgroup {
 sub process_alertgroup {
     my $self    = shift;
     my $id      = shift;
-    my $scot    = $self->scot;
     my @update  = ();
     my $log     = $self->log;
 
@@ -269,7 +267,8 @@ sub process_alertgroup {
     $log->debug("asking scot for /alertgroup/$id/alert");
 
     my $alertgroup_href = $self->get_alertgroup($id);
-    $log->debug("Alerts in AG:",{filter=>\&Dumper, value=>$alertgroup_href->{alerts}});
+    $log->debug("Alerts in AG:",
+                {filter=>\&Dumper, value=>$alertgroup_href->{alerts}});
     my $alerts_aref     = $alertgroup_href->{alerts};
 
     if ( ref($alerts_aref) ne "ARRAY" ) {
@@ -306,7 +305,7 @@ sub update_alertgroup {
     $self->log->debug("update alertgroup");
 
     if ( $self->get_method eq "scot_api" ) {
-        my $response = $self->scot->put($putdata);
+#        my $response = $self->scot->put($putdata);
     }
     else {
         $self->log->debug("doing mongo update");
@@ -397,8 +396,8 @@ sub get_entry {
     $self->log->debug("Getting entry $id");
 
     if ( $self->get_method eq "scot_api" ) {
-        my $scot    = $self->scot;
-        $href       = $scot->get({ id => $id, type => "entry" } );
+#        my $scot    = $self->scot;
+#        $href       = $scot->get({ id => $id, type => "entry" } );
     }
     else {
         my $mongo       = $self->env->mongo;
@@ -413,7 +412,7 @@ sub get_entry {
 sub process_entry {
     my $self    = shift;
     my $id      = shift;
-    my $scot    = $self->scot;
+#    my $scot    = $self->scot;
     my $update;
     my $log     = $self->log;
 
@@ -445,7 +444,7 @@ sub update_entry {
     $log->debug("updating entry");
 
     if ( $self->get_method eq "scot_api" ) {
-        my $response = $self->scot->put($putdata);
+#        my $response = $self->scot->put($putdata);
     }
     else {
         my $id    = delete $putdata->{id};

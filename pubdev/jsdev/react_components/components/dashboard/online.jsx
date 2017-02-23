@@ -19,7 +19,7 @@ var Online = React.createClass({
     render: function() {
         var OnlineRows = [];
         if (this.state.OnlineData != null) {
-            for (i=0; i < this.state.OnlineData.length; i++) {
+            for (var i=0; i < this.state.OnlineData.length; i++) {
                 var timeago = timeSince(this.state.OnlineData[i].last_activity);
                 OnlineRows.push(
                     <Panel header={this.state.OnlineData[i].username} >
