@@ -76,3 +76,8 @@ Example Migration::
    ...
    newscot:/home/scot> cd /opt/scot/bin
    newscot:/opt/scot/bin> ./migrate.pl all
+
+Save Your Old Database
+-----------------------
+
+The migration tool has been tested, but as with any process that operates on user data, things can happen.  The only defense is to save a copy of the last 3.4 SCOT database backup.

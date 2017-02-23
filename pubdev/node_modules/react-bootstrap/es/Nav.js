@@ -39,8 +39,8 @@ var propTypes = {
   stacked: React.PropTypes.bool,
 
   justified: all(React.PropTypes.bool, function (_ref) {
-    var justified = _ref.justified;
-    var navbar = _ref.navbar;
+    var justified = _ref.justified,
+        navbar = _ref.navbar;
     return justified && navbar ? Error('justified navbar `Nav`s are not supported') : null;
   }),
 
@@ -94,7 +94,8 @@ var defaultProps = {
 
 var contextTypes = {
   $bs_navbar: React.PropTypes.shape({
-    bsClass: React.PropTypes.string
+    bsClass: React.PropTypes.string,
+    onSelect: React.PropTypes.func
   }),
 
   $bs_tabContainer: React.PropTypes.shape({
@@ -125,11 +126,9 @@ var Nav = function (_React$Component) {
 
     var children = this.props.children;
 
-    var _getActiveProps = this.getActiveProps();
-
-    var activeKey = _getActiveProps.activeKey;
-    var activeHref = _getActiveProps.activeHref;
-
+    var _getActiveProps = this.getActiveProps(),
+        activeKey = _getActiveProps.activeKey,
+        activeHref = _getActiveProps.activeHref;
 
     var activeChild = ValidComponentChildren.find(children, function (child) {
       return _this2.isActive(child, activeKey, activeHref);
@@ -183,11 +182,9 @@ var Nav = function (_React$Component) {
       return child.props.eventKey && !child.props.disabled;
     });
 
-    var _getActiveProps2 = this.getActiveProps();
-
-    var activeKey = _getActiveProps2.activeKey;
-    var activeHref = _getActiveProps2.activeHref;
-
+    var _getActiveProps2 = this.getActiveProps(),
+        activeKey = _getActiveProps2.activeKey,
+        activeHref = _getActiveProps2.activeHref;
 
     var activeChild = ValidComponentChildren.find(children, function (child) {
       return _this3.isActive(child, activeKey, activeHref);
@@ -242,13 +239,13 @@ var Nav = function (_React$Component) {
       return null;
     }
 
-    var _child$props = child.props;
-    var id = _child$props.id;
-    var controls = _child$props['aria-controls'];
-    var eventKey = _child$props.eventKey;
-    var role = _child$props.role;
-    var onKeyDown = _child$props.onKeyDown;
-    var tabIndex = _child$props.tabIndex;
+    var _child$props = child.props,
+        id = _child$props.id,
+        controls = _child$props['aria-controls'],
+        eventKey = _child$props.eventKey,
+        role = _child$props.role,
+        onKeyDown = _child$props.onKeyDown,
+        tabIndex = _child$props.tabIndex;
 
 
     if (tabContainer) {
@@ -279,35 +276,31 @@ var Nav = function (_React$Component) {
     var _extends2,
         _this5 = this;
 
-    var _props = this.props;
-    var stacked = _props.stacked;
-    var justified = _props.justified;
-    var onSelect = _props.onSelect;
-    var propsRole = _props.role;
-    var propsNavbar = _props.navbar;
-    var pullRight = _props.pullRight;
-    var pullLeft = _props.pullLeft;
-    var className = _props.className;
-    var children = _props.children;
-
-    var props = _objectWithoutProperties(_props, ['stacked', 'justified', 'onSelect', 'role', 'navbar', 'pullRight', 'pullLeft', 'className', 'children']);
+    var _props = this.props,
+        stacked = _props.stacked,
+        justified = _props.justified,
+        onSelect = _props.onSelect,
+        propsRole = _props.role,
+        propsNavbar = _props.navbar,
+        pullRight = _props.pullRight,
+        pullLeft = _props.pullLeft,
+        className = _props.className,
+        children = _props.children,
+        props = _objectWithoutProperties(_props, ['stacked', 'justified', 'onSelect', 'role', 'navbar', 'pullRight', 'pullLeft', 'className', 'children']);
 
     var tabContainer = this.context.$bs_tabContainer;
     var role = propsRole || (tabContainer ? 'tablist' : null);
 
-    var _getActiveProps3 = this.getActiveProps();
-
-    var activeKey = _getActiveProps3.activeKey;
-    var activeHref = _getActiveProps3.activeHref;
+    var _getActiveProps3 = this.getActiveProps(),
+        activeKey = _getActiveProps3.activeKey,
+        activeHref = _getActiveProps3.activeHref;
 
     delete props.activeKey; // Accessed via this.getActiveProps().
     delete props.activeHref; // Accessed via this.getActiveProps().
 
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = _extends({}, getClassSet(bsProps), (_extends2 = {}, _extends2[prefix(bsProps, 'stacked')] = stacked, _extends2[prefix(bsProps, 'justified')] = justified, _extends2));
 
@@ -338,7 +331,7 @@ var Nav = function (_React$Component) {
       }),
       ValidComponentChildren.map(children, function (child) {
         var active = _this5.isActive(child, activeKey, activeHref);
-        var childOnSelect = createChainedFunction(child.props.onSelect, onSelect, tabContainer && tabContainer.onSelect);
+        var childOnSelect = createChainedFunction(child.props.onSelect, onSelect, navbar && navbar.onSelect, tabContainer && tabContainer.onSelect);
 
         return cloneElement(child, _extends({}, _this5.getTabProps(child, tabContainer, role, active, childOnSelect), {
           active: active,

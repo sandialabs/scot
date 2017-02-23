@@ -83,23 +83,20 @@ var ProgressBar = function (_React$Component) {
   ProgressBar.prototype.renderProgressBar = function renderProgressBar(_ref) {
     var _extends2;
 
-    var min = _ref.min;
-    var now = _ref.now;
-    var max = _ref.max;
-    var label = _ref.label;
-    var srOnly = _ref.srOnly;
-    var striped = _ref.striped;
-    var active = _ref.active;
-    var className = _ref.className;
-    var style = _ref.style;
+    var min = _ref.min,
+        now = _ref.now,
+        max = _ref.max,
+        label = _ref.label,
+        srOnly = _ref.srOnly,
+        striped = _ref.striped,
+        active = _ref.active,
+        className = _ref.className,
+        style = _ref.style,
+        props = _objectWithoutProperties(_ref, ['min', 'now', 'max', 'label', 'srOnly', 'striped', 'active', 'className', 'style']);
 
-    var props = _objectWithoutProperties(_ref, ['min', 'now', 'max', 'label', 'srOnly', 'striped', 'active', 'className', 'style']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = _extends({}, getClassSet(bsProps), (_extends2 = {
       active: active
@@ -124,28 +121,26 @@ var ProgressBar = function (_React$Component) {
   };
 
   ProgressBar.prototype.render = function render() {
-    var _props = this.props;
-    var isChild = _props.isChild;
-
-    var props = _objectWithoutProperties(_props, ['isChild']);
+    var _props = this.props,
+        isChild = _props.isChild,
+        props = _objectWithoutProperties(_props, ['isChild']);
 
     if (isChild) {
       return this.renderProgressBar(props);
     }
 
-    var min = props.min;
-    var now = props.now;
-    var max = props.max;
-    var label = props.label;
-    var srOnly = props.srOnly;
-    var striped = props.striped;
-    var active = props.active;
-    var bsClass = props.bsClass;
-    var bsStyle = props.bsStyle;
-    var className = props.className;
-    var children = props.children;
-
-    var wrapperProps = _objectWithoutProperties(props, ['min', 'now', 'max', 'label', 'srOnly', 'striped', 'active', 'bsClass', 'bsStyle', 'className', 'children']);
+    var min = props.min,
+        now = props.now,
+        max = props.max,
+        label = props.label,
+        srOnly = props.srOnly,
+        striped = props.striped,
+        active = props.active,
+        bsClass = props.bsClass,
+        bsStyle = props.bsStyle,
+        className = props.className,
+        children = props.children,
+        wrapperProps = _objectWithoutProperties(props, ['min', 'now', 'max', 'label', 'srOnly', 'striped', 'active', 'bsClass', 'bsStyle', 'className', 'children']);
 
     return React.createElement(
       'div',

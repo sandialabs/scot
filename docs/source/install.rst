@@ -4,13 +4,22 @@ Installing SCOT
 Minimum System Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Ubuntu 14.04 LTS (best tested), 16.04 LTS, or CentOS 7.
+* Ubuntu 14.04 LTS, 16.04 LTS, or CentOS 7.
 * 2 Quad Core CPU
 * 16 GB RAM
 * 1 TB Disk
 
+Note:  Requirements are for production use.  It is quite possible to run SCOT in 
+a small VM for testing or demonstration purposes.  Your VM should have access to
+at least 4 GB of RAM in this case.
+
 System Preparation
 ^^^^^^^^^^^^^^^^^^
+
+Ubuntu 14.04
+------------
+
+Only limited testing on 14.04 install has been performed.  16.04 is recommended.
 
 Ubuntu 16.04 and CENT 7
 -----------------------
@@ -67,6 +76,7 @@ If any of the above are not running, you will need to debug why.  Often, the fol
 
 The messages in the stats call will be useful in determining what is causing the problem.
 
+Once the problem has been fixed.  It is safe to re-run the installer script to make sure all the initialization scripts have run correctly.
 
 install.sh Options
 ^^^^^^^^^^^^^^^^^^
@@ -90,3 +100,9 @@ Using install.sh to upgrade
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sometimes you just want to refresh the SCOT software to get the latest fix or new feature.  This is when you should use the -s or -u flag.  If the fix or feature is in the flairing engine (scfd) or the elasticsearch push module (scepd) you will want to give the -d flag to restart those daemons.
+
+Configuration Files
+^^^^^^^^^^^^^^^^^^^
+
+Configuration templates are in SCOT/install/src/scot.  The files end in "cfg.pl".  You may edit them prior to install to suite your environment, or you may edit them post install in /opt/scot/etc.  All changes to config files after installation will require a restart of the service for changes to take place.
+

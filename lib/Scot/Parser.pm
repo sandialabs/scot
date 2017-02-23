@@ -12,6 +12,7 @@ Structure:
 
 {
     imap_uid    => 
+    body        =>
     envelope    => 
     subject     => 
     from        => 

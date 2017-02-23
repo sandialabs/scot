@@ -25,8 +25,11 @@ sub startup {
     my $self    = shift;
     $self->mode('development'); # remove when in prod
 
+    my $config_file  = $ENV{'scot_config_file'} // "/opt/scot/etc/scot.cfg.pl";
 
-    my $env     = Scot::Env->new();
+    my $env     = Scot::Env->new(
+        config_file => $config_file,
+    );
     $self->attr     ( env => sub { $env } );
     $self->helper   ( env => sub { shift->app->env } );
     $| = 1;
@@ -38,8 +41,10 @@ sub startup {
     $self->log($log);
     $self->log_startup($log);
 
-    $self->secrets( $env->mojo->{secrets} );
-    $self->sessions->default_expiration( $env->mojo->{default_expiration} );
+    $self->secrets( $env->mojo_defaults->{secrets} );
+    $self->sessions->default_expiration( 
+        $env->mojo_defaults->{default_expiration} 
+    );
     $self->sessions->secure(1);
 
 
@@ -512,8 +517,6 @@ sub log_startup {
                 "============================================================\n".
         " "x55 ."| SCOT  ". $self->env->version . "\n".
         " "x55 ."| mode: ". $self->env->mode. "\n".
-        " "x55 ."| db:   ". 
-                    Dumper($self->env->config) . "\n".
         " "x55 ."============================================================\n"
     );
     # $self->env->dump_env;
