@@ -7,7 +7,7 @@ var TagSourceFilter = React.createClass({
         var filterButtonArr = [];
         var filterButtonText = [];
         if (this.props.defaultValue != undefined) {
-            filterButtonArr.push(<div id='filterButton' className='btn btn-xs btn-default'>{this.props.defaultValue}<span onClick={this.handleDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></div>);
+            filterButtonArr.push(<div id='filterButton' className='btn btn-xs btn-default'>{this.props.defaultValue}<span onClick={this.handleDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" aria-hidden="true"></span></div>);
             filterButtonText.push(this.props.defaultValue);
             this.props.handleFilter(this.props.defaultValue);
         }
@@ -26,7 +26,7 @@ var TagSourceFilter = React.createClass({
     handleAddition: function(tag) {
         var currentButtons = this.state.filterButtonArr;
         var currentText = this.state.filterButtonText;
-        currentButtons.push(<div id='filterButton' className='btn btn-xs btn-default'>{tag}<span onClick={this.handleDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></div>);
+        currentButtons.push(<div id='filterButton' className='btn btn-xs btn-default'>{tag}<span onClick={this.handleDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" aria-hidden="true"></span></div>);
         currentText.push(tag)
         this.setState({filterButtonArr:currentButtons, filterButtonText:currentText});
         this.props.handleFilter(currentText);
@@ -34,7 +34,7 @@ var TagSourceFilter = React.createClass({
     handleDelete: function(e) {
         var newFilterButtonArr = this.state.filterButtonArr;
         var newFilterButtonText = this.state.filterButtonText;
-        for (i=0; i < this.state.filterButtonText.length; i++) {
+        for (var i=0; i < this.state.filterButtonText.length; i++) {
             if ($(e.target.parentElement).text() == this.state.filterButtonText[i]) {
                 newFilterButtonArr.splice(i,1);
                 newFilterButtonText.splice(i,1);
@@ -49,7 +49,7 @@ var TagSourceFilter = React.createClass({
         var inputSearch = tagSplit.pop();
         this.serverRequest = $.get('/scot/api/v2/ac/'+ this.props.columnsOne  + '/' + inputSearch, function (result) {
             var result = result.records;
-            for (i=0; i < result.length; i++) {
+            for (var i=0; i < result.length; i++) {
                 arr.push(result[i].value)
             }
             this.setState({suggestions:arr})

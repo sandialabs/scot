@@ -77,20 +77,18 @@ var ListGroupItem = function (_React$Component) {
   };
 
   ListGroupItem.prototype.render = function render() {
-    var _props = this.props;
-    var active = _props.active;
-    var disabled = _props.disabled;
-    var className = _props.className;
-    var header = _props.header;
-    var listItem = _props.listItem;
-    var children = _props.children;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['active', 'disabled', 'className', 'header', 'listItem', 'children']);
+    var _props = this.props,
+        active = _props.active,
+        disabled = _props.disabled,
+        className = _props.className,
+        header = _props.header,
+        listItem = _props.listItem,
+        children = _props.children,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['active', 'disabled', 'className', 'header', 'listItem', 'children']);
 
-    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = (0, _extends3['default'])({}, (0, _bootstrapUtils.getClassSet)(bsProps), {
       active: active,

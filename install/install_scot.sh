@@ -56,35 +56,52 @@ function get_config_files {
     fi
     echo "-- examining config files"
     CFGFILES='
-        mongo
-        logger
-        imap
-        activemq
-        enrichments
-        flair.app
-        flair_logger
-        stretch.app
-        stretch_logger
-        game.app
-        elastic
+        alert
+        apicli
         backup
-        scot_server
+        flair
+        game
+        migrate
+        replicate
+        scot
+        scot.test
+        stretch
     '
     for file in $CFGFILES; do
-        CFGDEST="$SCOTDIR/etc/${file}.cfg"
-        CFGSRC="$SCOT_CONFIG_SRC/scot/${file}.cfg"
+        CFGDEST="$SCOTDIR/etc/${file}.cfg.pl"
+        CFGSRC="$SCOT_CONFIG_SRC/scot/${file}.cfg.pl"
         if [[ -e $CFGDEST ]]; then
             echo "- config file $file already exists"
+            if [[ $SCOT_ENV_OVERWRITE == "yes" ]]; then
+                echo "overwrite requested..."
+                cp $CFGSRC $CFGDEST
+            else
+                echo "- skipping..."
+            fi
         else
             echo "- copying $CFGSRC to $CFGDEST"
             cp $CFGSRC $CFGDEST
         fi
     done
 
+    if [[ -e $SCOTDIR/etc/scot.cfg.pl ]]; then
+        echo "Scot Config scot_env.cfg exists!";
+        if [[ $SCOT_ENV_OVERWRITE == "yes" ]]; then
+            echo "overwrite requested..."
+        else
+            return
+        fi
+    fi
+
+    echo "***"
+    echo "*** installing scot config fiile "
+    echo "***"
     if [[ $AUTHMODE == "Remoteuser" ]]; then
-        cp $SCOT_CONFIG_SRC/scot/scot_env.remoteuser.cfg $SCOTDIR/etc/scot_env.cfg
+        echo "*** installing REMOTEUSER version of env.cfg"
+        cp $SCOT_CONFIG_SRC/scot/scot.remoteuser.cfg.pl $SCOTDIR/etc/scot.cfg.pl
     else
-        cp $SCOT_CONFIG_SRC/scot/scot_env.local.cfg $SCOTDIR/etc/scot_env.cfg
+        echo "*** installing LOCAL version of env.cfg"
+        cp $SCOT_CONFIG_SRC/scot/scot.local.cfg.pl $SCOTDIR/etc/scot.cfg.pl
     fi
 
 }
@@ -358,7 +375,7 @@ function install_scot {
     echo "-- copying SCOT to $SCOTDIR"
     TAROPTS="--exclude=pubdev --exclude-vcs"
     echo "-       TAROPTS are $TAROPTS"
-    (cd $DEVDIR; tar $TAROPTS -cf - .) | (cd $SCOTDIR; tar xvf -)
+    (cd $DEVDIR; tar $TAROPTS -cf - .) | (cd $SCOTDIR; tar xf -)
 
     echo "-- assigning owner/permissions on $SCOTDIR"
     chown -R scot:scot $SCOTDIR

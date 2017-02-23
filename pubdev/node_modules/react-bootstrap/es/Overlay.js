@@ -59,13 +59,19 @@ var propTypes = _extends({}, BaseOverlay.propTypes, {
   /**
    * Callback fired after the Overlay finishes transitioning out
    */
-  onExited: React.PropTypes.func
+  onExited: React.PropTypes.func,
+
+  /**
+   * Sets the direction of the Overlay.
+   */
+  placement: React.PropTypes.oneOf(['top', 'right', 'bottom', 'left'])
 });
 
 var defaultProps = {
   animation: Fade,
   rootClose: false,
-  show: false
+  show: false,
+  placement: 'right'
 };
 
 var Overlay = function (_React$Component) {
@@ -78,11 +84,10 @@ var Overlay = function (_React$Component) {
   }
 
   Overlay.prototype.render = function render() {
-    var _props = this.props;
-    var animation = _props.animation;
-    var children = _props.children;
-
-    var props = _objectWithoutProperties(_props, ['animation', 'children']);
+    var _props = this.props,
+        animation = _props.animation,
+        children = _props.children,
+        props = _objectWithoutProperties(_props, ['animation', 'children']);
 
     var transition = animation === true ? Fade : animation || null;
 

@@ -65,10 +65,10 @@ fi
 
 . ./install/commandline.sh
 default_variables
-
-process_commandline 
-
+process_commandline $@
 show_variables
+
+echo "____ INSTALL MODE $INSTMODE"
 
 if [[ $INSTMODE != "SCOTONLY" ]]; then
     . ./install/install_packages.sh

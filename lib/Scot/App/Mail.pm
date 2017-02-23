@@ -19,13 +19,6 @@ use Log::Log4perl::Level;
 use Moose;
 extends 'Scot::App';
 
-has env         => (
-    is          => 'ro',
-    isa         => 'Scot::Env',
-    required    => 1,
-    default     => sub { Scot::Env->instance },
-);
-
 has get_method  => (
     is          => 'ro',
     isa         => 'Str',
@@ -43,9 +36,8 @@ has imap    => (
 
 sub _build_imap {
     my $self    = shift;
-    my $imapcfg = $self->config->{imap};
-    $imapcfg->{log} = $self->log;
-    return Scot::Util::Imap->new($imapcfg);
+    my $env     = $self->env;
+    return $env->imap;
 }
 
 has max_processes => (
@@ -58,10 +50,10 @@ has max_processes => (
 
 sub _build_max_processes {
     my $self    = shift;
-    if ( $self->config->{max_processes} ) {
-        return $self->config->{max_processes};
-    }
-    return 0;
+    my $attr    = "max_processes";
+    my $default = 0;
+    my $envname = "scot_app_mail_max_processes";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has interactive => (
@@ -74,10 +66,10 @@ has interactive => (
 
 sub _build_interactive {
     my $self    = shift;
-    if ( $self->config->{interactive} ) {
-        return $self->config->{interactive};
-    }
-    return 'no';
+    my $attr    = "interactive";
+    my $default = "no";
+    my $envname = "scot_app_mail_interactive";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has verbose => (
@@ -90,10 +82,10 @@ has verbose => (
 
 sub _build_verbose {
     my $self    = shift;
-    if ( $self->config->{verbose} ) {
-        return $self->config->{verbose};
-    }
-    return 0;
+    my $attr    = "verbose";
+    my $default = 0;
+    my $envname = "scot_app_mail_verbose";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has approved_accounts   => (
@@ -106,8 +98,10 @@ has approved_accounts   => (
 
 sub _get_approved_accounts {
     my $self    = shift;
-    my $value   = $self->config->{approved_accounts};
-    return $value;
+    my $attr    = "approved_accounts";
+    my $default = [ ];
+    my $envname = "scot_app_mail_approved_accounts";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has approved_alert_domains  => (
@@ -120,8 +114,10 @@ has approved_alert_domains  => (
 
 sub _get_approved_alert_domains {
     my $self    = shift;
-    my $value   = $self->config->{approved_alert_domains};
-    return $value;
+    my $attr    = "approved_alert_domains";
+    my $default = [ ];
+    my $envname = "scot_app_mail_approved_alert_domains";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has scot => (
@@ -134,13 +130,8 @@ has scot => (
 
 sub _build_scot_scot {
     my $self    = shift;
-    return Scot::Util::Scot2->new({
-        log         => $self->log,
-        servername  => $self->config->{scot}->{servername},
-        username    => $self->config->{scot}->{username},
-        password    => $self->config->{scot}->{password},
-        authtype    => $self->config->{scot}->{authtype},
-    });
+    my $env     = $self->env;
+    return $env->scot;
 }
 
 has fetch_mode  => (
@@ -153,10 +144,10 @@ has fetch_mode  => (
 
 sub _build_fetch_mode {
     my $self    = shift;
-    if ( $self->config->{fetch_mode} ) {
-        return $self->config->{fetch_mode};
-    }
-    return 'unseen';
+    my $attr    = "fetch_mode";
+    my $default = 'unseen';
+    my $envname = "scot_app_mail_fetch_mode";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has since       => (
@@ -169,10 +160,10 @@ has since       => (
 
 sub _build_since {
     my $self    = shift;
-    if ( $self->config->{since} ) {
-        return $self->config->{since};
-    }
-    return { hour => 2 };
+    my $attr    = "since";
+    my $default = { hour => 2};
+    my $envname = "scot_app_since";
+    return $self->get_config_value($attr, $default, $envname);
 }
 
 has parsermap   => (
@@ -187,7 +178,7 @@ sub load_parsers  {
     my $self    = shift;
     my $log     = $self->log;
 
-    my $parser_dir  = $self->config->{parser_dir} //
+    my $parser_dir  = $self->env->parser_dir //
                       "/opt/scot/lib/Scot/Parser";
     try {
         opendir(DIR, $parser_dir);
@@ -287,8 +278,8 @@ sub run {
         $proc_count++;
         $log->trace("[UID $uid] Child process $pid finishes");
 
-        if ( $self->config->{leave_unseen} ) {
-            $imap->mark_uid_unseed($uid);
+        if ( $self->env->leave_unseen ) {
+            $imap->mark_uid_unseen($uid);
         }
 
         $taskmgr->finish;
@@ -311,7 +302,17 @@ sub reprocess_alertgroup {
     my $log     = $self->log;
     my $scot    = $self->scot;
 
-    my $alertgroup  = $self->get_alertgoup_by_id($agid); # ... returns href not obj
+    $log->debug("Fetching alertgroup $agid");
+    # ... returns href not obj
+    my $alertgroup  = $self->get_alertgroup_by_id($agid); 
+
+    unless (defined $alertgroup) {
+        $log->error("Alertgroup not found!");
+        return;
+    }
+
+    $log->debug("Alertgroup dump: ", {filter=>\&Dumper, value=>$alertgroup});
+
     my $msghref    = {
         subject     => $alertgroup->{subject},
         message_id  => $alertgroup->{message_id},
@@ -323,6 +324,7 @@ sub reprocess_alertgroup {
     };
 
     my $parser                  = $self->get_parser($msghref);
+    $log->debug("Message will be parsed by ".ref($parser));
     my $received                = DateTime->from_epoch(epoch=>$msghref->{when});
     my $json_to_post            = $parser->parse_message($msghref);
     my $path                    = "alertgroup";
@@ -338,6 +340,8 @@ sub reprocess_alertgroup {
     $log->debug("posting to $path");
 
     my $json_returned = $self->post_alertgroup($json_to_post);
+    # use this when update is implemented
+    # my $json_returned = $self->put_alertgroup($agid, $json_to_post);
 
     unless (defined $json_returned) {
         $log->error("ERROR! Undefined transaction object $path ",
@@ -465,6 +469,29 @@ sub process_message {
     return 1;
 }
 
+# TODO: so reprocessing updated existing alertgroup not create a new one
+sub put_alertgroup {
+    my $self    = shift;
+    my $id      = shift;
+    my $data    = shift;
+    my $log     = $self->log;
+    my $response;
+
+    if ( $self->get_method eq "scot_api" ) {
+        $response = $self->scot->put({
+            type    => "alertgroup",
+            id      => $id,
+            data    => $data,
+        });
+    }
+    else {
+        $log->debug("Posting via direct mongo access");
+        my $mongo   = $self->env->mongo;
+        my $agcol   = $mongo->collection('Alertgroup');
+        my $agobj   = $agcol->find_iid($id);
+    }
+}
+
 sub post_alertgroup {
     my $self    = shift;
     my $data    = shift;
@@ -577,7 +604,7 @@ sub get_alertgroup_by_id {
         my $col     = $mongo->collection('Alertgroup');
         my $obj     = $col->find_iid($id);
         if ( $obj ) {
-            return $obj->as_href;
+            return $obj->as_hash;
         }
     }
     return { error => 1};

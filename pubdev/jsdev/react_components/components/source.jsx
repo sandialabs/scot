@@ -18,17 +18,28 @@ var Source = React.createClass({
         var id = this.props.id;
         var type = this.props.type;
         var data = this.props.data;
+        
+        //Don't show if guide
+        if (this.props.type == 'guide') {
+            return (<th/>);
+        } 
+        
         if (data != undefined) {
-            for (i=0; i < data.length; i++) {
+            for (var i=0; i < data.length; i++) {
                 rows.push(<SourceDataIterator data={data} dataOne={data[i]} id={id} type={type} updated={this.props.updated} />);
             }
         }
         return (
-            <div>
-                {rows}
-                {this.state.sourceEntry ? <NewSource data={data} type={type} id={id} toggleSourceEntry={this.toggleSourceEntry} updated={this.props.updated}/>: null}
-                {this.state.sourceEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-minus' ariaHidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-plus' ariaHidden='true'></span></Button>} 
-            </div>
+            <th>
+                <th>
+                Sources:
+                </th>
+                <td>
+                    {rows}
+                    {this.state.sourceEntry ? <NewSource data={data} type={type} id={id} toggleSourceEntry={this.toggleSourceEntry} updated={this.props.updated}/>: null}
+                    {this.state.sourceEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-minus' aria-hidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-plus' aria-hidden='true'></span></Button>} 
+                </td>
+            </th>
         )
     }
 });
@@ -37,7 +48,7 @@ var SourceDataIterator = React.createClass({
     sourceDelete: function() {
         var data = this.props.data;
         var newSourceArr = [];
-        for (i=0; i < data.length; i++) {
+        for (var i=0; i < data.length; i++) {
             if (data[i] != undefined) {
                 if (typeof(data[i]) == 'string') {
                     if (data[i] != this.props.dataOne) {
@@ -63,7 +74,7 @@ var SourceDataIterator = React.createClass({
         });
     },
     render: function() {
-        dataOne = this.props.dataOne;
+        var dataOne = this.props.dataOne;
         var value;
         if (typeof(dataOne) == 'string') {
             value = dataOne;
@@ -73,7 +84,7 @@ var SourceDataIterator = React.createClass({
             }
         }
         return (
-            <Button id="event_source" bsSize={'xsmall'}>{value} <span onClick={this.sourceDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" ariaHidden="true"></span></Button>
+            <Button id="event_source" bsSize={'xsmall'}>{value} <span onClick={this.sourceDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" aria-hidden="true"></span></Button>
         )
     }
 });
@@ -87,7 +98,7 @@ var NewSource = React.createClass({
     handleAddition: function(source) {
         var newSourceArr = [];
         var data = this.props.data;
-        for (i=0; i < data.length; i++) {
+        for (var i=0; i < data.length; i++) {
             if (data[i] != undefined) {
                 if(typeof(data[i]) == 'string') {
                     newSourceArr.push(data[i]);
@@ -116,7 +127,7 @@ var NewSource = React.createClass({
         var arr = [];
         this.serverRequest = $.get('/scot/api/v2/ac/source/' + input, function (result) {
             var result = result.records;
-            for (i=0; i < result.length; i++) {
+            for (var i=0; i < result.length; i++) {
                 arr.push(result[i].value)
             }
             this.setState({suggestions:arr})

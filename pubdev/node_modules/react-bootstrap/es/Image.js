@@ -49,20 +49,17 @@ var Image = function (_React$Component) {
   Image.prototype.render = function render() {
     var _classes;
 
-    var _props = this.props;
-    var responsive = _props.responsive;
-    var rounded = _props.rounded;
-    var circle = _props.circle;
-    var thumbnail = _props.thumbnail;
-    var className = _props.className;
+    var _props = this.props,
+        responsive = _props.responsive,
+        rounded = _props.rounded,
+        circle = _props.circle,
+        thumbnail = _props.thumbnail,
+        className = _props.className,
+        props = _objectWithoutProperties(_props, ['responsive', 'rounded', 'circle', 'thumbnail', 'className']);
 
-    var props = _objectWithoutProperties(_props, ['responsive', 'rounded', 'circle', 'thumbnail', 'className']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = (_classes = {}, _classes[prefix(bsProps, 'responsive')] = responsive, _classes[prefix(bsProps, 'rounded')] = rounded, _classes[prefix(bsProps, 'circle')] = circle, _classes[prefix(bsProps, 'thumbnail')] = thumbnail, _classes);
 
