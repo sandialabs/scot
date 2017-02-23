@@ -5,68 +5,63 @@ var Dropzone    = require('../../../node_modules/react-dropzone')
 var Button      = require('react-bootstrap/lib/Button.js');
 
 var recently_updated = 0
-var reply = false
 
 var AddEntryModal = React.createClass({
 	getInitialState: function(){
         var key = new Date();
         key = key.getTime();
+        var tinymcearr = [];
+        var tinyID = 'tiny_' + key;
         return {
-            originalContent: '', key: key, 
+            tinyID: tinyID, key: key, tinymcearr: tinymcearr, scrolled: false 
         }
 	},
-	componentWillMount: function(){
+	componentDidMount: function(){
         if(this.props.entryAction == 'Edit'){
-            reply = false;
             $.ajax({
                 type: 'GET',
                 url:  '/scot/api/v2/entry/'+ this.props.id
                 }).success(function(response){
                     recently_updated = response.updated
                     if(response.body == ""){
-                        $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").html(response.body_plain)
+                        var tinycomponent = <TinyMCE id={this.state.tinyID} content={response.body_plain} className={'inputtext'} config={{plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) { function replaceA(string) { return string.replace(/<(\/)?a([^>]*)>/g, '<$1span$2>') }; args.content = replaceA(args.content) + ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css', height:250}} /> 
+                        this.setState({tinymcearr: tinycomponent});
+                        this.forceUpdate(); //The only time we want to bypass the shouldcomponentupdate returning false so we can apply the editor
                     }
                     else{
-                        $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").html(response.body)
+                        var tinycomponent = <TinyMCE id={this.state.tinyID} content={response.body} className={'inputtext'} config={{plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) { function replaceA(string) { return string.replace(/<(\/)?a([^>]*)>/g, '<$1span$2>') }; args.content = replaceA(args.content) + ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css', height:250}} /> 
+                        this.setState({tinymcearr: tinycomponent});
+                        this.forceUpdate(); //The only time we want to bypass the shouldcomponentupdate returning false so we can apply the editor
                     }
                 }.bind(this))
         }
-        else if (this.props.entryAction == 'Add'){
-            reply = false
-            $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").text('')
-        }
-        else if(this.props.entryAction == 'Reply'){
-            reply = true
-            $.ajax({
-                type: 'GET',
-                url:  '/scot/api/v2/entry/'+ this.props.id
-        }).success(function(response){
-            /*if (response.body_flair == '') {
-                this.setState({subitem: response.body});
-            } else {
-                this.setState({subitem: response.body_flair});
-            }*/
-        }.bind(this))
-        /*var newheight;
-        newheight= document.getElementById('iframe_'+this.state.key).contentWindow.document.body.scrollHeight;
-        newheight = newheight + 'px'
-        this.setState({height: newheight}) */
-        } 
+        this.forceUpdate();
     },
-    componentDidMount: function() {
-        //$('#tiny_' + this.props.id + '_ifr').css('height', '100px')
-        $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.state.key).position().top)
-        if(this.props.entryAction == 'Copy To Entry') {
-            $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").html(this.props.content)
+    componentWillMount: function() {
+        if (this.props.entryAction == 'Add' || this.props.entryAction == 'Reply'){
+            var tinycomponent = <TinyMCE id={this.state.tinyID} className={'inputtext'} config={{plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) { function replaceA(string) { return string.replace(/<(\/)?a([^>]*)>/g, '<$1span$2>') }; args.content = replaceA(args.content) + ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css', height:250}} />
+            this.setState({tinymcearr: tinycomponent});
+            this.forceUpdate(); //The only time we want to bypass the shouldcomponentupdate returning false so we can apply the editor
+        }
+        else if(this.props.entryAction == 'Copy To Entry') {
+            var tinycomponent = <TinyMCE id={this.state.tinyID} content={this.props.content} className={'inputtext'} config={{plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) { function replaceA(string) { return string.replace(/<(\/)?a([^>]*)>/g, '<$1span$2>') }; args.content = replaceA(args.content) + ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css', height:250}} />
+            this.setState({tinymcearr: tinycomponent});
+            this.forceUpdate(); //The only time we want to bypass the shouldcomponentupdate returning false so we can apply the editor
         }
     },
     shouldComponentUpdate: function() {
-        return false; //prevent updating this component because it causes the page container to scroll upwards and lose focus due to a bug in paste_preprocess.
+        return false; //prevent updating this component because it causes the page container to scroll upwards and lose focus due to a bug in paste_preprocess. If this is removed it will cause abnormal scrolling. 
+    },
+    setScrolled: function() {
+        this.setState({scrolled: true});
     },
 	render: function() {
-        var item = this.state.subitem
+        //var item = this.state.subitem
+        if ($('#not_saved_entry_'+this.state.key).position() && this.state.scrolled != true) {
+            $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.state.key).position().top)
+            this.setScrolled();
+        }
         var not_saved_entry_id = 'not_saved_entry_'+this.state.key
-        var tinyID = 'tiny_'+this.state.key
             return (
                 <div id={not_saved_entry_id} className={'not_saved_entry'}>
                     <div className={'row-fluid entry-outer'} style={{border: '3px solid blue',marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
@@ -78,7 +73,7 @@ var AddEntryModal = React.createClass({
                                 </span>
                             </div>
                         </div>
-                        <TinyMCE id={tinyID} content={""} className={'inputtext'} config={{plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) { function replaceA(string) { return string.replace(/<(\/)?a([^>]*)>/g, '<$1span$2>') }; args.content = replaceA(args.content) + ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css', height:250}} />  
+                        {this.state.tinymcearr}  
                     </div>    
                 </div>
             )
