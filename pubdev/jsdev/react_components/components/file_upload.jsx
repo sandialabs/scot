@@ -58,7 +58,7 @@ var FileUpload = React.createClass({
         if(finalfiles.length > 0){
 			for(var i = 0; i<finalfiles.length; i++){	
 			    var file = {file : finalfiles[i].name}
-                data  = new FormData()
+                var data  = new FormData()
                 data.append('upload', finalfiles[i])
                 data.append('target_type',this.props.type)
                 data.append('target_id',Number(this.props.targetid))

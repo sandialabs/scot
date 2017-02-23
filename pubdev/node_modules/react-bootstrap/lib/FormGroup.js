@@ -45,7 +45,7 @@ var propTypes = {
    * Sets `id` on `<FormControl>` and `htmlFor` on `<FormGroup.Label>`.
    */
   controlId: _react2['default'].PropTypes.string,
-  validationState: _react2['default'].PropTypes.oneOf(['success', 'warning', 'error'])
+  validationState: _react2['default'].PropTypes.oneOf(['success', 'warning', 'error', null])
 };
 
 var childContextTypes = {
@@ -61,9 +61,9 @@ var FormGroup = function (_React$Component) {
   }
 
   FormGroup.prototype.getChildContext = function getChildContext() {
-    var _props = this.props;
-    var controlId = _props.controlId;
-    var validationState = _props.validationState;
+    var _props = this.props,
+        controlId = _props.controlId,
+        validationState = _props.validationState;
 
 
     return {
@@ -83,17 +83,15 @@ var FormGroup = function (_React$Component) {
   };
 
   FormGroup.prototype.render = function render() {
-    var _props2 = this.props;
-    var validationState = _props2.validationState;
-    var className = _props2.className;
-    var children = _props2.children;
-    var props = (0, _objectWithoutProperties3['default'])(_props2, ['validationState', 'className', 'children']);
+    var _props2 = this.props,
+        validationState = _props2.validationState,
+        className = _props2.className,
+        children = _props2.children,
+        props = (0, _objectWithoutProperties3['default'])(_props2, ['validationState', 'className', 'children']);
 
-    var _splitBsPropsAndOmit = (0, _bootstrapUtils.splitBsPropsAndOmit)(props, ['controlId']);
-
-    var bsProps = _splitBsPropsAndOmit[0];
-    var elementProps = _splitBsPropsAndOmit[1];
-
+    var _splitBsPropsAndOmit = (0, _bootstrapUtils.splitBsPropsAndOmit)(props, ['controlId']),
+        bsProps = _splitBsPropsAndOmit[0],
+        elementProps = _splitBsPropsAndOmit[1];
 
     var classes = (0, _extends3['default'])({}, (0, _bootstrapUtils.getClassSet)(bsProps), {
       'has-feedback': this.hasFeedback(children)

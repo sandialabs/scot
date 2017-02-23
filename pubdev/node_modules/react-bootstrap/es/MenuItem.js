@@ -27,8 +27,8 @@ var propTypes = {
    * groups of menu items.
    */
   divider: all(React.PropTypes.bool, function (_ref) {
-    var divider = _ref.divider;
-    var children = _ref.children;
+    var divider = _ref.divider,
+        children = _ref.children;
     return divider && children ? new Error('Children will not be rendered for dividers') : null;
   }),
 
@@ -81,11 +81,11 @@ var MenuItem = function (_React$Component) {
   }
 
   MenuItem.prototype.handleClick = function handleClick(event) {
-    var _props = this.props;
-    var href = _props.href;
-    var disabled = _props.disabled;
-    var onSelect = _props.onSelect;
-    var eventKey = _props.eventKey;
+    var _props = this.props,
+        href = _props.href,
+        disabled = _props.disabled,
+        onSelect = _props.onSelect,
+        eventKey = _props.eventKey;
 
 
     if (!href || disabled) {
@@ -102,22 +102,19 @@ var MenuItem = function (_React$Component) {
   };
 
   MenuItem.prototype.render = function render() {
-    var _props2 = this.props;
-    var active = _props2.active;
-    var disabled = _props2.disabled;
-    var divider = _props2.divider;
-    var header = _props2.header;
-    var onClick = _props2.onClick;
-    var className = _props2.className;
-    var style = _props2.style;
+    var _props2 = this.props,
+        active = _props2.active,
+        disabled = _props2.disabled,
+        divider = _props2.divider,
+        header = _props2.header,
+        onClick = _props2.onClick,
+        className = _props2.className,
+        style = _props2.style,
+        props = _objectWithoutProperties(_props2, ['active', 'disabled', 'divider', 'header', 'onClick', 'className', 'style']);
 
-    var props = _objectWithoutProperties(_props2, ['active', 'disabled', 'divider', 'header', 'onClick', 'className', 'style']);
-
-    var _splitBsPropsAndOmit = splitBsPropsAndOmit(props, ['eventKey', 'onSelect']);
-
-    var bsProps = _splitBsPropsAndOmit[0];
-    var elementProps = _splitBsPropsAndOmit[1];
-
+    var _splitBsPropsAndOmit = splitBsPropsAndOmit(props, ['eventKey', 'onSelect']),
+        bsProps = _splitBsPropsAndOmit[0],
+        elementProps = _splitBsPropsAndOmit[1];
 
     if (divider) {
       // Forcibly blank out the children; separators shouldn't render any.

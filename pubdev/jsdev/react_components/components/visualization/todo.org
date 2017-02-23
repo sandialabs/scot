@@ -1,0 +1,52 @@
+
+* Unify graphics format and make it pipeable
+  It would be great if there was one simple data structure that
+  represented the graphics for the visualizations, or at least if
+  there was a simple uniform-feeling way to specify all of the
+  visualizations. Something list-based would be ideal, but in order to
+  have relevant drill-down data attached it'll be necessary to add
+  named fields.
+
+  I could make an algebraic data type approximation that has a library
+  of basic shapes, and set it up so that any entity can have both a
+  shape and an associated data object. Interacting with the shape in
+  the viz would then use the data from the associated object to
+  control the interaction.
+
+* Drill-down
+  I need to make all of the viz stuff interactive. It would be a major
+  win here if I had that unified viz format with interactive entities
+  defined somehow. An algebraic data type would be great... 
+
+  I want to be able to do things like click graph nodes to expand the
+  network with more data, or drill into new levels of a treemap, or
+  just click to see what the data is for a given entity.
+
+* Streaming implementation
+  It would be great if the result monad could be modified to work like
+  an iterator so that live data could be streamed through the app. I'm
+  imagining a way to have a viz that shows a window of time as events
+  stream through it. 
+
+  To make this composable, I'd want to separate the model from the
+  viz, and have a special accumulator that updates the model and sends
+  it to the viz for rendering. As events stream through, the model
+  accumulator would create, update, and destroy components of the viz,
+  and the renderer would just display its current state at any given
+  time. The user could control the behavior of the accumulator.
+
+  The viz modules would then be modified to take an iterator, and to
+  treat each item from the iterator as an updated model to
+  render. They would add viz-computed annotations to the model to hold
+  things that are only relevant for the rendering (node positions in a
+  force-layout graph for example, or point coordinates for a voronoi
+  diagram).
+
+  Models should be structural, indicating only the relationships and
+  generating data for the entities. The viz should have the power to
+  actually turn that into graphics objects.
+
+* Interactivity
+  Viz primitives need to support clicking, dragging, pan and zoom, and
+  other interactions. Once again, this depends on having a consistent
+  model for representing the viz parts.

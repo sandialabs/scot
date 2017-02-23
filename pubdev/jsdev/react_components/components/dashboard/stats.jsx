@@ -20,7 +20,7 @@ var Stats = React.createClass({
     render: function() {
         var StatsRows = [];
         if (this.state.StatsData != null) {
-            for (i=0; i < this.state.StatsData.length; i++) {
+            for (var i=0; i < this.state.StatsData.length; i++) {
                 var timeago = timeSince(this.state.StatsData[i].last_activity);
                 StatsRows.push(
                     <Panel header={this.state.StatsData[i].username} >

@@ -308,7 +308,7 @@ module.exports = React.createClass({
                                     <Button eventKey='1' onClick={this.props.notificationToggle} bsSize='xsmall'>Mute Notifications</Button> :
                                     <Button eventKey='2' onClick={this.props.notificationToggle} bsSize='xsmall'>Turn On Notifications</Button>
                                 }
-                                {this.props.type == 'event' || this.props.type == 'intel' ? <Button onClick={this.createNewThing} eventKey='6' bsSize='xsmall'>Create {this.state.typeCapitalized}</Button> : null}
+                                {this.props.type == 'event' || this.props.type == 'intel' || this.props.type == 'incident' ? <Button onClick={this.createNewThing} eventKey='6' bsSize='xsmall'>Create {this.state.typeCapitalized}</Button> : null}
                                 <Button eventKey='5' bsSize='xsmall' onClick={this.exportCSV}>Export to CSV</Button> 
                                 <Button bsSize='xsmall' onClick={this.toggleView}>Full Screen Toggle (f)</Button>
                                 {showClearFilter ? <Button onClick={this.clearAll} eventKey='3' bsSize='xsmall' bsStyle={'info'}>Clear All Filters</Button> : null}
@@ -316,7 +316,7 @@ module.exports = React.createClass({
                                 <div id='list-view-container' style={{display:this.state.listViewContainerDisplay, height:listViewContainerHeight, opacity:this.state.loading ? '.2' : '1'}} tabIndex='1'>
                                     <div id={this.state.listViewOrientation} tabIndex='2'>
                                         <div className='tableview' style={{display: 'flex'}}>
-                                            <div id='fluid2' className="container-fluid2" style={{width:'100%', 'max-height': this.state.maxheight, 'margin-left': '0px',height: this.state.scrollheight, 'overflow': 'hidden','padding-left':'5px', display:'flex', flexFlow: 'column'}}>                 
+                                            <div id='fluid2' className="container-fluid2" style={{width:'100%', maxHeight: this.state.maxheight, marginLeft: '0px',height: this.state.scrollheight, 'overflow': 'hidden',paddingLeft:'5px', display:'flex', flexFlow: 'column'}}>                 
                                                 <table style={{width:'100%'}}>
                                                     <ListViewHeader data={this.state.objectarray} columns={this.state.columns} columnsDisplay={this.state.columnsDisplay} columnsClassName={this.state.columnsClassName} handleSort={this.handleSort} sort={this.state.sort} filter={this.state.filter} handleFilter={this.handleFilter} startepoch={this.state.startepoch} endepoch={this.state.endepoch}/>
                                                 </table>
@@ -342,19 +342,27 @@ module.exports = React.createClass({
     },
     componentDidUpdate: function() {
         //auto scrolls to selected id
-        if (this.state.id != null) {
-            if ($('#'+this.state.id).offset() != undefined && $('.list-view-table-data').offset() != undefined) {
-                var cParentTop =  $('.list-view-table-data').offset().top;
-                var cTop = $('#'+this.state.id).offset().top - cParentTop;
-                var cHeight = $('#'+this.state.id).outerHeight(true);
-                var windowTop = $('#list-view-data-div').offset().top;
-                var visibleHeight = $('#list-view-data-div').height();
+        for (var i=0; i < this.state.objectarray.length; i++){          //Iterate through all of the items in the list to verify that the current id still matches the rows in the list. If not, don't scroll
+            var idReference = this.state.objectarray[i].id;
+            if (this.state.type == 'task') {
+                if (this.state.objectarray[i].target) {
+                    idReference = this.state.objectarray[i].target.id; //task uses target.id for id because its id is the entry.
+                }
+            }
+            if (this.state.id != null && this.state.id == idReference) {
+                if ($('#'+this.state.id).offset() != undefined && $('.list-view-table-data').offset() != undefined) {
+                    var cParentTop =  $('.list-view-table-data').offset().top;
+                    var cTop = $('#'+this.state.id).offset().top - cParentTop;
+                    var cHeight = $('#'+this.state.id).outerHeight(true);
+                    var windowTop = $('#list-view-data-div').offset().top;
+                    var visibleHeight = $('#list-view-data-div').height();
 
-                var scrolled = $('#list-view-data-div').scrollTop();
-                if (cTop < (scrolled)) {
-                    $('#list-view-data-div').animate({'scrollTop': cTop-(visibleHeight/2)}, 'fast', '');
-                } else if (cTop + cHeight + cParentTop> windowTop + visibleHeight) {
-                    $('#list-view-data-div').animate({'scrollTop': (cTop + cParentTop) - visibleHeight + scrolled + cHeight}, 'fast', 'swing');
+                    var scrolled = $('#list-view-data-div').scrollTop();
+                    if (cTop < (scrolled)) {
+                        $('#list-view-data-div').animate({'scrollTop': cTop-(visibleHeight/2)}, 'fast', '');
+                    } else if (cTop + cHeight + cParentTop> windowTop + visibleHeight) {
+                        $('#list-view-data-div').animate({'scrollTop': (cTop + cParentTop) - visibleHeight + scrolled + cHeight}, 'fast', 'swing');
+                    }
                 }
             }
         }
@@ -627,7 +635,7 @@ module.exports = React.createClass({
                 var newFilter = [];
                 //if no filter applied
                 if (currentFilter == undefined) {
-                    for (i=0; i < array.length; i++) {
+                    for (var i=0; i < array.length; i++) {
                         inProgressFilter.push(array[i]);
                     }
                     newFilterObj[column] = inProgressFilter;
@@ -635,13 +643,13 @@ module.exports = React.createClass({
                 } else {
                     //already filtered column being modified
                     if (currentFilter[column] != undefined) {
-                        for (i=0; i < array.length; i++) {
+                        for (var i=0; i < array.length; i++) {
                             inProgressFilter.push(array[i]);
                         }
                         delete currentFilter[column]
                         newFilterObj[column] = inProgressFilter;
                     } else {  //column not yet filtered, so append it to the existing filters
-                        for (i=0; i < array.length; i++) {
+                        for (var i=0; i < array.length; i++) {
                             inProgressFilter.push(array[i]);
                         }
                         newFilterObj[column] = inProgressFilter;

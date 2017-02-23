@@ -43,19 +43,16 @@ var ResponsiveEmbed = function (_React$Component) {
   ResponsiveEmbed.prototype.render = function render() {
     var _extends2;
 
-    var _props = this.props;
-    var a16by9 = _props.a16by9;
-    var a4by3 = _props.a4by3;
-    var className = _props.className;
-    var children = _props.children;
+    var _props = this.props,
+        a16by9 = _props.a16by9,
+        a4by3 = _props.a4by3,
+        className = _props.className,
+        children = _props.children,
+        props = _objectWithoutProperties(_props, ['a16by9', 'a4by3', 'className', 'children']);
 
-    var props = _objectWithoutProperties(_props, ['a16by9', 'a4by3', 'className', 'children']);
-
-    var _splitBsProps = splitBsProps(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = splitBsProps(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     process.env.NODE_ENV !== 'production' ? warning(a16by9 || a4by3, 'Either `a16by9` or `a4by3` must be set.') : void 0;
     process.env.NODE_ENV !== 'production' ? warning(!(a16by9 && a4by3), 'Only one of `a16by9` or `a4by3` can be set.') : void 0;

@@ -90,23 +90,21 @@ var Popover = function (_React$Component) {
   Popover.prototype.render = function render() {
     var _extends2;
 
-    var _props = this.props;
-    var placement = _props.placement;
-    var positionTop = _props.positionTop;
-    var positionLeft = _props.positionLeft;
-    var arrowOffsetTop = _props.arrowOffsetTop;
-    var arrowOffsetLeft = _props.arrowOffsetLeft;
-    var title = _props.title;
-    var className = _props.className;
-    var style = _props.style;
-    var children = _props.children;
-    var props = (0, _objectWithoutProperties3['default'])(_props, ['placement', 'positionTop', 'positionLeft', 'arrowOffsetTop', 'arrowOffsetLeft', 'title', 'className', 'style', 'children']);
+    var _props = this.props,
+        placement = _props.placement,
+        positionTop = _props.positionTop,
+        positionLeft = _props.positionLeft,
+        arrowOffsetTop = _props.arrowOffsetTop,
+        arrowOffsetLeft = _props.arrowOffsetLeft,
+        title = _props.title,
+        className = _props.className,
+        style = _props.style,
+        children = _props.children,
+        props = (0, _objectWithoutProperties3['default'])(_props, ['placement', 'positionTop', 'positionLeft', 'arrowOffsetTop', 'arrowOffsetLeft', 'title', 'className', 'style', 'children']);
 
-    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props);
-
-    var bsProps = _splitBsProps[0];
-    var elementProps = _splitBsProps[1];
-
+    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props),
+        bsProps = _splitBsProps[0],
+        elementProps = _splitBsProps[1];
 
     var classes = (0, _extends4['default'])({}, (0, _bootstrapUtils.getClassSet)(bsProps), (_extends2 = {}, _extends2[placement] = true, _extends2));
 
