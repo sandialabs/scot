@@ -28,17 +28,17 @@ SCOT has an installer that will work with Ubuntu 16.04 and CentOS 7.3.  While th
 
 To install on Ubuntu 16.04 or CentOS 7:
 
-* clone the SCOT repo::
+* clone the SCOT repo:
 
     git clone git@baltig.sandia.gov:scot/SCOT.git
 
 * be sure to set http_proxy environment variables if necessary
 
-* run the installer as root::
+* run the installer as root:
 
-    $ sudo -E bash
-    # cd SCOT
-    # ./install.sh 2>&1 | tee ../scot.install.log
+     $ sudo -E bash
+     # cd SCOT
+     # ./install.sh 2>&1 | tee ../scot.install.log
 
 The install can take a while.  The installer output is very verbose and saving it to a log is recommended to help with debugging any issues that might arise.
 
