@@ -3,12 +3,9 @@ Sandia Cyber Omni Tracker
 =========================
 
 
-![version](http://img.shields.io/badge/version-3.4-orange.svg)
+![version](http://img.shields.io/badge/version-3.5.2-orange.svg)
 [![Documentation Status][docs-badge]](http://scot.readthedocs.org/en/latest/)
 [![license](http://img.shields.io/badge/license-Apache%202-red.svg)](https://github.com/sandialabs/scot/blob/master/LICENSE)
-[![Circle CI](https://circleci.com/gh/sandialabs/scot.svg?style=shield&circle-token=1f0dc7e770297ca791738bf0a40d5c89c577fc39)](https://circleci.com/gh/sandialabs/scot)
-[![wercker status](https://app.wercker.com/status/28cd7a2ff338f464ff5489f3fe970e8f/s "wercker status")](https://app.wercker.com/project/bykey/28cd7a2ff338f464ff5489f3fe970e8f)
-[![Build Status](https://travis-ci.org/sandialabs/scot.svg?branch=master)](https://travis-ci.org/sandialabs/scot)
 
 SCOT Online Demo
 ----------------
@@ -27,7 +24,7 @@ Read our [documentation](http://scot.readthedocs.org/en/latest/install.html) at 
 Install It!
 -----------
 
-SCOT has an installer that will work with Ubuntu 16.04 and CentOS 7.  While there should be nothing preventing SCOT to work on other Linux's, you will have to do a lot more work by hand to get SCOT installed.  (Please post your successes for others)
+SCOT has an installer that will work with Ubuntu 16.04 and CentOS 7.3.  While there should be nothing preventing SCOT to work on other Linux's, you will have to do a lot more work by hand to get SCOT installed.  (Please post your successes for others)
 
 To install on Ubuntu 16.04 or CentOS 7:
 
@@ -35,13 +32,15 @@ To install on Ubuntu 16.04 or CentOS 7:
 
     git clone git@baltig.sandia.gov:scot/SCOT.git
 
+* be sure to set http_proxy environment variables if necessary
+
 * run the installer as root:
 
     $ sudo -E bash
     # cd SCOT
     # ./install.sh 2>&1 | tee ../scot.install.log
 
-The install can take a while.  Be sure to set your proxy environment variables.  the installer output is very verbose and saving it to a log is recommended to help with debugging any issues that might arise.
+The install can take a while.  The installer output is very verbose and saving it to a log is recommended to help with debugging any issues that might arise.
 
 Overview
 --------
