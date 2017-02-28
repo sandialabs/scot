@@ -3,6 +3,6 @@ cache:
   - apt
 perl:
   - "5.18"
-install: "sudo ./install_scot3.sh -m test"
+install: "sudo ./ubuntu_installer.sh -m test"
 script: "cd /opt/sandia/webapps/scot3/t/ && perl /opt/sandia/webapps/scot3/t/all.t"
 after_success: $DEPLOY
