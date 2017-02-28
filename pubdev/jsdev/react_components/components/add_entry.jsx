@@ -10,57 +10,75 @@ var AddEntryModal = React.createClass({
 	getInitialState: function(){
         var key = new Date();
         key = key.getTime();
-        var tinymcearr = [];
         var tinyID = 'tiny_' + key;
-        return {
-            tinyID: tinyID, key: key, tinymcearr: tinymcearr, scrolled: false 
+        var content;
+        /*if (this.props.entryAction == 'Edit'){
+            $.ajax({
+                type: 'GET',
+                url:  '/scot/api/v2/entry/'+ this.props.id,
+                async: false,
+                success: function(response){
+                    content = response.body;
+                    return {
+                        tinyID: tinyID, key: key, content: content 
+                    }
+                }.bind(this),
+                error: function() {
+                    content = 'error getting content - manually copy/pasting content may be necessary';
+                    return {
+                        tinyID: tinyID, key: key, content: content
+                    }
+                }.bind(this)
+            })
+        }*/
+        if (this.props.entryAction == 'Add' || this.props.entryAction == 'Reply'){
+            content = '';
+            return {
+                tinyID: tinyID, key: key, content: content, asyncContentLoaded: true
+            }
+        } else if (this.props.entryAction == 'Copy To Entry') {
+            content = this.props.content;
+            return {
+                tinyID: tinyID, key: key, content: content, asyncContentLoaded: true
+            }
+        } else if (this.props.entryAction == 'Edit') {
+           return {
+                tinyID: tinyID, key: key, content: '', asyncContentLoaded: false //Wait until componentDidMount to add the content
+           }
+        }
+        else {            //This is just in case a condition is missed
+            content = ''
+            return {
+                tinyID: tinyID, key: key, content: content, asyncContentLoaded: true
+            }
         }
 	},
 	componentDidMount: function(){
-        if(this.props.entryAction == 'Edit'){
+        if (this.props.entryAction == 'Edit') {
             $.ajax({
                 type: 'GET',
-                url:  '/scot/api/v2/entry/'+ this.props.id
-                }).success(function(response){
-                    recently_updated = response.updated
-                    if(response.body == ""){
-                        var tinycomponent = <TinyMCE id={this.state.tinyID} content={response.body_plain} className={'inputtext'} config={{plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) { function replaceA(string) { return string.replace(/<(\/)?a([^>]*)>/g, '<$1span$2>') }; args.content = replaceA(args.content) + ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css', height:250}} /> 
-                        this.setState({tinymcearr: tinycomponent});
-                        this.forceUpdate(); //The only time we want to bypass the shouldcomponentupdate returning false so we can apply the editor
-                    }
-                    else{
-                        var tinycomponent = <TinyMCE id={this.state.tinyID} content={response.body} className={'inputtext'} config={{plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) { function replaceA(string) { return string.replace(/<(\/)?a([^>]*)>/g, '<$1span$2>') }; args.content = replaceA(args.content) + ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css', height:250}} /> 
-                        this.setState({tinymcearr: tinycomponent});
-                        this.forceUpdate(); //The only time we want to bypass the shouldcomponentupdate returning false so we can apply the editor
-                    }
-                }.bind(this))
+                url:  '/scot/api/v2/entry/'+ this.props.id,
+                success: function(response){
+                    //$('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").html(response.body)
+                    recently_updated = response.updated;
+                    this.setState({content: response.body, asyncContentLoaded: true});
+                    this.forceUpdate();
+                }.bind(this),
+                error: function() {
+                    //$('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").html()
+                    this.setState({content: "Error getting original data from source. Copy/Paste original", asyncContentLoaded:true})
+                    this.forceUpdate();
+                }.bind(this)
+            }) 
         }
-        this.forceUpdate();
-    },
-    componentWillMount: function() {
-        if (this.props.entryAction == 'Add' || this.props.entryAction == 'Reply'){
-            var tinycomponent = <TinyMCE id={this.state.tinyID} className={'inputtext'} config={{plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) { function replaceA(string) { return string.replace(/<(\/)?a([^>]*)>/g, '<$1span$2>') }; args.content = replaceA(args.content) + ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css', height:250}} />
-            this.setState({tinymcearr: tinycomponent});
-            this.forceUpdate(); //The only time we want to bypass the shouldcomponentupdate returning false so we can apply the editor
-        }
-        else if(this.props.entryAction == 'Copy To Entry') {
-            var tinycomponent = <TinyMCE id={this.state.tinyID} content={this.props.content} className={'inputtext'} config={{plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) { function replaceA(string) { return string.replace(/<(\/)?a([^>]*)>/g, '<$1span$2>') }; args.content = replaceA(args.content) + ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css', height:250}} />
-            this.setState({tinymcearr: tinycomponent});
-            this.forceUpdate(); //The only time we want to bypass the shouldcomponentupdate returning false so we can apply the editor
+        if ($('#not_saved_entry_'+this.state.key).position()) {
+            $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.state.key).position().top)
         }
     },
     shouldComponentUpdate: function() {
         return false; //prevent updating this component because it causes the page container to scroll upwards and lose focus due to a bug in paste_preprocess. If this is removed it will cause abnormal scrolling. 
     },
-    setScrolled: function() {
-        this.setState({scrolled: true});
-    },
 	render: function() {
-        //var item = this.state.subitem
-        if ($('#not_saved_entry_'+this.state.key).position() && this.state.scrolled != true) {
-            $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.state.key).position().top)
-            this.setScrolled();
-        }
         var not_saved_entry_id = 'not_saved_entry_'+this.state.key
             return (
                 <div id={not_saved_entry_id} className={'not_saved_entry'}>
@@ -73,7 +91,9 @@ var AddEntryModal = React.createClass({
                                 </span>
                             </div>
                         </div>
-                        {this.state.tinymcearr}  
+                        {this.state.asyncContentLoaded ? <TinyMCE id={this.state.tinyID} content={this.state.content} className={'inputtext'} config={{plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools', paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) { function replaceA(string) { return string.replace(/<(\/)?a([^>]*)>/g, '<$1span$2>') }; args.content = replaceA(args.content) + ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css', height:250}} /> :
+                        <div>Loading Editor...</div> 
+                        }
                     </div>    
                 </div>
             )
