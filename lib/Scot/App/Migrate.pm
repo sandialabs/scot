@@ -931,7 +931,7 @@ sub create_sources {
             }
         }
         if ( ref($data) eq "ARRAY" ) {
-            $data = pop $data;
+            $data = pop @{$data};
         }
         
         my $docid = 0;  # keeps moose from blowing up
@@ -1003,7 +1003,7 @@ sub create_tags {
             }
         }
         if ( ref($data) eq "ARRAY" ) {
-            $data = pop $data;
+            $data = pop @{$data};
         }
 
         my $docid;
