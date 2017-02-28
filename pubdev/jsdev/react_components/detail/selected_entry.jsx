@@ -326,7 +326,7 @@ var EntryIterator = React.createClass({
                     rows.push(<EntryParent key={data.id} items={data} type={type} id={id} isPopUp={this.props.isPopUp} errorToggle={this.props.errorToggle}/>);
                 }.bind(this));
             } else {
-                rows.push(<AlertParent items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} alertPreSelectedId={this.props.alertPreSelectedId} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} entryToggle={this.props.entryToggle} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle}/>);
+                rows.push(<AlertParent key={id} items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} alertPreSelectedId={this.props.alertPreSelectedId} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} entryToggle={this.props.entryToggle} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle}/>);
             }
             return (
                 <div>
@@ -499,7 +499,7 @@ var AlertParent = React.createClass({
             col_names.unshift('status'); //Add status to 2nd column
             col_names.unshift('id'); //Add entries number to 1st column
             for (var i=0; i < col_names.length; i++){
-                header.push(<AlertHeader colName={col_names[i]} />)
+                header.push(<AlertHeader colName={col_names[i]} key={i}/>)
             }
             for (var z=0; z < items.length; z++) {
                 var dataFlair = null;
@@ -509,7 +509,7 @@ var AlertParent = React.createClass({
                     dataFlair = items[z].data;
                 }
                 
-                body.push(<AlertBody index={z} data={items[z]} dataFlair={dataFlair} headerData={this.props.headerData} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected} alertPreSelectedId={this.props.alertPreSelectedId} activeId={this.state.activeId} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle} />)
+                body.push(<AlertBody key={z} index={z} data={items[z]} dataFlair={dataFlair} headerData={this.props.headerData} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected} alertPreSelectedId={this.props.alertPreSelectedId} activeId={this.state.activeId} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle} />)
             }
             var search = null;
             if (items[0].data_with_flair != undefined) {
@@ -721,10 +721,10 @@ var AlertBody = React.createClass({
         var id = 'alert_'+data.id+'_status';
         return (
             <tbody>
-                <tr index={index} id={data.id} className={'main ' + selected} style={{cursor: 'pointer'}} onClick={this.onClick}>
-                    <td valign='top' style={{marginRight:'4px'}}>{data.id}</td>
-                    <td valign='top' style={{marginRight:'4px'}}>{data.status != 'promoted' ? <span style={{color:buttonStyle}}>{data.status}</span> : <Button bsSize='xsmall' bsStyle={buttonStyle} id={id} onClick={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{data.status}</Button>}</td>
-                    {data.entry_count == 0 ? <td valign='top' style={{marginRight:'4px'}}>{data.entry_count}</td> : <td valign='top' style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onClick={this.toggleEntry}>{data.entry_count}</span></td>}
+                <tr id={data.id} className={'main ' + selected} style={{cursor: 'pointer'}} onClick={this.onClick}>
+                    <td style={{marginRight:'4px'}}>{data.id}</td>
+                    <td style={{marginRight:'4px'}}>{data.status != 'promoted' ? <span style={{color:buttonStyle}}>{data.status}</span> : <Button bsSize='xsmall' bsStyle={buttonStyle} id={id} onClick={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{data.status}</Button>}</td>
+                    {data.entry_count == 0 ? <td style={{marginRight:'4px'}}>{data.entry_count}</td> : <td style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onClick={this.toggleEntry}>{data.entry_count}</span></td>}
                     {rowReturn}
                 </tr>
                 <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} showAddEntryToolbar={this.state.showAddEntryToolbar} toggleOffAddEntry={this.toggleOffAddEntry} showFileUploadToolbar={this.state.showFileUploadToolbar} toggleOffFileUpload={this.toggleOffFileUpload} errorToggle={this.props.errorToggle}/>
@@ -739,7 +739,7 @@ var AlertRow = React.createClass({
         var value = this.props.value;
         var rowReturn=[];
         return (
-            <td valign='top' style={{marginRight:'4px'}}>
+            <td style={{marginRight:'4px'}}>
                 <div className='alert_data_cell' dangerouslySetInnerHTML={{ __html: dataFlair[value]}}/>
             </td>
         )
@@ -930,14 +930,16 @@ var EntryData = React.createClass({
                 }
                 //if (this.props.type != 'entity') {
                     setTimeout(function() {
-                        document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
-                            var newheight; 
-                            newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-                            newheight = newheight + 'px';
-                            if (this.state.height != newheight) {
-                                this.setState({height:newheight});
-                            }
-                        }.bind(this))
+                        if (document.getElementById('iframe_'+this.props.id) != undefined) {
+                            document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
+                                var newheight; 
+                                newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+                                newheight = newheight + 'px';
+                                if (this.state.height != newheight) {
+                                    this.setState({height:newheight});
+                                }
+                            }.bind(this))
+                        }
                     }.bind(this),250); 
                 //}
             } else {
