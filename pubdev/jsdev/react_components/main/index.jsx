@@ -377,7 +377,8 @@ var App = React.createClass({
     notification: function() {
         //Notification display in update as it will run on every amq message matching 'main'.
         var notification = this.refs.notificationSystem
-        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api' && activemqwall != true && this.state.notificationSetting == 'on'){
+        //not showing notificaiton on entity due to "flooding" on an entry update that has many entities causing a storm of AMQ messages
+        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api' && activemqwall != true && activemqtype != 'entity' && this.state.notificationSetting == 'on'){  
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
