@@ -248,6 +248,9 @@ var EntityDetail = React.createClass({
         if (this.props.fullScreen == true || $('react-draggable-dragged')) { //Don't readd entityPopUpMaxSizeDefault if full screen or if the box has been dragged
             DragmeClass = 'box react-draggable entityPopUp'
         }
+        if (this.props.fullScreen == true) {
+            DragmeClass = DragmeClass + ' height100percent'
+        }
         for (var i=0; i < this.state.tabs.length; i++) {
             var z = i+1;
             var title = 'tab';
@@ -274,7 +277,7 @@ var EntityDetail = React.createClass({
             defaultOffsetX = 0;
         }
         return (
-            <Draggable handle="#handle" onMouseDown={this.moveDivInit} key={this.props.key}>
+            <Draggable handle="#handle" onMouseDown={this.moveDivInit}>
                 <div id="dragme" className={DragmeClass} style={{width:this.state.entityWidth, left:defaultOffsetX, maxHeight:'90vh'}}>
                     <div id='popup-flex-container' style={{height: '100%', display:'flex', flexFlow:'row'}}>
                         <div id="entity_detail_container" style={{flexFlow: 'column', display: 'flex', width:'100%'}}>
