@@ -888,7 +888,7 @@ var EntryParent = React.createClass({
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
                                     { type != 'entity' ? <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem> : null}
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} /></MenuItem>
-                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items.metadata} /></MenuItem>
+                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items} /></MenuItem>
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
                                     <MenuItem onClick={this.reparseFlair}>Reparse Flair</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
