@@ -88,6 +88,26 @@ sub find_existing_alert_entry {
     return undef;
 }
 
+sub find_existing_file_entry {
+    my $self    = shift;
+    my $type    = shift;
+    my $id      = shift;
+    my $log     = $self->env->log;
+    my $col     = $self->mongo->collection('Entry');
+    my $obj     = $col->find_one({
+        'target.type'   => $type,
+        'target.id'     => $id,
+        class           => 'file',
+    });
+    if ( defined $obj and ref($obj) eq "Scot::Model::Entry" ) {
+        $log->debug("found an existing file entry type for $type $id");
+        return $obj;
+    }
+    $log->warn("Target of File upload does not have an existing file entry");
+    return undef;
+}
+
+
 sub build_table {
     my $self    = shift;
     my $alert   = shift;
