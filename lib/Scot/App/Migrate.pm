@@ -157,9 +157,13 @@ sub migrate {
 
     my $legacy_colname      = $self->lookup_legacy_colname($new_col_type);
     my $legacy_collection   = $self->legacydb->get_collection($legacy_colname);
-    my $legacy_cursor       = $legacy_collection->find({
-        $idfield => { '$gt' => $max_already_converted_id }
-    });
+    my $findjson    = {};
+    if (defined $idfield) {
+        $findjson = {
+            $idfield => { '$gt' => $max_already_converted_id }
+        };
+    }
+    my $legacy_cursor       = $legacy_collection->find($findjson);
     $legacy_cursor->immortal(1);
 
     my $remaining_docs  = $legacy_cursor->count();
@@ -314,6 +318,9 @@ sub get_max_id {
     my $nc      = $self->$db->get_collection($col);
     my $idfield = ($type eq "legacy") ? $self->lookup_idfield($col) : 'id';
     my $cursor  = $nc->find();
+    unless (defined $idfield) {
+        return 0;
+    }
     $cursor->sort({$idfield => -1});
     my $doc     = $cursor->next;
     unless ($doc) {
@@ -352,6 +359,19 @@ sub has_been_migrated {
     return undef;
 }
 
+has idgen => (
+    is      => 'rw',
+    isa     => 'Int',
+    required    => 1,
+    default     => 1,
+);
+
+sub get_id  {
+    my $self    = shift;
+    my $id      = $self->idgen;
+    $self->idgen($id++);
+    return $id;
+}
 
 sub transform {
     my $self    = shift;
@@ -362,7 +382,13 @@ sub transform {
 
     my $method  = "xform_". $type;  # ... call this sub to do the transform
     my $idfield = delete $item->{idfield} // $self->lookup_idfield($type); # ... where is the int id
-    my $id      = delete $item->{$idfield};
+    my $id;
+    unless ( defined $idfield ) {
+        $id = $self->get_id;
+    }
+    else {
+        $id      = delete $item->{$idfield};
+    }
     $item->{id} = $id // '';    # ... stuff the id into the id field
 
     if ( $self->has_been_migrated($type, $id) ) {
@@ -931,7 +957,7 @@ sub create_sources {
             }
         }
         if ( ref($data) eq "ARRAY" ) {
-            $data = pop $data;
+            $data = pop @{$data};
         }
         
         my $docid = 0;  # keeps moose from blowing up
@@ -1003,7 +1029,7 @@ sub create_tags {
             }
         }
         if ( ref($data) eq "ARRAY" ) {
-            $data = pop $data;
+            $data = pop @{$data};
         }
 
         my $docid;
@@ -1272,6 +1298,7 @@ sub lookup_idfield {
         guide       => "guide_id",
         user        => "user_id",
         file        => "file_id",
+        handler     => undef,
     );
 
     return $map{$collection};
