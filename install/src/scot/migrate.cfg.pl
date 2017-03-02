@@ -18,6 +18,13 @@
             },
         },
         {
+            attr    => 'es',
+            class   => 'Scot::Util::ElasticSearch',
+            config  => {
+                nodes   => [ qw(localhost:9200) ],
+            },
+        },
+        {
             attr    => 'mongoquerymaker',
             class   => 'Scot::Util::MongoQueryMaker',
             config  => {
