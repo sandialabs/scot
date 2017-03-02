@@ -721,7 +721,7 @@ var AlertBody = React.createClass({
         var id = 'alert_'+data.id+'_status';
         return (
             <tbody>
-                <tr id={data.id} className={'main ' + selected} style={{cursor: 'pointer'}} onClick={this.onClick}>
+                <tr id={data.id} className={'main ' + selected} style={{cursor: 'pointer'}} onMouseDown={this.onClick}>
                     <td style={{marginRight:'4px'}}>{data.id}</td>
                     <td style={{marginRight:'4px'}}>{data.status != 'promoted' ? <span style={{color:buttonStyle}}>{data.status}</span> : <Button bsSize='xsmall' bsStyle={buttonStyle} id={id} onClick={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{data.status}</Button>}</td>
                     {data.entry_count == 0 ? <td style={{marginRight:'4px'}}>{data.entry_count}</td> : <td style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onClick={this.toggleEntry}>{data.entry_count}</span></td>}
@@ -888,7 +888,7 @@ var EntryParent = React.createClass({
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
                                     { type != 'entity' ? <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem> : null}
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} /></MenuItem>
-                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items.metadata} /></MenuItem>
+                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items} /></MenuItem>
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
                                     <MenuItem onClick={this.reparseFlair}>Reparse Flair</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
