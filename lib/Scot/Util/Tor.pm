@@ -7,7 +7,7 @@ has tor_url => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
-    default     => 'http://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=132.175.81.4',
+    default     => 'http://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=10.10.10.1',
     predicate   => 'has_tor_url',
 );
 
