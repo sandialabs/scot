@@ -17,7 +17,6 @@ var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx'); 
 var IncidentTable           = require('../components/incident_table.jsx');
-
 var SelectedEntry = React.createClass({
     getInitialState: function() {
         var entityDetailKey = Math.floor(Math.random()*1000);
@@ -309,7 +308,6 @@ var SelectedEntry = React.createClass({
         );
     }
 });
-
 var EntryIterator = React.createClass({
     render: function() {
         var rows = [];
@@ -328,7 +326,7 @@ var EntryIterator = React.createClass({
                     rows.push(<EntryParent key={data.id} items={data} type={type} id={id} isPopUp={this.props.isPopUp} errorToggle={this.props.errorToggle}/>);
                 }.bind(this));
             } else {
-                rows.push(<AlertParent items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} alertPreSelectedId={this.props.alertPreSelectedId} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} entryToggle={this.props.entryToggle} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle}/>);
+                rows.push(<AlertParent key={id} items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} alertPreSelectedId={this.props.alertPreSelectedId} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} entryToggle={this.props.entryToggle} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle}/>);
             }
             return (
                 <div>
@@ -338,7 +336,6 @@ var EntryIterator = React.createClass({
         }
     }
 });
-
 var AlertParent = React.createClass({
     getInitialState: function() {
         var arr = [];
@@ -351,7 +348,20 @@ var AlertParent = React.createClass({
         }
     },
     componentDidMount: function() {
-        $('#sortabletable'+this.props.id).tablesorter();
+        var filterOption = false;
+        var widgetOption = ['sortTbody'];
+        if (this.props.items.length > 1) { filterOption = true; widgetOption = ['sortTbody', 'filter']}
+        $('#sortabletable').tablesorter({
+            widgets: widgetOption,
+            widgetOptions: {
+                sortTbody_primaryRow : '.main',
+                sortTbody_sortRows   : false,
+                sortTbody_noSort     : 'tablesorter-no-sort-tbody',
+
+                // include child row content while filtering the second demo table
+                filter_childRows     : filterOption
+            }
+        });
         
         //Ctrl + A to select all alerts
         $('#main-detail-container').keydown(function(event){
@@ -368,7 +378,7 @@ var AlertParent = React.createClass({
         $('#main-detail-container').unbind('keydown');
     },
     componentDidUpdate: function() {
-        $('#sortabletable'+this.props.id).trigger('update');
+        $('#sortabletable').trigger('update');
     },
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();
@@ -463,7 +473,6 @@ var AlertParent = React.createClass({
                     }
                 }
             }
-
             if (col_names == undefined) {
                 if (this.props.headerData != undefined) {
                     if (this.props.headerData.columns != undefined) {
@@ -489,13 +498,19 @@ var AlertParent = React.createClass({
             col_names.unshift('entries'); //Add entries to 3rd column
             col_names.unshift('status'); //Add status to 2nd column
             col_names.unshift('id'); //Add entries number to 1st column
-            
             for (var i=0; i < col_names.length; i++){
-                header.push(<AlertHeader colName={col_names[i]} />)
+                header.push(<AlertHeader colName={col_names[i]} key={i}/>)
             }
-            
-            body.push(<AlertBody headerData={this.props.headerData} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected} alertPreSelectedId={this.props.alertPreSelectedId} activeId={this.state.activeId} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle} items={items}/>)
-            
+            for (var z=0; z < items.length; z++) {
+                var dataFlair = null;
+                if (Object.getOwnPropertyNames(items[z].data_with_flair).length != 0) {
+                    dataFlair = items[z].data_with_flair;
+                } else {
+                    dataFlair = items[z].data;
+                }
+                
+                body.push(<AlertBody key={z} index={z} data={items[z]} dataFlair={dataFlair} headerData={this.props.headerData} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected} alertPreSelectedId={this.props.alertPreSelectedId} activeId={this.state.activeId} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle} />)
+            }
             var search = null;
             if (items[0].data_with_flair != undefined) {
                 search = items[0].data_with_flair.search;
@@ -511,19 +526,17 @@ var AlertParent = React.createClass({
                     </div>
                 )
             }
-
         }
-        var tableid = 'sortabletable' + this.props.id;
         return (
             <div>
                 <div>
-                    <table className="tablesorter alertTableHorizontal" id={tableid} width='100%'>
+                    <table className="tablesorter alertTableHorizontal" id={'sortabletable'} width='100%'>
                         <thead>
                             <tr>
                                 {header}
                             </tr>
                         </thead>
-                        {body}
+                            {body}
                     </table>
                 </div>
                 {search != undefined ? <div className='alertTableHorizontal' dangerouslySetInnerHTML={{ __html: search}}/> : null}
@@ -531,7 +544,6 @@ var AlertParent = React.createClass({
         )
     }
 });
-
 var AlertHeader = React.createClass({
     render: function() {
         return (
@@ -539,14 +551,25 @@ var AlertHeader = React.createClass({
         )
     }
 });
-
 var AlertBody = React.createClass({
     getInitialState: function() {
         return {
+            selected: 'un-selected',
+            promotedNumber: null,
             showEntry: false,
+            promoteFetch:false,
             showAddEntryToolbar: false,
             showFileUpload: false,
             showFileUploadToolbar: false,
+        }
+    },
+    onClick: function(event) {
+        if (event.shiftKey == true) {
+            this.props.rowClicked(this.props.data.id,this.props.index,'shift',null);
+        } else if (event.ctrlKey == true || event.metaKey == true) {
+            this.props.rowClicked(this.props.data.id,this.props.index,'ctrl',this.props.data.status)
+        } else {
+            this.props.rowClicked(this.props.data.id,this.props.index,'',this.props.data.status);
         }
     },
     toggleEntry: function() {
@@ -583,54 +606,6 @@ var AlertBody = React.createClass({
         if (this.state.showFileUploadToolbar == true) {
             this.setState({showFileUploadToolbar: false});
             this.props.fileUploadToggle();
-        }
-    },
-    render: function() {
-        /*var data = this.props.data;
-        var headerData = this.props.headerData;
-        var dataFlair = this.props.dataFlair;
-        var index = this.props.index;
-        var selected = 'un-selected'*/
-        var rowReturn=[];
-        //var buttonStyle = '';
-        //var open = '';
-        //var closed = '';
-        //var promoted = '';
-        //var id = 'alert_'+data.id+'_status';
-        
-        for (var z=0; z < this.props.items.length; z++) {
-            var dataFlair = null;
-            var data = this.props.items[z];
-            if (Object.getOwnPropertyNames(this.props.items[z].data_with_flair).length != 0) {
-                dataFlair = this.props.items[z].data_with_flair;
-            } else {
-                dataFlair = this.props.items[z].data;
-            }
-            rowReturn.push(<AlertRow data={data} dataFlair={dataFlair} index={z} headerData={this.props.headerData} rowClicked={this.props.rowClicked} aID={this.props.aID} allSelected={this.props.allSelected} activeId={this.props.activeId} entryToolbar={this.props.entryToolbar} toggleEntry={this.toggleEntry} toggleOnAddEntry={this.toggleOnAddEntry} toggleOffAddEntry={this.toggleOffAddEntry} toggleOnFileUpload={this.toggleOnFileUpload} toggleOffFileUpload={this.toggleOffFileUpload} showAddEntryToolbar={this.state.showAddEntryToolbar} showFileUploadToolbar={this.state.showFileUploadToolbar} fileUploadToolbar={this.props.fileUploadToolbar}/>);
-            rowReturn.push(<AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} aID={this.props.aID} aType={this.props.aType} entryToolbar={this.props.entryToolbar} updated={this.props.updated} showAddEntryToolbar={this.state.showAddEntryToolbar} toggleOffAddEntry={this.toggleOffAddEntry} showFileUploadToolbar={this.state.showFileUploadToolbar} toggleOffFileUpload={this.toggleOffFileUpload} errorToggle={this.props.errorToggle} fileUploadToolbar={this.props.fileUploadToolbar}/>);
-        }
-        return (
-            <tbody>
-                {rowReturn}
-            </tbody>
-        )
-    }
-});
-
-var AlertRow = React.createClass({
-    getInitialState: function() {
-        return {
-            promotedNumber: null,
-            promoteFetch:false,
-        }
-    },
-    onClick: function(event) {
-        if (event.shiftKey == true) {
-            this.props.rowClicked(this.props.data.id,this.props.index,'shift',null);
-        } else if (event.ctrlKey == true || event.metaKey == true) {
-            this.props.rowClicked(this.props.data.id,this.props.index,'ctrl',this.props.data.status)
-        } else {
-            this.props.rowClicked(this.props.data.id,this.props.index,'',this.props.data.status);
         }
     },
     navigateTo: function() {
@@ -673,30 +648,29 @@ var AlertRow = React.createClass({
                 }
             }
         }
-        if (this.props.data.id == this.props.aID && nextProps.entryToolbar == true && this.props.showAddEntryToolbar == false) {
-            this.props.toggleOnAddEntry();
-        } else if (this.props.data.id != nextProps.aID && nextProps.entryToolbar == true && this.props.showAddEntryToolbar == true) {
-            this.props.toggleOffAddEntry();
+        if (this.props.data.id == this.props.aID && nextProps.entryToolbar == true && this.state.showAddEntryToolbar == false) {
+            this.toggleOnAddEntry();
+        } else if (this.props.data.id != nextProps.aID && nextProps.entryToolbar == true && this.state.showAddEntryToolbar == true) {
+            this.toggleOffAddEntry();
         }
-        if (this.props.data.id == this.props.aID && nextProps.fileUploadToolbar == true && this.props.showFileUploadToolbar == false) {
-            this.props.toggleOnFileUpload();
-        } else if (this.props.data.id != nextProps.aID && nextProps.fileUploadToolbar == true && this.props.showFileUploadToolbar == true) {
-            this.props.toggleOffFileUpload();
+        if (this.props.data.id == this.props.aID && nextProps.fileUploadToolbar == true && this.state.showFileUploadToolbar == false) {
+            this.toggleOnFileUpload();
+        } else if (this.props.data.id != nextProps.aID && nextProps.fileUploadToolbar == true && this.state.showFileUploadToolbar == true) {
+            this.toggleOffFileUpload();
         }
     },
     render: function() {
         var data = this.props.data;
+        var headerData = this.props.headerData;
         var dataFlair = this.props.dataFlair;
-        //var columns = this.props.columns;
-        var uniqueColumns = [];
+        var index = this.props.index;
         var columns;
         var selected = 'un-selected'
         var rowReturn=[];
         var buttonStyle = '';
         var open = '';
         var closed = '';
-        var promoted = ''; 
-        var id = 'alert_'+data.id+'_status'; 
+        var promoted = '';
         if (data.status == 'open') {
             buttonStyle = 'red';
         } else if (data.status == 'closed') {
@@ -730,6 +704,11 @@ var AlertRow = React.createClass({
                 }
             }
         }
+        
+        for (var i=0; i < columns.length; i++) {
+            var value = columns[i];
+            rowReturn.push(<AlertRow data={data} dataFlair={dataFlair} value={value} />)
+        }
         if (this.props.allSelected == false) {
             for (var j=0; j < this.props.activeId.length; j++) {
                 if (this.props.activeId[j] === data.id) {
@@ -739,30 +718,33 @@ var AlertRow = React.createClass({
         } else {
             selected = 'selected'
         }
-        for (var i=0; i < columns.length; i++) {
-            uniqueColumns.push(<AlertRowColumnsIterator dataFlair={dataFlair} column={columns[i]}/>) 
-        }
+        var id = 'alert_'+data.id+'_status';
         return (
-            <tr index={this.props.index} id={data.id} className={selected} style={{cursor: 'pointer'}} onClick={this.onClick}>
-                <td valign='top' style={{marginRight:'4px'}}>{data.id}</td>
-                <td valign='top' style={{marginRight:'4px'}}>{data.status != 'promoted' ? <span style={{color:buttonStyle}}>{data.status}</span> : <Button bsSize='xsmall' bsStyle={buttonStyle} id={id} onClick={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{data.status}</Button>}</td>
-                {data.entry_count == 0 ? <td valign='top' style={{marginRight:'4px'}}>{data.entry_count}</td> : <td valign='top' style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onClick={this.props.toggleEntry}>{data.entry_count}</span></td>} 
-                {uniqueColumns} 
-            </tr>
+            <tbody>
+                <tr id={data.id} className={'main ' + selected} style={{cursor: 'pointer'}} onMouseDown={this.onClick}>
+                    <td style={{marginRight:'4px'}}>{data.id}</td>
+                    <td style={{marginRight:'4px'}}>{data.status != 'promoted' ? <span style={{color:buttonStyle}}>{data.status}</span> : <Button bsSize='xsmall' bsStyle={buttonStyle} id={id} onClick={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{data.status}</Button>}</td>
+                    {data.entry_count == 0 ? <td style={{marginRight:'4px'}}>{data.entry_count}</td> : <td style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onClick={this.toggleEntry}>{data.entry_count}</span></td>}
+                    {rowReturn}
+                </tr>
+                <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} showAddEntryToolbar={this.state.showAddEntryToolbar} toggleOffAddEntry={this.toggleOffAddEntry} showFileUploadToolbar={this.state.showFileUploadToolbar} toggleOffFileUpload={this.toggleOffFileUpload} errorToggle={this.props.errorToggle}/>
+            </tbody>
         )
     }
 });
-
-var AlertRowColumnsIterator = React.createClass({
+var AlertRow = React.createClass({
     render: function() {
+        var data = this.props.data;
+        var dataFlair = this.props.dataFlair;
+        var value = this.props.value;
+        var rowReturn=[];
         return (
-            <td valign='top' style={{marginRight:'4px'}}>
-                <div className='alert_data_cell' dangerouslySetInnerHTML={{ __html: this.props.dataFlair[this.props.column]}}/>
+            <td style={{marginRight:'4px'}}>
+                <div className='alert_data_cell' dangerouslySetInnerHTML={{ __html: dataFlair[value]}}/>
             </td>
-        );
+        )
     }
 });
-
 var AlertRowBlank = React.createClass({
     render: function() {
         var id = this.props.id;
@@ -772,7 +754,7 @@ var AlertRowBlank = React.createClass({
         var DisplayValue = 'none';
         var arr = [];
         arr.push(<SelectedEntry type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/>)
-        if (showEntry == true && this.props.aID == this.props.id) {
+        if (showEntry == true) {
             DisplayValue = 'table-row';
         } 
         return (
@@ -786,7 +768,6 @@ var AlertRowBlank = React.createClass({
         )
     }
 });
-
 var EntryParent = React.createClass({
     getInitialState: function() {
         return {
@@ -907,11 +888,10 @@ var EntryParent = React.createClass({
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
                                     { type != 'entity' ? <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem> : null}
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} /></MenuItem>
-                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items.metadata} /></MenuItem>
+                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items} /></MenuItem>
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
                                     <MenuItem onClick={this.reparseFlair}>Reparse Flair</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
-
                                 </SplitButton>
                                 <Button bsSize='xsmall' onClick={this.editEntryToggle}>Edit</Button>
                             </span>
@@ -926,7 +906,6 @@ var EntryParent = React.createClass({
         );
     }
 });
-
 var EntryData = React.createClass({ 
     getInitialState: function() {
         /*if (this.props.type == 'entity' || this.props.isPopUp == 1) {
@@ -951,14 +930,16 @@ var EntryData = React.createClass({
                 }
                 //if (this.props.type != 'entity') {
                     setTimeout(function() {
-                        document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
-                            var newheight; 
-                            newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
-                            newheight = newheight + 'px';
-                            if (this.state.height != newheight) {
-                                this.setState({height:newheight});
-                            }
-                        }.bind(this))
+                        if (document.getElementById('iframe_'+this.props.id) != undefined) {
+                            document.getElementById('iframe_'+this.props.id).contentWindow.requestAnimationFrame( function() {
+                                var newheight; 
+                                newheight = document.getElementById('iframe_'+this.props.id).contentWindow.document.body.scrollHeight;
+                                newheight = newheight + 'px';
+                                if (this.state.height != newheight) {
+                                    this.setState({height:newheight});
+                                }
+                            }.bind(this))
+                        }
                     }.bind(this),250); 
                 //}
             } else {
@@ -975,9 +956,11 @@ var EntryData = React.createClass({
             rawMarkup = this.props.subitem.body;
         }
         var id = this.props.id;
+        var entry_body_id = 'entry-body-' + this.props.id;
+        var entry_body_inner_id = 'entry-body-inner-' + this.props.id;
         return (
-            <div key={this.props.id} className={'row-fluid entry-body'}>
-                <div className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
+            <div id={entry_body_id} key={this.props.id} className={'row-fluid entry-body'}>
+                <div id={entry_body_inner_id} className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
                     {this.props.editEntryToolbar ? <AddEntry entryAction={'Edit'} type={this.props.type} targetid={this.props.targetid} id={id} addedentry={this.props.editEntryToggle} parent={this.props.subitem.parent} errorToggle={this.props.errorToggle} /> : 
                     <Frame frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}> 
                         <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
@@ -990,5 +973,4 @@ var EntryData = React.createClass({
         this.onLoad();
     },
 });
-
-module.exports = SelectedEntry
+module.exports = SelectedEntry;

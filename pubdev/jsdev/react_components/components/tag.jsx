@@ -26,7 +26,7 @@ var Tag = React.createClass({
 
         if (data != undefined) {
             for (var i=0; i < data.length; i++) {
-                rows.push(<TagDataIterator data={data} dataOne={data[i]} id={id} type={type} updated={this.props.updated} />);
+                rows.push(<TagDataIterator data={data} dataOne={data[i]} id={id} type={type} updated={this.props.updated} key={i} />);
             }
         }
         return (
