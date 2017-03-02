@@ -50,8 +50,8 @@ class Results extends React.Component{
                         React.createElement('a',   {href: '/#/'+type+'/' + id, className: 'column owner'}, type))),
                         React.createElement('div', {className: 'wrapper title-comment-module-reporter'},
                         React.createElement('div', {className: 'wrapper title-comment'},
-                        React.createElement('a',   {style: {width: '1200px'},href: '/#/'+type+'/' + id, className: 'column title'}, sourceid + ' ' + body + ' ' + owner + ' ' + typeid)))))) : null
-    )
+                        React.createElement('a',   {style: {width: '1200px'},href: '/#/'+type+'/' + id, className: 'column title'},         sourceid + ' ' + body + ' ' + owner + ' ' + typeid)))))) : null
+        )
     }
 }
 
