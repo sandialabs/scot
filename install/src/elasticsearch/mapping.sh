@@ -116,7 +116,16 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
                         "type": { "type": "string", "index": "not_analyzed" }
                     }
                 },
-                "body":             { "type": "string" },
+                "body":             { 
+                    "type": "string",
+                    "analyzer": "simple",
+                    "fields": {
+                        "raw": {
+                            "type": "string",
+                            "index": "not_analyzed",
+                        }
+                    }
+                },
                 "updated":          { "type": "date", "format": "strict_date_optional_time||epoch_second" },
                 "created":          { "type": "date", "format": "strict_date_optional_time||epoch_second" },
                 "when":             { "type": "date", "format": "strict_date_optional_time||epoch_second" },
