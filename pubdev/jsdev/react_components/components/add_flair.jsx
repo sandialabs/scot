@@ -8,9 +8,6 @@ var AddFlair = {
                     ifr.contentWindow.requestAnimationFrame( function() {
                         if(ifr.contentDocument != null) {
                             var ifrContents = $(ifr).contents();
-                            if (entityResult == undefined) {
-                                //pentry(ifr,flairToolbarToggle,type,linkWarningToggle,id);
-                            }
                             //This makes all href point to blank so they don't reload the iframe
                             $(ifr.contentDocument.body).find('a').attr('target','_blank');
                             //Copies href to a new attribute, url, before we make href an anchor (so it doesn't go anywhere when clicked)
@@ -19,12 +16,9 @@ var AddFlair = {
                                 $(a).attr('url',url);
                             }.bind(this))
                             //Make href an anchor so it doesn't go anywhere when clicked and instead opens up the modal in linkWarningPopup
-                            //$(ifr.contentDocument.body).find('a').attr('href','#');
-                            //$(ifr.contentDocument.body).append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
                             $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
-                            if($(ifr.contentDocument.body).find('.extras')[0] == null) {
-                                
-                                ifrContents.find('.entity').each(function(index,entity){
+                            ifrContents.find('.entity').each(function(index,entity){
+                                if ($(entity).find('.extras')[0] == null) {
                                     var currentEntityValue = $(entity).attr('data-entity-value');
                                     if (currentEntityValue != undefined && entityResult != undefined) {
                                         if (entityResult[currentEntityValue.toLowerCase()] != undefined ) {
@@ -83,22 +77,19 @@ var AddFlair = {
                                             }
                                         }
                                     }
-                                }.bind(this));
-                            }
+                                }
+                            }.bind(this));
+                            //}
                         //pentry(ifr,flairToolbarToggle,type,linkWarningToggle,id);
                         }
                     }.bind(this));
                 }.bind(this));
             } else if (type == 'alertgroup') {
-                var subtable = $(document.body).find('.alertTableHorizontal');
-                if (entityResult == undefined) {
-                    //pentry(null,flairToolbarToggle,type,linkWarningToggle,id);
-                }
-                if(subtable.find('.extras')[0] == null) {
-                    subtable.find('a').attr('target','_blank');
-                    //subtable.append('<iframe id="targ" style="display:none;" name="targ"></iframe>');
-                    subtable.find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
-                    subtable.find('.entity').each(function(index,entity){
+                $(document.body).find('.alertTableHorizontal').find('.entity').each(function(index,entity){
+                    if ($(entity).find('.extras')[0] == null) {
+                        var subtable = $(document.body).find('.alertTableHorizontal');
+                        subtable.find('a').attr('target','_blank');
+                        subtable.find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
                         var currentEntityValue = $(entity).attr('data-entity-value');
                         if (currentEntityValue != undefined && entityResult != undefined) {
                             if (entityResult[currentEntityValue.toLowerCase()] != undefined ) {
@@ -157,9 +148,8 @@ var AddFlair = {
                                 }
                             }
                         }
-                        //pentry(null,flairToolbarToggle,type,linkWarningToggle,id);
-                    }.bind(this));
-                }
+                    }
+                }.bind(this));
             }
             if (scrollTo != undefined) {
                 scrollTo();
