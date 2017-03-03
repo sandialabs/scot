@@ -724,7 +724,7 @@ var AlertBody = React.createClass({
                 <tr id={data.id} className={'main ' + selected} style={{cursor: 'pointer'}} onMouseDown={this.onClick}>
                     <td style={{marginRight:'4px'}}>{data.id}</td>
                     <td style={{marginRight:'4px'}}>{data.status != 'promoted' ? <span style={{color:buttonStyle}}>{data.status}</span> : <Button bsSize='xsmall' bsStyle={buttonStyle} id={id} onClick={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{data.status}</Button>}</td>
-                    {data.entry_count == 0 ? <td style={{marginRight:'4px'}}>{data.entry_count}</td> : <td style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onClick={this.toggleEntry}>{data.entry_count}</span></td>}
+                    {data.entry_count == 0 ? <td style={{marginRight:'4px'}}>{data.entry_count}</td> : <td style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onMouseDown={this.toggleEntry}>{data.entry_count}</span></td>}
                     {rowReturn}
                 </tr>
                 <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} showAddEntryToolbar={this.state.showAddEntryToolbar} toggleOffAddEntry={this.toggleOffAddEntry} showFileUploadToolbar={this.state.showFileUploadToolbar} toggleOffFileUpload={this.toggleOffFileUpload} errorToggle={this.props.errorToggle}/>
