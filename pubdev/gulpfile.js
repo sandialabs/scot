@@ -4,7 +4,7 @@ var babelify = require('babelify');
 var source = require('vinyl-source-stream');
 
 gulp.task('watch', ['build-coffee', 'build'], function () {
-    gulp.watch('./jsdev/react_components/**/**', ['build-coffee']);
+    gulp.watch('./jsdev/react_components/**/**', ['build-coffee', 'build']);
 });
 
 gulp.task('build-coffee'), function() {
