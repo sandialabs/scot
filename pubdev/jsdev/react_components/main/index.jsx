@@ -450,10 +450,8 @@ var App = React.createClass({
                             <NavItem eventKey={8} href="#/visualization" active={setvisualization}>Visualization</NavItem>
                             <NavItem eventKey={9} href="incident_handler">{IH}</NavItem>
                         </Nav>
-                            <span id='ouo_warning' className='ouo-warning'>{sensitivity}</span>
-                            <div className='col-sm-1 col-md-1 pull-right'>
-                                <Search errorToggle={this.errorToggle} />
-                            </div>
+                        <span id='ouo_warning' className='ouo-warning'>{sensitivity}</span>
+                        <Search errorToggle={this.errorToggle} />
                     </Navbar.Collapse>
                 </Navbar>
                 <div className='mainNavPadding'>
