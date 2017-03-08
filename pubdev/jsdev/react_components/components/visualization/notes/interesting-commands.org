@@ -1,0 +1,142 @@
+Here are some interesting pipelines to show how this tool can be used:
+
+* Entity Frequencies over time
+  Query the most recent 100 entries, pull the entities for each of
+  them, group them by type, and create a barchart to show the relative
+  frequency of each type of entity:
+#+BEGIN_SRC
+  $ entry limit:100,sort:{id:-1},columns:['id'] \ (e)->e.id \
+     (n)->API.entry {id:n,sub:'entity',columns:['type']} \
+     wait \
+     (r)->Struct.tolist (Struct.map r,(v)->v.type) \
+     flatten \
+     group (ls)->ls[1] \
+     (ls)->ls.length \
+     barchart
+#+END_SRC
+
+* Examine event timing over long periods
+  Query 500 events, extract the creation timestamp, sort them in
+  ascending order, rebase the time to show time delta in minutes from
+  start of record, and create a dot chart to show the timing of
+  clusters of events and highlight gaps in the record:
+
+#+BEGIN_SRC
+  $ event limit:500 \
+      (e)->e.created \
+      sort \
+      into (ls)->map ls,(n)->(n-ls[0])/60000.0 \
+      (n,i)->[n,i] \
+      dotchart
+#+END_SRC
+
+* Look at sequence of alerts in alertgroup
+
+#+BEGIN_SRC
+$ alertgroup id:1512214,limit:100,sub:'alert' \
+    (r)->r.data._time \
+    pick Strings.pat.hms \
+    (ls)->(map ls[1..],(s,i)->(60**(2-i))*(parseInt s)).reduce (a,b)->a+b \
+    sort \
+    (n,i)->[n,i] \
+    dotchart
+#+END_SRC
+
+* Network connections between emails mentioned together in an alert for an alert group
+  Get the alerts for alertgroup 1512214, concatenate all of the
+  strings in the data field of each, pick out all of the email
+  addresses in the resulting strings, generate pairs from all emails
+  that were in the same alert, and make a force-directed graph from
+  the resulting structure.
+
+#+BEGIN_SRC
+  $ alertgroup id:1512214,limit:100,sub:'alert' \
+    (r)->(squash (Struct.tolist r.data)).join ' ' \
+    (s)->Strings.pick Strings.pat.email, s \
+    (ls)->ls.map (m)->m[0] \
+    (ls)->cmb ls,2 \
+    flatten \
+    forcegraph
+#+END_SRC
+
+* Association matrix of emails from one alertgroup
+  This is a very heavy computation, but it eventually finishes. Need
+  to look into ways to optimize this to make it more convenient, but
+  the filling out of the table really explodes the size of the data
+  set.
+
+#+BEGIN_SRC
+  $ alertgroup id:1512214,limit:100,sub:'alert' \
+     (r)->(squash (Struct.tolist r.data)).join ' '\
+     (s)->Strings.pick Strings.pat.email, s \
+     (ls)->ls.map (m)->m[0] \
+     (ls)->cmb ls,2 \
+     flatten \
+     nest (n)->n \
+     (row)->Struct.map row,(col)->col.$.length \
+     tabulate {} \
+     grid \
+     eachpoly (p)->if p.input == {} then p.color='#000' else p.color=Utils.heatColor p.input,10 \
+     draw
+#+END_SRC
+ 
+* Draw a treemap from an Nspace
+#+BEGIN_SRC
+ $  [1..100] \
+    foldl new Nspace (s,pt) -> s.insert pt,[['x',Math.random()],['y',Math.random()]]; s  \
+    into (s)->s.subdivide() \
+    into (sp)->sp.leaves() \
+    (l)->l.bounds \
+    (bnd)-> zip bnd \
+    (pts)->[[pts[0][0],pts[0][1]],[pts[0][0],pts[1][1]],[pts[1][0],pts[1][1]],[pts[1][0],pts[0][1]]] \
+    (pts)->(polygon pts).scale 200 \
+    into (polys)->{polygons: polys} \
+    draw
+#+END_SRC
+
+* Network showing relationship between events and entities
+  Query an event, find all the entities associated with it, then find
+  all the events associated with those entities. Make links
+  accordingly, then display as a force-directed graph. Mousing over
+  the network nodes will display the entity name or event id number
+  depending on what kind of node it is.
+
+#+BEGIN_SRC
+  $ event id:10982,sub:'entity' \
+     (e,k)->[{id:e.id,name:k},10982]  \
+     tolist \
+     (ls)->ls[1] \
+     filter (ls)->ls[0].id not in [4802,97248,19,533065,97249] \
+     (ls)-> [[[ls[0].name,ls[1]]],(API.entity sub:'event',id:ls[0].id).map (e)->([ev.id,ls[0].name]) for ev in e] \
+     wait \
+     flatten \
+     flatten \
+     forcegraph
+#+END_SRC
+
+* Barchart of event count for each entity
+  Fetch the entities associated with an event, then fetch all of the
+  events for each entity and make a barchart that shows how many
+  events are associated to each entity.
+
+#+BEGIN_SRC
+  $ event id:10982,sub:'entity' \
+     (ent)->(API.entity id:ent.id,sub:'event',columns:['id']).map (ls)->ls.length \
+     wait \
+     filter (n)->n>20 \
+     barchart
+#+END_SRC
+* Event leaderboard
+  Chart the number of events by owner to see who gets a raise!
+
+  Get the most recent 1000 events, receiving only the 'owner' field,
+  group them by owner, convert each group to its size, filter out any
+  with less than 10 events, then show the results in a bar chart.
+
+#+BEGIN_SRC
+  $ event limit:1000,columns:['owner'],sort:{id:-1} \ 
+      group (evt)->evt.owner \ 
+      (list)->list.length \ 
+      filter (n)->n>10 \
+      barchart
+#+END_SRC
