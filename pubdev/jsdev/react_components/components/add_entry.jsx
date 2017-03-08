@@ -135,12 +135,12 @@ var AddEntryModal = React.createClass({
                     data: data,
                     contentType: 'application/json; charset=UTF-8',
                     success: function(response){
+                        this.props.addedentry()
                     }.bind(this),
                     error: function(response) {
                         this.props.errorToggle("Failed to add entry.")
                     }.bind(this) 
                 })               
-                this.props.addedentry()
             }
             else if (this.props.entryAction == 'Edit'){
                 $.ajax({
@@ -200,12 +200,12 @@ var AddEntryModal = React.createClass({
                     data: data,
                     contentType: 'application/json; charset=UTF-8',
                     success: function(response){
+                        this.props.addedentry()
                     }.bind(this),
                     error: function(response) {
                         this.props.errorToggle("Failed to add entry.")
                     }.bind(this) 
                 })
-                this.props.addedentry()
             }	
             else {
                 var data = new Object();
@@ -231,12 +231,12 @@ var AddEntryModal = React.createClass({
                     data: JSON.stringify(data),
                     contentType: 'application/json; charset=UTF-8',
                     success: function(response){
+                        this.props.addedentry()
                     }.bind(this),
                     error: function(response) {
                         this.props.errorToggle("Failed to add entry.")
                     }.bind(this)
                 })
-                this.props.addedentry()
             }
         }
     },
@@ -269,14 +269,12 @@ var AddEntryModal = React.createClass({
                 data: JSON.stringify(data),
                 contentType: 'application/json; charset=UTF-8',
                 success: function(response){
-                    
+                    this.props.addedentry()        
                 }.bind(this),
                 error: function(response) {
                     this.props.errorToggle("Failed to edit entry.")
                 }.bind(this)
             })
-
-            this.props.addedentry()
         }
     }
 });
