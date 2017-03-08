@@ -76,7 +76,7 @@ var Search = React.createClass({
                     <div id='main-search-results' style={{display:'flex', flexFlow:'row',position:'absolute', right:'10px', top:'53px', background: '#f3f3f3', border:'black', borderStyle:'solid'}}>
                         <div>
                             <SearchDataEachHeader closeSearch={this.closeSearch}/>
-                            <div style={{overflowY: 'auto', maxHeight: '700px'}}>
+                            <div style={{overflowY: 'auto', maxHeight: '700px', display: 'table-caption'}}>
                                 {tableRows}
                             </div>
                         </div>
