@@ -17,6 +17,7 @@ var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx'); 
 var IncidentTable           = require('../components/incident_table.jsx');
+var SignatureTable          = require('../components/signature_table.jsx');
 var SelectedEntry = React.createClass({
     getInitialState: function() {
         var entityDetailKey = Math.floor(Math.random()*1000);
