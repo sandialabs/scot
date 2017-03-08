@@ -1,30 +1,35 @@
 React = require 'react'
-Editor = require './editor'
-Preview = require './preview'
-Visualization = require './visualization'
-Shell = require './shell'
-BaseCommands=require './base-commands'
-Barchart=require './barchart'
-Linechart=require './linechart'
-Dotchart=require './dotchart'
-Forcegraph = require './forcegraph'
-Poly=require './poly'
-Http=require './http'
-List = require './list'
-Struct = require './struct'
+
+Editor = require './ui/editor'
+Preview = require './ui/preview'
+Visualization = require './ui/visualization'
+Shell = require './ui/shell'
+BaseCommands=require './ui/base-commands'
+
+Barchart=require './viz/barchart'
+Linechart=require './viz/linechart'
+Dotchart=require './viz/dotchart'
+Forcegraph = require './viz/forcegraph'
+Poly=require './viz/poly'
+
 Nspace=require './space/nspace'
+
 {Polygon,polygon} = require './geometry/polygon'
 Edge = require './geometry/edge'
 BoundingBox = require './geometry/boundingbox'
 Voronoi = require './geometry/voronoi'
 Eps = require './geometry/eps'
 Vec = require './geometry/vec'
-Http = require './http'
-Utils = require './utils'
-Strings = require './strings'
-API = require './api'
-Poly = require './poly'
-{Result,ResultPromise} = require './result'
+
+List = require './utils/list'
+Struct = require './utils/struct'
+Http = require './utils/http'
+Utils = require './utils/utils'
+Strings = require './utils/strings'
+API = require './utils/api'
+{Result,ResultPromise} = require './utils/result'
+
+ScriptEditor = require './ui/script-editor'
 
 class Revl extends React.Component
     @revl=null
@@ -44,6 +49,7 @@ class Revl extends React.Component
         @shell.addCommands API.commands
         @shell.addCommands Result.commands
         @shell.addCommands ResultPromise.commands
+        @shell.addCommands Revl.commands
         @shell.addScope List
         @shell.addScope Polygon.scope
         @shell.addScope Eps
@@ -64,7 +70,8 @@ class Revl extends React.Component
             Result: Result
             ResultPromise: ResultPromise
         @shell.loadSavedData()
-        @state = {}
+        @state =
+            script_display: "none"
         Revl.revl=@
         
     output: (str) ->
@@ -73,16 +80,13 @@ class Revl extends React.Component
         else
             console.log "Editor undefined"
             console.log str
-    #keyDown: (k)->@refs.editor.keyDown k
-    #keyPress: (k)->@refs.editor.keyPress k
     render: ->
         {div} = React.DOM
         div
-            onFocus: ()=>@refs.editor.focus()
+            #onFocus: ()=>
+                #if @state.show_script=='block' then @refs.script_editor.focus() else @refs.editor.focus()
             tabIndex:0
             id: "revl"
-            #onKeyPress: (k)=>@refs.editor.keyPress(k)
-            #onKeyDown: (k)=>@refs.editor.keyDown(k)
             style:
                 position:'absolute'
                 top:'5vh'
@@ -92,6 +96,76 @@ class Revl extends React.Component
                 height:'95vh'
                 width:'100vw'
             [(Visualization {key: 2,revl: @, ref: 'visualization'}),
-             (Editor {key:0,shell: @shell, revl: @, ref:'editor'})]
+             (Editor {key:0,shell: @shell, revl: @, ref:'editor'}),
+             (ScriptEditor {key:1,shell: @shell, revl:@, ref:'script_editor',display:@state.script_display})]
 
+    showScriptEditor: (argv,data,ctx) ->
+        @setState script_display: "block"
+        Result.wrap "Script editor active"
+        
+    hideScriptEditor: () -> @setState script_display:"none"
+    @commands:
+        help__script: () -> """
+        script <name>
+
+        The script command allows opens an editor window in which you
+        can type a sequence of commands that will then be usable as a
+        single command (similar to a shell script). 
+
+        After you enter the command, the editor window will give you a
+        scratch area to type your commands. You can test the script as
+        you're working on it using the 'Try it' button, and save and
+        cancel work as you would expect.
+
+        Scripts are given their own version of the shell context to
+        operate on when they run. That means that any assignments you
+        do to global values will be forgotten when the script
+        finishes. The purpose of this is to give you some scratch
+        space to store temporary values for operations that have
+        intermediate state that you need to keep track of. These
+        values will be removed from the context when your script
+        finishes, so you don't have to worry about polluting the
+        global namespace or overwriting existing data by accident with
+        your scripts. There is one exception to this: If you modify
+        the *inside* of an object that's in the global context, that
+        change *will* be visible after the script finishes. The
+        scratch area only protects the top-level bindings in the
+        context, so if you mutate the data inside a binding (e.g. if
+        there is an object or an array and you change one of the
+        fields inside it), you'll change the global state. The store
+        and define commands are safe to use, as they will just
+        generate local bindings. Be careful with interior state
+        though!
+
+        You can pass data into a script in two ways: as the normal
+        piped-in data structure, or as named values that will be
+        inserted into the script's context when it starts. If you want
+        to use the named values, just specify an object on the command
+        line after the script name with fields for the items you want
+        in the context.
+
+        Data coming in through the pipeline will be passed as the pipe
+        data for the first command in your script. If you want to have
+        something available for testing while you write your script,
+        just pipe it into the script command (it will be re-used for
+        each subsequent call to the script as you press 'Try it').
+
+        The script will return the last value it generates, just as if
+        you had run the commands directly.
+        
+        Example:
+            $ script leaderboard
+                <script editor opens>
+            $ leaderboard count:1000
+
+            This would create a new command called 'leaderboard'
+            (which you would have to edit when the script editor
+            opens). Later, the leaderboard command is invoked, and the
+            context it gets has the 'count' variable defined to be
+            1000.
+        """
+
+        script: (argv,data,ctx) =>
+            @revl.showScriptEditor argv,data,ctx
+        
 module.exports = React.createFactory Revl
