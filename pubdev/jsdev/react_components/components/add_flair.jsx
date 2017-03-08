@@ -16,7 +16,7 @@ var AddFlair = {
                                 $(a).attr('url',url);
                             }.bind(this))
                             //Make href an anchor so it doesn't go anywhere when clicked and instead opens up the modal in linkWarningPopup
-                            $(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
+                            //$(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
                             ifrContents.find('.entity').each(function(index,entity){
                                 if ($(entity).find('.extras')[0] == null) {
                                     var currentEntityValue = $(entity).attr('data-entity-value');
