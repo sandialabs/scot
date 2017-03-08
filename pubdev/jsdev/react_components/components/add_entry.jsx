@@ -101,10 +101,6 @@ var AddEntryModal = React.createClass({
     onCancel: function(){
         this.props.addedentry()
         this.setState({change:false})
-        //click refresh detail button on screen to refresh data while the tinymce window was open since it held back updates of the DOM
-        if ($('#refresh-detail')) {
-            $('#refresh-detail').click();
-        }
     },
 	submit: function(){
         if($('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").text() == "" && $('#' + this.state.key + '_ifr').contents().find("#tinymce").find('img').length == 0) {
@@ -135,12 +131,13 @@ var AddEntryModal = React.createClass({
                     data: data,
                     contentType: 'application/json; charset=UTF-8',
                     success: function(response){
-                        this.props.addedentry()
+                        //TODO need to place this.props.addedentry here but can't because the store doesn't contain the created id yet. The danger to it not being here is if a submit happens and fails the content is lost. 
                     }.bind(this),
                     error: function(response) {
                         this.props.errorToggle("Failed to add entry.")
                     }.bind(this) 
-                })               
+                })   
+                this.props.addedentry()            
             }
             else if (this.props.entryAction == 'Edit'){
                 $.ajax({
