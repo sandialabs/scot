@@ -293,6 +293,10 @@ var SelectedHeader = React.createClass({
             this.setState({entryToolbar:true})
         } else {
             this.setState({entryToolbar:false})
+            //click refresh detail button on screen to refresh data while the tinymce window was open since it held back updates of the DOM
+            if ($('#refresh-detail')) {
+                $('#refresh-detail').click();
+            }
         }
     },
     deleteToggle: function() {
