@@ -403,16 +403,22 @@ var SelectedHeader = React.createClass({
             }.bind(this))
         } else {
             $('#detail-container').find('a, .entity').not('.not_selectable').each(function(index,tr) {
-                $(tr).off('mouseup');
                 $(tr).off('mousedown');
-                $(tr).on('mouseup', function() { //Firefox processes this function and then does this function
-                    this.checkFlairHover();
+                $(tr).on('mousedown', function(index) { 
+                    var thing = index.target;
+                    if ($(thing).attr('url')) {  //link clicked
+                        var url = $(a).attr('url');
+                        this.linkWarningToggle(url);
+                    } else { //entity clicked
+                        var entityid = $(thing).attr('data-entity-id');
+                        var entityvalue = $(thing).attr('data-entity-value');
+                        var entityoffset = $(thing).offset();                                      
+                        var entityobj = $(thing);
+                        this.flairToolbarToggle(entityid, entityvalue, 'entity', entityoffset, entityobj);
+                    }
                 }.bind(this))
-                $(tr).on('mousedown', function() { //Chrome processes css changes and then does this function
-                    this.checkFlairHover();
-                }.bind(this))
-            }.bind(this));
-        }
+            }.bind(this))
+        };
     },
     checkFlairHover: function(ifr) {
         function returnifr() {
@@ -445,25 +451,7 @@ var SelectedHeader = React.createClass({
                     }
                 }.bind(this));
             }
-        } else if (this.props.type == 'alertgroup') {
-            $(document.body).find('.alertTableHorizontal').find('.entity').each(function(index, entity) {
-                if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
-                    $(entity).data('state', 'down');
-                    var entityid = $(entity).attr('data-entity-id');
-                    var entityvalue = $(entity).attr('data-entity-value');
-                    var entityoffset = $(entity).offset();                                      
-                    var entityobj = $(entity);
-                    this.flairToolbarToggle(entityid, entityvalue, 'entity', entityoffset, entityobj);
-                } 
-            }.bind(this));
-            $(document.body).find('.alertTableHorizontal').find('a').each(function(index,a) {
-                if($(a).css('color') == 'rgb(255, 0, 0)') {
-                    $(a).data('state','down');
-                    var url = $(a).attr('url');
-                    this.linkWarningToggle(url);
-                } 
-            }.bind(this));
-        }
+        } 
     },
     summaryUpdate: function() {
         this.forceUpdate();
