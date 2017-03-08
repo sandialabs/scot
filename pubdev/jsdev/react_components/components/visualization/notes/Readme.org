@@ -1,0 +1,97 @@
+#+TITLE: REVL - Read Eval Viz Loop
+
+REVL is a tool to make it easy to visualize messy real-world data in
+various ways. Its inspiration is the Unix command line pipes and
+filters model, but the commands it implements are intended to make it
+easy to manipulate data structures.
+
+* Getting Started
+
+  Currently, REVL is just a basic page to be rendered in a web
+  browser. The easiest way to get started is
+  1. Clone this repo and change directory to it
+  2. ~git submodule init~
+  3. ~git submodule update~
+  4. ~./serve.sh~
+  5. In a browser, go to ~http://localhost:8000~
+
+  You'll need to have a recent version of coffee-script installed. The
+  one packaged with ubuntu is too old - I recommend using npm to
+  install it like this:
+
+  ~npm install --global coffee-script~
+
+  You'll also need python3 to run the ~serve.sh~ script (it uses the
+  python local webserver to make the site available on localhost,
+  e.g. ~python3 -m http.server~)
+
+  When you start it up, you'll see a page divided into three
+  sections. Top left is a text output that displays the result of the
+  last evaluation you entered. Top right is the visualization output,
+  and across the bottom is the command line.
+
+  The basic idea behind REVL is that the power of visualization comes
+  from its ability to give you new ways to explore data. Exploring
+  something should be an interactive process, so a single static
+  visualization doesn't have the same power as a tool that lets you
+  hack together a large variety of them. REVL has two main components
+  to make hacking up views easy: First is a library of visualization
+  primitives (various charts, diagrams, networks, etc.) which have
+  well-defined input formats, and render something when provided with
+  appropriate input. Second is a set of commands that make it
+  relatively easy to munge data into the formats expected by the
+  visualization primitives. 
+
+  The anticipated use goes like this:
+
+  1. Pull data into the tool using a fetch command. This will give you
+     a set of javascript objects in most cases.
+  2. Pipe the data through a series of filters and transformers to
+     pull out the parts you want to see and convert them into
+     appropriate inputs for visualization primitives
+  3. Pipe the resulting inputs into a visualization primitive. 
+  4. Iterate between tinkering with the input transformations and
+     looking at the result until you see what you need to understand.
+  5. Save the whole command for future reference if you think it will
+     be useful again.
+
+  The command line environment has a help system to make it easier to
+  discover how to get started with the tool. Start by typing ~help~ to
+  get a list of commands, and when you want to use a command you can
+  type ~help <command>~ to see what it does and get a couple of
+  example uses.
+
+* Primitives
+  Currently, REVL supports the following visualization outputs:
+  * Bar Chart
+  * Line Graph
+  * Force-directed network layout
+  * 2D polygonal grid with data-dependent coloring (incl. heatmap)
+  * Work in progress on Voronoi diagram
+  * Voronoi diagram
+  * Arbitrary user-defined polygon rendering
+
+* Future primitives
+  Planned primitives include
+  * Various scientific/statistical charts (box/qq-plot/etc)
+  * Treemaps (rectangular and Voronoi)
+  * GIS mapping
+  * Streaming animations
+
+* Upcoming work
+  Currently, REVL only works on snapshots of data. You pull data down
+  from a source, pipe it through a series of operations, and view the
+  results. If you want to update it, you just re-run the command and
+  get a new viz. 
+
+  The next big version will include streaming data support, so that a
+  visualization designed for the purpose can take incremental updates
+  and yield an animated view. With this kind of setup, you could
+  create a viz that does something like monitor events in real-time,
+  sort them into bins according to arbitrary criteria, and display the
+  state of the bins at any given time. 
+
+  The streaming implementation will also make it easier to work with
+  very large data sets. The tool is currently limited by what it can
+  hold in memory, but a streaming implementation will make it easier
+  to cherry-pick relevant information from a much bigger data source.
