@@ -17,6 +17,7 @@ var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx'); 
 var IncidentTable           = require('../components/incident_table.jsx');
+var SignatureTable          = require('../components/signature_table.jsx');
 var SelectedEntry = React.createClass({
     getInitialState: function() {
         var entityDetailKey = Math.floor(Math.random()*1000);
@@ -96,6 +97,11 @@ var SelectedEntry = React.createClass({
     componentWillReceiveProps: function() {
         this.containerHeightAdjust();
     },
+    componentDidUpdate: function() {
+        if(this.state.runWatcher == true) {
+            this.Watcher();
+        }
+    },
     updatedCB: function() {
        if (this.props.type == 'alert' || this.props.type == 'entity' || this.props.isPopUp == 1) {
            $.ajax({
@@ -168,9 +174,10 @@ var SelectedEntry = React.createClass({
         }
     },
     Watcher: function() {
+        var containerid = '#' + this.props.type + '-detail-container';
         if(this.props.type != 'alertgroup') {
-            
-            $('#other-detail-container').find('iframe').each(function(index,ifr) {
+             
+            $(containerid).find('iframe').each(function(index,ifr) {
             //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
                 ifr.contentWindow.requestAnimationFrame( function() {
                     if(ifr.contentDocument != null) {
@@ -193,11 +200,21 @@ var SelectedEntry = React.createClass({
                 }.bind(this));
             }.bind(this))
         } else {
-            $('#other-detail-container').find('a, .entity').not('.not_selectable').each(function(index,tr) {
+            $(containerid).find('a, .entity').not('.not_selectable').each(function(index,tr) {
                 $(tr).off('mousedown');
-                $(tr).on('mousedown', function() {
-                    this.checkFlairHover();
-                }.bind(this))
+                $(tr).on('mousedown', function(index) {
+                    var thing = index.target;
+                    if ($(thing).attr('url')) {  //link clicked
+                        var url = $(a).attr('url');
+                        this.linkWarningToggle(url);
+                    } else { //entity clicked
+                        var entityid = $(thing).attr('data-entity-id');
+                        var entityvalue = $(thing).attr('data-entity-value');
+                        var entityoffset = $(thing).offset();
+                        var entityobj = $(thing);
+                        this.flairToolbarToggle(entityid, entityvalue, 'entity', entityoffset, entityobj);
+                    }
+                }.bind(this)) 
             }.bind(this));
         }
     },
@@ -232,26 +249,7 @@ var SelectedEntry = React.createClass({
                     }
                 }.bind(this));
             }
-        } else if (this.props.type == 'alertgroup') {
-            var subtable = $(document.body).find('#other-detail-container');
-            subtable.find('.entity').each(function(index, entity) {
-                if($(entity).css('background-color') == 'rgb(255, 0, 0)') {
-                    $(entity).data('state', 'down');
-                    var entityid = $(entity).attr('data-entity-id');
-                    var entityvalue = $(entity).attr('data-entity-value');
-                    var entityoffset = $(entity).offset();                                      
-                    var entityobj = $(entity);
-                    this.flairToolbarToggle(entityid, entityvalue, 'entity', entityoffset, entityobj); 
-                }
-            }.bind(this));
-            subtable.find('a').each(function(index,a) {
-                if($(a).css('color') == 'rgb(255, 0, 0)') {
-                    $(a).data('state','down');
-                    var url = $(a).attr('url');
-                    this.linkWarningToggle(url);
-                }
-            }.bind(this));
-        }
+        } 
     },  
     containerHeightAdjust: function() {
         var scrollHeight;
@@ -291,7 +289,7 @@ var SelectedEntry = React.createClass({
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
         var EntityDetail = require('../modal/entity_detail.jsx');
         if (type == 'entity' || type == 'alert' || this.props.isPopUp == 1) {
-            divid = 'other-detail-container';
+            divid = this.props.type + '-detail-container';
             height = null;
         }
         //Add signature code when ready
@@ -300,7 +298,7 @@ var SelectedEntry = React.createClass({
                 {(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
                 {(type == 'signature' && this.props.headerData != null) ? <SignatureTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar}/> : <span>Loading...</span>} 
-                {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry entryAction={'Add'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.entryToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
+                {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry entryAction={'Add'} type={this.props.type} targetid={this.props.id} id={null} addedentry={this.props.entryToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
                 {this.props.fileUploadToolbar ? <div>{this.props.isAlertSelected == false ? <FileUpload type={this.props.type} targetid={this.props.id} id={'file_upload'} fileUploadToggle={this.props.fileUploadToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
                 {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} aID={this.props.aID} aType={this.props.aType} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
@@ -378,7 +376,10 @@ var AlertParent = React.createClass({
         $('#main-detail-container').unbind('keydown');
     },
     componentDidUpdate: function() {
-        $('#sortabletable').trigger('update');
+        //update the table, but not if a tinymce editor window is open as it will break the editing window
+        if (!$('.mce-tinymce')[0]) {
+            $('#sortabletable').trigger('update');
+        }
     },
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();
@@ -652,7 +653,7 @@ var AlertBody = React.createClass({
             this.toggleOnAddEntry();
         } else if (this.props.data.id != nextProps.aID && nextProps.entryToolbar == true && this.state.showAddEntryToolbar == true) {
             this.toggleOffAddEntry();
-        }
+        } 
         if (this.props.data.id == this.props.aID && nextProps.fileUploadToolbar == true && this.state.showFileUploadToolbar == false) {
             this.toggleOnFileUpload();
         } else if (this.props.data.id != nextProps.aID && nextProps.fileUploadToolbar == true && this.state.showFileUploadToolbar == true) {
@@ -721,13 +722,13 @@ var AlertBody = React.createClass({
         var id = 'alert_'+data.id+'_status';
         return (
             <tbody>
-                <tr id={data.id} className={'main ' + selected} style={{cursor: 'pointer'}} onClick={this.onClick}>
+                <tr id={data.id} className={'main ' + selected} style={{cursor: 'pointer'}} onMouseDown={this.onClick}>
                     <td style={{marginRight:'4px'}}>{data.id}</td>
                     <td style={{marginRight:'4px'}}>{data.status != 'promoted' ? <span style={{color:buttonStyle}}>{data.status}</span> : <Button bsSize='xsmall' bsStyle={buttonStyle} id={id} onClick={this.navigateTo} style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{data.status}</Button>}</td>
-                    {data.entry_count == 0 ? <td style={{marginRight:'4px'}}>{data.entry_count}</td> : <td style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onClick={this.toggleEntry}>{data.entry_count}</span></td>}
+                    {data.entry_count == 0 ? <td style={{marginRight:'4px'}}>{data.entry_count}</td> : <td style={{marginRight:'4px'}}><span style={{color: 'blue', textDecoration: 'underline', cursor: 'pointer'}} onMouseDown={this.toggleEntry}>{data.entry_count}</span></td>}
                     {rowReturn}
                 </tr>
-                <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} showAddEntryToolbar={this.state.showAddEntryToolbar} toggleOffAddEntry={this.toggleOffAddEntry} showFileUploadToolbar={this.state.showFileUploadToolbar} toggleOffFileUpload={this.toggleOffFileUpload} errorToggle={this.props.errorToggle}/>
+                <AlertRowBlank id={data.id} type={'alert'} showEntry={this.state.showEntry} aID={this.props.aID} aType={this.props.aType} updated={this.props.updated} showAddEntryToolbar={this.state.showAddEntryToolbar} toggleOffAddEntry={this.toggleOffAddEntry} showFileUploadToolbar={this.state.showFileUploadToolbar} toggleOffFileUpload={this.toggleOffFileUpload} errorToggle={this.props.errorToggle}/>
             </tbody>
         )
     }
@@ -761,7 +762,7 @@ var AlertRowBlank = React.createClass({
             <tr className='not_selectable' style={{display:DisplayValue}}>
                 <td colSpan="50">
                     {showEntry ? <div>{<SelectedEntry type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/>}</div> : null}
-                    {showAddEntryToolbar ? <AddEntry entryAction={'Add'} type={this.props.type} targetid={this.props.id} id={'add_entry'} addedentry={this.props.toggleOffAddEntry} updated={this.props.updated} errorToggle={this.props.errorToggle}/> : null}
+                    {showAddEntryToolbar ? <AddEntry entryAction={'Add'} type={this.props.type} targetid={this.props.id} id={null} addedentry={this.props.toggleOffAddEntry} updated={this.props.updated} errorToggle={this.props.errorToggle}/> : null}
                     {showFileUploadToolbar ? <FileUpload type={this.props.aType} targetid={this.props.id} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.toggleOffFileUpload}/> : null} 
                 </td>
             </tr>
@@ -888,7 +889,7 @@ var EntryParent = React.createClass({
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
                                     { type != 'entity' ? <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem> : null}
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} /></MenuItem>
-                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items.metadata} /></MenuItem>
+                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items} /></MenuItem>
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
                                     <MenuItem onClick={this.reparseFlair}>Reparse Flair</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
