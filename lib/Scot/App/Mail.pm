@@ -271,14 +271,29 @@ sub run {
 
         $log->trace("[UID $uid] Child process $pid begins");
 
-        unless ($self->process_message($msg_href)) {
-            $log->error("FAILED to process: ",
-                        {filter=>\&Dumper, value=>$msg_href});
+        my $status = $self->process_message($msg_href);
+
+        if ( $status eq "unapproved" ) {
+            $log->error("Unapproved Sender: ", { filter=>\&Dumper, value=>$msg_href});    
         }
+        elsif ( $status eq "healthcheck" ) {
+            $log->error("Health Check Received");    
+
+        }
+        elsif ( $status eq "alreadyprocessed" ) {
+            $log->error("Message Already Processed by SCOT" );    
+
+        }
+        elsif ( $status eq "postfailed" ) {
+            $log->error("POST to SCOT failed: ", 
+            { filter=>\&Dumper, value=>$msg_href});    
+        }
+
         $proc_count++;
         $log->trace("[UID $uid] Child process $pid finishes");
 
         if ( $self->env->leave_unseen ) {
+            print "---- marked as unseen\n" if ($self->verbose);
             $imap->mark_uid_unseen($uid);
         }
 
@@ -407,7 +422,7 @@ sub process_message {
         $log->error("Unapproved Sender is sending message to SCOT");
         $log->error({ filter => \&Dumper, value => $msghref });
         $self->output("unapproved sender ". $msghref->{from} . " rejected\n");
-        return;
+        return "unapproved";
     }
     $self->output("---- sender is approved\n");
 
@@ -420,14 +435,14 @@ sub process_message {
         $self->put_health_stat({
             amount  => 1,
         });
-        return;
+        return "healthcheck";
     }
 
     if ( $self->already_processed($message_id) ) {
         $log->warn("Message_id: $message_id already processed");
         $self->output("--- $message_id already in database\n");
         $imap->see($msghref->{imap_uid});
-        return;
+        return "alreadyprocessed";
     }
 
     my $parser = $self->get_parser($msghref);
@@ -453,7 +468,7 @@ sub process_message {
         $log->error("ERROR! Undefined transaction object $path ",
                     {filter=>\&Dumper, value=>$json_to_post});
         $self->output("Post to SCOT failed\n");
-        return;
+        return "postfailed";
     }
     
     if ( $json_returned->{status} ne "ok" ) {
@@ -461,7 +476,7 @@ sub process_message {
         $log->debug("tx->res is ",{filter=>\&Dumper, value=>$json_returned});
         $self->imap->mark_uid_unseen($msghref->{imap_uid});
         $self->output("Post to SCOT failed.\n");
-        return;
+        return "postfailed";
     }
     $self->output("---- posted to SCOT.\n");
     $log->trace("Created alertgroup ". $json_returned->{id});
