@@ -3,7 +3,6 @@
 
 var React                   = require('react')
 var SelectedContainer       = require('../detail/selected_container.jsx')
-var Search                  = require('../components/esearch.jsx')
 var Store                   = require('../activemq/store.jsx')
 var Page                    = require('../components/paging.jsx')
 var Popover                 = require('react-bootstrap/lib/Popover')

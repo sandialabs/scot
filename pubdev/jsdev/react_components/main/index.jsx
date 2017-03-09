@@ -18,13 +18,12 @@ var EntityDetail      = require('../modal/entity_detail.jsx')
 var AMQ             = require('../debug-components/amq.jsx');
 var Wall            = require('../debug-components/wall.jsx');
 var Search          = require('../components/esearch.jsx');
-var Revl            = require('../components/visualization/js/revl.js');
+var Revl            = require('../components/visualization/revl.coffee');
 var Gamification    = require('../components/dashboard/gamification.jsx');
 var Status           = require('../components/dashboard/status.jsx');
 var Online          = require('../components/dashboard/online.jsx');
 var Stats           = require('../components/dashboard/stats.jsx');
 var Notification    = require('react-notification-system');
-var SignatureTable  = require('../components/signature_table.jsx');
 var sethome = false
 var setalerts = false
 var setevents = false
@@ -377,7 +376,8 @@ var App = React.createClass({
     notification: function() {
         //Notification display in update as it will run on every amq message matching 'main'.
         var notification = this.refs.notificationSystem
-        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api' && activemqwall != true && this.state.notificationSetting == 'on'){
+        //not showing notificaiton on entity due to "flooding" on an entry update that has many entities causing a storm of AMQ messages
+        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && activemqwho!= 'scot-flair' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api' && activemqwall != true && activemqtype != 'entity' && this.state.notificationSetting == 'on'){  
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
@@ -442,17 +442,20 @@ var App = React.createClass({
                             <NavItem eventKey={1} href="#/alertgroup" active={setalerts}>Alert</NavItem>
                             <NavItem eventKey={2} href="#/event" active={setevents}>Event</NavItem>
                             <NavItem eventKey={3} href="#/incident" active={setincidents}>Incident</NavItem>
-                            <NavItem eventKey={4} href="#/task" active={settask}>Task</NavItem>
-                            <NavItem eventKey={5} href="#/guide" active={setguide}>Guide</NavItem>
                             <NavItem eventKey={6} href="#/intel" active={setintel}>Intel</NavItem>
-                            {/*<NavItem eventKey={7} href="#/signature" active={setsignature} disabled>Signature</NavItem>*/}
-                            <NavItem eventKey={8} href="#/visualization" active={setvisualization}>Visualization</NavItem>
+                            <NavDropdown eventKey={10} id='nav-dropdown' title={'More'}>
+                                <MenuItem eventKey={4} href="#/task" active={settask}>Task</MenuItem>
+                                <MenuItem eventKey={5} href="#/guide" active={setguide}>Guide</MenuItem>
+                                <MenuItem eventKey={8} href="#/visualization" active={setvisualization}>Visualization</MenuItem>
+                                {/*<MenuItem eventKey={7} href="#/signature" active={setsignature} disabled>Signature</MenuItem>*/}
+                                <MenuItem divider />
+                                <MenuItem eventKey={10.1} href='admin/index.html'>Administration</MenuItem>
+                                <MenuItem eventKey={10.2} href='docs/index.html'>Documentation</MenuItem>
+                            </NavDropdown>
                             <NavItem eventKey={9} href="incident_handler">{IH}</NavItem>
                         </Nav>
-                            <span id='ouo_warning' className='ouo-warning'>{sensitivity}</span>
-                            <div className='col-sm-1 col-md-1 pull-right'>
-                                <Search />
-                            </div>
+                        <span id='ouo_warning' className='ouo-warning'>{sensitivity}</span>
+                        <Search errorToggle={this.errorToggle} />
                     </Navbar.Collapse>
                 </Navbar>
                 <div className='mainNavPadding'>
@@ -496,7 +499,7 @@ var App = React.createClass({
                     :
                     null}
                     {this.state.set == 7 ?
-                        <SignatureTable type={'signature'} id={1}/> 
+                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'signature'}  notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
                     :
                     null}
                     {this.state.set == 8 ?
