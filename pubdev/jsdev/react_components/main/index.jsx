@@ -443,7 +443,6 @@ var App = React.createClass({
                             <NavItem eventKey={2} href="#/event" active={setevents}>Event</NavItem>
                             <NavItem eventKey={3} href="#/incident" active={setincidents}>Incident</NavItem>
                             <NavItem eventKey={6} href="#/intel" active={setintel}>Intel</NavItem>
-                            <NavItem eventKey={9} href="incident_handler">{IH}</NavItem>
                             <NavDropdown eventKey={10} id='nav-dropdown' title={'More'}>
                                 <MenuItem eventKey={4} href="#/task" active={settask}>Task</MenuItem>
                                 <MenuItem eventKey={5} href="#/guide" active={setguide}>Guide</MenuItem>
@@ -453,6 +452,7 @@ var App = React.createClass({
                                 <MenuItem eventKey={10.1} href='admin/index.html'>Administration</MenuItem>
                                 <MenuItem eventKey={10.2} href='docs/index.html'>Documentation</MenuItem>
                             </NavDropdown>
+                            <NavItem eventKey={9} href="incident_handler">{IH}</NavItem>
                         </Nav>
                         <span id='ouo_warning' className='ouo-warning'>{sensitivity}</span>
                         <Search errorToggle={this.errorToggle} />
