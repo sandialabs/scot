@@ -1,4 +1,4 @@
-Shell = require '../shell.js'
+Shell = require '../ui/shell'
 Vec = require './vec'
 BoundingBox = require './boundingbox'
 Edge = require './edge'
