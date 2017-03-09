@@ -18,13 +18,12 @@ var EntityDetail      = require('../modal/entity_detail.jsx')
 var AMQ             = require('../debug-components/amq.jsx');
 var Wall            = require('../debug-components/wall.jsx');
 var Search          = require('../components/esearch.jsx');
-var Revl            = require('../components/visualization/js/revl.js');
+var Revl            = require('../components/visualization/revl.coffee');
 var Gamification    = require('../components/dashboard/gamification.jsx');
 var Status           = require('../components/dashboard/status.jsx');
 var Online          = require('../components/dashboard/online.jsx');
 var Stats           = require('../components/dashboard/stats.jsx');
 var Notification    = require('react-notification-system');
-var SignatureTable  = require('../components/signature_table.jsx');
 var sethome = false
 var setalerts = false
 var setevents = false
@@ -450,10 +449,8 @@ var App = React.createClass({
                             <NavItem eventKey={8} href="#/visualization" active={setvisualization}>Visualization</NavItem>
                             <NavItem eventKey={9} href="incident_handler">{IH}</NavItem>
                         </Nav>
-                            <span id='ouo_warning' className='ouo-warning'>{sensitivity}</span>
-                            <div className='col-sm-1 col-md-1 pull-right'>
-                                <Search />
-                            </div>
+                        <span id='ouo_warning' className='ouo-warning'>{sensitivity}</span>
+                        <Search errorToggle={this.errorToggle} />
                     </Navbar.Collapse>
                 </Navbar>
                 <div className='mainNavPadding'>
@@ -497,7 +494,7 @@ var App = React.createClass({
                     :
                     null}
                     {this.state.set == 7 ?
-                        <SignatureTable type={'signature'} id={1}/> 
+                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'signature'}  notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
                     :
                     null}
                     {this.state.set == 8 ?
