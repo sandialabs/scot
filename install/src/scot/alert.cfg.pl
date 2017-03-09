@@ -47,6 +47,23 @@
                 find_master     => 1,
             },
         },
+        {
+            attr    => 'mq',
+            class   => 'Scot::Util::Messageq',
+            config  => {
+                destination => "scot",
+                stomp_host  => "localhost",
+                stomp_port  => 61613,
+            },
+        },
+        {
+            attr    => 'es',
+            class   => 'Scot::Util::ElasticSearch',
+            config  => {
+                nodes       => [ qw(localhost:9200) ],
+                max_workers => 1,
+            },
+        },
     ],
     parser_dir  => '/opt/scot/lib/Scot/Parser',
     get_method      => "mongo",     # other value is "rest"
