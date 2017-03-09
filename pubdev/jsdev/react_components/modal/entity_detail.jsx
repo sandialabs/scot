@@ -89,6 +89,7 @@ var EntityDetail = React.createClass({
         function escHandler(event){
             //prevent from working when in input
             if ($('input').is(':focus')) {return};
+            if ($('#main-search-results')[0] != undefined) {return}; //close search results before closing entity div
             //check for esc with keyCode
             if (event.keyCode == 27) {
                 this.props.flairToolbarOff();
@@ -281,7 +282,7 @@ var EntityDetail = React.createClass({
                 <div id="dragme" className={DragmeClass} style={{width:this.state.entityWidth, left:defaultOffsetX, maxHeight:'90vh'}}>
                     <div id='popup-flex-container' style={{height: '100%', display:'flex', flexFlow:'row'}}>
                         <div id="entity_detail_container" style={{flexFlow: 'column', display: 'flex', width:'100%'}}>
-                            <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" aria-hidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" onClick={this.props.flairToolbarOff}/></span></div></div>
+                            <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" aria-hidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" style={{color:'red'}}onClick={this.props.flairToolbarOff}/></span></div></div>
                             <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills'>
                                 {tabsArr}                     
                             </Tabs>
