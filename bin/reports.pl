@@ -140,24 +140,24 @@ event_report        Print the Event report
 }
 
 sub pyramid {
+
+    my $query   = {
+        created => {
+            '$gte'  => $start,
+            '$lte'  => $end,
+        }
+    };
     
     print "\n------- Pyramid Report ---------\n";
-    my $cursor  = $mongo->read_documents({
-        collection  => 'alertgroups',
-        match_ref   => {},
-    });
+    my $col = $env->mongo->collection('Alertgroup');
+    my $cursor  = $col->find($query);
     my $alert_count = $cursor->count();
 
-    $cursor     = $mongo->read_documents({
-        collection  => 'events',
-        match_ref   => {},
-    });
+    $col    = $env->mongo->collection('Event');
+    $cursor     = $col->find($query);
     my $event_count = $cursor->count();
 
-    $cursor     = $mongo->read_documents({
-        collection  => 'incidents',
-        match_ref   => {},
-    });
+    $cursor     = $env->mongo->collection('Incident')->find($query);
     my $incident_count  = $cursor->count();
 
     printf "%12d   Alerts\n", $alert_count;
