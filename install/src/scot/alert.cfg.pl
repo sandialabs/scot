@@ -48,6 +48,7 @@
             },
         },
     ],
+    parser_dir  => '/opt/scot/lib/Scot/Parser',
     get_method      => "mongo",     # other value is "rest"
     leave_unseen    => 1,
     # interactive => [ yes | no ]
