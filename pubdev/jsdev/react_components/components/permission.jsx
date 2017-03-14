@@ -144,11 +144,11 @@ var PermissionIterator = React.createClass({
         var type = this.props.type;
         if (type == 'entry') {
             return (
-                <Button id="permission_source" bsSize='xsmall'>{data}<span style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" aria-hidden="true" onClick={this.permissionDelete} ></span></Button>
+                <span id="permission_source" className='permissionButton'>{data}<span className="fa fa-times permissionButtonClose" aria-hidden="true" onClick={this.permissionDelete} ></span></span>
             )
         } else {
             return ( 
-                <Button id="permission_source" bsSize='xsmall'>{data}<span style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" aria-hidden="true" onClick={this.permissionDelete}></span></Button> 
+                <span id="permission_source" className='permissionButton'>{data}<span className="fa fa-times permissionButtonClose" aria-hidden="true" onClick={this.permissionDelete}></span></span> 
             )
         }
    }
