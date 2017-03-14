@@ -94,7 +94,7 @@ var SelectedHeader = React.createClass({
                         if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false})
                         }
-                        this.props.errorToggle("Error: " + result.responseText);
+                        this.props.errorToggle("Error: Failed to load detail data. Error message: " + result.responseText);
                     }.bind(this),
                 });
                 //entry load
@@ -114,7 +114,7 @@ var SelectedHeader = React.createClass({
                         if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false});
                         }
-                        this.props.errorToggle("Error: " + result.responseText);
+                        this.props.errorToggle("Error: Failed to load entry data. Error message: " + result.responseText);
                     }
                 });
                 //entity load
@@ -144,7 +144,7 @@ var SelectedHeader = React.createClass({
                         if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false});
                         }
-                        this.props.errorToggle("Error: " + result.responseText);
+                        this.props.errorToggle("Error: Failed to load entity data. Error message:" + result.responseText);
                     }.bind(this)
                 });
                 //guide load
@@ -162,7 +162,7 @@ var SelectedHeader = React.createClass({
                         }.bind(this),
                         error: function(result) {
                             this.setState({guideID: null})
-                            this.props.errorToggle("Error: " + result.responseText);
+                            this.props.errorToggle("Error: Failed to load guide data. Error message:" + result.responseText);
                         }.bind(this)
                     });     
                 }
@@ -205,7 +205,7 @@ var SelectedHeader = React.createClass({
                 if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false})
                 }
-                this.props.errorToggle("Error: " + result.responseText);
+                this.props.errorToggle("Error: Failed to reload detail data. Error message: " + result.responseText);
             }.bind(this),
         });    
         //entry load
@@ -225,7 +225,7 @@ var SelectedHeader = React.createClass({
                 if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 } 
-                this.props.errorToggle("Error: " + result.responseText);
+                this.props.errorToggle("Error: Failed to reload entry data. Error message: " + result.responseText);
             }
         });
         //entity load
@@ -255,7 +255,7 @@ var SelectedHeader = React.createClass({
                 if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 } 
-                this.props.errorToggle("Error: " + result.responseText);
+                this.props.errorToggle("Error: Failed to reload entity data. Error message: " + result.responseText);
             }.bind(this)
         });
         //error popup if an error occurs
@@ -294,9 +294,10 @@ var SelectedHeader = React.createClass({
         } else {
             this.setState({entryToolbar:false})
             //click refresh detail button on screen to refresh data while the tinymce window was open since it held back updates of the DOM
-            if ($('#refresh-detail')) {
+            //hold off on refresh as the tinymce preventing update is currently commented out
+            /*if ($('#refresh-detail')) {
                 $('#refresh-detail').click();
-            }
+            }*/
         }
     },
     deleteToggle: function() {
