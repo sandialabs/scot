@@ -20,7 +20,7 @@ sub has_invalid_user_chars {
     my $self    = shift;
     my $user    = shift;
     # help prevent ldap injection
-    unless ( $user =~ m/^[a-zA-Z0-9_@]+$/ ) {
+    unless ( $user =~ m/^[a-zA-Z0-9_@=]+$/ ) {
         $self->env->log->error("Invalid username chars detected! $user");
         $self->respond_401;
         return 1;
