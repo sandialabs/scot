@@ -779,6 +779,16 @@ var EntryParent = React.createClass({
             fileUploadToolbar: false,
         }
     }, 
+    componentDidMount: function() {
+        Store.storeKey(this.props.items.id);
+        Store.addChangeListener(this.refreshButton);
+    },
+    //TODO modify manual entry refresh to be done on automatically based on STOMP single entry update. This works for now.
+    refreshButton: function() {
+        if ($('#refresh-detail')) {
+            $('#refresh-detail').click();
+        }
+    },
     editEntryToggle: function() {
         if (this.state.editEntryToolbar == false) {
             this.setState({editEntryToolbar:true})
