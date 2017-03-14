@@ -16,6 +16,8 @@ my $env = Scot::Env->new(
     config_file => $config_file,
 );
 my $mongo   = $env->mongo;
+my $fix     = $ARGV[0];
+
 
 foreach my $colname(qw(
     appearance
@@ -51,4 +53,8 @@ foreach my $colname(qw(
 
     my $max = $object->id;
     say "Max ID is $max";
+
+    if ( $fix eq "fix" ) { 
+        $collection->set_next_id($max);
+    }
 }

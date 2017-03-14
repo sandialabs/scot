@@ -120,6 +120,7 @@ function install_elasticsearch {
             #     cp $ES_SERVICE_SRC $ES_SERVICE
             # fi
             systemctl daemon-reload
+            systemctl enable elasticsearch.service
             systemctl restart elasticsearch.service
         else
             echo "-- adding elasticsearch to rc.d"
@@ -132,6 +133,9 @@ function install_elasticsearch {
         systemctl enable elasticsearch.service
         systemctl start elasticsearch.service
     fi
+
+    echo "~~~ pausing for a few seconds to allow ES to spin up"
+    sleep 5
 
     if curl -i -XHEAD http://localhost:9200/scot | grep -q 404; then
         echo "-- need to init elastic search DB"

@@ -53,6 +53,20 @@ function get_https_proxy () {
     SPROXY=$(printenv https_proxy)
 }
 
+function check_no_proxy {
+    if [[ "$PROXY" != "" ]] || [[ "$SPROXY" != "" ]]; then
+        no_proxy_setting=$(printenv no_proxy)
+        if [[ -z $no_proxy_setting ]]; then
+            echo "!!! You have a proxy environment variable set, but have "
+            echo "!!! not set your \"no_proxy\" environment variable"
+            echo "!!! recommend adding the following to your environment "
+            echo "!!!    export no_proxy=localhost,127.0.0.1"
+            echo "!!!"
+            export no_proxy=localhost,127.0.0.1
+        fi
+    fi
+}
+
 function get_script_src_dir () {
     SRCDIR="${BASH_SOURCE%/*}"
     if [[ ! -d "$DIR" ]]; then
