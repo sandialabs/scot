@@ -107,6 +107,7 @@ module.exports = React.createClass({
         var filterBy = this.state.filter;
         var pageLimit = this.state.activepage.limit;
         var pageNumber = this.state.activepage.page;
+        var idsarray = [];
         var newPage;
         if(this.props.id != undefined){
             if(this.props.id.length > 0){
@@ -186,6 +187,7 @@ module.exports = React.createClass({
                     if (num == 'id') {
                         Store.storeKey(item)
                         Store.addChangeListener(this.reloadactive)
+                        idsarray.push(item);            
                     }
                 }.bind(this))
                 if(key %2 == 0){
@@ -195,7 +197,7 @@ module.exports = React.createClass({
                     finalarray[key]["classname"] = 'table-row rowodd'
                 }
             }.bind(this))
-            this.setState({scrollheight:height, objectarray: finalarray, totalcount: response.totalRecordCount, loading:false});
+            this.setState({scrollheight:height, objectarray: finalarray, totalcount: response.totalRecordCount, loading:false, idsarray:idsarray});
             if (this.props.type == 'alert' && this.state.showSelectedContainer == false) {
                 this.setState({showSelectedContainer:false})
             } else if (this.state.id == undefined) {
@@ -459,6 +461,8 @@ module.exports = React.createClass({
         var filterBy = filter;
         var pageLimit;
         var pageNumber;
+        var idsarray = this.state.idsarray;
+        var newidsarray = [];
         //defaultpage = page.page
         if (page == undefined) {
             pageNumber = this.state.activepage.page;
@@ -530,8 +534,17 @@ module.exports = React.createClass({
 	                    newarray[key][num] = item
 	                }
                     if (num == 'id') {
-                        //Store.storeKey(item)
-                        //Store.addChangeListener(this.reloadactive)
+                        var idalreadyadded = false;
+                        for (var i=0; i < idsarray.length; i++) {
+                            if (item == idsarray[i]) {
+                                idalreadyadded = true;
+                            }
+                        }
+                        if (idalreadyadded == false) {
+                            Store.storeKey(item)
+                            Store.addChangeListener(this.reloadactive)
+                        }
+                        newidsarray.push(item);
                     }
 	            }.bind(this))
                 if(key %2 == 0){
@@ -541,7 +554,7 @@ module.exports = React.createClass({
                     newarray[key]['classname'] = 'table-row rowodd'
                 }
 	        }.bind(this))
-                this.setState({totalcount: response.totalRecordCount, activepage: {page:pageNumber, limit:pageLimit}, objectarray: newarray, loading:false})
+                this.setState({totalcount: response.totalRecordCount, activepage: {page:pageNumber, limit:pageLimit}, objectarray: newarray, loading:false, idsarray:newidsarray})
         }.bind(this))
         //get incident handler
         $.ajax({
