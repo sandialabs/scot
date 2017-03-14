@@ -172,11 +172,17 @@ function configure_for_scot {
                 backup_file $MONGO_SYSTEMD_SERVICE
                 cp $MONGO_CONF_SRC/mongod.service $MONGO_SYSTEMD_SERVICE
                 cp $MONGO_CONF_SRC/mongod.conf /etc/mongod.conf
+                systemctl daemon-reload
+                systemctl restart mongod.service
+                systemctl enable mongod.service
             fi
         else
             backup_file $MONGO_SYSTEMD_SERVICE
             cp $MONGO_CONF_SRC/mongod.service $MONGO_SYSTEMD_SERVICE
             cp $MONGO_CONF_SRC/mongod.conf /etc/mongod.conf
+            systemctl daemon-reload
+            systemctl restart mongod.service
+            systemctl enable mongod.service
         fi
     fi
 
