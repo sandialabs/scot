@@ -31,6 +31,8 @@ else
     echo "https_proxy   : not set!"
 fi
 
+check_no_proxy
+
 if get_script_src_dir
 then
     echo "Install Src Dir: $DIR"
