@@ -36,6 +36,13 @@ use v5.18;
 use Moose;
 extends 'Scot::App';
 
+has scot_get_method => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'mongo',
+);
+
 has thishostname    => (
     is              => 'ro',
     isa             => 'Str',
@@ -182,6 +189,66 @@ sub process_message {
     $self->put_stat("elastic_docs_inserted", 1);
 }
 
+sub get_document {
+    my $self    = shift;
+    my $type    = shift;
+    my $id      = shift;
+
+    if ( $self->scot_get_method eq "mongo" ) {
+        my $mongo   = $self->env->mongo;
+        my $col     = $mongo->collection(ucfirst(lc($type)));
+        my $obj     = $col->find_iid($id);
+        return $obj->as_hash;
+    }
+    my $record  = $self->scot->get({
+        type    => $type,
+        id      => $id,
+    });
+    return $record;
+}
+
+sub query_documents {
+    my $self    = shift;
+    my $type    = shift;
+    my $limit   = shift // 100;
+    my $lastid  = shift // 0;
+
+    if ( $self->scot_get_method eq "mongo" ) {
+        my $mongo   = $self->env->mongo;
+        my $col     = $mongo->collection(ucfirst(lc($type)));
+        my $cursor  = $col->find({
+            id      => { '$gt' => $lastid },
+        });
+        $cursor->limit($limit);
+        $cursor->sort({id => 1});
+        return $cursor;
+    }
+    my $record  = $self->scot->get({
+        type    => $type,
+        id      => 'x>'.$lastid,
+    });
+    return $record;
+}
+
+sub get_maxid {
+    my $self    = shift;
+    my $type    = shift;
+
+    if ( $self->scot_get_method eq "mongo" ) {
+        my $col = $self->mongo->collection(ucfirst(lc($type)));
+        my $cur = $col->find({});
+        $cur->sort({id => -1});
+        my $obj = $cur->next;
+        return $obj->id;
+    }
+    my $resp = $self->scot->get({
+        type    => "$type/maxid",
+    });
+    my $maxid   = $resp->{max_id} // 500;
+    return $maxid;
+}
+        
+
 sub process_all {
     my $self       = shift;
     my $collection = shift;
@@ -190,11 +257,7 @@ sub process_all {
     my $limit       = 100;
     my $last_completed = 0;
 
-    my $resp = $scot->get({
-        type    => "$collection/maxid",
-    });
-    my $maxid   = $resp->{max_id} // 500;
-
+    my $maxid   = $self->get_maxid;
     say "Max ID = $maxid";
 
     my $continue = 1;
@@ -212,22 +275,22 @@ sub process_all {
 #            limit => $limit,
 #            sort  => { id => 1 },
 #        };
-        my $m = {
-            id  => "x>$last_completed",
-            limit   => $limit,
-            sort    => "+id",
-        };
-        say "looking for ".Dumper($m);
-        my $json = $scot->get({
-            type    => $collection, 
-            params  => $m
-        });
+        #my $m = {
+        #    id  => "x>$last_completed",
+        #    limit   => $limit,
+        #    sort    => "+id",
+        #};
+        #say "looking for ".Dumper($m);
+        #my $json = $scot->get({
+        #    type    => $collection, 
+        #    params  => $m
+        #});
+### NOTE: this is a quick hack until I can fix using the API
         my $count = 1;
+        my $cursor  = $self->query_documents($collection, $limit, $last_completed);
 
-        $cleanser->clean_in_place($json);
-
-        foreach my $href ( @{$json->{records}} ) {
-
+        while (my $obj  = $cursor->next ) {
+            my $href    = $obj->as_hash;
             say "   $count.    id = ".$href->{id};
 
             delete $href->{_id};
@@ -242,7 +305,6 @@ sub process_all {
             say "         last_completed = $last_completed";
             $count++;
         }
-
     }
 }
 
