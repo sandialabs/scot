@@ -17,7 +17,7 @@ $ua->on( start => sub {
     my $tx = shift;
     $tx->req->headers->header(
         'Authorization' => $auth,
-        'Host'  => 'as3002snllx'
+        'Host'  => 'testhost'
     );
 });
 
@@ -25,7 +25,7 @@ my $results = {};
 for my $i (1..100) {
 
     my $tx = $ua->get(
-        'https://as3002snllx/scot/api/v2/event/1' => {Accept => '*/*' }
+        'https://testhost/scot/api/v2/event/1' => {Accept => '*/*' }
     );
 
     my $code = $tx->res->code;
