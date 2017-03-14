@@ -131,13 +131,13 @@ var AddEntryModal = React.createClass({
                     data: data,
                     contentType: 'application/json; charset=UTF-8',
                     success: function(response){
-                        //TODO need to place this.props.addedentry here but can't because the store doesn't contain the created id yet. The danger to it not being here is if a submit happens and fails the content is lost. 
+                        this.props.addedentry() 
                     }.bind(this),
                     error: function(response) {
                         this.props.errorToggle("Failed to add entry.")
                     }.bind(this) 
                 })   
-                this.props.addedentry()            
+                            
             }
             else if (this.props.entryAction == 'Edit'){
                 $.ajax({
