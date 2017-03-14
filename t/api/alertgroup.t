@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-use lib '../lib';
+use lib '../../../Scot-Internal-Modules/lib';
 use lib '../../lib';
 
 use Test::More;
