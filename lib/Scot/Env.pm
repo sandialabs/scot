@@ -249,7 +249,7 @@ sub read_config_file {
         die "Config file not readable!\n";
     }
     my $href    = $self->get_config_href($file);
-    print "config is: ".Dumper($href)."\n";
+    print "config is: ".Dumper($href)."\n" if $self->debug;
     return $href;
 }
 
@@ -293,7 +293,7 @@ sub get_config_value {
 sub build_logger {
     my $self    = shift;
     my $config  = shift;
-    print "Logger config is ".Dumper($config)."\n";
+    print "Logger config is ".Dumper($config)."\n" if $self->debug;
     my $factory = Scot::Util::LoggerFactory->new( config => $config );
     return $factory->get_logger;
 }
