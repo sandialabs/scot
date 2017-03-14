@@ -247,7 +247,7 @@ sub build_match_ref {
     # TODO: abstract this somewhere so these are known meta properties
     my @skipfields   = qw(sort columns limit offset);
     my @datefields   = qw(when updated created occurred discovered reported);
-    my @numfields    = qw(id views entry_count);
+    my @numfields    = qw(id views entry_count alert_count);
     my @tagsrcfields = qw(tag source);
     my @handler      = qw(start end);
 
