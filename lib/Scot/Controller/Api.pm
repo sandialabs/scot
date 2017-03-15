@@ -559,6 +559,12 @@ sub get_one {
         #}
     }
 
+    if ( ref($object) eq "Scot::Model::Signature" ) {
+        $log->debug("Signature asked for, bundling sigbodies");
+        my $col = $mongo->collection('Signature');
+        $data_href = $col->get_bundled_sigbody($object);
+    }
+
     my $selected_fields = $self->build_fields($req_href);
     if ( $selected_fields ) {
         foreach my $key (keys %$data_href) {
