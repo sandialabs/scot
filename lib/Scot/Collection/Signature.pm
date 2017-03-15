@@ -38,7 +38,6 @@ sub create_from_api {
     $json->{owner}  = $user;
     my @tags        = $env->get_req_array($json, "tags");
     my @sources     = $env->get_req_array($json, "sources");
-    $json->{body}   = [ $json->{body} ];
 
     $log->debug("json is ". Dumper($json));
     
@@ -62,6 +61,23 @@ sub create_from_api {
     }
 
     return $signature;
+}
+
+sub get_bundled_sigbody {
+    my $self    = shift;
+    my $sigobj  = shift;
+    my $href    = $sigobj->as_hash;
+    $href->{body} = {};
+    my $id      = $sigobj->id + 0;
+    my $match   = { signature_id => $id };
+    my $col     = $self->meerkat->collection('Sigbody');
+    my $cur     = $col->find($match);
+    $cur->sort({created => -1});
+    while ( my $sigbody = $cur->next ) {
+        my $ahref = $sigbody->as_hash;
+        $href->{body}->{$sigbody->id} = $ahref;
+    }
+    return $href;
 }
 
 1;
