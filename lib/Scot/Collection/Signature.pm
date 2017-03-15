@@ -1,6 +1,8 @@
 package Scot::Collection::Signature;
 use lib '../../../lib';
 use Moose 2;
+use v5.18;
+use Data::Dumper;
 
 extends 'Scot::Collection';
     
@@ -29,12 +31,16 @@ sub create_from_api {
     my $log     = $env->log;
 
     $log->debug("Creating Signature from POST to API");
+    $log->debug(Dumper($request));
 
     my $user        = $request->{user};
     my $json        = $request->{request}->{json};
     $json->{owner}  = $user;
     my @tags        = $env->get_req_array($json, "tags");
     my @sources     = $env->get_req_array($json, "sources");
+    $json->{body}   = [ $json->{body} ];
+
+    $log->debug("json is ". Dumper($json));
     
     my $signature   = $self->create($json);
 
