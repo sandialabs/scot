@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 use v5.18;
+
+use lib '../../../Scot-Internal-Modules/lib';
 use lib '../lib';
 use lib '../../lib';
 

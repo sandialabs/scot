@@ -65,7 +65,7 @@ sub create {
     
     my $collection;
 
-    $log->trace("Getting Collection for $colname");
+    $log->debug("Getting Collection for $colname");
 
     try {
         $collection  = $mongo->collection($colname);
