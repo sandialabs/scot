@@ -18,6 +18,8 @@ db.user.drop();
 db.link.drop();
 db.guide.drop();
 db.appearance.drop();
+db.signature.drop();
+db.sigbody.drop();
 
 print ("Creating indexes...");
 load("./src/mongodb/indexes.js");
