@@ -66,6 +66,30 @@ has status  => (
     default     => 'enabled',
 );
 
+=item B<prod_sigbody_id>
+
+=cut
+
+has prod_sigbody_id => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    default     => 0,
+);
+
+=item B<qual_sigbody_id>
+
+=cut
+
+has qual_sigbody_id => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    default     => 0,
+);
+
+
+
 =item B<action>
 
 Array of actions to take if Signature is matched
@@ -116,20 +140,6 @@ has options => (
     isa         => 'HashRef',
     required    => 1,
     default     => sub { {} },
-);
-
-=item B<body>
-
-Array of signatures.  element 0 is the first revision of the signature.
-later revisions have incremented indexes.
-
-=cut
-
-has body    => (
-    is          => 'ro',
-    isa         => 'ArrayRef',
-    required    => 1,
-    default     => sub { [] },
 );
 
 =item B<description>
