@@ -20,7 +20,7 @@ with    qw(
     Scot::Role::Entriable
     Scot::Role::Hashable
     Scot::Role::Permission
-    Scot::Role::Targetable
+    Scot::Role::Target
     Scot::Role::Times
     Scot::Role::Permission
 );
