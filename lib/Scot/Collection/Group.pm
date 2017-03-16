@@ -36,7 +36,7 @@ override get_subthing => sub {
         my $name    = $obj->name;
 
         my $subcol = $mongo->collection('User');
-        my $cur     = $subcol->find({group=>$name});
+        my $cur     = $subcol->find({groups=>$name});
 
         return $cur;
     }
