@@ -200,14 +200,11 @@ sub get_groups {
     my $user    = shift;
     my $env     = $self->env;
     my $mongo   = $env->mongo;
-    my @groups;
-    my $col     = $mongo->collection('Group');
-    my $cursor  = $col->find({members => $user});
+    my $col     = $mongo->collection('User');
+    my $object  = $col->find_one({username => $user});
+    my $groups  = $object->groups;
 
-    while ( my $group = $cursor->next ) {
-        push @groups, $group->name;
-    }
-    return wantarray ? @groups : \@groups;
+    return wantarray ? @$groups : $groups;
 }
 
 sub failed_auth {
