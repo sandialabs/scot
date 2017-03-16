@@ -476,7 +476,7 @@ var SelectedHeader = React.createClass({
         var headerData = this.state.headerData;         
         var viewedby = this.viewedbyfunc(headerData);
         var type = this.props.type;
-        var subjectType = this.titleCase(this.props.type);
+        var subjectType = this.titleCase(this.props.type);  //in signatures we're using the key "name"
         var id = this.props.id; 
         return (
             <div> {this.state.isNotFound ? <h1>No record found.</h1> :
@@ -577,6 +577,12 @@ var EntryDataStatus = React.createClass({
     openAll: function() {
         this.statusAjax('open');
     },
+    enableAll: function() {
+        this.statusAjax('enabled');
+    },
+    disableAll: function() {
+        this.statusAjax('disabled');
+    },
     statusAjax: function(newStatus) {
         console.log(newStatus);
         var json = {'status':newStatus};
@@ -600,49 +606,67 @@ var EntryDataStatus = React.createClass({
         var promoted = '';
         var title = '';
         var classStatus = '';
-        if (this.state.buttonStatus == 'open') {
+        var href;
+        if (this.state.buttonStatus == 'open' || this.state.buttonStatus == 'disabled') {
             buttonStyle = 'danger';
             classStatus = 'alertgroup_open' 
-        } else if (this.state.buttonStatus == 'closed') {
+        } else if (this.state.buttonStatus == 'closed' || this.state.buttonStatus == 'enabled') {
             buttonStyle = 'success';
             classStatus = 'alertgroup_closed'
         } else if (this.state.buttonStatus == 'promoted') {
             buttonStyle = 'default'
             classStatus = 'alertgroup_promoted'
         };
+
         if (this.props.type == 'alertgroup') {
             open = this.props.data.open_count;
             closed = this.props.data.closed_count;
             promoted = this.props.data.promoted_count;
             title = open + ' / ' + closed + ' / ' + promoted;
         }
+
+        if (this.props.type == 'event') {
+            href = '/#/incident/' + this.props.data.promotion_id;
+        } else if (this.props.type == 'intel') {
+            href = '/#/event/' + this.props.data.promotion_id;
+        }
+        
         if (this.props.type == 'guide' || this.props.type == 'intel') {
             return(<div/>)
+        } else if (this.props.type == 'alertgroup') {
+            return (
+                <ButtonToolbar>
+                    <OverlayTrigger placement='top' overlay={<Popover id={this.props.id}>open/closed/promoted alerts</Popover>}>
+                        <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} title={title} id="dropdown" className={classStatus}>
+                            <MenuItem eventKey='1' onClick={this.openAll} bsSize='xsmall'><b>Open</b> All Alerts</MenuItem>
+                            <MenuItem eventKey='2' onClick={this.closeAll}><b>Close</b> All Alerts</MenuItem>
+                        </DropdownButton>
+                    </OverlayTrigger>
+                </ButtonToolbar>
+            )
+        } else if (this.props.type == 'incident') {
+            return (
+                <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.state.buttonStatus}>
+                    <MenuItem eventKey='1' onClick={this.openAll}>Open Incident</MenuItem>
+                    <MenuItem eventKey='2' onClick={this.closeAll}>Close Incident</MenuItem>
+                </DropdownButton>
+           ) 
+        } else if (this.props.type == 'signature') {
+            return ( 
+                <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.state.buttonStatus}> 
+                    <MenuItem eventKey='1' onClick={this.enableAll}>Enable Signature</MenuItem> 
+                    <MenuItem eventKey='2' onClick={this.disableAll}>Disable Signature</MenuItem> 
+                </DropdownButton>
+            )
         } else {
-            var href;
-            if (this.props.type == 'event') {
-                href = '/#/incident/' + this.props.data.promotion_id;
-            } else if (this.props.type == 'intel') {
-                href = '/#/event/' + this.props.data.promotion_id;
-            }
             return (
                 <div>
-                    {this.props.type == 'alertgroup' ? <ButtonToolbar>
-                        <OverlayTrigger placement='top' overlay={<Popover id={this.props.id}>open/closed/promoted alerts</Popover>}>
-                            <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} title={title} id="dropdown" className={classStatus}>
-                                <MenuItem eventKey='1' onClick={this.openAll} bsSize='xsmall'><b>Open</b> All Alerts</MenuItem>
-                                <MenuItem eventKey='2' onClick={this.closeAll}><b>Close</b> All Alerts</MenuItem>
-                            </DropdownButton>
-                        </OverlayTrigger></ButtonToolbar> : 
-                        <span>{this.props.type == 'incident' ? <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.state.buttonStatus}>
-                            <MenuItem eventKey='1' onClick={this.openAll}>Open Incident</MenuItem>
-                            <MenuItem eventKey='2' onClick={this.closeAll}>Close Incident</MenuItem>
-                        </DropdownButton> : 
-                        <span>{this.state.buttonStatus == 'promoted' ? <a href={href} role='button' className='btn btn-warning'>{this.state.buttonStatus}</a>:
+                    {this.state.buttonStatus == 'promoted' ? <a href={href} role='button' className={'btn btn-warning'}>{this.state.buttonStatus}</a>:
                         <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.state.buttonStatus}>
                             <MenuItem eventKey='1' onClick={this.openAll}>Open</MenuItem>
                             <MenuItem eventKey='2' onClick={this.closeAll}>Close</MenuItem>
-                        </DropdownButton>}</span>}</span>}
+                        </DropdownButton>
+                    }
                 </div>
             )
         }
@@ -651,14 +675,22 @@ var EntryDataStatus = React.createClass({
 
 var EntryDataSubject = React.createClass({
     getInitialState: function() {
+        var keyName = 'subject';
+        var value = this.props.data.subject;
+        if (this.props.type == 'signature') {
+            keyName = 'name';
+            value = this.props.data.name;
+        }
         return {
-            value:this.props.data.subject,
+            value:value,
             width:'',
+            keyName: keyName,
         }
     },
     handleChange: function(event) {
         if (event != null ) {
-            var json = {'subject':event.target.value};
+            var keyName = this.state.keyName
+            var json = {[keyName]:event.target.value};
             var newValue = event.target.value;
             $.ajax({
                 type: 'put',
@@ -671,7 +703,7 @@ var EntryDataSubject = React.createClass({
                     this.calculateWidth(newValue);
                 }.bind(this),
                 error: function() { 
-                    this.props.updated('error','Failed to update the subject');
+                    this.props.updated('error','Failed to update the subject/name');
                 }.bind(this)
             });
         }
