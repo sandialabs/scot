@@ -229,7 +229,7 @@ function group_modal(groupname, group_members, all_users, group_type, id) {
       var fullname = user.fullname;
       var username = user.username;
       var userid   = user.userid;
-      var user_option = $('<option></option>').val(username).text(fullname).attr('name', 'users').attr('id',userid);
+      var user_option = $('<option></option>').val(username).text(username).attr('name', 'users').attr('id',userid);
       $('#users').append(user_option);
       group_members_by_user.push(username);
    });
@@ -237,7 +237,7 @@ function group_modal(groupname, group_members, all_users, group_type, id) {
         // $(Object.keys(all_users)).each(function(user_index, username) {
             if($.inArray(all_users[i].username, group_members_by_user) < 0) {
                 var fullname = all_users[i].fullname;
-                var user_option = $('<option></option>').val(all_users[i].username).text(all_users[i].fullname).attr('name', 'all_users').attr('id',all_users[i].id);
+                var user_option = $('<option></option>').val(all_users[i].username).text(all_users[i].username).attr('name', 'all_users').attr('id',all_users[i].id);
                 $('#all_users').append(user_option);
             }
         //});
