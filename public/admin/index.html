@@ -218,10 +218,11 @@ function offline_update() {
 
 }
 
-function group_modal(groupname, group_members, all_users, group_type, id) {
+function group_modal(groupname, group_members, all_users, group_type, id, description) {
    $('.loading').remove();
    $('#group_modal').find('input[name=id]').val(id);
    $('#group_modal').find('input[name=groupname]').val(groupname);
+   $('#group_modal').find('input[name=description]').val(description);
    $('#users option').remove();
    $('#all_users option').remove();
    var group_members_by_user = new Array();
@@ -307,7 +308,7 @@ function populate_local_users_n_groups() {
                         $(trow).data('username', users[i].username).click({param1:user}, function(event){
                             var active = event.data.param1.active;
                             if (active == 1) {active = true} else {active = false}
-                            user_modal(event.data.param1.username, event.data.param1.fullname, active, (event.data.param1.lockouts > 0), event.data.param1.group, allGroups, 'Edit', event.data.param1.id);
+                            user_modal(event.data.param1.username, event.data.param1.fullname, active, (event.data.param1.lockouts > 0), event.data.param1.groups, allGroups, 'Edit', event.data.param1.id);
                         });
                         $('#users_table').append(trow); 
                     }
@@ -322,11 +323,11 @@ function populate_local_users_n_groups() {
                 var auth_method = 'local';
                 if (auth_method == 'local') {
                     //var group = response.records;
-                    $('#groups_table').html('<tr><th></th><th></th><th>Group Name</th><th>Num Users</th></tr>');
+                    $('#groups_table').html('<tr><th></th><th></th><th>Group</th><th>Description</th></tr>');
                     for (j=0; j < response.records.length; j++) {                  
                         //var count = groups[groupname].length;
-                        var count = 'n/a'
-                        var trow = $('<tr class="row"><td><img src="/images/edit.png" style="max-width:inherit;"></img></td><td>'+response.records[j].name+'</td><td>'+count+'</td></tr>');
+                        var description = response.records[j].description;
+                        var trow = $('<tr class="row"><td><img src="/images/edit.png" style="max-width:inherit;"></img></td><td>'+response.records[j].name+'</td><td>'+description+'</td></tr>');
                         var group = response.records[j];
                         $(trow).data('groupname', group.name).click({param1:group}, function(event) {
                             //var group = groups[j].name;
@@ -339,7 +340,7 @@ function populate_local_users_n_groups() {
                                 for (z=0; z < response.records.length; z++) {
                                     group_users.push({username : response.records[z].username, fullname: response.records[z].fullname, userid: response.records[z].id});    
                                 }
-                                group_modal(groupname, group_users, users, 'Edit', event.data.param1.id);
+                                group_modal(groupname, group_users, users, 'Edit', event.data.param1.id, event.data.param1.description);
                             })
                         });
                         $('#groups_table').append(trow);
@@ -598,7 +599,7 @@ $.ajax({
             if (id != undefined) {
                 url = '/scot/api/v2/user/' + id;
             }
-            var json = {'username':username,'fullname':fullname, 'active':active, 'password':password, 'group':group}
+            var json = {'username':username,'fullname':fullname, 'active':active, 'password':password, 'groups':group}
             $.ajax({
                 type: ajax_type,
                 async: true,
@@ -634,7 +635,8 @@ $.ajax({
 		  $(button).append('<img class="loading" src="./loading.gif"></img>');
 		  var id = $('#group_modal').find('input[name=id]').val();
           var groupname = $('#group_modal').find('input[name=groupname]').val();
-		  var selectedusers   = $('#group_form').find('select')[0];
+		  var description = $('#group_modal').find('input[name=description]').val();
+          var selectedusers   = $('#group_form').find('select')[0];
           selectedusers = $(selectedusers).find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from the left (selected) side in the users select into array 
 		  var unselectedusers = $('#group_form').find('select')[1];
           unselectedusers = $(unselectedusers).find('option').map(function() { return $(this).attr('value'); }).toArray(); //grab the values from the right (unselected) side in the users select into array
@@ -645,7 +647,7 @@ $.ajax({
           if (id != undefined) {
             url = '/scot/api/v2/group/' + id;
           }
-          var json = {'name':groupname}
+          var json = {'name':groupname, 'description':description}
           $.ajax({
 		     type: ajax_type,
 		     async: true,
@@ -665,7 +667,7 @@ $.ajax({
                             currentGroup.push(groupname);
                             //todo check if group is already there and skip if it is. 
                             var url = '/scot/api/v2/user/' + response.records[i].id;
-                            var json = {'group':currentGroup};
+                            var json = {'groups':currentGroup};
                             $.ajax({
                                 type: 'put',
                                 async: true,
@@ -681,13 +683,13 @@ $.ajax({
                     }
                     if (unselectedusersid.indexOf(response.records[i].id) !== -1) {
                         console.log(i);
-                        if (response.records[i].group.indexOf(groupname) !== -1) { 
-                            var currentGroup = response.records[i].group;
+                        if (response.records[i].groups.indexOf(groupname) !== -1) { 
+                            var currentGroup = response.records[i].groups;
                             var index = currentGroup.indexOf(groupname);
                             if (index !== -1) {
                                 currentGroup.splice(index,1)
                                 var url = '/scot/api/v2/user/' + response.records[i].id;
-                                var json = {'group':currentGroup}
+                                var json = {'groups':currentGroup}
                                 $.ajax({
                                     type: 'put',
                                     asynx: true,
@@ -1312,6 +1314,10 @@ $.ajax({
                                 <label class="control-label" for="groupname">Group</label>
                                 <div class="controls">
                                     <input type="text" name="groupname" id="groupname" ></input>
+                                </div>
+                                <label class="control-label" for="description">Description</label>
+                                <div class="controls">
+                                    <input type='test' name='description' id='description'></input>
                                 </div>
                             </div>
                             <table style="margin:auto;">
