@@ -924,6 +924,47 @@ html>body tbody.fixedContent {
             background-repeat:repeat-y;
 }
 
+.signatureTableWidth {
+    width:200px;
+}
+
+.signatureTable {
+  display: table;
+  padding:3px;
+  border-radius:5px;
+  border:1px solid black;
+  width:99%;
+  box-shadow:0px 0px 7px;
+  margin-bottom:10px;
+}
+
+.signatureTable > div {
+//  display: table-row;
+//  border-bottom: 1px solid #333;
+}
+
+.signatureTable div:nth-child(odd) {
+  background-color: #EEE;
+}
+
+.signatureTable div:nth-child(even) {
+  background-color: #FFF;
+}
+
+.signatureTable span:first-child {
+  font-weight: bold;
+  padding-right:10px;
+  //width:200px;
+  display: inline-block;
+}
+
+.incidentTable span:last-child {
+  width:100%;
+}
+.incidentTable select {
+  margin-bottom:2px;
+}
+
 .incidentTableWidth {
     width: 200px;
 }
@@ -963,9 +1004,7 @@ html>body tbody.fixedContent {
 }
 .incidentTable select {
   margin-bottom:2px;
-
 }
-
 
 .selectedRow > td {
   background-color: #B1D0FA !important;
