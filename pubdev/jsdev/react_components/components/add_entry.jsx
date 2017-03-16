@@ -12,25 +12,6 @@ var AddEntryModal = React.createClass({
         key = key.getTime();
         var tinyID = 'tiny_' + key;
         var content;
-        /*if (this.props.entryAction == 'Edit'){
-            $.ajax({
-                type: 'GET',
-                url:  '/scot/api/v2/entry/'+ this.props.id,
-                async: false,
-                success: function(response){
-                    content = response.body;
-                    return {
-                        tinyID: tinyID, key: key, content: content 
-                    }
-                }.bind(this),
-                error: function() {
-                    content = 'error getting content - manually copy/pasting content may be necessary';
-                    return {
-                        tinyID: tinyID, key: key, content: content
-                    }
-                }.bind(this)
-            })
-        }*/
         if (this.props.entryAction == 'Add' || this.props.entryAction == 'Reply'){
             content = '';
             return {
@@ -59,13 +40,11 @@ var AddEntryModal = React.createClass({
                 type: 'GET',
                 url:  '/scot/api/v2/entry/'+ this.props.id,
                 success: function(response){
-                    //$('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").html(response.body)
                     recently_updated = response.updated;
                     this.setState({content: response.body, asyncContentLoaded: true});
                     this.forceUpdate();
                 }.bind(this),
                 error: function() {
-                    //$('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").html()
                     this.setState({content: "Error getting original data from source. Copy/Paste original", asyncContentLoaded:true})
                     this.forceUpdate();
                 }.bind(this)
