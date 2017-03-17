@@ -204,6 +204,7 @@ var SelectedEntry = React.createClass({
                 $(tr).off('mousedown');
                 $(tr).on('mousedown', function(index) {
                     var thing = index.target;
+                   if ($(thing)[0].className == 'extras') { thing = $(thing)[0].parentNode}; //if an extra is clicked reference the parent element
                     if ($(thing).attr('url')) {  //link clicked
                         var url = $(a).attr('url');
                         this.linkWarningToggle(url);
