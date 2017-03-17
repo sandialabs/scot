@@ -77,10 +77,12 @@ var SignatureTable = React.createClass({
         this.setState({readOnly: false, viewVersionid: null, value:''});
     },
     Cancel: function() {
-        this.setState({readOnly:true});
+        this.setState({readOnly:true, value: this.state.signatureData.body[this.state.viewVersionid].body});
     },
     viewSigBody: function(e) {
-        this.setState({value:this.state.signatureData.body[e.target.id].body, viewVersionid:e.target.id});
+        if (this.state.readOnly == true) {  //only allow button click if you can't edit the signature
+            this.setState({value:this.state.signatureData.body[e.target.id].body, viewVersionid:e.target.id});
+        }
     },
     render: function() {
         var versionsArray = []
