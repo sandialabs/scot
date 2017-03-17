@@ -712,6 +712,11 @@ sub get_subthing {
             my $entrycount  = $self->get_entry_count($entity);
             $enc_total  += &$entrytimer;
 
+            my $entrycursor = $mongo->collection('Entry')->find({
+                'target.id' => $entity->id,
+                'target.type'   => "entity",
+            });
+            my @entries = $self->thread_entries($entrycursor);
             $things{$entity->value} = {
                 id      => $entity->id,
                 count   => $count,
@@ -719,6 +724,7 @@ sub get_subthing {
                 type    => $entity->type,
                 classes => $entity->classes,
                 data    => $entity->data,
+                entries => \@entries,
             };
         }
 
