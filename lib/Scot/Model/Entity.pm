@@ -68,6 +68,20 @@ has classes => (
     default => sub {[]},
 );
 
+=item B<status>
+
+some entities are very noisey and you probably will want to 
+avoid tracking them, for example your top level domain name
+valid statuses = tracked | untracked
+
+=cut
+
+has status  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'tracked',
+);
 
 =item B<data>
 

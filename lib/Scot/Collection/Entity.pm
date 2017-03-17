@@ -108,6 +108,10 @@ sub update_entities {
         });
 
         if ($entity) {
+            my $entity_status   = $entity->status;
+            if ( $entity_status eq "untracked" ) {
+                next;
+            }
             $log->trace("Found matching $type entity $value");
             push @updated_ids, $entity->id;
         }
