@@ -76,6 +76,19 @@
             },
         },
         {
+            attr    => 'es',
+            class   => 'Scot::Util::ESProxy',
+            config  => {
+                nodes       => [ qw(localhost:9200) ],
+                max_workers => 1,
+                proto       => 'http',
+                servername  => 'localhost',
+                serverport  => 9200,
+                username    => ' ',
+                password    => ' ',
+            },
+        },
+        {
             attr    => 'mongoquerymaker',
             class   => 'Scot::Util::MongoQueryMaker',
             config  => {
