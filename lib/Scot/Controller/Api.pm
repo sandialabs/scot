@@ -964,6 +964,17 @@ sub update {
             }
         });
     }
+    if ( ref($object) eq "Scot::Model::Sigbody") {
+        $env->mq->send("scot", { 
+            action  => "updated",
+            data    => {
+                who  => $user,
+                type => "signature",
+                id   => $object->{signature_id},
+                what => "Signature Update",
+            }
+        });
+    }
 }
 
 sub invalid_id_check {
