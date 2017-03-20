@@ -182,6 +182,10 @@ sub create {
         thing   => $self->get_object_collection($object),
         id      => $object->id,
     });
+    my $nowdt = DateTime->from_epoch( epoch => $env->now );
+    $mongo->collection('Stat')->increment($nowdt,
+                                            "$colname created",
+                                            1);
 }
 
 sub apply_tags {
@@ -986,6 +990,10 @@ sub update {
             }
         });
     }
+    my $now = DateTime->now;
+    $mongo->collection('Stat')->increment($now,
+                                            "$col_name updated",
+                                            1);
 }
 
 sub invalid_id_check {
@@ -1638,6 +1646,10 @@ sub delete {
             },
         });
     }
+        my $now = DateTime->now;
+        $mongo->collection('Stat')->increment($now,
+                                              "$col_name deleted",
+                                              1);
 }
 
 =item B<DELETE /scot/api/v2/:thing/:id/:/subthing/:subid>
