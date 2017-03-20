@@ -122,6 +122,17 @@ sub create {
             }
         });
     }
+    if ( ref($object) eq "Scot::Model::Sigbody") {
+        $env->mq->send("scot", { 
+            action  => "updated",
+            data    => {
+                who  => $user,
+                type => "signature",
+                id   => $object->{signature_id},
+                what => "Signature Update",
+            }
+        });
+    }
 
     if ( $object->meta->does_role("Scot::Role::Tags") ) {
         $self->apply_tags($req_href, $colname, $object->id);
