@@ -182,7 +182,8 @@ sub create {
         thing   => $self->get_object_collection($object),
         id      => $object->id,
     });
-    $mongo->collection('Stat')->increment($env->now,
+    my $nowdt = DateTime->from_epoch( epoch => $env->now );
+    $mongo->collection('Stat')->increment($nowdt,
                                             "$colname created",
                                             1);
 }
