@@ -128,7 +128,7 @@ sub auth {
 
     $log->debug("Attempting local authentication for $user");
     if ( $self->local_authenticates($user, $pass) ) {
-        my $group_aref  = $self->get_groups;
+        my $group_aref  = $self->get_groups($user);
         return $self->sucessful_auth($user);
     }
 
