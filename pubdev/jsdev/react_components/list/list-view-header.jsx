@@ -25,7 +25,7 @@ var ListViewHeader = React.createClass({
         var arr = [];
         var className = 'wrapper table-row header';
         for (var i=0; i < columns.length; i++) {
-            arr.push(<ListViewHeaderEach key={i} columnsOne={columns[i]} columnsDisplayOne={columnsDisplay[i]} columnsClassName={columnsClassName[i]} sort={sort} filter={filter} handleSort={handleSort} handleFilter={handleFilter} />)
+            arr.push(<ListViewHeaderEach key={i} columnsOne={columns[i]} columnsDisplayOne={columnsDisplay[i]} columnsClassName={columnsClassName[i]} sort={sort} filter={filter} handleSort={handleSort} handleFilter={handleFilter} type={this.props.type}/>)
         }
         return (
             <tbody className='list-view-table-header'>
@@ -178,9 +178,19 @@ var ListViewHeaderEach = React.createClass({
                         :
                         null}
                     </div>
-                    <OverlayTrigger trigger='focus' placement='bottom' overlay={<Popover id='statuspicker'><ButtonGroup vertical><Button onClick={this.handleStatusFilter}>Open</Button><Button onClick={this.handleStatusFilter}>Closed</Button><Button onClick={this.handleStatusFilter}>Promoted</Button><Button onClick={this.handleStatusFilterClear}>Clear</Button></ButtonGroup></Popover>}>
-                        <input style={{width:'inherit'}} onKeyPress={this.handleEnterKey} value={statusInputValue}/>
-                    </OverlayTrigger>
+                    {this.props.type == 'signature' ?
+                    <span style={{width:'inherit'}}>
+                        <OverlayTrigger trigger='focus' placement='bottom' overlay={<Popover id='statuspicker'><ButtonGroup vertical><Button onClick={this.handleStatusFilter}>Enabled</Button><Button onClick={this.handleStatusFilter}>Disabled</Button><Button onClick={this.handleStatusFilterClear}>Clear</Button></ButtonGroup></Popover>}>
+                            <input style={{width:'inherit'}} onKeyPress={this.handleEnterKey} value={statusInputValue}/>
+                        </OverlayTrigger>
+                    </span>
+                    :
+                    <span style={{width:'inherit'}}>
+                        <OverlayTrigger trigger='focus' placement='bottom' overlay={<Popover id='statuspicker'><ButtonGroup vertical><Button onClick={this.handleStatusFilter}>Open</Button><Button onClick={this.handleStatusFilter}>Closed</Button><Button onClick={this.handleStatusFilter}>Promoted</Button><Button onClick={this.handleStatusFilterClear}>Clear</Button></ButtonGroup></Popover>}>
+                            <input style={{width:'inherit'}} onKeyPress={this.handleEnterKey} value={statusInputValue}/>
+                        </OverlayTrigger>
+                    </span>
+                    }
                 </th>
             )
         } else {
