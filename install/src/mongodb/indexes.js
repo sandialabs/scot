@@ -9,6 +9,7 @@ db.alert.ensureIndex(       { "alertgroup": 1}  );
 db.alert.ensureIndex(       { "updated":    1}  );
 db.alert.ensureIndex(       { "created":    1}  );
 db.alert.ensureIndex(       { "when":       1}  );
+db.alert.ensureIndex(       { "status":     1}  );
 
 db.audit.ensureIndex(       { "id":         1}, {unique: true, dropDups:true}  );
 db.audit.ensureIndex(       { "when":       1}  );
