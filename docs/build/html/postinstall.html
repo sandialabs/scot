@@ -17,7 +17,8 @@
         VERSION:     '3.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -25,7 +26,6 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="Migration" href="migration.html" />
     <link rel="prev" title="Installing SCOT" href="install.html" /> 
   </head>
@@ -254,7 +254,20 @@ to resart SCOT for any changes to be recognized.</p>
 175
 176
 177
-178</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
     
     # scot version
     version     =&gt; &#39;3.5.1&#39;,
@@ -329,6 +342,19 @@ to resart SCOT for any changes to be recognized.</p>
                 host            =&gt; &#39;mongodb://localhost&#39;,
                 write_safety    =&gt; 1,
                 find_master     =&gt; 1,
+            },
+        },
+        {
+            attr    =&gt; &#39;es&#39;,
+            class   =&gt; &#39;Scot::Util::ESProxy&#39;,
+            config  =&gt; {
+                nodes       =&gt; [ qw(localhost:9200) ],
+                max_workers =&gt; 1,
+                proto       =&gt; &#39;http&#39;,
+                servername  =&gt; &#39;localhost&#39;,
+                serverport  =&gt; 9200,
+                username    =&gt; &#39; &#39;,
+                password    =&gt; &#39; &#39;,
             },
         },
         {
@@ -516,7 +542,25 @@ to resart SCOT for any changes to be recognized.</p>
 76
 77
 78
-79</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
     log_config  =&gt; {
         logger_name     =&gt; &#39;SCOT&#39;,
         layout          =&gt; &#39;%d %7p [%P] %15F{1}: %4L %m%n&#39;,
@@ -565,7 +609,25 @@ to resart SCOT for any changes to be recognized.</p>
                 find_master     =&gt; 1,
             },
         },
+        {
+            attr    =&gt; &#39;mq&#39;,
+            class   =&gt; &#39;Scot::Util::Messageq&#39;,
+            config  =&gt; {
+                destination =&gt; &quot;scot&quot;,
+                stomp_host  =&gt; &quot;localhost&quot;,
+                stomp_port  =&gt; 61613,
+            },
+        },
+        {
+            attr    =&gt; &#39;es&#39;,
+            class   =&gt; &#39;Scot::Util::ElasticSearch&#39;,
+            config  =&gt; {
+                nodes       =&gt; [ qw(localhost:9200) ],
+                max_workers =&gt; 1,
+            },
+        },
     ],
+    parser_dir  =&gt; &#39;/opt/scot/lib/Scot/Parser&#39;,
     get_method      =&gt; &quot;mongo&quot;,     # other value is &quot;rest&quot;
     leave_unseen    =&gt; 1,
     # interactive =&gt; [ yes | no ]
@@ -977,7 +1039,7 @@ entry.  It is recommended to run this every 2 to 5 minutes.  Here&#8217;s the cr
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/postinstall.txt"
+      <li><a href="_sources/postinstall.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
