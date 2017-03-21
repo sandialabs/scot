@@ -46,9 +46,9 @@ module.exports = React.createClass({
             columns = ['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
             columnsClassName=['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
         } else if (this.props.type == 'incident') {
-            columnsDisplay = ['ID', 'DOE', 'Status', 'Owner', 'Subject', 'Occurred', 'Type']
-            columns = ['id', 'doe_report_id', 'status', 'owner', 'subject', 'occurred', 'type']
-            columnsClassName = ['id', 'doe_report_id', 'status', 'owner', 'subject', 'occurred', 'type']
+            columnsDisplay = ['ID', 'DOE', 'Status', 'Owner', 'Subject', 'Occurred', 'Type', 'Tags', 'Sources']
+            columns = ['id', 'doe_report_id', 'status', 'owner', 'subject', 'occurred', 'type', 'tag', 'source']
+            columnsClassName = ['id', 'doe_report_id', 'status', 'owner', 'subject', 'occurred', 'type', 'tag', 'source']
         } else if (this.props.type == 'task') {
             columnsDisplay = ['Type', 'ID', 'Status', 'Owner', 'Entry Id', 'Updated']
             columns = ['target.type', 'target.id', 'task.status', 'owner', 'id', 'updated']
