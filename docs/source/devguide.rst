@@ -235,8 +235,8 @@ SCOT has been written using the JSX format. See https://facebook.github.io/react
 
 :JSX Libraries:         Most libraries that the SCOT JSX components (found in /pubdev/jsdev/react_components/) rely on are found in /pubdev/node_modules and can be installed/updated using npm.
 
-:JSX Compiling:         Compiling the JSX files into a single javascript file is done by using Grunt. The file that specifies the compiling directories is /pubdev/gruntfile.js. The final file that is ultimately compiled and used is /public/scot-3.5.js
+:JSX Compiling:         Compiling the JSX files into a single javascript file is done by using Gulp. The file that specifies the compiling directories is /pubdev/gulpfile.js. The final file that is ultimately compiled and used is /public/scot-3.5.js
 
-:JSX Dev:               If you would like to contribute to, or modify the front end of SCOT, you can do so by creating/modifying files in /pubdev/ and then compile your changes using grunt.
+:JSX Dev:               If you would like to contribute to, or modify the front end of SCOT, you can do so by creating/modifying files in /pubdev/ and then compile your changes using gulp.
 
 :Final HTML/JS:         The files ultimately used to display and control the front end are found in /public/
