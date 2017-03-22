@@ -46,9 +46,9 @@ module.exports = React.createClass({
             columns = ['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
             columnsClassName=['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
         } else if (this.props.type == 'incident') {
-            columnsDisplay = ['ID', 'DOE', 'Status', 'Owner', 'Subject', 'Occurred', 'Type']
-            columns = ['id', 'doe_report_id', 'status', 'owner', 'subject', 'occurred', 'type']
-            columnsClassName = ['id', 'doe_report_id', 'status', 'owner', 'subject', 'occurred', 'type']
+            columnsDisplay = ['ID', 'DOE', 'Status', 'Owner', 'Subject', 'Occurred', 'Type', 'Tags', 'Sources']
+            columns = ['id', 'doe_report_id', 'status', 'owner', 'subject', 'occurred', 'type', 'tag', 'source']
+            columnsClassName = ['id', 'doe_report_id', 'status', 'owner', 'subject', 'occurred', 'type', 'tag', 'source']
         } else if (this.props.type == 'task') {
             columnsDisplay = ['Type', 'ID', 'Status', 'Owner', 'Entry Id', 'Updated']
             columns = ['target.type', 'target.id', 'task.status', 'owner', 'id', 'updated']
@@ -62,9 +62,9 @@ module.exports = React.createClass({
             columns = ['id', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
             columnsClassName = ['id', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
         } else if (this.props.type =='signature') {
-            columnsDisplay = ['ID', 'Name', 'Type', 'Status', 'Group', 'Body', 'Description' ]
-            columns = ['id', 'name', 'type', 'status', 'signature_group', 'body', 'description']
-            columnsClassName = ['id', 'name', 'type', 'status', 'signature_group', 'body', 'description']
+            columnsDisplay = ['ID', 'Name', 'Type', 'Status', 'Group', 'Description' ]
+            columns = ['id', 'name', 'type', 'status', 'signature_group', 'description']
+            columnsClassName = ['id', 'name', 'type', 'status', 'signature_group', 'description']
         }
 
         if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; alertPreSelectedId=id;};
@@ -256,6 +256,7 @@ module.exports = React.createClass({
         }.bind(this))
         $(document.body).keydown(function(e) {
             if ($('input').is(':focus')) {return};
+            if ($('textarea').is(':focus')) {return};
             if (e.keyCode == 70 && (e.ctrlKey != true && e.metaKey != true)) {
                 this.toggleView();
             }
@@ -324,7 +325,7 @@ module.exports = React.createClass({
                                         <div className='tableview' style={{display: 'flex'}}>
                                             <div id='fluid2' className="container-fluid2" style={{width:'100%', maxHeight: this.state.maxheight, marginLeft: '0px',height: this.state.scrollheight, 'overflow': 'hidden',paddingLeft:'5px', display:'flex', flexFlow: 'column'}}>                 
                                                 <table style={{width:'100%'}}>
-                                                    <ListViewHeader data={this.state.objectarray} columns={this.state.columns} columnsDisplay={this.state.columnsDisplay} columnsClassName={this.state.columnsClassName} handleSort={this.handleSort} sort={this.state.sort} filter={this.state.filter} handleFilter={this.handleFilter} startepoch={this.state.startepoch} endepoch={this.state.endepoch}/>
+                                                    <ListViewHeader data={this.state.objectarray} columns={this.state.columns} columnsDisplay={this.state.columnsDisplay} columnsClassName={this.state.columnsClassName} handleSort={this.handleSort} sort={this.state.sort} filter={this.state.filter} handleFilter={this.handleFilter} startepoch={this.state.startepoch} endepoch={this.state.endepoch} type={this.props.type}/>
                                                 </table>
                                                 <div id='list-view-data-div' style={{height:this.state.scrollheight}} className='list-view-overflow'>
                                                     <div className='list-view-data-div' style={{display:'block'}}>
