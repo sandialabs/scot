@@ -742,6 +742,7 @@ sub get_subthing {
                 type    => $entity->type,
                 classes => $entity->classes,
                 data    => $entity->data,
+                status  => $entity->status,
                 entries => \@entries,
             };
         }
