@@ -326,10 +326,10 @@ sub list {
     $log->debug("match_ref is ",{filter=>\&Dumper, value=>$match_ref});
 
     if ( $tasksearch == 1 ) {
-	$match_ref->{'$or'} = [
-		{ 'task.status' => { '$exists' => 1 } },
-		{ 'metadata.status' => { '$exists' => 1 } },
-	];
+        $match_ref->{'$or'} = [
+            {'task.status' => {'$exists' => 1} },
+            {'metadata.status' => {'$exists' => 1 } }
+        ];
     }
 
     unless ( %{$match_ref} ) {
@@ -1648,6 +1648,15 @@ sub delete {
                 who     => $user,
             },
         });
+        # need to update any child entries
+        my $entrycol = $mongo->collection('Entry');
+        my $match    = {
+            parent_id   => $object->id,
+        };
+        my $ccursor  = $entrycol->find($match);
+        while ( my $child = $ccursor->next ) {
+            $child->update_set( parent_id => 0 );
+        }
     }
         my $now = DateTime->now;
         $mongo->collection('Stat')->increment($now,
