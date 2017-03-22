@@ -57,7 +57,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntryData:true});
-                        this.props.errorToggle("Error: " + result.responseText);
+                        this.props.errorToggle("Failed to load entry data.");
                     }
                 }.bind(this)
             });
@@ -83,7 +83,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntityData: true})
-                        this.props.errorToggle("Error: " + result.responseText);
+                        this.props.errorToggle("Failed to load entity data.");
                     }
                 }.bind(this)
             });
@@ -121,7 +121,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntryData:true});
-                        this.props.errorToggle("Error: " + result.responseText);
+                        this.props.errorToggle("Failed to load entry data ");
                     }
                 }.bind(this)
             }); 
@@ -147,7 +147,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntityData: true})
-                        this.props.errorToggle("Error: " + result.responseText);
+                        this.props.errorToggle("Failed to load entity data");
                     }
                 }.bind(this)
             }); 
