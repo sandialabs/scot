@@ -2,6 +2,7 @@ package Scot::Collection::Stat;
 
 use lib '../../../lib';
 use Moose 2;
+use Data::Dumper;
 
 extends 'Scot::Collection';
 
@@ -62,9 +63,10 @@ sub increment {
     return $obj;
 }
 
-sub get_statistics {
+sub get_dow_statistics {
     my $self    = shift;
     my $metric  = shift;
+    my $log     = $self->env->log;
     my %command;
     my $tie = tie(%command, "Tie::IxHash");
     %command = (
@@ -72,19 +74,30 @@ sub get_statistics {
         map         => $self->_get_map_js,
         reduce      => $self->_get_reduce_js,
         finalize    => $self->_get_finalize_js,
-        query       => $metric,
-        out         => { inline => 1 },
+        query       => { metric => $metric},
+        out         => 'tempstats',
     );
+
+#    $log->debug("Command is ",{filter=>\&Dumper,value=>\%command});
+
     my $mongo   = $self->meerkat;
-    my $json    = $self->_try_mongo_op(
+    my $db_name = $mongo->database_name;
+    my $db      = $mongo->_mongo_database($db_name);
+    my $result  = $self->_try_mongo_op(
         get_stats   => sub {
-            my $db_name = $mongo->database_name;
-            my $db      = $mongo->mongo_database($db_name);
             my $job     = $db->run_command(\%command);
             return $job;
         }
     );
-    return $json;
+    $log->debug("mapreduce returned: ",{filter=>\&Dumper, value=>$result});
+
+    my $tempcol = $db->get_collection($result->{result});
+    my $cursor  = $tempcol->find();
+    my @stats   = $cursor->all;
+
+    $log->debug("stats are ", {filter=>\&Dumper, value => \@stats});
+
+    return wantarray ? @stats : \@stats;
 }
 
 sub _get_map_js {
@@ -129,6 +142,7 @@ function (key, value) {
     value.variance = value.diff / value.count;
     value.stddev = Math.sqrt(value.variance);
     return value;
+}
 EOF
 }
 
