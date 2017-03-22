@@ -326,7 +326,10 @@ sub list {
     $log->debug("match_ref is ",{filter=>\&Dumper, value=>$match_ref});
 
     if ( $tasksearch == 1 ) {
-        $match_ref->{'task.status'} = {'$exists' => 1};
+	$match_ref->{'$or'} = [
+		{ 'task.status' => { '$exists' => 1 } },
+		{ 'metadata.status' => { '$exists' => 1 } },
+	];
     }
 
     unless ( %{$match_ref} ) {
