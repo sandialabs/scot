@@ -144,7 +144,7 @@ var SelectedHeader = React.createClass({
                         if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false});
                         }
-                        this.props.errorToggle("Error: Failed to load entity data. Error message:" + result.responseText);
+                        this.props.errorToggle("Error: Failed to load entity data.");
                     }.bind(this)
                 });
                 //guide load
@@ -255,7 +255,7 @@ var SelectedHeader = React.createClass({
                 if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 } 
-                this.props.errorToggle("Error: Failed to reload entity data. Error message: " + result.responseText);
+                this.props.errorToggle("Error: Failed to reload entity data.");
             }.bind(this)
         });
         //error popup if an error occurs
