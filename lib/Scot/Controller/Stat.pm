@@ -16,19 +16,15 @@ sub get {
     my $env     = $self->env;
     my $log     = $env->log;
     my $mongo   = $env->mongo;
+    my $thing   = $self->stash('thing');
     
     $log->debug("--- ");
     $log->debug("--- GET viz");
     $log->debug("--- ");
 
-    my $req_href    = $self->get_request_params;
-
-    my $json    = $self->pyramid_json(
-        $req_href->{span_type},
-        $req_href->{index},
-    );
-
-    $self->do_render($json);
+    return $self->pyramid_json          if ( $thing eq "pyramid" );
+    return $self->day_hour_heatmap_json if ( $thing eq "dhheatmap" );
+    return $self->get_statistics_json   if ( $thing eq "statistics" );
 
 }
 
@@ -129,8 +125,8 @@ sub pyramid_json {
 
 # http://bl.ocks.org/tjdecke/5558084
 sub day_hour_heatmap_json {
-    my $self        = shift
-    my $req_href    = shift;
+    my $self        = shift;
+    my $req_href    = $self->get_request_params;
     my $collection  = $req_href->{collection};
     my $type        = $req_href->{type}; # ... created | updated|...
     my $year        = $req_href->{year};
@@ -151,6 +147,22 @@ sub day_hour_heatmap_json {
         }
     }
     $self->do_render(\@resarray);
+}
+
+sub get_dow_statistics_json {
+    my $self        = shift;
+    my $req_href    = $self->get_request_params;
+    my $log         = $self->env->log;
+
+    my $collection  = $self->env->mongo->collection('Stat');
+    $log->debug("req_href is ",{filter=>\&Dumper,value=>$req_href});
+    my $metric      = $req_href->{metric};
+
+    $log->debug("Getting statistics");
+
+    my $json = $collection->get_dow_statistics($metric);
+    $self->do_render($json);
+
 }
 
         
