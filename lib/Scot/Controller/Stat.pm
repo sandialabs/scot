@@ -69,8 +69,10 @@ sub pyramid_json {
     my $req_href    = $self->get_request_params;
     my $log         = $self->env->log;
 
+    $log->debug("requested params are ",{filter=>\&Dumper, value=>$req_href});
+
     my $span_type   = $req_href->{span_type}; # ... day, month, quarter, year
-    my $index       = $req_href->{index}; # ... number of span_types ago to tally
+    my $index       = $req_href->{index} + 0; # ... number of span_types ago to tally
 
     # pyramid report returns:
     # {
@@ -79,11 +81,15 @@ sub pyramid_json {
     #   incidents: int,
     # }
 
+    my $st  = $span_type."s";
+
     my $nowdt       = DateTime->from_epoch( epoch => $self->env->now );
-    my $duration    = DateTime::Duration->new(
-        $span_type  => $index,
-    );
-    $nowdt->subtract_duration($duration);
+    if ( $span_type ne "all") {
+        my $duration    = DateTime::Duration->new(
+            $st  => $index,
+        );
+        $nowdt->subtract_duration($duration);
+    }
 
     $log->debug("Looking for $span_type pyramid $index on ".$nowdt->ymd);
 
@@ -92,21 +98,24 @@ sub pyramid_json {
     my $match   = {
         metric  => $createdre,
     };
-    if ($span_type eq "days") {
+    if ($span_type eq "day") {
         $match->{year} = $nowdt->year;
         $match->{month} = $nowdt->month;
         $match->{day} = $nowdt->day;
     }
-    if ($span_type eq "months") {
+    if ($span_type eq "month") {
         $match->{year} = $nowdt->year;
         $match->{month} = $nowdt->month;
     }
-    if ($span_type eq "quarters") {
+    if ($span_type eq "quarter") {
         $match->{year} = $nowdt->year;
         $match->{quarter} = $nowdt->quarter;
     }
-    if ($span_type eq "years") {
+    if ($span_type eq "year") {
         $match->{year} = $nowdt->year;
+    }
+    if ($span_type eq "all") {
+        # do nothing;
     }
 
     $log->debug("match is ",{ filter=>\&Dumper, value=>$match });
@@ -126,16 +135,19 @@ sub pyramid_json {
 # http://bl.ocks.org/tjdecke/5558084
 sub day_hour_heatmap_json {
     my $self        = shift;
+    my $log         = $self->env->log;
     my $req_href    = $self->get_request_params;
     my $collection  = $req_href->{collection};
     my $type        = $req_href->{type}; # ... created | updated|...
-    my $year        = $req_href->{year};
+    my $year        = $req_href->{year}+0;
     my $metricre    = qr/$collection $type/;
     my $match   = {
         metric  => $metricre,
         year    => $year,
     };
+    $log->debug("building day hour heatmap for ",{filter=>\&Dumper, value=>$match});
     my $cursor  = $self->env->mongo->collection('Stat')->find($match);
+    $log->debug("cursor has ".$cursor->count." document");
     my %results = ();
     while ( my $obj = $cursor->next ) {
         $results{$obj->dow}->{$obj->hour} += $obj->value;
