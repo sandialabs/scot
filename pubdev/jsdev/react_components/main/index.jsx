@@ -222,7 +222,7 @@ var App = React.createClass({
                     id2 = this.props.params.id2
                 }
                 setguide = false
-                setintel = true
+                setintel = false
                 sethome = false
                 setalerts = false
                 setincidents = false
@@ -447,7 +447,7 @@ var App = React.createClass({
                                 <MenuItem eventKey={4} href="#/task" active={settask}>Task</MenuItem>
                                 <MenuItem eventKey={5} href="#/guide" active={setguide}>Guide</MenuItem>
                                 <MenuItem eventKey={8} href="#/visualization" active={setvisualization}>Visualization</MenuItem>
-                                {/*<MenuItem eventKey={7} href="#/signature" active={setsignature} disabled>Signature</MenuItem>*/}
+                                <MenuItem eventKey={7} href="#/signature" active={setsignature}>Signature</MenuItem>
                                 <MenuItem divider />
                                 <MenuItem eventKey={10.1} href='admin/index.html'>Administration</MenuItem>
                                 <MenuItem eventKey={10.2} href='docs/index.html'>Documentation</MenuItem>
