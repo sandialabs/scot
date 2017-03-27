@@ -1,10 +1,10 @@
 User Guide
 ==========
 
-SCOT is divided into several main section.  Alerts flow into SCOT and are processed in the
+SCOT is divided into several main sections.  Alerts flow into SCOT and are processed in the
 Alert tab.  Some subject of those Alerts will be promoted into Events, where the team 
-records the results of their investigations.  A subset of those Events, will be important
-enough to promote them into Incidents.  All the while, new Intel reports will be created
+records the results of their investigations.  A subset of those Events will be important
+enough to be promoted into Incidents.  Simultaneously, new Intel reports will be created
 and addes to SCOT.  The sections below describe how to use each section.
 
 Views
