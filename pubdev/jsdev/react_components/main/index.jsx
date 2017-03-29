@@ -24,21 +24,7 @@ var Status           = require('../components/dashboard/status.jsx');
 var Online          = require('../components/dashboard/online.jsx');
 var Stats           = require('../components/dashboard/stats.jsx');
 var Notification    = require('react-notification-system');
-var sethome = false
-var setalerts = false
-var setevents = false
-var setincidents = false
-var setintel = false
-var settask = false
-var setguide = false
-var setsignature = false
-var setamq = false
-var setwall = false
-var setvisualization = false
 var isalert = false
-var supertableid = [];
-var statetype = ''
-var eventtableid = []
 {
 	window.React = React;	
 	var $ = window.$;
@@ -48,274 +34,66 @@ var eventtableid = []
 var App = React.createClass({
 
     getInitialState: function(){
-	    var state;
 	    var id;
         var id2;
-        if(this.props.params.value  != null){
-            if(this.props.params.value.toLowerCase() == "home"){
-                state = 0;
-                sethome = true
-                setintel = false
-                setalerts = false
-                setincidents = false
-                setevents = false
-                settask = false
-                setguide = false
-                setamq = false
-                setwall = false
-                setsignature = false
-                setvisualization = false
-            }
-           
-            else if( this.props.params.value.toLowerCase() == "alert"){
+        var type = this.props.params.value;
+        var activeKey = 0;
+        if(type != null){
+            if( type.toLowerCase() == "alert"){
                 if(this.props.params.id != null){
                     id = this.props.params.id
-                    //array = this.props.params.id.split('+')
+                    type = 'alert'
                 }
-                statetype = 'alert'
-                state = 1
-                isalert = true
-                setalerts = true
-                setintel = false
-                sethome = false
-                setincidents = false
-                setevents = false
-                settask = false
-                setguide = false
-                setamq = false
-                setwall = false
-                setsignature = false
-                setvisualization = false
                 //if the url is just /alert/ with no id - default to alertgroup
-                if (this.props.params.id == null) {
+                else { 
                     id = null;
-                    statetype = 'alertgroup'
+                    type = 'alertgroup'
                     isalert = false
                 }
+                activeKey = 1;
             }
-            else if( this.props.params.value.toLowerCase() == "alertgroup"){
-                if(this.props.params.id != null){
-                    //array = this.props.params.id.split('+')
-                    id = this.props.params.id;
-                }
-                statetype='alertgroup'
-                isalert = false
-                state = 1
-                setalerts = true
-                setintel = false
-                sethome = false
-                setincidents = false
-                setevents = false
-                settask = false
-                setguide = false
-                setamq = false
-                setwall = false
-                setsignature = false
-                setvisualization = false
+            else if( type.toLowerCase() == "alertgroup"){
+                activeKey = 1;
             }
-            else if(this.props.params.value.toLowerCase() == "event"){
-                state = 2
-                if(this.props.params.id != null) {
-                    state = 2
-                    statetype = 'event'	
-                    //array = this.props.params.id.split('+')
-                    id = this.props.params.id
-                    id2 = this.props.params.id2
-                }
-                setevents = true	
-                setintel = false
-                sethome = false
-                setalerts = false
-                setincidents = false
-                settask = false
-                setguide = false
-                setamq = false
-                setwall = false
-                setsignature = false
-                setvisualization = false
+            else if (type.toLowerCase() == "event"){
+                activeKey = 2;
             }
-            else if (this.props.params.value.toLowerCase() == "incident"){
-                state = 3
-                if(this.props.params.id != null) {
-                    state = 3
-                    statetype = 'incident'	
-                    //array = this.props.params.id.split('+')
-                    id = this.props.params.id
-                    id2 = this.props.params.id2
-                }
-                setguide = false
-                setincidents = true
-                setintel = false
-                sethome = false
-                setalerts = false
-                setevents = false
-                settask = false
-                setamq = false
-                setwall = false
-                setsignature = false
-                setvisualization = false
+            else if (type.toLowerCase() == "incident"){
+                activeKey = 3;
             }
-            
-            else if(this.props.params.value.toLowerCase() == "task")  {
-                state = 4
-                setguide = false
-                sethome = false
-                setalerts = false
-                setevents = false
-                setincidents = false
-                setintel = false
-                settask = true
-                setamq = false
-                setwall = false
-                setsignature = false
-                setvisualization = false
+            else if(type.toLowerCase() == "task")  {
+                activeKey = 4;
             }  
-            else if(this.props.params.value.toLowerCase() == 'guide'){
-                setguide = true
-                setevents = false	
-                setintel = false
-                sethome = false
-                setalerts = false
-                setincidents = false
-                settask = false
-                setamq = false
-                setwall = false
-                setsignature = false
-                setvisualization = false
-                state = 5
-                statetype = 'guide'
-                if(this.props.params.id != null) {
-                    state = 5
-                    statetype = 'guide'	
-                    //array = this.props.params.id.split('+')
-                    id = this.props.params.id
-                }
+            else if(type.toLowerCase() == 'guide'){
+                activeKey = 5;
             }
-            else if(this.props.params.value.toLowerCase() == "intel") {
-                state = 6
-                if(this.props.params.id != null) {
-                    state = 6
-                    statetype = 'intel'	
-                    //array = this.props.params.id.split('+')
-                    id = this.props.params.id
-                    id2 = this.props.params.id2
-                }
-                setguide = false
-                setintel = true
-                sethome = false
-                setalerts = false
-                setincidents = false
-                setevents = false
-                settask = false
-                setamq = false
-                setwall = false
-                setsignature = false
-                setvisualization = false
+            else if(type.toLowerCase() == "intel") {
+                activeKey = 6;    
             }
-            else if(this.props.params.value.toLowerCase() == "signature") {
-                state = 7
-                if(this.props.params.id != null) {
-                    state = 7
-                    statetype = 'signature'
-                    //array = this.props.params.id.split('+')
-                    id = this.props.params.id
-                    id2 = this.props.params.id2
-                }
-                setguide = false
-                setintel = false
-                sethome = false
-                setalerts = false
-                setincidents = false
-                setevents = false
-                settask = false
-                setamq = false
-                setwall = false
-                setsignature = true
-                setvisualization = false
+            else if(type.toLowerCase() == "signature") {
+                activeKey = 7;
             }
-            else if(this.props.params.value.toLowerCase() == 'visualization'){
-                state = 8
-                setguide = false
-                setintel = false
-                sethome = false
-                setalerts = false
-                setincidents = false
-                setevents = false
-                settask = false
-                setamq = false
-                setwall = false
-                setsignature = false
-                setvisualization = true
+            else if(type.toLowerCase() == 'visualization'){
+                activeKey = 8;
             }
-            else if(this.props.params.value.toLowerCase() == 'entity'){
-                setguide = false
-                setevents = false	
-                setintel = false
-                sethome = false
-                setalerts = false
-                setincidents = false
-                settask = false
-                setamq = false
-                setwall = false
-                setsignature = false
-                setvisualization = false
-                if(this.props.params.id != null) {
-                    state = 98
-                    //array = this.props.params.id.split('+')
-                    //array.push(this.props.params.type)
-                    //array.push(this.props.params.typeid)
-                    id = this.props.params.id
-                }
+            else if(type.toLowerCase() == 'entity'){
+                activeKey = 10;        
             }
-            else if (this.props.params.value.toLowerCase() == "amq") {
-                state = 99
-                setguide = false
-                sethome = false
-                setalerts = false
-                setevents = false
-                setincidents = false
-                setintel = false
-                settask = false
-                setamq = true
-                setwall = false
-                setsignature = false
-                setvisualization = false
+            else if (type.toLowerCase() == "amq") {
+                activeKey = 99; 
             }
-            else if (this.props.params.value.toLowerCase() == 'wall') {
-                state = 100
-                setguide = false
-                sethome = false
-                setalerts = false
-                setevents = false
-                setincidents = false
-                setintel = false
-                settask = false
-                setamq = false 
-                setwall = true
-                setsignature = false
-                setvisualization = false
+            else if (type.toLowerCase() == 'wall') {
+                activeKey = 100;
             }
             else {
-                state = 0
-                sethome = true
-                setalerts = false
-                setevents = false
-                setincidents = false
-                setintel = false
-                settask = false
-                setguide = false
-                setamq = false
-                setwall = false
-                setsignature = false
-                setvisualization = false
+               type = ''; 
             }
         }
         else {
-            this.props.params.value = ''
-            state = 0
+            type = ''
         }
         Listener.activeMq();   //register for amq updates
-        return{id: id, id2: id2, set: state, handler: "Scot", viewMode:'default', notificationSetting: 'on', eestring: ''}	
+        return{id: this.props.params.id, id2: this.props.params.id2, handler: "Scot", viewMode:'default', notificationSetting: 'on', eestring: '', type:type.toLowerCase(), activeKey:activeKey}	
     },
     componentDidMount: function() {
 	    $.ajax({
@@ -330,7 +108,7 @@ var App = React.createClass({
         Store.addChangeListener(this.notification);
        
         //ee
-        if (this.state.set == 0) {
+        if (this.state.type == '') {
             $(document.body).keydown(function(e) {
                 this.ee(e);
             }.bind(this))   
@@ -365,9 +143,9 @@ var App = React.createClass({
         //Get landscape/portrait view if the cookie exists
         var viewModeSetting = checkCookie('viewMode');
         var notificationSetting = checkCookie('notification');
-        var listViewFilterSetting = checkCookie('listViewFilter'+this.props.params.value.toLowerCase());
-        var listViewSortSetting = checkCookie('listViewSort'+this.props.params.value.toLowerCase());
-        var listViewPageSetting = checkCookie('listViewPage'+this.props.params.value.toLowerCase());
+        var listViewFilterSetting = checkCookie('listViewFilter'+this.state.type.toLowerCase());
+        var listViewSortSetting = checkCookie('listViewSort'+this.state.type.toLowerCase());
+        var listViewPageSetting = checkCookie('listViewPage'+this.state.type.toLowerCase());
         if (notificationSetting == undefined) {
             notificationSetting = 'on';
         }
@@ -428,6 +206,7 @@ var App = React.createClass({
     },
    render: function() {
         var IH = 'Incident Handler: ' + this.state.handler;
+        var type = this.state.type;
         return (
             <div>
                 <Navbar inverse fixedTop={true} fluid={true}>
@@ -438,19 +217,20 @@ var App = React.createClass({
                         <Navbar.Toggle />
                     </Navbar.Header>
                     <Navbar.Collapse>
-                        <Nav onSelect={this.handleSelect}>
-                            <NavItem eventKey={1} href="#/alertgroup" active={setalerts}>Alert</NavItem>
-                            <NavItem eventKey={2} href="#/event" active={setevents}>Event</NavItem>
-                            <NavItem eventKey={3} href="#/incident" active={setincidents}>Incident</NavItem>
-                            <NavItem eventKey={6} href="#/intel" active={setintel}>Intel</NavItem>
+                        <Nav onSelect={this.handleSelect} activeKey={this.state.activeKey}>
+                            <NavItem eventKey={1} href="#/alertgroup">Alert</NavItem>
+                            <NavItem eventKey={2} href="#/event">Event</NavItem>
+                            <NavItem eventKey={3} href="#/incident">Incident</NavItem>
+                            <NavItem eventKey={6} href="#/intel" >Intel</NavItem>
                             <NavDropdown eventKey={10} id='nav-dropdown' title={'More'}>
-                                <MenuItem eventKey={4} href="#/task" active={settask}>Task</MenuItem>
-                                <MenuItem eventKey={5} href="#/guide" active={setguide}>Guide</MenuItem>
-                                <MenuItem eventKey={8} href="#/visualization" active={setvisualization}>Visualization</MenuItem>
-                                <MenuItem eventKey={7} href="#/signature" active={setsignature}>Signature</MenuItem>
+                                <MenuItem eventKey={4} href="#/task">Task</MenuItem>
+                                <MenuItem eventKey={5} href="#/guide">Guide</MenuItem>
+                                <MenuItem eventKey={8} href="#/visualization">Visualization</MenuItem>
+                                <MenuItem eventKey={7} href="#/signature">Signature</MenuItem>
+                                <MenuItem eventKey={10} href="#/entity">Entity</MenuItem>
                                 <MenuItem divider />
-                                <MenuItem eventKey={10.1} href='admin/index.html'>Administration</MenuItem>
-                                <MenuItem eventKey={10.2} href='docs/index.html'>Documentation</MenuItem>
+                                <MenuItem eventKey={11.1} href='admin/index.html'>Administration</MenuItem>
+                                <MenuItem eventKey={11.2} href='docs/index.html'>Documentation</MenuItem>
                             </NavDropdown>
                             <NavItem eventKey={9} href="incident_handler">{IH}</NavItem>
                         </Nav>
@@ -460,7 +240,7 @@ var App = React.createClass({
                 </Navbar>
                 <div className='mainNavPadding'>
                     <Notification ref='notificationSystem' />
-                    {this.state.set == 0 ? 
+                    {this.state.type == '' || this.state.type == 'home' ? 
                     <div className="homePageDisplay">
                         <div className='col-md-4'>
                             <img src='/images/scot-600h.png' style={{maxWidth:'350px',width:'100%',marginLeft:'auto', marginRight:'auto', display: 'block'}}/>
@@ -474,47 +254,27 @@ var App = React.createClass({
                     </div>
                     :
                     null}
-                    {this.state.set == 1 ?
-                        <ListView isalert={isalert ? 'isalert' : ''} id={this.state.id} viewMode={this.state.viewMode} type={statetype} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting}  listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
+                    {this.state.type == 'alert' || this.state.type == 'alertgroup' ?
+                        <ListView isalert={isalert ? 'isalert' : ''} id={this.state.id} viewMode={this.state.viewMode} type={this.state.type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting}  listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
                     :
                     null}
-                    {this.state.set == 2 ? 
-                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'event'} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
+                    {this.state.type == 'event' || this.state.type == 'incident' || this.state.type == 'task' || this.state.type == 'guide' || this.state.type == 'intel' || this.state.type == 'signature' ? 
+                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={this.state.type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
                     :
                     null}
-                    {this.state.set == 3 ? 
-                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'incident'}  notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
-                    :
-                    null}
-                    {this.state.set == 4 ?
-                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'task'} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
-                    :
-                    null}
-                    {this.state.set == 5 ?
-                        <ListView id={this.state.id} type={'guide'} viewMode={this.state.viewMode} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
-                    :
-                    null}
-                    {this.state.set == 6 ?
-                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'intel'} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/> 
-                    :
-                    null}
-                    {this.state.set == 7 ?
-                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={'signature'}  notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
-                    :
-                    null}
-                    {this.state.set == 8 ?
+                    {this.state.type == 'visualization' ?
                         <Revl value={this.props.params.value} type={this.props.params.id} id={this.props.params.type} depth={this.props.params.typeid} viewMode={this.state.viewMode} Notification={this.state.Notification} />
                     :
                     null}
-                    {this.state.set == 98 ?
+                    {this.state.type == 'entity' ?
                         <EntityDetail entityid={this.state.id} entitytype={'entity'} id={this.state.id} type={'entity'} viewMode={this.state.viewMode} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} fullScreen={true} errorToggle={this.errorToggle}/>
                     :
                     null}
-                    {this.state.set == 99 ?
+                    {this.state.type == 'amq' ?
                         <AMQ type='amq' />
                     :
                     null}
-                    {this.state.set == 100 ?
+                    {this.state.type == 'wall' ?
                         <Wall />
                     :
                     null}
@@ -525,7 +285,7 @@ var App = React.createClass({
     handleSelect: function(selectedKey) {
         switch(selectedKey) {
             case 0:
-                this.setState({set:0});
+                this.setState({type:''});
                 break;
             case 1:
                 window.location.hash = '#/alertgroup';
@@ -562,6 +322,9 @@ var App = React.createClass({
             case 9:
                 window.open('incident_handler.html');
                 break;
+            case 10:
+                window.location.hash = '#/entity';
+                window.location.href = window.location.hash;
        }
     },
 });
