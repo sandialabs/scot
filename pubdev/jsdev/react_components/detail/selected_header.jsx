@@ -83,10 +83,12 @@ var SelectedHeader = React.createClass({
                     type:'get',
                     url:'scot/api/v2/' + this.props.type + '/' + this.props.id,
                     success:function(result) {
-                        var eventResult = result;
-                        this.setState({headerData:eventResult,showEventData:true, isNotFound:false, tagData:eventResult.tag, sourceData:eventResult.source})
-                        if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                            this.setState({loading:false})
+                        if (this.isMounted()) {
+                            var eventResult = result;
+                            this.setState({headerData:eventResult,showEventData:true, isNotFound:false, tagData:eventResult.tag, sourceData:eventResult.source})
+                            if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                                this.setState({loading:false})
+                            }
                         }
                     }.bind(this),
                     error: function(result) {
@@ -102,11 +104,13 @@ var SelectedHeader = React.createClass({
                     type: 'get',
                     url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType, 
                     success: function(result) {
-                        var entryResult = result.records;
-                        this.setState({showEntryData:true, entryData:entryResult, runWatcher:true})
-                        this.Watcher();
-                        if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                            this.setState({loading:false});
+                        if (this.isMounted()) {
+                            var entryResult = result.records;
+                            this.setState({showEntryData:true, entryData:entryResult, runWatcher:true})
+                            this.Watcher();
+                            if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                                this.setState({loading:false});
+                            }
                         }
                     }.bind(this),
                     error: function(result) {
@@ -122,22 +126,24 @@ var SelectedHeader = React.createClass({
                     type: 'get',
                     url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
                     success: function(result) {
-                        var entityResult = result.records;
-                        this.setState({showEntityData:true, entityData:entityResult})
-                        var waitForEntry = {
-                            waitEntry: function() {
-                                if(this.state.showEntryData == false && alertgroupforentity === false) {
-                                    setTimeout(waitForEntry.waitEntry,50);
-                                } else {
-                                    alertgroupforentity = false;
-                                    setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,this.scrollTo)}.bind(this));
-                                    if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
-                                        this.setState({loading:false});        
+                        if (this.isMounted()) {
+                            var entityResult = result.records;
+                            this.setState({showEntityData:true, entityData:entityResult})
+                            var waitForEntry = {
+                                waitEntry: function() {
+                                    if(this.state.showEntryData == false && alertgroupforentity === false) {
+                                        setTimeout(waitForEntry.waitEntry,50);
+                                    } else {
+                                        alertgroupforentity = false;
+                                        setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,this.scrollTo)}.bind(this));
+                                        if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
+                                            this.setState({loading:false});        
+                                        }
                                     }
-                                }
-                            }.bind(this)
-                        };
-                        waitForEntry.waitEntry();
+                                }.bind(this)
+                            };
+                            waitForEntry.waitEntry();
+                        }
                     }.bind(this),
                     error: function(result) {
                         this.setState({showEntityData:true})
@@ -153,11 +159,13 @@ var SelectedHeader = React.createClass({
                         type:'get',
                         url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/guide', 
                         success: function(result) {
-                            if (result.records[0] != undefined) {
-                                var guideID = result.records[0].id;
-                                this.setState({guideID: guideID});
-                            } else {
-                                this.setState({guideID: 0});
+                            if (this.isMounted()) {
+                                if (result.records[0] != undefined) {
+                                    var guideID = result.records[0].id;
+                                    this.setState({guideID: guideID});
+                                } else {
+                                    this.setState({guideID: 0});
+                                }
                             }
                         }.bind(this),
                         error: function(result) {
@@ -194,10 +202,12 @@ var SelectedHeader = React.createClass({
             type:'get',
             url:'scot/api/v2/' + this.props.type + '/' + this.props.id,
             success:function(result) {
-                var eventResult = result;
-                this.setState({headerData:eventResult,showEventData:true, eventLoaded:true, isNotFound:false, tagData:eventResult.tag, sourceData:eventResult.source})
-                if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                    this.setState({refreshing:false})
+                if (this.isMounted()) {
+                    var eventResult = result;
+                    this.setState({headerData:eventResult,showEventData:true, eventLoaded:true, isNotFound:false, tagData:eventResult.tag, sourceData:eventResult.source})
+                    if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                        this.setState({refreshing:false})
+                    }
                 }
             }.bind(this),
             error: function(result) {
@@ -213,12 +223,14 @@ var SelectedHeader = React.createClass({
             type: 'get',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType,
             success: function(result) {
-                var entryResult = result.records;
-                this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult, runWatcher:true})
-                this.Watcher();
-                if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                    this.setState({refreshing:false});
-                } 
+                if (this.isMounted()) {
+                    var entryResult = result.records;
+                    this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult, runWatcher:true})
+                    this.Watcher();
+                    if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                        this.setState({refreshing:false});
+                    } 
+                }
             }.bind(this),
             error: function(result) {
                 this.setState({showEntryData:true, entryLoaded:true})
@@ -233,22 +245,24 @@ var SelectedHeader = React.createClass({
             type: 'get',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
             success: function(result) {
-                var entityResult = result.records;
-                this.setState({showEntityData:true, entityLoaded:true, entityData:entityResult})
-                var waitForEntry = {
-                    waitEntry: function() {
-                        if(this.state.entryLoaded == false && alertgroupforentity === false){
-                            setTimeout(waitForEntry.waitEntry,50);
-                        } else {
-                            alertgroupforentity = false;
-                            setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
-                            if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                                this.setState({refreshing:false});
+                if (this.isMounted()) {
+                    var entityResult = result.records;
+                    this.setState({showEntityData:true, entityLoaded:true, entityData:entityResult})
+                    var waitForEntry = {
+                        waitEntry: function() {
+                            if(this.state.entryLoaded == false && alertgroupforentity === false){
+                                setTimeout(waitForEntry.waitEntry,50);
+                            } else {
+                                alertgroupforentity = false;
+                                setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+                                if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                                    this.setState({refreshing:false});
+                                }
                             }
-                        }
-                    }.bind(this)
-                };
-                waitForEntry.waitEntry();                    
+                        }.bind(this)
+                    };
+                    waitForEntry.waitEntry(); 
+                }
             }.bind(this),
             error: function(result) {
                 this.setState({showEntityData:true})
@@ -264,7 +278,7 @@ var SelectedHeader = React.createClass({
         }
     },
     flairToolbarToggle: function(id,value,type,entityoffset,entityobj){
-            this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type,entityoffset:entityoffset, entityobj:entityobj})
+        this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type,entityoffset:entityoffset, entityobj:entityobj})
     },
     flairToolbarOff: function() {
         if (this.isMounted()) {
