@@ -509,14 +509,30 @@ var SelectedHeader = React.createClass({
                                     <tr>
                                         <th></th>
                                         <td><div style={{marginLeft:'5px'}}>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData} id={id} type={type} updated={this.updated} />: null}</div></td>
-                                        <th>Owner: </th>
-                                        <td><span>{this.state.showEventData ? <Owner key={id} data={this.state.headerData.owner} type={type} id={id} updated={this.updated} errorToggle={this.props.errorToggle}/>: null}</span></td>
-                                        <th>Updated: </th>
-                                        <td><span id='event_updated'>{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
+                                        {(type != 'entity') ?
+                                            <th>Owner: </th> 
+                                        :
+                                            null
+                                        }
+                                        {(type != 'entity') ? 
+                                            <td><span>{this.state.showEventData ? <Owner key={id} data={this.state.headerData.owner} type={type} id={id} updated={this.updated} errorToggle={this.props.errorToggle}/>: null}</span></td> 
+                                        :
+                                            null 
+                                        }
+                                        {(type != 'entity') ?
+                                            <th>Updated: </th>
+                                        :
+                                            null
+                                        }
+                                        {(type != 'entity') ?
+                                            <td><span id='event_updated'>{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
+                                        :
+                                            null
+                                        }
                                         {(type == 'event' || type == 'incident') && this.state.showEventData ? <th>Promoted From:</th> : null}
                                         {(type == 'event' || type == 'incident') && this.state.showEventData ? <PromotedData data={this.state.headerData.promoted_from} type={type} id={id} /> : null}
-                                        {this.state.showEventData ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}
-                                        {this.state.showEventData ? <Source data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }
+                                        {(type != 'entity') && this.state.showEventData ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}
+                                        {(type != 'entity') && this.state.showEventData ? <Source data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }
                                     </tr>
                                 </tbody>
                             </table>
@@ -531,9 +547,10 @@ var SelectedHeader = React.createClass({
                     {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} guideRedirectToAlertListWithFilter={this.guideRedirectToAlertListWithFilter}/> : null} 
                     {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
                 </div>
-                {this.state.showEventData ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.props.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar}/> : null}
-            {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj}/> : null}    
-            </div>
+                {this.state.showEventData && type != 'entity' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.props.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar}/> : null}
+                {this.state.showEventData && type == 'entity' ? <EntityDetail entityid={id} entitytype={'entity'} id={id} type={'entity'} fullScreen={true} errorToggle={this.props.errorToggle}/> : null} 
+                {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj}/> : null}    
+                </div>
             }
             </div>
         )
@@ -586,6 +603,12 @@ var EntryDataStatus = React.createClass({
             this.statusAjax('open');
         } 
     },*/
+    trackAll: function() {
+        this.statusAjax('tracked');
+    },
+    untrackAll: function() {
+        this.statusAjax('untracked');
+    },
     closeAll: function() {
         this.statusAjax('closed');
     },
@@ -622,10 +645,10 @@ var EntryDataStatus = React.createClass({
         var title = '';
         var classStatus = '';
         var href;
-        if (this.state.buttonStatus == 'open' || this.state.buttonStatus == 'disabled') {
+        if (this.state.buttonStatus == 'open' || this.state.buttonStatus == 'disabled' || this.state.buttonStatus == 'untracked') {
             buttonStyle = 'danger';
             classStatus = 'alertgroup_open' 
-        } else if (this.state.buttonStatus == 'closed' || this.state.buttonStatus == 'enabled') {
+        } else if (this.state.buttonStatus == 'closed' || this.state.buttonStatus == 'enabled' || this.state.buttonStatus == 'tracked') {
             buttonStyle = 'success';
             classStatus = 'alertgroup_closed'
         } else if (this.state.buttonStatus == 'promoted') {
@@ -673,6 +696,13 @@ var EntryDataStatus = React.createClass({
                     <MenuItem eventKey='2' onClick={this.disableAll}>Disable Signature</MenuItem> 
                 </DropdownButton>
             )
+        } else if (this.props.type == 'entity') {
+            return ( 
+                <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.state.buttonStatus}> 
+                    <MenuItem eventKey='1' onClick={this.trackAll}>Track</MenuItem> 
+                    <MenuItem eventKey='2' onClick={this.untrackAll}>Untracked</MenuItem> 
+                </DropdownButton>
+            )
         } else {
             return (
                 <div>
@@ -695,6 +725,9 @@ var EntryDataSubject = React.createClass({
         if (this.props.type == 'signature') {
             keyName = 'name';
             value = this.props.data.name;
+        } else if (this.props.type == 'entity') {
+            keyName = 'value';
+            value = this.props.data.value;
         }
         return {
             value:value,
