@@ -289,11 +289,10 @@ var SelectedEntry = React.createClass({
         }
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
         var EntityDetail = require('../modal/entity_detail.jsx');
-        if (type == 'entity' || type == 'alert' || this.props.isPopUp == 1) {
+        if (type == 'alert' || this.props.isPopUp == 1) {
             divid = this.props.type + '-detail-container';
             height = null;
         }
-        //Add signature code when ready
         return (
             <div id={divid} key={id} className={divClass} style={{height:height}}> 
                 {(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
