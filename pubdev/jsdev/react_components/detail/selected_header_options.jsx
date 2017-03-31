@@ -293,12 +293,13 @@ var SelectedHeaderOptions = React.createClass({
         if (type != 'alertgroup') {
             var newType = null;
             var showPromote = true;
+            var showAddEntry = true;
             if (status != 'promoted') {
                 if (type == "alert") {
                     newType = "Event"
                 } else if (type == "event") {
                     newType = "Incident"
-                } else if (type == "incident" || type == "guide" || type == 'intel' || type == 'signature') {
+                } else if (type == "incident" || type == "guide" || type == 'intel' || type == 'signature' || type == 'entity') {
                     showPromote = false;
                 } 
             } else {
@@ -306,8 +307,8 @@ var SelectedHeaderOptions = React.createClass({
             }
             return (
                 <div className="entry-header">
-                    <Button eventKey="1" bsStyle='success' onClick={this.props.entryToggle} bsSize='xsmall'><i className="fa fa-plus-circle" aria-hidden="true"></i> Add Entry</Button>
-                    <Button eventKey="2" onClick={this.props.fileUploadToggle} bsSize='xsmall'><i className="fa fa-upload" aria-hidden="true"></i> Upload File</Button>
+                    {type != 'entity' ? <Button eventKey="1" bsStyle='success' onClick={this.props.entryToggle} bsSize='xsmall'><i className="fa fa-plus-circle" aria-hidden="true"></i> Add Entry</Button> : null }
+                    {type != 'entity' ? <Button eventKey="2" onClick={this.props.fileUploadToggle} bsSize='xsmall'><i className="fa fa-upload" aria-hidden="true"></i> Upload File</Button> : null }
                     <Button eventKey="3" onClick={this.toggleFlair} bsSize='xsmall'><i className="fa fa-eye-slash" aria-hidden="true"></i> Toggle Flair</Button>
                     <Button eventKey="4" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button>
                     <Button eventKey="5" onClick={this.props.changeHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> {subjectType} History</Button>
