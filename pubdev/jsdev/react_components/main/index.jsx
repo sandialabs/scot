@@ -227,7 +227,7 @@ var App = React.createClass({
                                 <MenuItem eventKey={5} href="#/guide">Guide</MenuItem>
                                 <MenuItem eventKey={8} href="#/visualization">Visualization</MenuItem>
                                 <MenuItem eventKey={7} href="#/signature">Signature</MenuItem>
-                                <MenuItem eventKey={10} href="#/entity">Entity</MenuItem>
+                                {/*<MenuItem eventKey={10} href="#/entity">Entity</MenuItem>*/}
                                 <MenuItem divider />
                                 <MenuItem eventKey={11.1} href='admin/index.html'>Administration</MenuItem>
                                 <MenuItem eventKey={11.2} href='docs/index.html'>Documentation</MenuItem>
