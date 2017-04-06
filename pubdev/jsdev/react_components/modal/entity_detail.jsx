@@ -569,7 +569,7 @@ var EntityEnrichmentButtons = React.createClass({
     render: function() { 
         var dataSource = this.props.dataSource; 
         return (
-            <div style={{overflowY:'auto'}}>
+            <div style={{overflowY:'auto', maxHeight: '70vh'}}>
                 <div> 
                     <Inspector.default data={dataSource} expandLevel={4} />
                 </div>
@@ -918,8 +918,8 @@ var GuideBody = React.createClass ({
         var SelectedEntry = require('../detail/selected_entry.jsx');
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='pills'>
-                <Tab eventKey={1} style={{overflow:'auto'}}>
-                    /<div>
+                <Tab eventKey={1} style={{overflow:'auto', maxHeight:'70vh'}}>
+                    <div>
                         <Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
                     </div>
                     {this.state.entryToolbar ? <AddEntry entryAction={'Add'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} 
