@@ -156,7 +156,7 @@ my $ts  = $dt->strftime("%Y%m%d%H%M");
 system("cp -r /opt/scot/public/cached_images $cacheimgdir");
 
 print "TARing up backups to $tarloc.$ts.tgz\n";
-system("tar cvzf $tarloc.$ts.tgz $dumpdir $esdir $cachimgdir");
+system("tar cvzf $tarloc.$ts.tgz $dumpdir $esdir $cacheimgdir");
 
 if ( $env->cleanup ) {
     system("rm -rf $dumpdir/*");
