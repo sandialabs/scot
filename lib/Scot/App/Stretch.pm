@@ -226,7 +226,7 @@ sub get_maxid {
     my $type    = shift;
 
     if ( $self->scot_get_method eq "mongo" ) {
-        my $col = $self->mongo->collection(ucfirst(lc($type)));
+        my $col = $self->env->mongo->collection(ucfirst(lc($type)));
         my $cur = $col->find({});
         $cur->sort({id => -1});
         my $obj = $cur->next;
@@ -323,8 +323,8 @@ sub import_range {
     my $self    = shift;
     my $type    = shift;
     my $range   = shift;    # aref [start, finish] ids
-    my $mongo   = $self->mongo;
-    my $log     = $self->log;
+    my $mongo   = $self->env->mongo;
+    my $log     = $self->env->log;
     my $match   = {};
     my $es      = $self->es;
 
