@@ -17,12 +17,12 @@
         },
         {
             attr    => 'scot',
-            class   => 'Scot::Util::Scot2',
+            class   => 'Scot::Util::ScotClient',
             config  => {
                 servername  => "localhost",
                 username    => "scot-alerts",
                 password    => "changemenow",
-                authtype    => "Local",
+                auth_type    => "basic",
             },
         },
     ],
