@@ -771,17 +771,13 @@ var EntryDataSubject = React.createClass({
         this.setState({width:newWidth});
     },
     render: function() {
-        /*if (this.state.value != undefined) {
-            var subjectLength = this.state.value.length;
-            var subjectWidth = subjectLength * 14;
-            if (subjectWidth <= 200) {
-                subjectWidth = 200;
-            }
-        } else {
-            var subjectWidth = 1000;
-        }*/
+        //only disable the subject editor on an entity with a non-blank subject as editing it could damage flair.
+        var isDisabled = false;
+        if (this.props.type == 'entity' && this.state.value != '') {
+            isDisabled = true;
+        }
         return (
-            <div>{this.props.subjectType} {this.props.id}: <input type='text' defaultValue={this.state.value} onKeyPress={this.handleEnterKey} onBlur={this.handleChange} style={{width:this.state.width,lineHeight:'normal'}} /></div>
+            <div>{this.props.subjectType} {this.props.id}: <input type='text' defaultValue={this.state.value} onKeyPress={this.handleEnterKey} onBlur={this.handleChange} style={{width:this.state.width,lineHeight:'normal'}} disabled={isDisabled} /></div>
         )
     }
 });
