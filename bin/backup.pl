@@ -159,6 +159,7 @@ print "TARing up backups to $tarloc.$ts.tgz\n";
 system("tar cvzf $tarloc.$ts.tgz $dumpdir $esdir $cacheimgdir");
 
 if ( $env->cleanup ) {
+    print "Cleaning up...\n";
     system("rm -rf $dumpdir/*");
     my $status = `curl -XDELETE $escmd`;
     unless ( $status =~ /acknowledged\":true/ ) {
