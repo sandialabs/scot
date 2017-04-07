@@ -260,7 +260,7 @@ sub build_match_ref {
         if ( grep {/$key/} @datefields ) {
             $mquery{$key} = $self->parse_datefield_match($value);
         }
-	elsif ( grep {/$key/} @handler ) {
+        elsif ( grep {/$key/} @handler ) {
             if ($key eq "start" ) {
                 $mquery{$key} = { '$gte' => $value };
             }
@@ -270,7 +270,6 @@ sub build_match_ref {
         }
         elsif ( grep {/$key/} @numfields ) {
             $mquery{$key} = $self->parse_numericfield_match($value);
-
         }
         elsif ( grep {/$key/} @tagsrcfields ) {
             $mquery{$key} = $self->parse_source_tag_match($value);

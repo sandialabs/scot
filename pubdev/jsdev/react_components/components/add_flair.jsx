@@ -27,6 +27,7 @@ var AddFlair = {
                                             var entityCount = abbreviateNumber(parseInt(entityResult[currentEntityValue.toLowerCase()].count),0);
                                             var entitydata = entityResult[currentEntityValue.toLowerCase()].data;
                                             var entityEntryCount = entityResult[currentEntityValue.toLowerCase()].entry;
+                                            var entitystatus = entityResult[currentEntityValue.toLowerCase()].status;
                                             var circle = $('<span class="noselect">');
                                             circle.addClass('circleNumber');
                                             circle.addClass('extras');
@@ -70,6 +71,9 @@ var AddFlair = {
                                                     }
                                                 }
                                             }
+                                            /*if (entitystatus == 'untracked') {
+                                                $(entity).append($('<img class="extras" title="untracked entity">').attr('src', '/images/flair/notrack64.jpeg'));
+                                            }*/
                                             if (entityEntryCount != undefined) {
                                                 if (entityEntryCount != 0) {
                                                     var entityEntry = entityResult[currentEntityValue.toLowerCase()].entries[0].body_plain
@@ -99,6 +103,7 @@ var AddFlair = {
                                 var entityCount = abbreviateNumber(entityResult[currentEntityValue.toLowerCase()].count);
                                 var entitydata = entityResult[currentEntityValue.toLowerCase()].data;
                                 var entityEntryCount = entityResult[currentEntityValue.toLowerCase()].entry;
+                                var entitystatus = entityResult[currentEntityValue.toLowerCase()].status;
                                 var circle = $('<span class="noselect">');
                                 circle.addClass('circleNumber');
                                 circle.addClass('extras');
@@ -140,8 +145,11 @@ var AddFlair = {
                                                 }
                                             }
                                         }
-                                    }                    
+                                    }           
                                 }
+                                /*if (entitystatus == 'untracked') {
+                                    $(entity).append($('<img class="extras" title="untracked entity">').attr('src', '/images/flair/notrack64.jpeg'));
+                                }*/
                                 if (entityEntryCount != undefined) {
                                     if (entityEntryCount != 0) {
                                         var entityEntry = entityResult[currentEntityValue.toLowerCase()].entries[0].body_plain
