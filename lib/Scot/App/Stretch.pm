@@ -210,6 +210,10 @@ sub query_documents {
     if ( $self->scot_get_method eq "mongo" ) {
         my $mongo   = $self->env->mongo;
         my $col     = $mongo->collection(ucfirst(lc($type)));
+        my $match   = {
+            id  => { '$gt'  => $lastid }
+        };
+        say "Match is ".Dumper($match);
         my $cursor  = $col->find({
             id      => { '$gt' => $lastid },
         });
@@ -239,15 +243,17 @@ sub get_maxid {
         
 
 sub process_all {
-    my $self       = shift;
-    my $collection = shift;
+    my $self        = shift;
+    my $collection  = shift;
+    my $startid     = shift;
     my $scot        = $self->scot;
     my $es          = $self->es;
     my $limit       = 100;
-    my $last_completed = 0;
+    my $last_completed = $startid;
 
-    my $maxid   = $self->get_maxid;
+    my $maxid   = $self->get_maxid($collection);
     say "Max ID = $maxid";
+    say "last_completed = $last_completed";
 
     my $continue = 1;
     my $cleanser = Data::Clean::FromJSON->get_cleanser;
@@ -278,6 +284,7 @@ sub process_all {
         my $count = 1;
         my $cursor  = $self->query_documents($collection, $limit, $last_completed);
 
+        my @errors  = ();
         while (my $obj  = $cursor->next ) {
             my $href    = $obj->as_hash;
             say "   $count.    id = ".$href->{id};
@@ -287,7 +294,9 @@ sub process_all {
                 $es->index($collection, $href, 'scot');
             }
             catch {
-                die Dumper($href);
+                say "Error: Failed to index $collection : ". $href->{id};
+                say Dumper($href);
+                push @errors, $href->{id};
             };
 
             $last_completed = $href->{id};
