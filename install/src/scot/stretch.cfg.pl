@@ -7,6 +7,7 @@
         logfile         => '/var/log/scot/scot.stretch.log',
         log_level       => 'DEBUG',
     },
+    default_owner   => 'scot-admin',
     modules => [
         {
             attr    => 'es',
@@ -23,6 +24,16 @@
                 username    => "scot-alerts",
                 password    => "changemenow",
                 auth_type    => "basic",
+            },
+        },
+        {
+            attr    => 'mongo',
+            class   => 'Scot::Util::MongoFactory',
+            config  => {
+                db_name         => 'scot-prod',
+                host            => 'mongodb://localhost',
+                write_safety    => 1,
+                find_master     => 1,
             },
         },
     ],
