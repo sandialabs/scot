@@ -134,8 +134,6 @@ var ReactAce = function (_PureComponent) {
   }, {
     key: 'componentWillReceiveProps',
     value: function componentWillReceiveProps(nextProps) {
-      var _this3 = this;
-
       var oldProps = this.props;
 
       for (var i = 0; i < editorOptions.length; i++) {
@@ -146,16 +144,14 @@ var ReactAce = function (_PureComponent) {
       }
 
       if (nextProps.className !== oldProps.className) {
-        (function () {
-          var appliedClasses = _this3.refs.editor.className;
-          var appliedClassesArray = appliedClasses.trim().split(' ');
-          var oldClassesArray = oldProps.className.trim().split(' ');
-          oldClassesArray.forEach(function (oldClass) {
-            var index = appliedClassesArray.indexOf(oldClass);
-            appliedClassesArray.splice(index, 1);
-          });
-          _this3.refs.editor.className = ' ' + nextProps.className + ' ' + appliedClassesArray.join(' ');
-        })();
+        var appliedClasses = this.refs.editor.className;
+        var appliedClassesArray = appliedClasses.trim().split(' ');
+        var oldClassesArray = oldProps.className.trim().split(' ');
+        oldClassesArray.forEach(function (oldClass) {
+          var index = appliedClassesArray.indexOf(oldClass);
+          appliedClassesArray.splice(index, 1);
+        });
+        this.refs.editor.className = ' ' + nextProps.className + ' ' + appliedClassesArray.join(' ');
       }
 
       if (nextProps.mode !== oldProps.mode) {
@@ -268,7 +264,7 @@ var ReactAce = function (_PureComponent) {
   }, {
     key: 'handleMarkers',
     value: function handleMarkers(markers) {
-      var _this4 = this;
+      var _this3 = this;
 
       // remove foreground markers
       var currentMarkers = this.editor.getSession().getMarkers(true);
@@ -296,7 +292,7 @@ var ReactAce = function (_PureComponent) {
             inFront = _ref$inFront === undefined ? false : _ref$inFront;
 
         var range = new Range(startRow, startCol, endRow, endCol);
-        _this4.editor.getSession().addMarker(range, className, type, inFront);
+        _this3.editor.getSession().addMarker(range, className, type, inFront);
       });
     }
   }, {
