@@ -28,6 +28,7 @@ use AnyEvent::ForkManager;
 use HTML::Entities;
 use Module::Runtime qw(require_module);
 use Sys::Hostname;
+use DateTime;
 use strict;
 use warnings;
 use v5.18;
@@ -121,6 +122,8 @@ sub tattler {
     };
 
     my @agg = ( $match, $group );
+    $log->debug("Aggreation command is ",
+                {filter=>\&Dumper, value => \@agg});
 
     my $col     = $mongo->collection('History');
 
@@ -196,6 +199,8 @@ sub alarmist {
     };
 
     my @agg = ( $match, $group );
+    $log->debug("Aggreation command is ",
+                {filter=>\&Dumper, value => \@agg});
 
     my $col     = $mongo->collection('Audit');
     $self->aggregate('alarmist', $col, \@agg);
@@ -230,6 +235,8 @@ sub cleaner {
     };
 
     my @agg = ( $match, $group );
+    $log->debug("Aggreation command is ",
+                {filter=>\&Dumper, value => \@agg});
 
     my $col     = $mongo->collection('Audit');
     $self->aggregate('cleaner', $col, \@agg);
@@ -264,6 +271,8 @@ sub closer {
     };
 
     my @agg = ( $match, $group );
+    $log->debug("Aggreation command is ",
+                {filter=>\&Dumper, value => \@agg});
 
     my $col     = $mongo->collection('Audit');
     $self->aggregate('closer', $col, \@agg);
@@ -298,6 +307,8 @@ sub fixer {
     };
 
     my @agg = ( $match, $group );
+    $log->debug("Aggreation command is ",
+                {filter=>\&Dumper, value => \@agg});
 
     my $col     = $mongo->collection('Audit');
     $self->aggregate('fixer', $col, \@agg);
@@ -331,6 +342,8 @@ sub teacher {
     };
 
     my @agg = ( $match, $group );
+    $log->debug("Aggreation command is ",
+                {filter=>\&Dumper, value => \@agg});
 
     my $col     = $mongo->collection('Entry');
     $self->aggregate('teacher', $col, \@agg);
@@ -364,6 +377,8 @@ sub operative {
     };
 
     my @agg = ( $match, $group );
+    $log->debug("Aggreation command is ",
+                {filter=>\&Dumper, value => \@agg});
 
     my $col     = $mongo->collection('Entry');
     $self->aggregate('operative', $col, \@agg);
