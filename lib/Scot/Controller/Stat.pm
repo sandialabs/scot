@@ -33,8 +33,8 @@ sub do_render {
     my $code    = 200;
     my $href    = shift;
     $self->render(
-        status  => $code,
         json    => $href,
+        status  => $code,
     );
 }
 
@@ -137,9 +137,9 @@ sub day_hour_heatmap_json {
     my $self        = shift;
     my $log         = $self->env->log;
     my $req_href    = $self->get_request_params;
-    my $collection  = $req_href->{collection};
-    my $type        = $req_href->{type}; # ... created | updated|...
-    my $year        = $req_href->{year}+0;
+    my $collection  = $req_href->{collection} // 'event';
+    my $type        = $req_href->{type} // 'created' ; # ... created | updated|...
+    my $year        = $req_href->{year}+0 // 2016;
     my $metricre    = qr/$collection $type/;
     my $match   = {
         metric  => $metricre,
@@ -150,18 +150,29 @@ sub day_hour_heatmap_json {
     $log->debug("cursor has ".$cursor->count." document");
     my %results = ();
     while ( my $obj = $cursor->next ) {
-        $results{$obj->dow}->{$obj->hour} += $obj->value;
+        my $dt  = DateTime->from_epoch( epoch => $obj->epoch );
+        $dt->set_time_zone("America/Denver");
+        $results{$dt->dow}->{$dt->hour} += $obj->value;
     }
-    my @resarray = ();
-    foreach my $dow (sort keys %results) {
-        foreach my $hour (sort keys %{$results{$dow}}) {
-            push @resarray, [ $dow, $hour, $results{$dow}{$hour} ];
+    my @resarray; #  = (
+    #    [ 'day', 'hour', 'value' ]
+    #);
+
+    for (my $dow = 1; $dow <= 7; $dow++) {
+
+        for (my $hour = 1; $hour <=24; $hour++) {
+            my $value   = defined $results{$dow}{$hour} ? $results{$dow}{$hour} : 0;
+            push @resarray, { 
+                day     => $dow, 
+                hour    => $hour, 
+                value   => $value,
+            };
         }
     }
     $self->do_render(\@resarray);
 }
 
-sub get_dow_statistics_json {
+sub get_statistics_json {
     my $self        = shift;
     my $req_href    = $self->get_request_params;
     my $log         = $self->env->log;
