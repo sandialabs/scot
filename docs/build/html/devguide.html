@@ -17,8 +17,7 @@
         VERSION:     '3.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -26,6 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="Signatures" href="signatures.html" />
     <link rel="prev" title="Administration Guide" href="adminguide.html" /> 
   </head>
@@ -228,6 +228,54 @@ output:  list of evens with tags email and malware but not containing
 </li>
 </ol>
 </div>
+<div class="section" id="scot-post-api">
+<h3>SCOT post API<a class="headerlink" href="#scot-post-api" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p class="first">Create an Alertgroup containing several alertgroups:</p>
+<dl class="docutils">
+<dt>curl -XPOST /scot/api/v2/alertgroup -d &#8216;{</dt>
+<dd><blockquote class="first">
+<div><p>&#8220;message_id&#8221;:   &#8216;112233445566778899aabbccddeeff&#8217;,
+&#8220;subject&#8221;: &#8220;Detection of Bad Stuff&#8221;,
+&#8220;data&#8221;:     [</p>
+<blockquote>
+<div><p>{ &#8220;column1&#8221;: &#8220;data11&#8221;, &#8220;column2&#8221;: &#8220;data12&#8221;, &#8220;column3&#8221;: &#8220;data13&#8221; },
+{ &#8220;column2&#8221;: &#8220;data21&#8221;, &#8220;column2&#8221;: &#8220;data22&#8221;, &#8220;column3&#8221;: &#8220;data23&#8221; },
+{ &#8220;column3&#8221;: &#8220;data31&#8221;, &#8220;column2&#8221;: &#8220;data32&#8221;, &#8220;column3&#8221;: &#8220;data33&#8221; },</p>
+</div></blockquote>
+<p>],
+&#8220;tag&#8221;: [ &#8216;tag1&#8217;,&#8217;tag2&#8217;,&#8217;tag3&#8217; ],
+&#8220;source&#8221;: [ &#8216;source1&#8217; ],
+columns: [ &#8216;column1&#8217;, &#8216;column2&#8217;, &#8216;column3&#8217; ],</p>
+</div></blockquote>
+<p class="last">}&#8217;</p>
+</dd>
+</dl>
+</li>
+</ol>
+</div>
+<div class="section" id="scot-put-api">
+<h3>SCOT put API<a class="headerlink" href="#scot-put-api" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p class="first">Update and event status:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">XPUT</span> <span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v2</span><span class="o">/</span><span class="n">event</span><span class="o">/</span><span class="mi">123</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39;{</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;closed&quot;</span>
+<span class="p">}</span><span class="s1">&#39;</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="scot-delete-api">
+<h3>SCOT delete API<a class="headerlink" href="#scot-delete-api" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic">
+<li><p class="first">Delete and entry:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">XDELETE</span> <span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v2</span><span class="o">/</span><span class="n">entry</span><span class="o">/</span><span class="mi">12345</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
 </div>
 <div class="section" id="scot-event-queue">
 <h2>SCOT Event Queue<a class="headerlink" href="#scot-event-queue" title="Permalink to this headline">¶</a></h2>
@@ -337,6 +385,9 @@ if sending a message, this could be the an epoch time.</p>
 <li><a class="reference internal" href="#scot-directory-map">SCOT Directory Map</a></li>
 <li><a class="reference internal" href="#scot-rest-api">SCOT REST API</a><ul>
 <li><a class="reference internal" href="#scot-get-api">SCOT get API</a></li>
+<li><a class="reference internal" href="#scot-post-api">SCOT post API</a></li>
+<li><a class="reference internal" href="#scot-put-api">SCOT put API</a></li>
+<li><a class="reference internal" href="#scot-delete-api">SCOT delete API</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#scot-event-queue">SCOT Event Queue</a></li>
@@ -355,7 +406,7 @@ if sending a message, this could be the an epoch time.</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/devguide.rst.txt"
+      <li><a href="_sources/devguide.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
