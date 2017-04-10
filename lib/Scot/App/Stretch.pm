@@ -22,7 +22,7 @@ use JSON;
 use Try::Tiny;
 
 use Scot::Env;
-use Scot::Util::Scot2;
+use Scot::Util::ScotClient;
 use Scot::Util::ElasticSearch;
 use AnyEvent::STOMP::Client;
 use AnyEvent::ForkManager;
@@ -53,13 +53,13 @@ has thishostname    => (
 
 has scot    => (
     is          => 'ro',
-    isa         => 'Scot::Util::Scot2',
+    isa         => 'Scot::Util::ScotClient',
     required    => 1,
     lazy        => 1,
-    builder     => '_build_scot_scot',
+    builder     => '_build_scotclient',
 );
 
-sub _build_scot_scot {
+sub _build_scotclient {
     my $self    = shift;
     my $env     = $self->env;
     return $env->scot;
@@ -110,6 +110,7 @@ sub run {
     my $scot    = $self->scot;
 
     $log->debug("Starting STOMP watcher");
+    $log->debug("SCOT access mode is ".$self->scot_get_method);
 
     my $stomp   = AnyEvent::STOMP::Client->new();
     my $pm      = AnyEvent::ForkManager->new( 
@@ -179,11 +180,7 @@ sub process_message {
         return;
     }
     my $cleanser = Data::Clean::FromJSON->get_cleanser;
-    my $scot    = $self->scot;
-    my $record  = $scot->get({
-        type    => $type, 
-        id      => $id
-    });
+    my $record  = $self->get_document($type, $id);
     $cleanser->clean_in_place($record);
     $es->index($type, $record, 'scot');
     $self->put_stat("elastic_docs_inserted", 1);
@@ -200,10 +197,7 @@ sub get_document {
         my $obj     = $col->find_iid($id);
         return $obj->as_hash;
     }
-    my $record  = $self->scot->get({
-        type    => $type,
-        id      => $id,
-    });
+    my $record  = $self->scot->get("$type/$id");
     return $record;
 }
 
@@ -216,6 +210,10 @@ sub query_documents {
     if ( $self->scot_get_method eq "mongo" ) {
         my $mongo   = $self->env->mongo;
         my $col     = $mongo->collection(ucfirst(lc($type)));
+        my $match   = {
+            id  => { '$gt'  => $lastid }
+        };
+        say "Match is ".Dumper($match);
         my $cursor  = $col->find({
             id      => { '$gt' => $lastid },
         });
@@ -223,10 +221,7 @@ sub query_documents {
         $cursor->sort({id => 1});
         return $cursor;
     }
-    my $record  = $self->scot->get({
-        type    => $type,
-        id      => 'x>'.$lastid,
-    });
+    my $record  = $self->scot->get("$type?id=x>$lastid");
     return $record;
 }
 
@@ -235,30 +230,30 @@ sub get_maxid {
     my $type    = shift;
 
     if ( $self->scot_get_method eq "mongo" ) {
-        my $col = $self->mongo->collection(ucfirst(lc($type)));
+        my $col = $self->env->mongo->collection(ucfirst(lc($type)));
         my $cur = $col->find({});
         $cur->sort({id => -1});
         my $obj = $cur->next;
         return $obj->id;
     }
-    my $resp = $self->scot->get({
-        type    => "$type/maxid",
-    });
+    my $resp = $self->scot->get("$type/maxid");
     my $maxid   = $resp->{max_id} // 500;
     return $maxid;
 }
         
 
 sub process_all {
-    my $self       = shift;
-    my $collection = shift;
+    my $self        = shift;
+    my $collection  = shift;
+    my $startid     = shift;
     my $scot        = $self->scot;
     my $es          = $self->es;
     my $limit       = 100;
-    my $last_completed = 0;
+    my $last_completed = $startid;
 
-    my $maxid   = $self->get_maxid;
+    my $maxid   = $self->get_maxid($collection);
     say "Max ID = $maxid";
+    say "last_completed = $last_completed";
 
     my $continue = 1;
     my $cleanser = Data::Clean::FromJSON->get_cleanser;
@@ -289,6 +284,7 @@ sub process_all {
         my $count = 1;
         my $cursor  = $self->query_documents($collection, $limit, $last_completed);
 
+        my @errors  = ();
         while (my $obj  = $cursor->next ) {
             my $href    = $obj->as_hash;
             say "   $count.    id = ".$href->{id};
@@ -298,7 +294,9 @@ sub process_all {
                 $es->index($collection, $href, 'scot');
             }
             catch {
-                die Dumper($href);
+                say "Error: Failed to index $collection : ". $href->{id};
+                say Dumper($href);
+                push @errors, $href->{id};
             };
 
             $last_completed = $href->{id};
@@ -317,14 +315,7 @@ sub process_by_date {
     $limit  = 0 unless $limit;
     my $scot        = $self->scot;
     my $es          = $self->es;
-    # TODO change this to new style
-    my $json        = $scot->get({
-        type    => $collection,
-        params  => {
-            created => [ $start, $end ],
-            limit   => $limit,
-        },
-    });
+    my $json    = $scot->get("$collection?created=$start&created=$end&limit=$limit");
 
     foreach my $href (@{$json->{records}}) {
         $es->index($collection, $href, 'scot');
@@ -341,8 +332,8 @@ sub import_range {
     my $self    = shift;
     my $type    = shift;
     my $range   = shift;    # aref [start, finish] ids
-    my $mongo   = $self->mongo;
-    my $log     = $self->log;
+    my $mongo   = $self->env->mongo;
+    my $log     = $self->env->log;
     my $match   = {};
     my $es      = $self->es;
 

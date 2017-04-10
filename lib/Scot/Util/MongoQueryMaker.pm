@@ -249,6 +249,7 @@ sub build_match_ref {
     my @datefields   = qw(when updated created occurred discovered reported);
     my @numfields    = qw(id views entry_count alert_count);
     my @tagsrcfields = qw(tag source);
+    my @exactfields  = qw(status);
     my @handler      = qw(start end);
 
     foreach my $key (keys %$params) {
@@ -260,7 +261,7 @@ sub build_match_ref {
         if ( grep {/$key/} @datefields ) {
             $mquery{$key} = $self->parse_datefield_match($value);
         }
-	elsif ( grep {/$key/} @handler ) {
+        elsif ( grep {/$key/} @handler ) {
             if ($key eq "start" ) {
                 $mquery{$key} = { '$gte' => $value };
             }
@@ -270,10 +271,12 @@ sub build_match_ref {
         }
         elsif ( grep {/$key/} @numfields ) {
             $mquery{$key} = $self->parse_numericfield_match($value);
-
         }
         elsif ( grep {/$key/} @tagsrcfields ) {
             $mquery{$key} = $self->parse_source_tag_match($value);
+        }
+        elsif ( grep {/$key/} @exactfields ) {
+            $mquery{$key} = $self->parse_exact_match($value);
         }
         else {
             # stringfield
@@ -282,6 +285,16 @@ sub build_match_ref {
     }
     say "Mathing: ", Dumper(\%mquery);
     return wantarray ? %mquery : \%mquery;
+}
+
+sub parse_exact_match {
+    my $self    = shift;
+    my $value   = shift;
+    my $match   = {};
+
+    # we expect a regex friendly string to match, that's it.
+    $match  = $value;
+    return $match;
 }
 
 1;
