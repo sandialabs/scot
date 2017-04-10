@@ -5,7 +5,7 @@ use warnings;
 use lib '../lib';
 use lib '../../lib';
 use lib '../../Scot-Internal-Modules/lib';
-use lib '/opt/scot/lib';
+# use lib '/opt/scot/lib';
 use v5.18;
 use Scot::App::Stretch;
 use IO::Prompt;
@@ -19,11 +19,13 @@ my $endepoch;
 my $collection;
 my $limit       = 0;
 my $all;
+my $id  = 0;
 
 GetOptions(
     'l=i'       => \$limit,
     'col=s'     => \$collection,
     'a'         => \$all,
+    'id=s'      => \$id,
 ) or die <<EOF
 
 Invalid option!
@@ -49,7 +51,7 @@ my $loop    = Scot::App::Stretch->new(
 
 
 if ( $all ) {
-    $loop->process_all($collection);
+    $loop->process_all($collection,$id+0);
 }
 else {
     $loop->run();
