@@ -54,6 +54,24 @@ has type  => (
     default     => '',
 );
 
+=item B<match_type>
+
+regex|explicit
+regex is things found by Regex 
+explicit are user entered strings (via highlighting 
+or otherwise creating an entity.  The extractor will
+pull all entities marked as explicit and do exact
+string matching to find.
+
+=cut
+
+has match_type => (
+    is      => 'ro',
+    isa     => 'Str',
+    required    => 1,
+    default     => 'regex',
+);
+
 =item B<classes>
 
 Array of css classes to flair this entity with
