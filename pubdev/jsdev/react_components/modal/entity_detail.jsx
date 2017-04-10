@@ -320,7 +320,7 @@ var EntityDetail = React.createClass({
                     title = '';
                 }
             }
-            tabsArr.push(<Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} valueClicked={this.state.tabs[i].valueClicked} i={z} key={z} errorToggle={this.props.errorToggle}/></Tab>)
+            tabsArr.push(<Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} valueClicked={this.state.tabs[i].valueClicked} i={z} key={z} errorToggle={this.props.errorToggle} linkWarningToggle={this.props.linkWarningToggle}/></Tab>)
         }
         if (this.state.defaultEntityOffset && this.state.entityobj) {
             var positionRightBoundsValue = this.positionRightBoundsCheck();
@@ -377,7 +377,7 @@ var TabContents = React.createClass({
                         <h4 id="myModalLabel">{this.props.data != null ? <EntityValue value={this.props.valueClicked} data={this.props.data}/> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>
                     </div>
                     <div style={{height:'100%',display:'flex', flex:'1 1 auto', marginLeft:'10px', flexFlow:'inherit', minHeight:'1px'}}>
-                    {this.props.data != null ? <EntityBody data={this.props.data} entityid={this.props.entityid} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/> : <div>Loading...</div>}
+                    {this.props.data != null ? <EntityBody data={this.props.data} entityid={this.props.entityid} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle} linkWarningToggle={this.props.linkWarningToggle}/> : <div>Loading...</div>}
                     </div>
                 </div>
             )
@@ -463,6 +463,9 @@ var EntityBody = React.createClass({
             this.setState({showFullEntityButton:true});
         }
     },
+    linkOnClickIntercept: function(e) {
+        this.props.linkWarningToggle(e.target.id);
+    },
     render: function() {
         var entityEnrichmentDataArr = [];
         var entityEnrichmentLinkArr = [];
@@ -479,7 +482,7 @@ var EntityBody = React.createClass({
                         entityEnrichmentDataArr.push(<Tab eventKey={enrichmentEventKey} className='entityPopUpButtons' style={{overflow:'auto'}} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/></Tab>);
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'link') {
-                        entityEnrichmentLinkArr.push(<Button bsSize='xsmall' target='_blank' href={entityData[prop].data.url}>{entityData[prop].data.title}</Button>)
+                        entityEnrichmentLinkArr.push(<Button bsSize='xsmall' target='_blank' id={entityData[prop].data.url} onMouseDown={this.linkOnClickIntercept}>{entityData[prop].data.title}</Button>)
                         enrichmentEventKey++;
                     }
                 }
