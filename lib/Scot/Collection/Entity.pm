@@ -19,6 +19,14 @@ sub create_from_api {
     $log->trace("Creating Entity via API");
 
     my $request = $href->{request}->{json};
+    my $value   = $request->{value};
+    my $type    = $request->{type};
+
+    if ( $self->entity_exists($value, $type) ) {
+        $log->error("Error! Entity already exists");
+        return undef;
+    }
+
     my $entity  = $self->create($request);
 
     unless ( defined $entity ) {
@@ -35,6 +43,18 @@ sub create_from_api {
     #    }
     #});
     return $entity;
+}
+
+sub entity_exists {
+    my $self    = shift;
+    my $value   = shift;
+    my $type    = shift;
+    my $obj     = $self->find_one({ value => $value, type => $type });
+
+    if ( defined $obj ) {
+        return 1;
+    }
+    return undef;
 }
 
 

@@ -198,6 +198,17 @@ The only way to transfer ownership of a task is for another team member to "take
 This prevents tasks being pushed onto someone who may be on vacation.  If you want to help,
 take the task.  If someone whats it back, they can take ownership again.
 
+Signature
+----
+
+Signatures are used to integrate the version control of signatures within 3rd party mitigation tools (firewalls, IDS, etc.) while being managed by SCOT as a central repository. Signature's have the same list view as other "things" within SCOT, but they have a slightly modified detail view. 
+
+The detail view of signatures contain metadata editing, where you can modify a description, signature type (yara, ids, firewall, etc.), production and quality signature body versions, signature group that the signature belongs in, and signature options (written in JSON format). The final new item within the detail view is the Signature body editor. This editor should be used to add in the signature's that will be used in the 3rd party tool. The output of the body is converted to a string format, which can then be ingested by the other tool.
+
+Below these new sections, the entries that are found in other "things" still exist.
+
+See the signature page for more information.
+
 Tags
 ----
 
