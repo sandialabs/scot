@@ -63,6 +63,25 @@ sub increment {
     return $obj;
 }
 
+sub get_today_count {
+    my $self    = shift;
+    my $metric  = shift;
+    my $log     = $self->env->log;
+    my $dt      = DateTime->from_epoch( epoch => $self->env->now );
+    my $match   = {
+        metric  => $metric,
+        year    => $dt->year,
+        month   => $dt->month,
+        day     => $dt->day, 
+    };
+    my $cursor  = $self->find($match);
+    my $total   = 0;
+    while ( my $obj = $cursor->next ) {
+        $total += $obj->value;
+    }
+    return $dt->dow, $total;
+}
+
 sub get_dow_statistics {
     my $self    = shift;
     my $metric  = shift;
@@ -71,14 +90,15 @@ sub get_dow_statistics {
     my $tie = tie(%command, "Tie::IxHash");
     %command = (
         mapreduce   => "stat",
-        map         => $self->_get_map_js,
+        out         => { inline => 1 },
+        query       => { metric => $metric},
+        map         => $self->_get_map_dow_js,
         reduce      => $self->_get_reduce_js,
         finalize    => $self->_get_finalize_js,
-        query       => { metric => $metric},
-        out         => 'tempstats',
+        # out         => 'tempstats',
     );
 
-#    $log->debug("Command is ",{filter=>\&Dumper,value=>\%command});
+    $log->debug("Command is ",{filter=>\&Dumper,value=>\%command});
 
     my $mongo   = $self->meerkat;
     my $db_name = $mongo->database_name;
@@ -89,18 +109,16 @@ sub get_dow_statistics {
             return $job;
         }
     );
-    $log->debug("mapreduce returned: ",{filter=>\&Dumper, value=>$result});
+    # $log->debug("mapreduce returned: ",{filter=>\&Dumper, value=>$result});
 
-    my $tempcol = $db->get_collection($result->{result});
-    my $cursor  = $tempcol->find();
-    my @stats   = $cursor->all;
+    my @stats   = @{ $result->{results} };
 
-    $log->debug("stats are ", {filter=>\&Dumper, value => \@stats});
+    # $log->debug("stats are ", {filter=>\&Dumper, value => \@stats});
 
     return wantarray ? @stats : \@stats;
 }
 
-sub _get_map_js {
+sub _get_map_dow_js {
     return <<EOF;
 function () {
     var key = this.dow;
