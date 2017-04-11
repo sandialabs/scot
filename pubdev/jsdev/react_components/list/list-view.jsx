@@ -51,7 +51,7 @@ module.exports = React.createClass({
             columnsClassName = ['id', 'doe_report_id', 'status', 'owner', 'subject', 'occurred', 'type', 'tag', 'source']
         } else if (this.props.type == 'task') {
             columnsDisplay = ['Type', 'ID', 'Status', 'Owner', 'Entry Id', 'Updated']
-            columns = ['target.type', 'target.id', 'task.status', 'owner', 'id', 'updated']
+            columns = ['target.type', 'target.id', 'metadata.status', 'owner', 'id', 'updated']
             columnsClassName = ['target_type', 'target_id', 'task_status', 'owner', 'id', 'updated']
         } else if (this.props.type == 'guide') {
             columnsDisplay = ['ID', 'Subject', 'Applies To']
@@ -65,6 +65,10 @@ module.exports = React.createClass({
             columnsDisplay = ['ID', 'Name', 'Type', 'Status', 'Group', 'Description' ]
             columns = ['id', 'name', 'type', 'status', 'signature_group', 'description']
             columnsClassName = ['id', 'name', 'type', 'status', 'signature_group', 'description']
+        } else if (this.props.type == 'entity') {
+            columnsDisplay = ['ID', 'Value', 'Type', 'Entries']
+            columns = ['id', 'value', 'type', 'entry_count']
+            columnsClassName = ['id', 'value', 'type', 'entry_count']
         }
 
         if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; alertPreSelectedId=id;};
