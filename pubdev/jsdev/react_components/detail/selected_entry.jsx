@@ -289,11 +289,10 @@ var SelectedEntry = React.createClass({
         }
         //lazy loading flair - this needs to be done here because it is not initialized when this function is called by itself (alerts and entities)
         var EntityDetail = require('../modal/entity_detail.jsx');
-        if (type == 'entity' || type == 'alert' || this.props.isPopUp == 1) {
+        if (type == 'alert' || this.props.isPopUp == 1) {
             divid = this.props.type + '-detail-container';
             height = null;
         }
-        //Add signature code when ready
         return (
             <div id={divid} key={id} className={divClass} style={{height:height}}> 
                 {(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
@@ -301,7 +300,7 @@ var SelectedEntry = React.createClass({
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar}/> : <span>Loading...</span>} 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry entryAction={'Add'} type={this.props.type} targetid={this.props.id} id={null} addedentry={this.props.entryToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
                 {this.props.fileUploadToolbar ? <div>{this.props.isAlertSelected == false ? <FileUpload type={this.props.type} targetid={this.props.id} id={'file_upload'} fileUploadToggle={this.props.fileUploadToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
-                {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} aID={this.props.aID} aType={this.props.aType} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj}/>: null}
+                {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} aID={this.props.aID} aType={this.props.aType} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj} linkWarningToggle={this.linkWarningToggle}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
             </div>       
         );
