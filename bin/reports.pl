@@ -71,7 +71,7 @@ EOF
 
 =cut
 
-my $config_file = $ENV{'scot_reports_config_file'} // '/opt/scot/etc/scot.cfg.pl';
+my $config_file = $ENV{'scot_reports_config_file'} // '/opt/scot/etc/reports.cfg.pl';
 
 my $env  = Scot::Env->new(
     config_file => $config_file,

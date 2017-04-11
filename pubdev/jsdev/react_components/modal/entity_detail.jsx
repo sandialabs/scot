@@ -8,6 +8,7 @@ var Inspector               = require('react-inspector');
 var SelectedEntry           = require('../detail/selected_entry.jsx');
 var AddEntry                = require('../components/add_entry.jsx');
 var Draggable               = require('react-draggable');
+var Store                   = require('../activemq/store.jsx');
 
 var startX;
 var startY;
@@ -41,6 +42,7 @@ var EntityDetail = React.createClass({
             valueClicked:'',
             defaultEntityOffset:this.props.entityoffset,
             entityobj: this.props.entityobj,
+            height: null,
         }
     },
     componentDidMount: function () {
@@ -66,6 +68,8 @@ var EntityDetail = React.createClass({
                             var entityidsarray = [];
                             entityidsarray.push(entityid);
                             this.setState({tabs:currentTabArray,currentKey:entityid,initialLoad:true,processedIds:entityidsarray});
+                            Store.storeKey(entityid);
+                            Store.addChangeListener(this.updated);
                         }
                     }.bind(this));
                 }
@@ -82,6 +86,8 @@ var EntityDetail = React.createClass({
                     var entityidsarray = [];
                     entityidsarray.push(result.id);
                     this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true, processedIds:entityidsarray});
+                    Store.storeKey(this.props.entityid);
+                    Store.addChangeListener(this.updated);
                 }
             }.bind(this));
         }
@@ -96,7 +102,13 @@ var EntityDetail = React.createClass({
                 event.preventDefault();
             }
         }
+       
+        
+
         $(document).keydown(escHandler.bind(this))
+        this.containerHeightAdjust();
+        window.addEventListener('resize',this.containerHeightAdjust);
+
     },
     componentWillUnmount: function() {
         //removes escHandler bind
@@ -130,6 +142,8 @@ var EntityDetail = React.createClass({
                                         currentTabArray.push(newTab);
                                         if (this.isMounted()) {
                                             this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
+                                            Store.storeKey(nextProps.entityid);
+                                            Store.addChangeListener(this.updated);
                                         }
                                     }.bind(this));
                                 }
@@ -143,6 +157,8 @@ var EntityDetail = React.createClass({
                                 currentTabArray.push(newTab);
                                 if (this.isMounted()) {
                                     this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
+                                    Store.storeKey(nextProps.entityid);
+                                    Store.addChangeListener(this.updated);
                                 }
                             }.bind(this));
                         }
@@ -172,7 +188,7 @@ var EntityDetail = React.createClass({
                                     if (addEntity) {
                                         addNewEntity.addNewEntity();
                                         array.push(nextPropsEntityIdInt)
-                                        this.setState({processedIDs:array});
+                                        this.setState({processedIds:array});
                                     }
                                 }
                             }
@@ -182,6 +198,29 @@ var EntityDetail = React.createClass({
             }.bind(this)
         }
         checkForInitialLoadComplete.checkForInitialLoadComplete();
+        this.containerHeightAdjust();
+    },
+    updated: function () {
+        var currentTabArray = this.state.tabs;
+        var valueClicked = this.props.entityvalue;
+        for (var j=0; j < currentTabArray.length; j++) {
+            if (activemqid == currentTabArray[j].entityid) {
+                var currentTabArrayIndex = j;
+                $.ajax({
+                    type: 'GET',
+                    url: 'scot/api/v2/' + this.props.entitytype + '/' + currentTabArray[j].entityid,
+                }).success(function(result) {
+                    //this.setState({entityData:result})
+                    var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:result.value}
+                    currentTabArray[currentTabArrayIndex] = newTab;
+                    if (this.isMounted()) {
+                        var entityidsarray = [];
+                        entityidsarray.push(result.id);
+                        this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true, processedIds:entityidsarray});
+                    }
+                }.bind(this));
+            }
+        }
     },
     initDrag: function(e) {
         //remove the entityPopUpMaxSizeDefault class so it can be resized.
@@ -236,6 +275,23 @@ var EntityDetail = React.createClass({
             return ($(document).width() - (this.state.defaultEntityOffset.left + e ) - this.state.entityWidthint);
         }
     },
+    containerHeightAdjust: function() {
+        //only run this if we're in /#/entity and not as a popup
+        if (this.props.fullScreen == true) {
+            var scrollHeight;
+            if ($('#list-view-container')[0]) {
+                scrollHeight = $(window).height() - $('#list-view-container').height() - $('#header').height() - 70
+                scrollHeight = scrollHeight + 'px'
+            } else {
+                scrollHeight = $(window).height() - $('#header').height() - 70
+                scrollHeight = scrollHeight + 'px'
+            }
+            //$('#detail-container').css('height',scrollHeight);
+            if (this.isMounted()) {
+                this.setState({height:scrollHeight});
+            }
+        }
+    },
     render: function() {
         //This makes the size that was last used hold for future entities
         /*if (entityPopUpHeight && entityPopUpWidth) {
@@ -264,7 +320,7 @@ var EntityDetail = React.createClass({
                     title = '';
                 }
             }
-            tabsArr.push(<Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} valueClicked={this.state.tabs[i].valueClicked} i={z} key={z} errorToggle={this.props.errorToggle}/></Tab>)
+            tabsArr.push(<Tab className='tab-content' eventKey={this.state.tabs[i].entityid} title={title}><TabContents data={this.state.tabs[i].data} type={this.props.type} id={this.props.id} entityid={this.state.tabs[i].entityid} entitytype={this.state.tabs[i].entitytype} valueClicked={this.state.tabs[i].valueClicked} i={z} key={z} errorToggle={this.props.errorToggle} linkWarningToggle={this.props.linkWarningToggle}/></Tab>)
         }
         if (this.state.defaultEntityOffset && this.state.entityobj) {
             var positionRightBoundsValue = this.positionRightBoundsCheck();
@@ -277,23 +333,36 @@ var EntityDetail = React.createClass({
             defaultOffsetY = 50;
             defaultOffsetX = 0;
         }
-        return (
-            <Draggable handle="#handle" onMouseDown={this.moveDivInit}>
-                <div id="dragme" className={DragmeClass} style={{width:this.state.entityWidth, left:defaultOffsetX, maxHeight:'90vh'}}>
-                    <div id='popup-flex-container' style={{height: '100%', display:'flex', flexFlow:'row'}}>
-                        <div id="entity_detail_container" style={{flexFlow: 'column', display: 'flex', width:'100%'}}>
-                            <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" aria-hidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" style={{color:'red'}}onClick={this.props.flairToolbarOff}/></span></div></div>
-                            <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills'>
-                                {tabsArr}                     
-                            </Tabs>
-                        </div>
-                        <div id='sidebar' onMouseDown={this.initDrag} style={{flex:'0 1 auto', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}}/>
-                    </div>
-                    <div id='footer' onMouseDown={this.initDrag} style={{display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}>
+        if (this.props.fullScreen == true) {
+            //entity detail is full screen mode
+            return (
+                <div id='popup-flex-container' style={{height: this.state.height}} className={'entity-full-screen'}>
+                    <div id="entity_detail_container" style={{flexFlow: 'column', display: 'flex', width:'100%'}}>
+                        <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills'>
+                            {tabsArr}                     
+                        </Tabs>
                     </div>
                 </div>
-            </Draggable>  
-        )
+            )
+        } else {
+            return (
+                <Draggable handle="#handle" onMouseDown={this.moveDivInit}>
+                    <div id="dragme" className={DragmeClass} style={{width:this.state.entityWidth, left:defaultOffsetX, maxHeight:'90vh'}}>
+                        <div id='popup-flex-container' style={{height: '100%', display:'flex', flexFlow:'row'}}>
+                            <div id="entity_detail_container" style={{flexFlow: 'column', display: 'flex', width:'100%'}}>
+                                <div id='handle' style={{width:'100%',background:'#292929', color:'white', fontWeight:'900', fontSize: 'large', textAlign:'center', cursor:'move',flex: '0 1 auto'}}><div><span className='pull-left' style={{paddingLeft:'5px'}}><i className="fa fa-arrows" aria-hidden="true"/></span><span className='pull-right' style={{cursor:'pointer',paddingRight:'5px'}}><i className="fa fa-times" style={{color:'red'}}onClick={this.props.flairToolbarOff}/></span></div></div>
+                                <Tabs className='tab-content' defaultActiveKey={this.props.entityid} activeKey={this.state.currentKey} onSelect={this.handleSelectTab} bsStyle='pills'>
+                                    {tabsArr}                     
+                                </Tabs>
+                            </div>
+                            <div id='sidebar' onMouseDown={this.initDrag} style={{flex:'0 1 auto', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden', width:'5px'}}/>
+                        </div>
+                        <div id='footer' onMouseDown={this.initDrag} style={{display: 'block', height: '5px', backgroundColor: 'black', borderTop: '2px solid black', borderBottom: '2px solid black', cursor: 'nwse-resize', overflow: 'hidden'}}>
+                        </div>
+                    </div>
+                </Draggable>  
+            )
+        }
     },
     
 });
@@ -301,13 +370,14 @@ var EntityDetail = React.createClass({
 var TabContents = React.createClass({
     render: function() {
         if (this.props.entitytype == 'entity') {
+            
             return (
                 <div className='tab-content'>
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
                         <h4 id="myModalLabel">{this.props.data != null ? <EntityValue value={this.props.valueClicked} data={this.props.data}/> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>
                     </div>
                     <div style={{height:'100%',display:'flex', flex:'1 1 auto', marginLeft:'10px', flexFlow:'inherit', minHeight:'1px'}}>
-                    {this.props.data != null ? <EntityBody data={this.props.data} entityid={this.props.entityid} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/> : <div>Loading...</div>}
+                    {this.props.data != null ? <EntityBody data={this.props.data} entityid={this.props.entityid} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle} linkWarningToggle={this.props.linkWarningToggle}/> : <div>Loading...</div>}
                     </div>
                 </div>
             )
@@ -330,8 +400,28 @@ var TabContents = React.createClass({
 var EntityValue = React.createClass({
     render: function() {
         if (this.props.data != undefined) {  //Entity Detail Popup showing the entity type
+            var entityurl = '/#/entity/' + this.props.data.id;
+            var statusClass = '';
+            if (this.props.data.status == 'untracked') {
+                statusClass = 'entity-untracked';
+            } else if (this.props.data.status == 'tracked') {
+                statusClass = 'entity-tracked';
+            }
             return (
-                <div className='flair_header'>{this.props.data.type}: {this.props.value}</div>
+                <div className='flair_header'>
+                    <a href={entityurl} target="_blank">
+                        Entity {this.props.data.id} 
+                    </a> 
+                    <div style={{display:'flex'}}>
+                        <div className={statusClass}>
+                            {this.props.data.status}
+                        </div>
+                        <span>&nbsp;</span>
+                        <div style={{display:'flex'}}>
+                            {this.props.data.type}: {this.props.value} 
+                        </div>
+                    </div>
+                </div>
             )
         } else {                            //Guide Detail Popup showing the name of the guide that is being applied to
             return (
@@ -373,6 +463,9 @@ var EntityBody = React.createClass({
             this.setState({showFullEntityButton:true});
         }
     },
+    linkOnClickIntercept: function(e) {
+        this.props.linkWarningToggle(e.target.id);
+    },
     render: function() {
         var entityEnrichmentDataArr = [];
         var entityEnrichmentLinkArr = [];
@@ -389,7 +482,7 @@ var EntityBody = React.createClass({
                         entityEnrichmentDataArr.push(<Tab eventKey={enrichmentEventKey} className='entityPopUpButtons' style={{overflow:'auto'}} title={prop}><EntityEnrichmentButtons dataSource={entityData[prop]} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle}/></Tab>);
                         enrichmentEventKey++;
                     } else if (entityData[prop].type == 'link') {
-                        entityEnrichmentLinkArr.push(<Button bsSize='xsmall' target='_blank' href={entityData[prop].data.url}>{entityData[prop].data.title}</Button>)
+                        entityEnrichmentLinkArr.push(<Button bsSize='xsmall' target='_blank' id={entityData[prop].data.url} onMouseDown={this.linkOnClickIntercept}>{entityData[prop].data.title}</Button>)
                         enrichmentEventKey++;
                     }
                 }
@@ -414,7 +507,8 @@ var EntityBody = React.createClass({
                         <div>
                             <Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
                         </div>
-                        {this.state.entryToolbar ? <AddEntry entryAction={'Add'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'entity'} id={this.props.entityid} errorToggle={this.props.errorToggle}/>
+                        {this.state.entryToolbar ? <AddEntry entryAction={'Add'} type='entity' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} 
+                        <SelectedEntry type={'entity'} id={this.props.entityid} isPopUp={1} errorToggle={this.props.errorToggle}/>
                     </div>
                 </Tab>
                 {entityEnrichmentGeoArr}
@@ -478,7 +572,7 @@ var EntityEnrichmentButtons = React.createClass({
     render: function() { 
         var dataSource = this.props.dataSource; 
         return (
-            <div style={{overflowY:'auto'}}>
+            <div style={{overflowY:'auto', maxHeight: '70vh'}}>
                 <div> 
                     <Inspector.default data={dataSource} expandLevel={4} />
                 </div>
@@ -827,11 +921,12 @@ var GuideBody = React.createClass ({
         var SelectedEntry = require('../detail/selected_entry.jsx');
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='pills'>
-                <Tab eventKey={1} style={{overflow:'auto'}}>
+                <Tab eventKey={1} style={{overflow:'auto', maxHeight:'70vh'}}>
                     <div>
                         <Button bsSize='xsmall' onClick={this.entryToggle}>Add Entry</Button><br/>
                     </div>
-                    {this.state.entryToolbar ? <AddEntry entryAction={'Add'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} errorToggle={this.props.errorToggle}/>
+                    {this.state.entryToolbar ? <AddEntry entryAction={'Add'} type='guide' targetid={this.props.entityid} id={'add_entry'} addedentry={this.entryToggle} errorToggle={this.props.errorToggle}/> : null} 
+                    <SelectedEntry type={'guide'} id={this.props.entityid} isPopUp={1} errorToggle={this.props.errorToggle}/>
                 </Tab>
             </Tabs>
         )
