@@ -137,7 +137,7 @@ SCOT get API
 
         /scot/api/v2/event?entry_count=2&entry_count=4&entry_count=6
 
-        output: events with entry_count's of 2, 4, or 6
+        output: events with an entry_count of 2, 4, or 6
 
   c. matching everything but a number::
   
@@ -173,6 +173,42 @@ SCOT get API
 
     output:  list of evens with tags email and malware but not containing
      the tag false_positive
+
+SCOT post API
+^^^^^^^^^^^^^
+
+#. Create an Alertgroup containing several alertgroups::
+
+   curl -XPOST /scot/api/v2/alertgroup -d '{
+        "message_id":   '112233445566778899aabbccddeeff',
+        "subject": "Detection of Bad Stuff",
+        "data":     [
+            { "column1": "data11", "column2": "data12", "column3": "data13" },
+            { "column2": "data21", "column2": "data22", "column3": "data23" },
+            { "column3": "data31", "column2": "data32", "column3": "data33" },
+        ],
+        "tag": [ 'tag1','tag2','tag3' ],
+        "source": [ 'source1' ],
+        columns: [ 'column1', 'column2', 'column3' ],
+    }'
+
+SCOT put API
+^^^^^^^^^^^^
+
+#. Update and event status::
+
+    curl -XPUT /scot/api/v2/event/123 -d '{
+        "status": "closed"
+    }'
+
+SCOT delete API
+^^^^^^^^^^^^^^^
+
+#. Delete and entry::
+
+    curl -XDELETE /scot/api/v2/entry/12345
+
+
 
 SCOT Event Queue
 ----------------
