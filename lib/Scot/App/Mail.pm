@@ -8,7 +8,7 @@ use Try::Tiny;
 use Mojo::UserAgent;
 use Scot::Env;
 use Scot::Util::Imap;
-use Scot::Util::Scot2;
+use Scot::Util::ScotClient;
 use HTML::TreeBuilder;
 use Parallel::ForkManager;
 use strict;
@@ -122,7 +122,7 @@ sub _get_approved_alert_domains {
 
 has scot => (
     is          => 'ro',
-    isa         => 'Scot::Util::Scot2',
+    isa         => 'Scot::Util::ScotClient',
     required    => 1,
     lazy        => 1,
     builder     => '_build_scot_scot',
