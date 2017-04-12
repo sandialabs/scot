@@ -482,9 +482,12 @@ var SelectedHeader = React.createClass({
         }
     },
     guideRedirectToAlertListWithFilter: function() {
+        RegExp.escape = function(text) {
+              return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+        };
         //column, string, clearall (bool), type
-        this.props.handleFilter(null,null,true,null);
-        this.props.handleFilter('subject', this.state.headerData.applies_to[0], false, "alertgroup");
+        this.props.handleFilter(null,null,true,'alertgroup');
+        this.props.handleFilter('subject', RegExp.escape(this.state.headerData.applies_to[0]), false, "alertgroup");
         window.open('#/alertgroup/');
     },
     render: function() {
