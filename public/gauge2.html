@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+      <head>
+        <meta http-equiv="content-type" content="text/html;charset=utf-8">
+        <title>d3.js gauges</title>
+        
+        <style>
+        
+            body
+            {
+                  font: 10px arial;
+            }
+            
+        </style>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
+        <script type="text/javascript" src="gauge.js"></script>
+
+        <script>
+                        
+                
+            var gauges = [];
+            
+            function createGauge(name, label, min, max, avg, stddev)
+            {
+                var config = 
+                {
+                    size: 240,
+                    label: label,
+                //    min: undefined != min ? min : 0,
+                 //   max: undefined != max ? max : 100,
+                    min: Math.round(avg - (2 * stddev)),
+                    max: Math.round(avg + (2 * stddev)),
+                    avg: undefined != avg ? avg : 50,
+                    stddev: stddev,
+                    minorTicks: 5
+                }
+
+                console.log("creating Gauge with");
+                console.log(config);
+                
+                var range = config.max - config.min;
+
+                //config.yellowZones = [{ from: config.min + range*0.33, to: config.min + range*0.66 }];
+                var yellow_min = config.avg - config.stddev;
+                if ( yellow_min < config.min ) { yellow_min = config.min; }
+                var yellow_max = config.avg + config.stddev;
+                if ( yellow_max > config.max ) { yellow_max = config.max }
+                config.yellowZones = [
+                    { 
+                        from: yellow_min,
+                        to: yellow_max
+                    }
+                ];
+                var red_min = config.avg + config.stddev;
+                if ( red_min > config.max ) { red_min = config.max; }
+                config.redZones = [
+                    { 
+                        from: red_min,
+                        to: config.max
+                    }
+                ];
+
+                var green_max = config.avg - config.stddev;
+                if ( green_max < config.min ) { green_max = config.min; }
+                config.greenZones = [
+                    {
+                        from: config.min,
+                        to: green_max
+                    }
+                ];
+
+                console.log("avg is "+config.avg);
+                console.log("std is "+config.stddev);
+                console.log(config.greenZones);
+                console.log(config.yellowZones);
+                console.log(config.redZones);
+                
+                gauges[name] = new Gauge(name + "GaugeContainer", config);
+                gauges[name].render();
+            }
+            
+            function createGauges()
+            {
+                createGauge("alerts", "Alerts");
+                createGauge("events", "Events");
+                createGauge("entries", "Entries");
+                //createGauge("test", "Test", -50, 50 );
+            }
+            
+            function updateGauges()
+            {
+                for (var key in gauges)
+                {
+                    var value = getRandomValue(gauges[key])
+                    gauges[key].redraw(value);
+                }
+            }
+            
+            function getRandomValue(gauge)
+            {
+                var overflow = 0; //10;
+                return gauge.config.min - overflow + (gauge.config.max - gauge.config.min + overflow*2) *  Math.random();
+            }
+            
+            function initialize()
+            {
+                $.ajax({
+                    type: "get",
+                    url: "/scot/api/v2/graph/todaystats",
+                    success: function (data, status) {
+                        for (var gname in data) {
+                            var ref = data[gname];
+                            console.log(ref);
+                            var max = ref.value.max;
+                            var min = ref.value.min;
+                            var avg = ref.value.avg;
+                            var stddev = ref.value.stddev;
+                            console.log("max is "+max);
+                            createGauge(gname, gname, min, max, avg, stddev);
+                        }
+                    },
+                    error: function (data, status) {
+                        alert("error getting todaystats");
+                    }
+                });
+                $.ajax({
+                    type: "get",
+                    url: "/scot/api/v2/graph/statistics?metric=alert%20created",
+                    success: function (data, status) {
+                        console.log("alert data");
+                        console.log(data);
+                        var pct = data.count / data.value.max;
+                        gauges['alerts'].redraw(data.count);
+                    }
+                });
+                $.ajax({
+                    type: "get",
+                    url: "/scot/api/v2/graph/statistics?metric=event%20created",
+                    success: function (data, status) {
+                        console.log("event data:");
+                        console.log(data);
+                        var pct = data.count / data.value.max;
+                        gauges['events'].redraw(data.count);
+                    }
+                });
+                //createGauges();
+                // change this to refresh data from server every 5 minutes?
+                setInterval(updateGauges, 5000);
+            }
+            
+        </script>
+        
+        
+    </head>
+    
+    <body onload="initialize()">
+        <span id="alertsGaugeContainer"></span>
+        <span id="eventsGaugeContainer"></span>
+        <span id="entriesGaugeContainer"></span>
+    </body>
+    
+</html>
