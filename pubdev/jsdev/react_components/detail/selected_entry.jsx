@@ -275,9 +275,7 @@ var SelectedEntry = React.createClass({
         var showEntryData = this.props.showEntryData;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
         if (type =='alert') {
-            //default size commented out for now
-            //divClass = 'row-fluid entry-wrapper entry-wrapper-main-70'
-            divClass= 'row-fluid entry-wrapper-main-nh';
+            divClass = 'row-fluid entry-wrapper entry-wrapper-main-300'
             data = this.state.entryData;
             showEntryData = this.state.showEntryData;
         } else if (type =='alertgroup') {
