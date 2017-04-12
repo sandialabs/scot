@@ -1,10 +1,10 @@
 User Guide
 ==========
 
-SCOT is divided into several main section.  Alerts flow into SCOT and are processed in the
+SCOT is divided into several main sections.  Alerts flow into SCOT and are processed in the
 Alert tab.  Some subject of those Alerts will be promoted into Events, where the team 
-records the results of their investigations.  A subset of those Events, will be important
-enough to promote them into Incidents.  All the while, new Intel reports will be created
+records the results of their investigations.  A subset of those Events will be important
+enough to be promoted into Incidents.  Simultaneously, new Intel reports will be created
 and addes to SCOT.  The sections below describe how to use each section.
 
 Views
@@ -272,7 +272,7 @@ SCOT can automatically detect and extract the following Entities:
 .. glossary::
 
     Domain Names
-        SCOT extracts domain names in form of host.sub.domain.tld, where tld is 2 to 6 characters in lenght.  Secondary validation against Mozilla's TLD database (effective_tld_names.dat)
+        SCOT extracts domain names in form of host.sub.domain.tld, where tld is 2 to 6 characters in length.  Secondary validation against Mozilla's TLD database (effective_tld_names.dat)
 
     File Names
         Common filename extensions such as exe, pdf, and so on are detected by SCOT.
@@ -345,7 +345,7 @@ Note about Group Names
 
 If you are using LDAP to manage group membership, and your team members 
 have large sets of groups they belong to, you can run into a limit in the 
-number of characters returned from LDAP.  This somethimes truncates the 
+number of characters returned from LDAP.  This sometimes truncates the 
 grouplist in such a way that the SCOT group may not be returned.
 
 To help avoid this, SCOT filters the LDAP query looking for a common string
