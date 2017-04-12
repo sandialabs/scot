@@ -98,7 +98,7 @@ sub get_dow_statistics {
         # out         => 'tempstats',
     );
 
-    $log->debug("Command is ",{filter=>\&Dumper,value=>\%command});
+    # $log->debug("Command is ",{filter=>\&Dumper,value=>\%command});
 
     my $mongo   = $self->meerkat;
     my $db_name = $mongo->database_name;
