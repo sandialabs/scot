@@ -9,6 +9,11 @@ import ButtonGroup from 'react-bootstrap/lib/ButtonGroup.js';
 import MenuItem from 'react-bootstrap/lib/MenuItem.js';
 import Popover from 'react-bootstrap/lib/Popover.js';
 import Store from '../activemq/store.jsx';
+import Grid from 'react-bootstrap/lib/Grid.js';
+import Row from 'react-bootstrap/lib/Grid.js';
+import Col from 'react-bootstrap/lib/Grid.js';
+import Clearfix from 'react-bootstrap/lib/Grid.js';
+
 
 import 'brace/mode/javascript';
 import 'brace/mode/java';
@@ -178,7 +183,7 @@ var SignatureTable = React.createClass({
         return (
             <div id={'signatureDetail'} className='signatureDetail'>
                 {this.state.loaded ?
-                    <div style={{display:'flex'}}>
+                    <div>
                         <SignatureMetaData signatureData={this.state.signatureData} type={this.props.type} id={this.props.id} currentLanguageMode={this.state.currentLanguageMode} currentEditorTheme={this.state.currentEditorTheme} currentKeyboardHandlerApplied={currentKeyboardHandlerApplied} errorToggle={this.props.errorToggle}/>
                         <div id={not_saved_signature_entry_id} className={'not_saved_signature_entry'}>
                             <div className={'row-fluid signature-entry-outer'} style={{marginLeft: 'auto', marginRight: 'auto'}}>          
@@ -206,7 +211,7 @@ var SignatureTable = React.createClass({
                                             </DropdownButton> 
                                         {this.state.readOnly ? 
                                             <span>
-                                                <Button bsSize={'xsmall'} onClick={this.createNewSigBody}>Create new version</Button>
+                                                <Button bsSize={'xsmall'} onClick={this.createNewSigBody} bsStyle={'success'}>Create new version</Button>
                                                 <Button bsSize={'xsmall'} onClick={this.createNewSigBodyFromSig}>Create new version using this base</Button>
                                                 <Button bsSize={'xsmall'} onClick={this.editSigBody}>Update displayed version</Button>
                                             </span>
@@ -260,6 +265,7 @@ var SignatureMetaData = React.createClass({
             qual_sigbody_id: this.props.signatureData.qual_sigbody_id,
             signature_group: this.props.signatureData.signature_group,
             optionsValue: JSON.stringify(this.props.signatureData.options),
+            showSignatureOptions: false,
         }
     },
     InputChange: function(event) {
@@ -295,6 +301,13 @@ var SignatureMetaData = React.createClass({
     onOptionsChange: function(optionsValue) {
         this.setState({optionsValue:optionsValue});
     },
+    showSignatureOptions: function() {
+        if (this.state.showSignatureOptions == false) {
+            this.setState({showSignatureOptions: true});
+        } else {
+            this.setState({showSignatureOptions: false});
+        }
+    },
     render: function() {
         var inputArray = [];
         for (var i=0; i < this.state.inputArrayType.length; i++) {
@@ -308,7 +321,7 @@ var SignatureMetaData = React.createClass({
                     }
                 } 
                 inputArray.push(
-                    <div> 
+                    <div className='col-lg'> 
                         <span className='signatureTableWidth'>
                             {this.state.inputArrayTypeDisplay[i]}:
                         </span>
@@ -322,7 +335,7 @@ var SignatureMetaData = React.createClass({
                 )
             } else {
                 inputArray.push(
-                    <div> 
+                    <div className='col-lg'> 
                         <span className='signatureTableWidth'>
                             {this.state.inputArrayTypeDisplay[i]}:
                         </span>
@@ -335,35 +348,42 @@ var SignatureMetaData = React.createClass({
             }
         }
         return (
-            <div style={{display:'flex'}}>
+            <div>
                 <div id='signatureTable' className='signatureTable'>
-                    <div>
-                    {inputArray} 
+                    <div className="row">
+                        {inputArray}
+                        <div className='col-lg-1' style={{backgroundColor:'#EEE', marginTop:'15px'}}>
+                            <Button type='submit' bsSize='xsmall' bsStyle='warning' onClick={this.showSignatureOptions} id={10}>View Custom Options</Button>
+                        </div>
                     </div>
                 </div>
-                <div id='signatureTable2' className='signatureTableOptions'>
-                    <div className={'row-fluid signature-entry-outer'} style={{marginLeft: 'auto', marginRight: 'auto'}}>          
-                        <div className={'row-fluid signature-entry-header'}>
-                            <div className="signature-entry-header-inner">
-                                Signature Options  
-                                <Button type='submit' bsSize='xsmall' bsStyle='success' onClick={this.submitMetaData} id={'options'} value={this.state.optionsValue}>Apply</Button>
-                            </div>
-                        </div> 
-                        <AceEditor
-                            mode            = 'json'
-                            theme           = {this.props.currentEditorTheme}
-                            onChange        = {this.onOptionsChange}
-                            name            = "signatureEditorOptions"
-                            editorProps     = {{$blockScrolling: true}}
-                            keyboardHandler = {this.props.currentKeyboardHandlerApplied}
-                            value           = {this.state.optionsValue}
-                            height          = '250px'
-                            width           = '100%'
-                            readOnly        = {false} 
-                            showPrintMargin = {false}
-                        />
-                    </div>
-                </div>
+                {this.state.showSignatureOptions ? 
+                    <div id='signatureTable2' className='signatureTableOptions'>
+                        <div className={'row-fluid signature-entry-outer'} style={{marginLeft: 'auto', marginRight: 'auto'}}>          
+                            <div className={'row-fluid signature-entry-header'}>
+                                <div className="signature-entry-header-inner">
+                                    Signature Options  
+                                    <Button type='submit' bsSize='xsmall' bsStyle='success' onClick={this.submitMetaData} id={'options'} value={this.state.optionsValue}>Apply</Button>
+                                </div>
+                            </div> 
+                            <AceEditor
+                                mode            = 'json'
+                                theme           = {this.props.currentEditorTheme}
+                                onChange        = {this.onOptionsChange}
+                                name            = "signatureEditorOptions"
+                                editorProps     = {{$blockScrolling: true}}
+                                keyboardHandler = {this.props.currentKeyboardHandlerApplied}
+                                value           = {this.state.optionsValue}
+                                height          = '200px'
+                                width           = '100%'
+                                readOnly        = {false} 
+                                showPrintMargin = {false}
+                            />
+                        </div>
+                    </div> 
+                : 
+                    null 
+                }
             </div>
         )
     },
