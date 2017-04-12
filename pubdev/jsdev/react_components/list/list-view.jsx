@@ -680,7 +680,9 @@ module.exports = React.createClass({
                 }
             }
             this.setState({filter:newFilterObj});
-            this.getNewData({page:0},null,newFilterObj)
+            if (type == this.props.type || type == undefined) {    //Check if the type passed in matches the type displayed. If not, it's updating the filter for a future query in a different type. Undefined implies its the same type, so update 
+                this.getNewData({page:0},null,newFilterObj)
+            }
             var cookieName = 'listViewFilter' + _type;
             setCookie(cookieName,JSON.stringify(newFilterObj),1000);
         }
