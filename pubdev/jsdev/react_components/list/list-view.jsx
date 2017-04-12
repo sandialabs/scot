@@ -706,6 +706,7 @@ module.exports = React.createClass({
             data: data
         }).success(function(response){
             this.launchEvent(this.props.type,response.id)
+            window.history.pushState('Page', 'SCOT', '/#/'+this.props.type+'/'+response.id);
         }.bind(this))
     }, 
 });
