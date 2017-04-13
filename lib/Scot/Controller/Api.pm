@@ -2762,26 +2762,28 @@ sub get_game_data {
     my %res = ();
 
     while ( my $gobj = $cur->next ) {
-        my $user    = $gobj->username;
-        my $cat     = $gobj->category;
-        my $count   = $gobj->count;
-        $res{$cat}{$user} = $count;
+        my $results_aref    = $gobj->results;
+        my $name            = $gobj->game_name;
+        my $tip             = $gobj->tooltip;
+        my $updated         = $gobj->lastupdate;
+
+        $res{$name} = [
+            { username => $results_aref->[0]->{_id},
+              count    => $results_aref->[0]->{total}, 
+              tooltip   => $tip, 
+            },
+            { username => $results_aref->[1]->{_id},   
+              count    => $results_aref->[1]->{total},
+              tooltip   => $tip, 
+            },
+            { username => $results_aref->[2]->{_id},   
+              count    => $results_aref->[2]->{total},
+              tooltip   => $tip, 
+            },
+        ];
     }
 
-    # truncate results to top 3
-    my %trunc   = ();
-
-    foreach my $cat (keys %res) {
-        my $h = $res{$cat};
-        my @ranked = sort { $h->{$b} <=> $h->{$a} } keys (%$h);
-        $#ranked = 2;   # truncate to 3 members
-
-        foreach my $r (@ranked) {
-            push @{$trunc{$cat}}, { username => $r, count => $res{$cat}{$r},tooltip => $tt->{$cat}};
-        }
-    }
-    
-    $self->do_render(\%trunc);
+    $self->do_render(\%res);
 
 }
 
