@@ -388,9 +388,17 @@ sub has_computed_attributes {
 sub get_aggregate_count {
     my $self    = shift;
     my $aref    = shift;
+    my $log     = $self->env->log;
     my $rawcol  = $self->_mongo_collection;
     my $result  = $rawcol->aggregate($aref);
-    return $result;
+
+    $log->debug("result is ".ref($result));
+
+
+    my @r       = $result->all;
+
+
+    return wantarray ? @r : \@r;
 }
 
 sub get_default_permissions {
