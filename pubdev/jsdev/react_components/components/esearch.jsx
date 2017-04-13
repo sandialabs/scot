@@ -55,9 +55,9 @@ var Search = React.createClass({
     },
     onChange: function(e) {
         //only do auto search if there are at least 3 characters
-        if (e.target.value.length > 2) {
+        //if (e.target.value.length > 2) {
             this.doSearch(e.target.value);
-        }
+        //}
     },
     componentDidUpdate: function() {
         if (this.state.searchString != undefined) {
@@ -145,6 +145,7 @@ var SearchDataEachRows = React.createClass({
             } else {
                 for (var key in this.props.dataOne.highlight) {
                     highlight = this.props.dataOne.highlight[key][0];
+                    break;
                 }
             }
         }
