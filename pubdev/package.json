@@ -56,6 +56,7 @@
     "react-tag-input": "^4.0.0",
     "react-time": "^4.0.0",
     "react-tinymce": "^0.5.1",
+    "semantic-ui-react": "^0.67.2",
     "through": "^2.3.8",
     "warning": "^3.0.0"
   }
