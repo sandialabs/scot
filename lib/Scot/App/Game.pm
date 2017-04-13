@@ -71,9 +71,10 @@ sub out {
 sub run {
     my $self    = shift;
     my $log     = $self->log;
+    my $env     = $self->env;
     my $now     = time();
-    # my $ago     = $now - ( 364 * 24 * 60 * 60 ); # last 364 days
-    my $ago     = 10;
+    my $days_ago    = $env->days_ago // 30;
+    my $ago     = $now - ( $days_ago * 24 * 60 * 60 ); 
 
 
 # collection->get_aggregate_count($aref) where $href is aggregate command
