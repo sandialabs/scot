@@ -88,6 +88,10 @@ sub newsearch {
 
     my $request = $self->req;
     my $qstring = $request->param('qstring');
+    
+    if ( $qstring ne "" ) {
+        $qstring = $qstring . "*";
+    }
 
     $log->debug("Search String: $qstring");
 
@@ -111,7 +115,8 @@ sub newsearch {
                     },
                     query   => {
                         query_string    => {
-                            query   => $qstring
+                            query   => $qstring,
+                            rewrite => "scoring_boolean" #scoring boolean can cause issues with >1024 sized query
                         }
                     }
                 }
