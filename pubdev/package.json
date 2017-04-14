@@ -20,6 +20,7 @@
     "grunt-legacy-util": "^1.0.0",
     "grunt-react": "^0.12.3",
     "gulp": "^3.9.1",
+    "mark.js": "github:julmot/mark.js",
     "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
