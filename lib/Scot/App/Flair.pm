@@ -25,7 +25,7 @@ use Try::Tiny;
 use Mojo::UserAgent;
 use Scot::Env;
 use Scot::App;
-use Scot::Util::Scot2;
+use Scot::Util::ScotClient;
 use Scot::Util::EntityExtractor;
 use Scot::Util::ImgMunger;
 use Scot::Util::Enrichments;
