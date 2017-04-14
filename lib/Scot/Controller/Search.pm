@@ -149,7 +149,7 @@ sub newsearch {
                 entryid     => $record->{_id},
                 score       => $record->{_score},
                 snippet     => $record->{_source}->{body_plain},
-                highlight   => $record->{highlight}->{body_plain},
+                highlight   => $record->{_source}->{body_plain},
             };
         }
         elsif ($record->{_type} eq "entity") {
