@@ -61,10 +61,11 @@ var Search = React.createClass({
     },
     componentDidUpdate: function() {
         if (this.state.searchString != undefined) {
-            var re = new RegExp(this.state.searchString,"gi");            
-            $(".search-snippet").html(function(_, html) {
-                return html.replace(re, '<span class="search_highlight">$&</span>');
-            });  
+            //var re = new RegExp(this.state.searchString,"gi");            
+            //$(".search-snippet").html(function(_, html) {
+            //    return html.replace(re, '<span class="search_highlight">$&</span>');
+            //});
+            $(".search-snippet").mark(this.state.searchString, {"element":"span", "className":"search_highlight"});
         }
     },
     render: function(){
@@ -72,7 +73,7 @@ var Search = React.createClass({
         if (this.state.results != undefined) {
             if (this.state.results[0] != undefined) {
                 for (var i=0; i < this.state.results.length; i++) {
-                    tableRows.push(<SearchDataEachRows dataOne={this.state.results[i]} />);
+                    tableRows.push(<SearchDataEachRows dataOne={this.state.results[i]} key={i} index={i}/>);
                 }
             } else {
                 tableRows.push(<div style={{display:'inline-flex'}}><div style={{display:'flex'}}>No results returned</div></div>)
@@ -134,23 +135,33 @@ var SearchDataEachRows = React.createClass({
         var entryid = this.props.dataOne.entryid;
         var score = this.props.dataOne.score;
         var snippet = this.props.dataOne.snippet;
-        var highlight;
+        var highlight = [];
+
+        var rowEvenOdd = 'even';
+        if (!isEven(this.props.index)) {rowEvenOdd = 'odd'};
+        
+        var rowClassName = 'search_result_row list-view-row'+rowEvenOdd;
+        
         var href = '/#/'+type+'/'+id;
         if (entryid != undefined) {
             href = '/#/'+type+'/'+id+'/'+entryid;
         }
+
         if (this.props.dataOne.highlight != undefined) {
-            if ($.isArray(this.props.dataOne.highlight)) {
-                highlight = this.props.dataOne.highlight[0];
+            if (typeof(this.props.dataOne.highlight) == 'string') {
+                highlight.push(this.props.dataOne.highlight);
+            }
+            else if ($.isArray(this.props.dataOne.highlight)) {
+                highlight.push(this.props.dataOne.highlight[0]);
             } else {
                 for (var key in this.props.dataOne.highlight) {
-                    highlight = this.props.dataOne.highlight[key][0];
-                    break;
+                    highlight.push(<span className='search_snippet_container'><span className='search_snippet_header'>{key}</span><span className='search_snippet_result'>{this.props.dataOne.highlight[key]}</span></span>);
                 }
             }
         }
+ 
         return (
-            <div key={Date.now()} style={{display:'inline-flex'}}>
+            <div key={Date.now()} className={rowClassName}>
                 <a href={href} style={{display:'flex'}}>
                     <div style={{display:'flex'}}>
                         <span style={{width:'100px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{id}</span>
@@ -162,12 +173,16 @@ var SearchDataEachRows = React.createClass({
                         <span style={{width:'100px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{score}</span>
                     </div>
                     <div className='search-snippet' style={{display:'flex', overflowX:'hidden',wordWrap:'break-word'}}>
-                        <span style={{textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', width: '400px'}}>{highlight}</span>
+                        <span style={{textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', width: '400px', display:'flex'}}>{highlight}</span>
                     </div>
                 </a>
             </div>
         )
     }
 })
+
+function isEven(n) {
+    return n % 2 == 0;
+}
 
 module.exports = Search
