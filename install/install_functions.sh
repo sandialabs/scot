@@ -36,7 +36,7 @@ function get_http_proxy () {
         echo "!!! http_proxy not set! if you are behind a proxy, install will "
         echo "!!! likely fail.  If you are using \"sudo\" to install use the "
         echo "!!! \"-E\" option to preserve your environment variables"
-        exit 1;
+        read -p "Ctrl-C to quit, enter to continue..." proxyfoo
     fi
     PROXY=$(printenv http_proxy)
 }
@@ -48,7 +48,7 @@ function get_https_proxy () {
         echo "!!! https_proxy not set! if you are behind a proxy, install may "
         echo "!!! encounter problems.  If you are using \"sudo\" to install "
         echo "!!! use the \"-E\" option to preserve your environment variables"
-        exit 1;
+        read -p "Ctrl-C to quit, enter to continue..." proxyfoo
     fi
     SPROXY=$(printenv https_proxy)
 }
