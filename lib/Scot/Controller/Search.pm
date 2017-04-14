@@ -99,6 +99,14 @@ sub newsearch {
                         or  => [
                             { term  => { _type  => { value => "alert" } } },
                             { term  => { _type  => { value => "entry" } } },
+                            { term  => { _type  => { value => "alertgroup" } } },
+                            { term  => { _type  => { value => "event" } } },
+                            { term  => { _type  => { value => "incident" } } },
+                            { term  => { _type  => { value => "intel" } } },
+                            { term  => { _type  => { value => "guide" } } },
+                            { term  => { _type  => { value => "task" } } },
+                            { term  => { _type  => { value => "signature" } } },
+                            { term  => { _type  => { value => "entity" } } },
                         ]
                     },
                     query   => {
@@ -111,17 +119,19 @@ sub newsearch {
             highlight   => {
                 #pre_tags    => [ qq|<div class="search_highlight">| ],
                 #post_tags   => [ qq|</div>| ],
+                pre_tags    => [qq||],
+                post_tags   => [qq||],
                 require_field_match => \0, # encode will conver to json false
                 fields  => {
                     '*' => {
-                        fragment_size   => 10,
+                        fragment_size   => 100,
                         number_of_fragments => 1,
                     },
                 },
             },
             _source => [ qw(id target body_plain alertgroup data) ],
             sort    => [ qw(_score) ],
-            min_score   => 0.8,
+            #min_score   => 0.8,
             size => 50,
         },
     ); 
@@ -132,20 +142,23 @@ sub newsearch {
 
     my @results;
     foreach my $record (@$records) {
-        if ( $record->{_type} eq "entry" ) {
+        if ( $record->{_type} eq "entry") {
             push @results, {
-                id      => $record->{_source}->{target}->{id},
-                type    => $record->{_source}->{target}->{type},
-                score   => $record->{_score},
-                snippet => $record->{_source}->{body_plain},
+                id          => $record->{_source}->{target}->{id},
+                type        => $record->{_source}->{target}->{type},
+                entryid     => $record->{_id},
+                score       => $record->{_score},
+                snippet     => $record->{_source}->{body_plain},
+                highlight   => $record->{highlight}->{body_plain},
             };
         }
         else {
             push @results, {
-                id      => $record->{_source}->{alertgroup},
-                type    => "alertgroup",
-                score   => $record->{_score},
-                snippet => $record->{_source}->{_raw},
+                id          => $record->{_id},
+                type        => $record->{_type},
+                score       => $record->{_score},
+                snippet     => $record->{_source}->{_raw},
+                highlight   => $record->{highlight},
             };
         }
     }
