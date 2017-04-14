@@ -23,27 +23,9 @@ with    qw(
 
 =over 4
 
-
-=item B<username>
-
-the name of the contestant
-
 =cut
 
-has username  => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-);
-
-=item B<category>
-
-the category of competition
-e.g.:  tattler, alarmist, voyeur, fixer, cleaner, novelist
-
-=cut
-
-has category    => (
+has game_name => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
@@ -55,17 +37,24 @@ has tooltip => (
     required    => 1,
 );
 
-=item B<count>
+has lastupdate  => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+);
 
-the count for the category
+=item B<results>
+
+results are (
+    { "_id": "username", total: x },
+)
 
 =cut
 
-has count   => (
+has results => (
     is          => 'ro',
-    isa         => 'Str',
+    isa         => 'ArrayRef',
     required    => 1,
-    default     => 0,
 );
 
 __PACKAGE__->meta->make_immutable;

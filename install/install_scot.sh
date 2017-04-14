@@ -3,6 +3,16 @@
 ### TODO
 ### stop/start daemons (controllable by flag?)
 
+function upgrade_database {
+    echo "- checking to see if database structure needs updating";
+    GAMEUPDATE=`mongo scot-prod --quiet --eval "printjson(db.game.findOne({category:'cleaner'}))"`
+    echo "GAMEUPDATE is $GAMEUPDATE"
+    if echo $GAMEUPDATE | grep -w 'category'; then
+        echo "-- dropping the game collection.  will be recreated upon first run of game.pl"
+        mongo scot-prod --quiet --eval 'db.game.remove({});'
+    fi
+}
+
 
 function add_scot_user {
     echo "- checking for existing scot user"
@@ -380,6 +390,8 @@ function install_scot {
     echo "-- assigning owner/permissions on $SCOTDIR"
     chown -R scot:scot $SCOTDIR
     chmod -R 755 $SCOTDIR/bin
+
+    upgrade_database
 
     get_config_files    
     configure_logging
