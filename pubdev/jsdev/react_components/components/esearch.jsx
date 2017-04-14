@@ -173,7 +173,7 @@ var SearchDataEachRows = React.createClass({
                         <span style={{width:'100px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{score}</span>
                     </div>
                     <div className='search-snippet' style={{display:'flex', overflowX:'hidden',wordWrap:'break-word'}}>
-                        <span style={{textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', width: '400px', display:'flex'}}>{highlight}</span>
+                        <span style={{textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', width: '400px'}}>{highlight}</span>
                     </div>
                 </a>
             </div>
