@@ -14,6 +14,7 @@ var Search = React.createClass({
             searchResults: null,
             entityHeight: '60vh',
             searching: false,
+            searchString: '',
         }
     },	
     componentDidMount: function() {
@@ -30,14 +31,14 @@ var Search = React.createClass({
     closeSearch: function() {
         this.setState({showSearchToolbar: false});
     },
-    doSearch: function(string) {
+    doSearch: function(string) { 
         $.ajax({
             type: 'get',
             url: '/scot/api/v2/esearch',
             data: {qstring:string},
             success: function(response) {
                 if (string == $('#main-search')[0].value) { 
-                    this.setState({results:response.records, showSearchToolbar:true, searching:false})
+                    this.setState({results:response.records, showSearchToolbar:true, searching:false, searchString:string})
                 }
             }.bind(this),
             error: function(response) {
@@ -53,7 +54,18 @@ var Search = React.createClass({
         }
     },
     onChange: function(e) {
-        this.doSearch(e.target.value);
+        //only do auto search if there are at least 3 characters
+        //if (e.target.value.length > 2) {
+            this.doSearch(e.target.value);
+        //}
+    },
+    componentDidUpdate: function() {
+        if (this.state.searchString != undefined) {
+            var re = new RegExp(this.state.searchString,"gi");            
+            $(".search-snippet").html(function(_, html) {
+                return html.replace(re, '<span class="search_highlight">$&</span>');
+            });  
+        }
     },
     render: function(){
         var tableRows = [] ;
@@ -119,23 +131,40 @@ var SearchDataEachRows = React.createClass({
     render: function() {
         var type = this.props.dataOne.type;
         var id = this.props.dataOne.id;
+        var entryid = this.props.dataOne.entryid;
         var score = this.props.dataOne.score;
         var snippet = this.props.dataOne.snippet;
+        var highlight;
         var href = '/#/'+type+'/'+id;
+        if (entryid != undefined) {
+            href = '/#/'+type+'/'+id+'/'+entryid;
+        }
+        if (this.props.dataOne.highlight != undefined) {
+            if ($.isArray(this.props.dataOne.highlight)) {
+                highlight = this.props.dataOne.highlight[0];
+            } else {
+                for (var key in this.props.dataOne.highlight) {
+                    highlight = this.props.dataOne.highlight[key][0];
+                    break;
+                }
+            }
+        }
         return (
-            <div style={{display:'inline-flex'}}>
-                <div style={{display:'flex'}}>
-                    <a href={href} style={{width:'100px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{id}</a>
-                </div>
-                <div style={{display:'flex'}}>
-                    <a href={href} style={{width:'100px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{type}</a>
-                </div>
-                <div style={{display:'flex'}}>
-                    <a href={href} style={{width:'100px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{score}</a>
-                </div>
-                <div style={{display:'flex', overflowX:'hidden',wordWrap:'break-word'}}>
-                    <a href={href} style={{textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', width: '400px'}}>{snippet}</a>
-                </div>
+            <div key={Date.now()} style={{display:'inline-flex'}}>
+                <a href={href} style={{display:'flex'}}>
+                    <div style={{display:'flex'}}>
+                        <span style={{width:'100px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{id}</span>
+                    </div>
+                    <div style={{display:'flex'}}>
+                        <span style={{width:'100px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{type}</span>
+                    </div>
+                    <div style={{display:'flex'}}>
+                        <span style={{width:'100px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{score}</span>
+                    </div>
+                    <div className='search-snippet' style={{display:'flex', overflowX:'hidden',wordWrap:'break-word'}}>
+                        <span style={{textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', width: '400px'}}>{highlight}</span>
+                    </div>
+                </a>
             </div>
         )
     }
