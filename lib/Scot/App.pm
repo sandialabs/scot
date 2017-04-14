@@ -74,32 +74,39 @@ sub put_stat {
     my $value   = shift;
     my $now     = DateTime->now;
 
-    try {
         if ( $self->get_method eq "scot_api" ) {
-            my $response    = $self->scot->post({
-                type    => "stat",
-                data    => {
-                    action  => 'incr',
-                    year    => $now->year,
-                    month   => $now->month,
-                    day     => $now->day,
-                    hour    => $now->hour,
-                    dow     => $now->dow,
-                    quarter => $now->quarter,
-                    metric  => $metric,
-                    value   => $value,
-                }
-            });
+            try {
+                my $response    = $self->scot->post({
+                    type    => "stat",
+                    data    => {
+                        action  => 'incr',
+                        year    => $now->year,
+                        month   => $now->month,
+                        day     => $now->day,
+                        hour    => $now->hour,
+                        dow     => $now->dow,
+                        quarter => $now->quarter,
+                        metric  => $metric,
+                        value   => $value,
+                    }
+                });
+            }
+            catch {
+                $self->log->warn("Caught error: $_");
+                $self->log->warn("Attempt to put stat $metric $value may have failed!");
+            };
         }
         else {
-            my $mongo   = $self->env->mongo;
-            my $col     = $mongo->collection('Stat');
-            $col->increment($now, $metric, $value);
+            try {
+                my $mongo   = $self->env->mongo;
+                my $col     = $mongo->collection('Stat');
+                $col->increment($now, $metric, $value);
+            }
+            catch {
+                $self->log->warn("Caught error: $_");
+                $self->log->warn("Attempt to write stat may have failed");
+            };
         }
-    }
-    catch {
-        $self->log->warn("Attempt to put stat $metric $value failed!");
-    };
 }
 
 
