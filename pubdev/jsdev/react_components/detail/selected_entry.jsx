@@ -275,7 +275,8 @@ var SelectedEntry = React.createClass({
         var showEntryData = this.props.showEntryData;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
         if (type =='alert') {
-            divClass = 'row-fluid entry-wrapper entry-wrapper-main-300'
+            //divClass = 'row-fluid entry-wrapper entry-wrapper-main-300'
+            divClass = 'row-fluid entry-wrapper entry-wrapper-main-nh'
             data = this.state.entryData;
             showEntryData = this.state.showEntryData;
         } else if (type =='alertgroup') {
