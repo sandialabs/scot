@@ -129,7 +129,7 @@ sub newsearch {
                     },
                 },
             },
-            _source => [ qw(id target body_plain alertgroup data) ],
+            _source => [ qw(id target body_plain alertgroup data value) ],
             sort    => [ qw(_score) ],
             #min_score   => 0.8,
             size => 50,
@@ -150,6 +150,15 @@ sub newsearch {
                 score       => $record->{_score},
                 snippet     => $record->{_source}->{body_plain},
                 highlight   => $record->{highlight}->{body_plain},
+            };
+        }
+        elsif ($record->{_type} eq "entity") {
+            push @results, {
+                id          => $record->{_id},
+                type        => $record->{_type},
+                score       => $record->{_score},
+                snippet     => $record->{_source}->{_raw},
+                highlight   => $record->{_source}->{value},
             };
         }
         else {
