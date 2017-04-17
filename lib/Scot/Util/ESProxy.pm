@@ -130,9 +130,9 @@ sub _get_base_url {
     $log->debug("$proto $servername $port");
     
     if ( $port != 443 ) {
-        return sprintf("%s://%s:%s/_search", $proto, $servername, $port);
+        return sprintf("%s://%s:%s/scot/_search", $proto, $servername, $port);
     }
-    return sprintf("%s://%s/_search", $proto, $servername);
+    return sprintf("%s://%s/scot/_search", $proto, $servername);
 }
 
 has ua  => (
