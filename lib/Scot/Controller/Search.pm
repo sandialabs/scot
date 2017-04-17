@@ -116,7 +116,9 @@ sub newsearch {
                     query   => {
                         query_string    => {
                             query   => $qstring,
-                            rewrite => "scoring_boolean" #scoring boolean can cause issues with >1024 sized query
+                            rewrite => "scoring_boolean", #scoring boolean can cause issues with >1024 sized query
+                            #analyzer => "scot_analyzer",
+                            analyze_wildcard => "true",
                         }
                     }
                 }
@@ -154,7 +156,7 @@ sub newsearch {
                 entryid     => $record->{_id},
                 score       => $record->{_score},
                 snippet     => $record->{_source}->{body_plain},
-                highlight   => $record->{_source}->{body_plain},
+                highlight   => $record->{highlight}->{body_plain},
             };
         }
         elsif ($record->{_type} eq "entity") {
