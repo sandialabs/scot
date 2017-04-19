@@ -418,7 +418,6 @@ sub process_entry {
 
     $log->debug("initial grab of entry $id");
     my $entry   = $self->get_entry($id);
-    $log->debug("flairing entry $id");
     $update     = $self->flair_entry($entry, $id);
 
     my $putdata = {
@@ -431,6 +430,7 @@ sub process_entry {
             entities    => $update->{entities},
         },
     };
+    $log->debug("Entry Put Data: ",{filter=>\&Dumper, value=>$putdata});
     $self->update_entry($putdata);
     $self->out("-------- done processing entry $id");
 }
@@ -518,8 +518,9 @@ sub flair_entry {
     my $entry_id   = shift;
     my $extract    = $self->extractor;
     my $munger     = $self->imgmunger;
+    my $log         = $self->log;
 
-    $self->log->debug("flairing entry $entry_id");
+    $log->debug("flairing entry $entry_id");
 
     my $href     = $self->get_entry($entry_id);
     my $body     = $href->{body};
