@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use v5.18;
 use lib '../lib';
-#use lib '/opt/scot/lib';
+use lib '/opt/scot/lib';
 
 use Scot::Env;
 use DateTime;
