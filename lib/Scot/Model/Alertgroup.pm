@@ -160,6 +160,24 @@ has columns => (
     default     => sub {[]},
 );
 
+=item B<firstview>
+
+this field is to track the first time someone viewed this alertgroup
+view_history, tracks the last time someone viewed, so not as useful
+for calculating response time metrics.  
+
+API will detect that value is -1 and then update the firstview to the
+seconds epoch when it was first viewed.
+
+=cut
+
+has firstview => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    default     => -1, # means not viewed
+);
+
 
 
 =back
