@@ -98,6 +98,10 @@ sub newsearch {
 
     my $request = $self->req;
     my $qstring = $request->param('qstring');
+    
+    if ( $qstring ne "" ) {
+        $qstring = $qstring . "*";
+    }
 
     $log->debug("Search String: $qstring");
 
@@ -121,7 +125,10 @@ sub newsearch {
                     },
                     query   => {
                         query_string    => {
-                            query   => $qstring
+                            query   => $qstring,
+                            rewrite => "scoring_boolean", #scoring boolean can cause issues with >1024 sized query
+                            #analyzer => "scot_analyzer",
+                            analyze_wildcard => "true",
                         }
                     }
                 }
@@ -159,7 +166,7 @@ sub newsearch {
                 entryid     => $record->{_id},
                 score       => $record->{_score},
                 snippet     => $record->{_source}->{body_plain},
-                highlight   => $record->{_source}->{body_plain},
+                highlight   => $record->{highlight}->{body_plain},
             };
         }
         elsif ($record->{_type} eq "entity") {
