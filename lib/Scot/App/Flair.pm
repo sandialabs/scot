@@ -403,8 +403,8 @@ sub get_entry {
         my $mongo       = $self->env->mongo;
         my $collection  = $mongo->collection("Entry");
         my $entryobj    = $collection->find_iid($id);
-        $self->log->debug("Entry OBJ = ", {filter=>\&Dumper, value=>$entryobj});
         $href           = $entryobj->as_hash;
+        $self->log->debug("Entry OBJ = ", {filter=>\&Dumper, value=>$href});
     }
     return $href;
 }

@@ -89,6 +89,7 @@ sub process_html {
     my @files   = ();
 
     foreach my $aref (@images) {
+        $log->debug("Found Img Tag: ",{filter=>\&Dumper, value=> $aref});
         my ( $link,
             $element,
             $attr,
@@ -97,6 +98,7 @@ sub process_html {
         my ($fqn, $fname);
 
         if ($link =~ m/^data:/) {
+            $log->debug("Link contains data uri");
             ($fqn,$fname)   =  $self->extract_data_image($link, $id);
         }
         else {
@@ -119,6 +121,7 @@ sub extract_data_image {
     my $self    = shift;
     my $link    = shift;
     my $id      = shift;
+    my $log     = $self->log;
 
     $link =~ m/^data:(.*);(.*),(.*)$/;
     my $mimetype = $1;
@@ -128,6 +131,8 @@ sub extract_data_image {
     $self->log->debug("mimetype = $mimetype encoding = $encoding");
 
     my ( $type, $ext ) = split('/', $mimetype);
+
+    $log->debug("data is : $data");
 
     my $decoded         = decode_base64($data);
     my ($fqn, $fname)   = $self->create_file($decoded, $id, $ext);
@@ -174,6 +179,7 @@ sub create_file {
     my $storage     = $self->storage;
 
     $log->debug("Creating File: $name");
+    $log->debug("Storage method is ".$storage);
 
     if ( $storage eq 'local' ) {
         if ($name =~ /^\d+$/ ) {
