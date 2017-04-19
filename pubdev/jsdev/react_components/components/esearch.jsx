@@ -42,7 +42,7 @@ var Search = React.createClass({
                 }
             }.bind(this),
             error: function(response) {
-                this.props.errorToggle('search failed')
+                //this.props.errorToggle('search failed')
                 this.setState({searching: false});    
             }.bind(this)
         });
@@ -89,7 +89,7 @@ var Search = React.createClass({
                     <div id='main-search-results' style={{display:'flex', flexFlow:'row',position:'absolute', right:'10px', top:'53px', background: '#f3f3f3', border:'black', borderStyle:'solid'}}>
                         <div>
                             <SearchDataEachHeader closeSearch={this.closeSearch}/>
-                            <div style={{overflowY: 'auto', maxHeight: '700px', display: 'table-caption'}}>
+                            <div style={{overflowY: 'auto', maxHeight: '600px', display: 'table-caption'}}>
                                 {tableRows}
                             </div>
                         </div>
@@ -106,7 +106,7 @@ var Search = React.createClass({
 
 var SearchDataEachHeader = React.createClass({
     render: function() {
-        return (
+        /*return (
             <div className="table-row header" style={{color:'black', display:'flex'}}>
                 <div style={{flexGrow:1, display:'flex'}}>
                     <div style={{width:'100px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
@@ -120,6 +120,16 @@ var SearchDataEachHeader = React.createClass({
                     </div>
                     <div style={{width:'400px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
                         Snippet
+                        <i className='fa fa-times pull-right' style={{color:'red', margin: '2px', cursor: 'pointer'}}onClick={this.props.closeSearch}/>
+                    </div>
+                </div>
+            </div>
+        )*/
+        return (
+            <div className="table-row header" style={{color:'black', display:'flex'}}>
+                <div style={{flexGrow:1, display:'flex'}}>
+                    <div style={{width:'100%', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+                        Search Results - Score Displayed
                         <i className='fa fa-times pull-right' style={{color:'red', margin: '2px', cursor: 'pointer'}}onClick={this.props.closeSearch}/>
                     </div>
                 </div>
@@ -149,17 +159,31 @@ var SearchDataEachRows = React.createClass({
 
         if (this.props.dataOne.highlight != undefined) {
             if (typeof(this.props.dataOne.highlight) == 'string') {
-                highlight.push(this.props.dataOne.highlight);
+                highlight.push(<span className='search_snippet_container panel col'><span className='search_snippet_header'>Snippet:</span><span className='search_snippet_result'>{this.props.dataOne.highlight}</span></span>);
             }
             else if ($.isArray(this.props.dataOne.highlight)) {
-                highlight.push(this.props.dataOne.highlight[0]);
+                highlight.push(<span className='search_snippet_container panel col'><span className='search_snippet_header'>Snippet:</span><span className='search_snippet_result'>{this.props.dataOne.highlight[0]}</span></span>);
             } else {
                 for (var key in this.props.dataOne.highlight) {
-                    highlight.push(<span className='search_snippet_container'><span className='search_snippet_header'>{key}</span><span className='search_snippet_result'>{this.props.dataOne.highlight[key]}</span></span>);
+                    highlight.push(<span className='search_snippet_container panel col'><span className='search_snippet_header'>{key}</span><span className='search_snippet_result'>{this.props.dataOne.highlight[key]}</span></span>);
                 }
             }
         }
- 
+        return (
+            <div key={Date.now()} className={rowClassName}>
+                <a href={href} style={{display:'flex'}}>
+                    <span className='panel panel-default' style={{display:'flex', flexFlow:'column', borderColor: 'black', borderWidth:'thin', margin: '0px'}}>
+                        <div className='panel-heading h4 search-heading'>
+                            {type} {id} - {score}
+                        </div>
+                        <div className='search-snippet' style={{display:'flex', overflowX:'hidden',wordWrap:'break-word'}}>
+                            <span className='container-fluid' style={{textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', width: '600px'}}>{highlight}</span>
+                        </div>
+                    </span>
+                </a>
+            </div>
+        )
+        /*
         return (
             <div key={Date.now()} className={rowClassName}>
                 <a href={href} style={{display:'flex'}}>
@@ -173,11 +197,11 @@ var SearchDataEachRows = React.createClass({
                         <span style={{width:'100px', textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{score}</span>
                     </div>
                     <div className='search-snippet' style={{display:'flex', overflowX:'hidden',wordWrap:'break-word'}}>
-                        <span style={{textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', width: '400px'}}>{highlight}</span>
+                        <span className='row' style={{textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', width: '400px'}}>{highlight}</span>
                     </div>
                 </a>
             </div>
-        )
+        )*/
     }
 })
 
