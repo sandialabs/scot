@@ -175,7 +175,7 @@ sub create_file {
     my $name        = shift;
     my $ext         = shift; 
     my $log         = $self->log;
-    my $dir         = $self->image_dir;
+    my $dir         = $self->img_dir;
     my $storage     = $self->storage;
 
     $log->debug("Creating File: $name");
