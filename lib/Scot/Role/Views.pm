@@ -40,7 +40,7 @@ sub add_view {
         $when   = time();
     }
     unless ($ipaddr) {
-        $ipaddr = "unknonw";
+        $ipaddr = "unknown";
     }
 
     $self->update({
@@ -49,6 +49,14 @@ sub add_view {
             "view_history.$user" =>  { when => $when, where => $ipaddr }
         },
     });
+
+# this could be used to update response time as we go, but not sure 
+# if this is the right way.
+#    if ( $self->views == 1 ) {
+#        # first view, return the elapsed time since creation
+#        return $when - $self->created;
+#    }
+#    return undef;
 }
 
 

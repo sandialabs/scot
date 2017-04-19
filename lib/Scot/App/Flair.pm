@@ -225,11 +225,11 @@ sub process_message {
     if ( $action eq "created" or $action eq "updated" ) {
         if ( $type eq "alertgroup" ) {
             $self->process_alertgroup($id);
-            $self->put_stat("alertgroups_flaired", 1);
+            $self->put_stat("alertgroup flaired", 1);
         }
         elsif ( $type eq "entry" ) {
             $self->process_entry($id);
-            $self->put_stat("entries_flaired", 1);
+            $self->put_stat("entry flaired", 1);
         }
         else {
             $self->out("Non-processed type: $type");
@@ -485,7 +485,7 @@ sub update_entry {
                         }
                     });
                 }
-                $self->put_stat("entities_created", scalar(@$create_aref));
+                $self->put_stat("entity created", scalar(@$create_aref));
                 $log->debug("updated entities: ",join(',',@$update_aref));
                 foreach my $id (@$update_aref) {
                     $self->env->mq->send("scot", {
@@ -497,7 +497,7 @@ sub update_entry {
                         }
                     });
                 }
-                $self->put_stat("entities_updated", scalar(@$update_aref));
+                $self->put_stat("entity updated", scalar(@$update_aref));
             }
         }
 

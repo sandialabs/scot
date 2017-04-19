@@ -393,12 +393,20 @@ sub get_aggregate_count {
     my $result  = $rawcol->aggregate($aref);
 
     $log->debug("result is ".ref($result));
-
-
+    $log->debug("result is ".Dumper($result));
     my @r       = $result->all;
+    $log->debug("all of result: ".Dumper(\@r));
 
 
     return wantarray ? @r : \@r;
+}
+
+sub get_aggregate_cursor {
+    my $self    = shift;
+    my $cmd     = shift;
+    my $col     = $self->_mongo_collection;
+    my $cur     = $col->aggregate($cmd);
+    return $cur;
 }
 
 sub get_default_permissions {

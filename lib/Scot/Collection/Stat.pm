@@ -24,6 +24,25 @@ sub create_from_api {
     return $stat;
 }
 
+sub upsert_metric {
+    my $self    = shift;
+    my $doc     = shift;
+    my $match   = { %$doc }; # shallow clone ok bc only one level deep.
+    my $log     = $self->env->log;
+    delete $match->{value};
+    my $obj = $self->find_one($match);
+    unless (defined $obj) {
+        $log->debug("New Metric, inserting");
+        $self->create($doc);
+    }
+    else {
+        $log->debug("Updating existing metric");
+        $self->update({
+            '$set'  => $doc
+        });
+    }
+}
+
 sub increment {
     my $self    = shift;
     my $dt      = shift;
