@@ -182,10 +182,17 @@ sub create {
         thing   => $self->get_object_collection($object),
         id      => $object->id,
     });
-    my $nowdt = DateTime->from_epoch( epoch => $env->now );
-    $mongo->collection('Stat')->increment($nowdt,
-                                            "$colname created",
-                                            1);
+    $self->put_stat("$colname created", 1);
+}
+
+sub put_stat {
+    my $self    = shift;
+    my $metric  = shift;
+    my $value   = shift;
+    my $env     = $self->env;
+    my $nowdt   = DateTime->from_epoch( epoch => $env->now );
+    my $col     = $env->mongo->collection('Stat');
+    $col->increment($nowdt, $metric, $value);
 }
 
 sub apply_tags {
@@ -570,11 +577,10 @@ sub get_one {
         $log->debug("Alertgroup asked for, bundling Alerts");
         my $col = $mongo->collection('Alertgroup');
         $data_href = $col->get_bundled_alertgroup($object->id);
-        #my $cur = $col->find({alertgroup => $object->id});
-        #while ( my $alert = $cur->next ) {
-        #    my $ahref = $alert->as_hash;
-        #    push @{$data_href->{alerts}}, $ahref;
-        #}
+        if ( $object->firstview == -1 ) {
+            $log->debug("First Time this Alertgroup has been viewed");
+            $object->update_set(firstview => $env->now);
+        }
     }
 
     if ( ref($object) eq "Scot::Model::Signature" ) {
@@ -595,6 +601,7 @@ sub get_one {
     $self->do_render($data_href);
 
     $self->audit("get_one", $req_href);
+    $self->put_stat($col_name. " viewed", 1);
 #    $env->mq->send("scot", {
 #        action  => "viewed",
 #        data    => {
@@ -994,10 +1001,7 @@ sub update {
             }
         });
     }
-    my $now = DateTime->now;
-    $mongo->collection('Stat')->increment($now,
-                                            "$col_name updated",
-                                            1);
+    $self->put_stat("$col_name updated", 1);
 }
 
 sub invalid_id_check {
@@ -1178,6 +1182,8 @@ sub process_promotion {
 
     $promote_to = $proobj->id; # to catch id if "new" was requested
     $proobj->update_push(promoted_from => $object->id);
+
+    $self->put_stat(lc($object_type)." promoted", 1);
 
     $env->mq->send("scot", {
         action  => 'created',
@@ -1475,6 +1481,7 @@ sub do_task_checks {
             when    => $now,
             status  => $status,
         };
+        $self->put_stat("task $status", 1);
     }
 }
 
@@ -1659,10 +1666,7 @@ sub delete {
             $child->update_set( parent_id => 0 );
         }
     }
-        my $now = DateTime->now;
-        $mongo->collection('Stat')->increment($now,
-                                              "$col_name deleted",
-                                              1);
+    $self->put_stat("$col_name deleted", 1);
 }
 
 =item B<DELETE /scot/api/v2/:thing/:id/:/subthing/:subid>
