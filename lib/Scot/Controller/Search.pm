@@ -68,10 +68,20 @@ sub search {
     # );
 
     $log->debug("Got Response: ", {filter=>\&Dumper, value=>$response});
-
+    $self->put_stat("search initiated", 1);
     $self->do_render($response);
 
 
+}
+
+sub put_stat {
+    my $self    = shift;
+    my $metric  = shift;
+    my $value   = shift;
+    my $env     = $self->env;
+    my $nowdt   = DateTime->from_epoch(epoch = $env->now);
+    my $col     = $env->mongo->collection('Stat');
+    $col->increment($nowdt, $metric, $value);
 }
 
 sub newsearch {
@@ -173,7 +183,7 @@ sub newsearch {
     }
 
     $log->debug("Got Response: ", {filter=>\&Dumper, value=>$response});
-
+    $self->put_stat("search initiated", 1);
     $self->do_render({
         totalRecordCount    => $total,
         queryRecordCount    => scalar(@results),
