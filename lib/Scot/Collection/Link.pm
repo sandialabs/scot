@@ -2,6 +2,7 @@ package Scot::Collection::Link;
 
 use lib '../../../lib';
 use Data::Dumper;
+use Try::Tiny;
 use Moose 2;
 
 extends 'Scot::Collection';
@@ -46,12 +47,18 @@ sub create_link {
         return undef;
     }
 
-    my $link    = $self->create({
-        when        => $when,
-        entity_id   => $eid,
-        value       => $value,
-        target      => $target,
-    });
+    my $link;
+    try {
+        $link    = $self->create({
+            when        => $when,
+            entity_id   => $eid,
+            value       => $value,
+            target      => $target,
+        });
+    }
+    catch {
+        $self->env->log->error("Failed to create Link!: ", $_);
+    };
 
     return $link;
 }

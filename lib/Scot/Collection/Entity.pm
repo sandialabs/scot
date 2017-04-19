@@ -76,8 +76,8 @@ sub update_entities {
     my $id      = $target->id;
     my $linkcol = $mongo->collection('Link');
 
-    $log->trace("[$type $id] Updating associated entities");
-    $log->trace("[$type $id] ", {filter=>\&Dumper, value=>$earef});
+    $log->debug("[$type $id] Updating associated entities");
+    $log->debug("[$type $id] ", {filter=>\&Dumper, value=>$earef});
     
     # find entity or create it.
     # NOTE: this is a cool way to get MongoDB to do everything in one
@@ -132,11 +132,11 @@ sub update_entities {
             if ( $entity_status eq "untracked" ) {
                 next;
             }
-            $log->trace("Found matching $type entity $value");
+            $log->debug("Found matching $type entity $value");
             push @updated_ids, $entity->id;
         }
         else {
-            $log->trace("Creating new $type entity $value");
+            $log->debug("Creating new $type entity $value");
             $entity = $self->create({
                 value   => $value,
                 type    => $etype,
