@@ -36,7 +36,7 @@
         },
         {
             attr    => 'scot',
-            class   => 'Scot::Util::Scot2',
+            class   => 'Scot::Util::ScotClient',
             config  => {
                 servername  => 'localhost',
                 # username with sufficient scot perms to create alert(groups)
