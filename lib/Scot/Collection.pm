@@ -401,6 +401,14 @@ sub get_aggregate_count {
     return wantarray ? @r : \@r;
 }
 
+sub raw_get_one {
+    my $self    = shift;
+    my $match   = shift;
+    my $rawcol  = $self->_mongo_collection;
+    my $result  = $rawcol->find_one($match);
+    return $result;
+}
+
 sub get_aggregate_cursor {
     my $self    = shift;
     my $cmd     = shift;
