@@ -79,7 +79,7 @@ sub put_stat {
     my $metric  = shift;
     my $value   = shift;
     my $env     = $self->env;
-    my $nowdt   = DateTime->from_epoch(epoch = $env->now);
+    my $nowdt   = DateTime->from_epoch(epoch => $env->now);
     my $col     = $env->mongo->collection('Stat');
     $col->increment($nowdt, $metric, $value);
 }
