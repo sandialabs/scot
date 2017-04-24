@@ -323,6 +323,7 @@ function install_perl_modules {
     fi
 
     PERLMODULES='
+        Array::Split
         Data::Dumper
         Data::Dumper::HTML
         Data::Dumper::Concise
