@@ -1,4 +1,4 @@
-package Scot::Collection::Stat;
+package Scot::Collection::Atmetric;
 
 use lib '../../../lib';
 use Moose 2;
@@ -17,10 +17,9 @@ sub create_from_api {
     my $env     = $self->env;
     my $log     = $env->log;
 
-    $log->trace("Create Stat from API");
+    $log->trace("Create AtMetric from API");
     
     my $stat = $self->create($request);
-
     return $stat;
 }
 
@@ -33,54 +32,15 @@ sub upsert_metric {
     delete $match->{value};
     my $obj = $self->find_one($match);
     unless (defined $obj) {
-        $log->debug("New Metric, inserting");
+        $log->debug("New AtMetric, inserting");
         $self->create($doc);
     }
     else {
-        $log->debug("Updating existing metric");
+        $log->debug("Updating existing AtMetric");
         $obj->update({
             '$set'  => $doc
         });
     }
-}
-
-sub increment {
-    my $self    = shift;
-    my $dt      = shift;
-    my $metric  = shift;
-    my $value   = shift;   
-    my $env     = $self->env;
-    my $log     = $env->log;
-
-    $log->debug("Incrementing a Stat record");
-
-    my $obj = $self->find_one({
-        year    => $dt->year,
-        month   => $dt->month,
-        day     => $dt->day,
-        hour    => $dt->hour,
-        metric  => $metric,
-    });
-
-    unless ( $obj ) { 
-        $log->debug("Creating new stat record");
-
-        $obj = $self->create({
-            year    => $dt->year,
-            month   => $dt->month,
-            day     => $dt->day,
-            hour    => $dt->hour,
-            dow     => $dt->dow,
-            quarter => $dt->quarter,
-            metric  => $metric,
-            value   => $value,
-        });
-    }
-    else {
-        $log->debug("Updating existing stat record");
-        $obj->update_inc( value   => $value );
-    }
-    return $obj;
 }
 
 sub get_today_count {
@@ -104,14 +64,14 @@ sub get_today_count {
 
 sub get_dow_statistics {
     my $self    = shift;
-    my $metric  = shift;
+    my $atype   = shift;
     my $log     = $self->env->log;
     my %command;
     my $tie = tie(%command, "Tie::IxHash");
     %command = (
-        mapreduce   => "stat",
+        mapreduce   => "atmetric",
         out         => { inline => 1 },
-        query       => { metric => $metric},
+        query       => { alerttype => $atype },
         map         => $self->_get_map_dow_js,
         reduce      => $self->_get_reduce_js,
         finalize    => $self->_get_finalize_js,
@@ -141,11 +101,11 @@ sub get_dow_statistics {
 sub _get_map_dow_js {
     return <<EOF;
 function () {
-    var key = this.dow;
+    var key = this.alerttype;
     var value = {
-        sum: this.value,
-        min: this.value,
-        max: this.value,
+        sum: this.rt_sum,
+        min: this.rt_sum,
+        max: this.rt_sum,
         count: 1,
         diff: 0
     };
