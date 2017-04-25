@@ -23,6 +23,7 @@ sub march {
     my $reports = shift; # match the sub name
     my $curdt   = shift;
     my $stopdt  = shift;
+    my $log     = $self->env->log;
 
     while ( DateTime->compare($curdt, $stopdt) > 0 ) {
         my ($sdt,$edt) = $self->get_daily_dts($curdt);
@@ -188,7 +189,7 @@ promotion data
 
 =cut
         
-sub alert_response_time {
+sub alert_response_time_agg {
     my $self    = shift;
     my $startdt = shift;
     my $enddt   = shift;
@@ -197,11 +198,13 @@ sub alert_response_time {
 
     my $aggcmd  = $self->build_response_time_aggregation($startdt,$enddt);
     my $aggcol  = $mongo->collection('Alert');
+    say "Agg Cmd is ".Dumper($aggcmd);
     my $cursor  = $aggcol->get_aggregate_cursor($aggcmd);
 
     while ( my $href = $cursor->next ) {
             if ( $href->{value} == 0 ) {
                 say "0";
+                say Dumper($href);
             }
             else {
                 say Dumper($href);
@@ -222,6 +225,173 @@ sub alert_response_time {
     }
 }
 
+sub alert_response_time {
+    my $self    = shift;
+    my $startdt = shift;
+    my $enddt   = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    $log->debug("STARTING Alert Response Time");
+
+    my $statcol = $mongo->collection('Stat');
+    my $agcol   = $mongo->collection('Alertgroup');
+    my $ecol    = $mongo->collection('Event');
+
+    my $agmatch = {
+        '$or' => [
+            {view_count  => { '$gt'  => 0 }},
+            {views       => { '$gt'  => 0 }},
+        ],
+        created     => {
+            '$lte'  => $enddt->epoch,
+            '$gte'  => $startdt->epoch,
+        },
+    };
+    my $agcursor    = $agcol->find($agmatch);
+    $agcursor->immortal(1);
+    $agcursor->sort({id => -1}); # work backwards
+
+    $log->debug("Got ".$agcursor->count." alertgroups");
+
+    my %all         = ();
+    my %promoted    = ();
+    my %incident    = ();
+    my $sum_all        = "Sum of all Alertgroup Response Times (seconds)";
+    my $count_all      = "Count of all Alertgroup Response Times";
+    my $sum_pro        = "Sum of promoted Alertgroup Response Times (seconds)";
+    my $count_pro      = "Count of promoted Alertgroup Response Times";
+    my $sum_inc        = "Sum of incident Alertgroup Response Times (seconds)";
+    my $count_inc      = "Count of incident Alertgroup Response Times";
+
+    while ( my $alertgroup = $agcursor->next ) {
+        my $id          = $alertgroup->id;
+        my $firstview   = $alertgroup->firstview;
+        $log->debug("Alertgroup $id");
+        if (! defined $firstview) {
+            $log->error("Alertgroup $id firstview not defined!");
+            next;
+        }
+        if ($firstview < 0) {
+            $log->error("Alertgroup $id: Problem with firstview value!");
+            next;
+        }
+        my $created = $alertgroup->created;
+        if (! defined $created) {
+            $log->error("Alertgroup $id: problem with created value!");
+            next;
+        }
+        my $response    = $firstview - $created;
+        if ( $response <= 0 ) {
+            $log->error("Alertgroup $id: invalid response time!");
+            $log->error("Alertgroup $id: firstview: $firstview");
+            $log->error("Alertgroup $id: created  : $created");
+            next;
+        }
+        my $dt      = DateTime->from_epoch(epoch => $created);
+
+        $all{$dt->year}{$dt->month}{$dt->day}{$dt->hour}{sum} += $response;
+        $all{$dt->year}{$dt->month}{$dt->day}{$dt->hour}{count}++;
+
+        my $status  = $alertgroup->status;
+        if ($status eq "promoted") {
+            $promoted{$dt->year}{$dt->month}
+                     {$dt->day}{$dt->hour}{sum} += $response;
+            $promoted{$dt->year}{$dt->month}
+                     {$dt->day}{$dt->hour}{count}++;
+            # check if it made it all the way to an incident
+            my $event   = $ecol->find_iid($alertgroup->promotion_id);
+            if ( ! defined $event ) {
+                $log->warn("Alertgroup $id: problem with promotion_id");
+                next;
+            }
+            my $event_status = $event->status;
+            if ( ! defined $event_status ) {
+                $log->warn("Event ".$event->id.": problem with status");
+                next;
+            }
+            if ( $event_status eq "promoted" ) {
+                $incident{$dt->year}{$dt->month}
+                        {$dt->day}{$dt->hour}{sum} += $response;
+                $incident{$dt->year}{$dt->month}
+                        {$dt->day}{$dt->hour}{count}++;
+            }
+        }
+
+    }
+
+    foreach my $y (sort keys %all) {
+        foreach my $m (sort keys %{$all{$y}} ) {
+            foreach my $d (sort keys %{$all{$y}{$m}}) {
+                foreach my $h (sort keys %{$all{$y}{$m}{$d}}) {
+                    my $allhref = $all{$y}{$m}{$d}{$h};
+                    my $prohref = $promoted{$y}{$m}{$d}{$h};
+                    my $inchref = $incident{$y}{$m}{$d}{$h};
+
+                    my @metrics = (
+                        {
+                            year    => $y + 0,
+                            month   => $m + 0,
+                            day     => $d + 0,
+                            hour    => $h + 0,
+                            metric  => $sum_all,
+                            value   => $allhref->{sum} // 0,
+                        },
+                        {
+                            year    => $y + 0,
+                            month   => $m + 0,
+                            day     => $d + 0,
+                            hour    => $h + 0,
+                            metric  => $count_all,
+                            value   => $allhref->{count} // 0,
+                        },
+                        {
+                            year    => $y + 0,
+                            month   => $m + 0,
+                            day     => $d + 0,
+                            hour    => $h + 0,
+                            metric  => $sum_pro,
+                            value   => $prohref->{sum} // 0,
+                        },
+                        {
+                            year    => $y + 0,
+                            month   => $m + 0,
+                            day     => $d + 0,
+                            hour    => $h + 0,
+                            metric  => $count_pro,
+                            value   => $prohref->{count} // 0,
+                        },
+                        {
+                            year    => $y + 0,
+                            month   => $m + 0,
+                            day     => $d + 0,
+                            hour    => $h + 0,
+                            metric  => $sum_inc,
+                            value   => $inchref->{sum} // 0,
+                        },
+                        {
+                            year    => $y + 0,
+                            month   => $m + 0,
+                            day     => $d + 0,
+                            hour    => $h + 0,
+                            metric  => $count_inc,
+                            value   => $inchref->{count} // 0,
+                        },
+                    );
+                    foreach my $metric (@metrics) {
+                        # say Dumper($metric);
+                        # $log->debug("writing metric ",{filter=>\&Dumper,value=>$metric});
+                        $statcol->upsert_metric($metric);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
 sub build_response_time_aggregation {
     my $self    = shift;
     my $startdt = shift;
@@ -229,7 +399,8 @@ sub build_response_time_aggregation {
     my @cmd     = (
         {
             '$match'  => {
-                view_count => {'$gt'    => 0},
+#   think view_count is problem, doesn't exist in individal alerts
+#                view_count => {'$gt'    => 0},
                 created => {
                     '$lte'  => $enddt->epoch,
                     '$gte'  => $startdt->epoch,
@@ -291,7 +462,6 @@ sub build_response_time_aggregation {
                     month   => { '$month'   => '$dt' },
                     day     => { '$dayOfMonth' => '$dt' },
                     hour    => { '$hour'    => '$dt' },
-                    dowx    => { '$dayOfWeek'   => '$dt' },
                 },
                 value   => { '$sum' => '$response' },
                 alerts  => { '$sum' => '$count' },
