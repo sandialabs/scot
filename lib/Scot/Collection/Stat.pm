@@ -29,7 +29,7 @@ sub upsert_metric {
     my $doc     = shift;
     my $match   = { %$doc }; # shallow clone ok bc only one level deep.
     my $log     = $self->env->log;
-    $log->debug("doc: ",{filter=>\&Dumper,value=>$doc});
+    # $log->debug("doc: ",{filter=>\&Dumper,value=>$doc});
     delete $match->{value};
     my $obj = $self->find_one($match);
     unless (defined $obj) {
