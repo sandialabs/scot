@@ -393,6 +393,32 @@ $t->get_ok("/scot/api/v2/alertgroup" => {},
             }
         )->status_is(200);
 
+# test the creation of a alertgroup with 300 alerts, should split
+
+$t->post_ok(
+    '/scot/api/v2/alertgroup'   => json => {
+        message_id  => '202233445566778899aabbccddeeff',
+        subject     => 'test message 202',
+        data        => [
+            { foo   => 1,   bar => 4 },
+            { foo   => 2,   bar => 4 },
+            { foo   => 3,   bar => 4 },
+            { foo   => 4,   bar => 4 },
+            { foo   => 5,   bar => 4 },
+            { foo   => 6,   bar => 4 },
+            { foo   => 7,   bar => 4 },
+            { foo   => 8,   bar => 4 },
+            { foo   => 9,   bar => 4 },
+            { foo   => 10,   bar => 4 },
+            { foo   => 11,   bar => 4 },
+            { foo   => 12,   bar => 4 },
+        ],
+        tag     => [qw(test testing)],
+        source  => [qw(todd scot)],
+        columns  => [qw(foo bar) ],
+    }
+)->status_is(200);
+
     
  print Dumper($t->tx->res->json), "\n";
 done_testing();
