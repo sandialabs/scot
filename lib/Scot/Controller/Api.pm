@@ -96,6 +96,16 @@ sub create {
         return;
     }
 
+    if ( ref($object) eq "ARRAY" ) {
+        # this fugly hack is the result of splitting alertgroups that are 
+        # too large.  in that case we return an array of alertgroups created
+        # ideally, we would be smart and be able to branch to return an array
+        # but then the client would need to be updated... so I just pop off
+        # the first alertgroup created and be happy...  I a have an idea
+        # that I will rue the day I made this decision.  I've been warned.
+        $object = pop @$object;
+    }
+
     if ( ref($object) eq "HASH" ) {
         # a specific error condition is in the object hashref
         $self->do_error(400, $object);
