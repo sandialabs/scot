@@ -57,6 +57,29 @@ sub create_from_api {
         push @$data, $data;
     }
 
+    my $row_limit = 200;
+    if ( defined $env->alertgroup_rowlimit ) {
+        $row_limit = $env->alertgroup_rowlimit;
+        $log->debug("Altername rowlimit specified as ".$row_limit);
+    }
+
+    if ( scalar(@$data) > $row_limit ) {
+        $log->warn("Large number of rows in Alertgroup, splitting...");
+        my @created_alertgroup;
+
+        my $x = 1;
+        my $subject = $href->{request}->{json}->{subject};
+        while ( my @subalerts = splice(@$data, 0, $row_limit) ) {
+            push @{$href->{request}->{json}->{data}}, @subalerts;
+            $href->{request}->{json}->{subject} = $subject . " part $x";
+            $log->debug("splitting alertgroup : ",
+                        {filter=>\&Dumper, value => $href});
+            push @created_alertgroup, $self->create_from_api($href);
+            $x++;
+        }
+        return \@created_alertgroup;
+    }
+
     my $tags    = $request->{tags};
     # delete $request->{tags};  # store a copy here and there
 
@@ -105,7 +128,7 @@ sub create_from_api {
 
 
 
-        $log->trace("Creating alert ", {filter=>\&Dumper, value => $chref});
+        $log->debug("Creating alert ", {filter=>\&Dumper, value => $chref});
 
         my $alert = $mongo->collection("Alert")->create($chref);
 
@@ -134,6 +157,8 @@ sub create_from_api {
         $closed_count++     if ( $alert->status eq "closed" );
         $promoted_count++   if ( $alert->status eq "promoted");
     }
+
+    $log->debug("updating alertgroup ", $alertgroup->id);
 
     $alertgroup->update({
         '$set'  => {
