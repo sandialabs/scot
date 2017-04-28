@@ -253,8 +253,14 @@ var SignatureTable = React.createClass({
 
 var SignatureMetaData = React.createClass({
     getInitialState: function() {
-        var inputArrayType = ['description','type', 'prod_sigbody_id','qual_sigbody_id', 'signature_group']
-        var inputArrayTypeDisplay = ['Description','Type', 'Production Signature Body Version','Quality Signature Body Version', 'Signature Group'] 
+        var inputArrayType = ['description','type', 'prod_sigbody_id','qual_sigbody_id', 'signature_group', 'target']
+        var inputArrayTypeDisplay = ['Description','Type', 'Production Signature Body Version','Quality Signature Body Version', 'Signature Group', 'Target'] 
+        var target = this.props.signatureData.target;
+        if (this.props.signatureData.target == undefined) {
+            target = {};
+            target['id'] = null;
+            target['type'] = null;
+        }
         return {
             descriptionValue: this.props.signatureData.description,
             inputArrayType: inputArrayType,
@@ -265,6 +271,7 @@ var SignatureMetaData = React.createClass({
             qual_sigbody_id: this.props.signatureData.qual_sigbody_id,
             signature_group: this.props.signatureData.signature_group,
             optionsValue: JSON.stringify(this.props.signatureData.options),
+            target: target,
             showSignatureOptions: false,
         }
     },
@@ -274,10 +281,16 @@ var SignatureMetaData = React.createClass({
         newValue[key] = event.target.value;
         this.setState(newValue);
     },
+    TargetInputChange: function(event) {
+        var currentTarget = this.state.target;
+        var key = event.target.id;
+        currentTarget[key] = event.target.value;
+        this.setState({target:currentTarget});
+    },
     submitMetaData: function(event) {
         var k  = event.target.id;
         var v = event.target.value;
-        if (k == 'options') { 
+        if (k == 'options' || k == 'target') { 
             try{v = JSON.parse(v)} 
             catch(err) {this.props.errorToggle('Failed to convert string to object. Try adding quotation marks around the key and values'); return; }
             var optionsType = typeof(v);
@@ -332,6 +345,16 @@ var SignatureMetaData = React.createClass({
                             <Button type='submit' bsSize='xsmall' bsStyle='success' onClick={this.submitMetaData} id={this.state.inputArrayType[i]} value={value}>Apply</Button>
                         </span>
                     </div> 
+                )
+            } else if (this.state.inputArrayType[i] == 'target') {
+                inputArray.push(
+                    <div className='col-lg'> 
+                        <span className='signatureTableWidth'>
+                            <span>Target Type: </span><input id={'type'} onChange={this.TargetInputChange} value={value.type} placeholder={'event, intel, entry... (only type one)'}/>
+                            <span>Target ID: </span><input id={'id'} onChange={this.TargetInputChange} value={value.id} placeholder={'ID of above'}/>
+                            <Button type='submit' bsSize='xsmall' bsStyle='success' onClick={this.submitMetaData} id={this.state.inputArrayType[i]} value={JSON.stringify(this.state.target)}>Apply</Button>
+                        </span>
+                    </div>
                 )
             } else {
                 inputArray.push(
