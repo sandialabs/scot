@@ -147,6 +147,10 @@ is ($range[0]->minute, 0, "this quarter start minute correct");
 is ($range[0]->hour,   0, "this quarter start hour   correct");
 is ($range[0]->day ,   1, "this quarter start day    correct");
 
+is ($range[1]->second, 59, "this quarter start second correct");
+is ($range[1]->minute, 59, "this quarter start minute correct");
+is ($range[1]->hour,   23, "this quarter start hour   correct");
+is ($range[1]->day ,   $qend->day, "this quarter start day    correct");
 
 done_testing();
 exit 0;
