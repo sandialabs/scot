@@ -1,4 +1,5 @@
 %environment = (
+    time_zone   => 'America/Denver',
     # server name of the SCOT server
     servername  => 'localhost',
     # username with sufficient scot perms to create alert(groups)
