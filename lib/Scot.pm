@@ -181,6 +181,10 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-api#get_game_data')
             ->name  ('game');
 
+    $scot   ->route ('/api/v2/metric/:thing')
+            ->to    ('controller-metric#get')
+            ->name  ('get');
+
     $scot   ->route ('/api/v2/graph/:thing')
             ->to    ('controller-stat#get')
             ->name  ('get_report_json');

@@ -110,7 +110,6 @@ has hour    => (
     default     => 1,
 );
 
-
 has rt_sum   => (
     is          => 'ro',
     isa         => 'Num',
@@ -123,12 +122,42 @@ has rt_count   => (
     required    => 1,
     default     => 0,
 );
+
+has promoted    => (
+    is          => 'ro',
+    isa         => 'Num',
+    required    => 1,
+    default     => 0,
+);
+
 has incident   => (
     is          => 'ro',
     isa         => 'Num',
     required    => 1,
     default     => 0,
 );
+
+has count   => (
+    is      => 'ro',
+    isa     => 'Num',
+    required    => 1,
+    default => 0,
+);
+
+has open    => (
+    is      => 'ro',
+    isa     => 'Num',
+    required    => 1,
+    default => 0,
+);
+
+has closed    => (
+    is      => 'ro',
+    isa     => 'Num',
+    required    => 1,
+    default => 0,
+);
+
 
 
 __PACKAGE__->meta->make_immutable;
