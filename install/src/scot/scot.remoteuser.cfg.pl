@@ -1,5 +1,6 @@
 %environment = (
     
+    time_zone   => 'America/Denver',
     # scot version
     version     => '3.5.1',
 
