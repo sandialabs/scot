@@ -974,6 +974,11 @@ sub update {
         status => "successfully updated",
     });
 
+    if ( grep {/status/} @what ) {
+        my $status    = $update{status};
+        $self->put_stat("$col_name status changed to $status", 1);
+    }
+
     if ( $object->meta->does_role("Scot::Role::Historable") ) {
         $self->update_history($object, $user, $col_name);
     }

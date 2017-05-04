@@ -27,12 +27,16 @@ my $enddt  = DateTime->new(
 );
 my $startdt   = DateTime->new(
     year    => 2017,
-    month   => 4,
-    day     => 25,
+    month   => 5,
+    day     => 1,
     hour    => 23,
     minute  => 59,
     second  => 59,
 );
 
 # march marches backwards
-$metrics->march([qw(alert_response_time)],$startdt,$enddt);
+# $metrics->march([qw(alert_response_time)],$startdt,$enddt);
+# $metrics->march([qw(promoted_count)],$startdt,$enddt);
+# $metrics->march([qw(alert_open_closed)],$startdt,$enddt);
+$metrics->march([qw(alerttype_metrics)],$startdt, $enddt);
+
