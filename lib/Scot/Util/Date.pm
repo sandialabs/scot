@@ -71,7 +71,12 @@ sub get_this_year {
 sub get_time_range {
     my $self    = shift;
     my $req     = shift;
+    my $targetdt= shift;
     my @range   = ();
+
+    unless ($targetdt) {
+        $targetdt = DateTime->now;
+    }
     
     # types of time ranges:
     #   - lifetime => response time over life of data collection
@@ -85,6 +90,14 @@ sub get_time_range {
 
     my $rvalue = $req->{range};
 
+    if ( ref($rvalue) eq "ARRAY" ) {
+        if ( ref($rvalue->[0]) eq "DateTime" ) {
+            if ( ref($rvalue->[1]) eq "DateTime" ) {
+                @range = ( $rvalue->[0], $rvalue->[1] );
+            }
+        }
+    }
+
     if ( $rvalue eq "lifetime" ) {
         @range  = (
             $self->parse_datetime_string("earliest"),
@@ -92,14 +105,14 @@ sub get_time_range {
         );
     }
     if ( $rvalue eq "now" ) {
-        my $sdt = DateTime->now;
+        my $sdt = $targetdt;
         $sdt->truncate(to => 'hour');
         my $edt = $sdt->clone();
         $edt->set(minute => 59, second => 59);
         @range = ( $sdt, $edt );
     }
     if ( $rvalue eq "lasthour" ) {
-        my $sdt = DateTime->now();
+        my $sdt = $targetdt;
         $sdt->subtract(hours=>1);
         $sdt->truncate(to => 'hour');
         my $edt = $sdt->clone();
@@ -120,7 +133,7 @@ sub get_time_range {
         @range = ( $sdt, $edt );
     }
     if ( $rvalue eq "thismonth" ) {
-        my $sdt = DateTime->now;
+        my $sdt = $targetdt;
         $sdt->truncate(to => "month");
         my $edt = DateTime->last_day_of_month(
             year    => $sdt->year,
@@ -129,7 +142,7 @@ sub get_time_range {
         @range = ( $sdt, $edt );
     }
     if ( $rvalue eq "lastmonth" ) {
-        my $sdt = DateTime->now;
+        my $sdt = $targetdt;
         $sdt->subtract(months => 1);
         $sdt->truncate(to => "month");
         my $edt = DateTime->last_day_of_month(
@@ -139,14 +152,14 @@ sub get_time_range {
         @range = ( $sdt, $edt );
     }
     if ( $rvalue eq "thisyear" ) {
-        my $sdt = DateTime->now;
+        my $sdt = $targetdt;
         $sdt->truncate(to => "year");
         my $edt = $sdt->clone();
         $edt->set(month => 12, day => 31, hour => 23, minute => 59, second => 59);
         @range = ( $sdt, $edt );
     }
     if ( $rvalue eq "lastyear" ) {
-        my $sdt = DateTime->now;
+        my $sdt = $targetdt;
         $sdt->subtract(years => 1);
         $sdt->truncate(to => "year");
         my $edt = $sdt->clone();
@@ -154,7 +167,7 @@ sub get_time_range {
         @range = ( $sdt, $edt );
     }
     if ( $rvalue eq "thisquarter" ) {
-        my $sdt = DateTime->now;
+        my $sdt = $targetdt;
         $sdt->truncate( to => "quarter" );
         my $edt = $sdt->clone();
         $edt->add(months => 3);
@@ -163,7 +176,7 @@ sub get_time_range {
         @range = ( $sdt, $edt );
     }
     if ( $rvalue eq "lastquarter" ) {
-        my $sdt = DateTime->now;
+        my $sdt = $targetdt;
         $sdt->subtract(months => 3);
         $sdt->truncate( to => "quarter" );
         my $edt = $sdt->clone();
