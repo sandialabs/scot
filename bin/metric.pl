@@ -20,7 +20,7 @@ $todaydt->set(hour=>23, minute=>59, second=>59);
 $stopdt->subtract(days => 7);
 $stopdt->set(hour=>0, minute=>0, second=>0);
 
-$m->march([qw(alert_response_time alerttype_metrics)],
+$m->march([qw(alert_response_time alerttype_metrics promoted_count alert_open_closed)],
           $todaydt, $stopdt);
 
 
