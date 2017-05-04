@@ -1,4 +1,5 @@
 %environment = (
+    time_zone   => 'America/Denver',
     log_config  => {
         logger_name     => 'SCOT_REPLICATE',
         layout          => '%d %7p [%P] %15F{1}: %4L %m%n',

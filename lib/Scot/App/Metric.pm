@@ -532,9 +532,12 @@ sub alerttype_metrics {
                 push @{$r{$subject}{$year}{$month}{$day}{$hour}{rt}}, $rt;
             }
             if ($alert->promotion_id != 0) {
+               #  $r{$subject}{$year}{$month}{$day}{$hour}{promoted}++;
                 my $event   = $e_col->find_iid($alert->promotion_id);
                 if ( defined $event ) {
+                    $log->debug("got event, checking promotion status");
                     if ( $event->status eq "promoted" ) {
+                        $log->debug("Promoted!");
                         $r{$subject}{$year}{$month}{$day}{$hour}{incident} ++;
                     }
                 }
@@ -547,6 +550,7 @@ sub alerttype_metrics {
                 foreach my $d (sort keys %{$r{$s}{$y}{$m}} ) {
                     foreach my $h (sort keys %{$r{$s}{$y}{$m}{$d}} ) {
                         my $p   = $r{$s}{$y}{$m}{$d}{$h};
+                        $log->debug("results are ",{filter=>\&Dumper, value=>$p});
                         my $stats = $self->get_stats($p->{rt});
                         my $row = {
                             alerttype   => $s,
@@ -699,7 +703,136 @@ sub build_alerttype_agg_cmd {
     return wantarray ? @cmd : \@cmd;
 }
 
+##
+## create promoted count records for stat
+## (should only be used to "catch up"  newest SCOT's should 
+## create stats for promotion as it goes.
+##
+
+sub promoted_count {
+    my $self    = shift;
+    my $startdt = shift;
+    my $enddt   = shift;
+    my $log         = $self->env->log;
+    my $mongo       = $self->env->mongo;
+    my $statcol     = $mongo->collection('Stat');
+    my $alertcol    = $mongo->collection('Alert');
+    my $eventcol    = $mongo->collection('Event');
+
+    my $event_cursor    = $eventcol->find({
+        created => {
+            '$lte'  => $enddt->epoch,
+            '$gte'  => $startdt->epoch,
+        }
+    });
+    $event_cursor->immortal(1);
+
+    my %r = ();
+
+    while ( my $event = $event_cursor->next ) {
+        my $promoted_from   = $event->promoted_from;
+        my $promoted_to     = $event->promotion_id;
+        my ($y, $m, $d, $dow, $quarter, $h) = $self->get_dt_breakout($event->created);
+
+        if (defined $promoted_to ) {
+            if ( $promoted_to != 0 ) {
+                $r{$y}{$m}{$d}{$h}{'promoted event count'}++;
+            }
+        }
+
+        if (defined $promoted_from) {
+            if ( scalar(@{$promoted_from}) > 0 ) {
+                foreach my $id (@{$promoted_from}) {
+                    my $alert = $alertcol->find_iid($id);
+                    if (defined $alert) {
+                        my ($ya, $ma, $da, $dowa, $qa, $ha) = $self->get_dt_breakout($alert->created);
+                        $r{$ya}{$ma}{$da}{$ha}{'promoted alert count'}++;
+                    }
+                    else {
+                        $log->warn("Alert $id not found");
+                    }
+                }
+            }
+            else {
+                $log->warn("No alerts in promoted_from array");
+            }
+        }
+        else {
+            $log->warn("No promoted_from array");
+        }
+    }
+    foreach my $y (keys %r) {
+        foreach my $m (keys %{$r{$y}}) {
+            foreach my $d (keys %{$r{$y}{$m}}) {
+                foreach my $h (keys %{$r{$y}{$m}{$d}}) {
+                    foreach my $metric (keys %{$r{$y}{$m}{$d}{$h}}) {
+                        my $value  = $r{$y}{$m}{$d}{$h}{$metric} // 0;
+                        my $row = {
+                            year    => $y,
+                            month   => $m,
+                            day     => $d,
+                            hour    => $h,
+                            metric  => $metric,
+                            value   => $value,
+                        };
+                        $log->debug("upserting promotion $y/$m/$d $h: $metric = $value");
+                        $statcol->upsert_metric($row);
+                    }
+                }
+            }
+        }
+    }
+}
+
+sub alert_open_closed {
+    my $self    = shift;
+    my $startdt = shift;
+    my $enddt   = shift;
+    my $log         = $self->env->log;
+    my $mongo       = $self->env->mongo;
+    my $statcol     = $mongo->collection('Stat');
+    my $alertcol    = $mongo->collection('Alert');
+
+    my $alert_cursor    = $alertcol->find({
+        created => {
+            '$lte'  => $enddt->epoch,
+            '$gte'  => $startdt->epoch,
+        },
+        status  => {
+            '$in'   => [ 'open', 'closed' ],
+        },
+    });
+
+    my %r   = ();
+    while ( my $alert = $alert_cursor->next ) {
+        my $status  = $alert->status;
+        my ($y, $m, $d, $dow, $quarter, $h) = $self->get_dt_breakout($alert->created);
+        $r{$y}{$m}{$d}{$h}{$status." alert count"}++;
+    }
+    foreach my $y (keys %r) {
+        foreach my $m (keys %{$r{$y}}) {
+            foreach my $d (keys %{$r{$y}{$m}}) {
+                foreach my $h (keys %{$r{$y}{$m}{$d}}) {
+                    foreach my $metric (keys %{$r{$y}{$m}{$d}{$h}}) {
+                        my $value  = $r{$y}{$m}{$d}{$h}{$metric} // 0;
+                        my $row = {
+                            year    => $y,
+                            month   => $m,
+                            day     => $d,
+                            hour    => $h,
+                            metric  => $metric,
+                            value   => $value,
+                        };
+                        $log->debug("upserting promotion $y/$m/$d $h: $metric = $value");
+                        $statcol->upsert_metric($row);
+                    }
+                }
+            }
+        }
+    }
+}
 
 
 
+    
 1;

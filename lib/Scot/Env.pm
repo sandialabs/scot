@@ -14,6 +14,7 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use Module::Runtime qw(require_module compose_module_name);
 use Data::Dumper;
 use Scot::Util::LoggerFactory;
+use Scot::Util::Date;
 use namespace::autoclean;
 
 use Moose;
@@ -24,6 +25,13 @@ has debug   => (
     isa         => 'Int',
     required    => 1,
     default     => 0, # 1 = print messages, 0 = quiet
+);
+
+has date_util => (
+    is          => 'ro',
+    isa         => 'Scot::Util::Date',
+    required    => 1,
+    default     => sub { Scot::Util::Date->new; },
 );
 
 has config_file => (
