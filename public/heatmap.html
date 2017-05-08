@@ -23,6 +23,7 @@
         fill: #000;
       }
     </style>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
     
   </head>
@@ -38,9 +39,14 @@
         <option>alert</option>
         <option>incident</option>
     </select>
+    <button id='export'>Export to PNG</button>
     <div id="chart"></div>
     <div id="dataset-picker">
     </div>
+    <!--Container for saving png-->
+    <canvas id="canvas" width="800" height="400" hidden></canvas>
+    <div id='png-container' hidden></div>
+    <!--End container-->
     <script type="text/javascript">
       var margin = { top: 50, right: 0, bottom: 100, left: 30 },
           width = 960 - margin.left - margin.right,
@@ -153,7 +159,35 @@
 
       heatmapChart(collection, type, year);
 
+      $('#export').click(function() {
+        var svgString = new XMLSerializer().serializeToString(document.querySelector('svg'));
 
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+        var DOMURL = self.URL || self.webkitURL || self;
+        var img = new Image();
+        var svg = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
+        var url = DOMURL.createObjectURL(svg);
+        img.onload = function() {
+            ctx.drawImage(img, 0, 0);
+            var png = canvas.toDataURL("image/png");
+            document.querySelector('#png-container').innerHTML = '<img src="'+png+'"/>';
+            DOMURL.revokeObjectURL(png);
+            var a = $("<a>")
+            .attr("href", png)
+            .attr("download", "img.png")
+            .appendTo("body");
+
+            a[0].click();
+
+            a.remove();      
+        };
+        img.src = url;
+  
+
+        
+      });
+      
     </script>
   </body>
 </html>
