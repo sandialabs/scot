@@ -58,10 +58,10 @@ sub create_from_api {
     }
 
     my $row_limit = 200;
-    if ( defined $env->alertgroup_rowlimit ) {
-        $row_limit = $env->alertgroup_rowlimit;
-        $log->debug("Altername rowlimit specified as ".$row_limit);
-    }
+    #if ( defined $env->alertgroup_rowlimit ) {
+    #    $row_limit = $env->alertgroup_rowlimit;
+    #    $log->debug("Altername rowlimit specified as ".$row_limit);
+    #}
 
     if ( scalar(@$data) > $row_limit ) {
         $log->warn("Large number of rows in Alertgroup, splitting...");
