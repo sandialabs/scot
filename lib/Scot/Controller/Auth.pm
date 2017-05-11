@@ -9,12 +9,232 @@ use base 'Mojolicious::Controller';
 
 =head1 Scot::Controller::Auth
 
-superclass of auth modules
-common functions here
-the configuration as startup will 
-define the auth module used
+Authentication and Authorization 
 
 =cut
+
+=item B<login>
+
+this route will generate a web based form for login
+
+=cut
+
+sub login {
+    my $self    = shift;
+    my $href    = { status => "fail" };
+    if ( $self->check ) {
+        $href->{status} = "ok";
+    }
+    $self->render( json => $href );
+}
+
+sub logout {
+    my $self    = shift;
+    $self->session( user    => '' );
+    $self->session( groups  => '' );
+    $self->session( expires => 1 );
+}
+
+=item B<check>
+
+This sub gets called on every route under /scot.  This routine checks the authentication
+status of the request.
+
+    First, we look for a mojolicious session.  The presence of that indicates that 
+    the use has been authenticated and we can return true.
+
+    Second, we look for an API token.  If we find a valid one, then we are good.
+
+    Finally, we either do a Local authentication or we redirect to an Apache Authentication
+    landing that will do SSO for us.
+
+=cut
+
+sub check {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $request = $self->req;
+    my $user    = '';
+    
+    $log->debug("Authentication Check Begins...");
+
+    $log->debug("Checking Mojo Session");
+
+    if ( $user = $self->valid_mojo_session ) {
+        $log->debug("Successful Prior Authentication Still Valid");
+        if ($self->set_group_membership($user)) {
+            return 1;
+        }
+        else {
+            return undef;
+        }
+    }
+
+    my $headers = $request->headers;
+
+    $log->debug("Checking Authorization Header");
+
+    if ( $user = $self->valid_authorization_header($headers) ) {
+        $log->debug("Successful Authentication via Authorization Header");
+        $self->set_group_membership($user);
+        return 1;
+    }
+
+    $log->debug("Checking Remoteuser set by Webserver");
+
+    if ( $user = $self->valid_remoteuser($headers) ) {
+        $log->debug("Successful Authentication via Remoteuser Header");
+        if ( $self->set_group_membership($user) ) {
+            return 1;
+        }
+        else {
+            return undef;
+        }
+    }
+
+    $log->error("Failed Authentication Check");
+    return undef;
+}
+
+sub valid_mojo_session {
+    my $self    = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("Looking for Mojo session cookie");
+    
+    my $user    = $self->session('user');
+
+    if ( defined $user ) {
+        $log->debug("User $user has valid mojo session.");
+        return $user;
+    }
+
+    $log->debug("Invalid or undefined Mojo Session");
+    return undef;
+}
+
+sub valid_authorization_header {
+    my $self    = shift;
+    my $headers = shift;
+    my $log     = $self->env->log;
+    my $user;
+
+    my $auth_header     = $headers->header('authorization');
+    my ($type,$value)   = split(/ /, $auth_header, 2);
+
+    if ( $type =~ /basic/i ) {
+        $log->debug("Basic Authentication Attempt...");
+        if ( $user = $self->validate_basic($value) ) {
+            $log->debug("User $user appears authentic");
+            return $user;
+        }
+        else {
+            $log->error("Invalid or disallowed user");
+            return undef;
+        }
+    }
+
+    if ( $type =~ /apikey/i ) {
+        $log->debug("ApiKey Authentication Attempt...");
+        if ( $user = $self->validate_apikey($value) ) {
+            $log->debug("User $user used apikey");
+            return $user;
+        }
+        else {
+            $log->error("Invalid api key");
+            return undef;
+        }
+    }
+
+    $log->error("Invalid Authentication type in Authentication Header");
+    return undef;
+}
+
+sub valid_remoteuser {
+    my $self    = shift;
+    my $headers = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    my $remoteuser  = $headers->header('remote-user');
+
+    if ( defined $remoteuser ) {
+        $log->debug("Remoteuser detected, and that is good enough for me. ");
+        return $remoteuser;
+    }
+    else {
+        $log->error("Remoteuser not set");
+    }
+    return undef;
+}
+
+sub set_group_membership {
+    my $self    = shift;
+    my $user    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    $log->debug("Group Membership");
+
+    my $groups  = $self->session('groups');
+    if ( ref($groups) eq "ARRAY" ) {
+        $log->debug("Groups set in Mojo Session");
+        $log->debug("$user Groups are ".join(', ',@$groups));
+        return 1;
+    }
+
+    $log->debug("Group membership not in session, fetching...");
+    $groups = $self->get_groups($user);
+
+    if ( scalar(@$groups) > 0 ) {
+        $log->debug("Got 1 or more groups, storing in session");
+        $self->session(groups => $groups);
+        return 1;
+    }
+    else {
+        $log->error("User has null group set!");
+        return undef;
+    }
+}
+
+sub get_groups {
+    my $self    = shift;
+    my $user    = shift;
+    my $log     = $self->env->log;
+    my $mode    = $self->env->group_mode;
+    my @groups  = ();
+    my $results;
+
+    $log->debug("Getting groups for user $user with mode $mode");
+
+    if ( $mode =~ /ldap/i ) {
+        my $ldap = $self->env->ldap;
+
+        if ( defined $ldap ) {
+            $results = $ldap->get_users_groups($user);
+            if ( $results < 0 ) { # TODO: refactor to check for empty array?
+                $log->error("LDAP group ERROR!");
+            }
+        }
+    }
+    else {
+        my $mongo   = $self->env->mongo;
+        my $ucol    = $mongo->collection("User");
+        my $user    = $ucol->find_one({username => $user});
+
+        if ( defined $user ) {
+            $results    = $user->groups;
+        }
+        else {
+            $log->error("User $user, not in local user collection!");
+        }
+    }
+
+    push @groups, grep {/scot/i} @$results;
+    return wantarray ? @groups : \@groups;
+}
+
 
 sub has_invalid_user_chars {
     my $self    = shift;
