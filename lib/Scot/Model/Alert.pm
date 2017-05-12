@@ -21,6 +21,7 @@ with    qw(
     Scot::Role::Entitiable
     Scot::Role::Entriable
     Scot::Role::Hashable
+    Scot::Role::Historable
     Scot::Role::Permission
     Scot::Role::Parsed
     Scot::Role::Promotable
