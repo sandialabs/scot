@@ -149,8 +149,9 @@ sub alarmist {
     
     my $match   = {
         '$match'    => { 
-            what        => qr/promoted alert/,
-            when        => { '$gte' => $when },
+            what                    => "promotion",
+            "data.source.type"      => "alert",
+            when                    => { '$gte' => $when },
         },
     };
 
@@ -165,7 +166,7 @@ sub alarmist {
     $log->debug("Aggreation command is ",
                 {filter=>\&Dumper, value => \@agg});
 
-    my $col     = $mongo->collection('History');
+    my $col     = $mongo->collection('Audit');
     $self->aggregate('alarmist', $col, \@agg);
 }
 
