@@ -977,6 +977,12 @@ sub update {
     if ( grep {/status/} @what ) {
         my $status    = $update{status};
         $self->put_stat("$col_name status changed to $status", 1);
+        $mongo->collection('History')->add_history_entry({
+            who     => $user,
+            what    => "$col_name status changed to $status",
+            when    => $self->env->now,
+            target => { id => $object->id, type => $col_name },
+        });
     }
 
     if ( $object->meta->does_role("Scot::Role::Historable") ) {
