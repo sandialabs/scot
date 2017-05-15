@@ -146,6 +146,11 @@ relies on the browser BasicAuth popup.
         ->via   ('post') 
         ->to    ($authclass.'#auth') 
         ->name  ('auth');
+
+    # let apache handle the auth
+    $r  ->route ( '/sso' )    
+        ->to    ($authclass.'#sso') 
+        ->name  ('sso');
     
     # make sure that we have passed authentication
 
