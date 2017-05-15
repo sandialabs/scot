@@ -22,10 +22,12 @@ this route will generate a web based form for login
 sub login {
     my $self    = shift;
     my $href    = { status => "fail" };
-    if ( $self->check ) {
-        $href->{status} = "ok";
-    }
-    $self->render( json => $href );
+    my $log     = $self->env->log;
+    my $url     = $self->session('orig_url');
+
+    $log->debug("rendering login form");
+
+    $self->render( orig_url => $url );
 }
 
 sub logout {
@@ -33,6 +35,107 @@ sub logout {
     $self->session( user    => '' );
     $self->session( groups  => '' );
     $self->session( expires => 1 );
+}
+
+sub sso {
+    my $self    = shift;
+    my $log     = $self->env->log;
+    my $url     = $self->param('orig_url');
+    $log->debug("SSO authentication attempt ($url)");
+    if ( $url eq "/login" ) {
+        $url    = "/";
+    }
+
+    my $request     = $self->req;
+    my $headers     = $request->headers;
+    my $remoteuser  = $headers->header('remote-user');
+
+    unless ( $remoteuser ) {
+        $log->debug("no remoteuser set");
+        return undef;
+    }
+
+    $log->debug("Checking Remoteuser set by Webserver");
+    $log->debug("remote-user is $remoteuser");
+
+    if ( my $user = $self->valid_remoteuser($headers) ) {
+        $log->debug("Successful Authentication via Remoteuser Header");
+        if ( $self->set_group_membership($user) ) {
+            $self->session( user    => $user );
+            $log->debug("Redirecting to $url");
+            $self->redirect_to($url);
+        }
+        else {
+            $log->debug("failed remoteuser");
+            $self->redirect_to('/login');
+        }
+    }
+}
+
+sub auth {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $user    = lc($self->param('user'));
+    my $pass    = $self->param('pass');
+    my $origurl = $self->session('orig_url');
+
+    $log->debug("Form based Login.  User = $user orig_url = $origurl");
+
+    # remove leading and trailing spaces from password
+    # sometimes happens with forms
+    $pass =~ s/^\s+(\w+)\s+$/$1/;
+
+    unless ( defined $user and defined $pass ) {
+        return $self->failed_auth(
+            "undefined user or pass",
+            $user
+        );
+    }
+
+    if ( $self->invalid_username($user) ) {
+        return $self->failed_auth(
+            "invalid characters in username",
+            $user
+        );
+    }
+
+    if ( length($user) > 32 or length($pass) > 32 ) {
+        return $self->failed_auth(
+            "user or pass was greater than 32 characters",
+            $user
+        );
+    }
+
+    if ( defined $env->auth_type and lc($env->auth_type) eq "ldap" ) {
+        if ( defined $env->ldap ) {
+            if ( $self->ldap_authenticates($user, $pass) ) {
+                return $self->sucessful_auth($user, $origurl);
+            }
+            else {
+                $log->error("Failed LDAP authentication!");
+                $log->debug("will attempt local authentication...");
+            }
+        }
+        else {
+            $log->error("LDAP config not defined in scot.cfg.pl");
+            $log->debug("will attempt local authentication...");
+        }
+    }
+    
+    # local auth 
+    if ( $self->local_authenticates($user, $pass) ) {
+        my $groups = $self->get_group_membership($user);
+        $self->session('groups' => $groups);
+        return $self->sucessful_auth($user, $origurl);
+    }
+     
+    # all hope is lost
+    $log->error("Failed all attempts to authenticate $user");
+    return $self->failed_auth(
+        "attempt to authenticate $user failed",
+        $user
+    );
 }
 
 =item B<check>
@@ -58,7 +161,6 @@ sub check {
     my $user    = '';
     
     $log->debug("Authentication Check Begins...");
-
     $log->debug("Checking Mojo Session");
 
     if ( $user = $self->valid_mojo_session ) {
@@ -81,19 +183,10 @@ sub check {
         return 1;
     }
 
-    $log->debug("Checking Remoteuser set by Webserver");
-
-    if ( $user = $self->valid_remoteuser($headers) ) {
-        $log->debug("Successful Authentication via Remoteuser Header");
-        if ( $self->set_group_membership($user) ) {
-            return 1;
-        }
-        else {
-            return undef;
-        }
-    }
 
     $log->error("Failed Authentication Check");
+    $self->session(orig_url => $request->url->to_string );
+    $self->redirect_to('/login');
     return undef;
 }
 
@@ -148,6 +241,24 @@ sub valid_authorization_header {
     }
 
     $log->error("Invalid Authentication type in Authentication Header");
+    return undef;
+}
+
+sub validate_basic {
+    my $self    = shift;
+    my $value   = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("This will someday validate a basic auth $value");
+    return undef;
+}
+
+sub validate_apikey {
+    my $self    = shift;
+    my $value   = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("This will someday validate apikey  auth $value");
     return undef;
 }
 
@@ -235,8 +346,7 @@ sub get_groups {
     return wantarray ? @groups : \@groups;
 }
 
-
-sub has_invalid_user_chars {
+sub invalid_username {
     my $self    = shift;
     my $user    = shift;
     # help prevent ldap injection
@@ -357,5 +467,33 @@ sub check_for_csrf {
     $log->error("Invalid Content of header X-Requested-With: ".$reqwith);
     return undef;
 }
+
+sub sucessful_auth {
+    my $self    = shift;
+    my $user    = shift;
+    my $url     = shift;
+    my $env     = $self->env;
+    my $origurl = $self->session('orig_url');
+    my $log     = $env->log;
+
+    $log->warn("User $user sucessfully authenticated");
+    my $groups  = $self->get_group_membership($user);
+    $self->session('groups' => $groups);
+    $self->update_user_sucess($user);
+    $self->session(
+        user    => $user,
+        groups  => $groups,
+        secure  => 1,
+        expiration  => $env->session_expiration // 3600 * 4,
+    );
+
+    $self->redirect_to($origurl);
+    return;
+}
+
+sub failed_auth {
+    my $self    = shift;
+}
+
 
 1;
