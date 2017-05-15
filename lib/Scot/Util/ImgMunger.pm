@@ -159,6 +159,8 @@ sub download_image {
         return $fqn, $fname;
     }
     else {
+        $log->error("Failed download of image $link");
+        $log->error("Error Msg: ".$response->status_line);
         print "Failed to retrieve!\n";
         die $response->status_line;
     }
