@@ -1,0 +1,26 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <center>
+            <img src="/images/scot_logo_473x473.png" alt="SCOT logo">
+            <h1>SCOT Login</h1>
+
+            <form action="/sso">
+                <input type="hidden" name ="orig_url" value="<%= $orig_url %>">
+                <input type="submit" value="Sign in using SSO" />
+            </form>
+
+            <p>or</p>
+
+            <form action="/auth" method="post">
+                <label for="u">Username</label>
+                <input  id="u" type="text" name="user"><br>
+                <label for="p">Password</label>
+                <input  id="p" type="password" name="pass"><br>
+                <input type="submit"><input type="reset">
+                <%= csrf_field %>
+            </form>
+        </center>
+    </body>
+</html>
