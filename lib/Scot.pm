@@ -47,6 +47,9 @@ sub startup {
     );
     $self->sessions->secure(1);
 
+    $self->plugin('WithCSRFProtection');
+    $self->plugin('TagHelpers');
+
 
     # Note to future maintainer: 
     # hypnotoad performs preforking.  This can cause problems with DB
@@ -144,6 +147,7 @@ relies on the browser BasicAuth popup.
 
     $r  ->route ( '/auth' )    
         ->via   ('post') 
+        ->with_csrf_protection
         ->to    ($authclass.'#auth') 
         ->name  ('auth');
 
