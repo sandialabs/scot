@@ -14,7 +14,7 @@ var ReportHeatmap = React.createClass({
         }
     },
     componentDidMount: function() {
-       this.loadHeatMap(); 
+       //this.loadHeatMap(); 
     },
     componentWillMount: function() {
         /*const script = document.createElement("script");
@@ -24,11 +24,11 @@ var ReportHeatmap = React.createClass({
         document.body.appendChild(script);*/
     },
     componentDidUpdate: function() {
-        this.loadHeatMap();
+        //this.loadHeatMap();
     },
     loadHeatMap: function() {
         var margin = { top: 50, right: 0, bottom: 100, left: 50 },
-        width = $('#heatmap').width() - (margin.left - margin.right),
+        width = $('#report').width() - (margin.left - margin.right),
         height = this.state.height - (margin.top - margin.bottom),
         gridSize = Math.floor(width / 24),
         legendElementWidth = gridSize*2,
