@@ -306,7 +306,7 @@ var SelectedHeaderOptions = React.createClass({
                 showPromote = false;
             }
             return (
-                <div className="entry-header">
+                <div className="entry-header detail-buttons">
                     {type != 'entity' ? <Button eventKey="1" bsStyle='success' onClick={this.props.entryToggle} bsSize='xsmall'><i className="fa fa-plus-circle" aria-hidden="true"></i> Add Entry</Button> : null }
                     {type != 'entity' ? <Button eventKey="2" onClick={this.props.fileUploadToggle} bsSize='xsmall'><i className="fa fa-upload" aria-hidden="true"></i> Upload File</Button> : null }
                     <Button eventKey="3" onClick={this.toggleFlair} bsSize='xsmall'><i className="fa fa-eye-slash" aria-hidden="true"></i> Toggle Flair</Button>
@@ -323,7 +323,7 @@ var SelectedHeaderOptions = React.createClass({
         } else {
             if (this.props.aIndex != undefined) {
                 return (
-                    <div className="entry-header second-menu">
+                    <div className="entry-header second-menu detail-buttons">
                         <Button eventKey='1' onClick={this.toggleFlair} bsSize='xsmall'><i className="fa fa-eye-slash" aria-hidden="true"></i> Toggle Flair</Button>
                         <Button eventKey="2" onClick={this.reparseFlair} bsSize='xsmall'><i className='fa fa-refresh' aria-hidden='true'></i> Reparse Flair</Button>
                         {this.props.guideID == null ? null : <span>{this.props.guideID != 0 ? <Button eventKey='3' onClick={this.guideToggle} bsSize='xsmall'><img src='/images/guide.png'/> Guide</Button> : <Button eventKey='3' onClick={this.createGuide} bsSize='xsmall'><img src='/images/guide.png'/> Create Guide</Button>}</span>}
@@ -346,7 +346,7 @@ var SelectedHeaderOptions = React.createClass({
                 )
             } else { 
                 return (
-                    <div className="entry-header">
+                    <div className="entry-header detail-buttons">
                         <Button eventKey='1' onClick={this.toggleFlair} bsSize='xsmall'><i className="fa fa-eye-slash" aria-hidden="true"></i> Toggle Flair</Button>
                         <Button eventKey="2" onClick={this.reparseFlair} bsSize='xsmall'><i className='fa fa-refresh' aria-hidden='true'></i> Reparse Flair</Button>
                         {this.props.guideID == null ? null : <span>{this.props.guideID != 0 ? <Button eventKey='3' onClick={this.guideToggle} bsSize='xsmall'><img src='/images/guide.png'/> Guide</Button> : <Button eventKey='3' onClick={this.createGuide} bsSize='xsmall'><img src='/images/guide.png'/> Create Guide</Button>}</span>}

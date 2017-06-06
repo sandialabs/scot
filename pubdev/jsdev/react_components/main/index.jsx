@@ -254,7 +254,7 @@ var App = React.createClass({
                         </div>
                         <Gamification />
                         <Online />
-                        <Report />
+                        <Report frontPage={true} />
                     </div>
                     :
                     null}
