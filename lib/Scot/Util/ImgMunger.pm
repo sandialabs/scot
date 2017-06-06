@@ -143,6 +143,7 @@ sub extract_data_image {
 sub download_image {
     my $self    = shift;
     my $link    = shift;
+    my $log     = $self->log;
     my $agent   = LWP::UserAgent->new(
         env_proxy   => 1,
         timeout     => 10,
@@ -162,6 +163,7 @@ sub download_image {
         $log->error("Failed download of image $link");
         $log->error("Error Msg: ".$response->status_line);
         print "Failed to retrieve!\n";
+        $log->error("Failed to retrieve $link, ".$response->status_line);
         die $response->status_line;
     }
 
