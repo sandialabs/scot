@@ -47,6 +47,9 @@ sub startup {
     );
     $self->sessions->secure(1);
 
+    $self->plugin('WithCSRFProtection');
+    $self->plugin('TagHelpers');
+
 
     # Note to future maintainer: 
     # hypnotoad performs preforking.  This can cause problems with DB
@@ -116,6 +119,7 @@ get JSON that was submitted with the web request
 =cut
 
     my $authclass   = $env->authclass;
+       $authclass   = "Controller::Auth";
 
     # routes
     my $r       = $self->routes;
@@ -143,8 +147,14 @@ relies on the browser BasicAuth popup.
 
     $r  ->route ( '/auth' )    
         ->via   ('post') 
+        ->with_csrf_protection
         ->to    ($authclass.'#auth') 
         ->name  ('auth');
+
+    # let apache handle the auth
+    $r  ->route ( '/sso' )    
+        ->to    ($authclass.'#sso') 
+        ->name  ('sso');
     
     # make sure that we have passed authentication
 
