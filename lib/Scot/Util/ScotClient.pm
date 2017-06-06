@@ -201,6 +201,39 @@ sub _build_auth_header {
     return sprintf("%s %s", $self->auth_type, $encoded);
 }
 
+has api_key => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    default     => ' ',
+);
+
+=item B<api_key_header>
+
+create the data for authorization header when using api key
+
+=cut
+
+has api_key_header => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_api_key_header',
+);
+
+sub _build_api_key_header {
+    my $self    = shift;
+    my $user    = $self->api_key;
+    my $log     = $self->log;
+    $log->debug("BUILDING api_key_header from $user");
+    chomp(my $encoded = encode_base64($user));
+    my $string = sprintf("%s %s", "apikey", $encoded);
+    $log->debug("string is $string");
+    return $string;
+}
+
 =item B<uapid>
 
 The pid of the client,  for fork detection.
@@ -293,13 +326,15 @@ sub _build_ua {
         }
     }
 
-    if ( $self->auth_type eq "token" ) {
-        $log->debug("adding token auth header callback");
+    if ( $self->auth_type =~ /apikey/i ) {
+        $log->debug("adding auth header callback with apikey");
+        my $ak = $self->api_key_header;
+        $log->debug("api_key_header $ak");
         $ua->on( start  => sub {
             my $ua  = shift;
             my $tx  = shift;
             $tx->req->headers->header(
-                'X-Scot-Api-Token'  => $self->api_token
+                'Authorization'     => $ak,
             );
         });
     }
