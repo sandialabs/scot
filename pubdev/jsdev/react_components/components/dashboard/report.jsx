@@ -2,7 +2,7 @@ var React               = require('react');
 var Panel               = require('react-bootstrap/lib/Panel.js');
 var Badge               = require('react-bootstrap/lib/Badge.js');
 var ReportHeatmap       = require('./report_heatmap.jsx'); 
-var ReportAlertPower    = require('./report_alertpower.jsx');
+//var ReportAlertPower    = require('./report_alertpower.jsx');
 
 var Report = React.createClass({
     getInitialState: function() {
@@ -24,7 +24,7 @@ var Report = React.createClass({
                         
                     </div>
                 </div>
-                {this.props.frontPage ? 
+                {/*this.props.frontPage ? 
                     null
                 :
                     <div id='alertpower' className='dashboard col-md-4'>
@@ -34,7 +34,7 @@ var Report = React.createClass({
                             </Panel>
                         </div>
                     </div>
-                }
+                */}
             </div>
         );
     }
