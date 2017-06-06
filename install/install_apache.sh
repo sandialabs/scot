@@ -41,7 +41,8 @@ function install_apache {
     echo "- looking for $CSF"
     if [[ ! -e $CSF ]]; then
 
-        CSF="$CSD/scot-revproxy-${OS}-${AUTHMODE}.conf"
+        # CSF="$CSD/scot-revproxy-${OS}-${AUTHMODE}.conf"
+        CSF="$CSD/scot-revproxy-${OS}.conf"
         echo "- looking for $CSF"
 
         if [[ ! -e $CSF ]]; then
