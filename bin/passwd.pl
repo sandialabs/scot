@@ -33,3 +33,4 @@ my $pbkdf2  = Crypt::PBKDF2->new(
 chomp($pass);
 # print $pass;
 print $pbkdf2->generate($pass);
+print "\n";
