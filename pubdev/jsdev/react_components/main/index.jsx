@@ -20,9 +20,9 @@ var Wall            = require('../debug-components/wall.jsx');
 var Search          = require('../components/esearch.jsx');
 var Revl            = require('../components/visualization/revl.coffee');
 var Gamification    = require('../components/dashboard/gamification.jsx');
-var Status           = require('../components/dashboard/status.jsx');
+var Status          = require('../components/dashboard/status.jsx');
 var Online          = require('../components/dashboard/online.jsx');
-var Stats           = require('../components/dashboard/stats.jsx');
+var Report          = require('../components/dashboard/report.jsx');
 var Notification    = require('react-notification-system');
 var isalert = false
 {
@@ -78,6 +78,9 @@ var App = React.createClass({
             }
             else if(type.toLowerCase() == 'entity'){
                 activeKey = 10;        
+            }
+            else if (type.toLowerCase() == 'report') {
+                activeKey = 12;
             }
             else if (type.toLowerCase() == "amq") {
                 activeKey = 99; 
@@ -167,7 +170,7 @@ var App = React.createClass({
                             activemqid = activemqsetentry
                             activemqtype = activemqsetentrytype
                         }
-                        window.open('#/' + activemqtype + '/' + activemqid)
+                        window.open('/#/' + activemqtype + '/' + activemqid)
                     }
                 } : null
             })
@@ -212,27 +215,28 @@ var App = React.createClass({
                 <Navbar inverse fixedTop={true} fluid={true}>
                     <Navbar.Header>
                         <Navbar.Brand>
-                            <a href='#' style={{margin:'0', padding:'0'}}><img src='scot.png' style={{width:'50px', margin:'0', padding:'0'}} /></a>
+                            <a href='/#' style={{margin:'0', padding:'0'}}><img src='/scot.png' style={{width:'50px', margin:'0', padding:'0'}} /></a>
                         </Navbar.Brand>
                         <Navbar.Toggle />
                     </Navbar.Header>
                     <Navbar.Collapse>
                         <Nav onSelect={this.handleSelect} activeKey={this.state.activeKey}>
-                            <NavItem eventKey={1} href="#/alertgroup">Alert</NavItem>
-                            <NavItem eventKey={2} href="#/event">Event</NavItem>
-                            <NavItem eventKey={3} href="#/incident">Incident</NavItem>
-                            <NavItem eventKey={6} href="#/intel" >Intel</NavItem>
+                            <NavItem eventKey={1} href="/#/alertgroup">Alert</NavItem>
+                            <NavItem eventKey={2} href="/#/event">Event</NavItem>
+                            <NavItem eventKey={3} href="/#/incident">Incident</NavItem>
+                            <NavItem eventKey={6} href="/#/intel" >Intel</NavItem>
                             <NavDropdown eventKey={10} id='nav-dropdown' title={'More'}>
-                                <MenuItem eventKey={4} href="#/task">Task</MenuItem>
-                                <MenuItem eventKey={5} href="#/guide">Guide</MenuItem>
-                                <MenuItem eventKey={8} href="#/visualization">Visualization</MenuItem>
-                                <MenuItem eventKey={7} href="#/signature">Signature</MenuItem>
-                                <MenuItem eventKey={10} href="#/entity">Entity</MenuItem>
+                                <MenuItem eventKey={4} href="/#/task">Task</MenuItem>
+                                <MenuItem eventKey={5} href="/#/guide">Guide</MenuItem>
+                                <MenuItem eventKey={8} href="/revl.html/#/visualization">Visualization</MenuItem>
+                                <MenuItem eventKey={7} href="/#/signature">Signature</MenuItem>
+                                <MenuItem eventKey={10} href="/#/entity">Entity</MenuItem>
+                                <MenuItem eventKey={12} href="/#/report">Report</MenuItem>
                                 <MenuItem divider />
-                                <MenuItem eventKey={11.1} href='admin/index.html'>Administration</MenuItem>
-                                <MenuItem eventKey={11.2} href='docs/index.html'>Documentation</MenuItem>
+                                <MenuItem eventKey={11.1} href='/admin/index.html'>Administration</MenuItem>
+                                <MenuItem eventKey={11.2} href='/docs/index.html'>Documentation</MenuItem>
                             </NavDropdown>
-                            <NavItem eventKey={9} href="incident_handler">{IH}</NavItem>
+                            <NavItem eventKey={9} href="/incident_handler">{IH}</NavItem>
                         </Nav>
                         <span id='ouo_warning' className='ouo-warning'>{sensitivity}</span>
                         <Search errorToggle={this.errorToggle} />
@@ -250,7 +254,7 @@ var App = React.createClass({
                         </div>
                         <Gamification />
                         <Online />
-                        <Stats />
+                        <Report frontPage={true} />
                     </div>
                     :
                     null}
@@ -258,7 +262,7 @@ var App = React.createClass({
                         <ListView isalert={isalert ? 'isalert' : ''} id={this.state.id} viewMode={this.state.viewMode} type={this.state.type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting}  listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
                     :
                     null}
-                    {this.state.type == 'event' || this.state.type == 'incident' || this.state.type == 'task' || this.state.type == 'guide' || this.state.type == 'intel' || this.state.type == 'signature' ? 
+                    {this.state.type == 'event' || this.state.type == 'incident' || this.state.type == 'task' || this.state.type == 'guide' || this.state.type == 'intel' || this.state.type == 'signature' || this.state.type == 'entity' ? 
                         <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={this.state.type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
                     :
                     null}
@@ -266,8 +270,8 @@ var App = React.createClass({
                         <Revl value={this.props.params.value} type={this.props.params.id} id={this.props.params.type} depth={this.props.params.typeid} viewMode={this.state.viewMode} Notification={this.state.Notification} />
                     :
                     null}
-                    {this.state.type == 'entity' ?
-                        <ListView id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={this.state.type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
+                    {this.state.type == 'report' ?
+                        <Report id={this.state.id} id2={this.state.id2} viewMode={this.state.viewMode} type={this.state.type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
                     :
                     null}
                     {this.state.type == 'amq' ?
@@ -288,43 +292,52 @@ var App = React.createClass({
                 this.setState({type:''});
                 break;
             case 1:
-                window.location.hash = '#/alertgroup';
-                window.location.href = window.location.hash;
+                window.open('/#/alertgroup','_self');
+                //window.location.hash = '/#/alertgroup';
+                //window.location.href = window.location.hash;
                 break;
             case 2:
-                window.location.hash = '#/event';
-                window.location.href = window.location.hash;
+                window.open('/#/event','_self');
+                //window.location.hash = '/#/event';
+                //window.location.href = window.location.hash;
                 break;
             case 3:
-                window.location.hash = '#/incident';
-                window.location.href = window.location.hash;
+                window.open('/#/incident','_self');
+                //window.location.hash = '/#/incident';
+                //window.location.href = window.location.hash;
                 break;
             case 4:
-                window.location.hash = '#/task';
-                window.location.href = window.location.hash;
+                window.open('/#/task','_self');
+                //window.location.hash = '/#/task';
+                //window.location.href = window.location.hash;
                 break;
             case 5:
-                window.location.hash = '#/guide';
-                window.location.href = window.location.hash;
+                window.open('/#/guide','_self');
+                //window.location.hash = '/#/guide';
+                //window.location.href = window.location.hash;
                 break;
             case 6:
-                window.location.hash = '#/intel';
-                window.location.href = window.location.hash;
+                window.open('/#/intel','_self');
+                //window.location.hash = '/#/intel';
+                //window.location.href = window.location.hash;
                 break;
             case 7:
-                window.location.hash = '#/signature';
-                window.location.href = window.location.hash;
+                window.open('/#/signature','_self');
+                //window.location.hash = '/#/signature';
+                //window.location.href = window.location.hash;
                 break;
             case 8:
-                window.location.hash = '#/visualization';
-                window.location.href = window.location.hash;
+                //window.location.hash = 'revl.html/#/visualization';
+                //window.location.href = window.location.hash;
+                window.open('/revl.html/#/visualization','_self');
                 break;
             case 9:
-                window.open('incident_handler.html');
+                window.open('/incident_handler.html','_self');
                 break;
             case 10:
-                window.location.hash = '#/entity';
-                window.location.href = window.location.hash;
+                window.open('/#/entity','_self');
+                //window.location.hash = '/#/entity';
+                //window.location.href = window.location.hash;
        }
     },
 });

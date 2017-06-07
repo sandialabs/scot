@@ -21,7 +21,7 @@ var changeKey;
 var amqdebug = false;
 $.ajax({
     type: 'get',
-    url:'scot/api/v2/whoami',
+    url:'/scot/api/v2/whoami',
     success: function(result) {
         whoami=result.user;
         if (result.data != undefined) {
