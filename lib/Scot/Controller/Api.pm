@@ -12,6 +12,7 @@ Perform the CRUD operations based on JSON input and provide JSON output
 =cut
 
 use Data::Dumper;
+use Data::UUID;
 use Try::Tiny;
 use DateTime;
 use Mojo::JSON qw(decode_json encode_json);
@@ -2880,6 +2881,36 @@ sub get_who_online {
         queryRecordCount    => scalar(@results),
         totalRecordCount    => $total
 
+    });
+}
+
+sub get_apikey {
+    my $self    = shift;
+    my $user    = $self->session('user');
+    my $groups  = $self->session('groups');
+    my $log     = $self->env->log;
+
+    unless (defined $user) {
+        $log->error("unauthenticated user trying to get apikey!");
+        $self->do_error(400, { error_msg => "missing user" });
+        return;
+    }
+
+    my $ug  = Data::UUID->new;
+    my $key = $ug->create_str();
+
+    my $record  = {
+        apikey      => $key,
+        groups      => $groups,
+        username    => $user,
+    };
+
+    my $collection  = $self->env->mongo->collection('Apikey');
+    my $apikey      = $collection->create_from_api($record);
+
+    $self->do_render({
+        status  => 'ok',
+        apikey  => $apikey->apikey,
     });
 }
 
