@@ -311,7 +311,7 @@ sub authenticate_via_local {
         my $pwhash  = $userobj->pwhash;
 
         if ( defined $pwhash ) {
-            if ( $pwhash ne '' ) {
+            if ( $pwhash =~ /X-PBKDF2/ ) {
                 my $pbkdf2 = Crypt::PBKDF2->new(
                     hash_class  => 'HMACSHA2',
                     hash_args   => { sha_size => 512 },
@@ -334,7 +334,7 @@ sub authenticate_via_local {
 
             }
             else {
-                $log->error("stored password for $user is null string");
+                $log->error("$user has no local pw or stored hash invalid");
                 return undef;
             }
         }
