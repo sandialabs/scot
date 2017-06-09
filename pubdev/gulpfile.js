@@ -2,20 +2,41 @@ var gulp = require('gulp');
 var browserify = require('browserify');
 var babelify = require('babelify');
 var source = require('vinyl-source-stream');
+var sass = require( 'gulp-sass' );
+var sourcemaps = require( 'gulp-sourcemaps' );
+var bulkSass = require( 'gulp-sass-bulk-import' );
+
+var paths = {
+	scripts: './jsdev/react_components/**/*.jsx',
+	admin: '.jsdev/react_components/administration/**/*',
+	sass: './sass/**/*.scss'
+}
 
 gulp.task('watch', ['build','buildadmin'], function () {
-    gulp.watch('./jsdev/react_components/**/**', ['build']);
-    gulp.watch('.jsdev/react_components/administration/**',['buildadmin']);
+    gulp.watch( paths.admin, ['buildadmin'] );
+    gulp.watch( paths.scripts, ['scripts'] );
+	gulp.watch( paths.sass, ['sass'] );
 });
 
-gulp.task('build', function () {
+gulp.task( 'scripts', function() {
   return browserify({entries: './jsdev/react_components/main/index.jsx', extensions: ['.jsx','.coffee'], debug: true})
     .transform('coffeeify', {only: './jsdev/react_components/components/visualization'})
     .transform('babelify', {presets: ['es2015', 'react']})
     .bundle()
     .pipe(source('scot-3.5.js'))
     .pipe(gulp.dest('../public/'),{overwrite:true});
-});
+} );
+
+gulp.task( 'sass', function() {
+	return gulp.src( './sass/styles.scss' )
+	  .pipe( bulkSass() )
+	  .pipe( sourcemaps.init() )
+	  .pipe( sass().on( 'error', sass.logError ) )
+	  .pipe( sourcemaps.write() )
+	  .pipe( gulp.dest( '../public/css' ), { overwrite: true } );
+} );
+
+gulp.task( 'build', ['scripts', 'sass'] );
 
 gulp.task('buildadmin', function() {
     return browserify({entries: './jsdev/react_components/administration/api.jsx', extensions: ['.jsx'], debug: true})
