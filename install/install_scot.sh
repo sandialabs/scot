@@ -203,7 +203,14 @@ function install_private_modules {
         echo "--- "
         echo "--- Running private module installer"
         echo "---"
-        . $PRIVATE_SCOT_MODULES/install.sh
+        PSM_FLAGS=""
+        if [[ "$SCOT_REFRESH_CONFIG" == "yes" ]]; then
+            PSM_FLAGS="-s"
+        fi
+        if [[ "$APACHE_REFRESH_CONFIG" == "yes" ]]; then
+            PSM_FLAGS="$PSM_FLAGS -a"
+        fi
+        . $PRIVATE_SCOT_MODULES/install.sh $PSM_FLAGS
     else
         echo "~~~ No Scot private module directory found at $PRIVATE_SCOT_MODULES"
     fi

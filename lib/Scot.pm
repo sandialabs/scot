@@ -268,6 +268,22 @@ relies on the browser BasicAuth popup.
 
 =pod
 
+@api {post} /scot/api/v2/get_apikey get an apikey
+@apiName Apikey
+@apiGroup Auth
+@apiVersion 2.0.0
+@apiDescription Create an apikey and return it to a user
+@apiParam {none}
+
+=cut
+
+    $scot   ->route ('/api/v2/create_apikey')
+            ->via   ('post')
+            ->to    ('controller-api#get_apikey')
+            ->name  ('get_apikey');
+
+=pod
+
 @api {post} /scot/api/v2/:thing Create thing
 @apiName Create :thing
 @apiGroup CRUD
