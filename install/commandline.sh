@@ -99,10 +99,11 @@ function process_commandline {
                 RESETDB="yes"
                 ;;
             u)
-                INSTMODE="SCOTONLY"
+                INSTMODE="UPGRADE"
                 RESETDB="no"
-                REFRESHREPOS="no"
-                MONGO_REFRESH_CONFIG="no"
+                REFRESHREPOS="yes"
+                MONGO_REFRESH_CONFIG="yes"
+                APACHE_REFRESH_CONFIG="yes"
                 ;;
             s)
                 echo "SCOT only Install"

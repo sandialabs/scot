@@ -451,7 +451,8 @@ sub validate_apikey {
 
     $log->debug("validating apikey = $value");
 
-    my $decoded = decode_base64($value);
+    # my $decoded = decode_base64($value);
+    my $decoded = $value;
     
     if ( my $user = $self->authenticate_via_apikey($decoded) ) {
         $log->debug("Authentic api key used");
