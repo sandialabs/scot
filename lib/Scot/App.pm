@@ -20,12 +20,30 @@ has env => (
     builder     => '_get_env',
 );
 
+# builder on is run if not env provided
 sub _get_env {
     my $self    = shift;
     my $file    = $self->config_file;
     return Scot::Env->new({
         config_file => $file,
     });
+}
+
+has config_file => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_get_config_file',
+);
+
+sub _get_config_file {
+    my $self    = shift;
+    my $envvar  = $ENV{'scot_app_config'};
+    if ( defined $envvar ) {
+        return $envvar;
+    }
+    return ' ';
 }
 
 has log => (

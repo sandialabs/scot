@@ -390,6 +390,8 @@ function install_perl_modules {
         Meerkat
         Mojo
         MojoX::Log::Log4perl
+        Mojolicious::Plugin::WithCSRFProtection
+        Mojolicious::Plugin::TagHelpers
         XML::Smart
         Config::Auto
         Data::GUID
