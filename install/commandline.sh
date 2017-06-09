@@ -67,6 +67,12 @@ function default_variables {
     REFRESHREPOS="yes"
     # wipe the $SCOT_ROOT prior to install
     DELDIR="no"
+    # refresh the mongo config file            
+    MONGO_REFRESH_CONFIG="no"
+    # refresh the apache configs, allow Scot-Internal-Modules to overwrite
+    APACHE_REFRESH_CONFIG="no"
+    # refresh the scot configs, allow Scot-Internal-Modules to overwrite
+    SCOT_REFRESH_CONFIG="no"
 }
 
 
@@ -99,10 +105,12 @@ function process_commandline {
                 RESETDB="yes"
                 ;;
             u)
-                INSTMODE="SCOTONLY"
+                INSTMODE="UPGRADE"
                 RESETDB="no"
-                REFRESHREPOS="no"
-                MONGO_REFRESH_CONFIG="no"
+                REFRESHREPOS="yes"
+                MONGO_REFRESH_CONFIG="yes"
+                APACHE_REFRESH_CONFIG="yes"
+                SCOT_REFRESH_CONFIG="yes"
                 ;;
             s)
                 echo "SCOT only Install"
