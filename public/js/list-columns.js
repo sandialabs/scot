@@ -8,7 +8,7 @@ listColumnsJSON = {
         task: ['Type', 'ID', 'Status', 'Owner', 'Entry Id', 'Updated'],
         guide: ['ID', 'Subject', 'Applies To'],
         intel: ['ID', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views'],
-        signature: ['ID', 'Name', 'Type', 'Status', 'Group', 'Description' ],
+        signature: ['ID', 'Name', 'Type', 'Status', 'Group', 'Description', 'Owner', 'Updated'],
         entity: ['ID', 'Value', 'Type', 'Entries']
     },
     columns: {
@@ -19,7 +19,7 @@ listColumnsJSON = {
         task: ['target.type', 'target.id', 'metadata.status', 'owner', 'id', 'updated'],
         guide: ['id', 'subject', 'applies_to'],
         intel: ['id', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views'],
-        signature: ['id', 'name', 'type', 'status', 'signature_group', 'description'],
+        signature: ['id', 'name', 'type', 'status', 'signature_group', 'description', 'owner', 'updated'],
         entity: ['id', 'value', 'type', 'entry_count']
     },
     columnsClassName: {
@@ -30,7 +30,7 @@ listColumnsJSON = {
         task: ['target_type', 'target_id', 'task_status', 'owner', 'id', 'updated'],
         guide: ['id', 'subject', 'applies_to']   ,
         intel: ['id', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views'],
-        signature: ['id', 'name', 'type', 'status', 'signature_group', 'description'],
+        signature: ['id', 'name', 'type', 'status', 'signature_group', 'description', 'owner', 'updated'],
         entity: ['id', 'value', 'type', 'entry_count']
     }
 };
