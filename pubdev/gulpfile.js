@@ -15,8 +15,9 @@ var paths = {
 	scot: '/opt/scot/public/',
 }
 
-gulp.task('watch', ['build','buildadmin'], function () {
-    gulp.watch( paths.admin, ['buildadmin'] );
+// gulp.task('watch', ['build','buildadmin'], function () {
+gulp.task('watch', ['build'], function () {
+    // gulp.watch( paths.admin, ['buildadmin'] );
     gulp.watch( paths.scripts, ['scripts'] );
 	gulp.watch( paths.sass, ['sass'] );
 });
