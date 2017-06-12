@@ -47,7 +47,7 @@ sub startup {
     );
     $self->sessions->secure(1);
 
-    $self->plugin('WithCSRFProtection');
+     $self->plugin('WithCSRFProtection');
     $self->plugin('TagHelpers');
 
 
