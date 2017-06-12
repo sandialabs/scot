@@ -75,7 +75,7 @@ sub get_bundled_sigbody {
     $cur->sort({created => -1});
     while ( my $sigbody = $cur->next ) {
         my $ahref = $sigbody->as_hash;
-        $href->{body}->{$sigbody->id} = $ahref;
+        $href->{version}->{$sigbody->revision} = $ahref;
     }
     return $href;
 }
