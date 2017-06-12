@@ -6,10 +6,13 @@ var sass = require( 'gulp-sass' );
 var sourcemaps = require( 'gulp-sourcemaps' );
 var bulkSass = require( 'gulp-sass-bulk-import' );
 
+
 var paths = {
 	scripts: './jsdev/react_components/**/*.jsx',
 	admin: '.jsdev/react_components/administration/**/*',
-	sass: './sass/**/*.scss'
+	sass: './sass/**/*.scss',
+	build: '../public/',
+	scot: '/opt/scot/public/',
 }
 
 gulp.task('watch', ['build','buildadmin'], function () {
@@ -24,7 +27,7 @@ gulp.task( 'scripts', function() {
     .transform('babelify', {presets: ['es2015', 'react']})
     .bundle()
     .pipe(source('scot-3.5.js'))
-    .pipe(gulp.dest('../public/'),{overwrite:true});
+    .pipe(gulp.dest( paths.build ),{overwrite:true});
 } );
 
 gulp.task( 'sass', function() {
@@ -33,7 +36,18 @@ gulp.task( 'sass', function() {
 	  .pipe( sourcemaps.init() )
 	  .pipe( sass().on( 'error', sass.logError ) )
 	  .pipe( sourcemaps.write() )
-	  .pipe( gulp.dest( '../public/css' ), { overwrite: true } );
+	  .pipe( gulp.dest( paths.build +'css' ), { overwrite: true } );
+} );
+
+gulp.task( 'watch-copy', ['watch'], function() {
+	console.log( "REMINDER: Run as 'sudo -E gulp watch-copy'" );
+	return gulp.watch( paths.build +'**/*', function( obj ) {
+			if ( obj.type === 'changed' ) {
+				gulp.src( obj.path, { base: paths.build } )
+					.pipe( gulp.dest( paths.scot ) );
+				console.log( 'Copied', obj.path, 'to', paths.scot );
+			}
+	} );
 } );
 
 gulp.task( 'build', ['scripts', 'sass'] );
