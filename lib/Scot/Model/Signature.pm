@@ -88,6 +88,18 @@ has qual_sigbody_id => (
     default     => 0,
 );
 
+=item B<latest_revision>
+
+give easy to use/remember revision numbers for sigbody
+ 
+=cut
+
+has latest_revision => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    default     => 0,
+);
 
 
 =item B<action>
@@ -111,9 +123,10 @@ Allow for grouping of Signatures aside from type
 
 has signature_group => (
     is              => 'ro',
-    isa             => 'Str',
+    isa             => 'ArrayRef',
+    traits          => [ 'Array' ],
     required        => 1,
-    default         => '',
+    default         => sub { [] },
 );
 
 =item B<stats>
@@ -169,4 +182,3 @@ Copyright (c) 2016 Sandia National Laboratories.
 Todd Bruner.  
 
 =cut
-    
