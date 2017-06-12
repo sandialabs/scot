@@ -41,6 +41,18 @@ has signature_id  => (
     required    => 1,
 );
 
+=item B<revision>
+
+as opposed to the id, this will increment  only within a Signature
+
+=cut
+
+has revision    => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+);
+
 =item B<body>
 
 the body text
@@ -72,7 +84,6 @@ sub _build_bodyb64 {
     my $body    = $self->body;
     return encode_base64($body);
 }
-
 
 
 __PACKAGE__->meta->make_immutable;
