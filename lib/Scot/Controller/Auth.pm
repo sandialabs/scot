@@ -63,6 +63,10 @@ sub check {
         return $self->sucessful_auth($user);
     }
 
+    if ( $user = $self->sso($headers) ) {
+        return $self->sucessful_auth($user);
+    }
+
     $log->error("Failed Authentication Check");
     $self->session(orig_url => $request->url->to_string );
     $self->redirect_to('/login');
@@ -183,6 +187,7 @@ sub sso {
 
     if ( my $user = $self->valid_remoteuser($headers) ) {
         $self->sucessful_auth($user,$url);
+        return $user;
     }
 }
 
