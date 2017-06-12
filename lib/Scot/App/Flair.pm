@@ -524,7 +524,13 @@ sub flair_entry {
 
     my $href     = $self->get_entry($entry_id);
     my $body     = $href->{body};
-    my $newbody  = $munger->process_html($body, $entry_id);
+    my $newbody  = $body;   # default
+    try {
+        $newbody  = $munger->process_html($body, $entry_id);
+    }
+    catch {
+        $log->error("Error in imgmunger process: $_");
+    };
     my $flair    = $extract->process_html($newbody);
     $self->log->debug("flairing returned ",{filter=>\&Dumper, value=>$flair});
     return $flair;
