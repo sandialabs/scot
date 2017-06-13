@@ -163,12 +163,23 @@ sub create {
         }
     });
 
-    $self->do_render({
-        action  => 'post',
-        thing   => $colname,
-        id      => $object->id,
-        status  => 'ok',
-    });
+    if ( ref($object) eq "Scot::Model::Sigbody") {
+        $self->do_render({
+            action      => 'post',
+            thing       => $colname,
+            id          => $object->id,
+            revision    => $object->revision,
+            status      => 'ok',
+        });
+    }
+    else {
+        $self->do_render({
+            action  => 'post',
+            thing   => $colname,
+            id      => $object->id,
+            status  => 'ok',
+        });
+    }
 
     $log->debug("Checking if $thing object is Historable");
     if ( $object->meta->does_role("Scot::Role::Historable") ) {
