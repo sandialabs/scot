@@ -1541,6 +1541,57 @@ sub ownership_change_permitted {
     return undef;
 }
 
+sub undelete {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+    my $user    = $self->session('user');
+
+    my $req_href    = $self->get_request_params;
+    my $id          = $req_href->{id};
+    my $status      = $req_href->{status};
+
+    if ( $status ne "undelete" ) {
+        $log->error("invalid undelete status");
+        $self->do_error(400,{
+            error_msg => "invalid status"
+        });
+        return;
+    }
+
+    my $delobj      = $mongo->collection('Deleted')->find_iid($id);
+
+    if (defined $delobj) {
+        my $data    = $delobj->data;
+        my $type    = $delobj->type;
+        my $colname = (split(/::/,$type))->[-1];
+        my $col     = $mongo->collection($colname);
+        my $obj     = $col->exact_create($data);
+        if ( defined $obj ) {
+            $log->debug("Restored $type $id");
+            $self->do_render(
+                action      => 'undelete',
+                thing       => $colname,
+                id          => $obj->id,
+                status      => 'ok',
+            );
+        }
+        else {
+            $log->error("Failed to create $type $id");
+            $self->do_error(400, {
+                error_msg => "unable to resotre $type $id"
+            });
+        }
+    }
+    else {
+        $log->error("Failed to find deleted object $id");
+        $self->do_error(404,{
+            error_msg => "unable to find deleted object $id"
+        });
+    }
+}
+
 =item B<DELETE /scot/api/v2/:thing/:id>
 
 =cut
@@ -1804,6 +1855,7 @@ sub breaklink {
     });
 
 }
+
 
 =item B<user_is_admin>
 
