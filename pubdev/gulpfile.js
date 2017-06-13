@@ -31,6 +31,14 @@ gulp.task( 'scripts', function() {
     .pipe(gulp.dest( paths.build ),{overwrite:true});
 } );
 
+gulp.task('buildadmin', function() {
+    return browserify({entries: './jsdev/react_components/administration/api.jsx', extensions: ['.jsx'], debug: true})
+    .transform('babelify', {presets: ['es2015', 'react']})
+    .bundle()
+    .pipe(source('api.js'))
+    .pipe(gulp.dest('../public/admin/'),{overwrite:true});
+});
+
 gulp.task( 'sass', function() {
 	return gulp.src( './sass/styles.scss' )
 	  .pipe( bulkSass() )
@@ -52,13 +60,5 @@ gulp.task( 'watch-copy', ['watch'], function() {
 } );
 
 gulp.task( 'build', ['scripts', 'sass'] );
-
-gulp.task('buildadmin', function() {
-    return browserify({entries: './jsdev/react_components/administration/api.jsx', extensions: ['.jsx'], debug: true})
-    .transform('babelify', {presets: ['es2015', 'react']})
-    .bundle()
-    .pipe(source('api.js'))
-    .pipe(gulp.dest('../public/admin/'),{overwrite:true});
-});
 
 gulp.task('default', ['watch']);
