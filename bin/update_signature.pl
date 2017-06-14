@@ -39,7 +39,7 @@ while (my $signature = $cursor->next) {
         {id => $id},
         {'$set' => {
             latest_revision => $revision_count,
-            signature_group => [ $siggroup ],
+            signature_group => $siggroup ,
         }}
     );
 }
