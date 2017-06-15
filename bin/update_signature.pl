@@ -10,6 +10,7 @@ my $bodycol     = $mongo->get_collection('sigbody');
 
 print "starting...\n";
 print $cursor->count . " signature records\n";
+my %lookup  = ();
 
 while (my $signature = $cursor->next) {
 
@@ -24,6 +25,7 @@ while (my $signature = $cursor->next) {
         while (my $sigbody = $sbcur->next ) {
             $revision_count++;
             my $sbid    = $sigbody->{id};
+            $lookup{$sbid} = $revision_count;
 	    print "......sigbody $sbid\n";
             $bodycol->update_one(
                 {id => $sbid},
@@ -39,7 +41,9 @@ while (my $signature = $cursor->next) {
         {id => $id},
         {'$set' => {
             latest_revision => $revision_count,
-            signature_group => $siggroup ,
+            signature_group => $siggroup,
+            prod_sigbody_id => $lookup{$signature->prod_sigbody_id},
+            qual_sigbody_id => $lookup{$signature->qual_sigbody_id},
         }}
     );
 }
