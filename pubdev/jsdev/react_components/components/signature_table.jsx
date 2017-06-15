@@ -217,7 +217,7 @@ var SignatureTable = React.createClass({
             <div id={'signatureDetail'} className='signatureDetail'>
                 {this.state.loaded ?
                     <div>
-                        <SignatureMetaData signatureData={this.state.signatureData} type={this.props.type} id={this.props.id} currentLanguageMode={this.state.currentLanguageMode} currentEditorTheme={this.state.currentEditorTheme} currentKeyboardHandlerApplied={currentKeyboardHandlerApplied} errorToggle={this.props.errorToggle}/>
+                        <SignatureMetaData signatureData={this.state.signatureData} type={this.props.type} id={this.props.id} currentLanguageMode={this.state.currentLanguageMode} currentEditorTheme={this.state.currentEditorTheme} currentKeyboardHandlerApplied={currentKeyboardHandlerApplied} errorToggle={this.props.errorToggle} showSignatureOptions={this.props.showSignatureOptions} />
                         <div id={not_saved_signature_entry_id} className={'not_saved_signature_entry'}>
                             <div className={'row-fluid signature-entry-outer'} style={{marginLeft: 'auto', marginRight: 'auto'}}>          
                                 <div className={'row-fluid signature-entry-header'}>
@@ -309,7 +309,6 @@ var SignatureMetaData = React.createClass({
             signature_group: this.props.signatureData.signature_group,
             optionsValue: JSON.stringify(this.props.signatureData.options),
             target: target,
-            showSignatureOptions: false,
         }
     },
     InputChange: function(event) {
@@ -351,13 +350,6 @@ var SignatureMetaData = React.createClass({
     onOptionsChange: function(optionsValue) {
         this.setState({optionsValue:optionsValue});
     },
-    showSignatureOptions: function() {
-        if (this.state.showSignatureOptions == false) {
-            this.setState({showSignatureOptions: true});
-        } else {
-            this.setState({showSignatureOptions: false});
-        }
-    },
     render: function() {
         var inputArray = [];
         for (var i=0; i < this.state.inputArrayType.length; i++) {
@@ -376,7 +368,7 @@ var SignatureMetaData = React.createClass({
                     }
                 } 
                 inputArray.push(
-                    <div className='col-lg'> 
+                    <div className='col-lg-2 col-md-4'> 
                         <span className='signatureTableWidth'>
                             {this.state.inputArrayTypeDisplay[i]}:
                         </span>
@@ -390,10 +382,14 @@ var SignatureMetaData = React.createClass({
                 )
             } else if (this.state.inputArrayType[i] == 'target') {
                 inputArray.push(
-                    <div className='col-lg'> 
+                    <div className='col-lg-2 col-md-4'> 
+                        <span className='signatureTableWidth'>Reference Type: </span>
                         <span className='signatureTableWidth'>
-                            <span>Target Type: </span><input id={'target.type'} onChange={this.TargetInputChange} value={this.state.target.type} placeholder={'event, intel, entry... (only type one)'} onBlur={this.submitMetaData}/>
-                            <span>Target ID: </span><input id={'target.id'} onChange={this.TargetInputChange} value={this.state.target.id} placeholder={'ID of above'} onBlur={this.submitMetaData}/>
+                            <input id={'target.type'} onChange={this.TargetInputChange} value={this.state.target.type} placeholder={'event, intel, entry... (only type one)'} onBlur={this.submitMetaData}/>
+                        </span>
+                        <span className='signatureTableWidth'>Reference ID: </span>
+                        <span className='signatureTableWidth'>
+                            <input id={'target.id'} onChange={this.TargetInputChange} value={this.state.target.id} placeholder={'ID of above'} onBlur={this.submitMetaData}/>
                         </span>
                     </div>
                 )
@@ -401,9 +397,21 @@ var SignatureMetaData = React.createClass({
                 inputArray.push(
                     <SignatureGroup metaType={'signature_group'} id={this.props.id} data={this.props.signatureData[this.state.inputArrayType[i]]} errorToggle={this.props.errorToggle}/>
                 )
-            } else {
+            } else if (this.state.inputArrayType[i] == 'description') {
                 inputArray.push(
-                    <div className='col-lg'> 
+                    <div className='col-lg-2 col-md-4'> 
+                        <span className='signatureTableWidth'>
+                            {this.state.inputArrayTypeDisplay[i]}:
+                        </span>
+                        <span className='signatureTableWidth'>
+                            <textarea id={this.state.inputArrayType[i]} onChange={this.InputChange} value={this.state[this.state.inputArrayType[i]]} onBlur={this.submitMetaData} className='signatureMetaTextArea'>{this.state[this.state.inputArrayType[i]]}</textarea>
+                        </span>
+                    </div> 
+                )
+            }
+            else {
+                inputArray.push(
+                    <div className='col-lg-2 col-md-4'> 
                         <span className='signatureTableWidth'>
                             {this.state.inputArrayTypeDisplay[i]}:
                         </span>
@@ -419,12 +427,9 @@ var SignatureMetaData = React.createClass({
                 <div id='signatureTable' className='signatureTable'>
                     <div className="row">
                         {inputArray}
-                        <div className='col-lg-1' style={{backgroundColor:'#EEE', marginTop:'15px'}}>
-                            <Button type='submit' bsSize='xsmall' bsStyle='warning' onClick={this.showSignatureOptions} id={10}>View Custom Options</Button>
-                        </div>
                     </div>
                 </div>
-                {this.state.showSignatureOptions ? 
+                {this.props.showSignatureOptions ? 
                     <div id='signatureTable2' className='signatureTableOptions'>
                         <div className={'row-fluid signature-entry-outer'} style={{marginLeft: 'auto', marginRight: 'auto'}}>          
                             <div className={'row-fluid signature-entry-header'}>
@@ -540,7 +545,7 @@ var SignatureGroup = React.createClass({
         var id = this.props.id;
         var type = 'signature';
         return (
-            <div className='col-lg'>
+            <div className='col-lg-2 col-md-4'>
                 <span className='signatureTableWidth'>
                     Signature Group:
                 </span>
@@ -555,4 +560,4 @@ var SignatureGroup = React.createClass({
 });
 
 
-module.exports = SignatureTable;
+module.exports = SignatureTable
