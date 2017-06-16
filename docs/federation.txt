@@ -1,0 +1,23 @@
+Federation cases
+
+site scot (Sscot) to COE scot (Cscot) communication can be logically two way:
+
+Cscot to Sscot
+    #1: stuff created in Cscot pushed to a site scot
+
+Sscot to Cscot
+    #2: stuff created in site gets push to Cscot
+    #3: Sscot can query Cscot for data
+
+BUT, there may be a case where Cscot can not access via web the Sscot 
+due to firewall/policy.  So we need to be able to have the Sscot poll
+Cscot for changes since last poll to catch #1 above.  So logically,
+it becomes a version ov case #3.
+
+The polling solution has the advantage of Cscot needing credentials on
+the remote scot.
+
+
+
+
+
