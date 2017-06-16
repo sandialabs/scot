@@ -408,6 +408,7 @@ function install_perl_modules {
         Search::Elasticsearch
         Term::ANSIColor
         Courriel
+        Statistics::Descriptive
     '
 
     # install_cpanm
