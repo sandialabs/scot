@@ -14,7 +14,7 @@ var Report = React.createClass({
         return (
             <div id='report' className='dashboard'>
                 <div style={{textAlign:'center'}}>
-                    {this.props.frontPage ? <h2>Reports Snippet</h2> : <h2>Reports</h2>}
+                    <h2>Reports</h2>
                 </div>
                 <div id='heatmap' className="dashboard col-md-4">
                     <div>
