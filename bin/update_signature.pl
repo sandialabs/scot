@@ -10,6 +10,7 @@ my $bodycol     = $mongo->get_collection('sigbody');
 
 print "starting...\n";
 print $cursor->count . " signature records\n";
+my %lookup  = ();
 
 while (my $signature = $cursor->next) {
 
@@ -24,7 +25,8 @@ while (my $signature = $cursor->next) {
         while (my $sigbody = $sbcur->next ) {
             $revision_count++;
             my $sbid    = $sigbody->{id};
-	    print "......sigbody $sbid\n";
+            $lookup{$sbid} = $revision_count;
+            print "......sigbody $sbid beomes rev $revision_count\n";
             $bodycol->update_one(
                 {id => $sbid},
                 {'$set' => {revision => $revision_count}}
@@ -34,12 +36,26 @@ while (my $signature = $cursor->next) {
     }
 
     my $siggroup = $signature->{signature_group};
+    my $prod_id  = $signature->{prod_sigbody_id} // 0;
+    my $qual_id  = $signature->{qual_sigbody_id} // 0;
+
+    my $set_href    = {
+            latest_revision => $revision_count,
+    #        signature_group => $siggroup,
+            prod_sigbody_id => $lookup{$prod_id},
+            qual_sigbody_id => $lookup{$qual_id},
+        };
+
+
+    if ( ref($siggroup) eq "ARRAY" ) {
+        print "... ... signature_group already converted to array\n";
+    }
+    else {
+        $set_href->{signature_group} = [ $siggroup ];
+    }
 
     $collection->update_one(
         {id => $id},
-        {'$set' => {
-            latest_revision => $revision_count,
-            signature_group => [ $siggroup ],
-        }}
+        {'$set' => $set_href }
     );
 }
