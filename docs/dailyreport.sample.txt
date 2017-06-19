@@ -42,7 +42,7 @@ The team worked on 20 different events yesterday.  They added added 34
 entries to those events.  Below are the list of events with links:
 
 +-------------------------------------------
-| Event Id | Subject
+| Event Id | Subject  | Summary
 |
 |
 |
