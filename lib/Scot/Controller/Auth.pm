@@ -586,7 +586,12 @@ sub get_groups {
         }
     }
     $log->debug("Got these groups: ",{filter=>\&Dumper, value=>$results});
-    push @groups, grep {/scot/i} @$results;
+    if ( ref($results) eq "ARRAY" ) {
+        push @groups, grep {/scot/i} @$results;
+    }
+    else {
+        $log->error("group fetch results in something other than an array! $results");
+    }
     return wantarray ? @groups : \@groups;
 }
 
