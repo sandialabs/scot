@@ -26,9 +26,9 @@ my $href    = {
 };
 
 my %senders = (
-    'tbruner@sandia.gov' => 1,
+    'tbruner@watermelon.gov' => 1,
     'todd.bruner@gmail.com' => 1,
-    'foo@sandia.gov'    => 1,
+    'foo@watermelon.gov'    => 1,
     'foo@bar.gov'   => undef,
     'hacker@bad.com'    => undef,
     'sydney@scotdemo.org'   => 1,
