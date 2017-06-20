@@ -36,14 +36,14 @@ while (my $signature = $cursor->next) {
     }
 
     my $siggroup = $signature->{signature_group};
-    my $prod_id  = $signature->{prod_sigbody_id} // 0;
-    my $qual_id  = $signature->{qual_sigbody_id} // 0;
+    my $prod_id  = $signature->{prod_sigbody_id};
+    my $qual_id  = $signature->{qual_sigbody_id};
 
     my $set_href    = {
             latest_revision => $revision_count,
     #        signature_group => $siggroup,
-            prod_sigbody_id => $lookup{$prod_id},
-            qual_sigbody_id => $lookup{$qual_id},
+            prod_sigbody_id => $lookup{$prod_id} // 0,
+            qual_sigbody_id => $lookup{$qual_id} // 0,
         };
 
 
