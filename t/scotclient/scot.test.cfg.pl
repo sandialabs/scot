@@ -1,5 +1,5 @@
 %environment = (
-    servername  => 'as3002snllx',
+    servername  => 'localhost',
     serverport  => 443,
     http_method => 'https',
     
@@ -101,7 +101,7 @@
             class   => 'Scot::Util::Imap',
             config  => {
                 mailbox     => 'INBOX',          # mailbox, typically INBOX
-                hostname    => 'mail.sandia.gov',# hostname of the imap server
+                hostname    => 'mail.watermelon.gov',# hostname of the imap server
                 port        => 993,              # port of the imap server
                 username    => 'scot-alerts',    # username  of the 
                                                  # account receiving alert email
@@ -141,13 +141,13 @@
                     },
                     hybrid_msgid     => {
                         type    => 'internal_link',
-                        url     => "https://mds.gibson.sandia.gov/messageidmap/%s",
+                        url     => "https://mxx.gib.watermelon.gov/mmap/%s",
                         field   => "value",
                         title   => 'Lookup in Hybrid',
                     },
                     hybrid_docid     => {
                         type    => 'internal_link',
-                        url     => "https://mds.gibson.sandia.gov/docmap/%s",
+                        url     => "https://mxx.gib.watermelon.gov/dmap/%s",
                         field   => "value",
                         title   => 'Lookup in Hybrid',
                     },
@@ -165,21 +165,21 @@
                     },
                     splunk      => {
                         type    => 'internal_link',
-                        url     => 'https://splunk.sandia.gov/en-US/app/search/search?q=search%%20%s',
+                        url     => 'https://s.watermelon.gov/en-US/app/search/search?q=search%%20%s',
                         field   => 'value',
                         title   => 'Search on Splunk',
                     },
                     ick_ip      => {
                         type    => 'internal_link',
-                        url     => 'https://ick.sandia.gov/ipaddress/details/%s',
+                        url     => 'https://i.watermelon.gov/ipaddress/details/%s',
                         field   => 'value',
-                        title   => 'ICK IP Details',
+                        title   => 'IP Details',
                     },
                     ick_snumber => {
                         type    => 'internal_link',
-                        url     => 'https://ick.sandia.gov/machine/details/%s',
+                        url     => 'https://i.watermelon.gov/machine/details/%s',
                         field   => 'value',
-                        title   => 'ICK S Number Details',
+                        title   => 'S Number Details',
                     },
                 }, # end enrichment module enrichers
             }, # end ennrichmenst config stanza
@@ -188,8 +188,8 @@
             attr    => 'ldap',
             class   => 'Scot::Util::Ldap',
             config  => {
-                servername  => 'sec-ldap-nm.sandia.gov',
-                dn          => 'cn=snlldapproxy,ou=local config,dc=gov',
+                servername  => 'sldap.watermelon.gov',
+                dn          => 'cn=sldap,ou=local config,dc=gov',
                 password    => 'xxxxxxxx',
                 scheme      => 'ldap',
                 group_search    => {
