@@ -530,7 +530,9 @@ sub set_group_membership {
     if ( ref($groups) eq "ARRAY" ) {
         $log->debug("Groups set in Mojo Session");
         $log->debug("$user Groups are ".join(', ',@$groups));
-        return 1;
+        if ( scalar(@$groups) > 0 ) {
+            return 1;
+        }
     }
 
     $log->debug("Group membership not in session, fetching...");
@@ -623,6 +625,14 @@ sub update_lastvisit {
     my $log     = $env->log;
 
     $log->trace("[User $user] update lastvisit time");
+
+    my $url = $self->url_for('current');
+
+    if ($url eq "/scot/api/v2/status" 
+        or $url eq "/scot/api/v2/who" ) {
+        $log->debug("skipping setting last visit for /status or /who");
+        return;
+    }
 
     my $col = $mongo->collection('User');
     my $obj = $col->find_one({username => $user});
