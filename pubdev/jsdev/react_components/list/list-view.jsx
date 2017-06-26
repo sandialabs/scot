@@ -666,7 +666,7 @@ module.exports = React.createClass({
     createNewThing: function(){
     var data;
     if (this.props.type == 'signature') {
-        data = JSON.stringify({name:'Name your Signature', type: 'signature type', status: 'disabled'});   
+        data = JSON.stringify({name:'Name your Signature', status: 'disabled', type:''});   
     } else {
         data = JSON.stringify({subject: 'No Subject'});
     }
