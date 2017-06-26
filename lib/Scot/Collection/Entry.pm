@@ -93,7 +93,7 @@ sub find_existing_file_entry {
     my $type    = shift;
     my $id      = shift;
     my $log     = $self->env->log;
-    my $col     = $self->mongo->collection('Entry');
+    my $col     = $self->env->mongo->collection('Entry');
     my $obj     = $col->find_one({
         'target.type'   => $type,
         'target.id'     => $id,
