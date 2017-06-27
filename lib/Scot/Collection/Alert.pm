@@ -19,6 +19,48 @@ sub create_from_handler {
     };
 }
 
+sub api_create {
+    my $self    = shift;
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    my $data    = $href->{data};
+    if ( ! defined $data ) {
+        $log->error("empty data field in api create request!");
+        return 0;
+    }
+
+    my $agid    = $href->{alertgroup};
+    if ( ! defined $agid ) {
+        $log->error("alerts must have a parent alertgroup id");
+        return 0;
+    }
+
+    my $columns = $href->{columns};
+    if ( ! defined $columns ) {
+        $log->error("alerts must have columns defined");
+        return 0;
+    }
+    if ( ref($columns) ne "ARRAY" ) {
+        $log->error("columns must be an array!");
+        return 0;
+    }
+
+    my $alert = $self->create({
+        data        => $data,
+        alertgroup  => $agid,
+        status      => 'open',
+        columns     => $columns,
+    });
+
+    if ( ! defined $alert ) {
+        $log->error("failed to create alert!");
+        return 0;
+    }
+    return 1;
+}
+
 # updating an Alert can cause changes in the alertgroup
 
 override 'update'   => sub {
@@ -151,6 +193,70 @@ override get_subthing => sub {
         $log->error("unsupported subthing $subthing!");
     }
 };
+
+sub api_subthing {
+    my $self    = shift;
+    my $req     = shift;
+    my $mongo   = $self->env->mongo;
+
+    my $thing       = $req->{collection};
+    my $id          = $req->{id}+0;
+    my $subthing    = $req->{subthing};
+
+    $self->env->log->debug("api_subthing: /$thing/$id/$subthing");
+
+    if ( $subthing eq "entry" ) {
+        return $mongo->collection('Entry')->get_entries_by_target({
+            id      => $id,
+            type    => 'alert',
+        });
+    }
+
+    if ( $subthing eq "entity" ) {
+        my @links = map { $_->{entity_id} }
+            $mongo->collection('Link')->get_links_by_target({
+                id  => $id, type => 'alert'
+            })->all;
+        return $mongo->collection('Entity')->find({
+            id => { '$in' => \@links }
+        });
+    }
+    if ( $subthing eq "event" ) {
+        return $mongo->collection('Event')->find({promoted_from => $id});
+    }
+    if ( $subthing eq "file" ) {
+        return $mongo->collection('File')->find({
+            'entry_target.type' => 'alert',
+            'entry_target.id'   => $id,
+        });
+    }
+    if ( $subthing eq "tag" ) {
+        my @appearances = map { $_->{apid} } 
+            $mongo->collection('Appearance')->find({
+                type    => 'tag', 
+                'target.type'   => 'alert',
+                'target.id'     => $id,
+            })->all;
+        return $mongo->collection('Tag')->find({
+            id => {'$in' => \@appearances}
+        });
+    }
+
+    if ( $subthing eq "source" ) {
+        my @appearances = map { $_->{apid} } 
+            $mongo->collection('Appearance')->find({
+                type    => 'source', 
+                'target.type'   => 'alert',
+                'target.id'     => $id,
+            })->all;
+        return $mongo->collection('Source')->find({
+            id => {'$in' => \@appearances}
+        });
+    }
+
+    die "Unsupported alert subthing: $subthing";
+
+}
 
 sub update_alert_status {
     my $self    = shift;
