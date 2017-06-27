@@ -352,7 +352,7 @@ sub list {
 
     $match_ref  = $self->build_match_ref($req_href->{request});    
 
-    if ( $col_name eq "apikey" ) {
+    if ( $col_name eq "apikey" and ! $self->is_admin) {
         $match_ref->{user} = $user;
     }
 
