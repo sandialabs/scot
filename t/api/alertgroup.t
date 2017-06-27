@@ -94,11 +94,6 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
     ->json_is('/records/0/data/foo'     => 1)
     ->json_is('/records/1/data/foo'     => 3);
 
-# print Dumper($t->tx->res->json), "\n";
-# done_testing();
-# exit 0;
-
-
 
 my $alert1_id   = $t->tx->res->json->{records}->[0]->{id};
 my $alert1_data = $t->tx->res->json->{records}->[0]->{data};
@@ -125,6 +120,7 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
     ->json_is('/records/1/data/boom'     => 9)
     ->json_is('/records/1/columns/2'   => 'boom');
 
+
 # print Dumper($t->tx->res->json), "\n";
 # $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
  #    "Getting alertgroup again to see if stuff is updated")
@@ -136,6 +132,7 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/tag" => {},
     ->status_is(200)
     ->json_is('/totalRecordCount'   => 2)
     ->json_is('/queryRecordCount'   => 2);
+
 
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/history" => {},
     "Getting alertgroup history")
@@ -156,6 +153,8 @@ $t->get_ok("/scot/api/v2/alert/$alert1_id/entry")
     ->json_is('/records/0/target/id'  => $alert1_id )
     ->json_is('/records/0/target/type'    => 'alert');
 
+
+
 $t->get_ok("/scot/api/v2/alertgroup" => {},
     "checking entry_count in alertgroup listing")
     ->status_is(200);
@@ -163,8 +162,7 @@ $t->get_ok("/scot/api/v2/alertgroup" => {},
 $t->put_ok("/scot/api/v2/alertgroup/$alertgroup_id" => json =>
     { status => 'closed' } 
 )->status_is(200)
- ->json_is("/status" => "successfully updated");
-
+ ->json_is("/status" => "ok");
 
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
     "Getting alerts in alertgroup")
@@ -259,6 +257,7 @@ foreach my $ag (@ags) {
         '/scot/api/v2/alertgroup'   => json => $ag
     )->status_is(200);
 }
+
 
 my $json_sort   = encode_json {
     id  => -1
