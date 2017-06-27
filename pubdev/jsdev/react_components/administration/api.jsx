@@ -141,7 +141,7 @@ class GroupModal extends React.Component {
         this.Open = this.Open.bind(this);
         this.Close = this.Close.bind(this);
         this.DeleteGroup = this.DeleteGroup.bind(this);
-        this.AddGroup = this.AddGroup.bind(this);
+        /*this.AddGroup = this.AddGroup.bind(this);*/ //Removed as we don't add groups to an api key
         this.ToggleActiveStatus = this.ToggleActiveStatus.bind(this);
         this.state = {
             showModal: false
@@ -167,7 +167,7 @@ class GroupModal extends React.Component {
         }
         this.props.GroupChange(this.props.id, newGroups);
     }
-
+    /*Removed as we don't add groups to an api key
     AddGroup (e) {
         var newGroups = [];
         for ( const i of this.props.currentGroups) {
@@ -180,7 +180,7 @@ class GroupModal extends React.Component {
         newGroups.push( e.target.textContent );
         this.props.GroupChange(this.props.id, newGroups);
     }
-
+    */
     ToggleActiveStatus (e) {
         var newStatus;
         if (this.props.keyActiveStatus == 'active') {
@@ -192,14 +192,15 @@ class GroupModal extends React.Component {
     }
 
     render() {
-        var allGroupArray = [];
+        //var allGroupArray = [];  //Removed as we don't add groups to an api key
         var currentGroupArray = [];
         var currentGroupArrayEdit = [];
-        if ( this.props.allGroups ) {
+        ////Removed as we don't add groups to an api key
+        /*if ( this.props.allGroups ) {
             for ( const i of this.props.allGroups ) {
                 allGroupArray.push( <Button id={this.props.id} onClick={this.AddGroup} bsSize='xsmall'>{i.name}</Button> );
             }
-        }
+        }*/
         if ( this.props.currentGroups) {
             for ( const j of this.props.currentGroups ) {
                 currentGroupArrayEdit.push( <span className='tagButton'>{j}<i id={this.props.id} onClick={this.DeleteGroup} className='fa fa-times tagButtonClose'></i></span> );
@@ -220,13 +221,13 @@ class GroupModal extends React.Component {
                     </Modal.Header>
                     <Modal.Body>
                         <div>
-                            Current Groups:
+                            <h4>Current Groups:</h4>
                             {currentGroupArrayEdit}
                         </div>  
-                        <div>
+                        {/*<div>
                             Click to add group: 
                             {allGroupArray}
-                        </div>
+                        </div>*/}
                         <hr/>
                         <div>
                             Key is <span className={this.props.keyActiveStatusCss}>{this.props.keyActiveStatus}</span>
