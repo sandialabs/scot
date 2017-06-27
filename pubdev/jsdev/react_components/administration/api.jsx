@@ -8,6 +8,12 @@ import Modal        from 'react-bootstrap/lib/Modal.js';
 class Api extends React.Component {
     constructor( props ) {
         super ( props );
+        this.GetKeys = this.GetKeys.bind(this);
+        this.GetAvailableGroups = this.GetAvailableGroups.bind(this);
+        this.CreateKey = this.CreateKey.bind(this);
+        this.DeleteKey = this.DeleteKey.bind(this);
+        this.GroupChange = this.GroupChange.bind(this);
+        this.ToggleActiveStatus = this.ToggleActiveStatus.bind(this);
         this.state = {
             Api: null,
             keys: null,
@@ -58,21 +64,28 @@ class Api extends React.Component {
         });
     }
 
-    AddGroup(e, currentgroup) {
-        //add group here
-        
-        console.log(e);
-        console.log(currentgroup);
-    }
-
-    DeleteGroup(e, currentgroup) {
-        $.ajax({
-            type: 'put',
-            url: '/scot/api/v2/apikey/' + e.target.id,
+    GroupChange(id, newGroup) {
+        $.ajax( {
+            type: 'PUT',
+            url: '/scot/api/v2/apikey/' + id,
+            data: JSON.stringify({ 'groups' : newGroup }),
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 this.GetKeys();
             }.bind(this)
         });
+    }
+    
+    ToggleActiveStatus(id, newStatus) {
+        $.ajax({
+            type: 'PUT',
+            url: '/scot/api/v2/apikey/' + id,
+            contentType: 'application/json; charset=UTF-8',
+            data: JSON.stringify({ 'active' : newStatus}),
+            success: function(data) {
+                this.GetKeys();
+            }.bind(this)
+        })
     }
 
     componentDidMount() {
@@ -86,8 +99,8 @@ class Api extends React.Component {
             for (var i=0; i < this.state.keys.length; i++) {
                 var keyActiveStatus;
                 var keyActiveStatusCss; 
-                var keyGroups;
-                if (this.state.keys[i].active == 1) {keyActiveStatus = 'true'; keyActiveStatusCss = 'keyActive' } else { keyActiveStatus = 'false'; keyActiveStatusCss = 'keyNotActive' }
+                var keyGroups = [];
+                if (this.state.keys[i].active == 1) {keyActiveStatus = 'active'; keyActiveStatusCss = 'keyActive' } else { keyActiveStatus = 'not active'; keyActiveStatusCss = 'keyNotActive' }
                 if (this.state.keys[i].groups != undefined) {
                     for (var j=0; j < this.state.keys[i].groups.length; j++) {
                         keyGroups.push(<div>this.state.keys[i].groups[j]</div>);
@@ -96,14 +109,12 @@ class Api extends React.Component {
                 keysArr.push(
                     <div>
                         <div>
+                            <div>{this.state.keys[i].apikey}</div>
+                            <div>{this.state.keys[i].username}</div>
+                            <span>Key is <span className={keyActiveStatusCss}>{keyActiveStatus}</span></span>
+                            <span className='pull-right pointer'><i id={this.state.keys[i].id} className="fa fa-trash" aria-hidden="true" onClick={this.DeleteKey}></i></span>
                             <div>
-                                <span>{this.state.keys[i].apikey}</span>
-                                <span>{this.state.keys[i].username}</span>
-                            </div>
-                                <span>Key is <span className={keyActiveStatusCss}>{this.state.keys[i].active}</span></span>
-                                <span className='pull-right pointer'><i id={this.state.keys[i].id} className="fa fa-trash" aria-hidden="true" onClick={this.DeleteKey}></i></span>
-                            <div>
-                                <GroupModal currentGroups={this.state.keys[i].groups} allGroups={this.state.availableGroups} DeleteGroup={this.DeleteGroup} AddGroup={this.AddGroup} />
+                                <GroupModal id={this.state.keys[i].id} currentGroups={this.state.keys[i].groups} allGroups={this.state.availableGroups} GroupChange={this.GroupChange} ToggleActiveStatus={this.ToggleActiveStatus} keyActiveStatus={keyActiveStatus} keyActiveStatusCss={keyActiveStatusCss}/>
                             </div>
                         </div>
                         <hr />
@@ -119,7 +130,6 @@ class Api extends React.Component {
                 </Panel>
                 
                 <Button bsStyle='success' onClick={this.CreateKey}>Create API Key</Button>
-                <p>Add group add/remove options</p>
             </div>
         );
     }
@@ -130,8 +140,9 @@ class GroupModal extends React.Component {
         super ( props );
         this.Open = this.Open.bind(this);
         this.Close = this.Close.bind(this);
-        this.AddGroup = this.AddGroup.bind(this);
         this.DeleteGroup = this.DeleteGroup.bind(this);
+        this.AddGroup = this.AddGroup.bind(this);
+        this.ToggleActiveStatus = this.ToggleActiveStatus.bind(this);
         this.state = {
             showModal: false
         }
@@ -146,38 +157,80 @@ class GroupModal extends React.Component {
     }
     
     DeleteGroup (e) {
-        this.props.DeleteGroup(e,'test');
+        var newGroups = [];
+        for ( const i of this.props.currentGroups) {
+            if ( i != undefined ) {
+                if ( i != e.target.parentNode.textContent ) {
+                    newGroups.push(i);
+                }   
+            }
+        }
+        this.props.GroupChange(this.props.id, newGroups);
     }
 
     AddGroup (e) {
-        this.props.AddGroup(e, 'test');
+        var newGroups = [];
+        for ( const i of this.props.currentGroups) {
+            if ( i != undefined ) {
+                if ( i != e.target.textContent ) {
+                    newGroups.push(i);
+                }
+            }
+        }
+        newGroups.push( e.target.textContent );
+        this.props.GroupChange(this.props.id, newGroups);
+    }
+
+    ToggleActiveStatus (e) {
+        var newStatus;
+        if (this.props.keyActiveStatus == 'active') {
+            newStatus = 0;
+        } else {
+            newStatus = 1;
+        }
+        this.props.ToggleActiveStatus(this.props.id, newStatus);
     }
 
     render() {
         var allGroupArray = [];
         var currentGroupArray = [];
-        for ( const i of this.props.allGroups ) {
-            allGroupArray.push( <Button onClick={this.AddGroup}>{i.name}</Button> );
+        var currentGroupArrayEdit = [];
+        if ( this.props.allGroups ) {
+            for ( const i of this.props.allGroups ) {
+                allGroupArray.push( <Button id={this.props.id} onClick={this.AddGroup} bsSize='xsmall'>{i.name}</Button> );
+            }
         }
-        for ( const j of this.props.currentGroups ) {
-            currentGroupArray.push( <span onClick={this.DeleteGroup}>{j}<i className='fa ta-times tagButtonClose'></i></span> );
+        if ( this.props.currentGroups) {
+            for ( const j of this.props.currentGroups ) {
+                currentGroupArrayEdit.push( <span className='tagButton'>{j}<i id={this.props.id} onClick={this.DeleteGroup} className='fa fa-times tagButtonClose'></i></span> );
+            }
+            for ( const k of this.props.currentGroups ) {
+                currentGroupArray.push( <span className='tagButton'>{k}</span> );
+            }
         }
         return (
             <div>
                 Current Groups: {currentGroupArray}
-                <Button onClick={this.Open}>Add/RemoveGroups</Button>
+                <div>
+                    <Button onClick={this.Open} bsSize='small'>Edit API key settings</Button>
+                </div>
                 <Modal show={this.state.showModal} onHide={this.Close}>
                     <Modal.Header closeButton>
-                        <Modal.Title>Add/Remove Groups to API key</Modal.Title>
+                        <Modal.Title>Edit API key settings</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <div>
                             Current Groups:
-                            {currentGroupArray}
+                            {currentGroupArrayEdit}
                         </div>  
                         <div>
-                            Click to add group:
+                            Click to add group: 
                             {allGroupArray}
+                        </div>
+                        <hr/>
+                        <div>
+                            Key is <span className={this.props.keyActiveStatusCss}>{this.props.keyActiveStatus}</span>
+                            <Button onClick={this.ToggleActiveStatus} bsSize='xsmall'>Toggle Active Status</Button>
                         </div>
                     </Modal.Body>
                 </Modal>
