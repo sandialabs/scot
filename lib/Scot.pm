@@ -268,7 +268,7 @@ relies on the browser BasicAuth popup.
 
 =pod
 
-@api {post} /scot/api/v2/get_apikey get an apikey
+@api {post} /scot/api/v2/apikey get an apikey
 @apiName Apikey
 @apiGroup Auth
 @apiVersion 2.0.0
@@ -277,7 +277,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/create_apikey')
+    $scot   ->route ('/api/v2/apikey')
             ->via   ('post')
             ->to    ('controller-api#get_apikey')
             ->name  ('get_apikey');
