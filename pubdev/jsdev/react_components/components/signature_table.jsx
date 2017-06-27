@@ -408,6 +408,17 @@ var SignatureMetaData = React.createClass({
                         </span>
                     </div> 
                 )
+            } else if (this.state.inputArrayType[i] == 'type') {
+                inputArray.push(
+                    <div className='col-lg-2 col-md-4'> 
+                        <span className='signatureTableWidth'>
+                            {this.state.inputArrayTypeDisplay[i]}:
+                        </span>
+                        <span className='signatureTableWidth'>
+                            <input id={this.state.inputArrayType[i]} onChange={this.InputChange} value={this.state[this.state.inputArrayType[i]]} placeholder='yara, snort, etc.' onBlur={this.submitMetaData}/>
+                        </span>
+                    </div> 
+                )
             }
             else {
                 inputArray.push(
