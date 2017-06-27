@@ -78,7 +78,7 @@ sub add_tag_to {
         $tags   = [ $tags ];
     }
 
-    $log->debug("Add_tag_to $thing:$id => ".join(',',@$tags));
+    $log->debug("Add_tag_to     $thing:$id => ".join(',',@$tags));
 
     $thing = lc($thing);
 

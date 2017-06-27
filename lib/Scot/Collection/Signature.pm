@@ -80,4 +80,19 @@ sub get_bundled_sigbody {
     return $href;
 }
 
+sub get_sigbodies {
+    my $self    = shift;
+    my $object  = shift;
+    my $id      = $object->id + 0;
+    my $col     = $self->meerkat->collection('Sigbody');
+    my $cur     = $col->find({signature_id => $id});
+    my $bodies  = {};
+    $cur->sort({created => -1});
+    while ( my $body = $cur->next ) {
+        $bodies->{$body->revision} = $body->as_hash;
+    }
+    return $bodies;
+}
+
+
 1;

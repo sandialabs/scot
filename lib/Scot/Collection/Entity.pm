@@ -67,7 +67,7 @@ sub update_entities {
     my $log     = $env->log;
     my $mongo   = $env->mongo;
 
-    $self->env->log->debug("updating entities on target ",
+    $self->env->log->trace("updating entities on target ",
                             { filter =>\&Dumper, value => $target});
 
     $log->debug("earef is ",{filter=>\&Dumper, value=>$earef});
