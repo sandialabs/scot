@@ -16,4 +16,39 @@ sub get_history {
     return $cursor;
 }
 
+sub create_audit_rec {
+    my $self        = shift;
+    my $href        = shift;
+    my $handler     = $href->{handler};
+    my $object      = $href->{object};
+    my $changes     = $href->{changes};
+    my $req         = $handler->tx->req;
+
+    my $data    = {
+        who     => $handler->session('user'),
+        groups  => $handler->session('groups'),
+        when    => $self->env->now,
+        method  => $req->method,
+        url     => $req->url->to_abs,
+        from    => $handler->tx->remote_address,
+        agent   => $req->headers->user_agent,
+        params  => $req->params->to_hash,
+        json    => $req->json,
+    };
+
+    if ( defined $object ) {
+        $data->{object} = {
+            id  => $object->id,
+            col => ref($object),
+        };
+    }
+
+    if ( defined $changes ) {
+        $data->{changes} = $changes;
+    }
+
+    $self->create($data);
+}
+
+
 1;
