@@ -352,6 +352,10 @@ sub list {
 
     $match_ref  = $self->build_match_ref($req_href->{request});    
 
+    if ( $col_name eq "apikey" and ! $self->user_is_admin) {
+        $match_ref->{username} = $user;
+    }
+
     $log->debug("match_ref is ",{filter=>\&Dumper, value=>$match_ref});
 
     if ( $tasksearch == 1 ) {
@@ -890,6 +894,17 @@ sub update {
     return undef unless ( $self->check_update_permission($req_href, $object));
 
     $log->debug("user has update privs");
+
+    my $usersgroups = $self->session('groups');
+    if ( ref($object) eq "Scot::Model::Apikey" ) {
+	my $updated_groups = [];
+	foreach my $g (@$req_href->{groups}) {
+            if ( grep {/$g/} @$usersgroups ) {
+                push @$updated_groups, $g;
+            }
+        }
+        $req_href->{groups} = $updated_groups;
+    }
 
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
         # this updates any alerts in request, doing it this way instead
