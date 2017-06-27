@@ -891,6 +891,17 @@ sub update {
 
     $log->debug("user has update privs");
 
+    my $usersgroups = $self->session('groups');
+    if ( ref($object) eq "Scot::Model::Apikey" ) {
+	my $updated_groups = [];
+	foreach my $g (@$req_href->{groups}) {
+            if ( grep {/$g/} @$usersgroups ) {
+                push @$updated_groups, $g;
+            }
+        }
+        $req_href->{groups} = $updated_groups;
+    }
+
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
         # this updates any alerts in request, doing it this way instead
         # of PUT /scot/api/v2/alert/123...  because that action causes
