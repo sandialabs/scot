@@ -12,7 +12,6 @@ with    qw(
     Scot::Role::GetTagged
 );
 
-
 sub create_from_promoted_alert {
     my $self    = shift;
     my $alert   = shift;
@@ -311,6 +310,41 @@ sub create_from_api {
     return $entry_obj;
 }
 
+override api_create => sub {
+    my $self    = shift;
+    my $req     = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $user    = $req->{user};
+    my $json    = $req->{request}->{json};
+    my $target_type = $json->{target_type};
+    my $target_id   = $json->{target_id};
+
+    $log->debug("req is ",{filter=>\&Dumper, value=>$req});
+
+    if ( ! defined $target_type or ! defined $target_id ) {
+        die "Entries must have target_type and target_id defined";
+    }
+
+    if (my $task = $self->validate_task($req) ) {
+        $json->{class}      = "task";
+        $json->{metadata}   = $task;
+    }
+
+    my $default_groups = $self->get_default_permissions($target_type, $target_id);
+    $json->{groups}->{read} = $
+        default_groups->{read} if (!defined $req->{readgroups});
+    $json->{groups}->{modify} = 
+        $default_groups->{modify} if (!defined $req->{modifygroups});
+    $json->{target} = {
+        type    => $target_type,
+        id      => $target_id,
+    };
+    $json->{owner}  = $user;
+    return $self->create($json);
+};
+
 
 sub validate_task {
     my $self    = shift;
@@ -503,7 +537,28 @@ sub get_entries_by_target {
     return $cursor;
 }
 
+sub move_entry {
+    my $self    = shift;
+    my $object  = shift;
+    my $thref   = shift;
+    my $mongo   = $self->env->mongo;
 
+    my $current = $mongo->collection(
+        ucfirst($object->target->{type})
+    )->find_iid($object->target->{id});
 
+    my $new     = $mongo->collection(
+        ucfirst($thref->{type})
+    )->find_iid($thref->{id});
+
+    $current->update({
+        '$set'  => { updated => $self->env->now },
+        '$inc'  => { entry_count => -1 },
+    });
+    $new->update({
+        '$set'  => { updated => $self->env->now },
+        '$inc'  => { entry_count => 1 },
+    });
+}
 
 1;
