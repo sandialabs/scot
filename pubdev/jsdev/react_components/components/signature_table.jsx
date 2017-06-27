@@ -15,6 +15,7 @@ import Col from 'react-bootstrap/lib/Grid.js';
 import Clearfix from 'react-bootstrap/lib/Grid.js';
 
 
+import 'brace/mode/bro';
 import 'brace/mode/javascript';
 import 'brace/mode/java';
 import 'brace/mode/python';
@@ -90,7 +91,7 @@ var SignatureTable = React.createClass({
             cursorEnabledDisabled: 'cursorDisabled',
             keyboardHandlers: ['none', 'vim', 'emacs'],
             currentKeyboardHandler: currentKeyboardHandler,
-            languageModes: ['csharp', 'c_cpp','html', 'javascript', 'java','json', 'markdown', 'mysql','perl', 'powershell', 'python', 'ruby', 'sass','xml','yaml'],
+            languageModes: ['bro', 'csharp', 'c_cpp','html', 'javascript', 'java','json', 'markdown', 'mysql','perl', 'powershell', 'python', 'ruby', 'sass','xml','yaml'],
             currentLanguageMode: currentLanguageMode,
             editorThemes: ['github', 'monokai', 'kuroir', 'solarized_dark','solarized_light' ,'terminal', 'textmate', 'tomorrow', 'twilight', 'xcode'],
             currentEditorTheme: currentEditorTheme,
@@ -271,6 +272,8 @@ var SignatureTable = React.createClass({
                                     value           = {this.state.value}
                                     height          = '250px'
                                     width           = '100%'
+                                    maxLines        = {100}
+                                    minLines        = {10}
                                     readOnly        = {this.state.readOnly}
                                     className       = {this.state.cursorEnabledDisabled}
                                     showPrintMargin = {false}
@@ -504,7 +507,7 @@ var SignatureGroup = React.createClass({
                 this.props.errorToggle('Failed to add signature_group');
             }.bind(this)
         });
-    }, 
+    },
     InputChange: function(event) {
         this.setState({signatureGroupValue: event.target.value});
     },
