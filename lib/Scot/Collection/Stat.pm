@@ -44,6 +44,15 @@ sub upsert_metric {
     }
 }
 
+sub put_stat {
+    my $self    = shift;
+    my $metric  = shift;
+    my $value   = shift;
+    my $env     = $self->env;
+    my $dt      = DateTime->from_epoch( epoch => $env->now );
+    $self->increment($dt, $metric, $value);
+}
+
 sub increment {
     my $self    = shift;
     my $dt      = shift;
