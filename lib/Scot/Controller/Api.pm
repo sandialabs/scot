@@ -353,7 +353,7 @@ sub list {
     $match_ref  = $self->build_match_ref($req_href->{request});    
 
     if ( $col_name eq "apikey" and ! $self->user_is_admin) {
-        $match_ref->{user} = $user;
+        $match_ref->{username} = $user;
     }
 
     $log->debug("match_ref is ",{filter=>\&Dumper, value=>$match_ref});
