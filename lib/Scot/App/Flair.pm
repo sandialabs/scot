@@ -360,6 +360,13 @@ sub flair_record {
             next COLUMN;
         }
 
+        if ( $column =~ /^lbscanid$/i ) {
+            # another special column
+            push @entity, { value => $value, type => "lb_scan_id" };
+            $flair{$column} = $self->genspan($value, "lb_scan_id");
+            next COLUMN;
+        }
+
         if ( $column =~ /^columns$/i ) {
             # no flairing on the "columns" attribute
             $flair{$column} = $value;
