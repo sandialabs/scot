@@ -362,7 +362,7 @@ sub flair_record {
 
         if ( $column =~ /^lbscanid$/i ) {
             # another special column
-            push @entity, { value => $value, $type => "lb_scan_id" };
+            push @entity, { value => $value, type => "lb_scan_id" };
             $flair{$column} = $self->genspan($value, "lb_scan_id");
             next COLUMN;
         }
