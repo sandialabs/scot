@@ -352,6 +352,10 @@ sub list {
 
     $match_ref  = $self->build_match_ref($req_href->{request});    
 
+    if ( $col_name eq "apikey" ) {
+        $match_ref->{user} = $user;
+    }
+
     $log->debug("match_ref is ",{filter=>\&Dumper, value=>$match_ref});
 
     if ( $tasksearch == 1 ) {
