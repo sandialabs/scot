@@ -3,6 +3,7 @@ var React       = require('react')
 var TinyMCE     = require('react-tinymce')
 var Dropzone    = require('../../../node_modules/react-dropzone')
 var Button      = require('react-bootstrap/lib/Button.js');
+var Link        = require('react-router-dom').Link;
 var finalfiles = []
 
 var timestamp = new Date()
@@ -23,7 +24,7 @@ var FileUpload = React.createClass({
                 <div id={not_saved_entry_id}>
                     <div className={'row-fluid entry-outer'} style={{border: '3px solid blue',marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
                         <div className={'row-fluid entry-header'}>
-                            <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/not_saved_0"}>Not_Saved_0</a>]by {whoami}
+                            <div className="entry-header-inner">[<Link style={{color:'black'}} to={"not_saved_0"}>Not_Saved_0</Link>]by {whoami}
                                 <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
                                     <Button bsSize={'xsmall'} onClick={this.submit}>Submit</Button>
                                     <Button bsSize={'xsmall'} onClick={this.onCancel}>Cancel</Button>

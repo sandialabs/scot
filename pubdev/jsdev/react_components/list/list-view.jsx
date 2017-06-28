@@ -348,6 +348,12 @@ module.exports = React.createClass({
             }
         }
     },
+    componentWillReceiveProps: function(nextProps) {
+        if ( nextProps.id == undefined ) {
+            this.setState({type: nextProps.type, id:null, showSelectedContainer: false, scrollheight: $(window).height() - 170});
+        }
+    },
+
     stopdrag: function(e){
         $('iframe').each(function(index,ifr){
         $(ifr).removeClass('pointerEventsOff')
