@@ -348,6 +348,8 @@ module.exports = React.createClass({
     componentWillReceiveProps: function(nextProps) {
         if ( nextProps.id == undefined ) {
             this.setState({type: nextProps.type, id:null, showSelectedContainer: false, scrollheight: $(window).height() - 170});
+        } else if (nextProps.id != this.props.id) {
+            this.setState({type: nextProps.type, id: nextProps.id});
         }
     },
 
