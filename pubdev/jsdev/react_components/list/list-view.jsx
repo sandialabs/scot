@@ -429,11 +429,13 @@ module.exports = React.createClass({
     },
     selected: function(type,rowid,taskid){
         if (taskid == null) {
-            window.history.pushState('Page', 'SCOT', '/#/' + type +'/'+rowid)  
+            //window.history.pushState('Page', 'SCOT', '/#/' + type +'/'+rowid)  
+            this.props.history.push( '/' + type + '/' + rowid );
             this.launchEvent(type, rowid)
         } else {
             //If a task, swap the rowid and the taskid
-            window.history.pushState('Page', 'SCOT', '/#/' + type + '/' + taskid + '/' + rowid)
+            //window.history.pushState('Page', 'SCOT', '/#/' + type + '/' + taskid + '/' + rowid)
+            this.props.history.push( '/' + type + '/' + taskid + '/' + rowid );
             this.launchEvent(type, taskid, rowid);
         }
         //scrolled = $('.list-view-data-div').scrollTop() 
