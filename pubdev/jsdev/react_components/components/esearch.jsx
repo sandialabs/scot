@@ -153,9 +153,9 @@ var SearchDataEachRows = React.createClass({
         
         var rowClassName = 'search_result_row list-view-row'+rowEvenOdd;
         
-        var href = type+'/'+id;
+        var href = '/' + type+'/'+id;
         if (entryid != undefined) {
-            href = type+'/'+id+'/'+entryid;
+            href = '/' + type+'/'+id+'/'+entryid;
         }
 
         if (this.props.dataOne.highlight != undefined) {
