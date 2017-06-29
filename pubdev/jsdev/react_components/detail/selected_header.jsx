@@ -831,7 +831,7 @@ var PromotedData = React.createClass({
         //makes large array for modal
         for (var i=0; i < this.props.data.length; i++) {
             if (i > 0) {fullarr.push(<div> , </div>)}
-            var link = promotedFromType + '/' + this.props.data[i];
+            var link = '/' + promotedFromType + '/' + this.props.data[i];
             fullarr.push(<div key={this.props.data[i]}><Link to={link}>{this.props.data[i]}</Link></div>)
         }
         //makes small array for quick display in header
@@ -840,7 +840,7 @@ var PromotedData = React.createClass({
         }
         for (var i=0; i < shortforlength; i++) {
             if (i > 0) {shortarr.push(<div> , </div>)}
-            var link = promotedFromType + '/' + this.props.data[i];
+            var link = '/' + promotedFromType + '/' + this.props.data[i];
             shortarr.push(<div key={this.props.data[i]}><Link to={link}>{this.props.data[i]}</Link></div>)
         } 
         if (this.props.data.length > 3) {shortarr.push(<div onClick={this.showAllPromotedDataToggle}>,<a href='javascript:;'>...more</a></div>)}

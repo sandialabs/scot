@@ -383,7 +383,7 @@ var TabContents = React.createClass({
                 </div>
             )
         } else if (this.props.entitytype == 'guide') {
-            var guideurl = 'guide/' + this.props.entityid;
+            var guideurl = '/' + 'guide/' + this.props.entityid;
             return (
                 <div className='tab-content'> 
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
@@ -401,7 +401,7 @@ var TabContents = React.createClass({
 var EntityValue = React.createClass({
     render: function() {
         if (this.props.data != undefined) {  //Entity Detail Popup showing the entity type
-            var entityurl = 'entity/' + this.props.data.id;
+            var entityurl = '/' + 'entity/' + this.props.data.id;
             var statusClass = '';
             if (this.props.data.status == 'untracked') {
                 statusClass = 'entity-untracked';
@@ -493,7 +493,7 @@ var EntityBody = React.createClass({
         var SelectedEntry = require('../detail/selected_entry.jsx');
         //PopOut available
         //var href = '/#/entity/' + this.props.entityid + '/' + this.props.type + '/' + this.props.id;
-        var href = 'entity/'+this.props.entityid;
+        var href = '/' + 'entity/'+this.props.entityid;
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='tabs'>
                 <Tab eventKey={1} className='entityPopUpButtons' title={this.state.appearances} style={{height:'100%'}}>
@@ -865,15 +865,15 @@ var ReferencesBody = React.createClass({
             statusColor = 'black';
         }
         if (this.props.type == 'alert') {
-            aHref = this.props.type + '/' + this.props.data.id;
+            aHref = '/' + this.props.type + '/' + this.props.data.id;
             //aHref = '/#/alertgroup/' + this.props.data.alertgroup;
             promotedHref = '/event/' + this.props.data.promotion_id;
         } else if (this.props.type == 'event') {
             promotedHref = '/incident/' + this.props.data.promotion_id;
-            aHref = this.props.type + '/' + this.props.data.id;
+            aHref = '/' + this.props.type + '/' + this.props.data.id;
         }
         else {
-            aHref = this.props.type + '/' + this.props.data.id;
+            aHref = '/' + this.props.type + '/' + this.props.data.id;
         }
         if (subject == undefined) {
             if (this.props.data.data != undefined) {
