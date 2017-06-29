@@ -233,12 +233,36 @@ var App = React.createClass({
                     </div>
                     :
                     null}
-                    {this.props.match.params.value == 'alert' || this.props.match.params.value == 'alertgroup' ?
-                        <ListView key={Date.now()} isalert={isalert ? 'isalert' : ''} id={this.props.match.params.id} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting}  listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
+                    { this.props.match.params.value == 'alert' || this.props.match.params.value == 'alertgroup' ? 
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                     :
                     null}
-                    {this.props.match.params.value == 'event' || this.props.match.params.value == 'incident' || this.props.match.params.value == 'task' || this.props.match.params.value == 'guide' || this.props.match.params.value == 'intel' || this.props.match.params.value == 'signature' || this.props.match.params.value == 'entity' ? 
-                        <ListView key={Date.now()} id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
+                    {this.props.match.params.value == 'event' ?
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    :
+                    null}
+                    {this.props.match.params.value == 'incident' ?
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    :
+                    null} 
+                    {this.props.match.params.value == 'task' ?
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    :
+                    null}
+                    {this.props.match.params.value == 'guide' ?
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    :
+                    null}
+                    {this.props.match.params.value == 'intel' ?
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    :
+                    null}
+                    {this.props.match.params.value == 'signature' ?
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    :
+                    null}
+                    {this.props.match.params.value == 'entity' ?
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                     :
                     null}
                     {this.props.match.params.value == 'visualization' ?
@@ -246,7 +270,7 @@ var App = React.createClass({
                     :
                     null}
                     {this.props.match.params.value == 'report' ?
-                        <Report key={Date.now()} id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
+                        <Report id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
                     :
                     null}
                     {this.props.match.params.value == 'amq' ?

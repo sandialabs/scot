@@ -893,7 +893,7 @@ var EntryParent = React.createClass({
                 <div className={outerClassName} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
                     <span className="anchor" id={"/"+ type + '/' + id + '/' + items.id}/>
                     <div className={innerClassName}>
-                        <div className="entry-header-inner">[<Link style={{color:'black'}} to={type + '/' + id + '/' + items.id}>{items.id}</Link>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
+                        <div className="entry-header-inner">[<Link style={{color:'black'}} to={'/' + type + '/' + id + '/' + items.id}>{items.id}</Link>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
                             <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
                                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
