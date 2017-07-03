@@ -1,6 +1,7 @@
 package Scot::Collection::Audit;
 use lib '../../../lib';
 use Moose 2;
+use Data::Dumper;
 extends 'Scot::Collection';
 
 sub create_from_handler {
@@ -23,6 +24,7 @@ sub create_audit_rec {
     my $object      = $href->{object};
     my $changes     = $href->{changes};
     my $req         = $handler->tx->req;
+    my $log     = $self->env->log;
 
     my $data    = {
         who     => $handler->session('user'),
@@ -36,6 +38,7 @@ sub create_audit_rec {
         json    => $req->json,
     };
 
+
     if ( defined $object ) {
         $data->{object} = {
             id  => $object->id,
@@ -46,6 +49,8 @@ sub create_audit_rec {
     if ( defined $changes ) {
         $data->{changes} = $changes;
     }
+
+    $log->debug("audit rec: ",{filter=>\&Dumper, value=>$data});
 
     $self->create($data);
 }

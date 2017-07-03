@@ -24,7 +24,7 @@ Create an event and from a POST to the handler
 
 =cut
 
-sub create_from_api {
+override api_create => sub  {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
@@ -61,7 +61,24 @@ sub create_from_api {
     }
 
     return $guide;
+};
+
+sub api_subthing {
+    my $self        = shift;
+    my $req         = shift;
+    my $thing       = $req->{collection};
+    my $id          = $req->{id}+0;
+    my $subthing    = $req->{subthing};
+    my $mongo       = $self->env->mongo;
+
+    if ( $subthing eq "entry" ) {
+        return $mongo->collection('Entry')->get_entries_by_target({
+            id      => $id,
+            type    => 'guide',
+        });
+    }
 }
+
 
 
 
