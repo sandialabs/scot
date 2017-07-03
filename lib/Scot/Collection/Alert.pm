@@ -5,6 +5,7 @@ use Moose 2;
 use MooseX::AttributeShortcuts;
 use Type::Params qw/compile/;
 use Types::Standard qw/slurpy :types/;
+use Data::Dumper;
 
 extends 'Scot::Collection';
 
