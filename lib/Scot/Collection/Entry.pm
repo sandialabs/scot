@@ -121,7 +121,7 @@ sub build_table {
 
     # some confusion as to where columns should actually be
     my $columns = $alert->columns;
-    $log->debug("columns are ",{filter=>\&Dumper, $columns});
+    $log->debug("columns are ",{filter=>\&Dumper, value => $columns});
 
     if ( ! defined $columns or scalar(@$columns) == 0) { 
         $log->debug("Columns not in the right place!");
@@ -496,8 +496,10 @@ override get_subthing => sub {
 
     if ( $subthing eq "history" ) {
         my $col = $mongo->collection('History');
-        my $cur = $col->find({'target.id'   => $id,
-                              'target.type' => 'entry',});
+        my $cur = $col->find({
+            'target.id'   => $id,
+            'target.type' => 'entry'
+        });
         return $cur;
     }
     elsif ( $subthing eq "entity" ) {
@@ -560,5 +562,6 @@ sub move_entry {
         '$inc'  => { entry_count => 1 },
     });
 }
+
 
 1;
