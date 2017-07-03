@@ -517,6 +517,11 @@ sub api_list {
 
     $match->{'groups.read'} = { '$in' => $groups };
 
+    if ( $href->{task_search} ) {
+        $match->{'task.status'}     = {'$exists'    => 1};
+        $match->{'metadata.status'} = {'$exists'    => 1};
+    }
+
     $self->env->log->debug("match is ",{filter=>\&Dumper, value=>$match});
 
     my $cursor  = $self->find($match);
@@ -600,6 +605,9 @@ sub api_find {
     my $href    = shift;
     my $id      = $href->{id} + 0;
     my $object  = $self->find_iid($id);
+    if ( !defined $object ) {
+        die "Object not found";
+    }
     return $object;
 }
 

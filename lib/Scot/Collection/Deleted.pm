@@ -13,7 +13,7 @@ sub preserve {
     my $self    = shift;
     my $object  = shift;
     my $req     = shift;
-    my $href    = $object->as_href;
+    my $href    = $object->as_hash;
     $self->create({
         when    => $self->env->now,
         who     => $req->{user},

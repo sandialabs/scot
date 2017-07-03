@@ -326,6 +326,7 @@ sub list {
 
     if ( $col_name eq "handler"  and defined $current ) {
 
+
         my $handler_cursor  = $collection->get_handler($current);
 
         my @handler_records;

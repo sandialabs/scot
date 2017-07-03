@@ -42,6 +42,11 @@ $t  ->post_ok('/scot/api/v2/entry' => json => {
 
 my $entry1 = $t->tx->res->json->{id};
 
+$t  ->get_ok("/scot/api/v2/event/$event_id")
+    ->status_is(200)
+    ->json_is('/entry_count'    => 1 );
+
+
 $t  ->post_ok('/scot/api/v2/entry'  => json => {
         body        => "Entry 1.a on event $event_id",
         target_id   => $event_id,
@@ -52,6 +57,11 @@ $t  ->post_ok('/scot/api/v2/entry'  => json => {
     ->json_is('/status' => 'ok');
 
 my $entry1a = $t->tx->res->json->{id};
+
+$t  ->get_ok("/scot/api/v2/event/$event_id")
+    ->status_is(200)
+    ->json_is('/entry_count'    => 2 );
+
 
 $t  ->post_ok('/scot/api/v2/entry'  => json => {
         body        => "Entry 1.a.i on event $event_id",
@@ -64,6 +74,10 @@ $t  ->post_ok('/scot/api/v2/entry'  => json => {
 
 my $entry1ai = $t->tx->res->json->{id};
 
+$t  ->get_ok("/scot/api/v2/event/$event_id")
+    ->status_is(200)
+    ->json_is('/entry_count'    => 3 );
+
 $t  ->post_ok('/scot/api/v2/entry'  => json => {
         body        => "Entry 1.b on event $event_id",
         target_id   => $event_id,
@@ -74,6 +88,11 @@ $t  ->post_ok('/scot/api/v2/entry'  => json => {
     ->json_is('/status' => 'ok');
 
 my $entry1b = $t->tx->res->json->{id};
+
+$t  ->get_ok("/scot/api/v2/event/$event_id")
+    ->status_is(200)
+    ->json_is('/entry_count'    => 4 );
+
 
 $t  ->post_ok('/scot/api/v2/entry'    => json => {
         body        => "Entry 2 on event $event_id",
@@ -86,6 +105,11 @@ $t  ->post_ok('/scot/api/v2/entry'    => json => {
 
 my $entry2  = $t->tx->res->json->{id};
 
+$t  ->get_ok("/scot/api/v2/event/$event_id")
+    ->status_is(200)
+    ->json_is('/entry_count'    => 5 );
+
+
 $t  ->get_ok("/scot/api/v2/event/$event_id/entry")
     ->status_is(200)
     ->json_is('/totalRecordCount' => 2)
@@ -95,10 +119,6 @@ $t  ->get_ok("/scot/api/v2/event/$event_id/entry")
     ->json_is('/records/0/children/1/id'    => $entry1b)
     ->json_is('/records/1/id'   => $entry2);
 
-  print Dumper($t->tx->res->json);
- done_testing();
- exit 0;
-
 $t  ->get_ok("/scot/api/v2/event/$event_id")
     ->status_is(200)
     ->json_is('/entry_count'    => 5);
@@ -107,8 +127,14 @@ my $pre_delete_updated      = $t->tx->res->json->{updated};
 my $pre_delete_entry_count  = $t->tx->res->json->{entry_count};
 sleep 1;
 
+print "Pre delete entry count is $pre_delete_entry_count\n";
 $t  ->delete_ok("/scot/api/v2/entry/$entry2")
     ->status_is(200);
+
+$t  ->get_ok("/scot/api/v2/event/$event_id")
+    ->status_is(200)
+    ->json_is('/entry_count'    => 4);
+
 
 $t  ->get_ok("/scot/api/v2/entry/$entry2")
     ->status_is(404);
@@ -121,7 +147,7 @@ my $post_delete_updated = $t->tx->res->json->{update};
 
 ok( $pre_delete_updated != $post_delete_updated, "updated time was updated");
 
-#  print Dumper($t->tx->res->json);
+  print Dumper($t->tx->res->json);
  done_testing();
  exit 0;
 
