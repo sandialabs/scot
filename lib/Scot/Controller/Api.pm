@@ -116,7 +116,7 @@ sub post_create_process {
     };
 
     if ( ref($object) eq "Scot::Model::Entry" ) {
-        $self->update_target($object);
+        $self->update_target($object, "create");
     }
 
     if ( ref($object) eq "Scot::Model::Sigbody" ) {
@@ -218,10 +218,7 @@ sub list {
         my $req_href        = $self->get_request_params;
         my $collection      = $self->get_collection_req($req_href);
         my ($cursor,$count) = $collection->api_list($req_href, $user, $groups);
-        my @records         = $self->post_list_process(
-                                    $cursor,
-                                    $collection->limit_fields($req_href),
-        );
+        my @records         = $self->post_list_process( $cursor, $req_href);
         my $return_href = {
             records             => \@records,
             queryRecordCount    => scalar(@records),
@@ -238,8 +235,17 @@ sub list {
 sub post_list_process {
     my $self        = shift;
     my $cursor      = shift;
-    my $fieldhref   = shift;
+    my $req_href    = shift;
     my @records     = $cursor->all;
+
+    my $collection  = $self->get_collection_req($req_href);
+    my $fieldhref   = $collection->limit_fields($req_href);
+
+    if ( $collection eq "handler" ) {
+        if (scalar(@records) < 1 ) {
+            push @records, { username => 'unassigned' };
+        }
+    }
 
     # remove any fields that are excluded
     if ( defined $fieldhref ) {
@@ -320,7 +326,11 @@ sub get_one {
     }
     catch {
         $log->error("in API get_one, Error: $_");
-        $self->render_error(400, { error_msg => $_ });
+        my $code    = 400;
+        if ( $_ =~ /Object not found/ ) {
+            $code = 404;
+        }
+        $self->render_error($code, { error_msg => $_ });
     };
 }
 
@@ -535,6 +545,8 @@ sub update {
 
     try {
         my $req_href    = $self->get_request_params;
+
+        
         my $collection  = $self->get_collection_req($req_href);
         if ($self->id_is_invalid($req_href)) { 
             die "Invalid id"; 
@@ -543,6 +555,10 @@ sub update {
         if ( ! $self->update_permitted($object)) { 
             die "Insufficent Privilege"; 
         }
+        # special case of promotion
+        if ( defined $req_href->{request}->{json}->{promote} ) {
+            return $self->promote($object, $req_href);
+        }
         $self->pre_update_process($object, $req_href);
         my @updates = $collection->api_update($object, $req_href);
         $self->post_update_process($object, $req_href, \@updates);
@@ -550,7 +566,11 @@ sub update {
     }
     catch {
         $log->error("in API update, Error: $_");
-        $self->render_error(400, { error_msg => $_ });
+        my $code = 400;
+        if ( $_ =~ /Insufficent Privilege/ ) {
+            $code = 403;
+        }
+        $self->render_error($code, { error_msg => $_ });
     };
 }
 
@@ -581,7 +601,109 @@ sub pre_update_process {
         my $collection  = $self->env->mongo->collection('Entity');
         $collection->update_entities($object, $entity_aref);
     }
+
 }
+
+sub get_promotion_collection {
+    my $self    = shift;
+    my $object  = shift;
+    my $mongo   = $self->env->mongo;
+
+    if ( ref($object) eq "Scot::Model::Alert" ) {
+        return $mongo->collection('Event');
+    }
+    if ( ref($object) eq "Scot::Model::Event" ) {
+        return $mongo->collection('Incident');
+    }
+    die "invalid promotion attempt";
+}
+
+# this function replaces the update function for promotions
+sub promote {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+    my $user    = $self->session('user');
+
+    $log->debug("processing promotion");
+
+    # find or create the promotion target
+    my $promotion_col;
+    if ( ref($object) eq "Scot::Model::Alert" ) {
+        $promotion_col  = $mongo->collection("Event");
+    }
+    elsif ( ref($object) eq "Scot::Model::Event" ) {
+        $promotion_col  = $mongo->collection("Incident");
+    }
+    else {
+        die "Unable to promote a ".ref($object);
+    }
+    my $promotion_obj = $promotion_col->get_promotion_obj($object,$req);
+    $promotion_obj->update({
+        '$addToSet' => { promoted_from => $object->id }
+    });
+
+    if ( ref($object) eq "Scot::Model::Alert") {
+        $mongo->collection('Alertgroup')->refresh_data($object->alertgroup);
+        my $entry = $mongo->collection('Entry')
+                          ->create_from_promoted_alert($object, $promotion_obj);
+    }
+
+    # update the promotee
+    $object->update({
+        '$set'  => {
+            updated         => $env->now,
+            promotion_id    => $promotion_obj->id,
+            status          => "promoted",
+        }
+    });
+
+    # update mq and other bookkeeping
+    $env->mq->send("scot", {
+        action  => "created",
+        data    => {
+            who     => $user,
+            type    => $promotion_obj->get_collection_name,
+            id      => $promotion_obj->id,
+        }
+    });
+    $env->mq->send("scot", {
+        action  => "updated",
+        data    => {
+            who     => $user,
+            type    => $object->get_collection_name,
+            id      => $object->id,
+        }
+    });
+
+    my $what = $object->get_collection_name." promoted to ".
+                       $promotion_obj->get_collection_name;
+    if ( $object->meta->does_role("Scot::Role::Historable") ) {
+        $mongo->collection('History')->add_history_entry({
+            who     => $user,
+            what    => $what,
+            when    => $env->now,
+            target  => {id => $object->id, type => $object->get_collection_name},
+        });
+    }
+
+    $mongo->collection('Audit')->create_audit_rec({
+        handler => $self,
+        object  => $object,
+        changes => $what,
+    });
+
+    # render and return
+    $self->do_render({
+        id      => $object->id,
+        pid     => $promotion_obj->id,
+        status  => "ok",
+    });
+}
+
 
 sub update_alerts {
     my $self    = shift;
@@ -659,6 +781,7 @@ sub post_update_process {
         }
         if ( $uphref->{attribute} eq "target" ) {
             if ( ref($object) eq "Scot::Model::Entry" ) {
+                $self->env->log->debug("processing entry move");
                 $self->process_entry_moves($object, $req);
             }
         }
@@ -729,7 +852,7 @@ sub changed_attributes {
     my $self    = shift;
     my $aref    = shift;
     my @changes = map { $_->{attribute}; } @$aref;
-    return wantarray ? @changes : \@changes;
+    return \@changes;
 }
 
 sub create_change_audit {
@@ -771,16 +894,26 @@ sub apply_sources {
 sub update_target {
     my $self    = shift;
     my $object  = shift;
+    my $update_type = shift;
     my $mongo   = $self->env->mongo;
     my $target  = $mongo->collection(
         ucfirst($object->target->{type})
     )->find_iid($object->target->{id});
 
+    $self->env->log->debug("updating target type = $update_type");
+    $self->env->log->debug("target entry_count = ".$target->entry_count);
+
     if ( defined $target ) {
         my $updated = 0;
         if ( $target->meta->does_role("Scot::Role::Entriable") ) {
-            $target->update_inc(entry_count => 1);
-            $updated++;
+            if ( $update_type eq "create" ) {
+                $target->update_inc(entry_count => 1);
+                $updated++;
+            }
+            if ( $update_type eq "delete" ) {
+                $target->update_inc(entry_count => -1);
+                $updated++;
+            }
         }
         if ( $target->meta->does_role("Scot::Role::Times") ) {
             $target->update_set(updated => $self->env->now);
@@ -789,6 +922,7 @@ sub update_target {
         if ($updated > 0) {
             $self->mq_obj_update($target);
         }
+        $self->env->log->debug("target entry_count = ". $target->entry_count);
     }
     else {
         $self->env->log->error("Failed to find target object to update");
@@ -865,6 +999,7 @@ sub delete {
         }
         $self->delete_or_purge($object, $req_href);
         $self->post_delete_process($object, $req_href);
+        $self->do_render({id => $object->id, status => 'ok'});
     }
     catch {
         $log->error("in API delete, Error: $_");
@@ -876,25 +1011,28 @@ sub post_delete_process {
     my $self    = shift;
     my $object  = shift;
     my $req     = shift;
+    my $mongo   = $self->env->mongo;
+    my $log     = $self->env->log;
 
     if ( $object->meta->does_role('Scot::Role::Target') ) {
-        $self->update_target($object);
+        $self->update_target($object, "delete");
     }
 
     if ( ref($object) eq 'Scot::Model::Entry' ) {
+
         # may need to point children entries
-        my $entrycol = $self->env->mongo->collection('Entry');
+        my $entrycol = $mongo->collection('Entry');
         my $cursor   = $entrycol->find({parent_id => $object->id});
         while ( my $child = $cursor->next ) {
             $child->update_set( parent_id => $object->parent_id );
         }
     }
-    $self->env->mongo->collection('Audit')->create_audit_rec({
+    my $audit_rec = {
         handler => $self,
         object  => $object,
-        changes => { deleted => $object->as_hash },
-    });
-    $self->env->mongo->collection('Stat')->put_stat($object->get_collecton_name." deleted", 1);
+    };
+    $self->env->mongo->collection('Audit')->create_audit_rec($audit_rec);
+    $self->env->mongo->collection('Stat')->put_stat($object->get_collection_name." deleted", 1);
 }
 
 sub delete_or_purge {
@@ -1030,6 +1168,10 @@ sub get_request_params  {
             json    => $json,
         },
     );
+    if ( $request{collection} eq "task" ) {
+        $request{collection} = "entry";
+        $request{task_search} = 1;
+    }
     $log->debug("Request is ",{ filter => \&Dumper, value => \%request } );
     return wantarray ? %request : \%request;
 }
@@ -1044,7 +1186,7 @@ sub do_render {
     );
 }
 
-sub do_error {
+sub render_error {
     my $self    = shift;
     my $code    = shift;
     my $href    = shift;
