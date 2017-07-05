@@ -676,9 +676,9 @@ var EntryDataStatus = React.createClass({
         }
 
         if (this.props.type == 'event') {
-            href = '/#/incident/' + this.props.data.promotion_id;
+            href = '/incident/' + this.props.data.promotion_id;
         } else if (this.props.type == 'intel') {
-            href = '/#/event/' + this.props.data.promotion_id;
+            href = '/event/' + this.props.data.promotion_id;
         }
         
         if (this.props.type == 'guide' || this.props.type == 'intel') {
@@ -718,7 +718,7 @@ var EntryDataStatus = React.createClass({
         } else {
             return (
                 <div>
-                    {this.state.buttonStatus == 'promoted' ? <a href={href} role='button' className={'btn btn-warning'}>{this.state.buttonStatus}</a>:
+                    {this.state.buttonStatus == 'promoted' ? <Link to={href} role='button' className={'btn btn-warning'}>{this.state.buttonStatus}</Link>:
                         <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.state.buttonStatus}>
                             <MenuItem eventKey='1' onClick={this.openAll}>Open</MenuItem>
                             <MenuItem eventKey='2' onClick={this.closeAll}>Close</MenuItem>
