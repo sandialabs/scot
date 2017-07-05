@@ -433,14 +433,18 @@ module.exports = React.createClass({
         if (taskid == null) {
             //window.history.pushState('Page', 'SCOT', '/#/' + type +'/'+rowid)  
             this.props.history.push( '/' + type + '/' + rowid );
-            this.launchEvent(type, rowid)
+            //this.launchEvent(type, rowid)
         } else {
             //If a task, swap the rowid and the taskid
             //window.history.pushState('Page', 'SCOT', '/#/' + type + '/' + taskid + '/' + rowid)
             this.props.history.push( '/' + type + '/' + taskid + '/' + rowid );
-            this.launchEvent(type, taskid, rowid);
+            //this.launchEvent(type, taskid, rowid);
         }
-        //scrolled = $('.list-view-data-div').scrollTop() 
+        //scrolled = $('.list-view-data-div').scrollTop()
+        if(this.state.display == 'block'){
+            this.state.scrollheight = '25vh'
+        }
+        this.setState({alertPreSelectedId: 0, scrollheight: this.state.scrollheight, showSelectedContainer: true })
     },
     getNewData: function(page, sort, filter){
         this.setState({loading:true}); //display loading opacity
@@ -682,8 +686,9 @@ module.exports = React.createClass({
             url: '/scot/api/v2/'+this.props.type,
             data: data
         }).success(function(response){
-            this.launchEvent(this.props.type,response.id)
-            window.history.pushState('Page', 'SCOT', '/#/'+this.props.type+'/'+response.id);
+            this.props.history.push( '/' + this.props.type + '/' + response.id );
+            //this.launchEvent(this.props.type,response.id)
+            //window.history.pushState('Page', 'SCOT', '/#/'+this.props.type+'/'+response.id);
         }.bind(this))
     }, 
 });
