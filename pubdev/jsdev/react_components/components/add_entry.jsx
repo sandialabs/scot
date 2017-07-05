@@ -113,6 +113,7 @@ var AddEntryModal = React.createClass({
                     url: '/scot/api/v2/entry',
                     data: data,
                     contentType: 'application/json; charset=UTF-8',
+                    dataType: 'json',
                     success: function(response){
                         this.setState({ leaveCatch: false });
                         this.props.addedentry() 
@@ -140,11 +141,11 @@ var AddEntryModal = React.createClass({
                             icon: 'glyphicon glyphicon-warning',
                             confirmButtonClass: 'btn-info',
                             cancelButtonClass: 'btn-info',
-                            confirmButton: 'Yes, override change?',
-                            cancelButton: 'No, Keep change from ' + response.owner + '?',
-                            content: response.owner+"'s edit:" +'\n\n'+response.body,
+                            confirmButton: 'Yes, override change',
+                            cancelButton: 'No, Keep edited version from another user',
+                            content: "edit:" +'\n\n'+response.body,
                             backgroundDismiss: false,
-                            title: "Edit Conflict" + '\n\n',
+                            title: "Edit Conflict from another user" + '\n\n',
                             confirm: function(){
                                 Confirm.launch(true)
                             },
@@ -180,6 +181,7 @@ var AddEntryModal = React.createClass({
                     url: '/scot/api/v2/entry',
                     data: data,
                     contentType: 'application/json; charset=UTF-8',
+                    dataType: 'json',
                     success: function(response){
                         this.setState({ leaveCatch: false });
                         this.props.addedentry()
@@ -212,6 +214,7 @@ var AddEntryModal = React.createClass({
                     url: '/scot/api/v2/entry',
                     data: JSON.stringify(data),
                     contentType: 'application/json; charset=UTF-8',
+                    dataType: 'json',
                     success: function(response){
                         this.setState({ leaveCatch: false });
                         this.props.addedentry()
@@ -251,6 +254,7 @@ var AddEntryModal = React.createClass({
                 url: '/scot/api/v2/entry/'+this.props.id,
                 data: JSON.stringify(data),
                 contentType: 'application/json; charset=UTF-8',
+                dataType: 'json',
                 success: function(response){
                     this.setState({ leaveCatch: false });
                     this.props.addedentry()        
