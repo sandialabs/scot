@@ -245,6 +245,32 @@ sub post_list_process {
         if (scalar(@records) < 1 ) {
             push @records, { username => 'unassigned' };
         }
+
+        $self->do_render({
+            records             => \@handler_records,
+            queryRecordCount    => 1,
+            totalRecordCount    => 1,
+        });
+        $self->audit("get_current_handler", $req_href);
+        return;
+    }
+
+    #$match_ref   = $req_href->{request}->{params}->{match} // 
+    #               $req_href->{request}->{json}->{match};
+
+    $match_ref  = $self->build_match_ref($req_href->{request});    
+
+    if ( $col_name eq "apikey" and ! $self->user_is_admin) {
+        $match_ref->{username} = $user;
+    }
+
+    $log->debug("match_ref is ",{filter=>\&Dumper, value=>$match_ref});
+
+    if ( $tasksearch == 1 ) {
+        $match_ref->{'$or'} = [
+            {'task.status' => {'$exists' => 1} },
+            {'metadata.status' => {'$exists' => 1 } }
+        ];
     }
 
     # remove any fields that are excluded
@@ -605,6 +631,17 @@ sub pre_update_process {
     my $object  = shift;
     my $req     = shift;
     my $mongo   = $self->env->mongo;
+
+    my $usersgroups = $self->session('groups');
+    if ( ref($object) eq "Scot::Model::Apikey" ) {
+	my $updated_groups = [];
+	foreach my $g ($req_href->{groups}) {
+            if ( grep {/$g/} @$usersgroups ) {
+                push @$updated_groups, $g;
+            }
+        }
+        $req_href->{groups} = $updated_groups;
+    }
 
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
         $self->update_alerts($object,$req);

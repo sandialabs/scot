@@ -9,7 +9,7 @@ var bulkSass = require( 'gulp-sass-bulk-import' );
 
 var paths = {
 	scripts: './jsdev/react_components/**/*.jsx',
-	admin: '.jsdev/react_components/administration/**/*',
+	admin: './jsdev/react_components/administration/**/*.jsx',
 	sass: './sass/**/*.scss',
 	build: '../public/',
 	scot: '/opt/scot/public/',
@@ -17,7 +17,7 @@ var paths = {
 
 // gulp.task('watch', ['build','buildadmin'], function () {
 gulp.task('watch', ['build'], function () {
-    // gulp.watch( paths.admin, ['buildadmin'] );
+    gulp.watch( paths.admin, ['buildadmin'] );
     gulp.watch( paths.scripts, ['scripts'] );
 	gulp.watch( paths.sass, ['sass'] );
 });
@@ -59,6 +59,6 @@ gulp.task( 'watch-copy', ['watch'], function() {
 	} );
 } );
 
-gulp.task( 'build', ['scripts', 'sass'] );
+gulp.task( 'build', ['scripts', 'sass', 'buildadmin'] );
 
 gulp.task('default', ['watch']);

@@ -7,8 +7,8 @@ use Data::Dumper;
 use Scot::Util::ImgMunger;
 use Scot::Env;
 
-$ENV{https_proxy}   = "https://wwwproxy.sandia.gov:80";
-$ENV{http_proxy}   = "http://wwwproxy.sandia.gov:80";
+$ENV{https_proxy}   = "https://proxy.watermelon.gov:80";
+$ENV{http_proxy}   = "http://proxy.watermelon.gov:80";
 $ENV{HTTPS_DEBUG}  = 1;
 my $env         = Scot::Env->new();
 my $imgmunger   = Scot::Util::ImgMunger->new({
@@ -16,7 +16,7 @@ my $imgmunger   = Scot::Util::ImgMunger->new({
 });
 
 my $html    = <<EOF;
-    <img src="https://my.sandia.gov/local/techweb/images/common_inside_logo.gif">
+    <img src="https://my.watermelon.gov/local/techweb/images/common_inside_logo.gif">
     <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png">
     <h1>Some Title</h1>
     <p>Some text</p>

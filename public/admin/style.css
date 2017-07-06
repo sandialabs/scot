@@ -296,4 +296,27 @@
 .form-horizontal .form-actions {
   padding-left: 180px;
 }
- 
+
+/* custom css */
+.tagButton {
+    background-color: #fff;
+    border-color: #ccc;
+    color: #333;
+    padding: 3px 5px;
+    font-weight: 400;
+    border-radius: 3px;
+    margin-right: 2px;
+}
+
+.tagButtonClose {
+    cursor: pointer;
+    padding-left: 3px;
+}
+
+.keyActive {
+    color: green;
+}
+
+.keyNotActive {
+    color: red;
+}
