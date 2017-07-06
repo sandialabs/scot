@@ -38,4 +38,15 @@ sub create_from_api {
 
 }
 
+sub autocomplete {
+    my $self    = shift;
+    my $frag    = shift;
+    my $cursor  = $self->find({
+        filename => /$frag/
+    });
+    my @records = map { {
+        id  => $_->{id}, key => $_->{filename}
+    } } $cursor->all;
+    return wantarray ? @records : \@records;
+}
 1;
