@@ -92,7 +92,7 @@ sub find_existing_file_entry {
     my $type    = shift;
     my $id      = shift;
     my $log     = $self->env->log;
-    my $col     = $self->mongo->collection('Entry');
+    my $col     = $self->env->mongo->collection('Entry');
     my $obj     = $col->find_one({
         'target.type'   => $type,
         'target.id'     => $id,
@@ -214,7 +214,7 @@ EOF
 
     $log->debug("creating file upload entry with ", {filter=>\&Dumper, value=>$entry_href});
 
-    my $existing_entry = $self->find_existing_alert_entry($target_type, $target_id);
+    my $existing_entry = $self->find_existing_file_entry($target_type, $target_id);
 
     if ( $existing_entry ) {
         # use this as the parent so that all additional file uploads
@@ -223,7 +223,7 @@ EOF
     }
     else {
         # create the "alert" type entry
-        $log->debug("creating a new alert type entry");
+        $log->debug("creating a new file type entry");
         my $aentry  = $self->create({
             class   => "file",
             parent  => 0,
