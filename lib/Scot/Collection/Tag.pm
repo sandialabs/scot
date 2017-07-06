@@ -52,6 +52,18 @@ sub create_from_api {
 
 }
 
+sub autocomplete {
+    my $self        = shift;
+    my $fragment    = shift;
+    my $cursor      = $self->find({ value => /$fragment/});
+    my @records     = map { {
+        id  => $_->{id},
+        key => $_->{value},
+    } } $cursor->all;
+    return wantarray ? @records : \@records;
+}
+    
+
 sub get_tag_completion { 
     my $self    = shift;
     my $string  = shift;
