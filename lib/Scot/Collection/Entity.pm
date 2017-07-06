@@ -169,6 +169,53 @@ sub update_entities {
     return \@created_ids, \@updated_ids;
 }
 
+sub api_subthing {
+    my $self    = shift;
+    my $req     = shift;
+    my $thing   = $req->{collection};
+    my $id      = $req->{id} + 0;
+    my $subthing= $req->{subthing};
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    if ( $subthing  eq "alert" or
+         $subthing  eq "event" or
+         $subthing  eq "intel" or
+         $subthing  eq "incident" ) {
+        my @links = map { $_->{target}->{id} } 
+                        $mongo->collection('Link')->find({
+                            entity_id       => $id,
+                            'target.type'   => $subthing,
+                        })->all;
+        return $self->find({id => { '$in' => \@links }});
+    }
+
+    if ( $subthing eq "entity" ) {
+        my @links = map { $_->{id} } 
+                        $mongo->collection('Link')->get_links_by_target({
+                            id      => $id,
+                            type    => 'entity',
+                        })->all;
+        return $self->find({id => {'$in' => \@links}});
+    }
+    if ( $subthing eq "entry" ) {
+        return $mongo->collection('Entry')->get_entries_by_target({
+            id  => $id,
+            type    => 'entity',
+        });
+    }
+    if ( $subthing eq "file" ) {
+        return $mongo->collection('File')->find({
+            'entry_target.type' => 'entity',
+            'entry_target.id'   => $id,
+        });
+    }
+    
+    die "Unsupported subthing request ($subthing) for Entity";
+
+}
+
 override get_subthing => sub {
     my $self        = shift;
     my $thing       = shift;
@@ -236,6 +283,18 @@ sub get_by_value {
         }
     }
     return $object;
+}
+
+sub autocomplete {
+    my $self    = shift;
+    my $frag    = shift;
+    my $cursor  = $self->find({
+        value => /$frag/
+    });
+    my @records = map { {
+        id  => $_->{id}, key => $_->{value}
+    } } $cursor->all;
+    return wantarray ? @records : \@records;
 }
 
 

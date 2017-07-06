@@ -239,8 +239,8 @@ sub post_list_process {
     my @records     = $cursor->all;
 
     my $collection  = $self->get_collection_req($req_href);
-    my $fieldhref   = $collection->limit_fields($req_href);
 
+    # special case of the handler 
     if ( $collection eq "handler" ) {
         if (scalar(@records) < 1 ) {
             push @records, { username => 'unassigned' };
@@ -248,14 +248,8 @@ sub post_list_process {
     }
 
     # remove any fields that are excluded
-    if ( defined $fieldhref ) {
-        foreach my $thing (@records) {
-            foreach my $key (keys %$thing) {
-                if ( ! defined $fieldhref->{$key} ) {
-                    delete $thing->{$key};
-                }
-            }
-        }
+    foreach my $href (@records) {
+        $self->filter_unrequested_columns($collection, $href, $req_href);
     }
     return wantarray ? @records : \@records;
 }
@@ -339,6 +333,8 @@ sub post_get_one_process {
     my $object  = shift;
     my $req     = shift;
 
+    # handle special get_one cases and convert object into hash
+
     if ( $object->meta->does_role('Scot::Role::Permittable') ) {
         unless ( $object->is_readable($self->session('groups')) ) {
             $self->read_not_permitted_error;
@@ -389,11 +385,23 @@ sub post_get_one_process {
         $href->{version} = $signaturecol->get_sigbodies($object);
     }
 
+    $self->filter_unrequested_columns($alertcol, $href, $req);
+    return $href;
+}
+
+sub filter_unrequested_columns {
+    my $self    = shift;
+    my $col     = shift;
+    my $href    = shift;
+    my $req     = shift;
+
+    # since operating on reference href, this operates as a side effect.
+
     # eliminate unrequested fields.  We could move this up and check
     # columns for the enriched columns above as an optimization but
     # this really isn't slow in practice
     # limit_fields is in Collection.pm so we can use any collection ref
-    my $cutfields   = $alertcol->limit_fields($href, $req);
+    my $cutfields   = $col->limit_fields($href, $req);
     if ( defined $cutfields ) {
         foreach my $key (keys %$href) {
             if ( ! defined $cutfields->{$key} ) {
@@ -401,8 +409,19 @@ sub post_get_one_process {
             }
         }
     }
+}
 
-    return $href;
+sub refresh_entity_enrichments {
+    my $self            = shift;
+    my $entity          = shift;
+    my ($updated, $data) = $self->env->enrichments->enrich($entity);
+
+    if ( $updated > 0 ) {
+        $entity->update_set(data => $data);
+    }
+    else {
+        $self->env->log->debug('No entity updates');
+    }
 }
 
 sub download_file {
@@ -841,11 +860,52 @@ sub process_entry_moves {
 
 sub process_entities {
     my $self    = shift;
-    my $object  = shift;
-    my $req     = shift;
+    my $cursor  = shift;
+    my %things  = ();
+    my $mongo   = $self->env->mongo;
+    my $log     = $self->env->log;
 
-    my $json    = $req->{request}->{json};
-    my $aref    = delete $json->{entities};
+    $log->debug("PROCESSING ENTITIED");
+
+    while ( my $entity = $cursor->next ) {
+
+        my $entry_cursor        = $mongo->collection('Entry')->get_entries(
+            target_id   => $entity->id,
+            target_type => 'entity',
+        );
+        my @threaded_entries    = $self->thread_entries($entry_cursor);
+
+        $things{$entity->value} = {
+            id      => $entity->id,
+            count   => $self->get_entity_count($entity),
+            entry   => $self->get_entry_count($entity),
+            type    => $entity->type,
+            classes => $entity->classes,
+            data    => $entity->data,
+            status  => $entity->status,
+            entries => \@threaded_entries,
+        };
+        $log->debug("thing{".$entity->value."} = ",{filter=>\&Dumper, value=>$things{$entity->value}});
+
+    }
+    return wantarray ? %things : \%things;
+}
+
+sub get_entity_count {
+    my $self    = shift;
+    my $entity  = shift;
+    my $mongo   = $self->env->mongo;
+    return $mongo->collection('Link')->get_display_count($entity);
+}
+
+sub get_entry_count {
+    my $self    = shift;
+    my $entity  = shift;
+    my $mongo   = $self->env->mongo;
+    return $mongo->collection('Entry')->get_entries(
+        target_id   => $entity->id,
+        target_type => 'entity',
+    )->count;
 }
 
 sub changed_attributes {
@@ -1280,4 +1340,118 @@ sub thread_entries {
     return wantarray ? @threaded : \@threaded;
 }
 
+# one reason for this is how to handle actions on multi-clicked rows
+# another, some things are hard to shoehorn into the REST paradigm. (e.g. send msg to queue )
+sub do_command {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+    my $user    = $self->session('user');
+
+    $log->trace("------------");
+    $log->trace("API is processing a PUT COMMAND request from $user");
+    $log->trace("------------");
+
+    my $req_href    = $self->get_request_params;
+
+# TODO
+    $env->mq->send("scot", {
+        action  => "message",
+        data    => {
+            wall    => ""
+        }
+    });
+}
+
+sub wall { 
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+    my $user    = $self->session('user');
+    my $msg     = $self->param('msg');
+    my $now     = $env->now;
+
+    $env->mq->send("scot", {
+        action  => "wall",
+        data    => {
+            message => $msg,
+            user    => $user,
+            when    => $now,
+        }
+    });
+    $self->do_render({
+        action  => 'wall',
+        status  => 'ok',
+    });
+}
+
+sub autocomplete {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+    my $thing   = $self->stash('thing');
+    my $fragment = $self->stash('search');
+
+    $log->debug("Autocompleting $thing against $fragment fragment");
+
+    try {
+        my @values  = $mongo->collection(ucfirst($thing))
+                            ->autocomplete($fragment);
+        # @values = (
+        #    { id => x, key => keythatwascompletedon },...
+        # )
+        $self->do_render({
+            records             => \@values,
+            queryRecordCount    => scalar(@values),
+            totalRecordCount    => scalar(@values),
+        });
+    }
+    catch {
+        $log->error("In API autocomplete, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+    };
+}
+
+sub whoami {
+    my $self    = shift;
+    my $user    = $self->session('user'); # username from session cookie
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    my $userobj = $mongo->collection('User')->find_one({username => $user});
+
+    if ( defined ( $userobj )  ) {
+        $userobj->update_set(lastvisit => $env->now);
+        my $user_href   = $userobj->as_hash;
+        # TODO:  move this to config file?
+        # placed here initially for convenience but not very logical
+        # since it has nothing to do with the user
+        # and is used to populate the sensitivity cell on the header.
+        $user_href->{sensitivity} = "OUO";
+        $self->do_render({
+            user    => $user,
+            data    => $user_href,
+        });
+    }
+    else {  
+        # TODO:  put code here that creates the users database entry
+        if ( $user ) {
+            $self->do_render({
+                user    => $user,
+                data    => {},
+            });
+        }
+        else {
+            $self->do_error(404, {
+                user    => "not valid",
+                data    => { error_msg => "$user not found" },
+            });
+        }
+    }
+}
 1;

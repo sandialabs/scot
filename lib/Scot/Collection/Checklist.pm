@@ -98,4 +98,15 @@ sub create_from_api {
     return $checklist;
 }
 
+sub autocomplete {
+    my $self    = shift;
+    my $frag    = shift;
+    my $cursor  = $self->find({
+        subject => /$frag/
+    });
+    my @records = map { {
+        id  => $_->{id}, key => $_->{subject}
+    } } $cursor->all;
+    return wantarray ? @records : \@records;
+}
 1;
