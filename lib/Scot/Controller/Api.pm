@@ -898,7 +898,7 @@ sub update {
     my $usersgroups = $self->session('groups');
     if ( ref($object) eq "Scot::Model::Apikey" ) {
 	my $updated_groups = [];
-	foreach my $g (@$req_href->{groups}) {
+	foreach my $g ($req_href->{groups}) {
             if ( grep {/$g/} @$usersgroups ) {
                 push @$updated_groups, $g;
             }
