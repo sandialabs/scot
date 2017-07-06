@@ -45,5 +45,13 @@ sub create_from_api {
     return $user;
 }
 
+sub autocomplete {
+    my $self    = shift;
+    my $frag    = shift;
+    my $cursor  = $self->find({username => /$frag/});
+    my @records = map { { id => $_->{id}, key => $_->{username} } }
+                  $cursor->all;
+    return wantarray ? @records : \@records;
+}
 
 1;

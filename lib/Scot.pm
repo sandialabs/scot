@@ -188,27 +188,82 @@ relies on the browser BasicAuth popup.
 =cut
 
     $scot   ->route ('/api/v2/game')
-            ->to    ('controller-api#get_game_data')
+            ->to    ('controller-metric#get_game_data')
             ->name  ('game');
+
+=pod
+
+@api {get} /scot/api/v2/metric/:thing Get a metric from SCOT
+@apiName metric
+@apiGroup Metric
+@apiVersion 2.0.0
+@apiDescription Get a metric from scot db
+@apiSuccess {Object}    -
+
+=cut
 
     $scot   ->route ('/api/v2/metric/:thing')
             ->to    ('controller-metric#get')
             ->name  ('get');
 
+=pod
+
+@api {get} /scot/api/v2/graph/:thing 
+@apiName metric
+@apiGroup Metric
+@apiVersion 2.0.0
+@apiDescription Get pyramid, dhheatmap, statistics, todaystats, bullet, or alertresponse data
+@apiSuccess {Object}    -
+
+=cut
+
     $scot   ->route ('/api/v2/graph/:thing')
             ->to    ('controller-stat#get')
             ->name  ('get_report_json');
 
+=pod
+
+@api {get} /scot/api/v2/graph/:thing 
+@apiName metric
+@apiGroup Metric
+@apiVersion 2.0.0
+@apiDescription build a graph (nodes,vertices) starting at :thing :id and going out :depth connections
+@apiSuccess {Object}    -
+
+=cut
+
     $scot   ->route ('/api/v2/graph/:thing/:id/:depth')
             ->to    ('controller-graph#get_graph')
             ->name  ('get_graph');
+=pod
+
+@api {get} /scot/api/v2/status
+@apiName metric
+@apiGroup Metric
+@apiVersion 2.0.0
+@apiDescription give the status of the scot system
+@apiSuccess {Object}    -
+
+=cut
+
 
     $scot   ->route ('/api/v2/status')
-            ->to    ('controller-api#get_status')
+            ->to    ('controller-metric#get_status')
             ->name  ('get_status');
 
+=pod
+
+@api {get} /scot/api/v2/who
+@apiName metric
+@apiGroup Metric
+@apiVersion 2.0.0
+@apiDescription like the unix who command but for SCOT
+@apiSuccess {Object}    -
+
+=cut
+
     $scot   ->route ('/api/v2/who')
-            ->to    ('controller-api#get_who_online')
+            ->to    ('controller-metric#get_who_online')
             ->name  ('get_who_online');
 
 =pod
@@ -245,6 +300,16 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-api#do_command')
             ->name  ('do_command');
 
+=pod
+
+@api {put} /scot/api/v2/wall Post a message to every logged in user
+@apiName send wall message
+@apiGroup Queue
+@apiVersion 2.0.0
+@apiDescription Post a message to the team
+
+=cut
+
 
     $scot   ->route ('/api/v2/wall')
             ->via   ('post')
@@ -279,7 +344,7 @@ relies on the browser BasicAuth popup.
 
     $scot   ->route ('/api/v2/create_apikey')
             ->via   ('post')
-            ->to    ('controller-api#get_apikey')
+            ->to    ('controller-auth#get_apikey')
             ->name  ('get_apikey');
 
 =pod
@@ -424,6 +489,14 @@ Alert subthings
 
 Event subthings
 -----
+* entity
+* entry
+* tag
+* source
+
+Incident subthings
+--------
+* events
 * entity
 * entry
 * tag
