@@ -65,7 +65,7 @@ module.exports = React.createClass({
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: [], listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, };
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: [], listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.listViewSort, filter: this.props.listViewFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, };
     },
     componentWillMount: function() {
         if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
@@ -318,30 +318,30 @@ module.exports = React.createClass({
             </div>
         )
     },
-    componentDidUpdate: function() {
+    AutoScrollToId: function() {
+        //auto scrolls to selected id
+        if ($('#'+this.state.id).offset() != undefined && $('.list-view-table-data').offset() != undefined) {
+            var cParentTop =  $('.list-view-table-data').offset().top;
+            var cTop = $('#'+this.state.id).offset().top - cParentTop;
+            var cHeight = $('#'+this.state.id).outerHeight(true);
+            var windowTop = $('#list-view-data-div').offset().top;
+            var visibleHeight = $('#list-view-data-div').height();
+
+            var scrolled = $('#list-view-data-div').scrollTop();
+            if (cTop < (scrolled)) {
+                $('#list-view-data-div').animate({'scrollTop': cTop-(visibleHeight/2)}, 'fast', '');
+            } else if (cTop + cHeight + cParentTop> windowTop + visibleHeight) {
+                $('#list-view-data-div').animate({'scrollTop': (cTop + cParentTop) - visibleHeight + scrolled + cHeight}, 'fast', 'swing');
+            }
+            this.setState({initialAutoScrollToId: true});
+        }
+    },
+    componentDidUpdate: function(prevProps, prevState) {
         //auto scrolls to selected id
         for (var i=0; i < this.state.objectarray.length; i++){          //Iterate through all of the items in the list to verify that the current id still matches the rows in the list. If not, don't scroll
             var idReference = this.state.objectarray[i].id;
-            if (this.state.type == 'task') {
-                if (this.state.objectarray[i].target) {
-                    idReference = this.state.objectarray[i].target.id; //task uses target.id for id because its id is the entry.
-                }
-            }
-            if (this.state.id != null && this.state.id == idReference) {
-                if ($('#'+this.state.id).offset() != undefined && $('.list-view-table-data').offset() != undefined) {
-                    var cParentTop =  $('.list-view-table-data').offset().top;
-                    var cTop = $('#'+this.state.id).offset().top - cParentTop;
-                    var cHeight = $('#'+this.state.id).outerHeight(true);
-                    var windowTop = $('#list-view-data-div').offset().top;
-                    var visibleHeight = $('#list-view-data-div').height();
-
-                    var scrolled = $('#list-view-data-div').scrollTop();
-                    if (cTop < (scrolled)) {
-                        $('#list-view-data-div').animate({'scrollTop': cTop-(visibleHeight/2)}, 'fast', '');
-                    } else if (cTop + cHeight + cParentTop> windowTop + visibleHeight) {
-                        $('#list-view-data-div').animate({'scrollTop': (cTop + cParentTop) - visibleHeight + scrolled + cHeight}, 'fast', 'swing');
-                    }
-                }
+            if (this.state.id != null && this.state.id == idReference && this.state.id != prevState.id || this.state.id != null && this.state.id == idReference && prevState.initialAutoScrollToId == false ) {     //Checks that the id is present, is on the screen, and will not be kicked off again if its already been scrolled to before. The || statement handles the initial load since the id hasn't been scrolled to before.
+               this.AutoScrollToId(); 
             }
         }
     },
