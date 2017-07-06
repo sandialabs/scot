@@ -360,6 +360,13 @@ sub flair_record {
             next COLUMN;
         }
 
+        if ( $column =~ /^lbscanid$/i ) {
+            # another special column
+            push @entity, { value => $value, type => "lb_scan_id" };
+            $flair{$column} = $self->genspan($value, "lb_scan_id");
+            next COLUMN;
+        }
+
         if ( $column =~ /^columns$/i ) {
             # no flairing on the "columns" attribute
             $flair{$column} = $value;
@@ -524,7 +531,13 @@ sub flair_entry {
 
     my $href     = $self->get_entry($entry_id);
     my $body     = $href->{body};
-    my $newbody  = $munger->process_html($body, $entry_id);
+    my $newbody  = $body;   # default
+    try {
+        $newbody  = $munger->process_html($body, $entry_id);
+    }
+    catch {
+        $log->error("Error in imgmunger process: $_");
+    };
     my $flair    = $extract->process_html($newbody);
     $self->log->debug("flairing returned ",{filter=>\&Dumper, value=>$flair});
     return $flair;

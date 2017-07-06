@@ -22,13 +22,13 @@ my $source      = <<'EOF';
         <th>Ipaddr</th><th>email address</th>
     </tr>
     <tr>
-        <td><div>10.10.1.2</div> foo</td><td>todd@sandia.gov</td>
+        <td><div>10.10.1.2</div> foo</td><td>todd@watermelon.gov</td>
     </tr>
 </table>
 EOF
 
 my $flair   = <<'EOF';
-<div><table><tr><th>Ipaddr </th><th>email address </th></tr><tr><td><div><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="10.10.1.2">10.10.1.2</span> </div> foo </td><td><span class="entity email" data-entity-type="email" data-entity-value="todd@sandia.gov">todd@<span class="entity domain" data-entity-type="domain" data-entity-value="sandia.gov">sandia.gov</span></span> </td></tr></table></div>
+<div><table><tr><th>Ipaddr </th><th>email address </th></tr><tr><td><div><span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="10.10.1.2">10.10.1.2</span> </div> foo </td><td><span class="entity email" data-entity-type="email" data-entity-value="todd@watermelon.gov">todd@<span class="entity domain" data-entity-type="domain" data-entity-value="watermelon.gov">watermelon.gov</span></span> </td></tr></table></div>
 EOF
 
 chomp($flair);
@@ -40,7 +40,7 @@ my $plain = <<'EOF';
 
    10.10.1.2 foo
 
-   todd@sandia.gov
+   todd@watermelon.gov
 EOF
 
 chomp($plain);
@@ -53,11 +53,11 @@ my @entities = (
         'value' => '10.10.1.2'
     },
     {
-        'value' => 'todd@sandia.gov',
+        'value' => 'todd@watermelon.gov',
         'type' => 'email'
     },
     {
-        value   => 'sandia.gov',
+        value   => 'watermelon.gov',
         type    => 'domain',
     },
 );

@@ -15,6 +15,7 @@ import Col from 'react-bootstrap/lib/Grid.js';
 import Clearfix from 'react-bootstrap/lib/Grid.js';
 
 
+import 'brace/mode/bro';
 import 'brace/mode/javascript';
 import 'brace/mode/java';
 import 'brace/mode/python';
@@ -90,7 +91,7 @@ var SignatureTable = React.createClass({
             cursorEnabledDisabled: 'cursorDisabled',
             keyboardHandlers: ['none', 'vim', 'emacs'],
             currentKeyboardHandler: currentKeyboardHandler,
-            languageModes: ['csharp', 'c_cpp','html', 'javascript', 'java','json', 'markdown', 'mysql','perl', 'powershell', 'python', 'ruby', 'sass','xml','yaml'],
+            languageModes: ['bro', 'csharp', 'c_cpp','html', 'javascript', 'java','json', 'markdown', 'mysql','perl', 'powershell', 'python', 'ruby', 'sass','xml','yaml'],
             currentLanguageMode: currentLanguageMode,
             editorThemes: ['github', 'monokai', 'kuroir', 'solarized_dark','solarized_light' ,'terminal', 'textmate', 'tomorrow', 'twilight', 'xcode'],
             currentEditorTheme: currentEditorTheme,
@@ -269,8 +270,9 @@ var SignatureTable = React.createClass({
                                     editorProps     = {{$blockScrolling: true}}
                                     keyboardHandler = {currentKeyboardHandlerApplied}
                                     value           = {this.state.value}
-                                    height          = '250px'
                                     width           = '100%'
+                                    maxLines        = {50}
+                                    minLines        = {10}
                                     readOnly        = {this.state.readOnly}
                                     className       = {this.state.cursorEnabledDisabled}
                                     showPrintMargin = {false}
@@ -408,6 +410,17 @@ var SignatureMetaData = React.createClass({
                         </span>
                     </div> 
                 )
+            } else if (this.state.inputArrayType[i] == 'type') {
+                inputArray.push(
+                    <div className='col-lg-2 col-md-4'> 
+                        <span className='signatureTableWidth'>
+                            {this.state.inputArrayTypeDisplay[i]}:
+                        </span>
+                        <span className='signatureTableWidth'>
+                            <input id={this.state.inputArrayType[i]} onChange={this.InputChange} value={this.state[this.state.inputArrayType[i]]} placeholder='yara, snort, etc.' onBlur={this.submitMetaData}/>
+                        </span>
+                    </div> 
+                )
             }
             else {
                 inputArray.push(
@@ -446,7 +459,8 @@ var SignatureMetaData = React.createClass({
                                 editorProps     = {{$blockScrolling: true}}
                                 keyboardHandler = {this.props.currentKeyboardHandlerApplied}
                                 value           = {this.state.optionsValue}
-                                height          = '200px'
+                                minLines        = {10}
+                                maxLines        = {25}
                                 width           = '100%'
                                 readOnly        = {false} 
                                 showPrintMargin = {false}
@@ -493,7 +507,7 @@ var SignatureGroup = React.createClass({
                 this.props.errorToggle('Failed to add signature_group');
             }.bind(this)
         });
-    }, 
+    },
     InputChange: function(event) {
         this.setState({signatureGroupValue: event.target.value});
     },
