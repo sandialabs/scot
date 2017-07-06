@@ -172,7 +172,7 @@ var App = React.createClass({
                 <Navbar inverse fixedTop={true} fluid={true}>
                     <Navbar.Header>
                         <Navbar.Brand>
-                            <Link to='/' style={{margin:'0', padding:'0'}}><img src='/scot.png' style={{width:'50px', margin:'0', padding:'0'}} /></Link>
+                            <Link to='/' style={{margin:'0', padding:'0'}}><img src='/images/scot.png' style={{width:'50px'}} /></Link>
                         </Navbar.Brand>
                         <Navbar.Toggle />
                     </Navbar.Header>
