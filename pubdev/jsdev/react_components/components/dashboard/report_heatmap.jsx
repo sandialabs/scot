@@ -1,6 +1,7 @@
-var React = require('react');
-var Panel = require('react-bootstrap/lib/Panel.js');
-var Badge = require('react-bootstrap/lib/Badge.js');
+var React   = require('react');
+var Panel   = require('react-bootstrap/lib/Panel.js');
+var Badge   = require('react-bootstrap/lib/Badge.js');
+var Button  = require('react-bootstrap/lib/Button.js');
 
 var ReportHeatmap = React.createClass({
     getInitialState: function() {
@@ -167,7 +168,7 @@ var ReportHeatmap = React.createClass({
                         <option value='incident'>incident</option>
                     </select>
                 </label>
-                <button id='export' onClick={this.exportToPNG}>Export to PNG</button>
+                <Button id='export' bsSize='xsmall' bsStyle='default' onClick={this.exportToPNG}>Export to PNG</Button>
                 <div id="chart">
                     <svg id={'report_heatmap'} width={svgwidth} height={this.state.height}>
                         <g id={'report_heatmap_g'} transform={transform}>

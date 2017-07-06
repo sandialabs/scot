@@ -89,7 +89,7 @@
     # approved_alert_domains => [ 'domain1\.org', ... ]
     # only domains listed in this array can send email to scot
     # periods need to be escaped by \
-    approved_alert_domains  => [ 'sandia.gov', 'scotdemo.org' ],
+    approved_alert_domains  => [ 'watermelon.gov', 'scotdemo.org' ],
     # approve_accounts => [ 'user@email.addr' ];
     # account in this domain can also send to scot
     approved_accounts   => [ 'todd.bruner@gmail.com', 'foo@bar.com' ],
