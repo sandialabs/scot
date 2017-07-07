@@ -1137,7 +1137,7 @@ sub post_delete_process {
     $self->env->mq->send("scot",{
         action  => "deleted",
         data    => {
-            type    => $object->get_colection_name,
+            type    => $object->get_collection_name,
             id      => $object->id,
             who     => $self->session('user'),
         }
