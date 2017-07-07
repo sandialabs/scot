@@ -9,7 +9,7 @@ var TagSourceFilter = React.createClass({
         if (this.props.defaultValue != undefined) {
             filterButtonArr.push(<div id='filterButton' className='btn btn-xs btn-default'>{this.props.defaultValue}<span onClick={this.handleDelete} style={{paddingLeft:'3px'}} className="glyphicon glyphicon-remove" aria-hidden="true"></span></div>);
             filterButtonText.push(this.props.defaultValue);
-            this.props.handleFilter(this.props.defaultValue);
+            //this.props.handleFilter(this.props.defaultValue);
         }
         return {
             suggestions: this.props.options,
