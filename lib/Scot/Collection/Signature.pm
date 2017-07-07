@@ -111,6 +111,17 @@ sub api_subthing {
         });
     }
 
+    if ($subthing eq "entity") {
+        my @links   = map { $_->{entity_id} }
+            $mongo->collection('Link')->get_links_by_target({
+                id      => $id,
+                type    => 'signature',
+            })->all;
+        return $mongo->collection('Entity')->find({
+            id => { '$in' => \@links }
+        });
+    }
+
     if ( $subthing eq "tag" ) {
         my @appearances = map { $_->{apid} } 
             $mongo->collection('Appearance')->find({
@@ -132,6 +143,20 @@ sub api_subthing {
             })->all;
         return $mongo->collection('Source')->find({
             id => {'$in' => \@appearances}
+        });
+    }
+
+    if ( $subthing eq "history" ) {
+        return $mongo->collection('History')->find({
+            'target.id'   => $id,
+            'target.type' => 'signature'
+        });
+    }
+
+    if ( $subthing eq "file" ) {
+        return $mongo->collection('File')->find({
+            'entry_target.id'     => $id,
+            'entry_target.type'   => 'signature',
         });
     }
 
