@@ -8,6 +8,7 @@ var Inspector               = require('react-inspector');
 var SelectedEntry           = require('../detail/selected_entry.jsx');
 var AddEntry                = require('../components/add_entry.jsx');
 var Draggable               = require('react-draggable');
+var Link                    = require('react-router-dom').Link;
 var Store                   = require('../activemq/store.jsx');
 
 var startX;
@@ -382,11 +383,11 @@ var TabContents = React.createClass({
                 </div>
             )
         } else if (this.props.entitytype == 'guide') {
-            var guideurl = '/#/guide/' + this.props.entityid;
+            var guideurl = '/' + 'guide/' + this.props.entityid;
             return (
                 <div className='tab-content'> 
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
-                        <a href={guideurl} target="_blank"><h4 id="myModalLabel">{this.props.data != null ? <span><span><EntityValue value={this.props.entityid} /></span><div><EntityValue value={this.props.data.applies_to} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4></a>
+                        <Link to={guideurl} target="_blank"><h4 id="myModalLabel">{this.props.data != null ? <span><span><EntityValue value={this.props.entityid} /></span><div><EntityValue value={this.props.data.applies_to} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4></Link>
                     </div>
                     <div style={{overflow:'auto',flex:'1 1 auto', marginLeft:'10px'}}>
                     {this.props.data != null ? <GuideBody entityid={this.props.entityid} entitytype={this.props.entitytype}/> : <div>Loading...</div>}
@@ -400,7 +401,7 @@ var TabContents = React.createClass({
 var EntityValue = React.createClass({
     render: function() {
         if (this.props.data != undefined) {  //Entity Detail Popup showing the entity type
-            var entityurl = '/#/entity/' + this.props.data.id;
+            var entityurl = '/' + 'entity/' + this.props.data.id;
             var statusClass = '';
             if (this.props.data.status == 'untracked') {
                 statusClass = 'entity-untracked';
@@ -409,9 +410,9 @@ var EntityValue = React.createClass({
             }
             return (
                 <div className='flair_header'>
-                    <a href={entityurl} target="_blank">
+                    <Link to={entityurl} target="_blank">
                         Entity {this.props.data.id} 
-                    </a> 
+                    </Link> 
                     <div style={{display:'flex'}}>
                         <div className={statusClass}>
                             {this.props.data.status}
@@ -492,7 +493,7 @@ var EntityBody = React.createClass({
         var SelectedEntry = require('../detail/selected_entry.jsx');
         //PopOut available
         //var href = '/#/entity/' + this.props.entityid + '/' + this.props.type + '/' + this.props.id;
-        var href = '/#/entity/'+this.props.entityid;
+        var href = '/' + 'entity/'+this.props.entityid;
         return (
             <Tabs className='tab-content' defaultActiveKey={1} bsStyle='tabs'>
                 <Tab eventKey={1} className='entityPopUpButtons' title={this.state.appearances} style={{height:'100%'}}>
@@ -500,7 +501,7 @@ var EntityBody = React.createClass({
                     {entityEnrichmentLinkArr}
                     </div>
                     <div style={{maxHeight: '30vh', overflowY: 'auto'}}>
-                        <span><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><a href={href} style={{color:'#c400ff'}} target='_blank'>List truncated due to large amount of references. Click to view the whole entity</a></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton}/><br/>
+                        <span><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><Link to={href} style={{color:'#c400ff'}} target='_blank'>List truncated due to large amount of references. Click to view the whole entity</Link></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton}/><br/>
                     </div>
                     <hr style={{marginTop:'.5em', marginBottom:'.5em'}}/>
                     <div style={{maxHeight:'50vh', overflowY:'auto'}}>
@@ -864,15 +865,15 @@ var ReferencesBody = React.createClass({
             statusColor = 'black';
         }
         if (this.props.type == 'alert') {
-            aHref = '/#/alert/' + this.props.data.id;
+            aHref = '/' + this.props.type + '/' + this.props.data.id;
             //aHref = '/#/alertgroup/' + this.props.data.alertgroup;
-            promotedHref = '/#/event/' + this.props.data.promotion_id;
+            promotedHref = '/event/' + this.props.data.promotion_id;
         } else if (this.props.type == 'event') {
-            promotedHref = '/#/incident/' + this.props.data.promotion_id;
-            aHref = '/#/' + this.props.type + '/' + this.props.data.id;
+            promotedHref = '/incident/' + this.props.data.promotion_id;
+            aHref = '/' + this.props.type + '/' + this.props.data.id;
         }
         else {
-            aHref = '/#/' + this.props.type + '/' + this.props.data.id;
+            aHref = '/' + this.props.type + '/' + this.props.data.id;
         }
         if (subject == undefined) {
             if (this.props.data.data != undefined) {
@@ -893,7 +894,7 @@ var ReferencesBody = React.createClass({
             <tr id={trId}>
                 <td style={{textAlign:'center',cursor: 'pointer', verticalAlign: 'top'}} onClick={this.onClick} id={tdId}><i className="fa fa-eye fa-1" aria-hidden="true"></i></td>
                 {this.props.data.status == 'promoted' ? <td style={{paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}><Button bsSize='xsmall' bsStyle={'warning'} id={this.props.data.id} href={promotedHref} target="_blank" style={{lineHeight: '12pt', fontSize: '10pt', marginLeft: 'auto'}}>{this.props.data.status}</Button></td> : <td style={{color: statusColor, paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}>{this.props.data.status}</td>}
-                <td style={{paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}><a href={aHref} target="_blank">{this.props.data.id}</a></td>
+                <td style={{paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}><Link to={aHref} target="_blank">{this.props.data.id}</Link></td>
                 <td style={{paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}>{this.props.type}</td>
                 <td style={{paddingRight:'4px', paddingLeft:'4px', textAlign:'center', verticalAlign: 'top'}}>{this.props.data.entry_count}</td>
                 <td style={{paddingRight:'4px', paddingLeft:'4px', verticalAlign: 'top'}}>{subject}</td>
