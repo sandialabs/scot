@@ -94,5 +94,50 @@ sub get_sigbodies {
     return $bodies;
 }
 
+sub api_subthing {
+    my $self    = shift;
+    my $req     = shift;
+    my $thing   = $req->{collection};
+    my $id      = $req->{id} + 0;
+    my $subthing= $req->{subthing};
+    my $mongo   = $self->env->mongo;
+
+    $self->env->log->debug("api_subthing /$thing/$id/$subthing");
+
+    if ($subthing eq "entry") {
+        return $mongo->collection('Entry')->get_entries_by_target({
+            id      => $id,
+            type    => 'signature',
+        });
+    }
+
+    if ( $subthing eq "tag" ) {
+        my @appearances = map { $_->{apid} } 
+            $mongo->collection('Appearance')->find({
+                type    => 'tag', 
+                'target.type'   => 'signature',
+                'target.id'     => $id,
+            })->all;
+        return $mongo->collection('Tag')->find({
+            id => {'$in' => \@appearances}
+        });
+    }
+
+    if ( $subthing eq "source" ) {
+        my @appearances = map { $_->{apid} } 
+            $mongo->collection('Appearance')->find({
+                type    => 'source', 
+                'target.type'   => 'signature',
+                'target.id'     => $id,
+            })->all;
+        return $mongo->collection('Source')->find({
+            id => {'$in' => \@appearances}
+        });
+    }
+
+    die "unsupported signature subthing $subthing";
+
+}
+
 
 1;
