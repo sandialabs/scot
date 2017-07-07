@@ -1,5 +1,6 @@
 var React               = require('react')
 var Draggable           = require('react-draggable');
+var Link                = require('react-router-dom').Link;
 var type = ''
 var id = 0
 var sourceid = ''
@@ -152,9 +153,9 @@ var SearchDataEachRows = React.createClass({
         
         var rowClassName = 'search_result_row list-view-row'+rowEvenOdd;
         
-        var href = '/#/'+type+'/'+id;
+        var href = '/' + type+'/'+id;
         if (entryid != undefined) {
-            href = '/#/'+type+'/'+id+'/'+entryid;
+            href = '/' + type+'/'+id+'/'+entryid;
         }
 
         if (this.props.dataOne.highlight != undefined) {
@@ -171,7 +172,7 @@ var SearchDataEachRows = React.createClass({
         }
         return (
             <div key={Date.now()} className={rowClassName}>
-                <a href={href} style={{display:'flex'}}>
+                <Link to={href} style={{display:'flex'}}>
                     <span className='panel panel-default' style={{display:'flex', flexFlow:'column', borderColor: 'black', borderWidth:'thin', margin: '0px'}}>
                         <div className='panel-heading h4 search-heading'>
                             {type} {id} - {score}
@@ -180,7 +181,7 @@ var SearchDataEachRows = React.createClass({
                             <span className='container-fluid' style={{textAlign:'left', overflow:'hidden', textOverflow:'ellipsis', width: '600px'}}>{highlight}</span>
                         </div>
                     </span>
-                </a>
+                </Link>
             </div>
         )
         /*
