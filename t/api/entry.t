@@ -147,6 +147,15 @@ my $post_delete_updated = $t->tx->res->json->{update};
 
 ok( $pre_delete_updated != $post_delete_updated, "updated time was updated");
 
+$t  ->put_ok("/scot/api/v2/entry/$entry1" => json => {
+    body => "Updated Entry"
+})  ->status_is(200)
+    ->json_is('/status' => 'ok');
+
+$t  ->get_ok("/scot/api/v2/entry/$entry1")
+    ->status_is(200)
+    ->json_is('/body'   => 'Updated Entry');
+
   print Dumper($t->tx->res->json);
  done_testing();
  exit 0;

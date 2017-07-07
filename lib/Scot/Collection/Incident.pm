@@ -236,7 +236,7 @@ sub api_subthing {
     if ( $subthing eq "entry" ) {
         return $mongo->collection('Entry')->get_entries_by_target({
             id      => $id,
-            type    => 'event',
+            type    => 'incident',
         });
     }
 
