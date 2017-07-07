@@ -483,6 +483,40 @@ sub get_entries_on_alertgroups_alerts {
     return $cursor;
 }
 
+sub api_subthing {
+    my $self        = shift;
+    my $thing       = shift;
+    my $id          = shift;
+    my $subthing    = shift;
+    my $env         = $self->env;
+    my $mongo       = $env->mongo;
+    my $log         = $env->log;
+
+    $id += 0;
+
+    if ( $subthing eq "history" ) {
+        return $mongo->collection('History')
+                    ->find({
+                        'target.id'   => $id,
+                        'target.type' => 'entry'
+                    });
+    }
+    elsif ( $subthing eq "entity" ) {
+        my @lnk = map { $_->{entity_id} } 
+            $mongo->collection('Link')->get_links_by_target({
+                id  => $id, type => 'entry'
+            })->all;
+
+        return $mongo->collection('Entity')
+                ->find({id => { '$in' => \@lnk } });
+    }
+    elsif ( $subthing eq "file" ) {
+        return $mongo->collection('File')
+                    ->find({entry => $id});
+    }
+    die "unsupported subthing $subthing!";
+}
+
 override get_subthing => sub {
     my $self        = shift;
     my $thing       = shift;
