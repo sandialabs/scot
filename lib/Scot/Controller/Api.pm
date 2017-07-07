@@ -247,30 +247,12 @@ sub post_list_process {
         }
 
         $self->do_render({
-            records             => \@handler_records,
+            records             => \@records,
             queryRecordCount    => 1,
             totalRecordCount    => 1,
         });
         $self->audit("get_current_handler", $req_href);
         return;
-    }
-
-    #$match_ref   = $req_href->{request}->{params}->{match} // 
-    #               $req_href->{request}->{json}->{match};
-
-    $match_ref  = $self->build_match_ref($req_href->{request});    
-
-    if ( $col_name eq "apikey" and ! $self->user_is_admin) {
-        $match_ref->{username} = $user;
-    }
-
-    $log->debug("match_ref is ",{filter=>\&Dumper, value=>$match_ref});
-
-    if ( $tasksearch == 1 ) {
-        $match_ref->{'$or'} = [
-            {'task.status' => {'$exists' => 1} },
-            {'metadata.status' => {'$exists' => 1 } }
-        ];
     }
 
     # remove any fields that are excluded
@@ -463,19 +445,33 @@ sub download_file {
     return;
 }
 
-sub refresh_entiry_enrichments {
-    my $self    = shift;
-    my $object  = shift;
-    my $env     = $self->env;
-    my ($updates, 
-        $data)  = $env->enrichments->enrich($object);
-    
-    if ( $updates > 0 ) {
-        $object->update_set(data => $data);
-    }
-}
-
 =item B<get_subthing>
+
+This function is called for GETs to the API for objects related to 
+a given :thing :id, e.g.  /scot/api/v2/alergroup/123/alert will return
+an array of alerts that are part of alertgroup 123.
+
+It can have a JSON blob that specifies the "filter" to apply to the list
+as well as sorting, limit, and offset parameters.  The user's group membership
+also determines if anything is display, e.g.  unless the user has permission
+to read an object it will not appear in the list (change from 3.5.1)
+
+This function returns the following JSON to the http client
+    {
+        records : [
+            { JSON object },
+            ...
+        ],
+        queryRecordCount : number_of_rec_in_records_array,
+        totalRecordCount : number_of_matching_in_entire_db,
+
+    }
+
+This function does not emit any messages on the SCOT topic in activemq
+
+This function does not write any records to the history collection
+
+This function does not create any record to the audit collection
 
 =cut
 
@@ -622,7 +618,10 @@ sub update {
 sub update_permitted {
     my $self    = shift;
     my $object  = shift;
-    return $object->is_modifiable($self->session('groups'));
+    if ( $object->meta->does_role('Scot::Role::Permittable') ) {
+        return $object->is_modifiable($self->session('groups'));
+    }
+    return 1;
 }
 
 
@@ -633,14 +632,15 @@ sub pre_update_process {
     my $mongo   = $self->env->mongo;
 
     my $usersgroups = $self->session('groups');
+
     if ( ref($object) eq "Scot::Model::Apikey" ) {
-	my $updated_groups = [];
-	foreach my $g ($req_href->{groups}) {
+        my $updated_groups = [];
+        foreach my $g ($req->{groups}) {
             if ( grep {/$g/} @$usersgroups ) {
                 push @$updated_groups, $g;
             }
         }
-        $req_href->{groups} = $updated_groups;
+        $req->{groups} = $updated_groups;
     }
 
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
@@ -726,12 +726,18 @@ sub promote {
             id      => $promotion_obj->id,
         }
     });
+    my $type = $object->get_collection_name;
+    my $id   = $object->id;
+    if ( $type eq "alert" ) {
+        $type   = "Alertgroup";
+        $id     = $object->alertgroup;
+    }
     $env->mq->send("scot", {
         action  => "updated",
         data    => {
             who     => $user,
-            type    => $object->get_collection_name,
-            id      => $object->id,
+            type    => $type,
+            id      => $id,
         }
     });
 
@@ -1128,6 +1134,14 @@ sub post_delete_process {
         handler => $self,
         object  => $object,
     };
+    $self->env->mq->send("scot",{
+        action  => "deleted",
+        data    => {
+            type    => $object->get_colection_name,
+            id      => $object->id,
+            who     => $self->session('user'),
+        }
+    });
     $self->env->mongo->collection('Audit')->create_audit_rec($audit_rec);
     $self->env->mongo->collection('Stat')->put_stat($object->get_collection_name." deleted", 1);
 }
@@ -1153,11 +1167,14 @@ sub delete_not_permitted {
     my $object  = shift;
     my $users_groups    = $self->session('groups');
 
-    if ( $object->is_modifiable($users_groups) ) {
-        return undef;
+    if ($object->meta->does_role('Scot::Role::Permittable')) {
+        if ( $object->is_modifiable($users_groups) ) {
+            return undef;
+        }
+        $self->modify_not_permitted_error($object, $users_groups);
+        return 1;
     }
-    $self->modify_not_permitted_error($object, $users_groups);
-    return 1;
+    return undef;
 }
 
 sub id_is_invalid {
@@ -1465,6 +1482,9 @@ sub whoami {
     if ( defined ( $userobj )  ) {
         $userobj->update_set(lastvisit => $env->now);
         my $user_href   = $userobj->as_hash;
+        if ( $env->is_admin($user_href->{username}, $self->session('groups'))){
+            $user_href->{is_admin} = 1;
+        }
         # TODO:  move this to config file?
         # placed here initially for convenience but not very logical
         # since it has nothing to do with the user

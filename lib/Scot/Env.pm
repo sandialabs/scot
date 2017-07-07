@@ -331,4 +331,14 @@ sub get_config_item {
     return undef;
 }
 
+sub is_admin {
+    my $self        = shift;
+    my $user        = shift;
+    my $groups      = shift;
+    my $admin_group = $self->admin_group;
+
+    return undef if (! defined $admin_group);
+    return grep { /$admin_group/ } @$groups;
+}
+
 1;
