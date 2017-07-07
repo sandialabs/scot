@@ -802,5 +802,14 @@ sub get_apikey {
     });
 }
 
+sub do_render {
+    my $self    = shift;
+    my $code    = 200;
+    my $href    = shift;
+    $self->render(
+        status  => $code,
+        json    => $href,
+    );
+}
 
 1;
