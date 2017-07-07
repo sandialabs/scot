@@ -376,7 +376,7 @@ var SignatureMetaData = React.createClass({
                         </span>
                         <span className='signatureTableWidth'>
                             <OverlayTrigger trigger='focus' placement='bottom' overlay={<Popover id='sigversionpicker'><ButtonGroup vertical>{sigBodyVersionArray}</ButtonGroup></Popover>}>
-                                <input id={this.state.inputArrayType[i]} onChange={this.InputChange} value={value} onBlur={this.submitMetaData}/>
+                                <input id={this.state.inputArrayType[i]} onChange={this.InputChange} value={value} />
                             </OverlayTrigger>  
                         </span>
                         {productionNewerVersionExists == true && this.state.inputArrayType[i] == 'prod_sigbody_id' ? <div style={{color:'red'}}>A higher signature body version exists, do you want to apply it?</div> : null }
