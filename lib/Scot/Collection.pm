@@ -515,7 +515,9 @@ sub api_list {
 
     my $match   = $self->build_match_ref($href->{request});
 
-    $match->{'groups.read'} = { '$in' => $groups };
+    if ( ref($self) ne "Scot::Collection::Group" ) {
+        $match->{'groups.read'} = { '$in' => $groups };
+    }
 
     if ( $href->{task_search} ) {
         $match->{'task.status'}     = {'$exists'    => 1};
@@ -637,10 +639,14 @@ sub api_update {
     my %update  = $self->env->mongoquerymaker->build_update_command($req);
 
     foreach my $key (keys %update) {
+        my $old = '';
+        if ( $object->meta->has_attribute($key) ) {
+            $old    = $object->$key;
+        }
         push @uprecs, {
             what        => "update",
             attribute   => $key,
-            old_value   => $object->$key,
+            old_value   => $old,
             new_value   => $update{$key},
         };
     }

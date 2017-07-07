@@ -54,4 +54,43 @@ sub autocomplete {
     return wantarray ? @records : \@records;
 }
 
+sub api_list {
+    my $self    = shift;
+    my $href    = shift;
+    my $user    = shift;
+    my $groups  = shift;
+
+    my $match   = $self->build_match_ref($href->{request});
+
+    my $cursor  = $self->find($match);
+    my $total   = $cursor->count;
+
+    unless ( $self->env->is_admin($user,$groups) ) {
+        $cursor->fields({
+            id          => 1,
+            username    => 1,
+        });
+    }
+
+    if ( my $limit = $self->build_limit($href)) {
+        $cursor->limit($limit);
+    }
+    else {
+        $cursor->limit(50);
+    }
+
+    if ( my $sort   = $self->build_sort($href)) {
+        $cursor->sort($sort);
+    }
+    else {
+        $cursor->sort({id => -1});
+    }
+
+    if ( my $offset = $self->build_offset($href) ) {
+        $cursor->skip($offset);
+    }
+
+    return ($cursor, $total);
+}
+
 1;
