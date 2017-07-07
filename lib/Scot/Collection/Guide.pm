@@ -77,6 +77,33 @@ sub api_subthing {
             type    => 'guide',
         });
     }
+
+    if ( $subthing eq "entity" )  {
+        my @links   = map { $_->{entity_id} }
+            $mongo->collection('Link')->get_links_by_target({
+                id      => $id,
+                type    => 'guide',
+            })->all;
+        return $mongo->collection('Entity')->find({
+            id => { '$in' => \@links }
+        });
+    }
+
+    if ( $subthing eq "history" ) {
+        return $mongo->collection('History')->find({
+            'target.id'   => $id,
+            'target.type' => 'guide'
+        });
+    }
+
+    if ( $subthing eq "file" ) {
+        return $mongo->collection('File')->find({
+            'entry_target.id'     => $id,
+            'entry_target.type'   => 'guide',
+        });
+    }
+
+    die "unsupported guide subthing $subthing";
 }
 
 sub autocomplete {
