@@ -323,7 +323,7 @@ var SelectedHeaderOptions = React.createClass({
                     {type != 'entity' ? <Button eventKey="1" bsStyle='success' onClick={this.props.entryToggle} bsSize='xsmall'><i className="fa fa-plus-circle" aria-hidden="true"></i> Add Entry</Button> : null }
                     {type != 'entity' ? <Button eventKey="2" onClick={this.props.fileUploadToggle} bsSize='xsmall'><i className="fa fa-upload" aria-hidden="true"></i> Upload File</Button> : null }
                     <Button eventKey="3" onClick={this.toggleFlair} bsSize='xsmall'><i className="fa fa-eye-slash" aria-hidden="true"></i> Toggle Flair</Button>
-                    <Button eventKey="4" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button>
+                    {type == 'alertgroup' || type == 'event' || type == 'intel' ? <Button eventKey="4" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button> : null}
                     <Button eventKey="5" onClick={this.props.changeHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> {subjectType} History</Button>
                     <Button eventKey="6" onClick={this.props.permissionsToggle} bsSize='xsmall'><i className="fa fa-users" aria-hidden="true"></i> Permissions</Button>
                     <Button eventKey="7" onClick={this.props.entitiesToggle} bsSize='xsmall'><span className='entity'>__</span> View Entities</Button>
@@ -344,7 +344,7 @@ var SelectedHeaderOptions = React.createClass({
                         {this.props.guideID == null ? null : <span>{this.props.guideID != 0 ? <Button eventKey='3' onClick={this.guideToggle} bsSize='xsmall'><img src='/images/guide.png'/> Guide</Button> : <Button eventKey='3' onClick={this.createGuide} bsSize='xsmall'><img src='/images/guide.png'/> Create Guide</Button>}</span>}
                         <Button eventKey='4' onClick={this.props.sourceToggle} bsSize='xsmall'><img src='/images/code.png'/> View Source</Button> 
                         <Button eventKey='5' onClick={this.props.entitiesToggle} bsSize='xsmall'><span className='entity'>__</span> View Entities</Button>
-                        <Button eventKey="6" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button>
+                        {type == 'alertgroup' || type == 'event' || type == 'intel' ? <Button eventKey="6" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button> : null}
                         <Button eventKey='7' onClick={this.props.changeHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> {subjectType} History</Button>
                         
                         <Button eventKey='8' onClick={this.alertOpenSelected} bsSize='xsmall' bsStyle='danger'><img src='/images/open.png'/> Open Selected</Button>
@@ -368,7 +368,7 @@ var SelectedHeaderOptions = React.createClass({
                         {this.props.guideID == null ? null : <span>{this.props.guideID != 0 ? <Button eventKey='3' onClick={this.guideToggle} bsSize='xsmall'><img src='/images/guide.png'/> Guide</Button> : <Button eventKey='3' onClick={this.createGuide} bsSize='xsmall'><img src='/images/guide.png'/> Create Guide</Button>}</span>}
                         <Button eventKey='4' onClick={this.props.sourceToggle} bsSize='xsmall'><img src='/images/code.png'/> View Source</Button> 
                         <Button eventKey='5' onClick={this.props.entitiesToggle} bsSize='xsmall'><span className='entity'>__</span> View Entities</Button>
-                        <Button eventKey="6" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button>
+                        {type == 'alertgroup' || type == 'event' || type == 'intel' ? <Button eventKey="6" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button> : null}
                         <Button eventKey='7' onClick={this.props.changeHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> {subjectType} History</Button>
                         <Button bsSize='xsmall' onClick={this.createLinkSignature}><i className="fa fa-pencil" aria-hidden="true"></i> Create & Link Signature</Button>
                         <Button bsStyle='danger' eventKey="8" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button>
