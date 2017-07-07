@@ -23,6 +23,7 @@ var Notification            = require('react-notification-system');
 var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx');
+var Link                    = require('react-router-dom').Link;
 var InitialAjaxLoad;
 
 var SelectedHeader = React.createClass({
@@ -675,9 +676,9 @@ var EntryDataStatus = React.createClass({
         }
 
         if (this.props.type == 'event') {
-            href = '/#/incident/' + this.props.data.promotion_id;
+            href = '/incident/' + this.props.data.promotion_id;
         } else if (this.props.type == 'intel') {
-            href = '/#/event/' + this.props.data.promotion_id;
+            href = '/event/' + this.props.data.promotion_id;
         }
         
         if (this.props.type == 'guide' || this.props.type == 'intel') {
@@ -717,7 +718,7 @@ var EntryDataStatus = React.createClass({
         } else {
             return (
                 <div>
-                    {this.state.buttonStatus == 'promoted' ? <a href={href} role='button' className={'btn btn-warning'}>{this.state.buttonStatus}</a>:
+                    {this.state.buttonStatus == 'promoted' ? <Link to={href} role='button' className={'btn btn-warning'}>{this.state.buttonStatus}</Link>:
                         <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.state.buttonStatus}>
                             <MenuItem eventKey='1' onClick={this.openAll}>Open</MenuItem>
                             <MenuItem eventKey='2' onClick={this.closeAll}>Close</MenuItem>
@@ -830,8 +831,8 @@ var PromotedData = React.createClass({
         //makes large array for modal
         for (var i=0; i < this.props.data.length; i++) {
             if (i > 0) {fullarr.push(<div> , </div>)}
-            var link = '/#/' + promotedFromType + '/' + this.props.data[i];
-            fullarr.push(<div key={this.props.data[i]}><a href={link}>{this.props.data[i]}</a></div>)
+            var link = '/' + promotedFromType + '/' + this.props.data[i];
+            fullarr.push(<div key={this.props.data[i]}><Link to={link}>{this.props.data[i]}</Link></div>)
         }
         //makes small array for quick display in header
         if (this.props.data.length < 3 ) {
@@ -839,8 +840,8 @@ var PromotedData = React.createClass({
         }
         for (var i=0; i < shortforlength; i++) {
             if (i > 0) {shortarr.push(<div> , </div>)}
-            var link = '/#/' + promotedFromType + '/' + this.props.data[i];
-            shortarr.push(<div key={this.props.data[i]}><a href={link}>{this.props.data[i]}</a></div>)
+            var link = '/' + promotedFromType + '/' + this.props.data[i];
+            shortarr.push(<div key={this.props.data[i]}><Link to={link}>{this.props.data[i]}</Link></div>)
         } 
         if (this.props.data.length > 3) {shortarr.push(<div onClick={this.showAllPromotedDataToggle}>,<a href='javascript:;'>...more</a></div>)}
         return (
