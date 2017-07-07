@@ -287,7 +287,7 @@ var SelectedHeaderOptions = React.createClass({
         $.ajax({
             type: 'POST',
             url: '/scot/api/v2/signature',
-            data: JSON.stringify({target: {id:this.props.id, type: this.props.type}, name: 'Name your Signature', status: 'disabled', type: ''}),
+            data: JSON.stringify({target: {id:this.props.id, type: this.props.type}, name: 'Name your Signature', status: 'disabled'}),
             contentType: 'application/json; charset=UTF-8',
         }).success(function(response) {
             const url = '/#/signature/'+response.id;
