@@ -41,6 +41,7 @@ has name  => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
+    default     => 'new sig',
 );
 
 =item B<type>
@@ -51,8 +52,9 @@ the type of signature: yara, extractor, sourcefire, pipeline, etc.
 
 has type    => (
     is          => 'ro',
-    isa         => 'Str',
+    isa         => 'Maybe[Str]',
     required    => 1,
+    default     => ' ',
 );
 
 =item B<status>

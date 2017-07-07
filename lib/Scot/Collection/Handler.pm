@@ -61,8 +61,6 @@ override api_list => sub {
         return ($cursor, $cursor->count);
     }
 
-    $match->{'groups.read'} = { '$in' => $groups };
-
     $self->env->log->debug("match is ",{filter=>\&Dumper, value=>$match});
 
     my $cursor  = $self->find($match);
