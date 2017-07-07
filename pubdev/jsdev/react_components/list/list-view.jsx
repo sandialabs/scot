@@ -35,25 +35,37 @@ module.exports = React.createClass({
         var columns = [];
         var columnsClassName = [];
         var showSelectedContainer = false;
+        var sort = {'id':-1};
+        var activepage = {page:0, limit:50};
+        var filter;
         width = 650
         
         columnsDisplay = listColumnsJSON.columnsDisplay[this.props.type];
         columns = listColumnsJSON.columns[this.props.type];
         columnsClassName = listColumnsJSON.columnsClassName[this.props.type];
         
+        if (this.props.listViewSort != null) {
+            sort = JSON.parse(this.props.listViewSort)
+        } 
+        if (this.props.listViewPage != null) {
+            activepage = JSON.parse(this.props.listViewPage);
+        }
+        if (this.props.listViewFilter != null) {
+            filter = JSON.parse(this.props.listViewFilter);
+        }
         if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; alertPreSelectedId=id;};
 
         return {
             splitter: true, 
             selectedColor: '#AEDAFF',
-            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: this.props.listViewPage,
+            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: activepage,
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             alldetail : true, viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
             resize: 'horizontal',createdarrow: [0, 0], sourcearrow:[0, 0],tagsarrow: [0, 0],
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: [], listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.listViewSort, filter: this.props.listViewFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, };
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: [], listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, };
     },
     componentWillMount: function() {
         if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
@@ -63,22 +75,7 @@ module.exports = React.createClass({
         } else if (this.props.viewMode == 'portrait') {
             this.Portrait();
         }
-        if (this.state.sort != null) {
-            var sort = JSON.parse(this.state.sort)
-            this.setState({sort:sort}); 
-        } else {
-            this.setState({sort:{'id':-1}});
-        }
-        if (this.state.activepage != null) {
-            var activepage = JSON.parse(this.state.activepage);
-            this.setState({activepage:activepage});
-        } else{
-            this.setState({activepage: {page:0, limit:50}});
-        }
-        if (this.state.filter != null) {
-            var filter = JSON.parse(this.state.filter);
-            this.setState({filter:filter}); 
-        }
+        
     },
     componentDidMount: function(){
         var height = this.state.scrollheight
@@ -348,6 +345,13 @@ module.exports = React.createClass({
             }
         }
     },
+    componentWillReceiveProps: function(nextProps) {
+        if ( nextProps.id == undefined ) {
+            this.setState({type: nextProps.type, id:null, showSelectedContainer: false, scrollheight: $(window).height() - 170});
+        } else if (nextProps.id != this.props.id) {
+            this.setState({type: nextProps.type, id: nextProps.id});
+        }
+    },
 
     stopdrag: function(e){
         $('iframe').each(function(index,ifr){
@@ -427,14 +431,20 @@ module.exports = React.createClass({
     },
     selected: function(type,rowid,taskid){
         if (taskid == null) {
-            window.history.pushState('Page', 'SCOT', '/#/' + type +'/'+rowid)  
-            this.launchEvent(type, rowid)
+            //window.history.pushState('Page', 'SCOT', '/#/' + type +'/'+rowid)  
+            this.props.history.push( '/' + type + '/' + rowid );
+            //this.launchEvent(type, rowid)
         } else {
             //If a task, swap the rowid and the taskid
-            window.history.pushState('Page', 'SCOT', '/#/' + type + '/' + taskid + '/' + rowid)
-            this.launchEvent(type, taskid, rowid);
+            //window.history.pushState('Page', 'SCOT', '/#/' + type + '/' + taskid + '/' + rowid)
+            this.props.history.push( '/' + type + '/' + taskid + '/' + rowid );
+            //this.launchEvent(type, taskid, rowid);
         }
-        //scrolled = $('.list-view-data-div').scrollTop() 
+        //scrolled = $('.list-view-data-div').scrollTop()
+        if(this.state.display == 'block'){
+            this.state.scrollheight = '25vh'
+        }
+        this.setState({alertPreSelectedId: 0, scrollheight: this.state.scrollheight, showSelectedContainer: true })
     },
     getNewData: function(page, sort, filter){
         this.setState({loading:true}); //display loading opacity
@@ -667,7 +677,7 @@ module.exports = React.createClass({
     createNewThing: function(){
     var data;
     if (this.props.type == 'signature') {
-        data = JSON.stringify({name:'Name your Signature', status: 'disabled', type:''});   
+        data = JSON.stringify({name:'Name your Signature', status: 'disabled'});   
     } else {
         data = JSON.stringify({subject: 'No Subject'});
     }
@@ -676,8 +686,9 @@ module.exports = React.createClass({
             url: '/scot/api/v2/'+this.props.type,
             data: data
         }).success(function(response){
-            this.launchEvent(this.props.type,response.id)
-            window.history.pushState('Page', 'SCOT', '/#/'+this.props.type+'/'+response.id);
+            this.props.history.push( '/' + this.props.type + '/' + response.id );
+            //this.launchEvent(this.props.type,response.id)
+            //window.history.pushState('Page', 'SCOT', '/#/'+this.props.type+'/'+response.id);
         }.bind(this))
     }, 
 });
