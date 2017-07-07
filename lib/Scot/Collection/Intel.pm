@@ -68,6 +68,70 @@ sub create_from_api {
 
 }
 
+sub api_subthing {
+    my $self    = shift;
+    my $req     = shift;
+    my $thing   = $req->{collection};
+    my $id      = $req->{id} + 0;
+    my $subthing= $req->{subthing};
+    my $mongo   = $self->env->mongo;
+
+    if ( $subthing eq "entry" ) {
+        return $mongo->collection('Entry')->get_entries_by_target({
+            id      => $id,
+            type    => 'intel',
+        });
+    }
+
+    if ( $subthing eq "entity" ) {
+        my @links   = map { $_->{entity_id} } 
+                      $mongo->collection('Link')->get_links_by_target({
+                        id => $id, type => 'intel'
+                      })->all;
+        return $mongo->collection('Entity')->find({id=>{'$in'=> \@links}});
+    }
+
+    if ( $subthing eq "tag" ) {
+        my @appearances = map { $_->{apid} } 
+            $mongo->collection('Appearance')->find({
+                type    => 'tag', 
+                'target.type'   => 'intel',
+                'target.id'     => $id,
+            })->all;
+        return $mongo->collection('Tag')->find({
+            id => {'$in' => \@appearances}
+        });
+    }
+
+    if ( $subthing eq "source" ) {
+        my @appearances = map { $_->{apid} } 
+            $mongo->collection('Appearance')->find({
+                type    => 'source', 
+                'target.type'   => 'intel',
+                'target.id'     => $id,
+            })->all;
+        return $mongo->collection('Source')->find({
+            id => {'$in' => \@appearances}
+        });
+    }
+
+    if ( $subthing eq "history" ) {
+        my $col = $mongo->collection('History');
+        my $cur = $col->find({'target.id'   => $id,
+                              'target.type' => 'intel',});
+        return $cur;
+    }
+    if ( $subthing eq "file" ) {
+        my $col = $mongo->collection('File');
+        my $cur = $col->find({
+            'entry_target.type' => 'intel',
+            'entry_target.id'   => $id,
+        });
+        return $cur;
+    }
+    die "Unsupported intel subthing $subthing";
+}
+
 override get_subthing => sub {
     my $self        = shift;
     my $thing       = shift;

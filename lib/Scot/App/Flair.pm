@@ -216,9 +216,11 @@ sub run {
 
 sub process_message {
     my $self    = shift;
-    my $action  = shift;
-    my $type    = shift;
+    my $action  = lc(shift);
+    my $type    = lc(shift);
     my $id      = shift;
+
+    $id += 0;
 
     $self->log->debug("Processing Message: $action $type $id");
 
