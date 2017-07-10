@@ -686,7 +686,8 @@ module.exports = React.createClass({
             url: '/scot/api/v2/'+this.props.type,
             data: data
         }).success(function(response){
-            this.props.history.push( '/' + this.props.type + '/' + response.id );
+            this.selected(this.props.type, response.id);
+            //this.props.history.push( '/' + this.props.type + '/' + response.id );
             //this.launchEvent(this.props.type,response.id)
             //window.history.pushState('Page', 'SCOT', '/#/'+this.props.type+'/'+response.id);
         }.bind(this))
