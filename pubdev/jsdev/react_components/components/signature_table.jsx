@@ -294,11 +294,14 @@ var SignatureMetaData = React.createClass({
     getInitialState: function() {
         var inputArrayType = ['description','type', 'prod_sigbody_id','qual_sigbody_id', 'signature_group', 'target']
         var inputArrayTypeDisplay = ['Description','Type', 'Production Signature Body Version','Quality Signature Body Version', 'Signature Group', 'Target'] 
-        var target = this.props.signatureData.target;
+        var target = {};
         if (this.props.signatureData.target == undefined) {
             target = {};
-            target['id'] = null;
-            target['type'] = null;
+            target['target.id'] = null;
+            target['target.type'] = null;
+        } else {
+            target['target.id'] = this.props.signatureData.target.id;
+            target['target.type'] = this.props.signatureData.target.type;
         }
         return {
             descriptionValue: this.props.signatureData.description,
@@ -387,11 +390,11 @@ var SignatureMetaData = React.createClass({
                     <div className='col-lg-2 col-md-4'> 
                         <span className='signatureTableWidth'>Reference Type: </span>
                         <span className='signatureTableWidth'>
-                            <input id={'target.type'} onChange={this.TargetInputChange} value={this.state.target.type} placeholder={'event, intel, entry... (only type one)'} onBlur={this.submitMetaData}/>
+                            <input id={'target.type'} onChange={this.TargetInputChange} value={this.state.target['target.type']} placeholder={'event, intel, entry... (only type one)'} onBlur={this.submitMetaData}/>
                         </span>
                         <span className='signatureTableWidth'>Reference ID: </span>
                         <span className='signatureTableWidth'>
-                            <input id={'target.id'} onChange={this.TargetInputChange} value={this.state.target.id} placeholder={'ID of above'} onBlur={this.submitMetaData}/>
+                            <input id={'target.id'} onChange={this.TargetInputChange} value={this.state.target['target.id']} placeholder={'ID of above'} onBlur={this.submitMetaData}/>
                         </span>
                     </div>
                 )
