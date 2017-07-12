@@ -33,6 +33,11 @@
     min-width:100px;
 }
 
+.body_plain-list-header-column {
+    flex-grow: 1;
+    min-width:200px;
+}
+
 .subject-list-header-column {
     flex-grow: 1;
     min-width:200px;
