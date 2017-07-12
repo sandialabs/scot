@@ -122,6 +122,8 @@ var ListViewDataEachColumn = React.createClass({
         }
         if (this.props.columnsOne == 'status') {
             dataRender = <ListViewStatus dataOneRow={dataOneRow} status={dataRender} type={this.props.type} />       
+        } else if (this.props.columnsOne == 'body_plain') {
+            dataRender = columnsOne.split('.').reduce(this.obj, dataOneRow).substring(0,120);
         }
         return (
             <td className={className}>
