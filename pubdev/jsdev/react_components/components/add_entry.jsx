@@ -110,7 +110,7 @@ var AddEntryModal = React.createClass({
                                             }
 
                                             editor.addButton('customBlockquote', {
-                                                text: '500px max-height div',
+                                                text: '500px max-height blockquote',
                                                 //image: 'http://p.yusukekamiyamane.com/icons/search/fugue/icons/calendar-blue.png',
                                                 tooltip: "Insert a 500px max-height div (blockquote)",
                                                 onclick: insertBlockquote
