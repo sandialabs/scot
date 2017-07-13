@@ -53,12 +53,16 @@ pre {
    border-radius: 4px;
 }
 
+p {
+    word-wrap: break-word;
+}
+
 blockquote {
-    height: 500px;
+    max-height: 500px;
     overflow-y: auto;
     display: inline-flex;
-    /*background: #DCE9FB;*/
     background-color: #f5f5f5;
+    width: 90%;
 }
 
 .alertTableHorizontal {
