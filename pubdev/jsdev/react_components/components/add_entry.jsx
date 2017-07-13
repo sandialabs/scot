@@ -8,6 +8,8 @@ var Link        = require('react-router-dom').Link;
 
 var recently_updated = 0
 
+var customButton = {};
+
 var AddEntryModal = React.createClass({
 	getInitialState: function(){
         var key = new Date();
@@ -36,6 +38,7 @@ var AddEntryModal = React.createClass({
             }
         }
 	},
+
 	componentDidMount: function(){
         if (this.props.entryAction == 'Edit') {
             $.ajax({
@@ -56,9 +59,11 @@ var AddEntryModal = React.createClass({
             $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.state.key).position().top)
         }
     },
+
     shouldComponentUpdate: function() {
         return false; //prevent updating this component because it causes the page container to scroll upwards and lose focus due to a bug in paste_preprocess. If this is removed it will cause abnormal scrolling. 
     },
+
 	render: function() {
         var not_saved_entry_id = 'not_saved_entry_'+this.state.key
             return (
@@ -72,7 +77,47 @@ var AddEntryModal = React.createClass({
                                 </span>
                             </div>
                         </div>
-                        {this.state.asyncContentLoaded ? <TinyMCE id={this.state.tinyID} content={this.state.content} className={'inputtext'} config={{auto_focus:this.state.tinyID, selector: 'textarea', plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools', table_clone_elements: "strong em b i font h1 h2 h3 h4 h5 h6 p div", paste_retain_style_properties: 'all', paste_data_images:true, paste_preprocess: function(plugin, args) { function replaceA(string) { return string.replace(/<(\/)?a([^>]*)>/g, '<$1span$2>') }; args.content = replaceA(args.content) + ' '; },relative_urls: false, remove_script_host:false, link_assume_external_targets:true, toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime', theme:'modern', content_css:'/css/entryeditor.css', height:250}} /> :
+                        {this.state.asyncContentLoaded ? 
+                            <TinyMCE 
+                                id={this.state.tinyID} 
+                                content={this.state.content} 
+                                className={'inputtext'} 
+                                config={
+                                    {
+                                        auto_focus:this.state.tinyID, 
+                                        selector: 'textarea', 
+                                        plugins: 'advlist lists link image charmap print preview hr anchor pagebreak searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking save table directionality emoticons template paste textcolor colorpicker textpattern imagetools', 
+                                        table_clone_elements: "strong em b i font h1 h2 h3 h4 h5 h6 p div", 
+                                        paste_retain_style_properties: 'all', 
+                                        paste_data_images:true, 
+                                        paste_preprocess: function(plugin, args) { function replaceA(string) { return string.replace(/<(\/)?a([^>]*)>/g, '<$1span$2>') }; args.content = replaceA(args.content) + ' '; },
+                                        relative_urls: false, 
+                                        remove_script_host:false, 
+                                        link_assume_external_targets:true, 
+                                        toolbar1: 'full screen spellchecker | undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | forecolor backcolor fontsizeselect fontselect formatselect | blockquote code link image insertdatetime | customBlockquote', 
+                                        theme:'modern', 
+                                        content_css:'/css/entryeditor.css', 
+                                        height:250,
+                                        setup: function(editor) {
+                                            
+                                            function blockquote() {
+                                                return '<blockquote><p><br></p></blockquote>';
+                                            }
+                                            
+                                            function insertBlockquote() {
+                                                var html = blockquote();
+                                                editor.insertContent(html);
+                                            }
+
+                                            editor.addButton('customBlockquote', {
+                                                text: '500px max-height div',
+                                                //image: 'http://p.yusukekamiyamane.com/icons/search/fugue/icons/calendar-blue.png',
+                                                tooltip: "Insert a 500px max-height div (blockquote)",
+                                                onclick: insertBlockquote
+                                            });
+                                        }
+                                    }
+                                } /> :
                         <div>Loading Editor...</div> 
                         }
                     </div> 
@@ -80,12 +125,14 @@ var AddEntryModal = React.createClass({
                 </div>
             )
     },
+
     onCancel: function(){
         this.setState({ leaveCatch: false });
         this.props.addedentry()
         this.setState({change:false})
     },
-	submit: function(){
+	
+    submit: function(){
         if($('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").text() == "" && $('#' + this.state.key + '_ifr').contents().find("#tinymce").find('img').length == 0) {
             alert("Please Add Some Text")
         }
