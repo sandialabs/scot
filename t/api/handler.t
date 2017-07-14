@@ -48,7 +48,6 @@ $t  ->get_ok("/scot/api/v2/handler?current=1")
     ->status_is(200)
     ->json_is('/records/0/username' => 'tbruner');
 
-
 print "Current Epoch is : ". $env->now()."\n";
 print "\n Sleeping for 11 secods\n";
 sleep 11;
@@ -70,7 +69,7 @@ $t  ->get_ok("/scot/api/v2/handler?current=$tt")
     ->json_is('/records/0/username' => 'tbruner')
     ->json_is('/records/1/username' => 'foobar');
 
-# print Dumper($t->tx->res->json);
+ print Dumper($t->tx->res->json);
  done_testing();
  exit 0;
 

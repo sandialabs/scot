@@ -26,6 +26,10 @@ $t  ->post_ok  ('/scot/api/v2/event'  => json => {
         subject => "Test Event 1",
         source  => ["firetest"],
         status  => 'open',
+        groups      => {
+            read    => \@defgroups,
+            modify  => \@defgroups,
+        },
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
@@ -40,6 +44,10 @@ $t  ->post_ok('/scot/api/v2/incident' => json => {
         sensitivity => 'very',
         occurred    => 1444309925,
         discovered    => 1444319925,
+        groups      => {
+            read    => \@defgroups,
+            modify  => \@defgroups,
+        },
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
@@ -53,9 +61,22 @@ $t  ->get_ok("/scot/api/v2/incident/$incident1")
     ->json_is('/occurred'   => 1444309925)
     ->json_is('/events/0'   => $event_id);
 
+$t  ->post_ok('/scot/api/v2/entry'  => json => {
+        body        => "incident entry one",
+        target_id   => $incident1,
+        target_type => 'incident',
+    })
+    ->status_is(200)
+    ->json_is('/status' => 'ok');
+
+$t  ->get_ok("/scot/api/v2/incident/$incident1/entry")
+    ->status_is(200)
+    ->json_is('/records/0/body'   => "incident entry one")
+    ->json_is('/records/0/target/id'  => 1)
+    ->json_is('/records/0/target/type'    => 'incident');
 
 
-#  print Dumper($t->tx->res->json);
+ print Dumper($t->tx->res->json);
  done_testing();
  exit 0;
 

@@ -52,12 +52,13 @@ sub create_from_api {
 
 }
 
-sub get_tag_completion { 
+
+sub autocomplete { 
     my $self    = shift;
     my $string  = shift;
     my @results = ();
     my $cursor  = $self->find({
-        value    => /$string/
+        value    => /$string/i
     });
     @results    = map { $_->value } $cursor->all;
     return wantarray ? @results : \@results;
@@ -78,7 +79,7 @@ sub add_tag_to {
         $tags   = [ $tags ];
     }
 
-    $log->debug("Add_tag_to $thing:$id => ".join(',',@$tags));
+    $log->debug("Add_tag_to     $thing:$id => ".join(',',@$tags));
 
     $thing = lc($thing);
 
