@@ -24,6 +24,46 @@ Create Signature from POST to API
 
 =cut
 
+override api_create => sub {
+    my $self    = shift;
+    my $request = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    $log->debug("Creating Signature from POST to API");
+    $log->debug(Dumper($request));
+
+    my $user        = $request->{user};
+    my $json        = $request->{request}->{json};
+    $json->{owner}  = $user;
+    my @tags        = $env->get_req_array($json, "tags");
+    my @sources     = $env->get_req_array($json, "sources");
+
+    $log->debug("json is ". Dumper($json));
+    
+    my $signature   = $self->create($json);
+
+    unless ( $signature ) {
+        $log->error("Error creating Signature from ",
+                    { filter => \&Dumper, value => $request });
+        return undef;
+    }
+
+    my $id  = $signature->id;
+
+    if ( scalar(@sources) > 0 ) {
+        my $col = $env->mongo->collection('Source');
+        $col->add_source_to("signature", $id, \@sources);
+    }
+    if ( scalar(@tags) > 0 ) {
+        my $col = $env->mongo->collection('Tag');
+        $col->add_source_to("signature", $id, \@tags);
+    }
+
+    return $signature;
+};
+
+
 sub create_from_api {
     my $self    = shift;
     my $request = shift;

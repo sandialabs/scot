@@ -667,5 +667,16 @@ sub update_alertgroup_with_bundled_alert {
     }
 }
 
+sub get_subject {
+    my $self    = shift;
+    my $agid    = shift;
+
+    my $agobj   = $self->find_iid($agid);
+    if (defined $agobj) {
+        return $agobj->subject;
+    }
+    die "Can't find Alertgroup $agid";
+}
+
 1;
 

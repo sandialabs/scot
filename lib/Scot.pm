@@ -322,14 +322,14 @@ relies on the browser BasicAuth popup.
 @apiGroup File
 @apiVersion 2.0.0
 @apiDescription Upload a file to the SCOT system
-@apiParam {File} upload     User selected file to upload
+@apiParam {Object} - JSON of File Record.  set "sendto" attribute
 
 =cut
 
     $scot   ->route ('/api/v2/file')
             ->via   ('post')
-            ->to    ('controller-file#upload')
-            ->name  ('create');
+            ->to    ('controller-file#update')
+            ->name  ('update');
 
 =pod
 
@@ -338,7 +338,6 @@ relies on the browser BasicAuth popup.
 @apiGroup Auth
 @apiVersion 2.0.0
 @apiDescription Create an apikey and return it to a user
-@apiParam {none}
 
 =cut
 
@@ -346,6 +345,22 @@ relies on the browser BasicAuth popup.
             ->via   ('post')
             ->to    ('controller-auth#get_apikey')
             ->name  ('get_apikey');
+
+=pod
+
+@api {get} /scot/api/v2/cidr/:cidrbase/:bits get list of ip entities in cidr block
+@apiName CIDR
+@apiGroup CIDR
+@apiVersion 2.0.0
+@apiDescription get list of IP address entities in SCOT that match a CIDR block
+@apiParam {Object} -    List of IP addresses
+
+=cut
+
+    $scot   ->route ('/api/v2/cidr/:cidrbase/:bits')
+            ->via   ('get')
+            ->to    ('controller-api#get_cidr_matches')
+            ->name  ('get_cidr_matches');
 
 =pod
 
