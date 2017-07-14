@@ -30,4 +30,5 @@ my $harness = TAP::Harness->new(\%args);
         './guide.t',
 #        './entity.t',
         './promote.t',
+        './signature.t',
     );
