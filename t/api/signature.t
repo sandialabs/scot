@@ -43,31 +43,33 @@ $t  ->post_ok ('/scot/api/v2/sigbody' => json => {
     ->json_is('/status' => 'ok');
 my $bsig1 = $t->tx->res->json->{id};
 
+# print Dumper($t->tx->res->json);
+# done_testing();
+# exit 0;
+
 $t  ->get_ok("/scot/api/v2/sigbody/$bsig1")
     ->status_is(200);
 
 my $bsig1rev = $t->tx->res->json->{revision};
 
-# print Dumper($t->tx->res->json);
-# done_testing();
-# exit 0;
 
 $t  ->get_ok    ("/scot/api/v2/signature/$sig_id")
     ->status_is(200)
     ->json_is('/name'   => 'Test Sig 1')
+    ->json_is('/type'   => 'testsig')
     ->json_is("/version/$bsig1rev/body" => $body)
-    ->json_is('/status' => "enabled");
+    ->json_is('/status' => "disabled");
 
 $t  ->put_ok    ("/scot/api/v2/signature/$sig_id" => json => {
     name    => "updated Test Sig 1",
-    status  => "disabled",
+    status  => "enabled",
 })  ->status_is(200)
-    ->json_is('/status' => "successfully updated");
+    ->json_is('/status' => "ok");
 
 $t  ->get_ok    ("/scot/api/v2/signature/$sig_id")
     ->status_is(200)
     ->json_is('/name'   => 'updated Test Sig 1')
-    ->json_is('/status' => 'disabled');
+    ->json_is('/status' => 'enabled');
 
 # add another version body
 sleep 1;
@@ -90,9 +92,18 @@ $t  ->get_ok    ("/scot/api/v2/signature/$sig_id")
     ->json_is('/name'   => 'updated Test Sig 1')
     ->json_is("/version/$bsig2rev/body" => "new signature foobar")
     ->json_is("/version/$bsig1rev/body" => $body)
-    ->json_is('/status' => "disabled");
+    ->json_is('/status' => "enabled");
 
-print Dumper($t->tx->res->json);
+$t  ->get_ok("/scot/api/v2/signature/$sig_id/history")
+    ->status_is(200)
+    ->json_is("/records/0/what" => "created via api")
+    ->json_is("/records/0/target/id" => 1)
+    ->json_is("/records/1/what" => "Signature status change to enabled")
+    ->json_is("/records/1/target/id" => 1);
+
+
+
+# print Dumper($t->tx->res->json);
 done_testing();
 exit 0;
 
