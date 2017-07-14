@@ -489,6 +489,7 @@ sub get_subthing {
         my $subcollection   = $req_href->{subthing};
         my $id              = $req_href->{id};
 
+
         my $collection  = $mongo->collection(ucfirst($thing));
         my $cursor      = $collection->api_subthing($req_href);
         my $records     = $self->post_subthing_process(
@@ -510,7 +511,7 @@ sub get_subthing {
         });
     }
     catch {
-        $log->error("in API get_one, Error: $_");
+        $log->error("in API get_subthing, Error: $_");
         $self->render_error(400, { error_msg => $_ });
     };
 }
@@ -521,6 +522,7 @@ sub post_subthing_process {
     my $req_href    = shift;
     my $cursor      = shift;
     my $subthing    = $req_href->{subthing};
+    my $log         = $self->env->log;
 
     if ( $subthing eq "entry" ) {
         my @records    = $self->thread_entries($cursor);
@@ -533,6 +535,9 @@ sub post_subthing_process {
     }
 
     my @records = $cursor->all;
+
+    # $log->debug("records prior to filtering: ",{filter=>\&Dumper, value=>\@records});
+
     foreach my $href (@records) {
         $collection->filter_fields($req_href, $href);
     }
@@ -593,7 +598,7 @@ sub update {
             die "Invalid id"; 
         }
         my $object  = $collection->api_find($req_href);
-        if ( ! $self->update_permitted($object)) { 
+        if ( ! $self->update_permitted($object, $req_href)) { 
             die "Insufficent Privilege"; 
         }
         # special case of promotion
@@ -618,7 +623,10 @@ sub update {
 sub update_permitted {
     my $self    = shift;
     my $object  = shift;
-    if ( $object->meta->does_role('Scot::Role::Permittable') ) {
+    my $req     = shift;
+
+    if ( $object->meta->does_role('Scot::Role::Permission') ) {
+
         return $object->is_modifiable($self->session('groups'));
     }
     return 1;
@@ -630,6 +638,9 @@ sub pre_update_process {
     my $object  = shift;
     my $req     = shift;
     my $mongo   = $self->env->mongo;
+    my $log     = $self->env->log;
+
+    $log->debug("PRE UPDATE");
 
     my $usersgroups = $self->session('groups');
 
@@ -653,11 +664,12 @@ sub pre_update_process {
     }
 
     if ( $object->meta->does_role("Scot::Role::Entitiable") ) {
+        $log->debug("object is entitiable");
         my $entity_aref = delete $req->{request}->{json}->{entities};
+        $log->debug("entities aref is ",{filter=>\&Dumper, value=>$entity_aref});
         my $collection  = $self->env->mongo->collection('Entity');
         $collection->update_entities($object, $entity_aref);
     }
-
 }
 
 sub get_promotion_collection {
@@ -908,9 +920,11 @@ sub process_entities {
     my $mongo   = $self->env->mongo;
     my $log     = $self->env->log;
 
-    $log->debug("PROCESSING ENTITIED");
+    $log->debug("PROCESSING ENTITIES");
 
     while ( my $entity = $cursor->next ) {
+
+        $log->debug("    entity = ".$entity->value);
 
         my $entry_cursor        = $mongo->collection('Entry')->get_entries(
             target_id   => $entity->id,
@@ -928,7 +942,8 @@ sub process_entities {
             status  => $entity->status,
             entries => \@threaded_entries,
         };
-        $log->debug("thing{".$entity->value."} = ",{filter=>\&Dumper, value=>$things{$entity->value}});
+        $log->debug("thing{".$entity->value."} = ",
+                    {filter=>\&Dumper, value=>$things{$entity->value}});
 
     }
     return wantarray ? %things : \%things;
@@ -995,16 +1010,20 @@ sub apply_sources {
 }
 
 sub update_target {
-    my $self    = shift;
-    my $object  = shift;
+    my $self        = shift;
+    my $object      = shift;
     my $update_type = shift;
-    my $mongo   = $self->env->mongo;
-    my $target  = $mongo->collection(
+    my $mongo       = $self->env->mongo;
+    my $target      = $mongo->collection(
         ucfirst($object->target->{type})
     )->find_iid($object->target->{id});
 
-    $self->env->log->debug("updating target type = $update_type");
-    $self->env->log->debug("target entry_count = ".$target->entry_count);
+    $self->env->log->debug("updating target ",{filter=>\&Dumper, value=>$object->target});
+
+    my $tmphref = $target->as_hash;
+#    $self->env->log->debug("found target       = ",{filter=>\&Dumper, value=>$tmphref});
+#    $self->env->log->debug("updating type      = $update_type");
+#    $self->env->log->debug("target entry_count = ".$target->entry_count);
 
     if ( defined $target ) {
         my $updated = 0;
@@ -1017,6 +1036,7 @@ sub update_target {
                 $target->update_inc(entry_count => -1);
                 $updated++;
             }
+           #$self->env->log->debug("target entry_count = ".$target->entry_count);
         }
         if ( $target->meta->does_role("Scot::Role::Times") ) {
             $target->update_set(updated => $self->env->now);
@@ -1310,6 +1330,24 @@ sub render_error {
     );
 }
 
+sub sarlacc {
+    my $self    = shift;
+    my $href    = shift;
+    my $url     = "https://sarlacc.givson.sandia.gov/api/scot/scan?";
+    my @params  = (
+        "apikey="       .$self->env->sarlacc_apikey,
+        "target_id="    .$href->{target}->{id},
+        "target_type="  .$href->{target}->{type},
+        "parent_id="    .$href->{parent},
+        "file_url="     ."/scot/api/v2/file/".$href->{id}."?download=1",
+    );
+    $url    .= join('&',@params);
+    return { 
+        send_to_name   => "Sarlacc",
+        send_to_url    => $url,
+    };
+}
+
 sub thread_entries {
     my $self    = shift;
     my $cursor  = shift;
@@ -1355,6 +1393,14 @@ sub thread_entries {
             $where{$entry->id} = \$summaries[$sindex];
             $sindex++;
             next ENTRY;
+        }
+
+        if ( $href->{body} =~ /class=\"fileinfo\"/ ) {
+            # we have a file entry so we need to "enrich" the data
+            # so that the UI can build sendto buttons
+            $href->{actions} = [
+                $self->sarlacc($href)
+            ];
         }
 
         if ( $entry->parent == 0 ) {
@@ -1511,4 +1557,35 @@ sub whoami {
         }
     }
 }
+
+sub get_cidr_matches {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+
+    my $cidrbase    = $self->stash('cidrbase');
+    my $cidrbits    = $self->stash('bits');
+
+    try {
+        my $ipobj   = Net::IP->new($cidrbase."/".$cidrbits);
+        my $mask    = substr($ipobj->binip, 0, $cidrbits);
+        
+        my $cursor  = $mongo->collection('Entity')->get_cidr_ipaddrs($mask);    
+        my $count   = $cursor->count;
+        my @records = $cursor->all;
+        my $return_href = {
+            records             => \@records,
+            queryRecordCount    => scalar(@records),
+            totalRecordCount    => $count,
+        };
+        $self->do_render($return_href);
+
+    }
+    catch {
+        $log->error("in API cidr, Error: $_");
+        $self->render_error(400, { error_msg => $_ } );
+    };
+}
+
 1;
