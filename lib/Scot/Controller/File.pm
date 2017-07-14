@@ -312,11 +312,4 @@ sub get_filetype {
 }
 
 
-    
-
-
-
-
-
-
 1;

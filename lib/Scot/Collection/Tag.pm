@@ -52,24 +52,13 @@ sub create_from_api {
 
 }
 
-sub autocomplete {
-    my $self        = shift;
-    my $fragment    = shift;
-    my $cursor      = $self->find({ value => /$fragment/});
-    my @records     = map { {
-        id  => $_->{id},
-        key => $_->{value},
-    } } $cursor->all;
-    return wantarray ? @records : \@records;
-}
-    
 
-sub get_tag_completion { 
+sub autocomplete { 
     my $self    = shift;
     my $string  = shift;
     my @results = ();
     my $cursor  = $self->find({
-        value    => /$string/
+        value    => /$string/i
     });
     @results    = map { $_->value } $cursor->all;
     return wantarray ? @results : \@results;
