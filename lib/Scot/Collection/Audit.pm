@@ -50,7 +50,7 @@ sub create_audit_rec {
         $data->{changes} = $changes;
     }
 
-    $log->debug("audit rec: ",{filter=>\&Dumper, value=>$data});
+    $log->trace("audit rec: ",{filter=>\&Dumper, value=>$data});
 
     $self->create($data);
 }
