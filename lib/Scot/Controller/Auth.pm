@@ -5,6 +5,7 @@ use v5.18;
 use MIME::Base64;
 use Crypt::PBKDF2;
 use Data::Dumper;
+use Data::UUID;
 use strict;
 use warnings;
 
@@ -771,6 +772,44 @@ sub failed_auth {
     return;
 }
 
+sub get_apikey {
+    my $self    = shift;
+    my $user    = $self->session('user');
+    my $groups  = $self->session('groups');
+    my $log     = $self->env->log;
 
+    unless (defined $user) {
+        $log->error("unauthenticated user trying to get apikey!");
+        $self->do_error(400, { error_msg => "missing user" });
+        return;
+    }
+
+    my $ug  = Data::UUID->new;
+    my $key = $ug->create_str();
+
+    my $record  = {
+        apikey      => $key,
+        groups      => $groups,
+        username    => $user,
+    };
+
+    my $collection  = $self->env->mongo->collection('Apikey');
+    my $apikey      = $collection->create_from_api($record);
+
+    $self->do_render({
+        status  => 'ok',
+        apikey  => $apikey->apikey,
+    });
+}
+
+sub do_render {
+    my $self    = shift;
+    my $code    = 200;
+    my $href    = shift;
+    $self->render(
+        status  => $code,
+        json    => $href,
+    );
+}
 
 1;
