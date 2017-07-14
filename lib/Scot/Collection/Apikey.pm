@@ -32,5 +32,41 @@ sub get_users_apikeys {
     return $cursor;
 }
 
+sub api_list {
+    my $self    = shift;
+    my $req     = shift;
+    my $user    = shift;
+    my $groups  = shift;
+
+    my $match   = $self->build_match_ref($req->{request});
+    
+    if (! $self->env->is_admin($user,$groups) ) {
+        $match->{username}  = $user;
+    }
+    my $cursor  = $self->find($match);
+    my $total   = $cursor->count;
+
+    if ( my $limit = $self->build_limit($req)) {
+        $cursor->limit($limit);
+    }
+    else {
+        $cursor->limit(50);
+    }
+
+    if ( my $sort   = $self->build_sort($req)) {
+        $cursor->sort($sort);
+    }
+    else {
+        $cursor->sort({id => -1});
+    }
+
+    if ( my $offset = $self->build_offset($req) ) {
+        $cursor->skip($offset);
+    }
+
+    return ($cursor, $total);
+}
+
+
 
 1;

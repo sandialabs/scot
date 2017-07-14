@@ -22,7 +22,7 @@ my @defgroups       = ( 'wg-scot-ir', 'testing' );
 
 my $t   = Test::Mojo->new('Scot');
 
-$t  ->post_ok  ('/scot/api/v2/create_apikey')
+$t  ->post_ok  ('/scot/api/v2/apikey')
     ->status_is(200)
     ->json_is('/status' => 'ok');
 
