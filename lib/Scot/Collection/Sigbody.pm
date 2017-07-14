@@ -24,7 +24,7 @@ Create Signature from POST to API
 
 =cut
 
-sub create_from_api {
+override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
@@ -61,7 +61,7 @@ sub create_from_api {
     }
 
     return $sigbody;
-}
+};
 
 sub get_next_revision {
     my $self        = shift;
