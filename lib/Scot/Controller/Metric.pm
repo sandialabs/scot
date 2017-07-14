@@ -494,4 +494,121 @@ sub calculate_score {
     return $score;
 }
 
+sub get_game_data {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+    my $user    = $self->session('user');
+    my $tt      = {
+        teacher     => "Most Guide Entries Authored",
+        tattler     => "Most Incidents Promoted",
+        alarmist    => "Most Alerts Promoted",
+        closer      => "Most Closed things",
+        cleaner     => "Most Deleted Things",
+        fixer       => "Most Edited Entries",
+        operative   => "Most Intel Entries",
+    };
+
+    my $col = $mongo->collection('Game');
+    my $cur = $col->find();
+    my %res = ();
+
+    while ( my $gobj = $cur->next ) {
+        my $results_aref    = $gobj->results;
+        my $name            = $gobj->game_name;
+        my $tip             = $gobj->tooltip;
+        my $updated         = $gobj->lastupdate;
+
+        $res{$name} = [
+            { username => $results_aref->[0]->{_id},
+              count    => $results_aref->[0]->{total}, 
+              tooltip   => $tip, 
+            },
+            { username => $results_aref->[1]->{_id},   
+              count    => $results_aref->[1]->{total},
+              tooltip   => $tip, 
+            },
+            { username => $results_aref->[2]->{_id},   
+              count    => $results_aref->[2]->{total},
+              tooltip   => $tip, 
+            },
+        ];
+    }
+
+    $self->do_render(\%res);
+
+}
+
+sub get_status {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    my $status  = {
+        'Scot Flair Daemon'         => $self->get_daemon_status('scfd'),
+        'Scot Elastic Push Daemon'  => $self->get_daemon_status('scepd'),
+        'System Uptime'             => `uptime`,
+        'MongoDB'                   => $self->get_daemon_status('mongod'),
+    };
+    $self->do_render($status);
+}
+
+sub get_daemon_status {
+    my $self    = shift;
+    my $daemon  = shift;
+    my $log     = $self->env->log;
+
+    my $systemd = `systemctl | grep "\-.mount"`;
+
+    if ( $systemd =~ /-\.mount/ ) {
+        $log->debug("systemd style services!");
+        my $result  = `service $daemon status`;
+        my @statuses  = ();
+        foreach my $line (split(/\n/,$result)) {
+            next unless ( $line =~ / +\S+:/ );
+            my ($type, $data) = split(/: /,$line);
+            if ( $type =~ /Active/ ) {
+                push @statuses, $data;
+            }
+            if ( $type =~ /Main PID/ ) {
+                push @statuses, $data;
+            }
+        }
+        return join(' ',reverse @statuses);
+    }
+
+    my $result  = `service $daemon status`;
+    $log->debug("DAEMON status is $result");
+    my ($status)=  $result =~ /.*\[(.*)\]/; 
+    $log->debug("plucked $status");
+    return $result;
+}
+
+sub get_who_online {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $now     = $env->now;
+    my $ago     = 30 * 60;   # activity in last 30 minutes
+    my $col     = $env->mongo->collection('User');
+    my $cur     = $col->find({ lastvisit => { '$gte' => $now - $ago }});
+    $cur->sort({lastvisit => -1});
+    my $total   = $cur->count;
+    my @results = ();
+
+    while (my $user = $cur->next ) {
+        push @results, {
+            username        => $user->username,
+            last_activity   => $now - $user->lastvisit,
+        };
+    }
+    $self->do_render({
+        records             => \@results,
+        queryRecordCount    => scalar(@results),
+        totalRecordCount    => $total
+
+    });
+}
+
 1;

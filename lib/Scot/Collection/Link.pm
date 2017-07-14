@@ -129,6 +129,7 @@ sub get_display_count {
     my $self    = shift;
     my $entity  = shift;
     my $collection  = $self->collection_name;
+    my $log     = $self->env->log;
     my %command;
     my $tie = tie(%command, "Tie::IxHash");
     %command = (
@@ -141,7 +142,7 @@ sub get_display_count {
             }
         },
     );
-    # $self->env->log->debug("command is ",{filter=>\&Dumper, value=>\%command});
+    $self->env->log->debug("display count command is ",{filter=>\&Dumper, value=>\%command});
 
     my $mongo   = $self->meerkat;
     my $result  = $self->_try_mongo_op(
@@ -153,7 +154,7 @@ sub get_display_count {
             return $job->{values};
         }
     );
-    # $self->env->log->debug("got result: ",{filter=>\&Dumper, value=>$result});
+    $self->env->log->debug("got result: ",{filter=>\&Dumper, value=>$result});
     unless (defined $result) {
         return 0;
     }
