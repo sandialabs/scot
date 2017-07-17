@@ -336,6 +336,7 @@ function install_perl_modules {
         Net::STOMP::Client
         Net::IDN::Encode
         Net::Works::Network
+        Net::IP
         Moose
         Moose::Role
         Moose::Util::TypeConstraints
