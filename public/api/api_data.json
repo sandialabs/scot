@@ -1,6 +1,17 @@
 [
   {
     "type": "post",
+    "url": "/scot/api/v2/apikey",
+    "title": "get an apikey",
+    "name": "Apikey",
+    "group": "Auth",
+    "version": "2.0.0",
+    "description": "<p>Create an apikey and return it to a user</p>",
+    "filename": "./Scot.pm",
+    "groupTitle": "Auth"
+  },
+  {
+    "type": "post",
     "url": "/auth",
     "title": "Request Authentication",
     "name": "AuthenticateUser",
@@ -42,6 +53,30 @@
     },
     "filename": "./Scot.pm",
     "groupTitle": "Auth"
+  },
+  {
+    "type": "get",
+    "url": "/scot/api/v2/cidr/:cidrbase/:bits",
+    "title": "get list of ip entities in cidr block",
+    "name": "CIDR",
+    "group": "CIDR",
+    "version": "2.0.0",
+    "description": "<p>get list of IP address entities in SCOT that match a CIDR block</p>",
+    "parameter": {
+      "fields": {
+        "Parameter": [
+          {
+            "group": "Parameter",
+            "type": "Object",
+            "optional": false,
+            "field": "-",
+            "description": "<p>List of IP addresses</p>"
+          }
+        ]
+      }
+    },
+    "filename": "./Scot.pm",
+    "groupTitle": "CIDR"
   },
   {
     "type": "post",
@@ -212,7 +247,7 @@
     "name": "Get_related_information",
     "version": "2.0.0",
     "group": "CRUD",
-    "description": "<p>Retrieve subthings related to the thing</p> <h2>Alertgroup subthings</h2> <ul> <li>alert</li> <li>entity</li> <li>entry</li> <li>tag</li> <li>source</li> </ul> <h2>Alert subthings</h2> <ul> <li>alertgroup</li> <li>entity</li> <li>entry</li> <li>tag</li> <li>source</li> </ul> <h2>Event subthings</h2> <ul> <li>entity</li> <li>entry</li> <li>tag</li> <li>source</li> </ul>",
+    "description": "<p>Retrieve subthings related to the thing</p> <h2>Alertgroup subthings</h2> <ul> <li>alert</li> <li>entity</li> <li>entry</li> <li>tag</li> <li>source</li> </ul> <h2>Alert subthings</h2> <ul> <li>alertgroup</li> <li>entity</li> <li>entry</li> <li>tag</li> <li>source</li> </ul> <h2>Event subthings</h2> <ul> <li>entity</li> <li>entry</li> <li>tag</li> <li>source</li> </ul> <h2>Incident subthings</h2> <ul> <li>events</li> <li>entity</li> <li>entry</li> <li>tag</li> <li>source</li> </ul>",
     "parameter": {
       "fields": {
         "Parameter": [
@@ -405,10 +440,10 @@
         "Parameter": [
           {
             "group": "Parameter",
-            "type": "File",
+            "type": "Object",
             "optional": false,
-            "field": "upload",
-            "description": "<p>User selected file to upload</p>"
+            "field": "-",
+            "description": "<p>JSON of File Record.  set &quot;sendto&quot; attribute</p>"
           }
         ]
       }
@@ -441,6 +476,126 @@
     "groupTitle": "Game"
   },
   {
+    "type": "get",
+    "url": "/scot/api/v2/graph/:thing",
+    "title": "",
+    "name": "metric",
+    "group": "Metric",
+    "version": "2.0.0",
+    "description": "<p>build a graph (nodes,vertices) starting at :thing :id and going out :depth connections</p>",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "-",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "filename": "./Scot.pm",
+    "groupTitle": "Metric"
+  },
+  {
+    "type": "get",
+    "url": "/scot/api/v2/who",
+    "title": "",
+    "name": "metric",
+    "group": "Metric",
+    "version": "2.0.0",
+    "description": "<p>like the unix who command but for SCOT</p>",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "-",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "filename": "./Scot.pm",
+    "groupTitle": "Metric"
+  },
+  {
+    "type": "get",
+    "url": "/scot/api/v2/metric/:thing",
+    "title": "Get a metric from SCOT",
+    "name": "metric",
+    "group": "Metric",
+    "version": "2.0.0",
+    "description": "<p>Get a metric from scot db</p>",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "-",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "filename": "./Scot.pm",
+    "groupTitle": "Metric"
+  },
+  {
+    "type": "get",
+    "url": "/scot/api/v2/status",
+    "title": "",
+    "name": "metric",
+    "group": "Metric",
+    "version": "2.0.0",
+    "description": "<p>give the status of the scot system</p>",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "-",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "filename": "./Scot.pm",
+    "groupTitle": "Metric"
+  },
+  {
+    "type": "get",
+    "url": "/scot/api/v2/graph/:thing",
+    "title": "",
+    "name": "metric",
+    "group": "Metric",
+    "version": "2.0.0",
+    "description": "<p>Get pyramid, dhheatmap, statistics, todaystats, bullet, or alertresponse data</p>",
+    "success": {
+      "fields": {
+        "Success 200": [
+          {
+            "group": "Success 200",
+            "type": "Object",
+            "optional": false,
+            "field": "-",
+            "description": ""
+          }
+        ]
+      }
+    },
+    "filename": "./Scot.pm",
+    "groupTitle": "Metric"
+  },
+  {
     "type": "put",
     "url": "/scot/api/v2/command/:action",
     "title": "Send Queue Command",
@@ -448,6 +603,17 @@
     "group": "Queue",
     "version": "2.0.0",
     "description": "<p>send the the string :command to the scot activemq topic queue</p>",
+    "filename": "./Scot.pm",
+    "groupTitle": "Queue"
+  },
+  {
+    "type": "put",
+    "url": "/scot/api/v2/wall",
+    "title": "Post a message to every logged in user",
+    "name": "send_wall_message",
+    "group": "Queue",
+    "version": "2.0.0",
+    "description": "<p>Post a message to the team</p>",
     "filename": "./Scot.pm",
     "groupTitle": "Queue"
   },
