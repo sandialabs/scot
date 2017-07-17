@@ -67,8 +67,9 @@ sub update_entities {
     my $log     = $env->log;
     my $mongo   = $env->mongo;
 
+    my $thash = $target->as_hash;
     $self->env->log->debug("updating entities on target ",
-                            { filter =>\&Dumper, value => $target});
+                            { filter =>\&Dumper, value => $thash});
 
     $log->debug("earef is ",{filter=>\&Dumper, value=>$earef});
 
@@ -79,42 +80,6 @@ sub update_entities {
     $log->debug("[$type $id] Updating associated entities");
     $log->debug("[$type $id] ", {filter=>\&Dumper, value=>$earef});
     
-    # find entity or create it.
-    # NOTE: this is a cool way to get MongoDB to do everything in one
-    # fell swoop, BUT, it will not create an iid for us when creating
-    # a new entity.  Bummer, so we are going to have to query and then
-    # update or create
-    #foreach my $entity (@$earef) {
-    #    my @command    = (
-    #        findAndModify   => "entity",
-    #        query           => { 
-    #            value   => $entity->{value}, 
-    #            type    => $entity->{type},
-    #        },
-    #        update          => {
-    #            '$setOnInsert'  => {
-    #                value   => $entity->{value},
-    #                type    => $entity->{type},
-    #            }
-    #        },
-    #        new     => 1,
-    #        upsert  => 1,
-    #    );
-    #
-    #    $log->trace("Attempting: ", {filter=>\&Dumper, value=>\@command});
-    #
-    #    my $return = $self->_try_mongo_op(
-    #        find_or_create => sub {
-    #            my $dbname  = $self->meerkat->database_name;
-    #            my $db      = $self->meerkat->_mongo_database($dbname);
-    #            my $job     = $db->run_command(\@command);
-    #            return $job;
-    #        }
-    #    );
-    #    $log->debug("FindAndModify returned: ",
-    #                { filter =>\&Dumper, value => $return });
-    #    my $entity_id    = $return->{id};
-
     my @created_ids = ();
     my @updated_ids = ();
 
@@ -167,6 +132,63 @@ sub update_entities {
         }
     }
     return \@created_ids, \@updated_ids;
+}
+
+sub api_subthing {
+    my $self    = shift;
+    my $req     = shift;
+    my $thing   = $req->{collection};
+    my $id      = $req->{id} + 0;
+    my $subthing= $req->{subthing};
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    if ( $subthing  eq "alert" or
+         $subthing  eq "event" or
+         $subthing  eq "intel" or
+         $subthing  eq "incident" ) {
+        my @links = map { $_->{target}->{id} } 
+                        $mongo->collection('Link')->find({
+                            entity_id       => $id,
+                            'target.type'   => $subthing,
+                        })->all;
+        $log->debug("Links found: ",{filter=>\&Dumper, value => \@links});
+        return $mongo->collection(ucfirst($subthing))->find({
+            id  => { '$in'  => \@links }
+        });
+    }
+
+    if ( $subthing eq "entity" ) {
+        my @links = map { $_->{id} } 
+                        $mongo->collection('Link')->get_links_by_target({
+                            id      => $id,
+                            type    => 'entity',
+                        })->all;
+        return $self->find({id => {'$in' => \@links}});
+    }
+    if ( $subthing eq "entry" ) {
+        return $mongo->collection('Entry')->get_entries_by_target({
+            id  => $id,
+            type    => 'entity',
+        });
+    }
+    if ( $subthing eq "file" ) {
+        return $mongo->collection('File')->find({
+            'entry_target.type' => 'entity',
+            'entry_target.id'   => $id,
+        });
+    }
+
+    if ( $subthing eq "history" ) {
+        return $mongo->collection('History')->find({
+            'target.type'   => "entity",
+            'target.id'     => $id,
+        });
+    }
+    
+    die "Unsupported subthing request ($subthing) for Entity";
+
 }
 
 override get_subthing => sub {
@@ -236,6 +258,56 @@ sub get_by_value {
         }
     }
     return $object;
+}
+
+sub autocomplete {
+    my $self    = shift;
+    my $frag    = shift;
+    my $cursor  = $self->find({
+        value => /$frag/
+    });
+    my @records = map { {
+        id  => $_->{id}, key => $_->{value}
+    } } $cursor->all;
+    return wantarray ? @records : \@records;
+}
+
+sub get_cidr_ipaddrs {
+    my $self    = shift;
+    my $mask    = shift;
+    my $mongo   = $self->env->mongo;
+    my @records = ();
+
+    my $cursor = $self->find({
+        'data.binip'    => qr/^$mask/
+    });
+
+    while ( my $entity = $cursor->next ) {
+        # get all linked targets
+        my @targets    = map { $_->{target} } 
+            $mongo->collection('Link')->get_links_by_entity_id($entity->id)->all;
+
+        my %seen;
+        my @final;
+        # filter out duplicates
+        foreach my $target (@targets) {
+            next if ( $target->{type} eq "alertgroup" );
+            if (! defined $seen{$target->{type}}{$target->{id}} ) {
+                $seen{$target->{type}}{$target->{id}}++;
+                push @final, $target;
+            }
+        }
+        # create record and store
+
+        my $href = {
+            id      => $entity->id,
+            value   => $entity->value,
+            targets => \@final,
+        };
+        push @records, $href;
+    }
+    return wantarray ? @records : \@records;
+
 }
 
 

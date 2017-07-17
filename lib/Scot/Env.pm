@@ -306,4 +306,39 @@ sub build_logger {
     return $factory->get_logger;
 }
 
+# this helps identify the problem when SCOT wants/needs an $env->foo
+# value, but the config file doesn't have the foo attribute.  Without this
+# the program will blow up with a "method "foo" not found in object $env"
+# 
+
+sub get_config_item {
+    my $self    = shift;
+    my $name    = shift;
+    my $log     = $self->log;
+
+    $log->trace("grabbing config item $name");
+
+    my $meta    = $self->meta;
+    my $method  = $meta->get_method($name);
+
+    if ( defined $method ) {
+        return $self->$method;
+    }
+
+    $log->error("The env obj does not have an accessor for $name");
+    $log->error("...check that the config file has that attribute");
+
+    return undef;
+}
+
+sub is_admin {
+    my $self        = shift;
+    my $user        = shift;
+    my $groups      = shift;
+    my $admin_group = $self->admin_group;
+
+    return undef if (! defined $admin_group);
+    return grep { /$admin_group/ } @$groups;
+}
+
 1;
