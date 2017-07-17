@@ -348,7 +348,7 @@ relies on the browser BasicAuth popup.
 
 =pod
 
-@api {get} /scot/api/v2/cidr/:cidrbase/:bits get list of ip entities in cidr block
+@api {get} /scot/api/v2/cidr?cidr=1.2.3.4/24 get list of ip entities in cidr block
 @apiName CIDR
 @apiGroup CIDR
 @apiVersion 2.0.0
@@ -357,7 +357,7 @@ relies on the browser BasicAuth popup.
 
 =cut
 
-    $scot   ->route ('/api/v2/cidr/:cidrbase/:bits')
+    $scot   ->route ('/api/v2/cidr')
             ->via   ('get')
             ->to    ('controller-api#get_cidr_matches')
             ->name  ('get_cidr_matches');
