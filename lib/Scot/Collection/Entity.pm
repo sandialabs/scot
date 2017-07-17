@@ -275,10 +275,39 @@ sub autocomplete {
 sub get_cidr_ipaddrs {
     my $self    = shift;
     my $mask    = shift;
+    my $mongo   = $self->env->mongo;
+    my @records = ();
 
-    return $self->find({
+    my $cursor = $self->find({
         'data.binip'    => qr/^$mask/
     });
+
+    while ( my $entity = $cursor->next ) {
+        # get all linked targets
+        my @targets    = map { $_->{target} } 
+            $mongo->collection('Link')->get_links_by_entity_id($entity->id)->all;
+
+        my %seen;
+        my @final;
+        # filter out duplicates
+        foreach my $target (@targets) {
+            next if ( $target->{type} eq "alertgroup" );
+            if (! defined $seen{$target->{type}}{$target->{id}} ) {
+                $seen{$target->{type}}{$target->{id}}++;
+                push @final, $target;
+            }
+        }
+        # create record and store
+
+        my $href = {
+            id      => $entity->id,
+            value   => $entity->value,
+            targets => \@final,
+        };
+        push @records, $href;
+    }
+    return wantarray ? @records : \@records;
+
 }
 
 
