@@ -8,6 +8,7 @@ use Data::Dumper;
 use Scot::Collection;
 use Scot::Collection::Alertgroup;
 use Mojo::JSON qw(encode_json decode_json);
+use Scot::App::Flair;
 
 $ENV{'scot_mode'}           = "testing";
 $ENV{'scot_auth_type'}      = "Testing";
@@ -35,6 +36,9 @@ my $env = Scot::Env->instance;
 
 # use this to set csrf protection 
 # though not really used due to testing auth 
+
+my $flairer = Scot::App::Flair->new({env=>$env});
+
 $t->ua->on(start => sub {
     my ($ua, $tx) = @_;
     $tx->req->headers->header('X-Requested-With' => 'XMLHttpRequest');
@@ -46,8 +50,8 @@ $t->post_ok(
         message_id  => '112233445566778899aabbccddeeff',
         subject     => 'test message 1',
         data        => [
-            { foo   => 1,   bar => 2 },
-            { foo   => 3,   bar => 4 },
+            { foo   => 1,   bar => 2, data => "10.10.10.1" },
+            { foo   => 3,   bar => 4, data => "10.10.10.2"},
         ],
         tag     => [qw(test testing)],
         source  => [qw(todd scot)],
@@ -57,7 +61,7 @@ $t->post_ok(
 
 my $alertgroup_id   = $t->tx->res->json->{id};
 my $updated         = $t->tx->res->json->{updated};
-
+$flairer->process_message("created","alertgroup",$alertgroup_id);
 
 $t->get_ok("/scot/api/v2/alertgroup" => {},
     "Get alertgroup list")
@@ -66,10 +70,6 @@ $t->get_ok("/scot/api/v2/alertgroup" => {},
     ->json_is('/records/0/tag/1'   => 'testing')
     ->json_is('/records/0/source/0'    => 'todd')
     ->json_is('/records/0/source/1'    => 'scot');
-
-#print Dumper($t->tx->res->json), "\n";
-#done_testing();
-#exit 0;
 
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
            "Get alertgroup $alertgroup_id" )
@@ -94,11 +94,6 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
     ->json_is('/records/0/data/foo'     => 1)
     ->json_is('/records/1/data/foo'     => 3);
 
-# print Dumper($t->tx->res->json), "\n";
-# done_testing();
-# exit 0;
-
-
 
 my $alert1_id   = $t->tx->res->json->{records}->[0]->{id};
 my $alert1_data = $t->tx->res->json->{records}->[0]->{data};
@@ -106,6 +101,18 @@ $alert1_data->{boom} = 8;
 my $alert2_id   = $t->tx->res->json->{records}->[1]->{id};
 my $alert2_data = $t->tx->res->json->{records}->[1]->{data};
 $alert2_data->{boom} = 9;
+
+$t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/entity" => {},
+    "Get alertgroup entity list")
+    ->status_is(200)
+    ->json_is('/totalRecordCount'   => 2)
+    ->json_is('/queryRecordCount'   => 2)
+    ->json_is('/records/10.10.10.2/type' => "ipaddr")
+    ->json_is('/records/10.10.10.1/type' => "ipaddr");
+
+#  print Dumper($t->tx->res->json), "\n";
+#  done_testing();
+#  exit 0;
 
 $t->put_ok("/scot/api/v2/alert/$alert1_id" => json => 
     {data => $alert1_data,
@@ -125,6 +132,7 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
     ->json_is('/records/1/data/boom'     => 9)
     ->json_is('/records/1/columns/2'   => 'boom');
 
+
 # print Dumper($t->tx->res->json), "\n";
 # $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
  #    "Getting alertgroup again to see if stuff is updated")
@@ -136,6 +144,7 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/tag" => {},
     ->status_is(200)
     ->json_is('/totalRecordCount'   => 2)
     ->json_is('/queryRecordCount'   => 2);
+
 
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/history" => {},
     "Getting alertgroup history")
@@ -156,6 +165,8 @@ $t->get_ok("/scot/api/v2/alert/$alert1_id/entry")
     ->json_is('/records/0/target/id'  => $alert1_id )
     ->json_is('/records/0/target/type'    => 'alert');
 
+
+
 $t->get_ok("/scot/api/v2/alertgroup" => {},
     "checking entry_count in alertgroup listing")
     ->status_is(200);
@@ -163,8 +174,7 @@ $t->get_ok("/scot/api/v2/alertgroup" => {},
 $t->put_ok("/scot/api/v2/alertgroup/$alertgroup_id" => json =>
     { status => 'closed' } 
 )->status_is(200)
- ->json_is("/status" => "successfully updated");
-
+ ->json_is("/status" => "ok");
 
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert" => {},
     "Getting alerts in alertgroup")
@@ -259,6 +269,7 @@ foreach my $ag (@ags) {
         '/scot/api/v2/alertgroup'   => json => $ag
     )->status_is(200);
 }
+
 
 my $json_sort   = encode_json {
     id  => -1
