@@ -104,7 +104,9 @@ has status  => (
 =item B<data>
 
 hold data in a key value store about the entity.
-not sure what this will be but it is a safety valve 
+for an example:
+    you can store the binary form of Ip addr for better matching
+    data.binip = 11101101101010110110...
 
 =cut
 
