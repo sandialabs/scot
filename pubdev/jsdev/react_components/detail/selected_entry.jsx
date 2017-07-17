@@ -313,11 +313,19 @@ var EntryIterator = React.createClass({
         var type = this.props.type;
         var id = this.props.id;  
         if (data[0] == undefined) {
-            return (
-                <div>
-                    <div style={{color:'blue'}}>No entries found. Would you like to create one?</div>
-                </div>
-            )
+            if (type != 'alertgroup') {
+                return (
+                    <div>
+                        <div style={{color:'blue'}}>No entries found. Would you like to create one?</div>
+                    </div>
+                )
+            } else {
+                return (
+                    <div>
+                        <div style={{color:'blue'}}>No alerts found or they are unable to be rendered. Please check the source and correct the formatting of the alert if necessary</div>
+                    </div>
+                )
+            }
         } else {
             if (type != 'alertgroup') {
                 data.forEach(function(data) {
