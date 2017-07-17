@@ -6,6 +6,7 @@ use Data::Dumper::HTML qw(dumper_html);
 use Data::UUID;
 use Mojo::JSON qw(decode_json encode_json);
 use Try::Tiny;
+use Net::IP;
 use strict;
 use warnings;
 use base 'Mojolicious::Controller';
@@ -1564,16 +1565,15 @@ sub get_cidr_matches {
     my $log     = $env->log;
     my $mongo   = $env->mongo;
 
-    my $cidrbase    = $self->stash('cidrbase');
-    my $cidrbits    = $self->stash('bits');
-
     try {
-        my $ipobj   = Net::IP->new($cidrbase."/".$cidrbits);
+        my $req_href= $self->get_request_params;
+        my $cidr    = $req_href->{request}->{params}->{cidr};
+        my ($cidrbase,$cidrbits) = split(/\//,$cidr);
+        my $ipobj   = Net::IP->new($cidr);
         my $mask    = substr($ipobj->binip, 0, $cidrbits);
         
-        my $cursor  = $mongo->collection('Entity')->get_cidr_ipaddrs($mask);    
-        my $count   = $cursor->count;
-        my @records = $cursor->all;
+        my @records = $mongo->collection('Entity')->get_cidr_ipaddrs($mask);    
+        my $count   = scalar(@records);
         my $return_href = {
             records             => \@records,
             queryRecordCount    => scalar(@records),
