@@ -4,7 +4,6 @@ var Button                      = require('react-bootstrap/lib/Button.js');
 var MenuItem                    = require('react-bootstrap/lib/MenuItem.js');
 var DropdownButton              = require('react-bootstrap/lib/DropdownButton.js');
 var Promote                     = require('../components/promote.jsx');
-var TrafficLightProtocol        = require('../components/traffic_light_protocol.jsx'); 
 
 var SelectedHeaderOptions = React.createClass({
     getInitialState: function() {
@@ -332,7 +331,6 @@ var SelectedHeaderOptions = React.createClass({
                     {showPromote ? <Promote type={type} id={id} updated={this.props.updated} /> : null}
                     {type != 'signature' ? <Button bsSize='xsmall' onClick={this.createLinkSignature}><i className="fa fa-pencil" aria-hidden="true"></i> Create & Link Signature</Button> : null}
                     {type == 'signature' ? <Button eventKey='11' onClick={this.props.showSignatureOptionsToggle} bsSize='xsmall' bsStyle='warning'>View Custom Options</Button> : null}
-                    <TrafficLightProtocol type={this.props.type} id={this.props.id} />
                     <Button bsStyle='danger' eventKey="9" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button>
                     <Button id='refresh-detail' bsStyle='info' eventKey="10" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                 </div>
