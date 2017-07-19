@@ -1334,7 +1334,7 @@ sub render_error {
 sub sarlacc {
     my $self    = shift;
     my $href    = shift;
-    my $url     = "https://sarlacc.givson.sandia.gov/api/scot/scan?";
+    my $url     = "https://sarlacc.gibson.sandia.gov/api/scot/scan?";
     my @params  = (
         "apikey="       .$self->env->sarlacc_apikey,
         "target_id="    .$href->{target}->{id},
