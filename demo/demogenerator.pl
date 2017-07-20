@@ -138,6 +138,13 @@ my $alerts  = [
                 URL	=> 'http://chrome.google.com/download',
                 date	=> '2015-04-21 10:30:01',
                 dstip	=> '10.233.26.1',
+                file    => 'chromedownload.exe',
+            },
+            {
+                URL	=> 'http://openme.com/download',
+                date	=> '2015-04-21 10:29:04',
+                dstip	=> '10.233.26.1',
+                file    => 'openme.exe',
             },
         ],
     },
@@ -251,14 +258,14 @@ my $entries = [
 	target_type	=> 'event',
     },
     {
-	body 		=> "<p>New CVE's from https://twitter.com/CVEnew/ reported the following 0 day: CVE-2017-0378. Do we have a signature built that will detect this? Keep your eyes open for delivery mechanisms.</p>",
+	body 		=> "<p>New CVE's from https://twitter.com/CVEnew/ reported the following 0 day: CVE-2017-0378. Do we have a signature built that will detect this? Keep your eyes open for delivery mechanisms. Original file was being sent in an email with the file name: openme.exe</p>",
 	target_id	=> 1,
 	target_type	=> 'intel',
     },
     {
     body 		=> "<p>MD5 dump containing a list of known bad hashes. <p>098f6bcd4621d373cade4e832627b4f6 8253053f2c9e565a136264e6f96aa57b 5a105e8b9d40e1329780d62ea2265d8a ad0234829205b9033196ba818f7a872b</p></p>",
-    target_id	=> 	=> 2,
-    target_type	=> 	=> 'intel',
+    target_id	=> 2,
+    target_type	=> 'intel',
     }, 
     {
 	body 		=> "<p>While scouring through pcap I stumbled across some interesting traffic that I followed down a rabbit hole. I noticed an odd file name. Have we seen this file before? Here's the MD5 8253053f2c9e565a136264e6f96aa57b</p>",
