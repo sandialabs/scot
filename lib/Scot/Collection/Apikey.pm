@@ -46,7 +46,8 @@ sub api_list {
     my $cursor  = $self->find($match);
     my $total   = $cursor->count;
 
-    if ( my $limit = $self->build_limit($req)) {
+    my $limit = $self->build_limit($req);
+    if ( defined $limit ) {
         $cursor->limit($limit);
     }
     else {
