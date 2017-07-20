@@ -31,13 +31,13 @@ var TrafficLightProtocol = React.createClass({
                 <Dropdown bsSize='xsmall'>
                     <DropdownToggle>
                         <svg id='trafficlight1' style={{width: '20px', height: '20px'}}>
-                            <circle id="circle1" r="10" cx="10" cy="10" style={{fill: (this.state.color == 'red' ? 'red' : 'transparent'), stroke: 'black', strokeWidth: '2'}} />
+                            <circle id="circle1" r="10" cx="10" cy="10" style={{fill: ((this.state.color == 'red' || this.state.color == 'white')  ? this.state.color : 'gray'), stroke: 'black', strokeWidth: '2'}} />
                         </svg>    
                         <svg id='trafficlight2' style={{width: '20px', height: '20px'}}>
-                            <circle id="circle2" r="10" cx="10" cy="10" style={{fill: (this.state.color == 'yellow' ? 'yellow' : 'transparent') , stroke: 'black', strokeWidth: '2'}} />
+                            <circle id="circle2" r="10" cx="10" cy="10" style={{fill: ((this.state.color == 'yellow' || this.state.color == 'white') ? this.state.color : 'gray') , stroke: 'black', strokeWidth: '2'}} />
                         </svg>
                         <svg id='trafficlight2' style={{width: '20px', height: '20px'}}>
-                            <circle id="circle3" r="10" cx="10" cy="10" style={{fill: (this.state.color == 'green' ? 'green' : 'transparent'), stroke: 'black', strokeWidth: '2'}} />
+                            <circle id="circle3" r="10" cx="10" cy="10" style={{fill: ((this.state.color == 'green' || this.state.color == 'white') ? this.state.color : 'gray'), stroke: 'black', strokeWidth: '2'}} />
                         </svg>
                     </DropdownToggle>
                     <DropdownMenu>
@@ -46,6 +46,7 @@ var TrafficLightProtocol = React.createClass({
                         <MenuItem eventKey='red' onSelect={this.selectColor}>Red</MenuItem>
                         <MenuItem eventKey='yellow' onSelect={this.selectColor}>Yellow</MenuItem>
                         <MenuItem eventKey='green' onSelect={this.selectColor}>Green</MenuItem>
+                        <MenuItem eventKey='white' onSelect={this.selectColor}>White</MenuItem>
                         <MenuItem divider/>
                         <MenuItem href="https://www.us-cert.gov/tlp">What is TLP?</MenuItem>
                     </DropdownMenu>
