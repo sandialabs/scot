@@ -116,7 +116,7 @@ var App = React.createClass({
         //Notification display in update as it will run on every amq message matching 'main'.
         var notification = this.refs.notificationSystem
         //not showing notificaiton on entity due to "flooding" on an entry update that has many entities causing a storm of AMQ messages
-        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && activemqwho!= 'scot-flair' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api' && activemqwall != true && activemqtype != 'entity' && this.state.notificationSetting == 'on'){  
+        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && activemqwho!= 'scot-flair' && notification != undefined && activemqwho != "" &&  activemqwho != 'api' && activemqwall != true && activemqtype != 'entity' && this.state.notificationSetting == 'on'){  
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
@@ -233,7 +233,11 @@ var App = React.createClass({
                     </div>
                     :
                     null}
-                    { this.props.match.params.value == 'alert' || this.props.match.params.value == 'alertgroup' ? 
+                    { this.props.match.params.value == 'alert' ? 
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    :
+                    null}
+                    { this.props.match.params.value == 'alertgroup' ? 
                         <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                     :
                     null}
