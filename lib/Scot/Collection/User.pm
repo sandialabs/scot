@@ -72,7 +72,8 @@ sub api_list {
         });
     }
 
-    if ( my $limit = $self->build_limit($href)) {
+    my $limit = $self->build_limit($href);
+    if ( defined $limit ) {
         $cursor->limit($limit);
     }
     else {

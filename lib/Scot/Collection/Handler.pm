@@ -66,7 +66,8 @@ override api_list => sub {
     my $cursor  = $self->find($match);
     my $total   = $cursor->count;
 
-    if ( my $limit   = $self->build_limit($href) ) {
+    my $limit   = $self->build_limit($href);
+    if ( defined $limit ) {
         $cursor->limit($limit);
     }
     else {
