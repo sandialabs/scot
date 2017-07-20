@@ -94,16 +94,8 @@ module.exports = React.createClass({
                 }
             }
         }
-
-        if (this.props.type == 'alert') {
-            $.ajax({
-                type: 'get',
-                url: 'scot/api/v2/alert/' + this.props.id
-            }).success(function(response1){
-                var newresponse = response1
-                this.setState({id: newresponse.alertgroup, showSelectedContainer:true})
-            }.bind(this))
-        };
+        //If alert id is passed, convert the id to its alertgroup id.
+        this.ConvertAlertIdToAlertgroupId(this.props.id)
 
         var array = []
         var finalarray = [];
@@ -349,8 +341,26 @@ module.exports = React.createClass({
         if ( nextProps.id == undefined ) {
             this.setState({type: nextProps.type, id:null, showSelectedContainer: false, scrollheight: $(window).height() - 170});
         } else if (nextProps.id != this.props.id) {
-            this.setState({type: nextProps.type, id: nextProps.id});
+            if (this.props.type == 'alert') {
+                this.ConvertAlertIdToAlertgroupId(nextProps.id);        
+                this.setState({ type : nextProps.type, alertPreSelectedId: nextProps.id });    
+            } else {
+                this.setState({type: nextProps.type, id: nextProps.id});
+            }        
         }
+    },
+
+    ConvertAlertIdToAlertgroupId: function(id) {
+        //if the type is alert, convert the id to the alertgroup id
+        if (this.props.type == 'alert') {
+            $.ajax({
+                type: 'get',
+                url: 'scot/api/v2/alert/' + id
+            }).success(function(response1){
+                var newresponse = response1
+                this.setState({id: newresponse.alertgroup, showSelectedContainer:true})
+            }.bind(this))
+        };
     },
 
     stopdrag: function(e){
@@ -454,6 +464,10 @@ module.exports = React.createClass({
         var pageNumber;
         var idsarray = this.state.idsarray;
         var newidsarray = [];
+        
+        //if the type is alert, convert the id to the alertgroup id
+        this.ConvertAlertIdToAlertgroupId(this.props.id)        
+                    
         //defaultpage = page.page
         if (page == undefined) {
             pageNumber = this.state.activepage.page;
