@@ -78,9 +78,9 @@ class ReportHeatmap extends PureComponent {
             function(error, data) {
 				/*
 				container.selectAll( '.hour' ).remove();
+				*/
 				container.selectAll( '.legend' ).remove();
 				container.selectAll( '.legend-text' ).remove();
-				*/
 				
 				let colorScale = d3.scaleQuantile()
 					.domain( [ 0, buckets - 1, d3.max( data, ( d ) => { return d.value } ) ] )
@@ -109,23 +109,20 @@ class ReportHeatmap extends PureComponent {
 				var legend = graph.selectAll( '.legend' )
 					.data( [0].concat( colorScale.quantiles() ), ( d ) => d );
 
-				legend.enter().append( 'g' )
-					.attr( 'class', 'legend' )
-					.merge( legend )
+				legend.enter()
 					.append( 'rect' )
+					.attr( 'class', 'legend' )
 					.attr( 'x', (d, i) => ( legendElementWidth * i ) )
 					.attr( 'y', height )
 					.attr( 'width', legendElementWidth )
 					.attr( 'height', gridSize / 2 )
 					.style( 'fill', (d, i) => colors[i] )
 
-				legend.append( 'text' )
-					.merge( legend )
+				legend.enter().append( 'text' )
 					.text( ( d ) => ( '≥ ' + Math.round( d ) ) )
+					.attr( 'class', 'legend-text' )
 					.attr( 'x', (d, i) => legendElementWidth * i )
 					.attr( 'y', height + gridSize );
-
-				legend.exit().remove();
 			}
 		);
     }
