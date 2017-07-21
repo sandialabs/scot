@@ -192,33 +192,50 @@ sub response_avg_last_x_days {
 
     my $averages = $self->get_alltime_alert_responsetime_avg;
 
-    my @results = ();
-    for (my $i = $x-1; $i >= 0; $i--) {
-        my $nsdt     = $dt->clone();
-        $nsdt->subtract(days => $i);
-        my $nedt    = $nsdt->clone();
-        $nedt->set(hour => 23, minute => 59, second => 59);
-        my $req = {
-            range   => [ $nsdt, $nedt ],
+     ## desire {
+     ##     lines: [ { name: " ", value: x },...], dates: [ { date: " ",name:" ", value: x }...]
+
+    my $json    = {};
+
+     for ( my $i = $x -1; $i >= 0; $i-- ) {
+        my $next_start_dt   = $dt->clone();
+        $next_start_dt->subtract(days => $i);
+        my $next_end_dt     = $next_start_dt->clone();
+        $next_end_dt->set(hour=>23, minute=>59, second=>59);
+        my $request = { 
+            range => [ $next_start_dt, $next_end_dt ] 
         };
-        $req->{limit} = $limit if ( defined $limit);
-        my $dayresult = $self->response_time($req);
-        $log->debug("dayresult = ",{filter=>\&Dumper, value=>$dayresult});
-        push @results, {
-            Date        => $nsdt->ymd('-'),
-            Categories => [
-                {Name    => "All Alerts", Value => $dayresult->{all}->{avg}//0 },
-                {Name    => "Promoted Alerts", Value => $dayresult->{promoted}->{avg}//0 },
-                {Name    => "Incident Alerts", Value => $dayresult->{incident}->{avg}//0 },
-            ],
-            LineCategory => [
-                {Name   => "All Avg", Value => $averages->{all}//0 },   
-                {Name   => "Promoted Avg", Value => $averages->{promoted}//0 },   
-                {Name   => "Incident Avg", Value => $averages->{incident}//0 },   
-            ]
+        if ( defined $limit ) {
+            $request->{limit} = $limit;
+        }
+        my $dayresult   = $self->response_time($request);
+
+        push @{ $json->{lines} }, {
+            name    => "All Avg",
+            value   => $averages->{all} // 0,
+        }, {
+            name    => "Promoted Avg",
+            value   => $averages->{promoted} // 0,
+        }, {
+            name    => "Incident Avg",
+            value   => $averages->{incident} // 0,
+        };
+
+        push @{ $json->{dates} }, {
+            date    => $next_start_dt->ymd('-'),
+            name    => 'All',
+            value   => $dayresult->{all}->{avg} // 0,
+        }, {
+            date    => $next_start_dt->ymd('-'),
+            name    => 'Promoted',
+            value   => $dayresult->{promoted}->{avg} // 0,
+        }, {
+            date    => $next_start_dt->ymd('-'),
+            name    => 'Incident',
+            value   => $dayresult->{incident}->{avg} // 0,
         };
     }
-    return \@results;
+    return $json;
 }
         
 
@@ -245,14 +262,14 @@ sub response_time {
                     
         my $metric  = $stat->metric;
         my @w       = split(/ /,$metric);
-        my $type    = $w[0]; # Sum or Count
-        my $subtype = $w[2]; # all, promoted, incident
+        my $type    = lc($w[0]); # Sum or Count
+        my $subtype = lc($w[2]); # all, promoted, incident
         my $value   = $stat->value;
         next if ($value == 0);
 
         $log->debug("pushing $value onto \$results{$subtype}");
 
-        push @{$results{$subtype}}, $stat->value;
+        push @{$results{$subtype}{$type}}, $stat->value;
     }
 
     my $json    = {
@@ -266,12 +283,26 @@ sub response_time {
 
 sub get_statistics {
     my $self    = shift;
-    my $aref    = shift;
-    return {} unless (defined $aref);
-    my $log     = $self->env->log;
-    $log->debug("Aref has ".scalar(@$aref)." elements");
+    my $href    = shift; # { sum => [ x,y,z...], count => [a,b,c...] }
+    my @values  = ();
+
+    unless (defined $href) {
+        return {};
+    }
+
+    $self->env->log->debug("HREF for stats = ",{filter=>\&Dumper, value=>$href});
+
+    for ( my $i = 0; $i < scalar(@{$href->{sum}}); $i++ ) {
+        my $sum = $href->{sum}->[$i];
+        my $cnt = $href->{count}->[$i];
+        if ( ! defined $cnt or $cnt == 0 ) {
+            $cnt = 1;
+        }
+        my $avg = $sum/$cnt;
+        push @values, $avg;
+    } 
     my $util    = Statistics::Descriptive::Sparse->new();
-       $util->add_data(@$aref);
+       $util->add_data(@values);
     return {
         avg     => $util->mean,
         min     => $util->min,
@@ -280,6 +311,7 @@ sub get_statistics {
         count   => $util->count,
     };
 }
+
 
 sub creation_bullet {
     my $self    = shift;
