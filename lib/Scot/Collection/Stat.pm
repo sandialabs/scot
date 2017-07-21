@@ -33,11 +33,11 @@ sub upsert_metric {
     delete $match->{value};
     my $obj = $self->find_one($match);
     unless (defined $obj) {
-        $log->debug("New Metric, inserting");
+        $log->trace("New Metric, inserting");
         $self->create($doc);
     }
     else {
-        $log->debug("Updating existing metric");
+        $log->trace("Updating existing metric");
         $obj->update({
             '$set'  => $doc
         });

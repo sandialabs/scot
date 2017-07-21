@@ -5,23 +5,36 @@ use JSON;
 use strict;
 use warnings;
 
-my $ua      = Mojo::UserAgent->new;
-$ua->on( start => sub {
-            my $ua  = shift;
-            my $tx  = shift;
+my %users = (
+    admin       => 'apikey 61E4663E-6CAB-11E7-B011-FEE80D183886',
+    joplin      => 'apikey 51E4663E-6CAB-11E7-B011-FEE80D183886',
+    kelly       => 'apikey 41E4663E-6CAB-11E7-B011-FEE80D183886',
+    montgomery  => 'apikey 31E4663E-6CAB-11E7-B011-FEE80D183886',
+    pilgrim     => 'apikey 21E4663E-6CAB-11E7-B011-FEE80D183886',
+);
+
+my %ua  = ();
+
+foreach my $user (keys %users) {
+    $ua{$user}  = Mojo::UserAgent->new;
+    $ua{$user}->on(
+        start   => sub {
+            my $agent  = shift;
+            my $tx     = shift;
             $tx->req->headers->header(
-                'Authorization' => 'apikey 61E4663E-6CAB-11E7-B011-FEE80D183886',
-                'Host' => 'localhost',
+                'Authorization' => $users{$user},
+                'Host'          => 'localhost',
             );
-        });
+        }
+    );
+}
+
+
 my $json    = JSON->new;
 
-my $user    = "admin";
-my $pass    = "admin";
 my $host    = "scotdemo.com";
 my $url     = "https://$host/scot/api/v2";
 my $authurl = "https://$host/auth";
-my $tx      = $ua->post($authurl => form => { user => $user, pass => $pass});
 
 my $alerts  = [
     {
@@ -277,7 +290,7 @@ my $entries = [
 
 #Add Alertgroups
 foreach my $a (@$alerts) {
-    my $tx  = $ua->post($url."/alertgroup" => json => $a);
+    my $tx  = $ua->{admin}->post($url."/alertgroup" => json => $a);
     if ( my $res = $tx->success ) {
         print $res->body;
     }
@@ -291,6 +304,7 @@ foreach my $a (@$alerts) {
 
 #Add Events
 foreach my $a (@$events) {
+    my $username = delete $a->{username};
     my $tx  = $ua->post($url."/event" => json => $a);
     if ( my $res = $tx->success ) {
         print $res->body;
