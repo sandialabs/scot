@@ -22,16 +22,16 @@
     }
 </style>
 <body>
-    <script src="//d3js.org/d3.v3.min.js"></script>
+    <script src="//d3js.org/d3.v4.min.js"></script>
     <script>
-        function getTextWidth(text, fontSize, fontName) {
+		const getTextWidth = (text, fontSize, fontName) => {
             c = document.createElement("canvas");
             ctx = c.getContext("2d");
             ctx.font = fontSize + ' ' + fontName;
             return ctx.measureText(text).width;
         }
 
-        function DataSegregator(array, on) {
+		const DataSegregator = (array, on) => {
             var SegData;
             OrdinalPositionHolder = {
                 valueOf: function () {
@@ -65,82 +65,86 @@
 
             return SegData;
         }
+		/**/
+        data = [{"Categories":[{"Name":"All Alerts","Value":26188},{"Name":"Promoted Alerts","Value":659},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-24","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":33074},{"Name":"Promoted Alerts","Value":1182},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-25","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":29898},{"Name":"Promoted Alerts","Value":204},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-26","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":262922},{"Name":"Promoted Alerts","Value":0},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-27","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":154644},{"Name":"Promoted Alerts","Value":39494},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-28","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":31182},{"Name":"Promoted Alerts","Value":0},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-29","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":46624},{"Name":"Promoted Alerts","Value":2609},{"Name":"Incident Alerts","Value":0}],"Date":"2016-03-01","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]}];
+        /**/
 
-
-        /*
-        Data = [
-{ Date: "2016-06-14", Categories: [{ Name: "Category1", Value: 368 }, { Name: "Category2", Value: 321 }, { Name: "Category3", Value: 524 }], LineCategory: [{ Name: "Line1", Value: 69 }, { Name: "Line2", Value: 63 }] },
-{ Date: "2016-06-15", Categories: [{ Name: "Category1", Value: 521 }, { Name: "Category2", Value: 123 }, { Name: "Category3", Value: 653 }], LineCategory: [{ Name: "Line1", Value: 89 }, { Name: "Line2", Value: 96 }] },
-{ Date: "2016-06-17", Categories: [{ Name: "Category1", Value: 368 }, { Name: "Category2", Value: 236 }, { Name: "Category3", Value: 537 }], LineCategory: [{ Name: "Line1", Value: 63 }, { Name: "Line2", Value: 35 }] },
-{ Date: "2016-06-18", Categories: [{ Name: "Category1", Value: 423 }, { Name: "Category2", Value: 330 }, { Name: "Category3", Value: 689 }], LineCategory: [{ Name: "Line1", Value: 86 }, { Name: "Line2", Value: 45 }] },
-{ Date: "2016-06-19", Categories: [{ Name: "Category1", Value: 601 }, { Name: "Category2", Value: 423 }, { Name: "Category3", Value: 490 }], LineCategory: [{ Name: "Line1", Value: 65 }, { Name: "Line2", Value: 63 }] },
-{ Date: "2016-06-20", Categories: [{ Name: "Category1", Value: 412 }, { Name: "Category2", Value: 461 }, { Name: "Category3", Value: 321 }], LineCategory: [{ Name: "Line1", Value: 75 }, { Name: "Line2", Value: 85 }] }
-        ]
-        */
-        /* Data = [{"Categories":[{"Name":"All Alerts","Value":26188},{"Name":"Promoted Alerts","Value":659},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-24","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":33074},{"Name":"Promoted Alerts","Value":1182},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-25","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":29898},{"Name":"Promoted Alerts","Value":204},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-26","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":262922},{"Name":"Promoted Alerts","Value":0},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-27","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":154644},{"Name":"Promoted Alerts","Value":39494},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-28","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":31182},{"Name":"Promoted Alerts","Value":0},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-29","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":46624},{"Name":"Promoted Alerts","Value":2609},{"Name":"Incident Alerts","Value":0}],"Date":"2016-03-01","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]}];
-        */
-
-        var margin = { top: 20, right: 30, bottom: 60, left: 40 },
-            width = 960 - margin.left - margin.right,
+        let margin = { top: 20, right: 40, bottom: 60, left: 40 },
+            width = 1000 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;
 
-        var textWidthHolder = 0;
+        let textWidthHolder = 0;
 
-        var url = "/scot/api/v2/metric/response_avg_last_x_days";
-        var opts = "?days=7&targetdate=2016-03-01";
+        let url = "/scot/api/v2/metric/response_avg_last_x_days";
+        let opts = "?days=7&targetdate=2017-06-21";
 
-        d3.json(url+opts, function(Data) {
+		//d3.json(url+opts, function(data) {
 
         /// Adding Date in LineCategory
-        Data.forEach(function (d) {
-            d.LineCategory.forEach(function (b) {
+		data.forEach( d => {
+			d.LineCategory.forEach( b => {
                 b.Date = d.Date;
-            })
-        });
+            } );
+        } );
 
-        var Categories = new Array();
-        // Extension method declaration
+        let Categories = [];
 
-        Categories.pro
+        var x0 = d3.scaleBand()
+            .rangeRound([0, width], .1);
+        var x1 = d3.scaleBand();
 
-//        var Data;
-        var ageNames;
-        var x0 = d3.scale.ordinal()
-            .rangeRoundBands([0, width], .1);
-        var XLine = d3.scale.ordinal()
-            .rangeRoundPoints([0, width], .1);
-        var x1 = d3.scale.ordinal();
-
-        var y = d3.scale.linear()
+        var y = d3.scaleLog()
+			.clamp( true )
+			.base( 4 )
             .range([height, 0]);
 
-        var YLine = d3.scale.linear().range([height, 0])
-        .domain([0, d3.max(Data, function (d) { return d3.max(d.LineCategory, function (b) { return b.Value }) })]);
+        var YLine = d3.scaleLog().range([height, 0])
+		.clamp( true )
+		.base( 2 )
+        .domain([1, d3.max(data, function (d) { return d3.max(d.LineCategory, function (b) { return b.Value }) })])
+		.nice();
 
-        var color = d3.scale.ordinal()
+        var color = d3.scaleOrdinal()
             .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
 
-        var line = d3.svg.line().x(function (d) {
-            return x0(d.Date) + x0.rangeBand() / 2;
+        var line = d3.line().x(function (d) {
+            return x0(d.Date) + x0.bandwidth() / 2;
         }).y(function (d) { return YLine(d.Value) });
 
 
+		let formatMinutes = function(d) { 
+			var hours = Math.floor(d / 3600),
+				minutes = Math.floor((d - (hours * 3600)) / 60),
+				seconds = d - (hours * 3600 ) - (minutes * 60);
+			if ( hours ) {
+				return hours +'h';
+			}
+			if ( minutes ) {
+				return minutes +'m';
+			}
+			return seconds +'s';
+		};
 
+		let logFormat = function( formatter ) {
+			return function( d ) {
+				var x = Math.log(d) / Math.log(10) + 1e-6;
+				return Math.abs(x - Math.floor(x)) < .5 ? formatter(d) : "";
+			}
+		}
 
-        var xAxis = d3.svg.axis()
-                        .scale(x0)
-                        .orient("bottom");
+        var xAxis = d3.axisBottom()
+                        .scale(x0);
 
-        var yAxis = d3.svg.axis()
+        var yAxis = d3.axisLeft()
                         .scale(y)
-                        .orient("left")
-                        .tickFormat(d3.format(".2s"));
+						.tickFormat( logFormat( formatMinutes ) );
 
-        var YLeftAxis = d3.svg.axis().scale(YLine).orient("right").tickFormat(d3.format(".2s"));
+		var YLeftAxis = d3.axisRight()
+						.scale(YLine)
+						.tickFormat( logFormat( formatMinutes ) );
 
         var svg = d3.select("body").append("svg")
-                    .attr("width", width + margin.left + margin.right)
-                    .attr("height", height + margin.top + margin.bottom)
+					.attr( 'viewBox', '0 0 1000 500' )
                     .append("g")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -149,7 +153,7 @@
 
 
         // Bar Data categories
-        Data.forEach(function (d) {
+        data.forEach(function (d) {
             d.Categories.forEach(function (b) {
                 if (Categories.findIndex(function (c) { return c.Name===b.Name}) == -1) {
                     b.Type = "bar";
@@ -161,7 +165,7 @@
 
 
         // Line Data categories
-        Data.forEach(function (d) {
+        data.forEach(function (d) {
             d.LineCategory.forEach(function (b) {
                 if (Categories.findIndex(function (c) { return c.Name === b.Name }) == -1) {
                     b.Type = "line";
@@ -172,16 +176,25 @@
         });
 
         // Processing Line data
-        lineData = DataSegregator(Data.map(function (d) { return d.LineCategory }), "Name");
+        lineData = DataSegregator(data.map(function (d) { return d.LineCategory }), "Name");
 
         // Line Coloring
-        LineColor = d3.scale.ordinal();
+        LineColor = d3.scaleOrdinal();
         LineColor.domain(Categories.filter(function (d) { return d.Type == "line" }).map(function (d) { return d.Name }));
         LineColor.range(["#d40606", "#06bf00", "#98bdc5", "#671919", "#0b172b"])
-        x0.domain(Data.map(function (d) { return d.Date; }));
-        XLine.domain(Data.map(function (d) { return d.Date; }));
-        x1.domain(Categories.filter(function (d) { return d.Type == "bar" }).map(function (d) { return d.Name})).rangeRoundBands([0, x0.rangeBand()]);
-        y.domain([0, d3.max(Data, function (d) { return d3.max(d.Categories, function (d) { return d.Value; }); })]);
+        x0.domain(data.map(function (d) { return d.Date; }));
+		x1.domain(
+			Categories.filter(
+				function (d) { 
+					return d.Type == "bar";
+				}
+			).map(
+				function (d) {
+					return d.Name;
+				}
+			)
+		).rangeRound([0, x0.bandwidth()]);
+        y.domain([1, d3.max(data, function (d) { return d3.max(d.Categories, function (d) { return d.Value; }); })]).nice();
 
         svg.append("g")
             .attr("class", "x axis")
@@ -196,9 +209,9 @@
          .append("text")
            .attr("transform", "rotate(-90)")
            .attr("y", -10)
-
            .attr("dy", ".71em")
            .style("text-anchor", "end")
+			.style( 'fill', 'black' )
            .text("Last year Mean Response");
 
         svg.append("g")
@@ -209,11 +222,11 @@
             .attr("y", 6)
             .attr("dy", ".71em")
             .style("text-anchor", "end")
+			.style( 'fill', 'black' )
             .text("Seconds to Respond");
 
-
         var state = svg.selectAll(".state")
-            .data(Data)
+            .data(data)
           .enter().append("g")
             .attr("class", "state")
             .attr("transform", function (d) { return "translate(" + x0(d.Date) + ",0)"; });
@@ -221,7 +234,7 @@
         state.selectAll("rect")
             .data(function (d) { return d.Categories; })
           .enter().append("rect")
-            .attr("width", x1.rangeBand())
+            .attr("width", x1.bandwidth())
             .attr("x", function (d) { return x1(d.Name); })
             .attr("y", function (d) { return y(d.Value); })
             //.attr("height", function (d) { return height - y(d.Value); })
@@ -237,8 +250,13 @@
         // drawaing lines
         svg.selectAll(".lines").data(lineData).enter().append("g").attr("class", "line")
         .each(function (d) {
-            Name=d[0].Name
-            d3.select(this).append("path").attr("d", function (b) { return line(b) }).style({ "stroke-width": "2px", "fill": "none" }).style("stroke", LineColor(Name)).transition().duration(1500);
+            Name=d[0].Name;
+			d3.select(this)
+				.append("path")
+				.attr("d", function (b) { return line(b) })
+				.style("stroke-width", "2px")
+				.style("fill", "none")
+				.style("stroke", LineColor(Name)).transition().duration(1500);
         })
 
 
@@ -289,7 +307,7 @@
             thisWidth = d3.select(this).node().getBBox().width;
             return "translate(" + ((width) / 2 - thisWidth / 2) + ",0)";
         })
-    });
+    //});
 
     </script>
 </body>
