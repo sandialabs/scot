@@ -25,7 +25,8 @@ var Revl            = require('../components/visualization/revl.coffee');
 var Gamification    = require('../components/dashboard/gamification.jsx');
 var Status          = require('../components/dashboard/status.jsx');
 var Online          = require('../components/dashboard/online.jsx');
-var Report          = require('../components/dashboard/report.jsx');
+// var Report          = require('../components/dashboard/report.jsx');
+import Report		from '../components/dashboard/report';
 var Notification    = require('react-notification-system');
 var Login           = require('../modal/login.jsx').default;
 
