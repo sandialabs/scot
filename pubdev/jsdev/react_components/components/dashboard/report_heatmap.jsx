@@ -1,33 +1,26 @@
-var React   = require('react');
-var Panel   = require('react-bootstrap/lib/Panel.js');
-var Badge   = require('react-bootstrap/lib/Badge.js');
-var Button  = require('react-bootstrap/lib/Button.js');
+import React, { PureComponent } from 'react';
+import { Button } from 'react-bootstrap';
 
-var ReportHeatmap = React.createClass({
-    getInitialState: function() {
-        return {
-            ReportData: null,
+class ReportHeatmap extends PureComponent {
+	constructor( props ) {
+		super( props );
+
+        this.state = {
             collection:'event',
             type:'created',
             year:'2017',
-            height: 430,
-            width: 1000,
         }
-    },
-    componentDidMount: function() {
+    }
+
+    componentDidMount() {
        this.loadHeatMap(); 
-    },
-    componentWillMount: function() {
-        /*const script = document.createElement("script");
-        script.type = 'text/javascript';
-        script.src = "/libs/d3.3_4_11.js";
-        script.async = true;
-        document.body.appendChild(script);*/
-    },
-    componentDidUpdate: function() {
+    }
+
+    componentDidUpdate() {
         this.loadHeatMap();
-    },
-    loadHeatMap: function() {
+    }
+
+    loadHeatMap() {
         var margin = { top: 50, right: 0, bottom: 100, left: 50 },
         width = $('#heatmap').width() - (margin.left - margin.right),
         height = this.state.height - (margin.top - margin.bottom),
@@ -118,15 +111,17 @@ var ReportHeatmap = React.createClass({
                 legend.exit().remove();
             }
         );
-        //this.setState({width: width, height: height});
-    },
-    collectionChange: function(event) {
+    }
+
+    collectionChange( event ) {
         this.setState({collection: event.target.value});
-    },
-    yearChange: function(event) {
+    }
+	 
+    yearChange( event ) {
         this.setState({year: event.target.value});
-    },
-    exportToPNG: function() {
+    }
+
+    exportToPNG() {
         var svgString = new XMLSerializer().serializeToString(document.querySelector('svg'));
 
         var canvas = document.getElementById("canvas");
@@ -150,8 +145,9 @@ var ReportHeatmap = React.createClass({
             a.remove();
         };
         img.src = url;
-    },
-    render: function() {
+    }
+
+    render() {
         var margin = { top: 50, right: 0, bottom: 100, left: 30 }
         var transform = 'translate(' + margin.left + ',' + margin.top + ')';
         var svgwidth = $('#report').width();
@@ -181,6 +177,6 @@ var ReportHeatmap = React.createClass({
             </div>
         )
     }
-});
+}
 
-module.exports = ReportHeatmap;
+export default ReportHeatmap;
