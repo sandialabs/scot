@@ -1,43 +1,23 @@
-var React               = require('react');
-var Panel               = require('react-bootstrap/lib/Panel.js');
-var Badge               = require('react-bootstrap/lib/Badge.js');
-var ReportHeatmap       = require('./report_heatmap.jsx'); 
-//var ReportAlertPower    = require('./report_alertpower.jsx');
+import React, { PureComponent } from 'react';
+import { Panel } from 'react-bootstrap';
 
-var Report = React.createClass({
-    getInitialState: function() {
-        return {
-            ReportData: null
-        }
-    },
-    render: function() {
-        return (
-            <div id='report' className='dashboard'>
-                <div style={{textAlign:'center'}}>
-                    <h2>Reports</h2>
-                </div>
-                <div id='heatmap' className="dashboard col-md-4">
-                    <div>
-                        <Panel header={'Heatmap'}>
-                            <ReportHeatmap />
-                        </Panel>
-                        
-                    </div>
-                </div>
-                {/*this.props.frontPage ? 
-                    null
-                :
-                    <div id='alertpower' className='dashboard col-md-4'>
-                        <div>
-                            <Panel header={'Alert Power'}>
-                                <ReportAlertPower />
-                            </Panel>
-                        </div>
-                    </div>
-                */}
-            </div>
-        );
-    }
-});
+import ReportHeatmap from './report_heatmap';
+// import ReportAlertPower from './report_alertpower';
 
-module.exports = Report;
+const Report = ( props ) => (
+	<div id='report' className='dashboard'>
+		<div style={{textAlign:'center'}}>
+			<h2>Reports</h2>
+		</div>
+		<div id='heatmap' className="dashboard col-md-4">
+			<div>
+				<Panel header='Heatmap'>
+					<ReportHeatmap />
+				</Panel>
+				
+			</div>
+		</div>
+	</div>
+)
+
+export default Report;
