@@ -454,7 +454,9 @@ sub build_match_ref {
 sub limit_fields {
     my $self    = shift;
     my $href    = shift;
-    my $params  = $href->{request}->{params};
+    my $req     = shift;
+    my $log     = $self->env->log;
+    my $params  = $req->{request}->{params};
     my $aref    = $params->{columns};
     my %fields  = ();
 
@@ -463,6 +465,7 @@ sub limit_fields {
             $aref = [ $aref ];  # make an array ref if we have a string
         }
     }
+    $log->debug("Attrs to limit: ",{filter=>\&Dumper, value=>$aref});
 
     foreach my $f (@$aref) {
         $fields{$f} = 1;
@@ -471,6 +474,7 @@ sub limit_fields {
     if ( scalar(keys %fields) == 0 ) {
         return undef;
     }
+    $log->debug("Limiting attributes to: ",{filter=>\&Dumper, value=>\%fields});
     return \%fields;
 }
 
