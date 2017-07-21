@@ -190,12 +190,22 @@ sub response_avg_last_x_days {
         $dt = DateTime->today();
     }
 
+    my $json    = {};
     my $averages = $self->get_alltime_alert_responsetime_avg;
+    push @{ $json->{lines} }, {
+        name    => "All Avg",
+        value   => $averages->{all} // 0,
+    }, {
+        name    => "Promoted Avg",
+        value   => $averages->{promoted} // 0,
+    }, {
+        name    => "Incident Avg",
+        value   => $averages->{incident} // 0,
+    };
+
 
      ## desire {
      ##     lines: [ { name: " ", value: x },...], dates: [ { date: " ",name:" ", value: x }...]
-
-    my $json    = {};
 
      for ( my $i = $x -1; $i >= 0; $i-- ) {
         my $next_start_dt   = $dt->clone();
@@ -210,29 +220,22 @@ sub response_avg_last_x_days {
         }
         my $dayresult   = $self->response_time($request);
 
-        push @{ $json->{lines} }, {
-            name    => "All Avg",
-            value   => $averages->{all} // 0,
-        }, {
-            name    => "Promoted Avg",
-            value   => $averages->{promoted} // 0,
-        }, {
-            name    => "Incident Avg",
-            value   => $averages->{incident} // 0,
-        };
-
         push @{ $json->{dates} }, {
             date    => $next_start_dt->ymd('-'),
-            name    => 'All',
-            value   => $dayresult->{all}->{avg} // 0,
-        }, {
-            date    => $next_start_dt->ymd('-'),
-            name    => 'Promoted',
-            value   => $dayresult->{promoted}->{avg} // 0,
-        }, {
-            date    => $next_start_dt->ymd('-'),
-            name    => 'Incident',
-            value   => $dayresult->{incident}->{avg} // 0,
+            values  => [
+                {
+                    name    => 'All',
+                    value   => $dayresult->{all}->{avg} // 0,
+                },
+                {
+                    name    => 'Promoted',
+                    value   => $dayresult->{promoted}->{avg} // 0,
+                },
+                {
+                    name    => 'Incident',
+                    value   => $dayresult->{incident}->{avg} // 0,
+                }
+            ]
         };
     }
     return $json;
