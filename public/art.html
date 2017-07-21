@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<meta charset="utf-8">
+<meta charset='utf-8'>
 <style>
     body {
         font: 10px sans-serif;
@@ -22,100 +22,19 @@
     }
 </style>
 <body>
-    <script src="//d3js.org/d3.v4.min.js"></script>
+    <script src='//d3js.org/d3.v4.min.js'></script>
     <script>
 		const getTextWidth = (text, fontSize, fontName) => {
-            c = document.createElement("canvas");
-            ctx = c.getContext("2d");
+            c = document.createElement( 'canvas' );
+            ctx = c.getContext( '2d' );
             ctx.font = fontSize + ' ' + fontName;
             return ctx.measureText(text).width;
         }
 
-		const DataSegregator = (array, on) => {
-            var SegData;
-            OrdinalPositionHolder = {
-                valueOf: function () {
-                    thisObject = this;
-                    keys = Object.keys(thisObject);
-                    keys.splice(keys.indexOf("valueOf"), 1);
-                    keys.splice(keys.indexOf("keys"), 1);
-                    return keys.length == 0 ? -1 : d3.max(keys, function (d) { return thisObject[d] })
-                }
-                , keys: function () {
-                    keys = Object.keys(thisObject);
-                    keys.splice(keys.indexOf("valueOf"), 1);
-                    keys.splice(keys.indexOf("keys"), 1);
-                    return keys;
-                }
-            }
-            array[0].map(function (d) { return d[on] }).forEach(function (b) {
-                value = OrdinalPositionHolder.valueOf();
-                OrdinalPositionHolder[b] = OrdinalPositionHolder > -1 ? ++value : 0;
-            })
-
-            SegData = OrdinalPositionHolder.keys().map(function () {
-                return [];
-            });
-
-            array.forEach(function (d) {
-                d.forEach(function (b) {
-                    SegData[OrdinalPositionHolder[b[on]]].push(b);
-                })
-            });
-
-            return SegData;
-        }
-		/**/
-        data = [{"Categories":[{"Name":"All Alerts","Value":26188},{"Name":"Promoted Alerts","Value":659},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-24","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":33074},{"Name":"Promoted Alerts","Value":1182},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-25","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":29898},{"Name":"Promoted Alerts","Value":204},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-26","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":262922},{"Name":"Promoted Alerts","Value":0},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-27","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":154644},{"Name":"Promoted Alerts","Value":39494},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-28","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":31182},{"Name":"Promoted Alerts","Value":0},{"Name":"Incident Alerts","Value":0}],"Date":"2016-02-29","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]},{"Categories":[{"Name":"All Alerts","Value":46624},{"Name":"Promoted Alerts","Value":2609},{"Name":"Incident Alerts","Value":0}],"Date":"2016-03-01","LineCategory":[{"Name":"All Avg","Value":160001},{"Name":"Promoted Avg","Value":283520},{"Name":"Incident Avg","Value":0}]}];
-        /**/
-
-        let margin = { top: 20, right: 40, bottom: 60, left: 40 },
-            width = 1000 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
-
-        let textWidthHolder = 0;
-
-        let url = "/scot/api/v2/metric/response_avg_last_x_days";
-        let opts = "?days=7&targetdate=2017-06-21";
-
-		//d3.json(url+opts, function(data) {
-
-        /// Adding Date in LineCategory
-		data.forEach( d => {
-			d.LineCategory.forEach( b => {
-                b.Date = d.Date;
-            } );
-        } );
-
-        let Categories = [];
-
-        var x0 = d3.scaleBand()
-            .rangeRound([0, width], .1);
-        var x1 = d3.scaleBand();
-
-        var y = d3.scaleLog()
-			.clamp( true )
-			.base( 4 )
-            .range([height, 0]);
-
-        var YLine = d3.scaleLog().range([height, 0])
-		.clamp( true )
-		.base( 2 )
-        .domain([1, d3.max(data, function (d) { return d3.max(d.LineCategory, function (b) { return b.Value }) })])
-		.nice();
-
-        var color = d3.scaleOrdinal()
-            .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
-
-        var line = d3.line().x(function (d) {
-            return x0(d.Date) + x0.bandwidth() / 2;
-        }).y(function (d) { return YLine(d.Value) });
-
-
-		let formatMinutes = function(d) { 
-			var hours = Math.floor(d / 3600),
-				minutes = Math.floor((d - (hours * 3600)) / 60),
-				seconds = d - (hours * 3600 ) - (minutes * 60);
+		const formatMinutes = d => { 
+			var hours = Math.floor( d / 3600 ),
+				minutes = Math.floor( ( d - ( hours * 3600 ) ) / 60 ),
+				seconds = d - ( hours * 3600 ) - ( minutes * 60 );
 			if ( hours ) {
 				return hours +'h';
 			}
@@ -125,189 +44,175 @@
 			return seconds +'s';
 		};
 
-		let logFormat = function( formatter ) {
-			return function( d ) {
-				var x = Math.log(d) / Math.log(10) + 1e-6;
-				return Math.abs(x - Math.floor(x)) < .5 ? formatter(d) : "";
-			}
+		const logFormat = formatter => d => {
+			var x = Math.log( d ) / Math.log(10) + 1e-6;
+			return Math.abs( x - Math.floor( x ) ) < .5 ? formatter( d ) : '';
 		}
 
-        var xAxis = d3.axisBottom()
-                        .scale(x0);
+        let margin = { top: 20, right: 40, bottom: 60, left: 40 },
+            width = 1000 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom,
+			barColors = {
+				'All': '#98abc5',
+				'Promoted': '#8a89a6',
+				'Incident': '#7b6888',
+			},
+			lineColors = {
+				'All Avg': 'gray',
+				'Promoted Avg': 'blue',
+				'Incident Avg': 'red',
+			};
 
-        var yAxis = d3.axisLeft()
-                        .scale(y)
-						.tickFormat( logFormat( formatMinutes ) );
+        let textWidthHolder = 0;
 
-		var YLeftAxis = d3.axisRight()
-						.scale(YLine)
-						.tickFormat( logFormat( formatMinutes ) );
-
-        var svg = d3.select("body").append("svg")
+        var svg = d3.select( 'body' ).append( 'svg' )
 					.attr( 'viewBox', '0 0 1000 500' )
-                    .append("g")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                    .append( 'g' )
+                    .attr( 'transform', 'translate( ' + margin.left + ',' + margin.top + ' )' );
 
+        let url = '/scot/api/v2/metric/response_avg_last_x_days';
+        let opts = '?days=7&targetdate=2017-07-21';
+		d3.json(url+opts, data => {
+			console.log( data );
 
+			// Bar names
+			let barNames = new Set();
+			data.dates.forEach( d => {
+				d.values.forEach( b => {
+					barNames.add( b.name );
+				} );
+			} );
 
+			// Line names
+			let lineNames = new Set();
+			data.lines.forEach( d => {
+				lineNames.add( d.name );
+			} );
 
+			// Scales
+			let maxValue = Math.max(
+				d3.max( data.lines, d => d.value ),
+				d3.max( data.dates, d => {
+					return d3.max( d.values, b => b.value );
+				} )
+			);
 
-        // Bar Data categories
-        data.forEach(function (d) {
-            d.Categories.forEach(function (b) {
-                if (Categories.findIndex(function (c) { return c.Name===b.Name}) == -1) {
-                    b.Type = "bar";
-                    console.log(JSON.stringify(b))
-                    Categories.push(b)
-                }
-            })
-        });
+			let dateScale = d3.scaleBand()
+				.range( [ 0, width ] )
+				.domain( data.dates.map( d => d.date ) );
+			let barScale = d3.scaleBand()
+				.domain( Array.from( barNames ) )
+				.range( [ 0, dateScale.bandwidth() ] );
+			let yScale = d3.scaleLog()
+				.clamp( true )
+				.base( 4 )
+				.range( [ height, 0 ] )
+				.domain( d3.range( 1, maxValue ) )
+				.nice();
 
+			// Axes
+			var xAxis = d3.axisBottom()
+				.scale( dateScale );
 
-        // Line Data categories
-        data.forEach(function (d) {
-            d.LineCategory.forEach(function (b) {
-                if (Categories.findIndex(function (c) { return c.Name === b.Name }) == -1) {
-                    b.Type = "line";
-                    console.log(JSON.stringify(b))
-                    Categories.push(b)
-                }
-            })
-        });
+			var yAxis = d3.axisLeft()
+				.scale( yScale )
+				.tickFormat( logFormat( formatMinutes ) );
 
-        // Processing Line data
-        lineData = DataSegregator(data.map(function (d) { return d.LineCategory }), "Name");
+			svg.append( 'g' )
+				.attr( 'class', 'x axis' )
+				.attr( 'transform', `translate( 0, ${height} )` )
+				.call( xAxis );
 
-        // Line Coloring
-        LineColor = d3.scaleOrdinal();
-        LineColor.domain(Categories.filter(function (d) { return d.Type == "line" }).map(function (d) { return d.Name }));
-        LineColor.range(["#d40606", "#06bf00", "#98bdc5", "#671919", "#0b172b"])
-        x0.domain(data.map(function (d) { return d.Date; }));
-		x1.domain(
-			Categories.filter(
-				function (d) { 
-					return d.Type == "bar";
-				}
-			).map(
-				function (d) {
-					return d.Name;
-				}
-			)
-		).rangeRound([0, x0.bandwidth()]);
-        y.domain([1, d3.max(data, function (d) { return d3.max(d.Categories, function (d) { return d.Value; }); })]).nice();
+			svg.append( 'g' )
+				.attr( 'class', 'y axis' )
+				.call( yAxis )
+				.append( 'text' )
+					.attr( 'transform', 'rotate(-90)' )
+					.attr( 'y', 6)
+					.attr( 'dy', '.71em' )
+					.style( 'text-anchor', 'end' )
+					.style( 'fill', 'black' )
+					.text( 'Seconds to Respond' );
 
-        svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
-            .call(xAxis);
+			// Drawing Bars
+			let state = svg.selectAll( '.state' )
+				.data( data.dates )
+				.enter().append( 'g' )
+					.attr( 'class', 'state' )
+					.attr( 'transform', d => `translate( ${dateScale( d.date )}, 0 )` );
 
-        svg.append("g")
-           .attr("class", "y axis")
-            .attr("transform", "translate(" + (width) + ",0)")
-           .call(YLeftAxis)
+			state.selectAll( 'rect' )
+				.data( d => d.values )
+				.enter().append( 'rect' )
+					.attr( 'width', barScale.bandwidth() )
+					.attr( 'x', d => barScale( d.name ) )
+					.attr( 'y', d => yScale( d.value ) )
+					.attr( 'height', d => height - yScale( d.value ) )
+					.style( 'fill', d => barColors[ d.name ] );
 
-         .append("text")
-           .attr("transform", "rotate(-90)")
-           .attr("y", -10)
-           .attr("dy", ".71em")
-           .style("text-anchor", "end")
-			.style( 'fill', 'black' )
-           .text("Last year Mean Response");
-
-        svg.append("g")
-            .attr("class", "y axis")
-            .call(yAxis)
-          .append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", 6)
-            .attr("dy", ".71em")
-            .style("text-anchor", "end")
-			.style( 'fill', 'black' )
-            .text("Seconds to Respond");
-
-        var state = svg.selectAll(".state")
-            .data(data)
-          .enter().append("g")
-            .attr("class", "state")
-            .attr("transform", function (d) { return "translate(" + x0(d.Date) + ",0)"; });
-
-        state.selectAll("rect")
-            .data(function (d) { return d.Categories; })
-          .enter().append("rect")
-            .attr("width", x1.bandwidth())
-            .attr("x", function (d) { return x1(d.Name); })
-            .attr("y", function (d) { return y(d.Value); })
-            //.attr("height", function (d) { return height - y(d.Value); })
-            .style("fill", function (d) { return color(d.Name); })
-            .transition().delay(500).attrTween("height", function (d) {
-                var i = d3.interpolate(0, height - y(d.Value));
-                return function (t)
-                {
-                    return i(t);
-                }
-            });
-
+			/*
         // drawaing lines
-        svg.selectAll(".lines").data(lineData).enter().append("g").attr("class", "line")
+        svg.selectAll( '.lines' ).data(lineData).enter().append( 'g' ).attr( 'class', 'line' )
         .each(function (d) {
             Name=d[0].Name;
 			d3.select(this)
-				.append("path")
-				.attr("d", function (b) { return line(b) })
-				.style("stroke-width", "2px")
-				.style("fill", "none")
-				.style("stroke", LineColor(Name)).transition().duration(1500);
+				.append( 'path' )
+				.attr( 'd', function (b) { return line(b) })
+				.style( 'stroke-width', '2px' )
+				.style( 'fill', 'none' )
+				.style( 'stroke', LineColor(Name)).transition().duration(1500);
         })
+		*/
 
 
         // Legends
 
-        var LegendHolder = svg.append("g").attr("class", "legendHolder");
-        var legend = LegendHolder.selectAll(".legend")
-            .data(Categories.map(function (d) { return {"Name":d.Name,"Type":d.Type}}))
-          .enter().append("g")
-            .attr("class", "legend")
-            .attr("transform", function (d, i) { return "translate(0," +( height+ margin.bottom/2 )+ ")"; })
+        var LegendHolder = svg.append( 'g' ).attr( 'class', 'legendHolder' );
+        var legend = LegendHolder.selectAll( '.legend' )
+            .data(Categories.map(function (d) { return {'Name':d.Name,'Type':d.Type}}))
+          .enter().append( 'g' )
+            .attr( 'class', 'legend' )
+            .attr( 'transform', function (d, i) { return 'translate(0,' +( height+ margin.bottom/2 )+ ' )'; })
             .each(function (d,i) {
                 //  Legend Symbols
 
 
-                d3.select(this).append("rect")
-                .attr("width", function () { return 18 })
-                .attr("x", function (b) {
+                d3.select(this).append( 'rect' )
+                .attr( 'width', function () { return 18 })
+                .attr( 'x', function (b) {
 
                     left = (i+1) * 15 + i * 18 + i * 5 + textWidthHolder;
                     return left;
                 })
-                 .attr("y", function (b) { return b.Type == 'bar'?0:7})
-                .attr("height", function (b) { return b.Type== 'bar'? 18:5 })
-                .style("fill", function (b) { return b.Type == 'bar' ? color(d.Name) : LineColor(d.Name) });
+                 .attr( 'y', function (b) { return b.Type == 'bar'?0:7})
+                .attr( 'height', function (b) { return b.Type== 'bar'? 18:5 })
+                .style( 'fill', function (b) { return b.Type == 'bar' ? color(d.Name) : LineColor(d.Name) });
 
                 //  Legend Text
 
-                d3.select(this).append("text")
-                .attr("x", function (b) {
+                d3.select(this).append( 'text' )
+                .attr( 'x', function (b) {
 
                     left = (i+1) * 15 + (i+1) * 18 + (i + 1) * 5 + textWidthHolder;
 
                     return left;
                 })
-                .attr("y", 9)
-                .attr("dy", ".35em")
-                .style("text-anchor", "start")
+                .attr( 'y', 9)
+                .attr( 'dy', '.35em' )
+                .style( 'text-anchor', 'start' )
                 .text(d.Name);
 
-                textWidthHolder += getTextWidth(d.Name, "10px", "calibri");
+                textWidthHolder += getTextWidth(d.Name, '10px', 'calibri' );
             });
 
 
         // Legend Placing
 
-        d3.select(".legendHolder").attr("transform", function (d) {
+        d3.select( '.legendHolder' ).attr( 'transform', function (d) {
             thisWidth = d3.select(this).node().getBBox().width;
-            return "translate(" + ((width) / 2 - thisWidth / 2) + ",0)";
+            return 'translate( ' + ((width) / 2 - thisWidth / 2) + ',0)';
         })
-    //});
+    });
 
     </script>
 </body>
