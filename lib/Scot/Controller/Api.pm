@@ -1478,7 +1478,7 @@ sub wall {
         action  => "wall",
         data    => {
             message => $msg,
-            user    => $user,
+            who     => $user,
             when    => $now,
         }
     });
