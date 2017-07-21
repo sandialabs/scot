@@ -206,12 +206,19 @@ This function does not create any record to the audit collection
 
 =cut
 
+sub get_groups {
+    my $self    = shift;
+    my $aref    = $self->session('groups');
+    my @groups  = map { lc($_) } @{$aref};
+    return wantarray ? @groups : \@groups;
+}
+
 sub list {
     my $self    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
     my $user    = $self->session('user');
-    my $groups  = $self->session('groups');
+    my $groups  = $self->get_groups;
 
     $log->debug("LIST");
 
@@ -345,7 +352,7 @@ sub post_get_one_process {
     # handle special get_one cases and convert object into hash
 
     if ( $object->meta->does_role('Scot::Role::Permittable') ) {
-        unless ( $object->is_readable($self->session('groups')) ) {
+        unless ( $object->is_readable($self->get_groups) ) {
             $self->read_not_permitted_error;
             die "Read not permitted";
         }
@@ -628,7 +635,7 @@ sub update_permitted {
 
     if ( $object->meta->does_role('Scot::Role::Permission') ) {
 
-        return $object->is_modifiable($self->session('groups'));
+        return $object->is_modifiable($self->get_groups);
     }
     return 1;
 }
@@ -643,7 +650,8 @@ sub pre_update_process {
 
     $log->debug("PRE UPDATE");
 
-    my $usersgroups = $self->session('groups');
+    # my $usersgroups = $self->session('groups');
+    my $usersgroups  = $self->get_groups;
 
     if ( ref($object) eq "Scot::Model::Apikey" ) {
         my $updated_groups = [];
@@ -1186,7 +1194,7 @@ sub delete_or_purge {
 sub delete_not_permitted {
     my $self    = shift;
     my $object  = shift;
-    my $users_groups    = $self->session('groups');
+    my $users_groups    = $self->get_groups;
 
     if ($object->meta->does_role('Scot::Role::Permittable')) {
         if ( $object->is_modifiable($users_groups) ) {
@@ -1354,11 +1362,11 @@ sub thread_entries {
     my $cursor  = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $mygroups    = $self->session('groups');
+    my $mygroups    = $self->get_groups;
     my $user        = $self->session('user');
 
     $log->debug("Threading ". $cursor->count . " entries...");
-    # $log->debug("users groups are: ".join(',',@$mygroups));
+    $log->debug("users groups are: ", {filter=>\&Dumper, value=>$mygroups});
 
     my @threaded    = ();
     my %where       = ();
@@ -1529,7 +1537,7 @@ sub whoami {
     if ( defined ( $userobj )  ) {
         $userobj->update_set(lastvisit => $env->now);
         my $user_href   = $userobj->as_hash;
-        if ( $env->is_admin($user_href->{username}, $self->session('groups'))){
+        if ( $env->is_admin($user_href->{username}, $self->get_groups)){
             $user_href->{is_admin} = 1;
         }
         # TODO:  move this to config file?
