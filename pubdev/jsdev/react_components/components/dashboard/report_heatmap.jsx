@@ -76,9 +76,11 @@ class ReportHeatmap extends PureComponent {
         d3.json(
             url,
             function(error, data) {
+				/*
 				container.selectAll( '.hour' ).remove();
 				container.selectAll( '.legend' ).remove();
 				container.selectAll( '.legend-text' ).remove();
+				*/
 				
 				let colorScale = d3.scaleQuantile()
 					.domain( [ 0, buckets - 1, d3.max( data, ( d ) => { return d.value } ) ] )
@@ -89,6 +91,8 @@ class ReportHeatmap extends PureComponent {
 					.data( data, ( d ) => { return d.day +':'+ d.hour; } );
 				cards.append( 'title' );
 				cards.enter().append( 'rect' )
+					.style( 'fill', colors[0] )
+					.merge( cards )
 					.attr( 'x', ( d ) => ( d.hour - 1 ) * gridSize )
 					.attr( 'y', ( d ) => ( d.day - 1 ) * gridSize )
 					.attr( 'rx', 4 )
@@ -96,7 +100,6 @@ class ReportHeatmap extends PureComponent {
 					.attr( 'class', 'hour' )
 					.attr( 'width', gridSize )
 					.attr( 'height', gridSize )
-					.style( 'fill', colors[0] )
 					.transition().duration( 1000 )
 						.style( 'fill', ( d ) => { return colorScale( d.value ); } );
 				cards.select( 'title' ).text( ( d ) => d.value );
@@ -106,17 +109,19 @@ class ReportHeatmap extends PureComponent {
 				var legend = graph.selectAll( '.legend' )
 					.data( [0].concat( colorScale.quantiles() ), ( d ) => d );
 
-				legend.enter().append( 'rect' )
+				legend.enter().append( 'g' )
+					.attr( 'class', 'legend' )
+					.merge( legend )
+					.append( 'rect' )
 					.attr( 'x', (d, i) => ( legendElementWidth * i ) )
 					.attr( 'y', height )
-					.attr( 'class', 'legend' )
 					.attr( 'width', legendElementWidth )
 					.attr( 'height', gridSize / 2 )
-					.style( 'fill', (d, i) => colors[i] );
+					.style( 'fill', (d, i) => colors[i] )
 
-				legend.enter().append( 'text' )
+				legend.append( 'text' )
+					.merge( legend )
 					.text( ( d ) => ( '≥ ' + Math.round( d ) ) )
-					.attr( 'class', 'legend-text' )
 					.attr( 'x', (d, i) => legendElementWidth * i )
 					.attr( 'y', height + gridSize );
 
