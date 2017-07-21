@@ -137,6 +137,15 @@ $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/alert")
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id/entity")
 ->status_is(200);
 
+# test entity attribute filter
+$t->get_ok("/scot/api/v2/entity?columns=id")
+    ->status_is(200);
+
+my $result = $t->tx->res->json;
+
+ok(keys %{$result->{records}->[0]} == 1, "only one attr per record");
+ok($result->{records}->[0]->{id} == 1, "id is correct");
+
  print Dumper($t->tx->res->json);
  done_testing();
  exit 0;
