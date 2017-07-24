@@ -465,7 +465,7 @@ sub limit_fields {
             $aref = [ $aref ];  # make an array ref if we have a string
         }
     }
-    $log->debug("Attrs to limit: ",{filter=>\&Dumper, value=>$aref});
+    $log->trace("Attrs to limit: ",{filter=>\&Dumper, value=>$aref});
 
     foreach my $f (@$aref) {
         $fields{$f} = 1;
@@ -474,7 +474,7 @@ sub limit_fields {
     if ( scalar(keys %fields) == 0 ) {
         return undef;
     }
-    $log->debug("Limiting attributes to: ",{filter=>\&Dumper, value=>\%fields});
+    $log->trace("Limiting attributes to: ",{filter=>\&Dumper, value=>\%fields});
     return \%fields;
 }
 
@@ -492,7 +492,7 @@ sub filter_fields {
         }
     }
     else {
-        $self->env->log->warn("leaving fields intact");
+        $self->env->log->trace("leaving fields intact");
     }
 }
 
