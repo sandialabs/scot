@@ -113,11 +113,11 @@ db.apikey.ensureIndex ( { "active" : 1 } );
 db.apikey.ensureIndex ( { "groups" : 1 } );
 db.apikey.ensureIndex ( { "username" : 1 } );
 
-db.apikey.insert ( { "apikey" : "61E4663E-6CAB-11E7-B011-FEE80D183886", "active" : 1, "groups" : ["wg-scot", "wg-scot-admin", "wg-scot-ir"], "username" : "admin" } );
-db.apikey.insert ( { "apikey" : "51E4663E-6CAB-11E7-B011-FEE80D183886", "active" : 1, "groups" : ["wg-scot", "wg-scot-admin", "wg-scot-ir"], "username" : "joplin" } );
-db.apikey.insert ( { "apikey" : "41E4663E-6CAB-11E7-B011-FEE80D183886", "active" : 1, "groups" : ["wg-scot", "wg-scot-admin", "wg-scot-ir"], "username" : "kelly" } );
-db.apikey.insert ( { "apikey" : "31E4663E-6CAB-11E7-B011-FEE80D183886", "active" : 1, "groups" : ["wg-scot", "wg-scot-admin", "wg-scot-ir"], "username" : "montgomery" } );
-db.apikey.insert ( { "apikey" : "21E4663E-6CAB-11E7-B011-FEE80D183886", "active" : 1, "groups" : ["wg-scot", "wg-scot-admin", "wg-scot-ir"], "username" : "pilgrim" } );
+db.apikey.insert ( { "id":1, "apikey" : "61E4663E-6CAB-11E7-B011-FEE80D183886", "active" : 1, "groups" : ["wg-scot", "wg-scot-admin", "wg-scot-ir"], "username" : "admin" } );
+db.apikey.insert ( { "id":2, "apikey" : "51E4663E-6CAB-11E7-B011-FEE80D183886", "active" : 1, "groups" : ["wg-scot", "wg-scot-admin", "wg-scot-ir"], "username" : "joplin" } );
+db.apikey.insert ( { "id":3,"apikey" : "41E4663E-6CAB-11E7-B011-FEE80D183886", "active" : 1, "groups" : ["wg-scot", "wg-scot-admin", "wg-scot-ir"], "username" : "kelly" } );
+db.apikey.insert ( { "id":4,"apikey" : "31E4663E-6CAB-11E7-B011-FEE80D183886", "active" : 1, "groups" : ["wg-scot", "wg-scot-admin", "wg-scot-ir"], "username" : "montgomery" } );
+db.apikey.insert ( { "id":5,"apikey" : "21E4663E-6CAB-11E7-B011-FEE80D183886", "active" : 1, "groups" : ["wg-scot", "wg-scot-admin", "wg-scot-ir"], "username" : "pilgrim" } );
 
 print ("Zero-ing the nexid collection...");
 db.nextid.drop();
