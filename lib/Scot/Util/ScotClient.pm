@@ -194,11 +194,22 @@ has auth_header => (
 
 sub _build_auth_header {
     my $self    = shift;
-    my $user    = $self->username;
-    my $pass    = $self->password;
-    my $mash    = $user . ":" . $pass;
+
+    my $mash;
+    if ( $self->api_key eq ' ' ) {
+        my $user    = $self->username;
+        my $pass    = $self->password;
+        $mash       = $user . ":" . $pass;
+    }
+    else {
+        # note to monday:  need to check auth type for api key
+        # and use that instead
+        $mash   = $self->api_key;
+        
+    }
     chomp(my $encoded = encode_base64($mash));
     return sprintf("%s %s", $self->auth_type, $encoded);
+    
 }
 
 has api_key => (
@@ -229,7 +240,8 @@ sub _build_api_key_header {
     my $log     = $self->log;
     $log->debug("BUILDING api_key_header from $user");
     chomp(my $encoded = encode_base64($user));
-    my $string = sprintf("%s %s", "apikey", $encoded);
+    # my $string = sprintf("%s %s", "apikey", $encoded);
+    my $string = sprintf("%s %s", "apikey", $user);
     $log->debug("string is $string");
     return $string;
 }
