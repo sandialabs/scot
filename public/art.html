@@ -28,12 +28,19 @@
         }
 
 		const formatTickTime = d => { 
-			let	days = Math.floor( d / ( 3600 * 24 ) ),
-				hours = Math.floor( d / 3600 ),
-				minutes = Math.floor( d / 60 ),
-				seconds = d;
+			const daySeconds = 3600 * 24;
+			let days = Math.floor( d / daySeconds ),
+				hours = Math.floor( d % daySeconds / 3600 ),
+				minutes = Math.floor( d % 3600 / 60 ),
+				seconds = Math.floor( d % 60 );
+
 			if ( days ) {
-				return days +'d';
+				let output = days + 'd';
+
+				if ( hours ) {
+					output = output +' '+ hours +'h';
+				}
+				return output;
 			}
 			if ( hours ) {
 				return hours +'h';
@@ -44,26 +51,39 @@
 			return seconds +'s';
 		};
 
-		const logFormat = formatter => d => {
-			var x = Math.log( d ) / Math.log(10) + 1e-6;
-			return Math.abs( x - Math.floor( x ) ) < .5 ? formatter( d ) : '';
+		const formatTime = d => {
+			const daySeconds = 3600 * 24;
+			let days = Math.floor( d / daySeconds ),
+				hours = Math.floor( d % daySeconds / 3600 ),
+				minutes = Math.floor( d % 3600 / 60 ),
+				seconds = Math.floor( d % 60 );
+
+			let output = seconds +'s';
+			if ( minutes ) {
+				output = minutes +'m '+ output;
+			}
+			if ( hours ) {
+				output = hours +'h '+ output;
+			}
+			if ( days ) {
+				output = days +'d '+ output;
+			}
+			return output;
 		}
 
-        let margin = { top: 20, right: 20, bottom: 60, left: 50 },
+        let margin = { top: 20, right: 20, bottom: 60, left: 45 },
             width = 1000 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom,
 			barColors = {
-				'All': '#98abc5',
-				'Promoted': '#8a89a6',
-				'Incident': '#7b6888',
+				'All': '#3b35a6',
+				'Promoted': '#eebd31',
+				'Incident': '#e63041',
 			},
 			lineColors = {
-				'All Avg': 'gray',
-				'Promoted Avg': 'blue',
-				'Incident Avg': 'red',
+				'All Avg': '#264653',
+				'Promoted Avg': '#0072bb',
+				'Incident Avg': '#ee4043',
 			};
-
-        let textWidthHolder = 0;
 
         var svg = d3.select( 'body' ).append( 'svg' )
 					.attr( 'viewBox', '0 0 1000 500' )
@@ -71,7 +91,7 @@
                     .attr( 'transform', 'translate( ' + margin.left + ',' + margin.top + ' )' );
 
         let url = '/scot/api/v2/metric/response_avg_last_x_days';
-        let opts = '?days=7&targetdate=2017-07-21';
+        let opts = '?days=7&targetdate=2017-07-20';
 		d3.json(url+opts, data => {
 			console.log( data );
 
@@ -90,12 +110,9 @@
 			} );
 
 			// Scales
-			let maxValue = Math.max(
-				d3.max( data.lines, d => d.value ),
-				d3.max( data.dates, d => {
-					return d3.max( d.values, b => b.value );
-				} )
-			);
+			let maxValue = d3.max( data.dates, d => {
+				return d3.max( d.values, b => b.value );
+			} );
 
 			let dateScale = d3.scaleBand()
 				.padding( 0.1 )
@@ -104,11 +121,10 @@
 			let barScale = d3.scaleBand()
 				.domain( Array.from( barNames ) )
 				.rangeRound( [ 0, dateScale.bandwidth() ] );
-			let yScale = d3.scaleLog()
+			let yScale = d3.scaleLinear()
 				.clamp( true )
-				.base( 10 )
 				.range( [ height, 0 ] )
-				.domain( [ 1, maxValue ] )
+				.domain( [ 0, maxValue ] )
 				.nice();
 
 			// Axes
@@ -118,11 +134,7 @@
 			var yAxis = d3.axisLeft()
 				.scale( yScale )
 				.ticks( 20 )
-				.tickFormat( logFormat( formatTickTime ) );
-
-			const avgLine = d3.line()
-				.x( d => 0)
-				.y( d => yScale( d.value ) );
+				.tickFormat( formatTickTime );
 
 			svg.append( 'g' )
 				.attr( 'class', 'x axis' )
@@ -134,26 +146,13 @@
 				.call( yAxis )
 				.append( 'text' )
 					.attr( 'transform', 'rotate(-90)' )
-					.attr( 'x', 0 - height / 2 )
+					.attr( 'x', 0 - height )
 					.attr( 'y', 0 - margin.left )
 					.attr( 'dy', '1em' )
-					.style( 'text-anchor', 'middle' )
+					.style( 'text-anchor', 'start' )
 					.style( 'fill', 'black' )
-					.text( 'Seconds to Respond' );
+					.text( 'Response Time' );
 
-
-			/*
-			// Artificially modify data
-			data.dates = data.dates.map( d => {
-				d.values = d.values.map( val => {
-					if ( val.value === 0 ) {
-						val.value = Math.random() * maxValue;
-					}
-					return val;
-				} );
-				return d;
-			} );
-			*/
 			// Bars
 			let dates = svg.selectAll( '.date' )
 				.data( data.dates )
@@ -169,37 +168,54 @@
 					.attr( 'x', d => barScale( d.name ) )
 					.attr( 'y', d => yScale( d.value ) )
 					.attr( 'height', d => height - yScale( d.value ) )
-					.style( 'fill', d => barColors[ d.name ] );
+					.style( 'fill', d => barColors[ d.name ] )
+					.append( 'title' )
+						.text( d => formatTime( d.value ) );
 
-			// Lines
-			const dateDomain = dateScale.domain();
-			const lineStart = dateScale( dateDomain[0] ), lineEnd = dateScale( dateDomain[ dateDomain.length - 1 ] ) + dateScale.bandwidth();
-			svg.selectAll( '.line' )
+			// Avg Box
+			let AvgHolder = svg.append( 'g' )
+				.attr( 'class', 'avg-holder' );
+
+			let averages = AvgHolder.selectAll( '.avg' )
 				.data( data.lines )
-				.enter().append( 'g' )
-					.attr( 'class', 'line' )
-					.append( 'line' )
-						.attr( 'x1', lineStart ).attr( 'y1', d => yScale( d.value ) )
-						.attr( 'x2', lineEnd ).attr( 'y2', d => yScale( d.value ) )
-						.style( 'stroke-width', '1.5px' )
-						.style( 'fill', 'none' )
-						.style( 'stroke', d => lineColors[ d.name ] );
+				.enter().append( 'text' )
+					.attr( 'class', 'avg' )
+					.attr( 'transform', ( d, i ) => `translate( 0, ${i * 15} )` );
+
+			averages.append( 'tspan' )
+				.attr( 'x', 0 )
+				.attr( 'font-weight', 'bold' )
+				.text( d => `${d.name}:` );
+
+			averages.append( 'tspan' )
+				.attr( 'x', 100 )
+				.text( d => formatTime( d.value ) );
+
+			let AvgHolderBox = AvgHolder.node().getBBox();
+			AvgHolder.attr( 'transform', `translate( ${width - AvgHolderBox.width}, 0 )` );
+
+			const borderOffset = 2;
+			let border = svg.append( 'rect' )
+				.attr( 'fill', 'none' )
+				.attr( 'stroke', 'black' )
+				.attr( 'x', AvgHolderBox.x - borderOffset )
+				.attr( 'y', AvgHolderBox.y - borderOffset )
+				.attr( 'width', AvgHolderBox.width + borderOffset * 2 )
+				.attr( 'height', AvgHolderBox.height + borderOffset * 2 );
+			border.node().transform.baseVal.initialize( AvgHolder.node().transform.baseVal.getItem(0) );
 
 			// Legend
-			const legendData = [
-				...Array.from( barNames ).map( d => { return { name: d, type: 'bar' } } ),
-				...Array.from( lineNames ).map( d => { return { name: d, type: 'line' } } ),
-			];
+			const legendData = Array.from( barNames );
 			let widthSum = 0;
 			const textWidths = legendData.map( d => {
 				let value = widthSum;
 				widthSum += getTextWidth( d.name, '10px', 'sans-serif' );
 				return value;
 			} );
-			const legendHeight = 20, legendSpacing = 15, legendTextSpacing = 5, legendLineHeight = 5;
+			const legendHeight = 20, legendSpacing = 15, legendTextSpacing = 5;
 
 			let LegendHolder = svg.append( 'g' )
-					.attr( 'class', 'legendHolder' );
+					.attr( 'class', 'legend-holder' );
 			let legend = LegendHolder.selectAll( '.legend' )
 				.data( legendData )
 				.enter().append( 'g' )
@@ -210,9 +226,9 @@
 			legend.append( 'rect' )
 				.attr( 'width', legendHeight )
 				.attr( 'x', ( d, i ) => ( i + 1 ) * legendSpacing + i * legendHeight + i * legendTextSpacing + textWidths[i] )
-				.attr( 'y', d => d.type === 'bar' ? 0 : legendHeight / 2 - legendLineHeight / 2 )
-				.attr( 'height', d => d.type === 'bar' ? legendHeight : legendLineHeight )
-				.style( 'fill', d => d.type === 'bar' ? barColors[ d.name ] : lineColors[ d.name ] );
+				.attr( 'y', 0 )
+				.attr( 'height', legendHeight )
+				.style( 'fill', d => barColors[ d ] );
 
 			// Legend Text
 			legend.append( 'text' )
@@ -220,7 +236,7 @@
 				.attr( 'y', legendHeight / 2 )
 				.attr( 'dy', '.35em' )
 				.style( 'text-anchor', 'start' )
-				.text( d => d.name );
+				.text( d => d );
 
 			// Legend Position
 			let legendWidth = LegendHolder.node().getBBox().width;
