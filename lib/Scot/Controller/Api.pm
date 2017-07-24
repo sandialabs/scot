@@ -1537,7 +1537,9 @@ sub whoami {
     if ( defined ( $userobj )  ) {
         $userobj->update_set(lastvisit => $env->now);
         my $user_href   = $userobj->as_hash;
-        if ( $env->is_admin($user_href->{username}, $self->get_groups)){
+        my $group_aref  = $self->get_groups;
+        $log->debug("groups aref: ",{filter=>\&Dumper,value=>$group_aref});
+        if ( $env->is_admin($user_href->{username}, $group_aref)){
             $user_href->{is_admin} = 1;
         }
         # TODO:  move this to config file?
