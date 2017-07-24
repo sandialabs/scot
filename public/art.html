@@ -16,10 +16,6 @@
     .bar {
         fill: steelblue;
     }
-
-    .x.axis path {
-        display: none;
-    }
 </style>
 <body>
     <script src='//d3js.org/d3.v4.min.js'></script>
@@ -31,10 +27,14 @@
             return ctx.measureText(text).width;
         }
 
-		const formatMinutes = d => { 
-			var hours = Math.floor( d / 3600 ),
-				minutes = Math.floor( ( d - ( hours * 3600 ) ) / 60 ),
-				seconds = d - ( hours * 3600 ) - ( minutes * 60 );
+		const formatTickTime = d => { 
+			let	days = Math.floor( d / ( 3600 * 24 ) ),
+				hours = Math.floor( d / 3600 ),
+				minutes = Math.floor( d / 60 ),
+				seconds = d;
+			if ( days ) {
+				return days +'d';
+			}
 			if ( hours ) {
 				return hours +'h';
 			}
@@ -49,7 +49,7 @@
 			return Math.abs( x - Math.floor( x ) ) < .5 ? formatter( d ) : '';
 		}
 
-        let margin = { top: 20, right: 40, bottom: 60, left: 40 },
+        let margin = { top: 20, right: 20, bottom: 60, left: 50 },
             width = 1000 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom,
 			barColors = {
@@ -98,16 +98,17 @@
 			);
 
 			let dateScale = d3.scaleBand()
-				.range( [ 0, width ] )
+				.padding( 0.1 )
+				.rangeRound( [ 0, width ] )
 				.domain( data.dates.map( d => d.date ) );
 			let barScale = d3.scaleBand()
 				.domain( Array.from( barNames ) )
-				.range( [ 0, dateScale.bandwidth() ] );
+				.rangeRound( [ 0, dateScale.bandwidth() ] );
 			let yScale = d3.scaleLog()
 				.clamp( true )
-				.base( 4 )
+				.base( 10 )
 				.range( [ height, 0 ] )
-				.domain( d3.range( 1, maxValue ) )
+				.domain( [ 1, maxValue ] )
 				.nice();
 
 			// Axes
@@ -116,7 +117,12 @@
 
 			var yAxis = d3.axisLeft()
 				.scale( yScale )
-				.tickFormat( logFormat( formatMinutes ) );
+				.ticks( 20 )
+				.tickFormat( logFormat( formatTickTime ) );
+
+			const avgLine = d3.line()
+				.x( d => 0)
+				.y( d => yScale( d.value ) );
 
 			svg.append( 'g' )
 				.attr( 'class', 'x axis' )
@@ -128,90 +134,97 @@
 				.call( yAxis )
 				.append( 'text' )
 					.attr( 'transform', 'rotate(-90)' )
-					.attr( 'y', 6)
-					.attr( 'dy', '.71em' )
-					.style( 'text-anchor', 'end' )
+					.attr( 'x', 0 - height / 2 )
+					.attr( 'y', 0 - margin.left )
+					.attr( 'dy', '1em' )
+					.style( 'text-anchor', 'middle' )
 					.style( 'fill', 'black' )
 					.text( 'Seconds to Respond' );
 
-			// Drawing Bars
-			let state = svg.selectAll( '.state' )
+
+			/*
+			// Artificially modify data
+			data.dates = data.dates.map( d => {
+				d.values = d.values.map( val => {
+					if ( val.value === 0 ) {
+						val.value = Math.random() * maxValue;
+					}
+					return val;
+				} );
+				return d;
+			} );
+			*/
+			// Bars
+			let dates = svg.selectAll( '.date' )
 				.data( data.dates )
 				.enter().append( 'g' )
-					.attr( 'class', 'state' )
+					.attr( 'class', 'date' )
 					.attr( 'transform', d => `translate( ${dateScale( d.date )}, 0 )` );
 
-			state.selectAll( 'rect' )
+			dates.selectAll( '.bar' )
 				.data( d => d.values )
 				.enter().append( 'rect' )
+					.attr( 'class', 'bar' )
 					.attr( 'width', barScale.bandwidth() )
 					.attr( 'x', d => barScale( d.name ) )
 					.attr( 'y', d => yScale( d.value ) )
 					.attr( 'height', d => height - yScale( d.value ) )
 					.style( 'fill', d => barColors[ d.name ] );
 
-			/*
-        // drawaing lines
-        svg.selectAll( '.lines' ).data(lineData).enter().append( 'g' ).attr( 'class', 'line' )
-        .each(function (d) {
-            Name=d[0].Name;
-			d3.select(this)
-				.append( 'path' )
-				.attr( 'd', function (b) { return line(b) })
-				.style( 'stroke-width', '2px' )
-				.style( 'fill', 'none' )
-				.style( 'stroke', LineColor(Name)).transition().duration(1500);
-        })
-		*/
+			// Lines
+			const dateDomain = dateScale.domain();
+			const lineStart = dateScale( dateDomain[0] ), lineEnd = dateScale( dateDomain[ dateDomain.length - 1 ] ) + dateScale.bandwidth();
+			svg.selectAll( '.line' )
+				.data( data.lines )
+				.enter().append( 'g' )
+					.attr( 'class', 'line' )
+					.append( 'line' )
+						.attr( 'x1', lineStart ).attr( 'y1', d => yScale( d.value ) )
+						.attr( 'x2', lineEnd ).attr( 'y2', d => yScale( d.value ) )
+						.style( 'stroke-width', '1.5px' )
+						.style( 'fill', 'none' )
+						.style( 'stroke', d => lineColors[ d.name ] );
 
+			// Legend
+			const legendData = [
+				...Array.from( barNames ).map( d => { return { name: d, type: 'bar' } } ),
+				...Array.from( lineNames ).map( d => { return { name: d, type: 'line' } } ),
+			];
+			let widthSum = 0;
+			const textWidths = legendData.map( d => {
+				let value = widthSum;
+				widthSum += getTextWidth( d.name, '10px', 'sans-serif' );
+				return value;
+			} );
+			const legendHeight = 20, legendSpacing = 15, legendTextSpacing = 5, legendLineHeight = 5;
 
-        // Legends
+			let LegendHolder = svg.append( 'g' )
+					.attr( 'class', 'legendHolder' );
+			let legend = LegendHolder.selectAll( '.legend' )
+				.data( legendData )
+				.enter().append( 'g' )
+					.attr( 'class', 'legend' )
+					.attr( 'transform', `translate( 0, ${ height + margin.bottom/2 } )` )
 
-        var LegendHolder = svg.append( 'g' ).attr( 'class', 'legendHolder' );
-        var legend = LegendHolder.selectAll( '.legend' )
-            .data(Categories.map(function (d) { return {'Name':d.Name,'Type':d.Type}}))
-          .enter().append( 'g' )
-            .attr( 'class', 'legend' )
-            .attr( 'transform', function (d, i) { return 'translate(0,' +( height+ margin.bottom/2 )+ ' )'; })
-            .each(function (d,i) {
-                //  Legend Symbols
+			// Legend Boxes
+			legend.append( 'rect' )
+				.attr( 'width', legendHeight )
+				.attr( 'x', ( d, i ) => ( i + 1 ) * legendSpacing + i * legendHeight + i * legendTextSpacing + textWidths[i] )
+				.attr( 'y', d => d.type === 'bar' ? 0 : legendHeight / 2 - legendLineHeight / 2 )
+				.attr( 'height', d => d.type === 'bar' ? legendHeight : legendLineHeight )
+				.style( 'fill', d => d.type === 'bar' ? barColors[ d.name ] : lineColors[ d.name ] );
 
+			// Legend Text
+			legend.append( 'text' )
+				.attr( 'x', ( d, i ) => ( i + 1 ) * legendSpacing + ( i + 1 ) * legendHeight + ( i + 1 ) * legendTextSpacing + textWidths[i] )
+				.attr( 'y', legendHeight / 2 )
+				.attr( 'dy', '.35em' )
+				.style( 'text-anchor', 'start' )
+				.text( d => d.name );
 
-                d3.select(this).append( 'rect' )
-                .attr( 'width', function () { return 18 })
-                .attr( 'x', function (b) {
-
-                    left = (i+1) * 15 + i * 18 + i * 5 + textWidthHolder;
-                    return left;
-                })
-                 .attr( 'y', function (b) { return b.Type == 'bar'?0:7})
-                .attr( 'height', function (b) { return b.Type== 'bar'? 18:5 })
-                .style( 'fill', function (b) { return b.Type == 'bar' ? color(d.Name) : LineColor(d.Name) });
-
-                //  Legend Text
-
-                d3.select(this).append( 'text' )
-                .attr( 'x', function (b) {
-
-                    left = (i+1) * 15 + (i+1) * 18 + (i + 1) * 5 + textWidthHolder;
-
-                    return left;
-                })
-                .attr( 'y', 9)
-                .attr( 'dy', '.35em' )
-                .style( 'text-anchor', 'start' )
-                .text(d.Name);
-
-                textWidthHolder += getTextWidth(d.Name, '10px', 'calibri' );
-            });
-
-
-        // Legend Placing
-
-        d3.select( '.legendHolder' ).attr( 'transform', function (d) {
-            thisWidth = d3.select(this).node().getBBox().width;
-            return 'translate( ' + ((width) / 2 - thisWidth / 2) + ',0)';
-        })
+			// Legend Position
+			let legendWidth = LegendHolder.node().getBBox().width;
+			LegendHolder.attr( 'transform', `translate( ${width / 2 - legendWidth / 2}, 0 )` );
     });
 
     </script>
