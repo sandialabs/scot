@@ -614,7 +614,7 @@ sub api_find {
     my $id      = $href->{id} + 0;
     my $object  = $self->find_iid($id);
     if ( !defined $object ) {
-        die "Object not found";
+        die "Object not found $id:".ref($self);
     }
     return $object;
 }
