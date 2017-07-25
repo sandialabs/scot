@@ -27,28 +27,39 @@ class ReportArt extends PureComponent {
     }
 
 	loadArt() {
-		const formatTickTime = d => { 
-			const daySeconds = 3600 * 24;
-			let days = Math.floor( d / daySeconds ),
-				hours = Math.floor( d % daySeconds / 3600 ),
-				minutes = Math.floor( d % 3600 / 60 ),
-				seconds = Math.floor( d % 60 );
+		const formatTickTime = ( domain, count = 10 ) => {
+			let start = domain[0],
+				end = domain[ domain.length - 1 ],
+				step = d3.tickStep( start, end, count );
 
-			if ( days ) {
-				let output = days + 'd';
+			return d => { 
+				const daySeconds = 3600 * 24;
+				let days = Math.floor( d / daySeconds ),
+					hours = Math.floor( d % daySeconds / 3600 ),
+					minutes = Math.floor( d % 3600 / 60 ),
+					seconds = Math.floor( d % 60 );
 
-				if ( hours ) {
-					output = output +' '+ hours +'h';
+
+				if ( days ) {
+					if ( step < daySeconds ) {
+						return `${days}d ${hours}h`;
+					}
+					return days +'d';
 				}
-				return output;
+				if ( hours ) {
+					if ( step < 3600 ) {
+						return `${hours}h ${minutes}m`;
+					}
+					return hours +'h';
+				}
+				if ( minutes ) {
+					if ( step < 60 ) {
+						return `${minutes}m ${seconds}s`;
+					}
+					return minutes +'m';
+				}
+				return seconds +'s';
 			}
-			if ( hours ) {
-				return hours +'h';
-			}
-			if ( minutes ) {
-				return minutes +'m';
-			}
-			return seconds +'s';
 		};
 
 		const formatTime = d => {
@@ -71,18 +82,13 @@ class ReportArt extends PureComponent {
 			return output;
 		}
 
-        let margin = { top: 20, right: 20, bottom: 60, left: 45 },
+        let margin = { top: 20, right: 20, bottom: 60, left: 50 },
             width = 1000 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom,
 			barColors = {
 				'All': '#3b35a6',
 				'Promoted': '#eebd31',
 				'Incident': '#e63041',
-			},
-			lineColors = {
-				'All Avg': '#264653',
-				'Promoted Avg': '#0072bb',
-				'Incident Avg': '#ee4043',
 			};
 
         var svg = d3.select( '#report_art' ).select( 'g' );
@@ -136,7 +142,7 @@ class ReportArt extends PureComponent {
 			var yAxis = d3.axisLeft()
 				.scale( yScale )
 				.ticks( 20 )
-				.tickFormat( formatTickTime );
+				.tickFormat( formatTickTime( yScale.domain(), 20 ) );
 
 			svg.selectAll( '.axis' ).remove()
 
