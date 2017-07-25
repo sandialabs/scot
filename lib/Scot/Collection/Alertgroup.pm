@@ -290,6 +290,12 @@ sub refresh_data {
     my $mq      = $env->mq;
     my $log     = $env->log;
 
+    ## TODO: see if we can move the mq stuff 
+    ## recent bug:  flairer didn't have an mq stanza on a demo box
+    ## so same code worked in prod but not on demo.  many hours of heartache
+    ## later, I discover that flairer.pl is silently dying because $env->mq
+    ## is not defined!
+
     $log->trace("[Alertgroup $id] Refreshing Data after Alert update");
 
     my $alertgroup  = $self->find_iid($id);
