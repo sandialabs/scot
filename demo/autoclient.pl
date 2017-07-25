@@ -37,6 +37,7 @@ foreach my $href (@alerts) {
     say "posting alert...";
     my $json    = $clients{'admin'}->post("alertgroup",$href);
     say Dumper($json);
+    sleep 5;
 }
 
 my @events  = &load_events;
@@ -45,6 +46,7 @@ foreach my $href (@events) {
     my $user    = delete $href->{username};
     my $json    = $clients{$user}->post("event", $href);
     say Dumper($json);
+    sleep 10;
 }
 
 my @intel   = &load_intel;
@@ -52,23 +54,26 @@ foreach my $href (@intel) {
     my $user    = delete $href->{username};
     my $json    = $clients{$user}->post("intel", $href);
     say Dumper($json);
+    sleep 5;
 }
-
-exit 0;
 
 my @entries = &load_entries;
 foreach my $href (@entries) {
     my $user    = delete $href->{username};
+    say "user = $user";
     my $json    = $clients{$user}->post("entry", $href);
     say Dumper($json);
+    sleep 15;
 }
 
 my @promotions = &load_promotions;
-foreach my $href (@entries) {
+foreach my $href (@promotions) {
     my $user        = delete $href->{username};
     my $promotee    = delete $href->{promotee};
+    say "user = $user , promotee = $promotee";
     my $json    = $clients{$user}->put($promotee, { promote => "new" });
     say Dumper($json);
+    sleep 5;
 }
 
 sub load_alerts {
@@ -268,7 +273,7 @@ sub load_intel {
             },
         },
         {
-            username        => 'kelley',
+            username        => 'kelly',
             source         => [ qw(twitter) ],
             subject         => "Twitter feed reporting new malicious md5 dump",
             tag            => [qw(md5) ],
@@ -284,64 +289,64 @@ sub load_entries {
     return (
         {
             username => 'pilgrim',
-        body 		=> "<p>More content found here: www.purple.com www.mytestsite.com; Can someone look into this?</p>",
-        target_id	=> 1,
-        target_type	=> 'event',
-        parent		=> 0,
-
+            body 		=> "<p>More content found here: www.purple.com www.mytestsite.com; Can someone look into this?</p>",
+            target_id	=> 1,
+            target_type	=> 'event',
+            parent		=> 0,
         },
         {
-            username => 'kelley',
-        body 		=> "<p>I checked the logs and can see that the user did indeed go the www.mytestsite.com. User has been contacted, but this needs to be escalated to determine if the connection was blocked.</p>",
-        target_id	=> 1,
-        target_type	=> 'event',
+            username => 'kelly',
+            body 		=> "<p>I checked the logs and can see that the user did indeed go the www.mytestsite.com. User has been contacted, but this needs to be escalated to determine if the connection was blocked.</p>",
+            target_id	=> 1,
+            target_type	=> 'event',
         },
         {
             username => 'joplin',
-        body 		=> "<p>The connection wasn't blocked. After further investigation I can see that it also went out to 1.2.3.4.</p>",
-        target_id	=> 1,
-        target_type	=> 'event',
+            body 		=> "<p>The connection wasn't blocked. After further investigation I can see that it also went out to 1.2.3.4.</p>",
+            target_id	=> 1,
+            target_type	=> 'event',
         },
         {
-        body 		=> "<p>Domains Found: www.foo.com www.hackingfoo.com; IPs found: 8.8.8.8</p>",
-        target_id	=> 2,
-        target_type	=> 'event',
+            username    => "montgomery",
+            body 		=> "<p>Domains Found: www.foo.com www.hackingfoo.com; IPs found: 8.8.8.8</p>",
+            target_id	=> 2,
+            target_type	=> 'event',
         },
         {
             username => 'montgomery',
-        body 		=> "<p>The user involved was testuser1 and their IP at the time of the action was 192.168.1.2.</p>",
-        target_id	=> 2,
-        target_type	=> 'event',
+            body 		=> "<p>The user involved was testuser1 and their IP at the time of the action was 192.168.1.2.</p>",
+            target_id	=> 2,
+            target_type	=> 'event',
         },
         {
             username => 'joplin',
-        body 		=> "<p>Checked proxy logs and found the following IPs attempting to scan: 123.456.789.012. They were attempting to scan the entire subnet. Need to check logs to see if this was blocked.</p>",
-        target_id	=> 3,
-        target_type	=> 'event',
+            body 		=> "<p>Checked proxy logs and found the following IPs attempting to scan: 123.456.789.012. They were attempting to scan the entire subnet. Need to check logs to see if this was blocked.</p>",
+            target_id	=> 3,
+            target_type	=> 'event',
         }, 
         {
             username => 'pilgrim',
-        body 		=> "<p>Domains Found: www.foo.com www.hackingfoo.com; IPs found: 123.456.789.012</p>",
-        target_id	=> 4,
-        target_type	=> 'event',
+            body 		=> "<p>Domains Found: www.foo.com www.hackingfoo.com; IPs found: 123.456.789.012</p>",
+            target_id	=> 4,
+            target_type	=> 'event',
         },
         {
             username    => 'pilgrim',
-        body 		=> "<p>New CVE's from https://twitter.com/CVEnew/ reported the following 0 day: CVE-2017-0378. Do we have a signature built that will detect this? Keep your eyes open for delivery mechanisms. Original file was being sent in an email with the file name: openme.exe</p>",
-        target_id	=> 1,
-        target_type	=> 'intel',
+            body 		=> "<p>New CVE's from https://twitter.com/CVEnew/ reported the following 0 day: CVE-2017-0378. Do we have a signature built that will detect this? Keep your eyes open for delivery mechanisms. Original file was being sent in an email with the file name: openme.exe</p>",
+            target_id	=> 1,
+            target_type	=> 'intel',
         },
         {
-            username    => 'kelley',
-        body 		=> "<p>MD5 dump containing a list of known bad hashes. <p>098f6bcd4621d373cade4e832627b4f6 8253053f2c9e565a136264e6f96aa57b 5a105e8b9d40e1329780d62ea2265d8a ad0234829205b9033196ba818f7a872b</p></p>",
-        target_id	=> 2,
-        target_type	=> 'intel',
+            username    => 'kelly',
+            body 		=> "<p>MD5 dump containing a list of known bad hashes. <p>098f6bcd4621d373cade4e832627b4f6 8253053f2c9e565a136264e6f96aa57b 5a105e8b9d40e1329780d62ea2265d8a ad0234829205b9033196ba818f7a872b</p></p>",
+            target_id	=> 2,
+            target_type	=> 'intel',
         }, 
         {
             username    => 'joplin',
-        body 		=> "<p>While scouring through pcap I stumbled across some interesting traffic that I followed down a rabbit hole. I noticed an odd file name. Have we seen this file before? Here's the MD5 8253053f2c9e565a136264e6f96aa57b</p>",
-        target_id	=> 5,
-        target_type	=> 'event',
+            body 		=> "<p>While scouring through pcap I stumbled across some interesting traffic that I followed down a rabbit hole. I noticed an odd file name. Have we seen this file before? Here's the MD5 8253053f2c9e565a136264e6f96aa57b</p>",
+            target_id	=> 5,
+            target_type	=> 'event',
         },
     );
 }
@@ -357,7 +362,7 @@ sub load_promotions {
             promotee    => 'alert/2',
         },
         {
-            username    => 'kelley',
+            username    => 'kelly',
             promotee    => 'event/1',
         },
     );
