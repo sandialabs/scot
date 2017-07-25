@@ -543,7 +543,7 @@ sub load_demo_data {
             next    => 5,
             data    => {
                 body    => "<p>New CVE's from https://twitter.com/CVEnew/ reported the following 0 day: CVE-2017-0378. Do we have a signature built that will detect this? Keep your eyes open for delivery mechanisms. Original file was being sent in an email with the file name: openme.exe</p>",
-                target_id   => 2,
+                target_id   => 3,
                 target_type => "intel",
                 parent      => 0,
                 groups      => {
@@ -659,12 +659,75 @@ sub load_demo_data {
             },
         },
         {
+            user    => "kelly",
+            verb    => "post",
+            endpt   => "entry",
+            next    => 2,
+            data    => {
+                body    => "Submitted to corporate investigations",
+                target_id   => 1,
+                target_type => "incident",
+                parent      => 0,
+                groups  => {
+                    read    => [ qw(wg-scot-ir) ],
+                    modify  => [ qw(wg-scot-ir) ],
+                },
+            },
+        },
+        {
+            user    => "kelly",
+            verb    => "put",
+            endpt   => "intel/1",
+            data    => {
+                occurred    => time() - 10000,
+                discovered  => time() -  9000,
+                reported    => time() -  6000,
+            },
+        },
+        {
             # event 2
             user    => "kelly",
             verb    => "put",
             endpt   => "event/3",
             next    => 1,
             data    => { promote => "new" },
+        },
+        {
+            user    => "montgomery",
+            verb    => "post",
+            endpt   => "entry",
+            next    => 2,
+            data    => {
+                body    => qq{<h2>Proxy Log</h2><br><pre>
+                192.100.153.102 - - [11/Apr/2017:21:24:53 +0000] "GET /spmiller.org/news/please_read.html HTTP/1.1" 200 6609 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
+                192.100.153.102 - - [11/Apr/2017:21:24:53 +0000] "GET /icons/ubuntu-logo.png HTTP/1.1" 200 3681 "https://spmiller.org/news/please_read.html" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
+                192.100.153.102 - - [11/Apr/2017:21:24:53 +0000] "GET /favicon.ico HTTP/1.1" 404 562 "https://smiller.com/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"},
+                target_id   => 1,
+                target_type => "event",
+                parent  => 0,
+                groups  => {
+                    read    => [ qw(wg-scot-ir) ],
+                    modify  => [ qw(wg-scot-ir) ],
+                },
+            },
+
+        },
+        {
+            user    => "pilgrim",
+            verb    => "post",
+            endpt   => "entry",
+            next    => 2,
+            data    => {
+                body    => 'Looks like user actually typed this in the browser.  Notice how they mispelled the URI then got it right the next time!  Advanced persistent User!  Oh well, time to do a forensic imaging,',
+                target_id   => 1,
+                target_type => "event",
+                parent  => 0,
+                groups  => {
+                    read    => [ qw(wg-scot-ir) ],
+                    modify  => [ qw(wg-scot-ir) ],
+                },
+            },
+
         },
     );
 }

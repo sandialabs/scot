@@ -664,6 +664,10 @@ sub update_alertgroup_with_bundled_alert {
         else {
             $log->warn("No Entities present");
         }
+        $alert_obj->update({'$set' => {
+            parsed  => 1,
+            data_with_flair => $alert->{data_with_flair},
+        }});
     }
 
     my $cmd = { '$set'  => $putdata };
