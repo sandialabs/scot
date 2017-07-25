@@ -619,8 +619,67 @@ sub get_alerts_in_alertgroup {
     return wantarray ? @alerts : \@alerts;
 }
 
-
 sub update_alertgroup_with_bundled_alert {
+    my $self    = shift;
+    my $putdata = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $alertcol    = $mongo->collection('Alert');
+    my $entitycol   = $mongo->collection('Entity');
+
+    $log->debug("updating alertgroup with bundled alerts");
+    $log->debug("putdata = ",{filter=>\&Dumper, value=>$putdata});
+
+    my $alertgroup_id   = delete $putdata->{id};
+    my $alerts_aref     = delete $putdata->{alerts};
+
+    if ( ! defined $alerts_aref ) {
+        $log->error("No alerts bundled with alertgroup!");
+        $alerts_aref    = [];
+    }
+
+    foreach my $alert (@{$alerts_aref}) {
+        my $alert_id    = $alert->{id} + 0;
+
+        $log->debug("Processing bundled alert $alert_id");
+
+        my $entity_aref = delete $alert->{entities};
+
+        $log->debug("Entities in alert: ",
+                    {filter=>\&Dumper, value=>$entity_aref});
+
+        my $alert_obj   = $alertcol->find_iid($alert_id);
+
+        if ( ! defined $alert_obj or 
+             ref($alert_obj) ne "Scot::Model::Alert" ) {
+            $log->error("ALERT OBJECT Not FOUND!!!");
+            die "Alert object $alert_id in alertgroup $alertgroup_id not found";
+            # why though?
+        }
+
+        if ( defined $entity_aref and ref($entity_aref) eq "ARRAY" ) {
+            $entitycol->update_entities($alert_obj, $entity_aref);
+        }
+        else {
+            $log->warn("No Entities present");
+        }
+    }
+
+    my $cmd = { '$set'  => $putdata };
+    $log->debug("updating alertgroup with :",
+                {filter=>\&Dumper,value=>$putdata});
+    my $alertgroup  = $self->find_iid($alertgroup_id);
+
+    if (! defined $alertgroup or 
+        ref($alertgroup) ne "Scot::Model::Alertgroup") {
+        $log->error("Can not find Alertgroup $alertgroup_id!");
+        die "No Alertgroup to update!";
+    }
+    $alertgroup->update($cmd);
+}
+
+sub update_alertgroup_with_bundled_alert_old {
     my $self    = shift;
     my $putdata = shift;
     my $env      = $self->env;
