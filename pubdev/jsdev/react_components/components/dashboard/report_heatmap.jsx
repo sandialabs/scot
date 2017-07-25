@@ -136,9 +136,9 @@ class ReportHeatmap extends PureComponent {
     }
 
     exportToPNG() {
-        var svgString = new XMLSerializer().serializeToString(document.querySelector('svg'));
+        var svgString = new XMLSerializer().serializeToString(document.querySelector( '#report_heatmap' ));
 
-        var canvas = document.getElementById("canvas");
+        var canvas = document.createElement("canvas");
         var ctx = canvas.getContext("2d");
         var DOMURL = self.URL || self.webkitURL || self;
         var img = new Image();
