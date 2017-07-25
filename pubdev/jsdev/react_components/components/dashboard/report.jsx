@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { Panel } from 'react-bootstrap';
 
 import ReportHeatmap from './report_heatmap';
+import ReportArt from './report_art';
 // import ReportAlertPower from './report_alertpower';
 
 const Report = ( props ) => (
@@ -14,7 +15,9 @@ const Report = ( props ) => (
 				<Panel header='Heatmap'>
 					<ReportHeatmap />
 				</Panel>
-				
+				<Panel header='Alert Response Time'>
+					<ReportArt />
+				</Panel>
 			</div>
 		</div>
 	</div>
