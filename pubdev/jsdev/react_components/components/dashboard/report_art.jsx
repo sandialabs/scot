@@ -294,7 +294,7 @@ class ReportArt extends PureComponent {
         return (
             <div className="dashboard">
                 <h1>Alert Response Time</h1>
-				<label htmlFor="date" style={{display: "inline-block", width: "240px", textAlign: "right"}}>Initial Date =&nbsp;
+				<label htmlFor="date" style={{display: "inline-block", textAlign: "right"}}>Initial Date =&nbsp;
 					<input
 						type="date"
 						value={this.state.date}
@@ -303,7 +303,7 @@ class ReportArt extends PureComponent {
 						pattern='[0-9]{4}-[0-9]{2}-[0-9]{2}'
 					/>
 				</label>
-                <label htmlFor="length" style={{display: "inline-block", width: "240px", textAlign:"right"}}>Length =&nbsp;
+                <label htmlFor="length" style={{display: "inline-block", textAlign:"right"}}>Length =&nbsp;
                     <input type="number" min="1" step="1" value={this.state.length} id="length" onChange={this.lengthChange} />
                 </label>
                 <label htmlFor="unit" style={{display: "inline-block", width: "240px", textAlign:"right"}}>Unit =&nbsp;
