@@ -507,7 +507,7 @@ sub load_demo_data {
                 body    => "Blackhole block is in place and confirmed",
                 target_id   => 2,
                 target_type => "event",
-                parent      => 13,
+                parent      => 14,
                 groups      => {
                     read    => [ qw(wg-scot-ir) ],
                     modify  => [ qw(wg-scot-ir) ],
@@ -721,6 +721,23 @@ sub load_demo_data {
                 body    => 'Looks like user actually typed this in the browser.  Notice how they mispelled the URI then got it right the next time!  Advanced persistent User!  Oh well, time to do a forensic imaging,',
                 target_id   => 1,
                 target_type => "event",
+                parent  => 0,
+                groups  => {
+                    read    => [ qw(wg-scot-ir) ],
+                    modify  => [ qw(wg-scot-ir) ],
+                },
+            },
+
+        },
+        {
+            user    => "pilgrim",
+            verb    => "post",
+            endpt   => "entry",
+            next    => 2,
+            data    => {
+                body    => 'spmiller.org domain is associated with APT1',
+                target_id   => 95,
+                target_type => "entity",
                 parent  => 0,
                 groups  => {
                     read    => [ qw(wg-scot-ir) ],
