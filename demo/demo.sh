@@ -7,4 +7,4 @@ curl -X DELETE 'http://localhost:9200/scot'
 
 echo 'reset mongodb'
 mongo scot-prod < ./reset.js
-./autoclient.pl
+./demo2.pl
