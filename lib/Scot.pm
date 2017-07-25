@@ -328,7 +328,7 @@ relies on the browser BasicAuth popup.
 
     $scot   ->route ('/api/v2/file')
             ->via   ('post')
-            ->to    ('controller-file#update')
+            ->to    ('controller-file#upload')
             ->name  ('update');
 
 =pod
