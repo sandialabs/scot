@@ -20,13 +20,6 @@
 <body>
     <script src='//d3js.org/d3.v4.min.js'></script>
     <script>
-		const getTextWidth = (text, fontSize, fontName) => {
-            c = document.createElement( 'canvas' );
-            ctx = c.getContext( '2d' );
-            ctx.font = fontSize + ' ' + fontName;
-            return ctx.measureText(text).width;
-        }
-
 		const formatTickTime = d => { 
 			const daySeconds = 3600 * 24;
 			let days = Math.floor( d / daySeconds ),
@@ -205,42 +198,40 @@
 			border.node().transform.baseVal.initialize( AvgHolder.node().transform.baseVal.getItem(0) );
 
 			// Legend
-			const legendData = Array.from( barNames );
-			let widthSum = 0;
-			const textWidths = legendData.map( d => {
-				let value = widthSum;
-				widthSum += getTextWidth( d.name, '10px', 'sans-serif' );
-				return value;
-			} );
 			const legendHeight = 20, legendSpacing = 15, legendTextSpacing = 5;
-
 			let LegendHolder = svg.append( 'g' )
 					.attr( 'class', 'legend-holder' );
 			let legend = LegendHolder.selectAll( '.legend' )
-				.data( legendData )
+				.data( Array.from( barNames ) )
 				.enter().append( 'g' )
-					.attr( 'class', 'legend' )
-					.attr( 'transform', `translate( 0, ${ height + margin.bottom/2 } )` )
+					.attr( 'class', 'legend' );
 
 			// Legend Boxes
 			legend.append( 'rect' )
 				.attr( 'width', legendHeight )
-				.attr( 'x', ( d, i ) => ( i + 1 ) * legendSpacing + i * legendHeight + i * legendTextSpacing + textWidths[i] )
+				.attr( 'x', 0 )
 				.attr( 'y', 0 )
 				.attr( 'height', legendHeight )
 				.style( 'fill', d => barColors[ d ] );
 
 			// Legend Text
 			legend.append( 'text' )
-				.attr( 'x', ( d, i ) => ( i + 1 ) * legendSpacing + ( i + 1 ) * legendHeight + ( i + 1 ) * legendTextSpacing + textWidths[i] )
+				.attr( 'x', legendHeight + legendTextSpacing )
 				.attr( 'y', legendHeight / 2 )
 				.attr( 'dy', '.35em' )
 				.style( 'text-anchor', 'start' )
 				.text( d => d );
 
 			// Legend Position
+			let widthSums = 0
+			LegendHolder.selectAll( '.legend' )
+				.attr( 'transform', function( d, i ) {
+					let value = widthSums;
+					widthSums += this.getBBox().width + legendSpacing;
+					return `translate( ${value}, 0 )`;
+				} );
 			let legendWidth = LegendHolder.node().getBBox().width;
-			LegendHolder.attr( 'transform', `translate( ${width / 2 - legendWidth / 2}, 0 )` );
+			LegendHolder.attr( 'transform', `translate( ${width / 2 - legendWidth / 2}, ${ height + margin.bottom/2 } )` );
     });
 
     </script>
