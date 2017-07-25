@@ -107,7 +107,7 @@ sub get_total_appearances {
     return $cursor->count;
 }
 
-sub get_display_count_slow {
+sub get_display_count {
     my $self    = shift;
     my $entity  = shift;
     my $cursor  = $self->find({
@@ -125,7 +125,7 @@ sub get_display_count_slow {
     return scalar(keys %seen);
 }
 
-sub get_display_count {
+sub get_display_count_buggy_but_fast {
     my $self    = shift;
     my $entity  = shift;
     my $collection  = $self->collection_name;
