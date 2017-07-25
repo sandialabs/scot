@@ -641,15 +641,24 @@ sub update_alertgroup_with_bundled_alert {
     }
 
     my $alertcol    = $mongo->collection('Alert');
+
     foreach my $alert (@$alerts) {
         my $alert_id    = $alert->{id} + 0;
         my $alert_obj   = $alertcol->find_iid($alert_id);
+
+        if ( ! defined $alert_obj ) {
+            $log->error("unable to get alert $alert_id object to update!");
+        }
+
         my $entities    = delete $alert->{entities};
         if ( $alert_obj->update({'$set' => $alert}) ) {
             $log->debug("updated alert $alert_id");
             if ( defined $entities and scalar(@$entities) > 0 ) {
                 $mongo->collection('Entity')
                       ->update_entities($alert_obj, $entities);
+            }
+            else {
+                $log->error("NO ENTITIES");
             }
         }
         else {
