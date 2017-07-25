@@ -9,6 +9,16 @@ use lib '/opt/scot/lib';
 use v5.18;
 use Scot::App::Flair;
 
+$SIG{__DIE__} = sub { our @reason = @_ };
+
+END {
+    our @reason;
+    if (@reason) {
+        say "Flairer died because: @reason";
+    }
+}
+
+
 my $config_file = $ENV{'scot_app_flair_config_file'} //
                         '/opt/scot/etc/flair.cfg.pl';
 
