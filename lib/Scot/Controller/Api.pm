@@ -634,8 +634,8 @@ sub update_permitted {
     my $req     = shift;
 
     if ( $object->meta->does_role('Scot::Role::Permission') ) {
-
-        return $object->is_modifiable($self->get_groups);
+        my $group_aref  = $self->get_groups;
+        return $object->is_modifiable($group_aref);
     }
     return 1;
 }
