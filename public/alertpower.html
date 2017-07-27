@@ -114,12 +114,11 @@
 
 	let yAxisEl = svg.append( 'g' )
 		.attr( 'class', 'y axis' )
-		//.call( xAxis );
 
 	let xAxisEl = svg.append( 'g' )
-			.attr( 'class', 'x axis' )
-			.attr( 'transform', `translate( 0, ${height} )` )
-			//.call( yAxis );
+		.attr( 'class', 'x axis' )
+		.attr( 'transform', `translate( 0, ${height} )` )
+
 	xAxisEl.append( 'text' )
 		.attr( 'text-anchor', 'middle' )
 		.attr( 'x', width / 2 )
@@ -127,10 +126,6 @@
 		.style( 'fill', 'black' )
 		.style( 'font-size', '12px' )
 		.text( 'Alert Count' );
-
-    let divTooltip = d3.select( 'body' )
-		.append( 'div' )
-			.attr( 'class', 'toolTip' );
 
 	let cachedData, dataTypes, stackedMax, groupedMax;
 
@@ -181,18 +176,18 @@
 
 		yScale.domain( dataset.map( d => d.date ) );
 
+		/*
 		// Animated, but multiline flashes
 		yAxisEl.transition().call( g => {
 			g.call( yAxis )
 			setTimeout( () => {
 				g.selectAll( '.tick text' ).call( wrapText, margin.left - 20 );
-			}, 5 )
+			}, 10 )
 		} )
-		/*
+		*/
 		// Not animated
 		yAxisEl.call( yAxis )
         svg.selectAll( '.y.axis .tick text' ).call( wrapText, margin.left - 20 ); // Wrap axis labels
-		*/
 
         let alerts = svg.selectAll( '.alert' )
 			.data( dataset, d => d.date )
@@ -281,51 +276,6 @@
 	const getData = () => {
 		d3.json( url+opts, dataset => {
 			update( dataset );
-
-					/*
-			bar_enter.append( 'text' )
-					 .text(function(d) { return d3.format( '.2s' )(d.x1-d.x0)+''; })
-					 .attr( 'y', function(d) { return x(d.x1)+(x(d.x0) -x(d.x1))/2; })
-					 .attr( 'x', y.bandwidth()/3)
-					 .style( 'fill', '#ffffff' );
-					 */
-
-					/*
-			bar.on( 'mousemove', function(d) {
-				divTooltip.style( 'left', d3.event.pageX+10+'px' );
-				divTooltip.style( 'top',  d3.event.pageY-25+'px' );
-				divTooltip.style( 'display', 'inline-block' );
-				let elements = document.querySelectorAll( ':hover' );
-				l = elements.length;
-				l = l - 1;
-				element = elements[l].__data__;
-				value = element.x1 - element.x0;
-				divTooltip.html((d.date)+'<br>'+element.name+'<br>'+value+'' );
-			});
-
-			bar.on( 'mouseout', function(d) {
-				divTooltip.style( 'display', 'none' );
-			});
-
-			svg.append( 'g' )
-			   .attr( 'class', 'legendLinear' )
-			   .attr( 'transform', 'translate(100,' + (height + 30) +' )' );
-
-			let legend  = d3.legend.color()
-								   .shapeWidth(height/4)
-								   .shapePadding(10)
-								   .orient( 'horizontal' )
-								   .scale(color);
-			svg.select( '.legendLinear' ).call(legend);
-
-			svg.append( 'text' )
-			   .attr( 'class', 'title' )
-			   .attr( 'x', (width/2) )
-			   .attr( 'y', 0)
-			   .attr( 'text-anchor', 'middle' )
-			   .style( 'font-size', '16px' )
-			   .text( 'Alert Status Breakout' );
-			   */
 		} );
 	}
 	getData();
