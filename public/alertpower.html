@@ -92,13 +92,14 @@
     let url = '/scot/api/v2/metric/alert_power';
     let opts = '?type=all';
     
-    let margin = {
-			top: 20, left: 200, right: 20, bottom: 40,
+    const margin = {
+			top: 20, left: 200, right: 20, bottom: 60,
         },
         width = 1000 - margin.left - margin.right,
-		height = 0;
-		lineHeight = 22;
-        //height = 700 - margin.top - margin.bottom;
+		legendHeight = 20, legendSpacing = 15, legendTextSpacing = 5;
+
+	// Height is initially 0, is calculated after we have data
+	let height = 0;
 
 	let xScale = d3.scaleLinear()
 		.rangeRound( [0, width] );
@@ -135,6 +136,9 @@
 		.style( 'font-size', '12px' )
 		.text( 'Alert Count' );
 
+	let LegendHolder = svg.append( 'g' )
+			.attr( 'class', 'legend-holder' );
+
 	let cachedData, dataTypes, stackedMax, groupedMax;
 
 	const update = ( dataset ) => {
@@ -145,7 +149,7 @@
 
 		// Calculate height
 		height = 32 * dataset.length;
-		d3.select( 'svg' ).attr( 'viewBox', `0 0 1000 ${height + margin.top + margin.bottom}` )
+		d3.select( 'svg' ).transition().attr( 'viewBox', `0 0 1000 ${height + margin.top + margin.bottom}` )
 
 		dataTypes = d3.keys( dataset[0] )
 				.filter( key => ![ 'date', 'values', 'total' ].includes( key ) );
@@ -236,6 +240,43 @@
 			.merge( alertTypes.select( 'title' ) )
 			.text( d => `${d.name}: ${d.count}` );
 
+		// Legend
+		let legend = LegendHolder.selectAll( '.legend' )
+			.data( dataTypes )
+
+		legend.exit().remove()
+
+		legend = legend.enter().append( 'g' )
+				.attr( 'class', 'legend' )
+
+		// Legend Boxes
+		legend.append( 'rect' )
+			.attr( 'width', legendHeight )
+			.attr( 'x', 0 )
+			.attr( 'y', 0 )
+			.attr( 'height', legendHeight )
+			.style( 'fill', d => colors( d ) );
+
+		// Legend Text
+		legend.append( 'text' )
+			.attr( 'x', legendHeight + legendTextSpacing )
+			.attr( 'y', legendHeight / 2 )
+			.attr( 'dy', '.35em' )
+			.style( 'text-anchor', 'start' )
+			.style( 'text-transform', 'capitalize' )
+			.text( d => d );
+
+		// Legend Position
+		let widthSums = 0
+		LegendHolder.selectAll( '.legend' )
+			.attr( 'transform', function( d, i ) {
+				let value = widthSums;
+				widthSums += this.getBBox().width + legendSpacing;
+				return `translate( ${value}, 0 )`;
+			} );
+		let legendWidth = LegendHolder.node().getBBox().width;
+		LegendHolder.transition().attr( 'transform', `translate( ${width / 2 - legendWidth / 2}, ${ height + margin.bottom - legendHeight } )` );
+		
 		if ( d3.select( 'input[name="mode"]:checked' ).attr( 'value' ) === 'grouped' ) {
 			transitionGrouped();
 		} else {
@@ -281,8 +322,8 @@
 			.transition()
 				.delay( ( d, i ) => i * 5 )
 				.duration( 500 )
-				.attr( 'height', yScale.bandwidth() / 3 )
-				.attr( 'y', ( d, i ) => ( yScale.bandwidth() / 3 ) * i )
+				.attr( 'height', yScale.bandwidth() / dataTypes.length )
+				.attr( 'y', ( d, i ) => ( yScale.bandwidth() / dataTypes.length ) * i )
 			.transition()
 				.attr( 'x', 0 )
 				.attr( 'width', d => xScale( d.end ) - xScale( d.start ) )
