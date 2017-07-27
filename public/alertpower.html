@@ -31,12 +31,18 @@
     text {
         font: 10px sans-serif;
     }
+	#container {
+		max-height: 90vh;
+		overflow: auto;
+	}
 </style>
 <body>
-<form>
-	<label><input type="radio" name="mode" value="grouped"> Grouped</label>
-	<label><input type="radio" name="mode" value="stacked" checked> Stacked</label>
-</form>
+	<div id='container'>
+		<form>
+			<label><input type="radio" name="mode" value="grouped"> grouped</label>
+			<label><input type="radio" name="mode" value="stacked" checked> Stacked</label>
+		</form>
+	</div>
 <script src='https://d3js.org/d3.v4.min.js'></script>
 <script>
 	const wrapText = ( text, width ) => {
@@ -90,7 +96,9 @@
 			top: 20, left: 200, right: 20, bottom: 40,
         },
         width = 1000 - margin.left - margin.right,
-        height = 700 - margin.top - margin.bottom;
+		height = 0;
+		lineHeight = 22;
+        //height = 700 - margin.top - margin.bottom;
 
 	let xScale = d3.scaleLinear()
 		.rangeRound( [0, width] );
@@ -106,9 +114,9 @@
     let yAxis = d3.axisLeft()
 		.scale( yScale );
 
-    let svg = d3.select( 'body' )
+    let svg = d3.select( '#container' )
 		.append( 'svg' )
-			.attr( 'viewBox', '0 0 1000 700' )
+		.attr( 'viewBox', `0 0 1000 ${height + margin.top + margin.bottom}` )
 			.append( 'g' )
 				.attr( 'transform', `translate( ${margin.left}, ${margin.top} )` );
 
@@ -134,6 +142,10 @@
 			dataset = cachedData;
 		}
 		cachedData = dataset;
+
+		// Calculate height
+		height = 32 * dataset.length;
+		d3.select( 'svg' ).attr( 'viewBox', `0 0 1000 ${height + margin.top + margin.bottom}` )
 
 		dataTypes = d3.keys( dataset[0] )
 				.filter( key => ![ 'date', 'values', 'total' ].includes( key ) );
@@ -174,20 +186,23 @@
 			return d3.max( dataTypes, b => d[ b ] );
 		} );
 
-		yScale.domain( dataset.map( d => d.date ) );
+		yScale.rangeRound( [0, height] )
+			.domain( dataset.map( d => d.date ) );
 
-		/*
+		/**/
 		// Animated, but multiline flashes
 		yAxisEl.transition().call( g => {
 			g.call( yAxis )
 			setTimeout( () => {
 				g.selectAll( '.tick text' ).call( wrapText, margin.left - 20 );
-			}, 10 )
+			}, 50 )
 		} )
-		*/
+		/**/
+		/*
 		// Not animated
 		yAxisEl.call( yAxis )
         svg.selectAll( '.y.axis .tick text' ).call( wrapText, margin.left - 20 ); // Wrap axis labels
+		/**/
 
         let alerts = svg.selectAll( '.alert' )
 			.data( dataset, d => d.date )
@@ -243,7 +258,8 @@
 
 	const transitionStacked = () => {
 		xScale.domain( [0, stackedMax] ).nice();
-		xAxisEl.transition().call( xAxis );
+		xAxisEl.transition().call( xAxis )
+			.attr( 'transform', `translate( 0, ${height} )` )
 
 		svg.selectAll( '.alert rect' )
 			.transition()
@@ -258,7 +274,8 @@
 
 	const transitionGrouped = () => {
 		xScale.domain( [0, groupedMax] ).nice();
-		xAxisEl.transition().call( xAxis );
+		xAxisEl.transition().call( xAxis )
+			.attr( 'transform', `translate( 0, ${height} )` )
 
 		svg.selectAll( '.alert' ).selectAll( 'rect' )
 			.transition()
