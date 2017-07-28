@@ -68,19 +68,19 @@ sub startup {
     );
 
     # capture stuff that normally would go to STDERR and put in log
-    #$SIG{'__WARN__'} = sub {
-    #    do {
-    #        no warnings 'uninitialized';
-    #        $log->warn(@_);
-    #        unless ( grep { /uninitialized/ } @_ ) {
-    #            $log->warn(longmess());
-    #        }
-    #    }
-    #};
-    #$SIG{'__DIE__'} = sub {
-    #    $log->error(@_);
-    #    $log->warn(longmess());
-    #};
+    $SIG{'__WARN__'} = sub {
+        do {
+            no warnings 'uninitialized';
+            $log->warn(@_);
+            unless ( grep { /uninitialized/ } @_ ) {
+                $log->warn(longmess());
+            }
+        }
+    };
+    $SIG{'__DIE__'} = sub {
+        $log->error(@_);
+        $log->warn(longmess());
+    };
 
 
 =head2 Scot Application Attributes and Helpers
