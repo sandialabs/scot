@@ -193,7 +193,7 @@
 		yScale.rangeRound( [0, height] )
 			.domain( dataset.map( d => d.date ) );
 
-		/**/
+		/*
 		// Animated, but multiline flashes
 		yAxisEl.transition().call( g => {
 			g.call( yAxis )
@@ -202,7 +202,7 @@
 			}, 50 )
 		} )
 		/**/
-		/*
+		/**/
 		// Not animated
 		yAxisEl.call( yAxis )
         svg.selectAll( '.y.axis .tick text' ).call( wrapText, margin.left - 20 ); // Wrap axis labels
