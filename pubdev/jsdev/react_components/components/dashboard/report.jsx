@@ -3,7 +3,7 @@ import { Panel } from 'react-bootstrap';
 
 import ReportHeatmap from './report_heatmap';
 import ReportArt from './report_art';
-// import ReportAlertPower from './report_alertpower';
+import ReportAlertpower from './report_alertpower';
 
 const Report = ( { frontPage } ) => (
 	<div id='report' className='dashboard'>
@@ -26,6 +26,9 @@ const Report = ( { frontPage } ) => (
 				<div className='col-md-6'>
 					<Panel header='Heatmap'>
 						<ReportHeatmap />
+					</Panel>
+					<Panel header='Alert Power'>
+						<ReportAlertpower />
 					</Panel>
 				</div>
 				<div className='col-md-6'>
