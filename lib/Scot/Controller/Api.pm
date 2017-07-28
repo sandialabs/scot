@@ -929,7 +929,7 @@ sub process_entities {
     my $mongo   = $self->env->mongo;
     my $log     = $self->env->log;
 
-    $log->debug("PROCESSING ENTITIES");
+    $log->debug("PROCESSING ENTITIES ".$cursor->count);
 
     while ( my $entity = $cursor->next ) {
 
@@ -941,10 +941,20 @@ sub process_entities {
         );
         my @threaded_entries    = $self->thread_entries($entry_cursor);
 
+        $log->debug("    has ".scalar(@threaded_entries)." entries");
+
+        my $appearance_count    = $self->get_entity_count($entity);
+
+        $log->debug("    has $appearance_count appearances in scot");
+
+        my $entry_count     = $self->get_entry_count($entity);
+
+        $log->debug("    has $entry_count entries ");
+
         $things{$entity->value} = {
             id      => $entity->id,
-            count   => $self->get_entity_count($entity),
-            entry   => $self->get_entry_count($entity),
+            count   => $appearance_count,
+            entry   => $entry_count,
             type    => $entity->type,
             classes => $entity->classes,
             data    => $entity->data,
@@ -955,6 +965,7 @@ sub process_entities {
                     {filter=>\&Dumper, value=>$things{$entity->value}});
 
     }
+    $log->debug("done processing entities");
     return wantarray ? %things : \%things;
 }
 
@@ -1445,6 +1456,8 @@ sub thread_entries {
     }
 
     unshift @threaded, @summaries;
+
+    $log->debug("ready to return threaded entries");
 
     return wantarray ? @threaded : \@threaded;
 }
