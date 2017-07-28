@@ -1,3 +1,6 @@
+Big batch of code fixes coming on Monday 7/31, hold tight!
+==========================================================
+
 ![ScotLogo](https://raw.githubusercontent.com/sandialabs/scot/master/public/images/scot_logo_highrez_64x64.png)
 Sandia Cyber Omni Tracker
 =========================
