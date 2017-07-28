@@ -108,30 +108,63 @@ sub update_entities {
             });
             push @created_ids, $entity->id;
         }
-        # $log->trace("entity is ",{filter=>\&Dumper, value=>$entity});
-        my $entity_id  = $entity->id;
-
-
-        my $link    = $linkcol->create_link(
-            $entity, { type => $type, id   => $id, }
-        );
-
-        if ( $type eq "entry" ) {
-            my $target_id   = $target->target->{id};
-            my $target_type = $target->target->{type};
-
-            my $addlink = $linkcol->create_link(
-                $entity, { type => $target_type, id => $target_id, }
-            );
-        }
-
-        if ( $type eq "alert" ) {
-            my $addlink = $linkcol->create_link(
-                $entity, { type => "alertgroup", id => $target->{alertgroup} }
-            );
-        }
+        $self->create_entity_links($entity, $target);
     }
     return \@created_ids, \@updated_ids;
+}
+
+sub upsert_link {
+    my $self    = shift;
+    my $entity  = shift; # object
+    my $target  = shift; # href
+
+    my $linkcol = $self->env->mongo->collection('Link');
+    my $linkobj = $linkcol->find_one({
+        entity_id       => $entity->id,
+        'target.id'     => $target->{id},
+        'target.type'   => $target->{type},
+    });
+
+    if ( defined $linkobj and
+         ref($linkobj) eq "Scot::Model::Link" ) {
+        $self->env->log->debug("Entity already linked to target");
+        return;
+    }
+
+    $linkobj    = $linkcol->create_link(
+        $entity, { 
+            type    => $target->{type},
+            id      => $target->{id}, 
+        }
+    );
+}
+
+sub create_entity_links {
+    my $self    = shift;
+    my $entity  = shift; # object
+    my $target  = shift; # object
+
+    $self->upsert_link($entity, {
+        id      => $target->id,
+        type    => $target->get_collection_name,
+    });
+
+    if ( $target->get_collection_name eq "entry" ) {
+        my $additional_link = $self->upsert_link(
+            $entity, {
+                type    => $target->target->{type},
+                id      => $target->target->{id},
+            }
+        );
+    }
+    if ( $target->get_collection_name eq "alert" ) {
+        my $additional_link = $self->upsert_link(
+            $entity, {
+                type    => "alertgroup",
+                id      => $target->alertgroup,
+            }
+        );
+    }
 }
 
 sub api_subthing {
