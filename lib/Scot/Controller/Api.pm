@@ -1350,24 +1350,6 @@ sub render_error {
     );
 }
 
-sub sarlacc {
-    my $self    = shift;
-    my $href    = shift;
-    my $url     = "https://sarlacc.gibson.sandia.gov/api/scot/scan?";
-    my @params  = (
-        "apikey="       .$self->env->sarlacc_apikey,
-        "target_id="    .$href->{target}->{id},
-        "target_type="  .$href->{target}->{type},
-        "parent_id="    .$href->{parent},
-        "file_url="     ."/scot/api/v2/file/".$href->{id}."?download=1",
-    );
-    $url    .= join('&',@params);
-    return { 
-        send_to_name   => "Sarlacc",
-        send_to_url    => $url,
-    };
-}
-
 sub thread_entries {
     my $self    = shift;
     my $cursor  = shift;
@@ -1418,9 +1400,11 @@ sub thread_entries {
         if ( $href->{body} =~ /class=\"fileinfo\"/ ) {
             # we have a file entry so we need to "enrich" the data
             # so that the UI can build sendto buttons
-            $href->{actions} = [
-                $self->sarlacc($href)
-            ];
+            # actions defined in the config file
+            if ( defined $self->env->{entry_actions}->{fileinfo} ) {
+                my $action  = $env->{entry_actions}->{fileinfo};
+                $href->{actions} = [ $action->($href) ];
+            }
         }
 
         if ( $entry->parent == 0 ) {
