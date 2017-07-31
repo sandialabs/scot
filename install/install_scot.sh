@@ -165,7 +165,7 @@ function configure_startup {
                         sed -i 's=instdir='$SCOTDIR'=g' /etc/init.d/scot
                     else
                         echo "-- install /etc/init.d/$service"
-                        /opt/scot/bin/${service}.pl > /etc/init.d/$service
+                        /opt/scot/bin/${service}.pl get_init_file > /etc/init.d/$service
                         chmod +x /etc/init.d/$service
                     fi
                 fi
