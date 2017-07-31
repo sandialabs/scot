@@ -206,12 +206,19 @@ This function does not create any record to the audit collection
 
 =cut
 
+sub get_groups {
+    my $self    = shift;
+    my $aref    = $self->session('groups');
+    my @groups  = map { lc($_) } @{$aref};
+    return wantarray ? @groups : \@groups;
+}
+
 sub list {
     my $self    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
     my $user    = $self->session('user');
-    my $groups  = $self->session('groups');
+    my $groups  = $self->get_groups;
 
     $log->debug("LIST");
 
@@ -345,7 +352,7 @@ sub post_get_one_process {
     # handle special get_one cases and convert object into hash
 
     if ( $object->meta->does_role('Scot::Role::Permittable') ) {
-        unless ( $object->is_readable($self->session('groups')) ) {
+        unless ( $object->is_readable($self->get_groups) ) {
             $self->read_not_permitted_error;
             die "Read not permitted";
         }
@@ -627,8 +634,8 @@ sub update_permitted {
     my $req     = shift;
 
     if ( $object->meta->does_role('Scot::Role::Permission') ) {
-
-        return $object->is_modifiable($self->session('groups'));
+        my $group_aref  = $self->get_groups;
+        return $object->is_modifiable($group_aref);
     }
     return 1;
 }
@@ -643,7 +650,8 @@ sub pre_update_process {
 
     $log->debug("PRE UPDATE");
 
-    my $usersgroups = $self->session('groups');
+    # my $usersgroups = $self->session('groups');
+    my $usersgroups  = $self->get_groups;
 
     if ( ref($object) eq "Scot::Model::Apikey" ) {
         my $updated_groups = [];
@@ -921,7 +929,7 @@ sub process_entities {
     my $mongo   = $self->env->mongo;
     my $log     = $self->env->log;
 
-    $log->debug("PROCESSING ENTITIES");
+    $log->debug("PROCESSING ENTITIES ".$cursor->count);
 
     while ( my $entity = $cursor->next ) {
 
@@ -933,10 +941,20 @@ sub process_entities {
         );
         my @threaded_entries    = $self->thread_entries($entry_cursor);
 
+        $log->debug("    has ".scalar(@threaded_entries)." entries");
+
+        my $appearance_count    = $self->get_entity_count($entity);
+
+        $log->debug("    has $appearance_count appearances in scot");
+
+        my $entry_count     = $self->get_entry_count($entity);
+
+        $log->debug("    has $entry_count entries ");
+
         $things{$entity->value} = {
             id      => $entity->id,
-            count   => $self->get_entity_count($entity),
-            entry   => $self->get_entry_count($entity),
+            count   => $appearance_count,
+            entry   => $entry_count,
             type    => $entity->type,
             classes => $entity->classes,
             data    => $entity->data,
@@ -947,6 +965,7 @@ sub process_entities {
                     {filter=>\&Dumper, value=>$things{$entity->value}});
 
     }
+    $log->debug("done processing entities");
     return wantarray ? %things : \%things;
 }
 
@@ -1186,7 +1205,7 @@ sub delete_or_purge {
 sub delete_not_permitted {
     my $self    = shift;
     my $object  = shift;
-    my $users_groups    = $self->session('groups');
+    my $users_groups    = $self->get_groups;
 
     if ($object->meta->does_role('Scot::Role::Permittable')) {
         if ( $object->is_modifiable($users_groups) ) {
@@ -1331,34 +1350,16 @@ sub render_error {
     );
 }
 
-sub sarlacc {
-    my $self    = shift;
-    my $href    = shift;
-    my $url     = "https://sarlacc.gibson.sandia.gov/api/scot/scan?";
-    my @params  = (
-        "apikey="       .$self->env->sarlacc_apikey,
-        "target_id="    .$href->{target}->{id},
-        "target_type="  .$href->{target}->{type},
-        "parent_id="    .$href->{parent},
-        "file_url="     ."/scot/api/v2/file/".$href->{id}."?download=1",
-    );
-    $url    .= join('&',@params);
-    return { 
-        send_to_name   => "Sarlacc",
-        send_to_url    => $url,
-    };
-}
-
 sub thread_entries {
     my $self    = shift;
     my $cursor  = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $mygroups    = $self->session('groups');
+    my $mygroups    = $self->get_groups;
     my $user        = $self->session('user');
 
     $log->debug("Threading ". $cursor->count . " entries...");
-    # $log->debug("users groups are: ".join(',',@$mygroups));
+    $log->debug("users groups are: ", {filter=>\&Dumper, value=>$mygroups});
 
     my @threaded    = ();
     my %where       = ();
@@ -1399,9 +1400,11 @@ sub thread_entries {
         if ( $href->{body} =~ /class=\"fileinfo\"/ ) {
             # we have a file entry so we need to "enrich" the data
             # so that the UI can build sendto buttons
-            $href->{actions} = [
-                $self->sarlacc($href)
-            ];
+            # actions defined in the config file
+            if ( defined $self->env->{entry_actions}->{fileinfo} ) {
+                my $action  = $env->{entry_actions}->{fileinfo};
+                $href->{actions} = [ $action->($href) ];
+            }
         }
 
         if ( $entry->parent == 0 ) {
@@ -1437,6 +1440,8 @@ sub thread_entries {
     }
 
     unshift @threaded, @summaries;
+
+    $log->debug("ready to return threaded entries");
 
     return wantarray ? @threaded : \@threaded;
 }
@@ -1478,7 +1483,7 @@ sub wall {
         action  => "wall",
         data    => {
             message => $msg,
-            user    => $user,
+            who     => $user,
             when    => $now,
         }
     });
@@ -1529,7 +1534,9 @@ sub whoami {
     if ( defined ( $userobj )  ) {
         $userobj->update_set(lastvisit => $env->now);
         my $user_href   = $userobj->as_hash;
-        if ( $env->is_admin($user_href->{username}, $self->session('groups'))){
+        my $group_aref  = $self->get_groups;
+        $log->debug("groups aref: ",{filter=>\&Dumper,value=>$group_aref});
+        if ( $env->is_admin($user_href->{username}, $group_aref)){
             $user_href->{is_admin} = 1;
         }
         # TODO:  move this to config file?
