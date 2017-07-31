@@ -454,7 +454,9 @@ sub build_match_ref {
 sub limit_fields {
     my $self    = shift;
     my $href    = shift;
-    my $params  = $href->{request}->{params};
+    my $req     = shift;
+    my $log     = $self->env->log;
+    my $params  = $req->{request}->{params};
     my $aref    = $params->{columns};
     my %fields  = ();
 
@@ -463,6 +465,7 @@ sub limit_fields {
             $aref = [ $aref ];  # make an array ref if we have a string
         }
     }
+    $log->trace("Attrs to limit: ",{filter=>\&Dumper, value=>$aref});
 
     foreach my $f (@$aref) {
         $fields{$f} = 1;
@@ -471,6 +474,7 @@ sub limit_fields {
     if ( scalar(keys %fields) == 0 ) {
         return undef;
     }
+    $log->trace("Limiting attributes to: ",{filter=>\&Dumper, value=>\%fields});
     return \%fields;
 }
 
@@ -488,7 +492,7 @@ sub filter_fields {
         }
     }
     else {
-        $self->env->log->warn("leaving fields intact");
+        $self->env->log->trace("leaving fields intact");
     }
 }
 
@@ -516,7 +520,8 @@ sub api_list {
     my $match   = $self->build_match_ref($href->{request});
 
     if (  ref($self) ne "Scot::Collection::Group" 
-       && ref($self) ne "Scot::Collection::Entity" ) {
+       && ref($self) ne "Scot::Collection::Entity" 
+       && ref($self) ne "Scot::Collection::Link" ) {
         $match->{'groups.read'} = { '$in' => $groups };
     }
 
@@ -610,7 +615,7 @@ sub api_find {
     my $id      = $href->{id} + 0;
     my $object  = $self->find_iid($id);
     if ( !defined $object ) {
-        die "Object not found";
+        die "Object not found $id:".ref($self);
     }
     return $object;
 }

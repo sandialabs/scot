@@ -28,7 +28,7 @@ Create an event and from a POST to the handler
 =cut
 
 
-sub create_from_api {
+override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
@@ -65,8 +65,7 @@ sub create_from_api {
     }
 
     return $intel;
-
-}
+};
 
 sub api_subthing {
     my $self    = shift;
