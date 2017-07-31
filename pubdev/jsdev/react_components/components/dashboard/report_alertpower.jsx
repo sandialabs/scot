@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { Button } from 'react-bootstrap';
 
 const wrapText = ( text, width ) => {
+	// FYI: not an error function because of 'this' injection
 	text.each( function( value, i ) {
 		if ( this.getComputedTextLength() < width ) {
 			return;
@@ -46,7 +47,7 @@ const wrapText = ( text, width ) => {
 }
 
 const margin = {
-		top: 5, left: 200, right: 20, bottom: 60,
+		top: 5, left: 200, right: 30, bottom: 60,
 	},
 	width = 1000 - margin.left - margin.right,
 	legendHeight = 20, legendSpacing = 15, legendTextSpacing = 5;
@@ -120,7 +121,7 @@ class ReportAlertpower extends PureComponent {
 		d3.select( '#report_alertpower' ).transition().attr( 'viewBox', `0 0 1000 ${this.height + margin.top + margin.bottom}` )
 
 		this.dataTypes = d3.keys( dataset[0] )
-				.filter( key => ![ 'date', 'values', 'total' ].includes( key ) );
+				.filter( key => ![ 'date', 'values', 'total', 'power', 'max' ].includes( key ) );
 
 		// Build color domain from keys except name
         this.colors.domain( this.dataTypes );
@@ -132,6 +133,7 @@ class ReportAlertpower extends PureComponent {
 			/**/ // False Data
 			this.dataTypes.forEach( type => {
 				d[ type ] = Math.round( Math.random() * 5 );
+				d.power = ( Math.random() * 10 ).toPrecision( 2 );
 			} );
 			/**/
 
@@ -151,6 +153,9 @@ class ReportAlertpower extends PureComponent {
 			} );
 
             d.total = d.values[ d.values.length - 1 ].end;
+			d.max = d3.max( this.dataTypes, b => {
+				return d[ b ];
+			} );
         } );
 
 		this.stackedMax = d3.max( dataset, d => d.total );
@@ -185,15 +190,16 @@ class ReportAlertpower extends PureComponent {
 				.style( 'opacity', 0 )
 			.remove()
 
-		alerts = alerts.enter().append( 'g' )
-				.attr( 'class', 'alert' )
-				.attr( 'transform', d => `translate( 1, ${this.yScale( d.date )} )` )
-				.merge( alerts )
+		alerts.enter().append( 'g' )
+			.attr( 'class', 'alert' )
+			.attr( 'transform', d => `translate( 1, ${this.yScale( d.date )} )` )
+			.append( 'text' )
+				.attr( 'dy', '1.2em' )
 
 		alerts.transition()
 			.attr( 'transform', d => `translate( 1, ${this.yScale( d.date )} )` )
 
-		let alertTypes = alerts.selectAll( 'rect' )
+		let alertTypes = this.svg.selectAll( '.alert' ).selectAll( 'rect' )
 			.data( d => d.values )
 
 		let bars = alertTypes.enter().append( 'rect' )
@@ -266,6 +272,20 @@ class ReportAlertpower extends PureComponent {
 			.transition()
 				.attr( 'height', this.yScale.bandwidth() )
 				.attr( 'y', 0 )
+
+		this.svg.selectAll( '.alert' ).selectAll( 'text' )
+			.transition()
+				.delay( ( d, i ) => i * 5 )
+				.duration( 500 )
+				.attr( 'transform', d => `translate( ${this.xScale( d.total ) + 10}, 0 )` )
+				.tween( 'text', function( d ) {
+					let text = d3.select( this );
+					let i = d3.interpolateNumber( text.text(), d.power ),
+						prec = d.power.split( '.' ),
+						round = ( prec.length > 1 ) ? Math.pow( 10, prec[0].length ) : 1;
+
+					return t => text.text( Math.round( i( t ) * round ) / round );
+				} )
 	}
 
 	transitionGrouped() {
@@ -282,6 +302,19 @@ class ReportAlertpower extends PureComponent {
 			.transition()
 				.attr( 'x', 0 )
 				.attr( 'width', d => this.xScale( d.end ) - this.xScale( d.start ) )
+
+		this.svg.selectAll( '.alert' ).selectAll( 'text' )
+			.transition()
+				.delay( ( d, i ) => i * 5 + 500 )
+				.attr( 'transform', d => `translate( ${this.xScale( d.max ) + 10}, 0 )` )
+				.tween( 'text', function( d ) {
+					let text = d3.select( this );
+					let i = d3.interpolateNumber( text.text(), d.power ),
+						prec = d.power.split( '.' ),
+						round = ( prec.length > 1 ) ? Math.pow( 10, prec[0].length ) : 1;
+
+					return t => text.text( Math.round( i( t ) * round ) / round );
+				} )
 	}
 
 	loadData() {
