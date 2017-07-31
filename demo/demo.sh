@@ -6,5 +6,5 @@ curl -X DELETE 'http://localhost:9200/scot'
 /opt/scot/install/src/elasticsearch/mapping.sh
 
 echo 'reset mongodb'
-mongo scot-prod < /usr/lib/scotdemo/reset.js
-/usr/lib/scotdemo/demogenerator.pl
+mongo scot-prod < ./reset.js
+./demo2.pl

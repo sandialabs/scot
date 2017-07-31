@@ -267,8 +267,8 @@ sub alert_response_time {
 
     while ( my $alertgroup = $agcursor->next ) {
         my $id          = $alertgroup->id;
+        my $debugstr    = "Alertgroup $id: ";
         my $firstview   = $alertgroup->firstview;
-        $log->debug("Alertgroup $id");
         if (! defined $firstview) {
             $log->error("Alertgroup $id firstview not defined!");
             next;
@@ -294,7 +294,10 @@ sub alert_response_time {
         $all{$dt->year}{$dt->month}{$dt->day}{$dt->hour}{sum} += $response;
         $all{$dt->year}{$dt->month}{$dt->day}{$dt->hour}{count}++;
 
+        $debugstr .= "response = $response ";
+
         my $status  = $alertgroup->status;
+        $debugstr .= "status = $status ";
         if ($status eq "promoted") {
             $promoted{$dt->year}{$dt->month}
                      {$dt->day}{$dt->hour}{sum} += $response;
@@ -318,6 +321,7 @@ sub alert_response_time {
                         {$dt->day}{$dt->hour}{count}++;
             }
         }
+        $log->debug($debugstr);
 
     }
 
