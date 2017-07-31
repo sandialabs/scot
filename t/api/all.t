@@ -26,9 +26,11 @@ my $harness = TAP::Harness->new(\%args);
         './intel.t',
         './incident.t',
         './task.t',
-#        './flair.t',
+        './filter.t',
         './guide.t',
-#        './entity.t',
+        './entity.t',
         './promote.t',
         './signature.t',
+        './link.t',
+        './apikey.t',
     );

@@ -107,9 +107,18 @@ sub get_total_appearances {
     return $cursor->count;
 }
 
-sub get_display_count_slow {
+sub get_display_count {
     my $self    = shift;
     my $entity  = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("Counting links to entity");
+
+    if ( $entity->status eq "untracked" ) {
+        $log->debug("untracked entity");
+        return 0;
+    }
+
     my $cursor  = $self->find({
         'entity_id'   => $entity->id,
         'target.type' => {
@@ -117,6 +126,12 @@ sub get_display_count_slow {
             '$nin'  => [ 'alertgroup', 'entry' ]
         }
     });
+
+    if ( $cursor->count > 1000 ) {
+        # return a quicker esitmate
+        return $cursor->count;
+    }
+
     my %seen;
     while (my $link = $cursor->next) {
         my $key = $link->target->{type} . $link->target->{id};
@@ -125,7 +140,7 @@ sub get_display_count_slow {
     return scalar(keys %seen);
 }
 
-sub get_display_count {
+sub get_display_count_buggy_but_fast {
     my $self    = shift;
     my $entity  = shift;
     my $collection  = $self->collection_name;
