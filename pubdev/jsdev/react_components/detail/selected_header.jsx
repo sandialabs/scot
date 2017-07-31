@@ -24,6 +24,7 @@ var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx');
 var Link                    = require('react-router-dom').Link;
+var DetailDataStatus        = require('../components/detail_data_status.jsx');
 var InitialAjaxLoad;
 
 var SelectedHeader = React.createClass({
@@ -520,7 +521,7 @@ var SelectedHeader = React.createClass({
                                 <tbody>
                                     <tr>
                                         <th></th>
-                                        <td><div style={{marginLeft:'5px'}}>{this.state.showEventData ? <EntryDataStatus data={this.state.headerData} id={id} type={type} updated={this.updated} />: null}</div></td>
+                                        <td><div style={{marginLeft:'5px'}}>{this.state.showEventData ? <DetailDataStatus data={this.state.headerData} status={this.state.headerData.status} id={id} type={type} errorToggle={this.props.errorToggle} />: null}</div></td>
                                         {(type != 'entity') ?
                                             <th>Owner: </th> 
                                         :
@@ -575,158 +576,6 @@ var EntryDataUpdated = React.createClass({
         return (
             <div><ReactTime value={data * 1000} format="MM/DD/YY hh:mm:ss a" /></div>
         )
-    }
-});
-
-var EntryDataStatus = React.createClass({
-    getInitialState: function() {
-        return {
-            buttonStatus:this.props.data.status,
-            key: this.props.id
-        }
-    },
-    componentDidMount: function() {
-        //Adds open/close hot keys for alertgroup
-        if (this.props.type == 'alertgroup') {
-            $('#landscape-list-view').keydown(function(event){
-                //prevent from working when in input
-                if ($('input').is(':focus')) {return};
-                //check for character "o" for 79 or "c" for 67
-                if (this.state.buttonStatus != 'promoted') {
-                    if (event.keyCode == 79 && (event.ctrlKey != true && event.metaKey != true)) {
-                        this.statusAjax('open');
-                    } else if (event.keyCode == 67 && (event.ctrlKey != true && event.metaKey != true)) {
-                        this.statusAjax('closed');
-                    }
-                }
-            }.bind(this))
-        }
-    },
-    componentWillUnmount: function() {
-        $('#landscape-list-view').unbind('keydown');
-    },
-    componentWillReceiveProps: function() {
-        this.setState({buttonStatus:this.props.data.status});
-    },
-    /*eventStatusToggle: function () {
-        if (this.state.buttonStatus == 'open') {
-            this.statusAjax('closed');
-        } else if (this.state.buttonStatus == 'closed') {
-            this.statusAjax('open');
-        } 
-    },*/
-    trackAll: function() {
-        this.statusAjax('tracked');
-    },
-    untrackAll: function() {
-        this.statusAjax('untracked');
-    },
-    closeAll: function() {
-        this.statusAjax('closed');
-    },
-    openAll: function() {
-        this.statusAjax('open');
-    },
-    enableAll: function() {
-        this.statusAjax('enabled');
-    },
-    disableAll: function() {
-        this.statusAjax('disabled');
-    },
-    statusAjax: function(newStatus) {
-        console.log(newStatus);
-        var json = {'status':newStatus};
-        $.ajax({
-            type: 'put',
-            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
-            data: JSON.stringify(json),
-            contentType: 'application/json; charset=UTF-8',
-            success: function(data) {
-                console.log('success status change to: ' + data);
-            }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to change status');
-            }.bind(this)
-        });
-    },
-    render: function() { 
-        var buttonStyle = '';
-        var open = '';
-        var closed = '';
-        var promoted = '';
-        var title = '';
-        var classStatus = '';
-        var href;
-        if (this.state.buttonStatus == 'open' || this.state.buttonStatus == 'disabled' || this.state.buttonStatus == 'untracked') {
-            buttonStyle = 'danger';
-            classStatus = 'alertgroup_open' 
-        } else if (this.state.buttonStatus == 'closed' || this.state.buttonStatus == 'enabled' || this.state.buttonStatus == 'tracked') {
-            buttonStyle = 'success';
-            classStatus = 'alertgroup_closed'
-        } else if (this.state.buttonStatus == 'promoted') {
-            buttonStyle = 'default'
-            classStatus = 'alertgroup_promoted'
-        };
-
-        if (this.props.type == 'alertgroup') {
-            open = this.props.data.open_count;
-            closed = this.props.data.closed_count;
-            promoted = this.props.data.promoted_count;
-            title = open + ' / ' + closed + ' / ' + promoted;
-        }
-
-        if (this.props.type == 'event') {
-            href = '/incident/' + this.props.data.promotion_id;
-        } else if (this.props.type == 'intel') {
-            href = '/event/' + this.props.data.promotion_id;
-        }
-        
-        if (this.props.type == 'guide' || this.props.type == 'intel') {
-            return(<div/>)
-        } else if (this.props.type == 'alertgroup') {
-            return (
-                <ButtonToolbar>
-                    <OverlayTrigger placement='top' overlay={<Popover id={this.props.id}>open/closed/promoted alerts</Popover>}>
-                        <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} title={title} id="dropdown" className={classStatus}>
-                            <MenuItem eventKey='1' onClick={this.openAll} bsSize='xsmall'><b>Open</b> All Alerts</MenuItem>
-                            <MenuItem eventKey='2' onClick={this.closeAll}><b>Close</b> All Alerts</MenuItem>
-                        </DropdownButton>
-                    </OverlayTrigger>
-                </ButtonToolbar>
-            )
-        } else if (this.props.type == 'incident') {
-            return (
-                <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.state.buttonStatus}>
-                    <MenuItem eventKey='1' onClick={this.openAll}>Open Incident</MenuItem>
-                    <MenuItem eventKey='2' onClick={this.closeAll}>Close Incident</MenuItem>
-                </DropdownButton>
-           ) 
-        } else if (this.props.type == 'signature') {
-            return ( 
-                <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.state.buttonStatus}> 
-                    <MenuItem eventKey='1' onClick={this.enableAll}>Enable Signature</MenuItem> 
-                    <MenuItem eventKey='2' onClick={this.disableAll}>Disable Signature</MenuItem> 
-                </DropdownButton>
-            )
-        } else if (this.props.type == 'entity') {
-            return ( 
-                <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.state.buttonStatus}> 
-                    <MenuItem eventKey='1' onClick={this.trackAll}>Track</MenuItem> 
-                    <MenuItem eventKey='2' onClick={this.untrackAll}>Untracked</MenuItem> 
-                </DropdownButton>
-            )
-        } else {
-            return (
-                <div>
-                    {this.state.buttonStatus == 'promoted' ? <Link to={href} role='button' className={'btn btn-warning'}>{this.state.buttonStatus}</Link>:
-                        <DropdownButton bsSize='xsmall' bsStyle={buttonStyle} id="event_status" className={classStatus} style={{fontSize: '14px'}} title={this.state.buttonStatus}>
-                            <MenuItem eventKey='1' onClick={this.openAll}>Open</MenuItem>
-                            <MenuItem eventKey='2' onClick={this.closeAll}>Close</MenuItem>
-                        </DropdownButton>
-                    }
-                </div>
-            )
-        }
     }
 });
 

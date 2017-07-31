@@ -8,6 +8,7 @@ var Inspector               = require('react-inspector');
 var SelectedEntry           = require('../detail/selected_entry.jsx');
 var AddEntry                = require('../components/add_entry.jsx');
 var Draggable               = require('react-draggable');
+var DetailDataStatus        = require('../components/detail_data_status.jsx');
 var Link                    = require('react-router-dom').Link;
 var Store                   = require('../activemq/store.jsx');
 
@@ -375,7 +376,7 @@ var TabContents = React.createClass({
             return (
                 <div className='tab-content'>
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
-                        <h4 id="myModalLabel">{this.props.data != null ? <EntityValue value={this.props.valueClicked} data={this.props.data}/> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>
+                        <h4 id="myModalLabel">{this.props.data != null ? <EntityValue value={this.props.valueClicked} data={this.props.data} errorToggle={this.props.errorToggle} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>
                     </div>
                     <div style={{height:'100%',display:'flex', flex:'1 1 auto', marginLeft:'10px', flexFlow:'inherit', minHeight:'1px'}}>
                     {this.props.data != null ? <EntityBody data={this.props.data} entityid={this.props.entityid} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle} linkWarningToggle={this.props.linkWarningToggle}/> : <div>Loading...</div>}
@@ -387,7 +388,7 @@ var TabContents = React.createClass({
             return (
                 <div className='tab-content'> 
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
-                        <Link to={guideurl} target="_blank"><h4 id="myModalLabel">{this.props.data != null ? <span><span><EntityValue value={this.props.entityid} /></span><div><EntityValue value={this.props.data.applies_to} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4></Link>
+                        <Link to={guideurl} target="_blank"><h4 id="myModalLabel">{this.props.data != null ? <span><span><EntityValue value={this.props.entityid} errorToggle={this.props.errorToggle} /></span><div><EntityValue value={this.props.data.applies_to} errorToggle={this.props.errorToggle} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4></Link>
                     </div>
                     <div style={{overflow:'auto',flex:'1 1 auto', marginLeft:'10px'}}>
                     {this.props.data != null ? <GuideBody entityid={this.props.entityid} entitytype={this.props.entitytype}/> : <div>Loading...</div>}
@@ -412,15 +413,13 @@ var EntityValue = React.createClass({
                 <div className='flair_header'>
                     <Link to={entityurl} target="_blank">
                         Entity {this.props.data.id} 
-                    </Link> 
-                    <div style={{display:'flex'}}>
-                        <div className={statusClass}>
-                            {this.props.data.status}
-                        </div>
+                    </Link>
+                    <div style={{display: 'flex'}}>
+                        <DetailDataStatus status={this.props.data.status} id={this.props.data.id} type={'entity'} errorToggle={this.props.errorToggle} />
                         <span>&nbsp;</span>
                         <div style={{display:'flex'}}>
-                            {this.props.data.type}: {this.props.value} 
-                        </div>
+                            {this.props.data.type}: {this.props.value}
+                        </div> 
                     </div>
                 </div>
             )
@@ -867,9 +866,9 @@ var ReferencesBody = React.createClass({
         if (this.props.type == 'alert') {
             aHref = '/' + this.props.type + '/' + this.props.data.id;
             //aHref = '/#/alertgroup/' + this.props.data.alertgroup;
-            promotedHref = '/event/' + this.props.data.promotion_id;
+            promotedHref = '/#/event/' + this.props.data.promotion_id;
         } else if (this.props.type == 'event') {
-            promotedHref = '/incident/' + this.props.data.promotion_id;
+            promotedHref = '/#/incident/' + this.props.data.promotion_id;
             aHref = '/' + this.props.type + '/' + this.props.data.id;
         }
         else {
