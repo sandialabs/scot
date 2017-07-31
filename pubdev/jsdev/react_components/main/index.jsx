@@ -25,8 +25,7 @@ var Revl            = require('../components/visualization/revl.coffee');
 var Gamification    = require('../components/dashboard/gamification.jsx');
 var Status          = require('../components/dashboard/status.jsx');
 var Online          = require('../components/dashboard/online.jsx');
-// var Report          = require('../components/dashboard/report.jsx');
-import Report		from '../components/dashboard/report';
+import { ReportDashboard, ReportPage } from '../components/dashboard/report';
 var Notification    = require('react-notification-system');
 var Login           = require('../modal/login.jsx').default;
 
@@ -325,7 +324,7 @@ var App = React.createClass({
                             <div>
                                 <Gamification errorToggle={this.errorToggle} />
                                 <Online errorToggle={this.errorToggle} />
-                                <Report frontPage={true} errorToggle={this.errorToggle}/>
+                                <ReportDashboard />
                             </div>
                         :
                             null
@@ -378,7 +377,7 @@ var App = React.createClass({
                     :
                     null}
                     {type == 'report' ?
-                        <Report id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
+                        <ReportPage id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
                     :
                     null}
                     {type == 'amq' ?
