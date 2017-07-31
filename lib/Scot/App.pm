@@ -55,6 +55,13 @@ has log => (
     predicate   => 'has_log',
 );
 
+has get_method  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    default     => 'mongo',
+);
+
 sub _build_log {
     my $self    = shift;
     my $env     = $self->env;
