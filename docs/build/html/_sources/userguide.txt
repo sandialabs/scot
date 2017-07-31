@@ -39,7 +39,7 @@ Each column contains a textbox to filter the grid results.  Just enter in a filt
 
 A summary of alert status within an alertgroup can be quickly determined by glancing at the status column.  The legend below explains the shapes/colors used.
 
-.. figure:: _static/images/ag_status.gif
+.. figure:: _static/ag_status.gif
    :width: 100%
    :alt: Alertgroup status
 
@@ -48,7 +48,7 @@ Alert Details
 
 Let's look at the contents of an alert by clicking on one of the rows in the Alert Grid.  Note: 
 
-.. figure:: _static/images/alert_details.png
+.. figure:: _static/alert_details.png
    :width: 100 %
    :alt: Screen capture of alert details
 
@@ -58,7 +58,7 @@ To change the subject, click in the black subject box and edit like you would an
 
 Now let's look at the context sensitive command bar located directly below the header.
 
-.. figure:: _static/images/AlertMenuContextUnselected.png
+.. figure:: _static/AlertMenuContextUnselected.png
    :alt: Alert Context Menu with no selected alerts
 
 :Toggle Flair:  Toggle the display of Flair.
@@ -72,7 +72,7 @@ Now let's look at the context sensitive command bar located directly below the h
 After clicking on one or more Alerts in the detail view, the 
 alertgroup context menu changes to
 
-.. figure:: _static/images/AlertMenuContextSelected.png
+.. figure:: _static/AlertMenuContextSelected.png
    :alt: Alert Context Menu with alert selected
 
 :Open Selected: Change status of selected alerts to "open"
@@ -85,7 +85,7 @@ alertgroup context menu changes to
 
 Let's look at the actual alerts in this alertgroup now.  Each row in the table represents an alert, which may or may not be related to the other alerts. You can select one or more rows by clicking on them and utilizing the Shift and Ctrl keys as you would when selecting files in Windows Explorer.  Selected row(s) are highlighted in green.
 
-.. image:: _static/images/alert_rows.png
+.. image:: _static/alert_rows.png
    :width: 100 %
 
 For each alert, we want to answer the following:
@@ -100,9 +100,9 @@ If there is not **enough information** to continue, but there is some informatio
 
 If we need to **investigate further**, select the row(s) in question and click 'Promote Selected'.  This will create a new Event where you can document your findings and collaborate with other analysts on your team.  This event is linked back to the original alert, so no data is lost.
 
-.. |x| image:: _static/images/remove_x.png
+.. |x| image:: _static/remove_x.png
 
-.. |add| image:: _static/images/add.png
+.. |add| image:: _static/add.png
 
 Events
 ------
@@ -117,7 +117,7 @@ Event Grid View
 
 The Event grid allows you to view sets of Events and to filter those sets in various ways.
 
-.. figure:: _static/images/EventListView.png
+.. figure:: _static/EventListView.png
    :width: 100 %
    :alt: Sample Event List View
 
@@ -125,7 +125,7 @@ The Event grid allows you to view sets of Events and to filter those sets in var
 Event Detail View
 ^^^^^^^^^^^^^^^^^
 
-.. figure:: _static/images/EventDetailView.png
+.. figure:: _static/EventDetailView.png
    :width: 100 %
    :alt: Sample Event Detail View
 
@@ -176,7 +176,7 @@ sources.  Once input, the Flair engine will detect and cross correlate all Entit
 with the Intel record.  This can be very powerful and easy way to find threat actors withing
 you existing SCOT data as well as flagging it in new incoming alerts.
 
-.. figure:: _static/images/intelDetailView.png
+.. figure:: _static/intel_details.png
    :width: 100 %
    :alt: Sample Intel Detail View
 
@@ -205,7 +205,7 @@ This prevents tasks being pushed onto someone who may be on vacation.  If you wa
 take the task.  If someone whats it back, they can take ownership again.
 
 Signature
-----
+---------
 
 Signatures are used to integrate the version control of signatures within 3rd party mitigation tools (firewalls, IDS, etc.) while being managed by SCOT as a central repository. Signature's have the same list view as other "things" within SCOT, but they have a slightly modified detail view. 
 
