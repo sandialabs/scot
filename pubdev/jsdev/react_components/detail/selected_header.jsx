@@ -516,40 +516,44 @@ var SelectedHeader = React.createClass({
                             {this.state.refreshing ? <span style={{color:'lightblue'}}>Refreshing Data...</span> :null }
                             {this.state.loading ? <span style={{color:'lightblue'}}>Loading...</span> :null}    
                         </div> 
-                        <div className='details-table toolbar'>
-                            <table>
-                                <tbody>
-                                    <tr>
-                                        <th></th>
-                                        <td><div style={{marginLeft:'5px'}}>{this.state.showEventData ? <DetailDataStatus data={this.state.headerData} status={this.state.headerData.status} id={id} type={type} errorToggle={this.props.errorToggle} />: null}</div></td>
-                                        {(type != 'entity') ?
-                                            <th>Owner: </th> 
-                                        :
-                                            null
-                                        }
-                                        {(type != 'entity') ? 
-                                            <td><span>{this.state.showEventData ? <Owner key={id} data={this.state.headerData.owner} type={type} id={id} updated={this.updated} errorToggle={this.props.errorToggle}/>: null}</span></td> 
-                                        :
-                                            null 
-                                        }
-                                        {(type != 'entity') ?
-                                            <th>Updated: </th>
-                                        :
-                                            null
-                                        }
-                                        {(type != 'entity') ?
-                                            <td><span id='event_updated'>{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
-                                        :
-                                            null
-                                        }
-                                        {(type == 'event' || type == 'incident') && this.state.showEventData ? <th>Promoted From:</th> : null}
-                                        {(type == 'event' || type == 'incident') && this.state.showEventData ? <PromotedData data={this.state.headerData.promoted_from} type={type} id={id} /> : null}
-                                        {(type != 'entity') && this.state.showEventData ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}
-                                        {(type != 'entity') && this.state.showEventData ? <Source data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                        {type != 'entity' ? 
+                            <div className='details-table toolbar'>
+                                <table>
+                                    <tbody>
+                                        <tr>
+                                            <th></th>
+                                            <td><div style={{marginLeft:'5px'}}>{this.state.showEventData ? <DetailDataStatus data={this.state.headerData} status={this.state.headerData.status} id={id} type={type} errorToggle={this.props.errorToggle} />: null}</div></td>
+                                            {(type != 'entity') ?
+                                                <th>Owner: </th> 
+                                            :
+                                                null
+                                            }
+                                            {(type != 'entity') ? 
+                                                <td><span>{this.state.showEventData ? <Owner key={id} data={this.state.headerData.owner} type={type} id={id} updated={this.updated} errorToggle={this.props.errorToggle}/>: null}</span></td> 
+                                            :
+                                                null 
+                                            }
+                                            {(type != 'entity') ?
+                                                <th>Updated: </th>
+                                            :
+                                                null
+                                            }
+                                            {(type != 'entity') ?
+                                                <td><span id='event_updated'>{this.state.showEventData ? <EntryDataUpdated data={this.state.headerData.updated} /> : null}</span></td>
+                                            :
+                                                null
+                                            }
+                                            {(type == 'event' || type == 'incident') && this.state.showEventData ? <th>Promoted From:</th> : null}
+                                            {(type == 'event' || type == 'incident') && this.state.showEventData ? <PromotedData data={this.state.headerData.promoted_from} type={type} id={id} /> : null}
+                                            {(type != 'entity') && this.state.showEventData ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}
+                                            {(type != 'entity') && this.state.showEventData ? <Source data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div> 
+                        :
+                            null
+                        }
                     </div>
                     <Notification ref="notificationSystem" /> 
                     {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
