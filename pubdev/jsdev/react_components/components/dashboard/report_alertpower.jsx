@@ -59,13 +59,10 @@ class ReportAlertpower extends PureComponent {
         this.state = {
 			displayMode: 'stacked',
 			chartData: [],
+			chartCount: 20,
         }
 
-		/*
-		this.unitChange = this.unitChange.bind( this );
-		this.lengthChange = this.lengthChange.bind( this );
-		this.dateChange = this.dateChange.bind( this );
-		*/
+		this.dataChange = this.dataChange.bind( this );
 		this.displayModeChange = this.displayModeChange.bind( this );
     }
 
@@ -273,9 +270,9 @@ class ReportAlertpower extends PureComponent {
 				.attr( 'height', this.yScale.bandwidth() )
 				.attr( 'y', 0 )
 
-		this.svg.selectAll( '.alert' ).selectAll( 'text' )
+		this.svg.selectAll( '.alert text' )
 			.transition()
-				.delay( ( d, i ) => i * 5 )
+				.delay( ( d, i ) => ( i * this.dataTypes.length ) * 5 + i )
 				.duration( 500 )
 				.attr( 'transform', d => `translate( ${this.xScale( d.total ) + 10}, 0 )` )
 				.tween( 'text', function( d ) {
@@ -293,19 +290,22 @@ class ReportAlertpower extends PureComponent {
 		this.xAxisEl.transition().call( this.xAxis )
 			.attr( 'transform', `translate( 0, ${this.height} )` )
 
+		let initialDuration = this.displayModeChanged ? 500 : 0;
+
 		this.svg.selectAll( '.alert' ).selectAll( 'rect' )
 			.transition()
 				.delay( ( d, i ) => i * 5 )
-				.duration( 500 )
+				.duration( initialDuration )
 				.attr( 'height', this.yScale.bandwidth() / this.dataTypes.length )
 				.attr( 'y', ( d, i ) => ( this.yScale.bandwidth() / this.dataTypes.length ) * i )
 			.transition()
+				.duration( 500 )
 				.attr( 'x', 0 )
 				.attr( 'width', d => this.xScale( d.end ) - this.xScale( d.start ) )
 
-		this.svg.selectAll( '.alert' ).selectAll( 'text' )
+		this.svg.selectAll( '.alert text' )
 			.transition()
-				.delay( ( d, i ) => i * 5 + 500 )
+				.delay( ( d, i ) => i * 5 + initialDuration )
 				.attr( 'transform', d => `translate( ${this.xScale( d.max ) + 10}, 0 )` )
 				.tween( 'text', function( d ) {
 					let text = d3.select( this );
@@ -315,6 +315,8 @@ class ReportAlertpower extends PureComponent {
 
 					return t => text.text( Math.round( i( t ) * round ) / round );
 				} )
+
+		this.displayModeChanged = false;
 	}
 
 	loadData() {
@@ -334,25 +336,15 @@ class ReportAlertpower extends PureComponent {
 		this.loadData(); 
     }
 
-    componentDidUpdate() {
-		//this.loadData();
-    }
-
-	/*
-    unitChange( event ) {
-        this.setState({unit: event.target.value});
-    }
-	 
-    lengthChange( event ) {
-        this.setState({length: event.target.value});
-    }
-
-	dateChange( event ) {
-		this.setState({date: event.target.value});
+	dataChange( event ) {
+		let target = event.target;
+		this.setState( {
+			[target.name]: target.value,
+		} );
 	}
-	*/
 
 	displayModeChange( event ){
+		this.displayModeChanged = true;
 		this.setState( {
 			displayMode: event.target.value,
 		} );
@@ -393,6 +385,15 @@ class ReportAlertpower extends PureComponent {
             <div className='dashboard'>
                 <h1>Alert Power</h1>
 				<form>
+					<label>Count =&nbsp;
+						<input
+							type='number'
+							name='chartCount'
+							value={this.state.chartCount}
+							onChange={this.dataChange}
+						/></label>
+				</form>
+				<form>
 					<label><input
 						type='radio'
 						name='mode'
@@ -407,8 +408,8 @@ class ReportAlertpower extends PureComponent {
 						checked={this.state.displayMode === 'stacked'}
 						onChange={this.displayModeChange}
 					/> Stacked</label>
+					<Button id='export' bsSize='xsmall' bsStyle='default' onClick={this.exportToPNG}>Export to PNG</Button>
 				</form>
-                <Button id='export' bsSize='xsmall' bsStyle='default' onClick={this.exportToPNG}>Export to PNG</Button>
                 <div id='chart'>
 					<svg id='report_alertpower' viewBox='0 0 1000 100' />
                 </div>
