@@ -612,11 +612,19 @@ sub get_collection_name {
 sub api_find {
     my $self    = shift;
     my $href    = shift;
-    my $id      = $href->{id} + 0;
-    my $object  = $self->find_iid($id);
-    if ( !defined $object ) {
-        die "Object not found $id:".ref($self);
+
+    if ( $href->{collection} ne "entity" and
+         $href->{id} ne "byname" ) {
+        my $id      = $href->{id} + 0;
+        my $object  = $self->find_iid($id);
+        if ( !defined $object ) {
+            die "Object not found $id:".ref($self);
+        }
+        return $object;
     }
+
+    my $value = $href->{request}->{params}->{name};
+    my $object  = $self->find_one({value => $value});
     return $object;
 }
 
