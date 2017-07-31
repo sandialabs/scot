@@ -81,7 +81,7 @@ Once the problem has been fixed.  It is safe to re-run the installer script to m
 install.sh Options
 ^^^^^^^^^^^^^^^^^^
 
-SCOT's installer, install.sh,  is designed to automate many of the tasks need to install and upgrade SCOT.  The installer takes the following flags to modify its installtion behavior::
+SCOT's installer, install.sh,  is designed to automate many of the tasks need to install and upgrade SCOT.  The installer takes the following flags to modify its instalation behavior::
 
     Usage: $0 [-A mode] [-M path] [-dersu]
 

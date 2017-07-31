@@ -137,7 +137,7 @@ SCOT get API
 
         /scot/api/v2/event?entry_count=2&entry_count=4&entry_count=6
 
-        output: events with entry_count's of 2, 4, or 6
+        output: events with an entry_count of 2, 4, or 6
 
   c. matching everything but a number::
   
