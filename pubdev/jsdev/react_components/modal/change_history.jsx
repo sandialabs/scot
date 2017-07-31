@@ -38,7 +38,7 @@ var ChangeHistory = React.createClass({
                         <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.changeHistoryToggle} />
                         <h3 id="myModalLabel">{this.props.subjectType} Change History</h3>
                     </div>
-                    <div className="modal-body" style={{height: '75vh', width:'700px',overflowY:'auto'}}>
+                    <div className="modal-body" style={{maxHeight: '30vh', width:'700px',overflowY:'auto'}}>
                        {this.state.historyBody ? <ChangeHistoryData data={this.state.data} /> : null }
                     </div>
                     <div className="modal-footer">
