@@ -267,8 +267,10 @@ to resart SCOT for any changes to be recognized.</p>
 188
 189
 190
-191</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+191
+192</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
     
+    time_zone   =&gt; &#39;America/Denver&#39;,
     # scot version
     version     =&gt; &#39;3.5.1&#39;,
 
@@ -560,7 +562,9 @@ to resart SCOT for any changes to be recognized.</p>
 94
 95
 96
-97</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+97
+98</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+    time_zone   =&gt; &#39;America/Denver&#39;,
     log_config  =&gt; {
         logger_name     =&gt; &#39;SCOT&#39;,
         layout          =&gt; &#39;%d %7p [%P] %15F{1}: %4L %m%n&#39;,
@@ -588,7 +592,7 @@ to resart SCOT for any changes to be recognized.</p>
         },
         {
             attr    =&gt; &#39;scot&#39;,
-            class   =&gt; &#39;Scot::Util::Scot2&#39;,
+            class   =&gt; &#39;Scot::Util::ScotClient&#39;,
             config  =&gt; {
                 servername  =&gt; &#39;scotserver&#39;,
                 # username with sufficient scot perms to create alert(groups)
@@ -770,7 +774,9 @@ to resart SCOT for any changes to be recognized.</p>
 105
 106
 107
-108</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+108
+109</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+    time_zone   =&gt; &#39;America/Denver&#39;,
     # server name of the SCOT server
     servername  =&gt; &#39;localhost&#39;,
     # username with sufficient scot perms to create alert(groups)
@@ -808,7 +814,7 @@ to resart SCOT for any changes to be recognized.</p>
         },
         {
             attr    =&gt; &#39;scot&#39;,
-            class   =&gt; &#39;Scot::Util::Scot2&#39;,
+            class   =&gt; &#39;Scot::Util::ScotClient&#39;,
             config  =&gt; {
                 servername  =&gt; &#39;localhost&#39;,
                 # username with sufficient scot perms to create alert(groups)
@@ -904,7 +910,8 @@ to resart SCOT for any changes to be recognized.</p>
 18
 19
 20
-21</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+21
+22</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
     log_config  =&gt; {
         logger_name     =&gt; &#39;SCOT&#39;,
         layout          =&gt; &#39;%d %7p [%P] %15F{1}: %4L %m%n&#39;,
@@ -912,6 +919,7 @@ to resart SCOT for any changes to be recognized.</p>
         logfile         =&gt; &#39;/var/log/scot/scot.game.log&#39;,
         log_level       =&gt; &#39;DEBUG&#39;,
     },
+    days_ago    =&gt; 30,
     modules =&gt; [
         {
             attr    =&gt; &#39;mongo&#39;,
@@ -970,7 +978,9 @@ to resart SCOT for any changes to be recognized.</p>
 37
 38
 39
-40</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+40
+41</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+    time_zone   =&gt; &#39;America/Denver&#39;,
     max_workers =&gt; 1,
     log_config  =&gt; {
         logger_name     =&gt; &#39;SCOT&#39;,
