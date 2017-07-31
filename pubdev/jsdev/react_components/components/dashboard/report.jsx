@@ -6,7 +6,7 @@ import ReportArt from './report_art';
 import ReportAlertpower from './report_alertpower';
 
 const Report = ( { frontPage } ) => (
-	<div id='report' className='dashboard'>
+	<div id='report' className='dashboard' style={{height: 'calc( 100vh - 51px )', overflow: 'auto'}}>
 		<div style={{textAlign:'center'}}>
 			<h2>Reports</h2>
 		</div>
