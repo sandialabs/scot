@@ -37,6 +37,12 @@ To access the Alert Grid, click on the “Alert” button in the Navigation Bar 
 
 Each column contains a textbox to filter the grid results.  Just enter in a filter and press 'Enter' on your keyboard to activate the filter.  You can also click on a column above the filter textbox to sort by that column.  We can see the default sort order is by 'created' which is indicated by the chevron next to the column name.
 
+A summary of alert status within an alertgroup can be quickly determined by glancing at the status column.  The legend below explains the shapes/colors used.
+
+.. figure:: _static/images/ag_status.gif
+   :width: 100%
+   :alt: Alertgroup status
+
 Alert Details
 -------------
 
@@ -199,7 +205,7 @@ This prevents tasks being pushed onto someone who may be on vacation.  If you wa
 take the task.  If someone whats it back, they can take ownership again.
 
 Signature
-----
+---------
 
 Signatures are used to integrate the version control of signatures within 3rd party mitigation tools (firewalls, IDS, etc.) while being managed by SCOT as a central repository. Signature's have the same list view as other "things" within SCOT, but they have a slightly modified detail view. 
 
