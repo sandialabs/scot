@@ -315,6 +315,7 @@ sub update_alertgroup {
         my $mongo      = $self->env->mongo;
         my $agcol      = $mongo->collection("Alertgroup");
         $agcol->update_alertgroup_with_bundled_alert($putdata);
+        $self->log->debug("after alertgroup update");
         $self->env->mq->send("scot", {
             action  => "updated",
             data    => {
