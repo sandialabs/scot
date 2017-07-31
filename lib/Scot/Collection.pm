@@ -612,20 +612,25 @@ sub get_collection_name {
 sub api_find {
     my $self    = shift;
     my $href    = shift;
+    my $log     = $self->env->log;
 
-    if ( $href->{collection} ne "entity" and
-         $href->{id} ne "byname" ) {
-        my $id      = $href->{id} + 0;
-        my $object  = $self->find_iid($id);
-        if ( !defined $object ) {
-            die "Object not found $id:".ref($self);
+    if ( $href->{collection} eq "entity" ) {
+        $log->debug("finding an entity");
+        if ( $href->{id} eq "byname" ) {
+            $log->debug("byname, please");
+            my $name    = $href->{request}->{params}->{name};
+            my $obj     = $self->find_one({ value => $name });
+            return $obj;
         }
-        return $object;
+        $log->debug("by iid, thank you");
+        my $id  = $href->{id} + 0;
+        my $obj = $self->find_iid($id);
+        return $obj;
     }
+    my $id  = $href->{id} + 0;
+    my $obj = $self->find_iid($id);
+    return $obj;
 
-    my $value = $href->{request}->{params}->{name};
-    my $object  = $self->find_one({value => $value});
-    return $object;
 }
 
 sub api_create {
