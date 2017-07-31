@@ -70,8 +70,7 @@ class ReportArt extends PureComponent {
 	constructor( props ) {
 		super( props );
 
-		// let today = ( new Date() ).toISOString().slice(0, 10); 
-		let today = '2017-07-20';
+		let today = ( new Date() ).toISOString().slice(0, 10); 
         this.state = {
 			length: 7,
 			date: today,
