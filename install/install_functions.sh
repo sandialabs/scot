@@ -36,7 +36,7 @@ function get_http_proxy () {
         echo "!!! http_proxy not set! if you are behind a proxy, install will "
         echo "!!! likely fail.  If you are using \"sudo\" to install use the "
         echo "!!! \"-E\" option to preserve your environment variables"
-        exit 1;
+        read -p "Ctrl-C to quit, enter to continue..." proxyfoo
     fi
     PROXY=$(printenv http_proxy)
 }
@@ -48,7 +48,7 @@ function get_https_proxy () {
         echo "!!! https_proxy not set! if you are behind a proxy, install may "
         echo "!!! encounter problems.  If you are using \"sudo\" to install "
         echo "!!! use the \"-E\" option to preserve your environment variables"
-        exit 1;
+        read -p "Ctrl-C to quit, enter to continue..." proxyfoo
     fi
     SPROXY=$(printenv https_proxy)
 }
@@ -144,6 +144,12 @@ function wait_for_mongo {
         echo "~ waiting for mongo to initialize ($COUNTER seconds have passed)"
         grep -q 'waiting for connections on port' /var/log/mongod.log
     done
+
+    if [[ $? -ne 0 ]]; then
+        echo "!!!! Mongod failed to start. Please fix and restart mongod "
+        echo "!!!! Unless mongod is running, you will get an error attempting"
+        echo "!!!! to access SCOT!"
+    fi
 }
 
 
@@ -163,7 +169,9 @@ function start_services {
             systemctl restart scfd.service
             systemctl restart scepd.service
         else 
-            /etc/init.d/scot restart
+            service mongod restart
+            wait_for_mongo
+            service scot restart
             service apache2 restart
             service scfd restart
             service scepd restart

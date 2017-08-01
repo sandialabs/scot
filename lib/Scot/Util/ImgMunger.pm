@@ -89,6 +89,7 @@ sub process_html {
     my @files   = ();
 
     foreach my $aref (@images) {
+        $log->debug("Found Img Tag: ",{filter=>\&Dumper, value=> $aref});
         my ( $link,
             $element,
             $attr,
@@ -97,6 +98,7 @@ sub process_html {
         my ($fqn, $fname);
 
         if ($link =~ m/^data:/) {
+            $log->debug("Link contains data uri");
             ($fqn,$fname)   =  $self->extract_data_image($link, $id);
         }
         else {
@@ -119,6 +121,7 @@ sub extract_data_image {
     my $self    = shift;
     my $link    = shift;
     my $id      = shift;
+    my $log     = $self->log;
 
     $link =~ m/^data:(.*);(.*),(.*)$/;
     my $mimetype = $1;
@@ -129,6 +132,8 @@ sub extract_data_image {
 
     my ( $type, $ext ) = split('/', $mimetype);
 
+    $log->debug("data is : $data");
+
     my $decoded         = decode_base64($data);
     my ($fqn, $fname)   = $self->create_file($decoded, $id, $ext);
 
@@ -138,6 +143,7 @@ sub extract_data_image {
 sub download_image {
     my $self    = shift;
     my $link    = shift;
+    my $log     = $self->log;
     my $agent   = LWP::UserAgent->new(
         env_proxy   => 1,
         timeout     => 10,
@@ -154,7 +160,10 @@ sub download_image {
         return $fqn, $fname;
     }
     else {
+        $log->error("Failed download of image $link");
+        $log->error("Error Msg: ".$response->status_line);
         print "Failed to retrieve!\n";
+        $log->error("Failed to retrieve $link, ".$response->status_line);
         die $response->status_line;
     }
 
@@ -170,10 +179,11 @@ sub create_file {
     my $name        = shift;
     my $ext         = shift; 
     my $log         = $self->log;
-    my $dir         = $self->image_dir;
+    my $dir         = $self->img_dir;
     my $storage     = $self->storage;
 
     $log->debug("Creating File: $name");
+    $log->debug("Storage method is ".$storage);
 
     if ( $storage eq 'local' ) {
         if ($name =~ /^\d+$/ ) {

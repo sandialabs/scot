@@ -1,18 +1,15 @@
-Big batch of code fixes coming on Monday 7/31, hold tight!
-==========================================================
-
-![ScotLogo](https://raw.githubusercontent.com/sandialabs/scot/master/public/images/scot_logo_highrez_64x64.png)
+![ScotLogo](https://raw.githubusercontent.com/sandialabs/scot/master/deploy/scot_logo_highrez_64x64.png)
 Sandia Cyber Omni Tracker
 =========================
 
 
-![version](http://img.shields.io/badge/version-3.5.2-orange.svg)
+![version](http://img.shields.io/badge/version-3.5.3-orange.svg)
 [![Documentation Status][docs-badge]](http://scot.readthedocs.org/en/latest/)
 [![license](http://img.shields.io/badge/license-Apache%202-red.svg)](https://github.com/sandialabs/scot/blob/master/LICENSE)
 
 SCOT Online Demo
 ----------------
-Give SCOT a try [here](https://52.12.122.162) with the **username**: `admin`/ **password**: `admin`
+Give SCOT a try: [https://scotdemo.com](https://scotdemo.com) with the **username**: `admin`/ **password**: `admin`
 
 > ###### For this demo, the app is reverted every hour on the hour.  We are currently using a self signed cert for the demo, but that will change in the next few days.
 

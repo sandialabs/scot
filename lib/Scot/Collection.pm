@@ -36,7 +36,7 @@ override 'create' => sub {
     my $env = $self->env;
     my $log = $self->env->log;
 
-    $log->trace("In overriden create");
+    $log->debug("In overriden create ".ref($self));
 
     my @args    = ( ref $args->[0] eq 'HASH' ? %{$args->[0]} : @$args );
     my $iid     = $self->get_next_id;
@@ -47,6 +47,8 @@ override 'create' => sub {
         $log->trace("Checking for group permissions !!!!!!!");
         $self->get_group_permissions(\@args);
     }
+
+    $log->trace("creating with : ",{filter=>\&Dumper, value=>\@args});
 
     my $obj = $self->class->new( @args, _collection => $self );
     $self->_save($obj);
@@ -388,9 +390,33 @@ sub has_computed_attributes {
 sub get_aggregate_count {
     my $self    = shift;
     my $aref    = shift;
+    my $log     = $self->env->log;
     my $rawcol  = $self->_mongo_collection;
     my $result  = $rawcol->aggregate($aref);
+
+    $log->debug("result is ".ref($result));
+    $log->debug("result is ".Dumper($result));
+    my @r       = $result->all;
+    $log->debug("all of result: ".Dumper(\@r));
+
+
+    return wantarray ? @r : \@r;
+}
+
+sub raw_get_one {
+    my $self    = shift;
+    my $match   = shift;
+    my $rawcol  = $self->_mongo_collection;
+    my $result  = $rawcol->find_one($match);
     return $result;
+}
+
+sub get_aggregate_cursor {
+    my $self    = shift;
+    my $cmd     = shift;
+    my $col     = $self->_mongo_collection;
+    my $cur     = $col->aggregate($cmd);
+    return $cur;
 }
 
 sub get_default_permissions {
@@ -418,7 +444,238 @@ sub get_default_permissions {
     return $env->default_groups;
 }
 
+sub build_match_ref {
+    my $self    = shift;
+    my $request = shift;
+    my $params  = $request->{params};
+    return $self->env->mongoquerymaker->build_match_ref($params);
+}
 
+sub limit_fields {
+    my $self    = shift;
+    my $href    = shift;
+    my $req     = shift;
+    my $log     = $self->env->log;
+    my $params  = $req->{request}->{params};
+    my $aref    = $params->{columns};
+    my %fields  = ();
 
+    if ( defined $aref ) {
+        if ( ref($aref) ne "ARRAY" ) {
+            $aref = [ $aref ];  # make an array ref if we have a string
+        }
+    }
+    $log->trace("Attrs to limit: ",{filter=>\&Dumper, value=>$aref});
+
+    foreach my $f (@$aref) {
+        $fields{$f} = 1;
+    }
+
+    if ( scalar(keys %fields) == 0 ) {
+        return undef;
+    }
+    $log->trace("Limiting attributes to: ",{filter=>\&Dumper, value=>\%fields});
+    return \%fields;
+}
+
+sub filter_fields {
+    my $self    = shift;
+    my $req     = shift;
+    my $href    = shift;
+    my $cut     = $self->limit_fields($req);
+    # side effect: deletes keys out of hash 
+    if ( defined $cut ) {
+        foreach my $key (keys %$href) {
+            if ( ! defined $cut->{$key} ) {
+                delete $href->{$key};
+            }
+        }
+    }
+    else {
+        $self->env->log->trace("leaving fields intact");
+    }
+}
+
+sub build_limit {
+    my $self    = shift;
+    my $href    = shift;
+    my $req     = $href->{request};
+    my $params  = $req->{params};
+    my $json    = $req->{json};
+    
+    my $limit   = $params->{limit} // $json->{limit};
+
+    if ( defined $limit ) {
+        return $limit;
+    }
+    return undef;
+}
+
+sub api_list {
+    my $self    = shift;
+    my $href    = shift;
+    my $user    = shift;
+    my $groups  = shift;
+
+    my $match   = $self->build_match_ref($href->{request});
+
+    if (  ref($self) ne "Scot::Collection::Group" 
+       && ref($self) ne "Scot::Collection::Entity" 
+       && ref($self) ne "Scot::Collection::Link" ) {
+        $match->{'groups.read'} = { '$in' => $groups };
+    }
+
+    if ( $href->{task_search} ) {
+        $match->{'task.status'}     = {'$exists'    => 1};
+        $match->{'metadata.status'} = {'$exists'    => 1};
+    }
+
+    $self->env->log->debug("match is ",{filter=>\&Dumper, value=>$match});
+
+    my $cursor  = $self->find($match);
+    my $total   = $cursor->count;
+
+    my $limit   = $self->build_limit($href);
+    if ( defined $limit ) {
+        $cursor->limit($limit);
+    }
+    else {
+        # TODO: accept a default out of env/config?
+        $cursor->limit(50);
+    }
+
+    if ( my $sort   = $self->build_sort($href) ) {
+        $cursor->sort($sort);
+    }
+    else {
+        $cursor->sort({id   => -1});
+    }
+
+    if ( my $offset  = $self->build_offset($href) ) {
+        $cursor->skip($offset);
+    }
+
+    return ($cursor,$total);
+}
+
+sub build_sort {
+    my $self    = shift;
+    my $href    = shift;
+    my $params  = $href->{request}->{params} // $href->{request}->{json};
+    my $sort    = $params->{sort};
+    my %s       = ();
+
+    if ( defined $sort ) {
+        if ( ref($sort) ne "ARRAY" ) {
+            if ( ref($sort) eq "HASH" ) {
+                return $sort;
+            }
+            $sort = [ $sort ];
+        }
+        foreach my $term ( @$sort ) {
+            if ( $term =~ /^\-(\S+)$/ ) {
+                $s{$1}  = -1;
+            }
+            elsif ( $term =~ /^\+(\S+)$/ ) {
+                $s{$1}  = 1;
+            }
+            else {
+                $s{$term} = 1;
+            }
+        }
+    }
+    return \%s;
+}
+
+    
+sub build_offset {
+    my $self    = shift;
+    my $href    = shift;
+    $href    = $href->{request}; # shifting up
+    return $href->{params}->{offset} // $href->{json}->{offset};
+}
+
+sub get_max_id {
+    my $self    = shift;
+    my $cursor  = $self->find({});
+    $cursor->sort({id => -1});
+    my $object  = $cursor->next;
+    return $object->id;
+}
+
+sub get_collection_name {
+    my $self    = shift;
+    my $name    = lc((split(/::/,ref($self)))[-1]);
+    return $name;
+}
+
+sub api_find {
+    my $self    = shift;
+    my $href    = shift;
+    my $log     = $self->env->log;
+
+    if ( $href->{collection} eq "entity" ) {
+        $log->debug("finding an entity");
+        if ( $href->{id} eq "byname" ) {
+            $log->debug("byname, please");
+            my $name    = $href->{request}->{params}->{name};
+            my $obj     = $self->find_one({ value => $name });
+            return $obj;
+        }
+        $log->debug("by iid, thank you");
+        my $id  = $href->{id} + 0;
+        my $obj = $self->find_iid($id);
+        return $obj;
+    }
+    my $id  = $href->{id} + 0;
+    my $obj = $self->find_iid($id);
+    return $obj;
+
+}
+
+sub api_create {
+    my $self    = shift;
+    my $href    = shift;
+    my $req     = $href->{request};
+    my $json    = $req->{json};
+    my $params  = $req->{params};
+    my @objects;
+
+    $self->env->log->debug("api_create");
+
+    my $object  = $self->create($req);
+
+    push @objects, $object;
+
+    return wantarray ? @objects : \@objects;
+}
+
+sub api_update {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my @uprecs  = ();
+    $req->{request}->{json}->{updated} = $self->env->now;
+    my %update  = $self->env->mongoquerymaker->build_update_command($req);
+
+    foreach my $key (keys %update) {
+        my $old = '';
+        if ( $object->meta->has_attribute($key) ) {
+            $old    = $object->$key;
+        }
+        push @uprecs, {
+            what        => "update",
+            attribute   => $key,
+            old_value   => $old,
+            new_value   => $update{$key},
+        };
+    }
+
+    if ( ! $object->update({'$set' => \%update}) ) {
+        die "Update of object failed";
+    }
+
+    return wantarray ? @uprecs : \@uprecs;
+}
 
 1;

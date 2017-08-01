@@ -1,8 +1,9 @@
 package Scot::Util::MongoQueryMaker;
 
-use Moose;
 use Data::Dumper;
 use v5.18;
+use Moose;
+extends 'Scot::Util';
 
 sub parse_datefield_match {
     my $self    = shift;
@@ -249,6 +250,7 @@ sub build_match_ref {
     my @datefields   = qw(when updated created occurred discovered reported);
     my @numfields    = qw(id views entry_count alert_count);
     my @tagsrcfields = qw(tag source);
+    my @exactfields  = qw(status);
     my @handler      = qw(start end);
 
     foreach my $key (keys %$params) {
@@ -274,13 +276,63 @@ sub build_match_ref {
         elsif ( grep {/$key/} @tagsrcfields ) {
             $mquery{$key} = $self->parse_source_tag_match($value);
         }
+        elsif ( grep {/$key/} @exactfields ) {
+            $mquery{$key} = $self->parse_exact_match($value);
+        }
         else {
             # stringfield
             $mquery{$key} = $self->parse_stringfield_match($value);
         }
     }
-    say "Mathing: ", Dumper(\%mquery);
+    say "Matching: ", Dumper(\%mquery);
     return wantarray ? %mquery : \%mquery;
 }
+
+sub parse_exact_match {
+    my $self    = shift;
+    my $value   = shift;
+    my $match   = {};
+
+    # we expect a regex friendly string to match, that's it.
+    $match  = $value;
+    return $match;
+}
+
+sub build_update_command {
+    my $self    = shift;
+    my $req     = shift;
+    my $params  = $req->{request}->{params};
+    my $json    = $req->{request}->{json};
+    my %update  = ();
+
+    if ( defined $params ) {
+        foreach my $key (%$params) {
+            my $value = $params->{$key};
+            if ( $key eq "groups" ) {
+                # if all groups are removed, put in the admin group(s)
+                if ( scalar(@{$value->{read}}) < 1 ) { 
+                    $update{$key}{read} = $self->env->admin_groups;
+                }
+                if ( scalar(@{$value->{modify}}) < 1) {
+                    $update{$key}{modify} = $self->env->admin_groups;
+                }
+            }
+            else {
+                $update{$key} = $value;
+            }
+        }
+    }
+    if ( defined $json ) {
+        foreach my $key (keys %$json) {
+            if ( $key =~ /^\{/ ) {
+                next;
+            }
+            $update{$key} = $json->{$key};  # json will overwrite params
+        }
+    }
+    # $update{updated} = $self->env->now;
+    return wantarray ? %update : \%update;
+}
+
 
 1;

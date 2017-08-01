@@ -123,6 +123,13 @@
                 }
             }, # end ldap config
         }, # end ldap
+        {
+            attr    => 'extractor',
+            class   => 'Scot::Util::EntityExtractor',
+            config  => {
+                suffixfile  => '/opt/scot/etc/effective_tld_names.dat',
+            },
+        },
     ],
 );
 

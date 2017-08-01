@@ -1,4 +1,5 @@
 %environment = (
+    time_zone   => 'America/Denver',
     max_workers => 1,
     log_config  => {
         logger_name     => 'SCOT',

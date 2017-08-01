@@ -122,6 +122,8 @@ var ListViewDataEachColumn = React.createClass({
         }
         if (this.props.columnsOne == 'status') {
             dataRender = <ListViewStatus dataOneRow={dataOneRow} status={dataRender} type={this.props.type} />       
+        } else if (this.props.columnsOne == 'body_plain') {
+            dataRender = columnsOne.split('.').reduce(this.obj, dataOneRow).substring(0,120);
         }
         return (
             <td className={className}>
@@ -157,7 +159,7 @@ var ListViewStatus = React.createClass({
             classStatus = 'alertgroup_promoted'
             color = 'orange'
         };
-        if (this.props.type == 'alertgroup') {
+        if (this.props.type == 'alertgroup' || this.props.type == 'alert') {
             open = this.props.dataOneRow.open_count;
             closed = this.props.dataOneRow.closed_count;
             promoted = this.props.dataOneRow.promoted_count;

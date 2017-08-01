@@ -6,6 +6,25 @@ curl -XDELETE localhost:9200/scot
 echo "Creating SCOT index";
 curl -XPUT localhost:9200/scot?pretty=1 -d '
 {
+    "settings": 
+        {"analysis": 
+            {"analyzer": 
+                {
+                    "scot_analyzer": 
+                        {
+                            "tokenizer": "my_tokenizer"
+                        }
+                },
+                "tokenizer": 
+                    {
+                        "my_tokenizer": 
+                            {
+                                "type": "uax_url_email"
+                            }
+                    }
+            }
+        }
+    ,    
     "mappings": {
         "alert": {
             "_all": { "store": true },
@@ -44,7 +63,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
                 },
                 "body":             { 
                     "type": "string",
-                    "analyzer": "simple",
+                    "index": "not_analyzed",
                     "fields": {
                         "raw": {
                             "type": "string",
@@ -127,7 +146,7 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
                 },
                 "body":             { 
                     "type": "string",
-                    "analyzer": "simple",
+                    "index": "not_analyzed",
                     "fields": {
                         "raw": {
                             "type": "string",
@@ -330,3 +349,4 @@ curl -XPUT localhost:9200/scot?pretty=1 -d '
     }
 }
 '
+

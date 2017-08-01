@@ -1,4 +1,5 @@
 %environment = (
+    time_zone   => 'America/Denver',
     log_config  => {
         logger_name     => 'SCOT',
         layout          => '%d %7p [%P] %15F{1}: %4L %m%n',
@@ -26,7 +27,7 @@
         },
         {
             attr    => 'scot',
-            class   => 'Scot::Util::Scot2',
+            class   => 'Scot::Util::ScotClient',
             config  => {
                 servername  => 'scotserver',
                 # username with sufficient scot perms to create alert(groups)

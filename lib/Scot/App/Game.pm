@@ -19,7 +19,7 @@ use Try::Tiny;
 use Mojo::UserAgent;
 use Scot::Env;
 use Scot::App;
-use Scot::Util::Scot2;
+use Scot::Util::ScotClient;
 use Scot::Util::EntityExtractor;
 use Scot::Util::ImgMunger;
 use Scot::Util::Enrichments;
@@ -71,64 +71,28 @@ sub out {
 sub run {
     my $self    = shift;
     my $log     = $self->log;
+    my $env     = $self->env;
     my $now     = time();
-    my $ago     = $now - ( 7 * 24 * 60 * 60 );
+    my $days_ago    = $env->days_ago // 30;
+    my $ago     = $now - ( $days_ago * 24 * 60 * 60 ); 
 
-    my $when    = [$now , $ago];
 
 # collection->get_aggregate_count($aref) where $href is aggregate command
 # $aref = [ $match_href, $group_href ];
 
     my @cats = (qw(
-        teacher
-        tattler
         alarmist
-        closer
-        cleaner
         fixer
+        cleaner
+        closer
         operative
+        tattler
+        teacher
     ));
 
     foreach my $category (@cats) {
-        $self->$category($when);
+        $self->$category($ago);
     }
-}
-
-=item B<tattler>
-
-this game calculated the user who has promoted the most incidents
-
-=cut
-
-sub tattler {
-    my $self    = shift;
-    my $when    = shift;
-    my $env     = $self->env;
-    my $log     = $self->log;
-    my $mongo   = $env->mongo;
-    
-    my $match   = {
-        '$match'    => { 
-            what => 'event promotion to incident',
-            when => { '$lte' => $when->[0] , '$gte' => $when->[1] },
-        },
-    };
-
-    my $group   = {
-        '$group'    => {
-            '_id'   => '$who',
-            total   => { '$sum' => 1 },
-        }
-    };
-
-    my @agg = ( $match, $group );
-    $log->debug("Aggreation command is ",
-                {filter=>\&Dumper, value => \@agg});
-
-    my $col     = $mongo->collection('History');
-
-    $self->aggregate('tattler', $col, \@agg);
-
 }
 
 sub aggregate {
@@ -139,30 +103,33 @@ sub aggregate {
     my $log     = $self->log;
     my $env     = $self->env;
     my $mongo   = $env->mongo;
-    my $tt      = $self->tooltip;
-
-    my $result  = $col->get_aggregate_count($agcmd);
+    my $tt      = $self->tooltip->{$type};
 
     $log->debug("Aggregating $type");
 
-    if ( $result ) {
+    my $result  = $col->get_aggregate_count($agcmd);
 
-        $log->debug("writing aggregation results for $type");
+    $log->debug("Results: ",{filter=>\&Dumper, value=>$result});
 
-        my $gcol    = $mongo->collection("Game");
-        while ( my $doc = $result->next ) {
-            $doc->{tooltip} = $tt->{$type};
+    my $gamecol = $mongo->collection('Game');
 
-            $log->debug("updating ",{filter=>\&Dumper, value => $doc});
+    my $obj = $gamecol->find_one({
+        game_name   => $type,
+    });
 
-            my $gameobj = $gcol->upsert($type,$doc);
-            unless ($gameobj) {
-                $log->error("failed to create game object");
-            }
-        }
+    if ( defined $obj ) {
+        $obj->update({ '$set' => {
+            lastupdate  => $env->now,
+            results     => $result,
+        }});
     }
     else {
-        $log->error("error getting aggregation!");
+        $gamecol->create({
+            game_name   => $type,
+            tooltip     => $tt,
+            lastupdate  => $env->now,
+            results     => $result
+        });
     }
 }
 
@@ -173,9 +140,6 @@ this game calculates who has promoted the most alerts
 
 =cut
 
-
-    
-
 sub alarmist {
     my $self    = shift;
     my $when    = shift;
@@ -185,20 +149,20 @@ sub alarmist {
     
     my $match   = {
         '$match'    => { 
-            what        => 'promotion', 
-            'data.type' => "alert to event", 
-            when        => { '$lte' => $when->[0] , '$gte' => $when->[1] },
+            what                    => "promotion",
+            "data.source.type"      => "alert",
+            when                    => { '$gte' => $when },
         },
     };
 
-    my $group   = {
-        '$group'    => {
-            '_id'   => '$who',
-            total   => { '$sum' => 1 },
-        }
+    my $group   = { 
+        '$group' => { _id => '$who', total   => { '$sum' => 1 } }
+    };
+    my $sort    = { 
+        '$sort' => { total => -1 }
     };
 
-    my @agg = ( $match, $group );
+    my @agg = ( $match, $group, $sort );
     $log->debug("Aggreation command is ",
                 {filter=>\&Dumper, value => \@agg});
 
@@ -223,7 +187,7 @@ sub cleaner {
     my $match   = {
         '$match'    => { 
             what        => 'delete_thing', 
-            when        => { '$lte' => $when->[0] , '$gte' => $when->[1] },
+            when        => { '$gte' => $when },
         },
     };
 
@@ -233,8 +197,11 @@ sub cleaner {
             total   => { '$sum' => 1 },
         }
     };
+    my $sort    = { 
+        '$sort' => {total => -1 }
+    };
 
-    my @agg = ( $match, $group );
+    my @agg = ( $match, $group, $sort );
     $log->debug("Aggreation command is ",
                 {filter=>\&Dumper, value => \@agg});
 
@@ -257,9 +224,8 @@ sub closer {
     
     my $match   = {
         '$match'    => { 
-            what        => 'update_thing', 
-            'data.request.json.closed'  => { '$ne' => undef },
-            when        => { '$lte' => $when->[0] , '$gte' => $when->[1] },
+            what        => qr/closed/,
+            when        => { '$gte' => $when },
         },
     };
 
@@ -269,12 +235,15 @@ sub closer {
             total   => { '$sum' => 1 },
         }
     };
+    my $sort    = { 
+        '$sort' => { total =>  -1 },
+    };
 
-    my @agg = ( $match, $group );
+    my @agg = ( $match, $group, $sort );
     $log->debug("Aggreation command is ",
                 {filter=>\&Dumper, value => \@agg});
 
-    my $col     = $mongo->collection('Audit');
+    my $col     = $mongo->collection('History');
     $self->aggregate('closer', $col, \@agg);
 }
 
@@ -293,9 +262,9 @@ sub fixer {
     
     my $match   = {
         '$match'    => { 
-            what        => 'update_thing', 
-            'data.collection'  => 'entry',
-            when        => { '$lte' => $when->[0] , '$gte' => $when->[1] },
+            what        => qr/updated/, 
+            'target.type'  => 'entry',
+            when        => { '$gte' => $when },
         },
     };
 
@@ -305,48 +274,16 @@ sub fixer {
             total   => { '$sum' => 1 },
         }
     };
+    my $sort    = { 
+        '$sort' => { total =>  -1 },
+    };
 
-    my @agg = ( $match, $group );
+    my @agg = ( $match, $group, $sort );
     $log->debug("Aggreation command is ",
                 {filter=>\&Dumper, value => \@agg});
 
-    my $col     = $mongo->collection('Audit');
+    my $col     = $mongo->collection('History');
     $self->aggregate('fixer', $col, \@agg);
-}
-
-=item B<teacher>
-
-this game calculates who has create the most guide entries in the past timeframe
-
-=cut
-
-sub teacher {
-    my $self    = shift;
-    my $when    = shift;
-    my $env     = $self->env;
-    my $log     = $self->log;
-    my $mongo   = $env->mongo;
-    
-    my $match   = {
-        '$match'    => { 
-            'target.type'  => 'guide',
-            when        => { '$lte' => $when->[0] , '$gte' => $when->[1] },
-        },
-    };
-
-    my $group   = {
-        '$group'    => {
-            '_id'   => '$owner',
-            total   => { '$sum' => 1 },
-        }
-    };
-
-    my @agg = ( $match, $group );
-    $log->debug("Aggreation command is ",
-                {filter=>\&Dumper, value => \@agg});
-
-    my $col     = $mongo->collection('Entry');
-    $self->aggregate('teacher', $col, \@agg);
 }
 
 =item B<operative>
@@ -365,7 +302,7 @@ sub operative {
     my $match   = {
         '$match'    => { 
             'target.type'  => 'intel',
-            when        => { '$lte' => $when->[0] , '$gte' => $when->[1] },
+            when        => { '$gte' => $when },
         },
     };
 
@@ -375,8 +312,11 @@ sub operative {
             total   => { '$sum' => 1 },
         }
     };
+    my $sort    = { 
+        '$sort' => {total => -1 },
+    };
 
-    my @agg = ( $match, $group );
+    my @agg = ( $match, $group, $sort );
     $log->debug("Aggreation command is ",
                 {filter=>\&Dumper, value => \@agg});
 
@@ -384,8 +324,83 @@ sub operative {
     $self->aggregate('operative', $col, \@agg);
 }
 
+=item B<tattler>
 
+this game calculated the user who has promoted the most incidents
 
+=cut
 
+sub tattler {
+    my $self    = shift;
+    my $when    = shift;
+    my $env     = $self->env;
+    my $log     = $self->log;
+    my $mongo   = $env->mongo;
+    
+    my $match   = {
+        '$match'    => { 
+            what => 'event promotion to incident',
+            when => { '$gte' => $when },
+        },
+    };
+
+    my $group   = {
+        '$group'    => {
+            '_id'   => '$who',
+            total   => { '$sum' => 1 },
+        }
+    };
+
+    my $sort    = { 
+        '$sort' => {total => -1 },
+    };
+
+    my @agg = ( $match, $group, $sort );
+    $log->debug("Aggreation command is ",
+                {filter=>\&Dumper, value => \@agg});
+
+    my $col     = $mongo->collection('History');
+
+    $self->aggregate('tattler', $col, \@agg);
+
+}
+
+=item B<teacher>
+
+this game calculates who has create the most guide entries in the past timeframe
+
+=cut
+
+sub teacher {
+    my $self    = shift;
+    my $when    = shift;
+    my $env     = $self->env;
+    my $log     = $self->log;
+    my $mongo   = $env->mongo;
+    
+    my $match   = {
+        '$match'    => { 
+            'target.type'  => 'guide',
+            when        => { '$gte' => $when },
+        },
+    };
+
+    my $group   = {
+        '$group'    => {
+            '_id'   => '$owner',
+            total   => { '$sum' => 1 },
+        }
+    };
+    my $sort    = { 
+        '$sort' => { total => -1 }
+    };
+
+    my @agg = ( $match, $group, $sort );
+    $log->debug("Aggreation command is ",
+                {filter=>\&Dumper, value => \@agg});
+
+    my $col     = $mongo->collection('Entry');
+    $self->aggregate('teacher', $col, \@agg);
+}
 
 1;

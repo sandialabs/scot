@@ -145,9 +145,9 @@ input[type=text]:not(.form-control) {
     overflow:auto;
 }
 
-.entry-wrapper-main-70 {
-    width: 100%;
-    //height: 70vh;
+.entry-wrapper-main-300 {
+    width: 99vw;
+    max-height: 300px;
     position: relative;
     overflow:auto;
 }
@@ -581,6 +581,39 @@ border-radius: 4px 4px 4px 4px;
   overflow: auto !important;
 }
 
+.search_result_row {
+    display: inline-flex;
+}
+
+.search_highlight {
+  background-color: yellow;
+  font-weight: bolder;
+}
+
+.search-heading {
+    margin: 0px;
+}
+
+.search_snippet_container {
+    display: flex;
+    //flex-flow: column;
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+    margin-bottom: 0px !important;
+}
+
+.search_snippet_header {
+    font-weight: bolder;
+    text-decoration: underline;
+    //font-size: 12pt;
+    //border-top: 1px solid #e0e0e0;
+    padding-right: 10px;
+}
+
+.search_snippet_result {
+    
+}
+
 .entityCircleNumber {
     background: lightblue;
     border-radius: 5em 5em 5em 5em;
@@ -937,8 +970,9 @@ html>body tbody.fixedContent {
             background-repeat:repeat-y;
 }
 
+/*
 .signatureTableOptions {
-    width:350px;
+    //width:350px;
 }
 
 .signatureTableWidth {
@@ -976,7 +1010,7 @@ html>body tbody.fixedContent {
   //width:200px;
   display: inline-block;
 }
-
+*/
 .incidentTable span:last-child {
   width:100%;
 }
@@ -1161,6 +1195,15 @@ html>body tbody.fixedContent {
 
 @media print
 {
+    .detail-buttons { display: none; }
+    .entry-header {
+        background-color: @entry_header_background_color;
+        box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.9);
+        border-radius: @entry_border_rounded @entry_border_rounded 0px 0px;
+    }
+}
+
+/*{
    #TopPane { display: none; }
    #filters { display: none; }
    #TopMenu { display: none; }
@@ -1184,9 +1227,9 @@ html>body tbody.fixedContent {
   	word-break:break-all;
    }
    table {
-/*	width: inherit !important;
+        width: inherit !important;
         max-width: inherit !important; 
-*/   }
+   }
    .alert_data_cell {
     word-break: break-word;
    }
@@ -1214,7 +1257,7 @@ html>body tbody.fixedContent {
    #ouo_banner {
      content: "";
    }
-}
+}*/
 
 
 pre {
@@ -1482,7 +1525,7 @@ a:active {
     flex-flow: row;
     flex-wrap: wrap;
     width: 500px;
-    height: 60vh;
+    max-height: 60vh;
     overflow-y: auto;
 }
  
@@ -1576,6 +1619,7 @@ a:active {
     padding: 3px 5px;
     font-weight: 400;
     border-radius: 3px;
+    margin-right: 2px;
 }
 
 .tagButtonClose {
@@ -1630,4 +1674,12 @@ a:active {
 
 .cursorDisabled > .ace_scroller {
     cursor: not-allowed !important;
+}
+
+.signature_production_color {
+    color: #5cb85c;
+}
+
+.signature_quality_color {
+    color: #f0ad4e;
 }

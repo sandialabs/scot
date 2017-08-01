@@ -80,7 +80,7 @@ var ListViewHeaderEach = React.createClass({
     handleStatusFilter: function(e) {
         if (e.target != undefined) {
             if (e.target.textContent != undefined) {
-                this.handleFilter(e.target.textContent);
+                this.handleFilter(e.target.textContent.toLowerCase());
             }
         }
     },

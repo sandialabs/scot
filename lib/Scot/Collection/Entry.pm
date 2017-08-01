@@ -12,7 +12,6 @@ with    qw(
     Scot::Role::GetTagged
 );
 
-
 sub create_from_promoted_alert {
     my $self    = shift;
     my $alert   = shift;
@@ -93,7 +92,7 @@ sub find_existing_file_entry {
     my $type    = shift;
     my $id      = shift;
     my $log     = $self->env->log;
-    my $col     = $self->mongo->collection('Entry');
+    my $col     = $self->env->mongo->collection('Entry');
     my $obj     = $col->find_one({
         'target.type'   => $type,
         'target.id'     => $id,
@@ -122,7 +121,7 @@ sub build_table {
 
     # some confusion as to where columns should actually be
     my $columns = $alert->columns;
-    $log->debug("columns are ",{filter=>\&Dumper, $columns});
+    $log->debug("columns are ",{filter=>\&Dumper, value => $columns});
 
     if ( ! defined $columns or scalar(@$columns) == 0) { 
         $log->debug("Columns not in the right place!");
@@ -215,7 +214,7 @@ EOF
 
     $log->debug("creating file upload entry with ", {filter=>\&Dumper, value=>$entry_href});
 
-    my $existing_entry = $self->find_existing_alert_entry($target_type, $target_id);
+    my $existing_entry = $self->find_existing_file_entry($target_type, $target_id);
 
     if ( $existing_entry ) {
         # use this as the parent so that all additional file uploads
@@ -224,7 +223,7 @@ EOF
     }
     else {
         # create the "alert" type entry
-        $log->debug("creating a new alert type entry");
+        $log->debug("creating a new file type entry");
         my $aentry  = $self->create({
             class   => "file",
             parent  => 0,
@@ -310,6 +309,41 @@ sub create_from_api {
 
     return $entry_obj;
 }
+
+override api_create => sub {
+    my $self    = shift;
+    my $req     = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $user    = $req->{user};
+    my $json    = $req->{request}->{json};
+    my $target_type = $json->{target_type};
+    my $target_id   = $json->{target_id};
+
+    $log->debug("req is ",{filter=>\&Dumper, value=>$req});
+
+    if ( ! defined $target_type or ! defined $target_id ) {
+        die "Entries must have target_type and target_id defined";
+    }
+
+    if (my $task = $self->validate_task($req) ) {
+        $json->{class}      = "task";
+        $json->{metadata}   = $task;
+    }
+
+    my $default_groups = $self->get_default_permissions($target_type, $target_id);
+    $json->{groups}->{read} = $
+        default_groups->{read} if (!defined $req->{readgroups});
+    $json->{groups}->{modify} = 
+        $default_groups->{modify} if (!defined $req->{modifygroups});
+    $json->{target} = {
+        type    => $target_type,
+        id      => $target_id,
+    };
+    $json->{owner}  = $user;
+    return $self->create($json);
+};
 
 
 sub validate_task {
@@ -449,6 +483,44 @@ sub get_entries_on_alertgroups_alerts {
     return $cursor;
 }
 
+sub api_subthing {
+    my $self        = shift;
+    my $req         = shift;
+    my $thing       = $req->{collection};
+    my $id          = $req->{id} + 0;
+    my $subthing    = $req->{subthing};
+    my $env         = $self->env;
+    my $mongo       = $env->mongo;
+    my $log         = $env->log;
+
+    $log->debug("getting /$thing/$id/$subthing");
+
+    if ( $subthing eq "history" ) {
+        return $mongo->collection('History')
+                    ->find({
+                        'target.id'   => $id,
+                        'target.type' => 'entry'
+                    });
+    }
+
+    if ( $subthing eq "entity" ) {
+        my @lnk = map { $_->{entity_id} } 
+            $mongo->collection('Link')->get_links_by_target({
+                id  => $id, type => 'entry'
+            })->all;
+
+        return $mongo->collection('Entity')
+                ->find({id => { '$in' => \@lnk } });
+    }
+
+    if ( $subthing eq "file" ) {
+        return $mongo->collection('File')
+                    ->find({entry => $id});
+    }
+
+    die "unsupported subthing $subthing!";
+}
+
 override get_subthing => sub {
     my $self        = shift;
     my $thing       = shift;
@@ -462,8 +534,10 @@ override get_subthing => sub {
 
     if ( $subthing eq "history" ) {
         my $col = $mongo->collection('History');
-        my $cur = $col->find({'target.id'   => $id,
-                              'target.type' => 'entry',});
+        my $cur = $col->find({
+            'target.id'   => $id,
+            'target.type' => 'entry'
+        });
         return $cur;
     }
     elsif ( $subthing eq "entity" ) {
@@ -503,7 +577,29 @@ sub get_entries_by_target {
     return $cursor;
 }
 
+sub move_entry {
+    my $self    = shift;
+    my $object  = shift;
+    my $thref   = shift;
+    my $mongo   = $self->env->mongo;
 
+    my $current = $mongo->collection(
+        ucfirst($object->target->{type})
+    )->find_iid($object->target->{id});
+
+    my $new     = $mongo->collection(
+        ucfirst($thref->{type})
+    )->find_iid($thref->{id});
+
+    $current->update({
+        '$set'  => { updated => $self->env->now },
+        '$inc'  => { entry_count => -1 },
+    });
+    $new->update({
+        '$set'  => { updated => $self->env->now },
+        '$inc'  => { entry_count => 1 },
+    });
+}
 
 
 1;

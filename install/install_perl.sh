@@ -323,6 +323,7 @@ function install_perl_modules {
     fi
 
     PERLMODULES='
+        Array::Split
         Data::Dumper
         Data::Dumper::HTML
         Data::Dumper::Concise
@@ -335,6 +336,7 @@ function install_perl_modules {
         Net::STOMP::Client
         Net::IDN::Encode
         Net::Works::Network
+        Net::IP
         Moose
         Moose::Role
         Moose::Util::TypeConstraints
@@ -389,6 +391,8 @@ function install_perl_modules {
         Meerkat
         Mojo
         MojoX::Log::Log4perl
+        Mojolicious::Plugin::WithCSRFProtection
+        Mojolicious::Plugin::TagHelpers
         XML::Smart
         Config::Auto
         Data::GUID
@@ -405,6 +409,7 @@ function install_perl_modules {
         Search::Elasticsearch
         Term::ANSIColor
         Courriel
+        Statistics::Descriptive
     '
 
     # install_cpanm

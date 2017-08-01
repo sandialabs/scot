@@ -14,6 +14,7 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use Module::Runtime qw(require_module compose_module_name);
 use Data::Dumper;
 use Scot::Util::LoggerFactory;
+use Scot::Util::Date;
 use namespace::autoclean;
 
 use Moose;
@@ -24,6 +25,13 @@ has debug   => (
     isa         => 'Int',
     required    => 1,
     default     => 0, # 1 = print messages, 0 = quiet
+);
+
+has date_util => (
+    is          => 'ro',
+    isa         => 'Scot::Util::Date',
+    required    => 1,
+    default     => sub { Scot::Util::Date->new; },
 );
 
 has config_file => (
@@ -296,6 +304,41 @@ sub build_logger {
     print "Logger config is ".Dumper($config)."\n" if $self->debug;
     my $factory = Scot::Util::LoggerFactory->new( config => $config );
     return $factory->get_logger;
+}
+
+# this helps identify the problem when SCOT wants/needs an $env->foo
+# value, but the config file doesn't have the foo attribute.  Without this
+# the program will blow up with a "method "foo" not found in object $env"
+# 
+
+sub get_config_item {
+    my $self    = shift;
+    my $name    = shift;
+    my $log     = $self->log;
+
+    $log->trace("grabbing config item $name");
+
+    my $meta    = $self->meta;
+    my $method  = $meta->get_method($name);
+
+    if ( defined $method ) {
+        return $self->$method;
+    }
+
+    $log->error("The env obj does not have an accessor for $name");
+    $log->error("...check that the config file has that attribute");
+
+    return undef;
+}
+
+sub is_admin {
+    my $self        = shift;
+    my $user        = shift;
+    my $groups      = shift;
+    my $admin_group = $self->admin_group;
+
+    return undef if (! defined $admin_group);
+    return grep { /$admin_group/ } @$groups;
 }
 
 1;

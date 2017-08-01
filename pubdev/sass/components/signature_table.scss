@@ -1,0 +1,41 @@
+// Styles for Signature Table Component
+
+.signatureDetail {
+    
+	.signatureTable {
+		padding: 3px;
+        border-radius: 5px;
+        border: 1px solid black;
+        box-shadow: 0px 0px 7px;
+        margin-bottom: 10px;
+	    
+        .signatureTableWidth {
+            display: flex;
+            
+            input {
+                width: 100%;
+            }
+
+            .signatureMetaTextArea {
+                width: 100%;
+                -webkit-box-sizing: border-box;
+                -moz-box-sizing: border-box;
+                box-sizing: border-box;
+            }
+        }
+
+        div:nth-child(odd) {
+            background-color: #EEE;
+        }       
+
+        div:nth-child(even) {
+            background-color: #FFF;
+        }
+
+        span:first-child{
+            font-weight: bold;
+            padding-right: 10px;
+            display: inline-block;
+        }
+    }
+}

@@ -233,7 +233,7 @@ sub process_html {
     my %entities;
 
     my $previous_level = $log->level();
-    # $log->level(Log::Log4perl::Level::to_priority('WARN'));
+    $log->level(Log::Log4perl::Level::to_priority('TRACE'));
 
     $log->debug("===============");
     $log->debug("Processing HTML");

@@ -1,4 +1,5 @@
 %environment = (
+    time_zone   => 'America/Denver',
     # server name of the SCOT server
     servername  => 'localhost',
     # username with sufficient scot perms to create alert(groups)
@@ -36,7 +37,7 @@
         },
         {
             attr    => 'scot',
-            class   => 'Scot::Util::Scot2',
+            class   => 'Scot::Util::ScotClient',
             config  => {
                 servername  => 'localhost',
                 # username with sufficient scot perms to create alert(groups)

@@ -457,6 +457,7 @@ sub xform_alertgroup {
     $href->{source} = \@newsources;
     $href->{tag}    = delete $href->{tags};
     $href->{body}   = delete $href->{body_html};    # ...renaming
+    $href->{view_history} = delete $href->{viewed_by}; 
 
 
     my $legacy_alert_cursor = $leg_alert_col->find({alertgroup => $id});
