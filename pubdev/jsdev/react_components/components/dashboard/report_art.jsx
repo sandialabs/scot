@@ -2,6 +2,8 @@ import React, { PureComponent } from 'react';
 import { Button } from 'react-bootstrap';
 import DateRangePicker from 'react-daterange-picker';
 
+import debounce from '../../utils/debounce';
+
 const formatTickTime = ( domain, count = 10 ) => {
 	let start = domain[0],
 		end = domain[ domain.length - 1 ],
@@ -80,6 +82,9 @@ class ReportArt extends PureComponent {
 				lines: [],
 			},
         }
+
+		// Load Art is auto debounced
+		this.loadArt = debounce( this.loadArt );
 
 		this.unitChange = this.unitChange.bind( this );
 		this.lengthChange = this.lengthChange.bind( this );
@@ -275,6 +280,10 @@ class ReportArt extends PureComponent {
 	}
 
 	loadArt() {
+		if ( !this.state.date || ! this.state.length ) {
+			return;
+		}
+
         let url = '/scot/api/v2/metric/response_avg_last_x_days';
         let opts = `?days=${this.state.length}&targetdate=${this.state.date}&unit=${this.state.unit}`;
 		d3.json( url+opts, data => {
