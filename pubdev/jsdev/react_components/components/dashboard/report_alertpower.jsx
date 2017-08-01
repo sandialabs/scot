@@ -1,6 +1,8 @@
 import React, { PureComponent } from 'react';
 import { Button } from 'react-bootstrap';
 
+import debounce from '../../utils/debounce';
+
 const wrapText = ( text, width ) => {
 	// FYI: not an error function because of 'this' injection
 	text.each( function( value, i ) {
@@ -59,8 +61,14 @@ class ReportAlertpower extends PureComponent {
         this.state = {
 			displayMode: 'stacked',
 			chartData: [],
-			chartCount: 20,
+			chartResults: 20,
+			chartSort: 'power',
+			chartSortDir: 'desc',
+			chartFilter: '',
         }
+
+		// LoadData is automatically debounced
+		this.loadData = debounce( this.loadData );
 
 		this.dataChange = this.dataChange.bind( this );
 		this.displayModeChange = this.displayModeChange.bind( this );
@@ -127,12 +135,14 @@ class ReportAlertpower extends PureComponent {
 			// Remove number at the end
 			d.date = d.date.replace( / \([0-9]+\)/, '' );
 
-			/**/ // False Data
+			/* // False Data
 			this.dataTypes.forEach( type => {
 				d[ type ] = Math.round( Math.random() * 5 );
-				d.power = ( Math.random() * 10 ).toPrecision( 2 );
 			} );
 			/**/
+			if ( !d.power ) {
+				d.power = ( Math.random() * 10 ).toPrecision( 2 );
+			}
 
 			// Calculate bar start/end points
             let start = 0;
@@ -320,6 +330,10 @@ class ReportAlertpower extends PureComponent {
 	}
 
 	loadData() {
+		if ( !this.state.chartResults ) {
+			return;
+		}
+
 		let url = '/scot/api/v2/metric/alert_power';
 		let opts = '?type=all';
 
@@ -340,7 +354,7 @@ class ReportAlertpower extends PureComponent {
 		let target = event.target;
 		this.setState( {
 			[target.name]: target.value,
-		} );
+		}, this.loadData );
 	}
 
 	displayModeChange( event ){
@@ -385,13 +399,46 @@ class ReportAlertpower extends PureComponent {
             <div className='dashboard'>
                 <h1>Alert Power</h1>
 				<form>
-					<label>Count =&nbsp;
+					<label>Filter =&nbsp;
+						<input
+							type='text'
+							style={{background: 'initial', border: '1px solid #ccc'}}
+							name='chartFilter'
+							value={this.state.chartFilter}
+							onChange={this.dataChange}
+							placeholder='All'
+						/>
+					</label>
+				</form>
+				<form>
+					<label>Sort by =&nbsp;
+						<select
+							name='chartSort'
+							value={this.state.chartSort}
+							onChange={this.dataChange}
+						>
+							<option value='power'>Power Score</option>
+							<option value='count'>Alert Count</option>
+							<option value='promoted'>Promoted Count</option>
+							<option value='incident'>Incident Count</option>
+						</select>
+						<select
+							name='chartSortDir'
+							value={this.state.chartSortDir}
+							onChange={this.dataChange}
+						>
+							<option value='desc'>Desc</option>
+							<option value='asc'>Asc</option>
+						</select>
+					</label>
+					<label>Results =&nbsp;
 						<input
 							type='number'
-							name='chartCount'
-							value={this.state.chartCount}
+							name='chartResults'
+							value={this.state.chartResults}
 							onChange={this.dataChange}
-						/></label>
+						/>
+					</label>
 				</form>
 				<form>
 					<label><input
