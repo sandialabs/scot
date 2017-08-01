@@ -335,7 +335,7 @@ class ReportAlertpower extends PureComponent {
 		}
 
 		let url = '/scot/api/v2/metric/alert_power';
-		let opts = '?type=all';
+		let opts = `?sort=${this.state.chartSort}&dir=${this.state.chartSortDir}&count=${this.state.chartResults}&filter=${encodeURIComponent( this.state.chartFilter )}`;
 
 		d3.json( url+opts, dataset => {
 			this.setState( {
@@ -352,6 +352,12 @@ class ReportAlertpower extends PureComponent {
 
 	dataChange( event ) {
 		let target = event.target;
+
+		if( target.name === 'chartResults' && target.value ) {
+			if ( target.value > 50 ) target.value = 50;
+			if ( target.value < 1 ) target.value = 1;
+		}
+
 		this.setState( {
 			[target.name]: target.value,
 		}, this.loadData );
@@ -362,6 +368,11 @@ class ReportAlertpower extends PureComponent {
 		this.setState( {
 			displayMode: event.target.value,
 		} );
+	}
+
+	preventSubmit( event ) {
+		event.preventDefault();
+		event.stopPropagation();
 	}
 
     exportToPNG() {
@@ -398,7 +409,7 @@ class ReportAlertpower extends PureComponent {
         return (
             <div className='dashboard'>
                 <h1>Alert Power</h1>
-				<form>
+				<form onSubmit={this.preventSubmit}>
 					<label>Filter =&nbsp;
 						<input
 							type='text'
@@ -410,7 +421,7 @@ class ReportAlertpower extends PureComponent {
 						/>
 					</label>
 				</form>
-				<form>
+				<form onSubmit={this.preventSubmit}>
 					<label>Sort by =&nbsp;
 						<select
 							name='chartSort'
@@ -434,6 +445,8 @@ class ReportAlertpower extends PureComponent {
 					<label>Results =&nbsp;
 						<input
 							type='number'
+							min={1}
+							max={50}
 							name='chartResults'
 							value={this.state.chartResults}
 							onChange={this.dataChange}
