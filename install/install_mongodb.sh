@@ -91,6 +91,7 @@ function start_stop  {
         if [[ $OSVERSION == "16" ]]; then
             systemctl $2 ${1}.service
         else
+            echo "Start Mongod service..."
             service $1 $2
         fi
     else
@@ -197,17 +198,21 @@ function configure_for_scot {
     fi
 
     echo "-- ensuring ownership"
-    # sigh, why cant we settle on one username for mongo
-    if [[ $OS == "Ubuntu" ]]; then
-        chown -R mongodb:mongodb $MONGO_DB_DIR
-    else
-        chown -R mongod:mongod $MONGO_DB_DIR
+    if [[ ! -v SCOT_MONGOUSER ]]; then
+        # sigh, why cant we settle on one username for mongo
+        if [[ $OS == "Ubuntu" ]]; then
+            readonly SCOT_MONGOUSER="mongodb"
+        else
+            readonly SCOT_MONGOUSER="mongod"
+        fi
     fi
+
+    chown -R "$SCOT_MONGOUSER":"$SCOT_MONGOUSER" $MONGO_DB_DIR
 
     MONGO_LOG="/var/log/mongodb/mongod.log"
     echo "-- clearing $MONGO_LOG"
     cat /dev/null > $MONGO_LOG
-    chown mongodb:mongodb $MONGO_LOG
+    chown -R "$SCOT_MONGOUSER":"$SCOT_MONGOUSER" $MONGO_LOG
 
     start_stop mongod start
     wait_for_mongo

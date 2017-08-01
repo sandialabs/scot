@@ -293,6 +293,7 @@ sub get_users_groups {
         foreach my $attr ( $membership->attributes() ) {
             $log->debug("attr $attr ");
             push @groups,
+                grep { /scot/i }            # only care about scot groups
                 map { /cn=(.*?),.*/; $1 } $membership->get_value($attr);
         }
     } else {
@@ -301,7 +302,7 @@ sub get_users_groups {
     }
     $log->level($loglevel); # restore the loglevel from the rest of the app
 
-    $log->trace("User $user is in the following groups: ".join(',',@groups));
+    $log->debug("User $user is in the following groups: ".join(',',@groups));
     return wantarray ? @groups : \@groups;
 }
 

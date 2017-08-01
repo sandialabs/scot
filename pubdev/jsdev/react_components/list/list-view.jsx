@@ -35,55 +35,37 @@ module.exports = React.createClass({
         var columns = [];
         var columnsClassName = [];
         var showSelectedContainer = false;
+        var sort = {'id':-1};
+        var activepage = {page:0, limit:50};
+        var filter;
         width = 650
         
-        if (this.props.type == 'alertgroup' || this.props.type == 'alert') {
-            columnsDisplay = ['ID', 'Status', 'Subject', 'Created', 'Sources', 'Tags', 'Views']
-            columns = ['id', 'status', 'subject', 'created', 'source', 'tag', 'views']
-            columnsClassName=['id', 'status', 'subject', 'created', 'source', 'tag', 'views']
-        } else if (this.props.type == 'event') {
-            columnsDisplay = ['ID', 'Status', 'Subject', 'Created', 'Updated', 'Sources', 'Tags', 'Owner', 'Entries', 'Views']
-            columns = ['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
-            columnsClassName=['id', 'status', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
-        } else if (this.props.type == 'incident') {
-            columnsDisplay = ['ID', 'DOE', 'Status', 'Owner', 'Subject', 'Occurred', 'Type', 'Tags', 'Sources']
-            columns = ['id', 'doe_report_id', 'status', 'owner', 'subject', 'occurred', 'type', 'tag', 'source']
-            columnsClassName = ['id', 'doe_report_id', 'status', 'owner', 'subject', 'occurred', 'type', 'tag', 'source']
-        } else if (this.props.type == 'task') {
-            columnsDisplay = ['Type', 'ID', 'Status', 'Owner', 'Entry Id', 'Updated']
-            columns = ['target.type', 'target.id', 'metadata.status', 'owner', 'id', 'updated']
-            columnsClassName = ['target_type', 'target_id', 'task_status', 'owner', 'id', 'updated']
-        } else if (this.props.type == 'guide') {
-            columnsDisplay = ['ID', 'Subject', 'Applies To']
-            columns = ['id', 'subject', 'applies_to']
-            columnsClassName = ['id', 'subject', 'applies_to']
-        } else if (this.props.type == 'intel') {
-            columnsDisplay =['ID', 'Subject', 'Created', 'Updated', 'Source', 'Tags', 'Owner', 'Entries', 'Views']
-            columns = ['id', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
-            columnsClassName = ['id', 'subject', 'created', 'updated', 'source', 'tag', 'owner', 'entry_count', 'views']
-        } else if (this.props.type =='signature') {
-            columnsDisplay = ['ID', 'Name', 'Type', 'Status', 'Group', 'Description' ]
-            columns = ['id', 'name', 'type', 'status', 'signature_group', 'description']
-            columnsClassName = ['id', 'name', 'type', 'status', 'signature_group', 'description']
-        } else if (this.props.type == 'entity') {
-            columnsDisplay = ['ID', 'Value', 'Type', 'Entries']
-            columns = ['id', 'value', 'type', 'entry_count']
-            columnsClassName = ['id', 'value', 'type', 'entry_count']
+        columnsDisplay = listColumnsJSON.columnsDisplay[this.props.type];
+        columns = listColumnsJSON.columns[this.props.type];
+        columnsClassName = listColumnsJSON.columnsClassName[this.props.type];
+        
+        if (this.props.listViewSort != null) {
+            sort = JSON.parse(this.props.listViewSort)
+        } 
+        if (this.props.listViewPage != null) {
+            activepage = JSON.parse(this.props.listViewPage);
         }
-
+        if (this.props.listViewFilter != null) {
+            filter = JSON.parse(this.props.listViewFilter);
+        }
         if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; alertPreSelectedId=id;};
 
         return {
             splitter: true, 
             selectedColor: '#AEDAFF',
-            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: this.props.listViewPage,
+            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: activepage,
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             alldetail : true, viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
             resize: 'horizontal',createdarrow: [0, 0], sourcearrow:[0, 0],tagsarrow: [0, 0],
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: [], listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: this.props.listViewSort, filter: this.props.listViewFilter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, };
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: [], listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, };
     },
     componentWillMount: function() {
         if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
@@ -93,22 +75,7 @@ module.exports = React.createClass({
         } else if (this.props.viewMode == 'portrait') {
             this.Portrait();
         }
-        if (this.state.sort != null) {
-            var sort = JSON.parse(this.state.sort)
-            this.setState({sort:sort}); 
-        } else {
-            this.setState({sort:{'id':-1}});
-        }
-        if (this.state.activepage != null) {
-            var activepage = JSON.parse(this.state.activepage);
-            this.setState({activepage:activepage});
-        } else{
-            this.setState({activepage: {page:0, limit:50}});
-        }
-        if (this.state.filter != null) {
-            var filter = JSON.parse(this.state.filter);
-            this.setState({filter:filter}); 
-        }
+        
     },
     componentDidMount: function(){
         var height = this.state.scrollheight
@@ -127,16 +94,8 @@ module.exports = React.createClass({
                 }
             }
         }
-
-        if (this.props.type == 'alert') {
-            $.ajax({
-                type: 'get',
-                url: 'scot/api/v2/alert/' + this.props.id
-            }).success(function(response1){
-                var newresponse = response1
-                this.setState({id: newresponse.alertgroup, showSelectedContainer:true})
-            }.bind(this))
-        };
+        //If alert id is passed, convert the id to its alertgroup id.
+        this.ConvertAlertIdToAlertgroupId(this.props.id)
 
         var array = []
         var finalarray = [];
@@ -351,33 +310,59 @@ module.exports = React.createClass({
             </div>
         )
     },
-    componentDidUpdate: function() {
+    AutoScrollToId: function() {
+        //auto scrolls to selected id
+        if ($('#'+this.state.id).offset() != undefined && $('.list-view-table-data').offset() != undefined) {
+            var cParentTop =  $('.list-view-table-data').offset().top;
+            var cTop = $('#'+this.state.id).offset().top - cParentTop;
+            var cHeight = $('#'+this.state.id).outerHeight(true);
+            var windowTop = $('#list-view-data-div').offset().top;
+            var visibleHeight = $('#list-view-data-div').height();
+
+            var scrolled = $('#list-view-data-div').scrollTop();
+            if (cTop < (scrolled)) {
+                $('#list-view-data-div').animate({'scrollTop': cTop-(visibleHeight/2)}, 'fast', '');
+            } else if (cTop + cHeight + cParentTop> windowTop + visibleHeight) {
+                $('#list-view-data-div').animate({'scrollTop': (cTop + cParentTop) - visibleHeight + scrolled + cHeight}, 'fast', 'swing');
+            }
+            this.setState({initialAutoScrollToId: true});
+        }
+    },
+    componentDidUpdate: function(prevProps, prevState) {
         //auto scrolls to selected id
         for (var i=0; i < this.state.objectarray.length; i++){          //Iterate through all of the items in the list to verify that the current id still matches the rows in the list. If not, don't scroll
             var idReference = this.state.objectarray[i].id;
-            if (this.state.type == 'task') {
-                if (this.state.objectarray[i].target) {
-                    idReference = this.state.objectarray[i].target.id; //task uses target.id for id because its id is the entry.
-                }
-            }
-            if (this.state.id != null && this.state.id == idReference) {
-                if ($('#'+this.state.id).offset() != undefined && $('.list-view-table-data').offset() != undefined) {
-                    var cParentTop =  $('.list-view-table-data').offset().top;
-                    var cTop = $('#'+this.state.id).offset().top - cParentTop;
-                    var cHeight = $('#'+this.state.id).outerHeight(true);
-                    var windowTop = $('#list-view-data-div').offset().top;
-                    var visibleHeight = $('#list-view-data-div').height();
-
-                    var scrolled = $('#list-view-data-div').scrollTop();
-                    if (cTop < (scrolled)) {
-                        $('#list-view-data-div').animate({'scrollTop': cTop-(visibleHeight/2)}, 'fast', '');
-                    } else if (cTop + cHeight + cParentTop> windowTop + visibleHeight) {
-                        $('#list-view-data-div').animate({'scrollTop': (cTop + cParentTop) - visibleHeight + scrolled + cHeight}, 'fast', 'swing');
-                    }
-                }
+            if (this.state.id != null && this.state.id == idReference && this.state.id != prevState.id || this.state.id != null && this.state.id == idReference && prevState.initialAutoScrollToId == false ) {     //Checks that the id is present, is on the screen, and will not be kicked off again if its already been scrolled to before. The || statement handles the initial load since the id hasn't been scrolled to before.
+               this.AutoScrollToId(); 
             }
         }
     },
+    componentWillReceiveProps: function(nextProps) {
+        if ( nextProps.id == undefined ) {
+            this.setState({type: nextProps.type, id:null, showSelectedContainer: false, scrollheight: $(window).height() - 170});
+        } else if (nextProps.id != this.props.id) {
+            if (this.props.type == 'alert') {
+                this.ConvertAlertIdToAlertgroupId(nextProps.id);        
+                this.setState({ type : nextProps.type, alertPreSelectedId: nextProps.id });    
+            } else {
+                this.setState({type: nextProps.type, id: nextProps.id});
+            }        
+        }
+    },
+
+    ConvertAlertIdToAlertgroupId: function(id) {
+        //if the type is alert, convert the id to the alertgroup id
+        if (this.props.type == 'alert') {
+            $.ajax({
+                type: 'get',
+                url: 'scot/api/v2/alert/' + id
+            }).success(function(response1){
+                var newresponse = response1
+                this.setState({id: newresponse.alertgroup, showSelectedContainer:true})
+            }.bind(this))
+        };
+    },
+
     stopdrag: function(e){
         $('iframe').each(function(index,ifr){
         $(ifr).removeClass('pointerEventsOff')
@@ -456,14 +441,20 @@ module.exports = React.createClass({
     },
     selected: function(type,rowid,taskid){
         if (taskid == null) {
-            window.history.pushState('Page', 'SCOT', '/#/' + type +'/'+rowid)  
-            this.launchEvent(type, rowid)
+            //window.history.pushState('Page', 'SCOT', '/#/' + type +'/'+rowid)  
+            this.props.history.push( '/' + type + '/' + rowid );
+            //this.launchEvent(type, rowid)
         } else {
             //If a task, swap the rowid and the taskid
-            window.history.pushState('Page', 'SCOT', '/#/' + type + '/' + taskid + '/' + rowid)
-            this.launchEvent(type, taskid, rowid);
+            //window.history.pushState('Page', 'SCOT', '/#/' + type + '/' + taskid + '/' + rowid)
+            this.props.history.push( '/' + type + '/' + taskid + '/' + rowid );
+            //this.launchEvent(type, taskid, rowid);
         }
-        //scrolled = $('.list-view-data-div').scrollTop() 
+        //scrolled = $('.list-view-data-div').scrollTop()
+        if(this.state.display == 'block'){
+            this.state.scrollheight = '25vh'
+        }
+        this.setState({alertPreSelectedId: 0, scrollheight: this.state.scrollheight, showSelectedContainer: true })
     },
     getNewData: function(page, sort, filter){
         this.setState({loading:true}); //display loading opacity
@@ -473,6 +464,10 @@ module.exports = React.createClass({
         var pageNumber;
         var idsarray = this.state.idsarray;
         var newidsarray = [];
+        
+        //if the type is alert, convert the id to the alertgroup id
+        this.ConvertAlertIdToAlertgroupId(this.props.id)        
+                    
         //defaultpage = page.page
         if (page == undefined) {
             pageNumber = this.state.activepage.page;
@@ -680,7 +675,9 @@ module.exports = React.createClass({
                 }
             }
             this.setState({filter:newFilterObj});
-            this.getNewData({page:0},null,newFilterObj)
+            if (type == this.props.type || type == undefined) {    //Check if the type passed in matches the type displayed. If not, it's updating the filter for a future query in a different type. Undefined implies its the same type, so update 
+                this.getNewData({page:0},null,newFilterObj)
+            }
             var cookieName = 'listViewFilter' + _type;
             setCookie(cookieName,JSON.stringify(newFilterObj),1000);
         }
@@ -694,7 +691,7 @@ module.exports = React.createClass({
     createNewThing: function(){
     var data;
     if (this.props.type == 'signature') {
-        data = JSON.stringify({name:'Name your Signature', type: 'signature type'});   
+        data = JSON.stringify({name:'Name your Signature', status: 'disabled'});   
     } else {
         data = JSON.stringify({subject: 'No Subject'});
     }
@@ -703,7 +700,10 @@ module.exports = React.createClass({
             url: '/scot/api/v2/'+this.props.type,
             data: data
         }).success(function(response){
-            this.launchEvent(this.props.type,response.id)
+            this.selected(this.props.type, response.id);
+            //this.props.history.push( '/' + this.props.type + '/' + response.id );
+            //this.launchEvent(this.props.type,response.id)
+            //window.history.pushState('Page', 'SCOT', '/#/'+this.props.type+'/'+response.id);
         }.bind(this))
     }, 
 });

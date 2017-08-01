@@ -16,6 +16,7 @@ var Store                   = require('../activemq/store.jsx');
 var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx'); 
+var Link                    = require('react-router-dom').Link;
 var IncidentTable           = require('../components/incident_table.jsx');
 var SignatureTable          = require('../components/signature_table.jsx');
 var SelectedEntry = React.createClass({
@@ -275,9 +276,8 @@ var SelectedEntry = React.createClass({
         var showEntryData = this.props.showEntryData;
         var divClass = 'row-fluid entry-wrapper entry-wrapper-main'
         if (type =='alert') {
-            //default size commented out for now
-            //divClass = 'row-fluid entry-wrapper entry-wrapper-main-70'
-            divClass= 'row-fluid entry-wrapper-main-nh';
+            //divClass = 'row-fluid entry-wrapper entry-wrapper-main-300'
+            divClass = 'row-fluid entry-wrapper entry-wrapper-main-nh'
             data = this.state.entryData;
             showEntryData = this.state.showEntryData;
         } else if (type =='alertgroup') {
@@ -296,11 +296,11 @@ var SelectedEntry = React.createClass({
         return (
             <div id={divid} key={id} className={divClass} style={{height:height}}> 
                 {(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
-                {(type == 'signature' && this.props.headerData != null) ? <SignatureTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
+                {(type == 'signature' && this.props.headerData != null) ? <SignatureTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle} showSignatureOptions={this.props.showSignatureOptions} /> : null}
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar}/> : <span>Loading...</span>} 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry entryAction={'Add'} type={this.props.type} targetid={this.props.id} id={null} addedentry={this.props.entryToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
                 {this.props.fileUploadToolbar ? <div>{this.props.isAlertSelected == false ? <FileUpload type={this.props.type} targetid={this.props.id} id={'file_upload'} fileUploadToggle={this.props.fileUploadToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
-                {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} aID={this.props.aID} aType={this.props.aType} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj}/>: null}
+                {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} aID={this.props.aID} aType={this.props.aType} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj} linkWarningToggle={this.linkWarningToggle}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
             </div>       
         );
@@ -313,11 +313,19 @@ var EntryIterator = React.createClass({
         var type = this.props.type;
         var id = this.props.id;  
         if (data[0] == undefined) {
-            return (
-                <div>
-                    <div style={{color:'blue'}}>No entries found. Would you like to create one?</div>
-                </div>
-            )
+            if (type != 'alertgroup') {
+                return (
+                    <div>
+                        <div style={{color:'blue'}}>No entries found. Would you like to create one?</div>
+                    </div>
+                )
+            } else {
+                return (
+                    <div>
+                        <div style={{color:'blue'}}>No alerts found or they are unable to be rendered. Please check the source and correct the formatting of the alert if necessary</div>
+                    </div>
+                )
+            }
         } else {
             if (type != 'alertgroup') {
                 data.forEach(function(data) {
@@ -893,7 +901,7 @@ var EntryParent = React.createClass({
                 <div className={outerClassName} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
                     <span className="anchor" id={"/"+ type + '/' + id + '/' + items.id}/>
                     <div className={innerClassName}>
-                        <div className="entry-header-inner">[<a style={{color:'black'}} href={"#/"+ type + '/' + id + '/' + items.id}>{items.id}</a>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
+                        <div className="entry-header-inner">[<Link style={{color:'black'}} to={'/' + type + '/' + id + '/' + items.id}>{items.id}</Link>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
                             <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
                                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 

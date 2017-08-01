@@ -85,8 +85,22 @@ has quarter    => (
     is          => 'ro',
     isa         => 'Int',
     required   => 1,
-    default     => 1,
+    lazy        => 1,
+    builder     => '_build_quarter',
 );
+
+sub _build_quarter {
+    my $self    = shift;
+    my $dt      = DateTime->new(
+        year    => $self->year,
+        month   => $self->month,
+        day     => $self->day,
+        hour    => 0,
+        minute  => 0,
+        second  => 0,
+    );
+    return $dt->quarter;
+}
 
 has hour    => (
     is          => 'ro',

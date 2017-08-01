@@ -2,6 +2,7 @@ package Scot::Collection::Alertgroup;
 use lib '../../../lib';
 use Moose 2;
 use Data::Dumper;
+use Storable qw(dclone);
 
 extends 'Scot::Collection';
 
@@ -22,7 +23,117 @@ Custom collection operations for Alertgroups
 
 =over 4
 
-=item B<create_from_api($request_href)>
+=item B<api_create($request_href)>
+
+Create an alertgroup, return relevant data to Api.pm module
+(new way, to replace create_from_api)
+
+=cut
+
+sub split_alertgroups {
+    my $self    = shift;
+    my $href    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    $log->debug("splitting alertgroup");
+
+    # strip data field and ensure it is an array
+    my $data    = delete $href->{request}->{json}->{data};
+    push @$data, $data if ( ref($data) ne "ARRAY" );
+        
+    my $alert_rows  = scalar(@$data);
+    my $row_limit   = $env->get_config_item("row_limit")//200;
+    my @ag_requests = ();
+    my $parts       = int($alert_rows/$row_limit);
+    my $remainder   = $alert_rows % $row_limit;
+    if ( $remainder != 0 ) {
+        $parts += 1;
+    }
+    my $page        = 1;
+
+    while ( my @subalerts = splice(@$data, 0, $row_limit) ) {
+        my $sub = $href->{request}->{json}->{subject};
+        $sub .= " (part $page of $parts)" if ($parts != 1);
+        my $new = dclone($href);
+        $new->{request}->{json}->{subject} = $sub;
+        push @{$new->{request}->{json}->{data}}, @subalerts;
+        push @ag_requests, $new;
+        $page++;
+    }
+
+    $log->debug("Alertgroup was split into ".scalar(@ag_requests)." pieces");
+    return wantarray ? @ag_requests : \@ag_requests;
+}
+
+override api_create => sub {
+    my $self    = shift;
+    my $href    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    my @mq_msgs     = ();
+    my @audit_msgs  = ();
+    my @stat_msgs   = ();
+
+    $log->trace("create alertgroup");
+
+    # alertgroup creation will receive the following in the 
+    # json portion of the request
+    # request => {
+    #    message_id  => '213123',
+    #    subject     => 'subject',
+    #    data       => [ { ... href structure ...      }, { ... } ... ],
+    #    tags       => [],
+    #    sources    => [],
+    # }
+
+    my @requests        = $self->split_alertgroups($href);
+    my @alertgroups     = ();
+
+    REQUEST:
+    foreach my $request (@requests) {
+        my $tags        = $request->{request}->{json}->{tag};
+        my $sources     = $request->{request}->{json}->{source};
+        my $data        = delete $request->{request}->{json}->{data};
+        my $alertgroup  = $self->create($request->{request}->{json});
+        my $alertscreated   = 0;
+
+        if ( ! defined $alertgroup ) {
+            $log->error("Failed to create alertgroup with data ",
+                        { filter => \&Dumper, value => $request });
+            next REQUEST;
+        }
+        my $id          = $alertgroup->id;
+
+        my $alert_col   = $mongo->collection('Alert');
+
+        $log->trace("Creating alerts belonging to Alertgroup ". $id);
+        foreach my $datum (@{$data}) {
+
+            my $alertscreated += $alert_col->api_create({
+                data        => $datum,
+                alertgroup  => $id,
+                columns     => $alertgroup->columns,
+            });
+        }
+
+        $alertgroup->update({
+            '$set'  => {
+                open_count      => $alertscreated,
+                closed_count    => 0,
+                promoted_count  => 0,
+                alert_count     => $alertscreated,
+            }
+        });
+
+        push @alertgroups, $alertgroup;
+    }
+    return wantarray ? @alertgroups : \@alertgroups;
+};
+
+=item B<create_from_api(request_href)>
 
 Create an alertgroup and sub alerts from a POST to the handler
 
@@ -55,6 +166,29 @@ sub create_from_api {
 
     if ( ref($data) ne "ARRAY" ) {
         push @$data, $data;
+    }
+
+    my $row_limit = 200;
+    #if ( defined $env->alertgroup_rowlimit ) {
+    #    $row_limit = $env->alertgroup_rowlimit;
+    #    $log->debug("Altername rowlimit specified as ".$row_limit);
+    #}
+
+    if ( scalar(@$data) > $row_limit ) {
+        $log->warn("Large number of rows in Alertgroup, splitting...");
+        my @created_alertgroup;
+
+        my $x = 1;
+        my $subject = $href->{request}->{json}->{subject};
+        while ( my @subalerts = splice(@$data, 0, $row_limit) ) {
+            push @{$href->{request}->{json}->{data}}, @subalerts;
+            $href->{request}->{json}->{subject} = $subject . " part $x";
+            $log->debug("splitting alertgroup : ",
+                        {filter=>\&Dumper, value => $href});
+            push @created_alertgroup, $self->create_from_api($href);
+            $x++;
+        }
+        return \@created_alertgroup;
     }
 
     my $tags    = $request->{tags};
@@ -105,7 +239,7 @@ sub create_from_api {
 
 
 
-        $log->trace("Creating alert ", {filter=>\&Dumper, value => $chref});
+        $log->debug("Creating alert ", {filter=>\&Dumper, value => $chref});
 
         my $alert = $mongo->collection("Alert")->create($chref);
 
@@ -135,6 +269,8 @@ sub create_from_api {
         $promoted_count++   if ( $alert->status eq "promoted");
     }
 
+    $log->debug("updating alertgroup ", $alertgroup->id);
+
     $alertgroup->update({
         '$set'  => {
             open_count      => $open_count,
@@ -153,6 +289,12 @@ sub refresh_data {
     my $env     = $self->env;
     my $mq      = $env->mq;
     my $log     = $env->log;
+
+    ## TODO: see if we can move the mq stuff 
+    ## recent bug:  flairer didn't have an mq stanza on a demo box
+    ## so same code worked in prod but not on demo.  many hours of heartache
+    ## later, I discover that flairer.pl is silently dying because $env->mq
+    ## is not defined!
 
     $log->trace("[Alertgroup $id] Refreshing Data after Alert update");
 
@@ -209,6 +351,81 @@ sub refresh_data {
 #        }
 #    });
 }
+
+sub api_subthing {
+    my $self    = shift;
+    my $req     = shift;
+    my $thing       = $req->{collection};
+    my $id          = $req->{id} + 0;
+    my $subthing    = $req->{subthing};
+    my $mongo       = $self->env->mongo;
+
+    $self->env->log->debug("api_subthing /$thing/$id/$subthing");
+
+    if ( $subthing eq "alert") {
+        return $mongo->collection('Alert')->find({
+            alertgroup => $id
+        });
+    }
+
+    if ( $subthing eq "entry") {
+        return $mongo->collection('Entry')->get_entries_by_target({
+            id      => $id,
+            type    => 'alertgroup',
+        });
+    }
+
+    if ( $subthing eq "entity" ) {
+        # build array of entity ids linked to this alertgroup
+        my @links = map { $_->{entity_id} } 
+            $mongo->collection('Link')->get_links_by_target({
+                id  => $id, type => 'alertgroup'
+            })->all;
+        # return all matching entities
+        return $mongo->collection('Entity')->find({
+            id  => { '$in' => \@links }
+        });
+    }
+
+    if ( $subthing eq "tag" ) {
+        my @appearances = map { $_->{apid} } 
+            $mongo->collection('Appearance')->find({
+                type    => 'tag', 
+                'target.type'   => 'alertgroup',
+                'target.id'     => $id,
+            })->all;
+        return $mongo->collection('Tag')->find({
+            id => {'$in' => \@appearances}
+        });
+    }
+
+    if ( $subthing eq "source" ) {
+        my @appearances = map { $_->{apid} } 
+            $mongo->collection('Appearance')->find({
+                type    => 'source', 
+                'target.type'   => 'alertgroup',
+                'target.id'     => $id,
+            })->all;
+        return $mongo->collection('Source')->find({
+            id => {'$in' => \@appearances}
+        });
+    }
+
+    if ( $subthing eq "guide" ) {
+        my $ag  = $mongo->collection('Alertgroup')->find_iid($id);
+        return $mongo->collection('Guide')->find({applies_to => $ag->subject});
+    }
+
+    if ( $subthing eq "history") {
+        return $mongo->collection('History')->find({
+            'target.id'   => $id,
+            'target.type' => 'alertgroup',
+        });
+    }
+
+    die "Unsupported subthing: $subthing";
+}
+    
 
 override get_subthing => sub {
     my $self        = shift;
@@ -369,6 +586,7 @@ sub update_alerts_in_alertgroup {
     return $status;
 }
 
+# used by old api
 sub get_bundled_alertgroup {
     my $self    = shift;
     my $id      = shift;
@@ -391,7 +609,88 @@ sub get_bundled_alertgroup {
     return $href;
 }
 
+# new api 
+sub get_alerts_in_alertgroup {
+    my $self    = shift;
+    my $object  = shift;
+    my $id      = $object->id + 0;
+    my $col     = $self->env->mongo->collection('Alert');
+    my $cursor  = $col->find({alertgroup => $id});
+    my @alerts  = ();
+
+    while ( my $alert = $cursor->next ) {
+        my $alert_href  = $alert->as_hash;
+        push @alerts, $alert_href;
+    }
+    return wantarray ? @alerts : \@alerts;
+}
+
 sub update_alertgroup_with_bundled_alert {
+    my $self    = shift;
+    my $putdata = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $alertcol    = $mongo->collection('Alert');
+    my $entitycol   = $mongo->collection('Entity');
+
+    $log->debug("updating alertgroup with bundled alerts");
+    $log->debug("putdata = ",{filter=>\&Dumper, value=>$putdata});
+
+    my $alertgroup_id   = delete $putdata->{id};
+    my $alerts_aref     = delete $putdata->{alerts};
+
+    if ( ! defined $alerts_aref ) {
+        $log->error("No alerts bundled with alertgroup!");
+        $alerts_aref    = [];
+    }
+
+    foreach my $alert (@{$alerts_aref}) {
+        my $alert_id    = $alert->{id} + 0;
+
+        $log->debug("Processing bundled alert $alert_id");
+
+        my $entity_aref = delete $alert->{entities};
+
+        $log->debug("Entities in alert: ",
+                    {filter=>\&Dumper, value=>$entity_aref});
+
+        my $alert_obj   = $alertcol->find_iid($alert_id);
+
+        if ( ! defined $alert_obj or 
+             ref($alert_obj) ne "Scot::Model::Alert" ) {
+            $log->error("ALERT OBJECT Not FOUND!!!");
+            die "Alert object $alert_id in alertgroup $alertgroup_id not found";
+            # why though?
+        }
+
+        if ( defined $entity_aref and ref($entity_aref) eq "ARRAY" ) {
+            $entitycol->update_entities($alert_obj, $entity_aref);
+        }
+        else {
+            $log->warn("No Entities present");
+        }
+
+        $alert_obj->update({'$set' => {
+            parsed  => 1,
+            data_with_flair => $alert->{data_with_flair},
+        }});
+    }
+
+    my $cmd = { '$set'  => $putdata };
+    $log->debug("updating alertgroup with :",
+                {filter=>\&Dumper,value=>$putdata});
+    my $alertgroup  = $self->find_iid($alertgroup_id);
+
+    if (! defined $alertgroup or 
+        ref($alertgroup) ne "Scot::Model::Alertgroup") {
+        $log->error("Can not find Alertgroup $alertgroup_id!");
+        die "No Alertgroup to update!";
+    }
+    $alertgroup->update($cmd);
+}
+
+sub update_alertgroup_with_bundled_alert_old {
     my $self    = shift;
     my $putdata = shift;
     my $env      = $self->env;
@@ -412,15 +711,24 @@ sub update_alertgroup_with_bundled_alert {
     }
 
     my $alertcol    = $mongo->collection('Alert');
+
     foreach my $alert (@$alerts) {
         my $alert_id    = $alert->{id} + 0;
         my $alert_obj   = $alertcol->find_iid($alert_id);
+
+        if ( ! defined $alert_obj ) {
+            $log->error("unable to get alert $alert_id object to update!");
+        }
+
         my $entities    = delete $alert->{entities};
         if ( $alert_obj->update({'$set' => $alert}) ) {
             $log->debug("updated alert $alert_id");
             if ( defined $entities and scalar(@$entities) > 0 ) {
                 $mongo->collection('Entity')
                       ->update_entities($alert_obj, $entities);
+            }
+            else {
+                $log->error("NO ENTITIES");
             }
         }
         else {
@@ -436,6 +744,17 @@ sub update_alertgroup_with_bundled_alert {
     else {
         $log->error("failed to update alertgroup");
     }
+}
+
+sub get_subject {
+    my $self    = shift;
+    my $agid    = shift;
+
+    my $agobj   = $self->find_iid($agid);
+    if (defined $agobj) {
+        return $agobj->subject;
+    }
+    die "Can't find Alertgroup $agid";
 }
 
 1;

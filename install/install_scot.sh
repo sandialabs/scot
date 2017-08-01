@@ -3,6 +3,16 @@
 ### TODO
 ### stop/start daemons (controllable by flag?)
 
+function upgrade_database {
+    echo "- checking to see if database structure needs updating";
+    GAMEUPDATE=`mongo scot-prod --quiet --eval "printjson(db.game.findOne({category:'cleaner'}))"`
+    echo "GAMEUPDATE is $GAMEUPDATE"
+    if echo $GAMEUPDATE | grep -w 'category'; then
+        echo "-- dropping the game collection.  will be recreated upon first run of game.pl"
+        mongo scot-prod --quiet --eval 'db.game.remove({});'
+    fi
+}
+
 
 function add_scot_user {
     echo "- checking for existing scot user"
@@ -155,7 +165,7 @@ function configure_startup {
                         sed -i 's=instdir='$SCOTDIR'=g' /etc/init.d/scot
                     else
                         echo "-- install /etc/init.d/$service"
-                        /opt/scot/bin/${service}.pl > /etc/init.d/$service
+                        /opt/scot/bin/${service}.pl get_init_file > /etc/init.d/$service
                         chmod +x /etc/init.d/$service
                     fi
                 fi
@@ -193,7 +203,14 @@ function install_private_modules {
         echo "--- "
         echo "--- Running private module installer"
         echo "---"
-        . $PRIVATE_SCOT_MODULES/install.sh
+        PSM_FLAGS=""
+        if [[ "$SCOT_REFRESH_CONFIG" == "yes" ]]; then
+            PSM_FLAGS="-s"
+        fi
+        if [[ "$APACHE_REFRESH_CONFIG" == "yes" ]]; then
+            PSM_FLAGS="$PSM_FLAGS -a"
+        fi
+        . $PRIVATE_SCOT_MODULES/install.sh $PSM_FLAGS
     else
         echo "~~~ No Scot private module directory found at $PRIVATE_SCOT_MODULES"
     fi
@@ -341,6 +358,18 @@ function selinux_to_permissive {
     setenforce 0
 }
 
+function start_mongo {
+    if [[ $OS == "Ubuntu" ]]; then
+        if [[ $OSVERSION == "16" ]]; then
+            systemctl start mongod.service
+        else 
+            service mongod start
+        fi
+    else
+        systemctl start mongod.service
+    fi
+}
+
 function install_scot {
     
     echo "---"
@@ -381,6 +410,8 @@ function install_scot {
     chown -R scot:scot $SCOTDIR
     chmod -R 755 $SCOTDIR/bin
 
+    upgrade_database
+
     get_config_files    
     configure_logging
     copy_documentation
@@ -390,6 +421,7 @@ function install_scot {
     install_private_modules
     configure_startup
     restart_daemons
+    start_mongo
     start_scot
     start_apache
 }

@@ -25,6 +25,15 @@ use strict;
 use warnings;
 use base 'Mojolicious::Controller';
 
+sub put_stat {
+    my $self    = shift;
+    my $metric  = shift;
+    my $value   = shift;
+    my $env     = $self->env;
+    my $nowdt   = DateTime->from_epoch( epoch => $env->now );
+    my $col     = $env->mongo->collection('Stat');
+    $col->increment($nowdt, $metric, $value);
+}
 
 sub upload {
     my $self    = shift;
@@ -143,6 +152,7 @@ sub upload {
     $self->render(
         status  => 200, 
         json    => \@statuses);
+    $self->put_stat("file uploaded", 1);
 }
 
 sub create_file_upload_entry {
@@ -300,13 +310,6 @@ sub get_filetype {
     my $content_type    = $file_type->mime_type($path);
     return $content_type;
 }
-
-
-    
-
-
-
-
 
 
 1;

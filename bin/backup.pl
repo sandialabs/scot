@@ -29,6 +29,9 @@ my $env  = Scot::Env->new({
 #   es_backup_location = the directory to create the repo snapshots
 #
 
+# delete backups older than 14 days;
+system("find '/opt/scotbackup/' -maxdepth 1 -type f -name '*.tgz' -mtime +14 -delete");
+
 my $pidfile = $env->pidfile;
 if ( -s $pidfile ) {
     die "$pidfile exists and is non-zero length, implies another backup is running";

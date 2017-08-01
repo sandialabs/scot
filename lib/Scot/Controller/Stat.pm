@@ -8,6 +8,7 @@ use Data::Dumper;
 use Mojo::JSON qw(decode_json encode_json);
 use DateTime;
 use DateTime::Duration;
+use Statistics::Descriptive;
 
 use base 'Mojolicious::Controller';
 
@@ -27,6 +28,7 @@ sub get {
     return $self->get_statistics_json   if ( $thing eq "statistics" );
     return $self->get_stats_this_dow    if ( $thing eq "todaystats" );
     return $self->get_bullet_data       if ( $thing eq "bullet" );
+    return $self->alert_response        if ( $thing eq "alertresponse" );
 
 }
 
@@ -177,21 +179,28 @@ sub day_hour_heatmap_json {
 sub get_stats_this_dow {
     my $self    = shift;
     my $req_href= $self->get_request_params;
+    my $results = $self->get_dow_stats;
+    $self->do_render($results);
+    
+}
+
+sub get_dow_stats {
+    my $self    = shift;
+    my $env     = $self->env;
     my $results = {};
-    my $dt      = DateTime->from_epoch( epoch => $self->env->now );
+    my $dt      = DateTime->from_epoch( epoch => $env->now );
     my $dow     = $dt->dow;
-    my $collection  = $self->env->mongo->collection('Stat');
+    my $col     = $env->mongo->collection('Stat');
     my %metrics = (
-        "alerts"    => "alert created",
-        "events"    => "event created",
+        "alert"    => "alert created",
+        "event"    => "event created",
     );
 
     foreach my $metric (sort keys %metrics) {
         $results->{$metric} = 
-            ($collection->get_dow_statistics($metrics{$metric}))[$dow];
+            ($col->get_dow_statistics($metrics{$metric}))[$dow];
     }
-    $self->do_render($results);
-    
+    return $results;
 }
 
 sub get_statistics_json {
@@ -227,21 +236,248 @@ sub get_bullet_data {
         my $metric  = "$colname created";
         my ($today, $count) = $collection->get_today_count($metric);
         $log->debug("today $today count $count");
-        my $stats   = $self->get_stats_this_dow();
+        my $stats   = $self->get_dow_stats();
         $log->debug("Stats: ",{filter=>\&Dumper, value => $stats});
-        my $below   = $stats->{$metric}->{avg} - $stats->{stddev};
-        my $above   = $stats->{$metric}->{avg} + $stats->{stddev};
+        my $below   = $stats->{$colname}->{value}->{avg} - $stats->{stddev};
+        my $above   = $stats->{$colname}->{value}->{avg} + $stats->{stddev};
         my $expected    = $count * ( 24 - $hour);
         my $result  = {
             title       => $metric,
             subtitle    => "count",
             ranges      => [ $below, $above ],
             measures    => [ $count, $expected ],
-            markers     => $stats->{avg},
+            markers     => $stats->{$colname}->{value}->{avg},
         };
         push @results, $result;
     }
     $self->do_render(\@results);
 }
+
+sub get_time_range {
+    my $self    = shift;
+    my $href    = shift;
+    my $env     = $self->env;
+    my $type    = $href->{type} // 'month'; # or quarter or year
+    my $dt      = DateTime->from_epoch( epoch => $env->now );
+    my $month   = $dt->month;
+    my $year    = $dt->year;
+    if ( $type eq "month" ) {
+        my $year    = defined $href->{year}  ? $href->{year}  : $dt->year;
+        my $month   = defined $href->{month} ? $href->{month} : $dt->month;
+        my $ldt     = DateTime->last_day_of_month(
+            year    => $year,
+            month   => $month,
+        );
+        $ldt->set( hour => 23, minute => 59, second => 59 );
+        my $startdt = DateTime->new(
+            year    => $ldt->year,
+            month   => $ldt->month,
+            day     => 1,
+            hour    => 0,
+            minute  => 0,
+            second  => 0,
+        );
+        return $startdt, $ldt;
+    }
+    # else quarter
+    my $targetqtr = $href->{quarter}; # 17Q2 or YYQ[1-4]
+    my $targetfy  = $href->{fy};
+    my ($startdt, $enddt) = $self->get_start_stop_sandia_fyq($targetfy, $targetqtr);
+    return $startdt, $enddt;
+
+}
+
+sub get_quarter {
+    my $self    = shift;
+    my $month   = shift;
+    # TODO: move to config
+    my %qtrs    = (
+        1       => 2,
+        2       => 2,
+        3       => 2,
+        4       => 3,
+        5       => 3,
+        6       => 3,
+        7       => 4,
+        8       => 4,
+        9       => 4,
+        10      => 1,
+        11      => 1,
+        12      => 1,
+    );
+    return $qtrs{$month};
+}
+
+sub get_start_stop_sandia_fyq {
+    my $self    = shift;
+    my $fy      = shift;
+    my $qtr     = shift;
+
+    my ($startmonth, $endmonth, $endday);
+    my $year    = "20" . $fy;
+    if ( $qtr == 1 ) {
+        $year--;
+        $startmonth = 10;
+        $endmonth   = 12;
+        $endday     = 31;
+    }
+    if ( $qtr == 2 ) {
+        $startmonth = 1;
+        $endmonth   = 3;
+        $endday     = 31;
+    }
+    if ( $qtr == 3 ) {
+        $startmonth = 4;
+        $endmonth   = 6;
+        $endday     = 30;
+    }
+    if ( $qtr == 4 ) {
+        $startmonth = 7;
+        $endmonth   = 9;
+        $endday     = 30;
+    }
+    my $startdt = DateTime->new(
+        year    => $year,
+        month   => $startmonth,
+        day     => 1,
+        hour    => 0,
+        minute  => 0,
+        second  => 0,
+    );
+    my $enddt = DateTime->new(
+        year    => $year,
+        month   => $endmonth,
+        day     => $endday,
+        hour    => 23,
+        minute  => 59,
+        second  => 59,
+    );
+    return $startdt, $enddt;
+}
+        
+
+sub get_max {
+    my $self    = shift;
+    my $a       = shift;
+    my $b       = shift;
+    return ($a,$b)[$a < $b];
+}
+
+sub get_min {
+    my $self    = shift;
+    my $a       = shift;
+    my $b       = shift;
+    return ($a,$b)[$a > $b];
+}
+
+sub during_production {
+    my $self    = shift;
+    my $dt      = shift;
+    my $dow     = $dt->dow;
+    my $hour    = $dt->hour;
+
+    if ( $dow < 6 ) {
+        if ( $hour < 18 and $hour >= 6 ) {
+            return 1;
+        }
+    }
+    return undef;
+}
+
+sub get_earliest_view {
+    my $self        = shift;
+    my $alertgroup  = shift;
+    my $href        = $alertgroup->view_history;
+    my @times       = sort { $a <=> $b }
+                      grep { $_ == $_ }
+                      map  { $href->{$_}->{when} }
+                      keys  %{$href};
+    foreach my $t (@times) {
+        return $t if ($t != 0);
+    }
+    return undef;
+}
+
+
+sub alert_response {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+    my $req_href    = $self->get_request_params;
+    my ($startdt, $enddt) = $self->get_time_range($req_href);
+
+    $log->debug("Building alert response time stats");
+
+    my $agcol   = $mongo->collection('Alertgroup');
+    my $cursor  = $agcol->find({
+         status => "promoted" ,
+         when  => { '$lte' => $enddt->epoch ,
+                    '$gte' => $startdt->epoch },
+    });
+    $cursor->sort({id => 1});
+
+    my @prod    = ();
+    my @all     = ();
+    my @clear;  
+    while ( my $alertgroup = $cursor->next ) {
+        my $dt  = DateTime->from_epoch( epoch => $alertgroup->when );
+        # TODO: move this to a configuration item in scot.cfg.pl
+        $dt->set_time_zone('America/Denver');
+        # TODO: define production days/hours in config
+
+        if ( $self->during_production($dt) ) {
+            my $first_view_epoch = $self->get_earliest_view($alertgroup);
+            if (defined $first_view_epoch) {
+                my $delta = $first_view_epoch - $alertgroup->when;
+                if ( $delta > 0 ) {
+                    push @prod, $delta;
+                }
+            }
+        }
+        my $first_view_epoch = $self->get_earliest_view($alertgroup);
+        if (defined $first_view_epoch) {
+            my $delta = $first_view_epoch - $alertgroup->when;
+            if ( $delta > 0 ) {
+                push @all, $delta;
+            }
+        }
+    }
+
+    my $stat = Statistics::Descriptive::Full->new();
+    $stat->add_data(@prod);
+    
+    my $final   = {
+        prod    => {
+            mean    => $stat->mean(),
+            var     => $stat->variance(),
+            sd      => $stat->standard_deviation(),
+            mode    => $stat->mode(),
+            count   => $stat->count(),
+            max     => $stat->max(),
+            min     => $stat->min(),
+        },
+    };
+
+    $stat->add_data(@clear);
+    $stat->add_data(@all);
+
+    $final->{all} = {
+        mean    => $stat->mean(),
+        var     => $stat->variance(),
+        sd      => $stat->standard_deviation(),
+        mode    => $stat->mode(),
+        count   => $stat->count(),
+        max     => $stat->max(),
+        min     => $stat->min(),
+    };
+
+    $self->do_render($final);
+
+}
+
+
+
+
         
 1;

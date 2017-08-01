@@ -24,6 +24,35 @@ sub create_from_api {
     return $stat;
 }
 
+sub upsert_metric {
+    my $self    = shift;
+    my $doc     = shift;
+    my $match   = { %$doc }; # shallow clone ok bc only one level deep.
+    my $log     = $self->env->log;
+    # $log->debug("doc: ",{filter=>\&Dumper,value=>$doc});
+    delete $match->{value};
+    my $obj = $self->find_one($match);
+    unless (defined $obj) {
+        $log->trace("New Metric, inserting");
+        $self->create($doc);
+    }
+    else {
+        $log->trace("Updating existing metric");
+        $obj->update({
+            '$set'  => $doc
+        });
+    }
+}
+
+sub put_stat {
+    my $self    = shift;
+    my $metric  = shift;
+    my $value   = shift;
+    my $env     = $self->env;
+    my $dt      = DateTime->from_epoch( epoch => $env->now );
+    $self->increment($dt, $metric, $value);
+}
+
 sub increment {
     my $self    = shift;
     my $dt      = shift;
@@ -98,7 +127,7 @@ sub get_dow_statistics {
         # out         => 'tempstats',
     );
 
-    $log->debug("Command is ",{filter=>\&Dumper,value=>\%command});
+    # $log->debug("Command is ",{filter=>\&Dumper,value=>\%command});
 
     my $mongo   = $self->meerkat;
     my $db_name = $mongo->database_name;

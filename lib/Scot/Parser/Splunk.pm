@@ -100,10 +100,24 @@ sub parse_message {
                 $log->warn("Empty Column Name detected");
                 $log->warn("replacing column name with $colname");
             }
-            my $value   = $values[$i]->as_text;
+
+            # OK, thanks to splunk changing stuff we now have to look that
+            # a cell my contain multiple divs like
+            # <td>
+            #   <div style="white-space: pre-wrap;">2</div>
+            #   <div style="white-space: pre-wrap;">2</div>
+            # </td>
+            # so let's loop! and concatenate!
+
+            my @intervalues = ();
+            foreach my $v (@{$values[$i]->{_content}}) {
+                push @intervalues, $v->as_text;
+            }
+
             if ( $colname eq "MESSAGE_ID" ) {
                 $log->debug("MESSAGE_ID detection moved to Flair.pm");
             }
+            my $value = join(' ',@intervalues);
             $rowresult{$colname} = $value;
         }
         push @results, \%rowresult;

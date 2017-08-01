@@ -81,6 +81,7 @@ sub get_mongo {
             host        => $self->host,
             w           => $self->write_safety,
             find_master => $self->find_master,
+            socket_timeout_ms => 600000,
         },
     );
 

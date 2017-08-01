@@ -9,7 +9,13 @@ import ButtonGroup from 'react-bootstrap/lib/ButtonGroup.js';
 import MenuItem from 'react-bootstrap/lib/MenuItem.js';
 import Popover from 'react-bootstrap/lib/Popover.js';
 import Store from '../activemq/store.jsx';
+import Grid from 'react-bootstrap/lib/Grid.js';
+import Row from 'react-bootstrap/lib/Grid.js';
+import Col from 'react-bootstrap/lib/Grid.js';
+import Clearfix from 'react-bootstrap/lib/Grid.js';
 
+
+import 'brace/mode/bro';
 import 'brace/mode/javascript';
 import 'brace/mode/java';
 import 'brace/mode/python';
@@ -46,6 +52,8 @@ var SignatureTable = React.createClass({
         var currentKeyboardHandler = 'none';
         var currentLanguageMode = 'java';
         var currentEditorTheme = 'github';
+        var viewVersionid = this.props.headerData.prod_sigbody_id;
+        var viewSigBodyid;
         if (checkCookie('signatureKeyboardHandler') != undefined) {
             currentKeyboardHandler = checkCookie('signatureKeyboardHandler');
         }
@@ -55,9 +63,20 @@ var SignatureTable = React.createClass({
         if (checkCookie('signatureEditorTheme') != undefined) {
             currentEditorTheme = checkCookie('signatureEditorTheme');
         }
-        if (!jQuery.isEmptyObject(this.props.headerData.body)) {
-            if (this.props.headerData.body[this.props.headerData.prod_sigbody_id] != undefined) {
-                value = this.props.headerData.body[this.props.headerData.prod_sigbody_id].body;
+        if (!jQuery.isEmptyObject(this.props.headerData.version)) {
+            if (this.props.headerData.version[this.props.headerData.prod_sigbody_id] != undefined || this.props.headerData.version[this.props.headerData.prod_sigbody_id] == 0) {
+                value = this.props.headerData.version[this.props.headerData.prod_sigbody_id].body;
+                viewSigBodyid = this.props.headerData.version[this.props.headerData.prod_sigbody_id].id;
+            } else {
+                for (var key in this.props.headerData.version) {
+                    if (key < viewVersionid) {
+                        continue;
+                    } else {
+                        viewVersionid = key;
+                        value = this.props.headerData.version[key].body;    
+                        viewSigBodyid = this.props.headerData.version[key].id;
+                    }
+                } 
             }
         }
         return {
@@ -65,13 +84,14 @@ var SignatureTable = React.createClass({
             value: value,
             signatureData: this.props.headerData,
             loaded: true,
-            viewVersionid: this.props.headerData.prod_sigbody_id,
+            viewSigBodyid: viewSigBodyid,
+            viewVersionid: viewVersionid,
             lastViewVersionid: null,
             key: key,
             cursorEnabledDisabled: 'cursorDisabled',
             keyboardHandlers: ['none', 'vim', 'emacs'],
             currentKeyboardHandler: currentKeyboardHandler,
-            languageModes: ['csharp', 'c_cpp','html', 'javascript', 'java','json', 'markdown', 'mysql','perl', 'powershell', 'python', 'ruby', 'sass','xml','yaml'],
+            languageModes: ['bro', 'csharp', 'c_cpp','html', 'javascript', 'java','json', 'markdown', 'mysql','perl', 'powershell', 'python', 'ruby', 'sass','xml','yaml'],
             currentLanguageMode: currentLanguageMode,
             editorThemes: ['github', 'monokai', 'kuroir', 'solarized_dark','solarized_light' ,'terminal', 'textmate', 'tomorrow', 'twilight', 'xcode'],
             currentEditorTheme: currentEditorTheme,
@@ -83,8 +103,10 @@ var SignatureTable = React.createClass({
     },
     submitSigBody: function(e) {
         var url = 'scot/api/v2/sigbody/';
+        var versionid = this.state.viewVersionid;  //version revision if creating a new sigbody
         if (this.state.ajaxType == 'put') {
-            url = 'scot/api/v2/sigbody/' + this.state.viewVersionid;
+           versionid = this.state.viewSigBodyid;  //version id (not revision id) if editing an existing sigbody 
+           url = 'scot/api/v2/sigbody/' + versionid;
         }
         $.ajax({
             type: this.state.ajaxType,
@@ -93,7 +115,9 @@ var SignatureTable = React.createClass({
             contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('successfully changed signature data');
-                this.setState({readOnly:true, cursorEnabledDisabled: 'cursorDisabled', ajaxType:null, viewVersionid:data.id});
+                var viewVersionid;
+                if (data.revision == undefined) {viewVersionid = this.state.viewVersionid} else {viewVersionid = data.revision} 
+                this.setState({readOnly:true, cursorEnabledDisabled: 'cursorDisabled', ajaxType:null, viewVersionid:viewVersionid, viewSigBodyid:data.id});
             }.bind(this),
             error: function() {
                 this.props.errorToggle('Failed to create/update sigbody');
@@ -103,7 +127,7 @@ var SignatureTable = React.createClass({
     componentWillReceiveProps: function(nextProps) {
         this.setState({signatureData: nextProps.headerData});
     },
-    editSigBody: function() {
+    editSigBody: function(e) {
         this.setState({readOnly: false, lastViewVersionid: this.state.viewVersionid, cursorEnabledDisabled: 'cursorEnabled', ajaxType:'put'});    
     },
     createNewSigBody: function() {
@@ -114,16 +138,16 @@ var SignatureTable = React.createClass({
     },
     Cancel: function() {
         var value = '';
-        if (!jQuery.isEmptyObject(this.state.signatureData.body)) {
-            if (this.state.signatureData.body[this.state.signatureData.prod_sigbody_id] != undefined) {
-                value = this.state.signatureData.body[this.state.lastViewVersionid].body;
+        if (!jQuery.isEmptyObject(this.state.signatureData.version)) {
+            if (this.state.signatureData.version[this.state.signatureData.prod_sigbody_id] != undefined) {
+                value = this.state.signatureData.version[this.state.lastViewVersionid].body;
             }
         }
         this.setState({readOnly:true, value:value , viewVersionid: this.state.lastViewVersionid, cursorEnabledDisabled: 'cursorDisabled', ajaxType:null});
     },
     viewSigBody: function(e) {
         if (this.state.readOnly == true) {  //only allow button click if you can't edit the signature
-            this.setState({value:this.state.signatureData.body[e.target.id].body, viewVersionid:e.target.id});
+            this.setState({value:this.state.signatureData.version[e.target.id].body, viewVersionid:e.target.id, viewSigBodyid:e.target.viewSigBodyid});
         }
     },
     keyboardHandlerUpdate: function(e) {
@@ -145,12 +169,20 @@ var SignatureTable = React.createClass({
         var editorThemesArray = [];
         var not_saved_signature_entry_id = 'not_saved_signature_entry_' + this.state.key;
         var currentKeyboardHandlerApplied = this.state.currentKeyboardHandler;
+        var viewVersionid = [];
+        var highestVersionid = 0;
         if (!jQuery.isEmptyObject(this.state.signatureData)) {
-            for (var key in this.state.signatureData.body) {
-                var versionid = this.state.signatureData.body[key].id
-                var disabled;
-                if (this.state.readOnly == true) { disabled = false;} else { disabled = true;};
-                versionsArray.push(<MenuItem id={versionid} key={versionid} onClick={this.viewSigBody} eventKey={versionid} bsSize={'xsmall'} disabled={disabled}>{versionid}</MenuItem>)
+            if (!jQuery.isEmptyObject(this.state.signatureData.version)){
+                for (var key in this.state.signatureData.version) {
+                    var versionidrevision = this.state.signatureData.version[key].revision;
+                    var versionidrevisionprodqual = this.state.signatureData.version[key].revision;
+                    var versionidSigBodyid = this.state.signatureData.version[key].id;
+                    if (this.state.signatureData.prod_sigbody_id == versionidrevision) {versionidrevisionprodqual = versionidrevision + ' - Production'} else if (this.state.signatureData.qual_sigbody_id == versionidrevision) {versionidrevisionprodqual = versionidrevision + ' - Quality'}; //add production and quality text to identify current status on the menu
+                    var disabled;
+                    if (this.state.readOnly == true) { disabled = false;} else { disabled = true;};
+                    versionsArray.push(<MenuItem id={versionidrevision} key={versionidrevision} onClick={this.viewSigBody} eventKey={versionidrevision} viewSigBodyid={versionidSigBodyid} bsSize={'xsmall'} disabled={disabled}>{versionidrevisionprodqual}</MenuItem>)
+                    if (versionidrevision > highestVersionid) {highestVersionid = versionidrevision};
+                }
             }
         }
         
@@ -175,16 +207,23 @@ var SignatureTable = React.createClass({
                 editorThemesArray.push(<MenuItem id={i} key={i} onClick={this.editorThemeUpdate} eventKey={i} bsSize={'xsmall'}>{this.state.editorThemes[i]}</MenuItem>);
             }
         }
+        if (this.state.signatureData.prod_sigbody_id == this.state.viewVersionid) { 
+            viewVersionid.push(<span className='signature_production_color'>{this.state.viewVersionid} - Production</span>) 
+        } else if (this.state.signatureData.qual_sigbody_id == this.state.viewVersionid) {
+            viewVersionid.push(<span className='signature_quality_color'>{this.state.viewVersionid} - Quality</span>)
+        } else {
+            viewVersionid.push(<span>{this.state.viewVersionid}</span>)
+        }
         return (
             <div id={'signatureDetail'} className='signatureDetail'>
                 {this.state.loaded ?
-                    <div style={{display:'flex'}}>
-                        <SignatureMetaData signatureData={this.state.signatureData} type={this.props.type} id={this.props.id} currentLanguageMode={this.state.currentLanguageMode} currentEditorTheme={this.state.currentEditorTheme} currentKeyboardHandlerApplied={currentKeyboardHandlerApplied} errorToggle={this.props.errorToggle}/>
+                    <div>
+                        <SignatureMetaData signatureData={this.state.signatureData} type={this.props.type} id={this.props.id} currentLanguageMode={this.state.currentLanguageMode} currentEditorTheme={this.state.currentEditorTheme} currentKeyboardHandlerApplied={currentKeyboardHandlerApplied} errorToggle={this.props.errorToggle} showSignatureOptions={this.props.showSignatureOptions} />
                         <div id={not_saved_signature_entry_id} className={'not_saved_signature_entry'}>
                             <div className={'row-fluid signature-entry-outer'} style={{marginLeft: 'auto', marginRight: 'auto'}}>          
                                 <div className={'row-fluid signature-entry-header'}>
                                     <div className="signature-entry-header-inner">
-                                        Signature Body: {this.state.viewVersionid}
+                                        Signature Body: {viewVersionid} 
                                         <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
                                             Editor Theme:
                                             <DropdownButton bsSize={'xsmall'} title={this.state.currentEditorTheme} id='bg-nested-dropdown' style={{marginRight:'10px'}}>
@@ -201,14 +240,18 @@ var SignatureTable = React.createClass({
                                             </DropdownButton>
                                             
                                             Signature Body Version:  
-                                            <DropdownButton bsSize={'xsmall'} title={this.state.viewVersionid} id='bg-nested-dropdown' style={{marginRight:'10px'}}>
+                                            <DropdownButton bsSize={'xsmall'} title={viewVersionid} id='bg-nested-dropdown' style={{marginRight:'10px'}}>
                                                 {versionsArray}
-                                            </DropdownButton> 
+                                            </DropdownButton>
                                         {this.state.readOnly ? 
                                             <span>
-                                                <Button bsSize={'xsmall'} onClick={this.createNewSigBody}>Create new version</Button>
-                                                <Button bsSize={'xsmall'} onClick={this.createNewSigBodyFromSig}>Create new version using this base</Button>
-                                                <Button bsSize={'xsmall'} onClick={this.editSigBody}>Update displayed version</Button>
+                                                <Button bsSize={'xsmall'} onClick={this.createNewSigBody} bsStyle={'success'}>Create new version</Button>
+                                                {this.state.viewVersionid != 0 ? 
+                                                    <span><Button bsSize={'xsmall'} onClick={this.createNewSigBodyFromSig}>Create new version using this base</Button>
+                                                    <Button bsSize={'xsmall'} onClick={this.editSigBody}>Update displayed version</Button></span> 
+                                                : 
+                                                    null 
+                                                }
                                             </span>
                                         :
                                             <span>
@@ -227,8 +270,9 @@ var SignatureTable = React.createClass({
                                     editorProps     = {{$blockScrolling: true}}
                                     keyboardHandler = {currentKeyboardHandlerApplied}
                                     value           = {this.state.value}
-                                    height          = '250px'
                                     width           = '100%'
+                                    maxLines        = {50}
+                                    minLines        = {10}
                                     readOnly        = {this.state.readOnly}
                                     className       = {this.state.cursorEnabledDisabled}
                                     showPrintMargin = {false}
@@ -248,8 +292,17 @@ var SignatureTable = React.createClass({
 
 var SignatureMetaData = React.createClass({
     getInitialState: function() {
-        var inputArrayType = ['description','type', 'prod_sigbody_id','qual_sigbody_id', 'signature_group']
-        var inputArrayTypeDisplay = ['Description','Type', 'Production Signature Body Version','Quality Signature Body Version', 'Signature Group'] 
+        var inputArrayType = ['description','type', 'prod_sigbody_id','qual_sigbody_id', 'signature_group', 'target']
+        var inputArrayTypeDisplay = ['Description','Type', 'Production Signature Body Version','Quality Signature Body Version', 'Signature Group', 'Target'] 
+        var target = {};
+        if (this.props.signatureData.target == undefined) {
+            target = {};
+            target['target.id'] = null;
+            target['target.type'] = null;
+        } else {
+            target['target.id'] = this.props.signatureData.target.id;
+            target['target.type'] = this.props.signatureData.target.type;
+        }
         return {
             descriptionValue: this.props.signatureData.description,
             inputArrayType: inputArrayType,
@@ -260,6 +313,7 @@ var SignatureMetaData = React.createClass({
             qual_sigbody_id: this.props.signatureData.qual_sigbody_id,
             signature_group: this.props.signatureData.signature_group,
             optionsValue: JSON.stringify(this.props.signatureData.options),
+            target: target,
         }
     },
     InputChange: function(event) {
@@ -268,10 +322,16 @@ var SignatureMetaData = React.createClass({
         newValue[key] = event.target.value;
         this.setState(newValue);
     },
+    TargetInputChange: function(event) {
+        var currentTarget = this.state.target;
+        var key = event.target.id;
+        currentTarget[key] = event.target.value;
+        this.setState({target:currentTarget});
+    },
     submitMetaData: function(event) {
         var k  = event.target.id;
         var v = event.target.value;
-        if (k == 'options') { 
+        if (k == 'options' || k == 'target') { 
             try{v = JSON.parse(v)} 
             catch(err) {this.props.errorToggle('Failed to convert string to object. Try adding quotation marks around the key and values'); return; }
             var optionsType = typeof(v);
@@ -298,75 +358,223 @@ var SignatureMetaData = React.createClass({
     render: function() {
         var inputArray = [];
         for (var i=0; i < this.state.inputArrayType.length; i++) {
-            var value = this.state[this.state.inputArrayType[i]];
+            var value = this.props.signatureData[this.state.inputArrayType[i]];
             if (this.state.inputArrayType[i] == 'prod_sigbody_id' || this.state.inputArrayType[i] == 'qual_sigbody_id') {
               var sigBodyVersionArray = [];
+              var productionNewerVersionExists = false;
               if (!jQuery.isEmptyObject(this.props.signatureData)) {
-                    for (var key in this.props.signatureData.body) {
-                        var versionid = this.props.signatureData.body[key].id
-                        sigBodyVersionArray.push(<Button id={this.state.inputArrayType[i]} key={versionid} onClick={this.InputChange} eventKey={versionid} bsSize={'xsmall'} value={versionid}>{versionid}</Button>)        
+                    for (var key in this.props.signatureData.version) {
+                        var versionidrevision = this.props.signatureData.version[key].revision;
+                        var versionidrevisionprodqual = this.props.signatureData.version[key].revision;
+                        var versionid = this.props.signatureData.version[key].id;
+                        if (this.props.signatureData.prod_sigbody_id == versionidrevision) {versionidrevisionprodqual = versionidrevision + ' - Production'} else if (this.props.signatureData.qual_sigbody_id == versionidrevision) {versionidrevisionprodqual = versionidrevision + ' - Quality'}; //add production and quality text to identify current status on the menu
+                        sigBodyVersionArray.push(<Button id={this.state.inputArrayType[i]} key={versionidrevision} onClick={this.submitMetaData} eventKey={versionidrevision} bsSize={'xsmall'} value={versionidrevision}>{versionidrevisionprodqual}</Button>)        
+                        if (value < versionidrevision) {productionNewerVersionExists = true;}; //check if the production/quality versions are the highest, if not, show warning.
                     }
                 } 
                 inputArray.push(
-                    <div> 
+                    <div className='col-lg-2 col-md-4'> 
                         <span className='signatureTableWidth'>
                             {this.state.inputArrayTypeDisplay[i]}:
                         </span>
                         <span className='signatureTableWidth'>
                             <OverlayTrigger trigger='focus' placement='bottom' overlay={<Popover id='sigversionpicker'><ButtonGroup vertical>{sigBodyVersionArray}</ButtonGroup></Popover>}>
-                                <input id={this.state.inputArrayType[i]} onChange={this.InputChange} value={value}/>
+                                <input id={this.state.inputArrayType[i]} onChange={this.InputChange} value={value} />
                             </OverlayTrigger>  
-                            <Button type='submit' bsSize='xsmall' bsStyle='success' onClick={this.submitMetaData} id={this.state.inputArrayType[i]} value={value}>Apply</Button>
                         </span>
+                        {productionNewerVersionExists == true && this.state.inputArrayType[i] == 'prod_sigbody_id' ? <div style={{color:'red'}}>A higher signature body version exists, do you want to apply it?</div> : null }
                     </div> 
                 )
-            } else {
+            } else if (this.state.inputArrayType[i] == 'target') {
                 inputArray.push(
-                    <div> 
+                    <div className='col-lg-2 col-md-4'> 
+                        <span className='signatureTableWidth'>Reference Type: </span>
+                        <span className='signatureTableWidth'>
+                            <input id={'target.type'} onChange={this.TargetInputChange} value={this.state.target['target.type']} placeholder={'event, intel, entry... (only type one)'} onBlur={this.submitMetaData}/>
+                        </span>
+                        <span className='signatureTableWidth'>Reference ID: </span>
+                        <span className='signatureTableWidth'>
+                            <input id={'target.id'} onChange={this.TargetInputChange} value={this.state.target['target.id']} placeholder={'ID of above'} onBlur={this.submitMetaData}/>
+                        </span>
+                    </div>
+                )
+            } else if (this.state.inputArrayType[i] == 'signature_group') {
+                inputArray.push(
+                    <SignatureGroup metaType={'signature_group'} id={this.props.id} data={this.props.signatureData[this.state.inputArrayType[i]]} errorToggle={this.props.errorToggle}/>
+                )
+            } else if (this.state.inputArrayType[i] == 'description') {
+                inputArray.push(
+                    <div className='col-lg-2 col-md-4'> 
                         <span className='signatureTableWidth'>
                             {this.state.inputArrayTypeDisplay[i]}:
                         </span>
                         <span className='signatureTableWidth'>
-                            <input id={this.state.inputArrayType[i]} onChange={this.InputChange} value={value}/>
-                            <Button type='submit' bsSize='xsmall' bsStyle='success' onClick={this.submitMetaData} id={this.state.inputArrayType[i]} value={value}>Apply</Button>
+                            <textarea id={this.state.inputArrayType[i]} onChange={this.InputChange} value={this.state[this.state.inputArrayType[i]]} onBlur={this.submitMetaData} className='signatureMetaTextArea'>{this.state[this.state.inputArrayType[i]]}</textarea>
+                        </span>
+                    </div> 
+                )
+            } else if (this.state.inputArrayType[i] == 'type') {
+                inputArray.push(
+                    <div className='col-lg-2 col-md-4'> 
+                        <span className='signatureTableWidth'>
+                            {this.state.inputArrayTypeDisplay[i]}:
+                        </span>
+                        <span className='signatureTableWidth'>
+                            <input id={this.state.inputArrayType[i]} onChange={this.InputChange} value={this.state[this.state.inputArrayType[i]]} placeholder='yara, snort, etc.' onBlur={this.submitMetaData}/>
+                        </span>
+                    </div> 
+                )
+            }
+            else {
+                inputArray.push(
+                    <div className='col-lg-2 col-md-4'> 
+                        <span className='signatureTableWidth'>
+                            {this.state.inputArrayTypeDisplay[i]}:
+                        </span>
+                        <span className='signatureTableWidth'>
+                            <input id={this.state.inputArrayType[i]} onChange={this.InputChange} value={this.state[this.state.inputArrayType[i]]} onBlur={this.submitMetaData}/>
                         </span>
                     </div> 
                 )
             }
         }
         return (
-            <div style={{display:'flex'}}>
+            <div>
                 <div id='signatureTable' className='signatureTable'>
-                    <div>
-                    {inputArray} 
+                    <div className="row">
+                        {inputArray}
                     </div>
                 </div>
-                <div id='signatureTable2' className='signatureTableOptions'>
-                    <div className={'row-fluid signature-entry-outer'} style={{marginLeft: 'auto', marginRight: 'auto'}}>          
-                        <div className={'row-fluid signature-entry-header'}>
-                            <div className="signature-entry-header-inner">
-                                Signature Options  
-                                <Button type='submit' bsSize='xsmall' bsStyle='success' onClick={this.submitMetaData} id={'options'} value={this.state.optionsValue}>Apply</Button>
-                            </div>
-                        </div> 
-                        <AceEditor
-                            mode            = 'json'
-                            theme           = {this.props.currentEditorTheme}
-                            onChange        = {this.onOptionsChange}
-                            name            = "signatureEditorOptions"
-                            editorProps     = {{$blockScrolling: true}}
-                            keyboardHandler = {this.props.currentKeyboardHandlerApplied}
-                            value           = {this.state.optionsValue}
-                            height          = '250px'
-                            width           = '100%'
-                            readOnly        = {false} 
-                            showPrintMargin = {false}
-                        />
-                    </div>
-                </div>
+                {this.props.showSignatureOptions ? 
+                    <div id='signatureTable2' className='signatureTableOptions'>
+                        <div className={'row-fluid signature-entry-outer'} style={{marginLeft: 'auto', marginRight: 'auto'}}>          
+                            <div className={'row-fluid signature-entry-header'}>
+                                <div className="signature-entry-header-inner">
+                                    Signature Options  
+                                    <Button type='submit' bsSize='xsmall' bsStyle='success' onClick={this.submitMetaData} id={'options'} value={this.state.optionsValue}>Apply</Button>
+                                </div>
+                            </div> 
+                            <AceEditor
+                                mode            = 'json'
+                                theme           = {this.props.currentEditorTheme}
+                                onChange        = {this.onOptionsChange}
+                                name            = "signatureEditorOptions"
+                                editorProps     = {{$blockScrolling: true}}
+                                keyboardHandler = {this.props.currentKeyboardHandlerApplied}
+                                value           = {this.state.optionsValue}
+                                minLines        = {10}
+                                maxLines        = {25}
+                                width           = '100%'
+                                readOnly        = {false} 
+                                showPrintMargin = {false}
+                            />
+                        </div>
+                    </div> 
+                : 
+                    null 
+                }
             </div>
         )
     },
 });
 
-module.exports = SignatureTable;
+var SignatureGroup = React.createClass({
+    getInitialState: function() {
+        return {
+            signatureGroupValue: '',
+        }
+    },
+    handleAddition: function(signature_group) {
+        var newSignatureGroupArr = [];
+        var data = this.props.data;
+        for (var i=0; i < data.length; i++) {
+            if (data[i] != undefined) {
+                if (typeof(data[i]) == 'string') {
+                    newSignatureGroupArr.push(data[i]);
+                } else {
+                    newSignatureGroupArr.push(data[i].value);
+                }
+            }
+        }
+        newSignatureGroupArr.push(signature_group.target.value);
+        $.ajax({
+            type: 'put',
+            url: 'scot/api/v2/signature/' + this.props.id,
+            data: JSON.stringify({'signature_group':newSignatureGroupArr}),
+            contentType: 'application/json; charset=UTF-8',
+            success: function(data) {
+                console.log('success: signature_group added');
+                this.setState({signatureGroupValue: ''});
+            }.bind(this),
+            error: function() {
+                this.props.errorToggle('Failed to add signature_group');
+            }.bind(this)
+        });
+    },
+    InputChange: function(event) {
+        this.setState({signatureGroupValue: event.target.value});
+    },
+    handleDelete: function(event) {
+        var data = this.props.data;
+        var clickedThing = event.target.id;
+        var newSignatureGroupArr = [];
+        for (var i=0; i < data.length; i++) {
+            if (data[i] != undefined) {
+                if (typeof(data[i]) == 'string') {
+                    if (data[i] != clickedThing) {
+                        newSignatureGroupArr.push(data[i]);
+                    }
+                } else {
+                    if (data[i].value != clickedThing) {
+                        newSignatureGroupArr.push(data[i].value);
+                    }
+                }
+            }
+        }
+        $.ajax({
+            type: 'put',
+            url: 'scot/api/v2/signature/' + this.props.id,
+            data: JSON.stringify({'signature_group':newSignatureGroupArr}),
+            success: function(data) {
+                console.log('deleted signature_group success: ' + data);
+            }.bind(this),
+            error: function() {
+                this.props.updated('error','Failed to delete signature_group');
+            }.bind(this)
+        });
+    },
+        
+    render: function() {
+        var data = this.props.data;
+        var signatureGroupArr = [];
+        var value;
+        for (var i=0; i < data.length; i++) {
+            if (typeof(data[i]) == 'string') {
+                value = data[i];
+            } else if (typeof(data[i]) == 'object') {
+                if (data[i] != undefined) {
+                    value = data[i].value;
+                }
+            } 
+            signatureGroupArr.push(<span id="event_signature" className='tagButton'>{value} <i id={value} onClick={this.handleDelete} className="fa fa-times tagButtonClose"/></span>);
+        }
+        var rows = [];
+        var id = this.props.id;
+        var type = 'signature';
+        return (
+            <div className='col-lg-2 col-md-4'>
+                <span className='signatureTableWidth'>
+                    Signature Group:
+                </span>
+                <span className='signatureTableWidth'>
+                    <input id={this.props.metaType} onChange={this.InputChange} value={this.state.signatureGroupValue} />
+                    {this.state.signatureGroupValue != '' ? <Button bsSize='xsmall' bsStyle='success' onClick={this.handleAddition} value={this.state.signatureGroupValue}>Submit</Button> : <Button bsSize='xsmall' bsType='submit' disabled>Submit</Button>} 
+                </span>     
+                {signatureGroupArr}
+            </div>
+        )
+    }
+});
+
+
+module.exports = SignatureTable

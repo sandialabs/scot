@@ -137,7 +137,7 @@ SCOT get API
 
         /scot/api/v2/event?entry_count=2&entry_count=4&entry_count=6
 
-        output: events with entry_count's of 2, 4, or 6
+        output: events with an entry_count of 2, 4, or 6
 
   c. matching everything but a number::
   
@@ -174,6 +174,42 @@ SCOT get API
     output:  list of evens with tags email and malware but not containing
      the tag false_positive
 
+SCOT post API
+^^^^^^^^^^^^^
+
+#. Create an Alertgroup containing several alertgroups::
+
+   curl -XPOST /scot/api/v2/alertgroup -d '{
+        "message_id":   '112233445566778899aabbccddeeff',
+        "subject": "Detection of Bad Stuff",
+        "data":     [
+            { "column1": "data11", "column2": "data12", "column3": "data13" },
+            { "column2": "data21", "column2": "data22", "column3": "data23" },
+            { "column3": "data31", "column2": "data32", "column3": "data33" },
+        ],
+        "tag": [ 'tag1','tag2','tag3' ],
+        "source": [ 'source1' ],
+        columns: [ 'column1', 'column2', 'column3' ],
+    }'
+
+SCOT put API
+^^^^^^^^^^^^
+
+#. Update and event status::
+
+    curl -XPUT /scot/api/v2/event/123 -d '{
+        "status": "closed"
+    }'
+
+SCOT delete API
+^^^^^^^^^^^^^^^
+
+#. Delete and entry::
+
+    curl -XDELETE /scot/api/v2/entry/12345
+
+
+
 SCOT Event Queue
 ----------------
 
@@ -195,6 +231,7 @@ The message format is::
     }
 
 :unique_guid_string:  is a requirement of the STOMP protocol and is generated
+
 :action_string:       is a member of the following: 
                        *  "created"  = something was created
                        *  "updated"  = something was updated
@@ -212,8 +249,8 @@ The message format is::
                     or in the case of a "message" it can be any string
                         that your client is listening for.
 
-:id:                is an integer id for the "type" above.  if sending a message, 
-                        this could be the an epoch time.
+:id:                is an integer id for the "type" above.  
+                    if sending a message, this could be the an epoch time.
 
 :data:              is a json structure that you are free to put stuff in.
 
@@ -225,4 +262,17 @@ will discuss how to work in the Perl base server.  Perldocs will be linked here 
 SCOT UI
 -------
 
-will discuss how to create/modify the React.js based UI.
+SCOT'S front end is primarily developed using React JS. See https://facebook.github.io/react/ to read more about it.
+
+:pubdev/:           Contains files necessary to modify the React-based front end
+*Note: Not all of the front end of SCOT is developed in React. Currently, the Incident Handler calendar and administration pages are written using jQuery and HTML, without React.*
+
+SCOT has been written using the JSX format. See https://facebook.github.io/react/docs/introducing-jsx.html to read more about it. 
+
+:JSX Libraries:         Most libraries that the SCOT JSX components (found in /pubdev/jsdev/react_components/) rely on are found in /pubdev/node_modules and can be installed/updated using npm.
+
+:JSX Compiling:         Compiling the JSX files into a single javascript file is done by using Gulp. The file that specifies the compiling directories is /pubdev/gulpfile.js. The final file that is ultimately compiled and used is /public/scot-3.5.js
+
+:JSX Dev:               If you would like to contribute to, or modify the front end of SCOT, you can do so by creating/modifying files in /pubdev/ and then compile your changes using gulp.
+
+:Final HTML/JS:         The files ultimately used to display and control the front end are found in /public/

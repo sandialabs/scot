@@ -25,7 +25,7 @@ use Try::Tiny;
 use Mojo::UserAgent;
 use Scot::Env;
 use Scot::App;
-use Scot::Util::Scot2;
+use Scot::Util::ScotClient;
 use Scot::Util::EntityExtractor;
 use Scot::Util::ImgMunger;
 use Scot::Util::Enrichments;
@@ -216,20 +216,22 @@ sub run {
 
 sub process_message {
     my $self    = shift;
-    my $action  = shift;
-    my $type    = shift;
+    my $action  = lc(shift);
+    my $type    = lc(shift);
     my $id      = shift;
+
+    $id += 0;
 
     $self->log->debug("Processing Message: $action $type $id");
 
     if ( $action eq "created" or $action eq "updated" ) {
         if ( $type eq "alertgroup" ) {
             $self->process_alertgroup($id);
-            $self->put_stat("alertgroups_flaired", 1);
+            $self->put_stat("alertgroup flaired", 1);
         }
         elsif ( $type eq "entry" ) {
             $self->process_entry($id);
-            $self->put_stat("entries_flaired", 1);
+            $self->put_stat("entry flaired", 1);
         }
         else {
             $self->out("Non-processed type: $type");
@@ -313,6 +315,7 @@ sub update_alertgroup {
         my $mongo      = $self->env->mongo;
         my $agcol      = $mongo->collection("Alertgroup");
         $agcol->update_alertgroup_with_bundled_alert($putdata);
+        $self->log->debug("after alertgroup update");
         $self->env->mq->send("scot", {
             action  => "updated",
             data    => {
@@ -360,6 +363,13 @@ sub flair_record {
             next COLUMN;
         }
 
+        if ( $column =~ /^lbscanid$/i ) {
+            # another special column
+            push @entity, { value => $value, type => "lb_scan_id" };
+            $flair{$column} = $self->genspan($value, "lb_scan_id");
+            next COLUMN;
+        }
+
         if ( $column =~ /^columns$/i ) {
             # no flairing on the "columns" attribute
             $flair{$column} = $value;
@@ -403,8 +413,8 @@ sub get_entry {
         my $mongo       = $self->env->mongo;
         my $collection  = $mongo->collection("Entry");
         my $entryobj    = $collection->find_iid($id);
-        $self->log->debug("Entry OBJ = ", {filter=>\&Dumper, value=>$entryobj});
         $href           = $entryobj->as_hash;
+        $self->log->debug("Entry OBJ = ", {filter=>\&Dumper, value=>$href});
     }
     return $href;
 }
@@ -418,7 +428,6 @@ sub process_entry {
 
     $log->debug("initial grab of entry $id");
     my $entry   = $self->get_entry($id);
-    $log->debug("flairing entry $id");
     $update     = $self->flair_entry($entry, $id);
 
     my $putdata = {
@@ -431,6 +440,7 @@ sub process_entry {
             entities    => $update->{entities},
         },
     };
+    $log->debug("Entry Put Data: ",{filter=>\&Dumper, value=>$putdata});
     $self->update_entry($putdata);
     $self->out("-------- done processing entry $id");
 }
@@ -485,7 +495,7 @@ sub update_entry {
                         }
                     });
                 }
-                $self->put_stat("entities_created", scalar(@$create_aref));
+                $self->put_stat("entity created", scalar(@$create_aref));
                 $log->debug("updated entities: ",join(',',@$update_aref));
                 foreach my $id (@$update_aref) {
                     $self->env->mq->send("scot", {
@@ -497,7 +507,7 @@ sub update_entry {
                         }
                     });
                 }
-                $self->put_stat("entities_updated", scalar(@$update_aref));
+                $self->put_stat("entity updated", scalar(@$update_aref));
             }
         }
 
@@ -518,12 +528,19 @@ sub flair_entry {
     my $entry_id   = shift;
     my $extract    = $self->extractor;
     my $munger     = $self->imgmunger;
+    my $log         = $self->log;
 
-    $self->log->debug("flairing entry $entry_id");
+    $log->debug("flairing entry $entry_id");
 
     my $href     = $self->get_entry($entry_id);
     my $body     = $href->{body};
-    my $newbody  = $munger->process_html($body, $entry_id);
+    my $newbody  = $body;   # default
+    try {
+        $newbody  = $munger->process_html($body, $entry_id);
+    }
+    catch {
+        $log->error("Error in imgmunger process: $_");
+    };
     my $flair    = $extract->process_html($newbody);
     $self->log->debug("flairing returned ",{filter=>\&Dumper, value=>$flair});
     return $flair;

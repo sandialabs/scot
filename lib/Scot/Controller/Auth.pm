@@ -2,6 +2,10 @@ package Scot::Controller::Auth;
 
 use lib '../../../lib';
 use v5.18;
+use MIME::Base64;
+use Crypt::PBKDF2;
+use Data::Dumper;
+use Data::UUID;
 use strict;
 use warnings;
 
@@ -9,14 +13,592 @@ use base 'Mojolicious::Controller';
 
 =head1 Scot::Controller::Auth
 
-superclass of auth modules
-common functions here
-the configuration as startup will 
-define the auth module used
+Authentication and Authorization 
 
 =cut
 
-sub has_invalid_user_chars {
+=item B<check>
+
+This sub gets called on every route under /scot.  This routine checks the authentication
+status of the request.
+
+    First, we look for a mojolicious session.  
+    The presence of that indicates that 
+    the use has been authenticated and we can return true.
+
+    Second, we look for an API token.  If we find a valid one, then we are good.
+    Finally, we either do a Local authentication or 
+    we redirect to an Apache Authentication
+    landing that will do SSO for us.
+
+=cut
+
+sub check {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $request = $self->req;
+    my $user    = '';
+    my $headers = $request->headers;
+
+    $log->debug("Authentication Check Begins...");
+
+    if ( $env->auth_type eq "Testing" ) {
+        $log->warn("in test mode, NO AUTHENTICATION");
+        $user   = "scot-testing";
+        return $self->sucessful_auth($user);
+    }
+
+    if ( $user = $self->valid_mojo_session ) {
+        $log->debug("Successful Prior Authentication Still Valid");
+        $self->update_lastvisit($user);
+        if ($self->set_group_membership($user)) {
+            return 1;
+        }
+        else {
+            return undef;
+        }
+    }
+
+    if ( $user = $self->valid_authorization_header($headers) ) {
+        return $self->sucessful_auth($user);
+    }
+
+    if ( $user = $self->sso($headers) ) {
+        return $self->sucessful_auth($user);
+    }
+
+    $log->error("Failed Authentication Check");
+    $self->session(orig_url => $request->url->to_string );
+    $self->redirect_to('/login');
+    return undef;
+}
+
+
+=item B<login>
+
+this route will generate a web based form for login
+
+=cut
+
+sub login {
+    my $self    = shift;
+    my $href    = { status => "fail" };
+    my $log     = $self->env->log;
+    my $url     = $self->session('orig_url');
+    $log->debug("rendering login form");
+    $self->render( orig_url => $url );
+}
+
+=item B<logout>
+
+this route will clear the session cookie that will force a 
+reauthentication, although if you are using basic auth, the
+browser may need to be quick and restarted to fully log out.
+
+=cut
+
+sub logout {
+    my $self    = shift;
+    $self->session( user    => '' );
+    $self->session( groups  => '' );
+    $self->session( expires => 1 );
+}
+
+=item B<auth>
+
+this is the route that the form posts username and password to
+we then check for validity and then try to authenticate via 
+ldap and then local
+
+=cut
+
+
+sub auth {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $user    = lc($self->param('user'));
+    my $pass    = $self->param('pass');
+    my $origurl = $self->session('orig_url');
+
+    $log->debug("Form based Login.  User = $user orig_url = $origurl");
+
+    # remove leading and trailing spaces from password
+    # sometimes happens with forms
+    $pass =~ s/^\s+(\w+)\s+$/$1/;
+
+    $log->debug("checking validity of username and password");
+    if ( $self->invalid_user_pass($user, $pass) ) {
+        return $self->failed_auth("invalid user or password", $user);
+    }
+
+    $log->debug("attempting to authenticate via ldap");
+    if ( $self->authenticate_via_ldap($user, $pass) ) {
+        return $self->sucessful_auth($user, $origurl);
+    }
+
+    $log->debug("attempting to authenticate via local");
+    if ( $self->authenticate_via_local($user, $pass) ) {
+        return $self->sucessful_auth($user, $origurl);
+    }
+     
+    # all hope is lost
+    $log->error("Failed all attempts to authenticate $user");
+    return $self->failed_auth(
+        "attempt to authenticate $user failed",
+        $user
+    );
+}
+
+=item B<sso>
+
+this route is called to a route that will do the 
+SSO (single sign on).  Essentially, we are relying 
+on the apache config wrapped around the /sso location
+to authenticate the user (via kerberos, or someother 
+authentication system).  The apache config then 
+sets a remote_user header that is passed to the 
+scot server.  (this is ok because only the apache
+server can talk to the scot server.)  If we pull
+apache and scot apart to seperate systems we will
+need to otherwise lock this connection down
+
+=cut
+
+sub sso {
+    my $self    = shift;
+    my $log     = $self->env->log;
+    my $url     = $self->param('orig_url');
+    $log->debug("SSO authentication attempt ($url)");
+    if ( $url eq "/login" ) {
+        $url    = "/";
+    }
+
+    my $request     = $self->req;
+    my $headers     = $request->headers;
+    my $remoteuser  = $headers->header('remote-user');
+
+    unless ( $remoteuser ) {
+        $log->debug("no remoteuser set");
+        return undef;
+    }
+
+    $log->debug("Remoteuser set by Webserver as $remoteuser");
+
+    if ( my $user = $self->valid_remoteuser($headers) ) {
+        $self->sucessful_auth($user,$url);
+        return $user;
+    }
+}
+
+=item B<invalid_user_pass>
+
+this subroutine checks for common problems in a
+username or password
+
+=cut
+
+sub invalid_user_pass {
+    my $self    = shift;
+    my $user    = shift;
+    my $pass    = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("checking validity of username/password");
+
+    unless ( defined $user and defined $pass ) {
+        $log->error("undefined user or pass");
+        return 1;
+    }
+    if ( $self->invalid_username($user) ) {
+        $log->error("invalid username characters");
+        return 1;
+    }
+    if ( length($user) > 32 or length($pass) > 32 ) {
+        $log->error("user or pass was greater than 32 characters");
+        return 1;
+    }
+    return undef;
+}
+
+=item B<authenticate_via_ldap>
+
+return true if the ldap server is available and authenticates the user
+
+=cut
+
+sub authenticate_via_ldap {
+    my $self    = shift;
+    my $user    = shift;
+    my $pass    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $type    = lc($env->auth_type);
+
+    $log->debug("attempting authentication of $user by ldap");
+
+    if ( defined $type ) {
+        if ( $type eq "ldap" ) {
+            if ( $self->ldap_authenticates($user, $pass) ) {
+                $log->debug("$user authenticated via ldap");
+                return 1;
+            }
+            else {
+                $log->error("$user failed ldap authentication");
+                return undef;
+            }
+        }
+        else {
+            $log->debug("skipping ldap attempt");
+            return undef;
+        }
+    }
+    else {
+        $log->error("environment did not define auth_type, ".
+                    "skipping ldap attempt");
+        return undef;
+    }
+}
+
+=item B<ldap_authenticates>
+
+returns true if Scot::Util::Ldap->authenticate_user returns true
+
+=cut
+
+sub ldap_authenticates {
+    my $self    = shift;
+    my $user    = shift;
+    my $pass    = shift;
+    my $env     = $self->env;
+    my $log     = $self->log;
+    my $ldap    = $env->ldap;
+
+    $log->debug("seeing if ldap will authenticate");
+
+    if ( defined $ldap ) {
+        if ( $ldap->authenticate_user($user, $pass) ) {
+            $log->debug("$user authenticated by ldap");
+            return 1;
+        }
+        else {
+            $log->error("$user failed ldap authentication");
+            return undef;
+        }
+    }
+    else {
+        $log->error("ldap not loaded in env.  Config file problem?");
+        return undef;
+    }
+}
+
+=item B<authenticate_via_local>
+
+authenticate a user against the users collection 
+
+=cut
+
+sub authenticate_via_local {
+    my $self    = shift;
+    my $user    = shift;
+    my $pass    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+
+    $log->debug("authenticating $user via local");
+
+    my $col     = $mongo->collection('User');
+    my $userobj = $col->find_one({ username => $user});
+
+    if (defined($userobj)) {
+        $log->debug("User $user is in user collection");
+        my $pwhash  = $userobj->pwhash;
+
+        if ( defined $pwhash ) {
+            if ( $pwhash =~ /X-PBKDF2/ ) {
+                my $pbkdf2 = Crypt::PBKDF2->new(
+                    hash_class  => 'HMACSHA2',
+                    hash_args   => { sha_size => 512 },
+                    iterations  => 10000,
+                    salt_len    => 15,
+                );
+
+                if ( $pbkdf2->validate($pwhash, $pass) ) {
+                    my $active = $userobj->active;
+                    if ( defined $active and $active == 0 ) {
+                        $log->error("$user is not active");
+                        return undef;
+                    }
+                    return 1;
+                }
+                else {
+                    $log->error("$user entered invalid password");
+                    return undef;
+                }
+
+            }
+            else {
+                $log->error("$user has no local pw or stored hash invalid");
+                return undef;
+            }
+        }
+        else {
+            $log->error("User does not have a PW hash stored");
+            return undef;
+        }
+    }
+    $log->error("No user matching $user in user collection");
+    return undef;
+}
+
+=item B<valid_mojo_session>
+
+checks for the presence of a valid mojo session cookie
+
+=cut
+
+sub valid_mojo_session {
+    my $self    = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("Looking for Mojo session cookie");
+    
+    my $user    = $self->session('user');
+    if ( defined $user ) {
+        $log->debug("User $user has valid mojo session.");
+        return $user;
+    }
+
+    $log->debug("Invalid or undefined Mojo Session");
+    return undef;
+}
+
+=item B<valid_authorization_header>
+
+checks for either basic or api in the Authorization key
+
+=cut
+
+sub valid_authorization_header {
+    my $self    = shift;
+    my $headers = shift;
+    my $log     = $self->env->log;
+    my $user;
+
+    $log->debug("checking for valid authorization header");
+
+    my $auth_header     = $headers->header('authorization');
+
+    if ( defined $auth_header ) {
+
+        $log->debug("Authorization header = $auth_header");
+
+        my ($type,$value)   = split(/ /, $auth_header, 2);
+
+        if ( $type =~ /basic/i ) {
+            $log->debug("Basic Authentication Attempt...");
+            if ( $user = $self->validate_basic($value) ) {
+                $log->debug("User $user appears authentic");
+                return $user;
+            }
+            else {
+                $log->error("Invalid or disallowed user");
+                return undef;
+            }
+        }
+
+        if ( $type =~ /apikey/i ) {
+            $log->debug("ApiKey Authentication Attempt...");
+            if ( $user = $self->validate_apikey($value) ) {
+                $log->debug("User $user used apikey");
+                return $user;
+            }
+            else {
+                $log->error("Invalid api key");
+                return undef;
+            }
+        }
+
+        $log->error("Invalid Authentication type in Authentication Header");
+    }
+    else {
+        $log->error("no authorization header present");
+    }
+    return undef;
+}
+
+sub validate_basic {
+    my $self    = shift;
+    my $value   = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    my $decoded         = decode_base64($value);
+    my ($user, $pass)   = split(/:/,$decoded,2);
+
+    if ( $self->authenticate_via_ldap($user, $pass) ) {
+        $log->debug("$user authenticated via ldap");
+        return $user;
+    }
+
+    if ( $self->authenticate_via_local($user, $pass) ) {
+        $log->debug("$user authenticated via local");
+        return $user;
+    }
+    return undef;
+}
+
+sub validate_apikey {
+    my $self    = shift;
+    my $value   = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("validating apikey = $value");
+
+    # my $decoded = decode_base64($value);
+    my $decoded = $value;
+    
+    if ( my $user = $self->authenticate_via_apikey($decoded) ) {
+        $log->debug("Authentic api key used");
+        return $user;
+    }
+    return undef;
+}
+
+sub authenticate_via_apikey {
+    my $self    = shift;
+    my $key     = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("key is $key");
+
+    my $mongo   = $self->env->mongo;
+    my $col     = $mongo->collection('Apikey');
+    my $keyobj  = $col->find_one({apikey => $key});
+
+    if ( defined $keyobj ) {
+        $log->debug("API Key Found");
+        if ( $keyobj->active == 1 ) {
+            $log->debug("apikey is active");
+            return $keyobj->username;
+        }
+        else {
+            $log->error("inactive api key attempt");
+            return undef;
+        }
+    }
+    else {
+        $log->error("non matching api key attempt");
+        return undef;
+    }
+}
+
+=item B<valid_remoteuser>
+
+checks for a valid remote user
+
+=cut
+
+sub valid_remoteuser {
+    my $self    = shift;
+    my $headers = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    my $remoteuser  = $headers->header('remote-user');
+
+    if ( defined $remoteuser ) {
+        $log->debug("Remoteuser detected, and that is good enough for me. ");
+        return $remoteuser;
+    }
+    else {
+        $log->error("Remoteuser not set");
+    }
+    return undef;
+}
+
+sub set_group_membership {
+    my $self    = shift;
+    my $user    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    $log->debug("Set Group Membership");
+
+    my $groups  = $self->session('groups');
+    if ( ref($groups) eq "ARRAY" ) {
+        $log->debug("Groups set in Mojo Session");
+        $log->debug("$user Groups are ".join(', ',@$groups));
+        if ( scalar(@$groups) > 0 ) {
+            return 1;
+        }
+    }
+
+    $log->debug("Group membership not in session, fetching...");
+    $groups = $self->get_groups($user);
+
+    if ( scalar(@$groups) > 0 ) {
+        $log->debug("Got 1 or more groups, storing in session");
+        $self->session(groups => $groups);
+        return 1;
+    }
+    else {
+        $log->error("User has null group set!");
+        return undef;
+    }
+}
+
+sub get_groups {
+    my $self    = shift;
+    my $user    = shift;
+    my $log     = $self->env->log;
+    my $mode    = $self->env->group_mode;
+    my @groups  = ();
+    my $results;
+
+    $log->debug("Getting groups for user $user with mode $mode");
+
+    # testing short circuit
+    if ( $user eq "scot-testing" ) {
+        push @groups, @{$self->env->default_groups->{modify}};
+        return wantarray ? @groups :\@groups;
+    }
+
+    if ( $mode =~ /ldap/i ) {
+        my $ldap = $self->env->ldap;
+
+        if ( defined $ldap ) {
+            $results = $ldap->get_users_groups($user);
+            if ( $results < 0 ) { # TODO: refactor to check for empty array?
+                $log->error("LDAP group ERROR!");
+            }
+        }
+    }
+    else {
+        my $mongo   = $self->env->mongo;
+        my $ucol    = $mongo->collection("User");
+        my $user    = $ucol->find_one({username => $user});
+
+        if ( defined $user ) {
+            $results    = $user->groups;
+        }
+        else {
+            $log->error("User $user, not in local user collection!");
+        }
+    }
+    $log->debug("Got these groups: ",{filter=>\&Dumper, value=>$results});
+    if ( ref($results) eq "ARRAY" ) {
+        push @groups, grep {/scot/i} @$results;
+    }
+    else {
+        $log->error("group fetch results in something other than an array! $results");
+    }
+    return wantarray ? @groups : \@groups;
+}
+
+sub invalid_username {
     my $self    = shift;
     my $user    = shift;
     # help prevent ldap injection
@@ -28,6 +610,14 @@ sub has_invalid_user_chars {
     return undef;
 }
 
+sub respond_401 {
+    my $self = shift;
+    $self->render(
+        status  => 401,
+        json    => { error => "invalid username" }
+    );
+}
+
 sub update_lastvisit {
     my $self    = shift;
     my $user    = shift;
@@ -36,6 +626,14 @@ sub update_lastvisit {
     my $log     = $env->log;
 
     $log->trace("[User $user] update lastvisit time");
+
+    my $url = $self->url_for('current');
+
+    if ($url eq "/scot/api/v2/status" 
+        or $url eq "/scot/api/v2/who" ) {
+        $log->debug("skipping setting last visit for /status or /who");
+        return;
+    }
 
     my $col = $mongo->collection('User');
     my $obj = $col->find_one({username => $user});
@@ -108,34 +706,110 @@ sub update_user_failure {
     }
 }
 
-sub check_for_csrf {
+sub sucessful_auth {
     my $self    = shift;
-    # see: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet
-    # for now, choosing the Custom Request Header check for it's friendliness to REST
+    my $user    = shift;
+    my $url     = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
 
-    return 1;  #for testing...
+    $log->warn("User $user sucessfully authenticated");
 
-    my $headers = $self->req->headers;
-    my $reqwith = $headers->header('X-Requested-With');
+    if ( $user eq "scot-testing" ) {
+        $log->warn("setting default groups for $user since in test mode");
+    }
+
+    my $groups  = $self->get_groups($user);
+
+    $log->debug("Got groups : ",{filter=>\&Dumper, value=>$groups});
+
+    $self->session('groups' => $groups);
+
+    $log->debug("attempting to set user sucess");
+    
+    $self->update_user_sucess($user);
+
+    my $expiration = $self->get_expiration;
+
+    $log->debug("setting users session");
+
+    $self->session(
+        user    => $user,
+        groups  => $groups,
+        secure  => 1,
+        expiration  => $expiration,
+    );
+
+    if ( defined $url ) {
+        $self->redirect_to($url);
+    }
+    return 1;
+}
+
+sub get_expiration {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $meta    = $env->meta;
+    
+    if ( $meta->has_attribute("session_expiration") ) {
+        return $env->session_expiration;
+    }
+    return 3600 * 4;
+}
+
+sub failed_auth {
+    my $self    = shift;
+    my $msg     = shift;
+    my $user    = shift;
     my $log     = $self->env->log;
 
-    $log->debug("CSRF Check...");
+    $log->error("$user failed authentication");
 
-    my $url = $self->req->url->to_abs;
+    $self->update_user_failure($user);
 
-    $log->debug("URL is $url");
+    $self->flash("Failed Authentication");
+    $self->redirect_to("/login");
+    return;
+}
 
-    unless ( $url =~ /\/scot\/api\// ) {
-        $log->warn("Not a REST request, skipping CSRF check...");
-        return 1;
+sub get_apikey {
+    my $self    = shift;
+    my $user    = $self->session('user');
+    my $groups  = $self->session('groups');
+    my $log     = $self->env->log;
+
+    unless (defined $user) {
+        $log->error("unauthenticated user trying to get apikey!");
+        $self->do_error(400, { error_msg => "missing user" });
+        return;
     }
 
-    if ( $reqwith eq "XMLHttpRequest" ) {
-        $log->debug("Passed CSRF Check");
-        return 1;
-    }
-    $log->error("Invalid Content of header X-Requested-With: ".$reqwith);
-    return undef;
+    my $ug  = Data::UUID->new;
+    my $key = $ug->create_str();
+
+    my $record  = {
+        apikey      => $key,
+        groups      => $groups,
+        username    => $user,
+    };
+
+    my $collection  = $self->env->mongo->collection('Apikey');
+    my $apikey      = $collection->create_from_api($record);
+
+    $self->do_render({
+        status  => 'ok',
+        apikey  => $apikey->apikey,
+    });
+}
+
+sub do_render {
+    my $self    = shift;
+    my $code    = 200;
+    my $href    = shift;
+    $self->render(
+        status  => $code,
+        json    => $href,
+    );
 }
 
 1;

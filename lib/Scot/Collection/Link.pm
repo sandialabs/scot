@@ -2,6 +2,7 @@ package Scot::Collection::Link;
 
 use lib '../../../lib';
 use Data::Dumper;
+use Try::Tiny;
 use Moose 2;
 
 extends 'Scot::Collection';
@@ -46,12 +47,18 @@ sub create_link {
         return undef;
     }
 
-    my $link    = $self->create({
-        when        => $when,
-        entity_id   => $eid,
-        value       => $value,
-        target      => $target,
-    });
+    my $link;
+    try {
+        $link    = $self->create({
+            when        => $when,
+            entity_id   => $eid,
+            value       => $value,
+            target      => $target,
+        });
+    }
+    catch {
+        $self->env->log->error("Failed to create Link!: ", $_);
+    };
 
     return $link;
 }
@@ -100,9 +107,18 @@ sub get_total_appearances {
     return $cursor->count;
 }
 
-sub get_display_count_slow {
+sub get_display_count {
     my $self    = shift;
     my $entity  = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("Counting links to entity");
+
+    if ( $entity->status eq "untracked" ) {
+        $log->debug("untracked entity");
+        return 0;
+    }
+
     my $cursor  = $self->find({
         'entity_id'   => $entity->id,
         'target.type' => {
@@ -110,6 +126,12 @@ sub get_display_count_slow {
             '$nin'  => [ 'alertgroup', 'entry' ]
         }
     });
+
+    if ( $cursor->count > 1000 ) {
+        # return a quicker esitmate
+        return $cursor->count;
+    }
+
     my %seen;
     while (my $link = $cursor->next) {
         my $key = $link->target->{type} . $link->target->{id};
@@ -118,10 +140,11 @@ sub get_display_count_slow {
     return scalar(keys %seen);
 }
 
-sub get_display_count {
+sub get_display_count_buggy_but_fast {
     my $self    = shift;
     my $entity  = shift;
     my $collection  = $self->collection_name;
+    my $log     = $self->env->log;
     my %command;
     my $tie = tie(%command, "Tie::IxHash");
     %command = (
@@ -134,7 +157,7 @@ sub get_display_count {
             }
         },
     );
-    # $self->env->log->debug("command is ",{filter=>\&Dumper, value=>\%command});
+    $self->env->log->debug("display count command is ",{filter=>\&Dumper, value=>\%command});
 
     my $mongo   = $self->meerkat;
     my $result  = $self->_try_mongo_op(
@@ -146,7 +169,7 @@ sub get_display_count {
             return $job->{values};
         }
     );
-    # $self->env->log->debug("got result: ",{filter=>\&Dumper, value=>$result});
+    $self->env->log->debug("got result: ",{filter=>\&Dumper, value=>$result});
     unless (defined $result) {
         return 0;
     }

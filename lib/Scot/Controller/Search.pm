@@ -68,10 +68,20 @@ sub search {
     # );
 
     $log->debug("Got Response: ", {filter=>\&Dumper, value=>$response});
-
+    $self->put_stat("search initiated", 1);
     $self->do_render($response);
 
 
+}
+
+sub put_stat {
+    my $self    = shift;
+    my $metric  = shift;
+    my $value   = shift;
+    my $env     = $self->env;
+    my $nowdt   = DateTime->from_epoch(epoch => $env->now);
+    my $col     = $env->mongo->collection('Stat');
+    $col->increment($nowdt, $metric, $value);
 }
 
 sub newsearch {
@@ -88,6 +98,10 @@ sub newsearch {
 
     my $request = $self->req;
     my $qstring = $request->param('qstring');
+    
+    if ( $qstring ne "" ) {
+        $qstring = $qstring . "*";
+    }
 
     $log->debug("Search String: $qstring");
 
@@ -99,11 +113,22 @@ sub newsearch {
                         or  => [
                             { term  => { _type  => { value => "alert" } } },
                             { term  => { _type  => { value => "entry" } } },
+                            { term  => { _type  => { value => "alertgroup" } } },
+                            { term  => { _type  => { value => "event" } } },
+                            { term  => { _type  => { value => "incident" } } },
+                            { term  => { _type  => { value => "intel" } } },
+                            { term  => { _type  => { value => "guide" } } },
+                            { term  => { _type  => { value => "task" } } },
+                            { term  => { _type  => { value => "signature" } } },
+                            { term  => { _type  => { value => "entity" } } },
                         ]
                     },
                     query   => {
                         query_string    => {
-                            query   => $qstring
+                            query   => $qstring,
+                            rewrite => "scoring_boolean", #scoring boolean can cause issues with >1024 sized query
+                            #analyzer => "scot_analyzer",
+                            analyze_wildcard => "true",
                         }
                     }
                 }
@@ -111,17 +136,19 @@ sub newsearch {
             highlight   => {
                 #pre_tags    => [ qq|<div class="search_highlight">| ],
                 #post_tags   => [ qq|</div>| ],
+                pre_tags    => [qq||],
+                post_tags   => [qq||],
                 require_field_match => \0, # encode will conver to json false
                 fields  => {
                     '*' => {
-                        fragment_size   => 10,
+                        fragment_size   => 100,
                         number_of_fragments => 1,
                     },
                 },
             },
-            _source => [ qw(id target body_plain alertgroup data) ],
+            _source => [ qw(id target body_plain alertgroup data value) ],
             sort    => [ qw(_score) ],
-            min_score   => 0.8,
+            #min_score   => 0.8,
             size => 50,
         },
     ); 
@@ -132,26 +159,38 @@ sub newsearch {
 
     my @results;
     foreach my $record (@$records) {
-        if ( $record->{_type} eq "entry" ) {
+        if ( $record->{_type} eq "entry") {
             push @results, {
-                id      => $record->{_source}->{target}->{id},
-                type    => $record->{_source}->{target}->{type},
-                score   => $record->{_score},
-                snippet => $record->{_source}->{body_plain},
+                id          => $record->{_source}->{target}->{id},
+                type        => $record->{_source}->{target}->{type},
+                entryid     => $record->{_id},
+                score       => $record->{_score},
+                snippet     => $record->{_source}->{body_plain},
+                highlight   => $record->{highlight}->{body_plain},
+            };
+        }
+        elsif ($record->{_type} eq "entity") {
+            push @results, {
+                id          => $record->{_id},
+                type        => $record->{_type},
+                score       => $record->{_score},
+                snippet     => $record->{_source}->{_raw},
+                highlight   => $record->{_source}->{value},
             };
         }
         else {
             push @results, {
-                id      => $record->{_source}->{alertgroup},
-                type    => "alertgroup",
-                score   => $record->{_score},
-                snippet => $record->{_source}->{_raw},
+                id          => $record->{_id},
+                type        => $record->{_type},
+                score       => $record->{_score},
+                snippet     => $record->{_source}->{_raw},
+                highlight   => $record->{highlight},
             };
         }
     }
 
     $log->debug("Got Response: ", {filter=>\&Dumper, value=>$response});
-
+    $self->put_stat("search initiated", 1);
     $self->do_render({
         totalRecordCount    => $total,
         queryRecordCount    => scalar(@results),

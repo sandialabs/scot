@@ -176,14 +176,14 @@ sub process_message {
 
     if ($action eq "deleted") {
         $es->delete($type, $id, 'scot');
-        $self->put_stat("elastic_docs_deleted", 1);
+        $self->put_stat("elastic doc deleted", 1);
         return;
     }
     my $cleanser = Data::Clean::FromJSON->get_cleanser;
     my $record  = $self->get_document($type, $id);
     $cleanser->clean_in_place($record);
     $es->index($type, $record, 'scot');
-    $self->put_stat("elastic_docs_inserted", 1);
+    $self->put_stat("elastic doc inserted", 1);
 }
 
 sub get_document {
