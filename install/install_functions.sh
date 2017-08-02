@@ -144,6 +144,12 @@ function wait_for_mongo {
         echo "~ waiting for mongo to initialize ($COUNTER seconds have passed)"
         grep -q 'waiting for connections on port' /var/log/mongod.log
     done
+
+    if [[ $? -ne 0 ]]; then
+        echo "!!!! Mongod failed to start. Please fix and restart mongod "
+        echo "!!!! Unless mongod is running, you will get an error attempting"
+        echo "!!!! to access SCOT!"
+    fi
 }
 
 
@@ -163,7 +169,9 @@ function start_services {
             systemctl restart scfd.service
             systemctl restart scepd.service
         else 
-            /etc/init.d/scot restart
+            service mongod restart
+            wait_for_mongo
+            service scot restart
             service apache2 restart
             service scfd restart
             service scepd restart
