@@ -91,6 +91,7 @@ function start_stop  {
         if [[ $OSVERSION == "16" ]]; then
             systemctl $2 ${1}.service
         else
+            echo "Start Mongod service..."
             service $1 $2
         fi
     else
