@@ -279,7 +279,7 @@ class ReportCreated extends Component {
 
         return (
             <div className='dashboard'>
-                <h1>Created</h1>
+                <h1>Items Created</h1>
 				<form>
 					<Button id='export' bsSize='xsmall' bsStyle='default' onClick={this.exportToPNG}>Export to PNG</Button>
 				</form>
