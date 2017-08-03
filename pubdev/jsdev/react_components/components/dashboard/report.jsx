@@ -42,7 +42,7 @@ export const ReportPage = () => (
 				<Panel header='Alert Response Time'>
 					<ReportArt />
 				</Panel>
-				<Panel header='Created'>
+				<Panel header='Items Created'>
 					<ReportCreated />
 				</Panel>
 			</div>
