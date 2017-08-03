@@ -4,7 +4,7 @@ import { Button } from 'react-bootstrap';
 import debounce from '../../utils/debounce';
 
 const wrapText = ( text, width ) => {
-	// FYI: not an error function because of 'this' injection
+	// FYI: not an arrow function because of 'this' injection
 	text.each( function( value, i ) {
 		if ( this.getComputedTextLength() < width ) {
 			return;
