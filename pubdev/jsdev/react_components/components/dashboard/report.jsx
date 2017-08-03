@@ -4,6 +4,7 @@ import { Panel } from 'react-bootstrap';
 import ReportHeatmap from './report_heatmap';
 import ReportArt from './report_art';
 import ReportAlertpower from './report_alertpower';
+import ReportCreated from './report_created';
 
 export const ReportDashboard = () => (
 	<div id='report' className='dashboard'>
@@ -40,6 +41,9 @@ export const ReportPage = () => (
 			<div className='col-md-6'>
 				<Panel header='Alert Response Time'>
 					<ReportArt />
+				</Panel>
+				<Panel header='Created'>
+					<ReportCreated />
 				</Panel>
 			</div>
 		</div>
