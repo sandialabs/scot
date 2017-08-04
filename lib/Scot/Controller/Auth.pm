@@ -564,6 +564,7 @@ sub set_group_membership {
 sub get_groups {
     my $self    = shift;
     my $user    = shift;
+    my $env     = $self->env;
     my $log     = $self->env->log;
     my $mode    = $self->env->group_mode;
     my @groups  = ();
@@ -577,27 +578,35 @@ sub get_groups {
         return wantarray ? @groups :\@groups;
     }
 
-    if ( $mode =~ /ldap/i ) {
+    my $envmeta = $env->meta;
+
+    if ( $envmeta->has_attribute('ldap') ) {
         my $ldap = $self->env->ldap;
 
         if ( defined $ldap ) {
             $results = $ldap->get_users_groups($user);
-            if ( $results < 0 ) { # TODO: refactor to check for empty array?
-                $log->error("LDAP group ERROR!");
+            if ( ref($results) eq "ARRAY" ) {
+                # return array
+                push @groups, grep {/scot/i} @$results;
+                return wantarray ? @groups : \@groups;
+            }
+            else {
+                $log->warn("ldap failed to get groups: ".$results);
             }
         }
+
+    }
+
+    $log->debug("last attempt to get groups, local");
+    my $mongo   = $self->env->mongo;
+    my $ucol    = $mongo->collection("User");
+    my $userobj    = $ucol->find_one({username => $user});
+
+    if ( defined $userobj ) {
+        $results    = $userobj->groups;
     }
     else {
-        my $mongo   = $self->env->mongo;
-        my $ucol    = $mongo->collection("User");
-        my $user    = $ucol->find_one({username => $user});
-
-        if ( defined $user ) {
-            $results    = $user->groups;
-        }
-        else {
-            $log->error("User $user, not in local user collection!");
-        }
+        $log->error("User $user, not in local user collection!");
     }
     $log->debug("Got these groups: ",{filter=>\&Dumper, value=>$results});
     if ( ref($results) eq "ARRAY" ) {
