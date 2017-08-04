@@ -22,10 +22,17 @@ var ChangeHistory = React.createClass({
         }
     },
     componentDidMount: function() {
-        this.serverRequest = $.get('/scot/api/v2/'+ this.props.type + '/' + this.props.id + '/history', function (result) {
-            var result = result.records;
-            this.setState({historyBody:true, data:result})
-        }.bind(this));
+        $.ajax({
+            type: 'get',
+            url: '/scot/api/v2/'+ this.props.type + '/' + this.props.id + '/history',
+            success: function (result) {
+                var result = result.records;
+                this.setState({historyBody:true, data:result})
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('Failed to get change history', data)
+            }.bind(this)
+        })
     }, 
     render: function() {
         return (
