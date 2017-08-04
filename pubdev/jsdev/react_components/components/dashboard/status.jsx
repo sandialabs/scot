@@ -12,9 +12,13 @@ var Status = React.createClass({
         $.ajax({
             type: 'get',
             url: '/scot/api/v2/status',
-        }).success(function(response) {
-            this.setState({StatusData:response});
-        }.bind(this))
+            success: function(response) {
+                this.setState({StatusData:response});
+            }.bind(this),
+            error: function(data) {
+                this.errorToggle('failed to get status', data)
+            }.bind(this)
+        })
     },
     render: function() {
         var StatusRows = [];

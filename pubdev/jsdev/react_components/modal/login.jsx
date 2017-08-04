@@ -1,82 +1,116 @@
-var React               = require('react');
-var Modal               = require('react-modal');
-var Button              = require('react-bootstrap/lib/Button');
-var DropdownButton      = require('react-bootstrap/lib/DropdownButton');
-var MenuItem            = require('react-bootstrap/lib/MenuItem');
-const customStyles = {
-    content : {
-        top     : '50%',
-        left    : '50%',
-        right   : 'auto',
-        bottom  : 'auto',
-        marginRight: '-50%',
-        transform:  'translate(-50%, -50%)'
+import React, { PureComponent, Component } from 'react';
+import PropTypes from 'prop-types';
+import { Modal } from 'react-bootstrap';
+
+class Login extends Component {
+    constructor( props ) { 
+        super( props );
+
+        this.state = {
+            user: '',
+            pass: '',
+        }
+        this.SSO = this.SSO.bind(this);
+        this.NormalAuth = this.NormalAuth.bind(this);
+        this.HandleInput = this.HandleInput.bind(this); 
+        this.Reset = this.Reset.bind(this);
+    }
+
+    componentWillMount() {
+        this.mounted = true;
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+    }
+    
+    render() {
+
+        return (
+            <Modal dialogClassName='login-modal' show={ this.props.modalActive }> 
+                <Modal.Header >
+                    <Modal.Title style={{textAlign: 'center'}}>
+                        <h1> SCOT Login </h1>
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{textAlign: 'center'}}>
+                    <img src='/images/scot_logo_473x473.png' alt='SCOT Logo' />
+                    <input type='submit' value='Sign in using SSO' onClick={this.SSO} />
+                    <br />
+                    <br />
+                    <div>
+                        <label>Username </label>
+                        <input id='user' type='user' ref='user' onBlur={this.HandleInput} />
+                    </div>
+                    <div>
+                        <label>Password </label>
+                        <input id='pass' type='password' ref='pass' onBlur={this.HandleInput} />
+                    </div>
+                    <input type='submit' onClick={this.NormalAuth} />
+                    <input type='reset' onClick={this.Reset} />
+                    <br />
+                </Modal.Body>
+            </Modal>
+        )
+    }
+     
+    Reset() {
+        this.refs.user.value = '';
+        this.refs.pass.value = '';
+    }
+
+    HandleInput(e) {
+        let key = e.target.id;
+        let val = e.target.value;
+        let obj = {};
+        obj[key] = val;
+        this.setState(obj);
+    }
+
+    SSO() {
+        let data = {};
+        data['orig_url'] = '%2f';
+        $.ajax({
+            type: 'get',
+            url: 'sso',
+            data: data,
+            success: function(data) {
+                console.log('success logging in');
+                this.props.loginToggle( null, true );
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('Failed to log in using SSO');
+            },
+        });
+    }
+
+    NormalAuth () {
+        let data = {}
+        data['user'] = this.state.user;
+        data['pass'] = this.state.pass;
+        data['csrf_token'] = this.props.csrf;
+
+        $.ajax({
+            type: 'post',
+            url: 'auth',
+            data: data,
+            success: function() {
+                console.log('success logging in');
+                this.props.loginToggle( null, true );
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('Failed to log in using normal auth');
+            }
+        });
     }
 }
 
-var Owner = React.createClass({
-    getInitialState: function() {
-        return {
-            currentOwner:this.props.data,
-            whoami:'', 
-            ownerToolbar: false,
-            key:this.props.id,
-        }
-    },
-    componentDidMount: function() {
-        this.whoamiRequest = $.get('scot/api/v2/whoami', function (result) {
-            var result = result.user;
-            this.setState({whoami:result})
-        }.bind(this)); 
-    },
-    componentWillReceiveProps: function() {
-        this.setState({currentOwner:this.props.data});
-    },
-    toggle: function() { 
-        var json = {'owner':this.state.whoami} 
-        $.ajax({
-            type: 'put',
-            url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id,
-            data: JSON.stringify(json),
-            contentType: 'application/json; charset=UTF-8',
-            success: function(data) {
-                var key = this.state.key;
-            }.bind(this),
-            error: function() {
-                this.props.errorToggle('Failed to change owner');
-            }.bind(this)
-        }); 
-        this.ownerToggle();
-    },
-    ownerToggle: function() {
-        if (this.state.ownerToolbar == false) {
-            this.setState({ownerToolbar:true});
-        } else {
-            this.setState({ownerToolbar:false});
-        } 
-    },
-    render: function() { 
-        return (
-            <div>
-                <DropdownButton bsSize='xsmall' id='event_owner' title={this.state.currentOwner}>
-                    <MenuItem eventKey='1' onClick={this.ownerToggle}>Take Ownership</MenuItem>
-                </DropdownButton>
-                {this.state.ownerToolbar ? <Modal isOpen={true} onRequestClose={this.ownerToggle} style={customStyles}>
-                    <div className='modal-header'>
-                        <img src='images/close_toolbar.png' className='close_toolbar' onClick={this.ownerToggle} />
-                        <h3 id='myModalLabel'>Take Ownership</h3>
-                    </div>
-                    <div className='modal-body'>
-                        Are you sure you want to take ownership of this event?
-                    </div>
-                    <div className='modal-footer'>
-                        <Button id='cancel-ownership' onClick={this.ownerToggle}>Cancel</Button>
-                        <Button bsStyle='info' id='take-ownership' onClick={this.toggle}>Take Ownership</Button>     
-                    </div>
-                </Modal> : null }
-            </div>
-        )
-    }
-});
+Login.propTypes = {
+    modalActive: PropTypes.bool
+}
 
-module.exports = Owner;
+Login.defaultProps = {
+    modalActive: true
+}
+
+export default Login;

@@ -47,13 +47,20 @@ var TagSourceFilter = React.createClass({
         var arr = [];
         var tagSplit = input.split(/,|\!/);
         var inputSearch = tagSplit.pop();
-        this.serverRequest = $.get('/scot/api/v2/ac/'+ this.props.columnsOne  + '/' + inputSearch, function (result) {
-            var result = result.records;
-            for (var i=0; i < result.length; i++) {
-                arr.push(result[i].value)
-            }
-            this.setState({suggestions:arr})
-        }.bind(this));
+        $.ajax({
+            type:'get',
+            url:'/scot/api/v2/ac/'+ this.props.columnsOne  + '/' + inputSearch, 
+            success: function (result) {
+                var result = result.records;
+                for (var i=0; i < result.length; i++) {
+                    arr.push(result[i].value)
+                }
+                this.setState({suggestions:arr})
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get autocomplete data' , data)
+            }.bind(this)
+        })
     },
     handleDrag: function () {
         //blank since buttons are handled outside of this
