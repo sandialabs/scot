@@ -49,7 +49,8 @@ var AddEntryModal = React.createClass({
                     this.setState({content: response.body, asyncContentLoaded: true});
                     this.forceUpdate();
                 }.bind(this),
-                error: function() {
+                error: function(data) {
+                    this.props.errorToggle("Error getting original data from source. Copy/Paste original", data);
                     this.setState({content: "Error getting original data from source. Copy/Paste original", asyncContentLoaded:true})
                     this.forceUpdate();
                 }.bind(this)
@@ -166,7 +167,7 @@ var AddEntryModal = React.createClass({
                         this.props.addedentry() 
                     }.bind(this),
                     error: function(response) {
-                        this.props.errorToggle("Failed to add entry.")
+                        this.props.errorToggle("Failed to add entry.", response)
                     }.bind(this) 
                 })   
                             
@@ -174,36 +175,40 @@ var AddEntryModal = React.createClass({
             else if (this.props.entryAction == 'Edit'){
                 $.ajax({
                     type: 'GET',
-                    url: '/scot/api/v2/entry/'+this.props.id
-                }).success(function(response){
-                    if(recently_updated != response.updated){
-                        this.forEdit(false)
-                        var set = false
-                        var Confirm = {
-                            launch: function(set){
-                                this.forEdit(set)
-                            }.bind(this)
-                        }
-                        $.confirm({
-                            icon: 'glyphicon glyphicon-warning',
-                            confirmButtonClass: 'btn-info',
-                            cancelButtonClass: 'btn-info',
-                            confirmButton: 'Yes, override change',
-                            cancelButton: 'No, Keep edited version from another user',
-                            content: "edit:" +'\n\n'+response.body,
-                            backgroundDismiss: false,
-                            title: "Edit Conflict from another user" + '\n\n',
-                            confirm: function(){
-                                Confirm.launch(true)
-                            },
-                            cancel: function(){
-                                return 
+                    url: '/scot/api/v2/entry/'+this.props.id,
+                    success: function(response){
+                        if(recently_updated != response.updated){
+                            this.forEdit(false)
+                            var set = false
+                            var Confirm = {
+                                launch: function(set){
+                                    this.forEdit(set)
+                                }.bind(this)
                             }
-                        })
-                    } else {
-                        this.forEdit(true)
-                    }
-                }.bind(this))
+                            $.confirm({
+                                icon: 'glyphicon glyphicon-warning',
+                                confirmButtonClass: 'btn-info',
+                                cancelButtonClass: 'btn-info',
+                                confirmButton: 'Yes, override change',
+                                cancelButton: 'No, Keep edited version from another user',
+                                content: "edit:" +'\n\n'+response.body,
+                                backgroundDismiss: false,
+                                title: "Edit Conflict from another user" + '\n\n',
+                                confirm: function(){
+                                    Confirm.launch(true)
+                                },
+                                cancel: function(){
+                                    return 
+                                }
+                            })
+                        } else {
+                            this.forEdit(true)
+                        }
+                    }.bind(this),
+                    error: function(data) {
+                        this.props.errorToggle('failed to get data for edit', data);
+                    }.bind(this)
+                })
             }
             else if(this.props.type == 'alert'){ 
                 var data;
@@ -234,7 +239,7 @@ var AddEntryModal = React.createClass({
                         this.props.addedentry()
                     }.bind(this),
                     error: function(response) {
-                        this.props.errorToggle("Failed to add entry.")
+                        this.props.errorToggle("Failed to add entry.", response)
                     }.bind(this) 
                 })
             }	
@@ -267,7 +272,7 @@ var AddEntryModal = React.createClass({
                         this.props.addedentry()
                     }.bind(this),
                     error: function(response) {
-                        this.props.errorToggle("Failed to add entry.")
+                        this.props.errorToggle("Failed to add entry.", response)
                     }.bind(this)
                 })
             }
@@ -307,7 +312,7 @@ var AddEntryModal = React.createClass({
                     this.props.addedentry()        
                 }.bind(this),
                 error: function(response) {
-                    this.props.errorToggle("Failed to edit entry.")
+                    this.props.errorToggle("Failed to edit entry.", response)
                 }.bind(this)
             })
         }

@@ -18,7 +18,6 @@ var BrowserRouter   = require('react-router-dom').BrowserRouter;
 var Listener        = require('../activemq/listener.jsx')
 var Store           = require('../activemq/store.jsx');
 var SelectedContainer = require('../detail/selected_container.jsx')
-var EntityDetail      = require('../modal/entity_detail.jsx')
 var AMQ             = require('../debug-components/amq.jsx');
 var Wall            = require('../debug-components/wall.jsx');
 var Search          = require('../components/esearch.jsx');
@@ -28,6 +27,7 @@ var Status          = require('../components/dashboard/status.jsx');
 var Online          = require('../components/dashboard/online.jsx');
 var Report          = require('../components/dashboard/report.jsx');
 var Notification    = require('react-notification-system');
+var Login           = require('../modal/login.jsx').default;
 var isalert = false
 {
 	window.React = React;	
@@ -39,8 +39,9 @@ var App = React.createClass({
 
     getInitialState: function(){
         Listener.activeMq();   //register for amq updates
-        return{handler: "Scot", viewMode:'default', notificationSetting: 'on', eestring: ''}	
+        return{handler: "Scot", viewMode:'default', notificationSetting: 'on', eestring: '', login: false, csrf: '', origurl: ''}	
     },
+
     componentDidMount: function() {
 	    $.ajax({
 	        type: 'get',
@@ -60,6 +61,7 @@ var App = React.createClass({
             }.bind(this))   
         }
     },
+
     componentWillReceiveProps: function (nextProps) {
         var viewModeSetting = checkCookie('viewMode');
         var notificationSetting = checkCookie('notification');
@@ -73,6 +75,7 @@ var App = React.createClass({
         }
         this.setState({viewMode:viewModeSetting, notificationSetting:notificationSetting, listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting})
     },
+
     ee: function(e) {
         var ee = '837279877769847269697171';
         if (ee.includes(this.state.eestring)) {
@@ -90,10 +93,12 @@ var App = React.createClass({
             this.setState({eestring: ''});
         }
     },
+
     eedraw: function() {
         $('#content').css('transform','rotateX(20deg)');
         $(document.body).prepend('<span id="ee">Lbh sbhaq gur egg. Cbfg gb gur jnyy "V sbhaq gur rtt, pna lbh?"</span>');
     },
+
     eeremove: function() {
         $('#content').css('transform','rotateX(0deg)');
         $('#ee').remove();
@@ -147,7 +152,14 @@ var App = React.createClass({
             activemqwall = false;
         }
     },
-    errorToggle: function(string) {
+    errorToggle: function(string, result) {
+        if ( result ) {
+            if ( result.responseJSON.error === 'Authentication Required') {
+                this.loginToggle( result.responseJSON.csrf );
+                return;
+            }
+        } 
+
         var notification = this.refs.notificationSystem
         notification.addNotification({
             message: string,
@@ -165,7 +177,20 @@ var App = React.createClass({
             setCookie('notification','off',1000);
         } 
     },
-   render: function() {
+
+    loginToggle: function( csrf, loggedin ) {
+        //Only open modal once - if other requests come in to open the modal just bypass since the login page is active
+        if ( !this.state.login && loggedin != true ) {
+            let origurl = this.props.location.pathname;;
+            this.props.history.push( '/' );
+            this.setState({login: true, csrf: csrf, origurl: origurl}); 
+        } else if ( this.state.login && loggedin == true ) {
+            this.setState({login: false}); 
+            this.props.history.push( this.state.origurl );
+        }
+    },
+
+    render: function() {
         var IH = 'Incident Handler: ' + this.state.handler;
         return (
             <div>
@@ -218,6 +243,7 @@ var App = React.createClass({
                     </Navbar.Collapse>
                 </Navbar>
                 <div className='mainNavPadding'>
+                    <Login csrf={this.state.csrf} modalActive={this.state.login} loginToggle={this.loginToggle} errorToggle={this.props.errorToggle} />
                     <Notification ref='notificationSystem' />
                     {!this.props.match.params.value || this.props.match.params.value == 'home' ? 
                     <div className="homePageDisplay">
@@ -225,11 +251,11 @@ var App = React.createClass({
                             <img src='/images/scot-600h.png' style={{maxWidth:'350px',width:'100%',marginLeft:'auto', marginRight:'auto', display: 'block'}}/>
                             <h1>Sandia Cyber Omni Tracker 3.5</h1>
                             <h1>{sensitivity}</h1>
-                            <Status />
+                            <Status errorToggle={this.errorToggle} />
                         </div>
-                        <Gamification />
-                        <Online />
-                        <Report frontPage={true} />
+                        <Gamification errorToggle={this.errorToggle} />
+                        <Online errorToggle={this.errorToggle} />
+                        <Report frontPage={true} errorToggle={this.errorToggle}/>
                     </div>
                     :
                     null}
@@ -278,11 +304,11 @@ var App = React.createClass({
                     :
                     null}
                     {this.props.match.params.value == 'amq' ?
-                        <AMQ type='amq' />
+                        <AMQ type='amq' errorToggle={this.errorToggle} />
                     :
                     null}
                     {this.props.match.params.value == 'wall' ?
-                        <Wall />
+                        <Wall errorToggle={this.errorToggle} />
                     :
                     null}
                 </div>

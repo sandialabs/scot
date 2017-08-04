@@ -12,9 +12,13 @@ var Online = React.createClass({
         $.ajax({
             type: 'get',
             url: '/scot/api/v2/who',
-        }).success(function(response) {
-            this.setState({OnlineData:response.records});
-        }.bind(this))
+            success: function(response) {
+                this.setState({OnlineData:response.records});
+            },
+            error: function(data) {
+                this.props.errorToggle('failed to get current user', data);
+            }.bind(this)
+        })
     },
     render: function() {
         var OnlineRows = [];

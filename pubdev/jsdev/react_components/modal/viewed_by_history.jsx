@@ -22,9 +22,16 @@ var ViewedByHistory = React.createClass({
         }
     },
     componentDidMount: function() {
-        this.serverRequest = $.get('/scot/api/v2/'+ this.props.type + '/' + this.props.id, function (result) {
-            this.setState({historyBody:true, data:result})
-        }.bind(this));
+        $.ajax({
+            type:'get',
+            url:'/scot/api/v2/'+ this.props.type + '/' + this.props.id,
+            success: function (result) {
+                this.setState({historyBody:true, data:result})
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get user change history', data);
+            }.bind(this)
+        })
     }, 
     render: function() {
         return (
