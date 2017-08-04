@@ -198,6 +198,13 @@ sub sso {
         $self->sucessful_auth($user,$url);
         return $user;
     }
+    $self->render(
+        status  => 401,
+        json    => { 
+            error => "Authentication Required",
+            csrf  => $self->csrf_token,
+        }
+    );
 }
 
 =item B<invalid_user_pass>
@@ -788,7 +795,14 @@ sub failed_auth {
     $self->update_user_failure($user);
 
     $self->flash("Failed Authentication");
-    $self->redirect_to("/login");
+    # $self->redirect_to("/login");
+    $self->render(
+        status  => 401,
+        json    => { 
+            error => "Authentication Required",
+            csrf  => $self->csrf_token,
+        }
+    );
     return;
 }
 
