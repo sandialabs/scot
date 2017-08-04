@@ -20,34 +20,9 @@ class Mark extends Component {
     componentWillMount() {
         this.mounted = true;
         
-        const data = [
-            {
-                type: 'event',
-                id: 123,
-                subject: 'event subject 1',
-                selected: false,
-            },
-            {
-                type: 'event',
-                id: 456,
-                subject: 'event subject 2',
-                selected: true,
-            },
-            {
-                type: 'entry',
-                id: 1000,
-                subject: 'entry body 120 characters',
-                selected: false,
-            },
-            {
-                type: 'entry',
-                id: 2000,
-                subject: 'entry body 120 characters including this text to make it intentionally longer for test purposes 1234125312312312312112 12',
-                selected: false,
-            },
-        ]
+        const data = this.getMarkedItems();
 
-        this.setState({ data: data });
+        this.setState({ data: data.markedItems });
     }
 
     componentWillUnmount() {
@@ -192,6 +167,14 @@ class Mark extends Component {
             }   
         }
         return true;
+    }
+
+    getMarkedItems () {
+        let markedItems = getLocalStorage( 'marked' );
+        if ( markedItems ) {
+            markedItems = JSON.parse( markedItems );
+        }
+        return { markedItems }; 
     }
 }
 
