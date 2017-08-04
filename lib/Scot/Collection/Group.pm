@@ -4,7 +4,7 @@ use Data::Dumper;
 use Moose 2;
 extends 'Scot::Collection';
 
-overrid api_create => sub {
+override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
