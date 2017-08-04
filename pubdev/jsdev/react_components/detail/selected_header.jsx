@@ -99,7 +99,7 @@ var SelectedHeader = React.createClass({
                         if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false})
                         }
-                        this.props.errorToggle("Error: Failed to load detail data. Error message: " + result.responseText);
+                        this.props.errorToggle("Error: Failed to load detail data. Error message: " + result.responseText, result);
                     }.bind(this),
                 });
                 //entry load
@@ -121,7 +121,7 @@ var SelectedHeader = React.createClass({
                         if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false});
                         }
-                        this.props.errorToggle("Error: Failed to load entry data. Error message: " + result.responseText);
+                        this.props.errorToggle("Error: Failed to load entry data. Error message: " + result.responseText, result);
                     }
                 });
                 //entity load
@@ -153,7 +153,7 @@ var SelectedHeader = React.createClass({
                         if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                             this.setState({loading:false});
                         }
-                        this.props.errorToggle("Error: Failed to load entity data.");
+                        this.props.errorToggle("Error: Failed to load entity data.", result);
                     }.bind(this)
                 });
                 //guide load
@@ -173,7 +173,7 @@ var SelectedHeader = React.createClass({
                         }.bind(this),
                         error: function(result) {
                             this.setState({guideID: null})
-                            this.props.errorToggle("Error: Failed to load guide data. Error message:" + result.responseText);
+                            this.props.errorToggle("Error: Failed to load guide data. Error message:" + result.responseText, result);
                         }.bind(this)
                     });     
                 }
@@ -218,7 +218,7 @@ var SelectedHeader = React.createClass({
                 if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false})
                 }
-                this.props.errorToggle("Error: Failed to reload detail data. Error message: " + result.responseText);
+                this.props.errorToggle("Error: Failed to reload detail data. Error message: " + result.responseText, result);
             }.bind(this),
         });    
         //entry load
@@ -240,7 +240,7 @@ var SelectedHeader = React.createClass({
                 if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 } 
-                this.props.errorToggle("Error: Failed to reload entry data. Error message: " + result.responseText);
+                this.props.errorToggle("Error: Failed to reload entry data. Error message: " + result.responseText, result);
             }
         });
         //entity load
@@ -272,7 +272,7 @@ var SelectedHeader = React.createClass({
                 if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                     this.setState({refreshing:false});
                 } 
-                this.props.errorToggle("Error: Failed to reload entity data.");
+                this.props.errorToggle("Error: Failed to reload entity data.", result);
             }.bind(this)
         });
         //error popup if an error occurs
@@ -381,22 +381,26 @@ var SelectedHeader = React.createClass({
     sourceToggle: function() {
         $.ajax({
             type: 'GET',
-            url: '/scot/api/v2/alertgroup/'+this.props.id
-        }).success(function(response){
-            var win = window.open('/libs/viewSource.html') //, '_blank')
-            var html =  response.body;
-            var plain = response.body_plain;
-            win.onload = function() {   
-            if(html != undefined){
-                $(win.document).find('#html').text(html)
-            } else {
-                $(win.document).find('.html').remove() }
-            if(plain != undefined) {
-                $(win.document).find('#plain').text(plain)
-            }
-            else {
-                $(win.document).find('.plain').remove() }
-            }
+            url: '/scot/api/v2/alertgroup/'+this.props.id,
+            success: function(response){
+                var win = window.open('/libs/viewSource.html') //, '_blank')
+                var html =  response.body;
+                var plain = response.body_plain;
+                win.onload = function() {   
+                if(html != undefined){
+                    $(win.document).find('#html').text(html)
+                } else {
+                    $(win.document).find('.html').remove() }
+                if(plain != undefined) {
+                    $(win.document).find('#plain').text(plain)
+                }
+                else {
+                    $(win.document).find('.plain').remove() }
+                }
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get data for source popup' , data);
+            }.bind(this)
         })
     },
     Watcher: function() {
@@ -512,7 +516,7 @@ var SelectedHeader = React.createClass({
                 <div id="header">
                     <div id="NewEventInfo" className="entry-header-info-null">
                         <div className='details-subject' style={{display: 'inline-flex',paddingLeft:'5px'}}>
-                            {this.state.showEventData ? <EntryDataSubject data={this.state.headerData} subjectType={subjectType} type={type} id={this.props.id} updated={this.updated} />: null}
+                            {this.state.showEventData ? <EntryDataSubject data={this.state.headerData} subjectType={subjectType} type={type} id={this.props.id} errorToggle={this.props.errorToggle} />: null}
                             {this.state.refreshing ? <span style={{color:'lightblue'}}>Refreshing Data...</span> :null }
                             {this.state.loading ? <span style={{color:'lightblue'}}>Loading...</span> :null}    
                         </div> 
@@ -545,8 +549,8 @@ var SelectedHeader = React.createClass({
                                             }
                                             {(type == 'event' || type == 'incident') && this.state.showEventData ? <th>Promoted From:</th> : null}
                                             {(type == 'event' || type == 'incident') && this.state.showEventData ? <PromotedData data={this.state.headerData.promoted_from} type={type} id={id} /> : null}
-                                            {(type != 'entity') && this.state.showEventData ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated}/> : null}
-                                            {(type != 'entity') && this.state.showEventData ? <Source data={this.state.sourceData} id={id} type={type} updated={this.updated} /> : null }
+                                            {(type != 'entity') && this.state.showEventData ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated} errorToggle={this.props.errorToggle} /> : null}
+                                            {(type != 'entity') && this.state.showEventData ? <Source data={this.state.sourceData} id={id} type={type} updated={this.updated} errorToggle={this.props.errorToggle}/> : null }
                                         </tr>
                                     </tbody>
                                 </table>
@@ -557,12 +561,12 @@ var SelectedHeader = React.createClass({
                     </div>
                     <Notification ref="notificationSystem" /> 
                     {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
-                    {this.state.viewedByHistoryToolbar ? <ViewedByHistory viewedByHistoryToggle={this.viewedByHistoryToggle} id={id} type={type} subjectType={subjectType} viewedby={viewedby}/> : null}
-                    {this.state.changeHistoryToolbar ? <ChangeHistory changeHistoryToggle={this.changeHistoryToggle} id={id} type={type} subjectType={subjectType}/> : null} 
+                    {this.state.viewedByHistoryToolbar ? <ViewedByHistory viewedByHistoryToggle={this.viewedByHistoryToggle} id={id} type={type} subjectType={subjectType} viewedby={viewedby} errorToggle={this.props.errorToggle} /> : null}
+                    {this.state.changeHistoryToolbar ? <ChangeHistory changeHistoryToggle={this.changeHistoryToggle} id={id} type={type} subjectType={subjectType} errorToggle={this.props.errorToggle}/> : null} 
                     {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} /> : null}
                     {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} errorToggle={this.props.errorToggle} /> :null}
-                    {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} guideRedirectToAlertListWithFilter={this.guideRedirectToAlertListWithFilter} showSignatureOptionsToggle={this.showSignatureOptionsToggle}/> : null} 
-                    {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated}/> : null}
+                    {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} guideRedirectToAlertListWithFilter={this.guideRedirectToAlertListWithFilter} showSignatureOptionsToggle={this.showSignatureOptionsToggle} errorToggle={this.props.errorToggle}/> : null} 
+                    {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated} errorToggle={this.props.errorToggle} /> : null}
                 </div>
                 {this.state.showEventData && type != 'entity' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.props.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} showSignatureOptions={this.state.showSignatureOptions}/> : null}
                 {this.state.showEventData && type == 'entity' ? <EntityDetail entityid={id} entitytype={'entity'} id={id} type={'entity'} fullScreen={true} errorToggle={this.props.errorToggle} linkWarningToggle={this.linkWarningToggle}/> : null} 
@@ -615,8 +619,8 @@ var EntryDataSubject = React.createClass({
                     this.setState({value:newValue});
                     this.calculateWidth(newValue);
                 }.bind(this),
-                error: function() { 
-                    this.props.updated('error','Failed to update the subject/name');
+                error: function(result) { 
+                    this.props.errorToggle('error: Failed to update the subject/name', result);
                 }.bind(this)
             });
         }

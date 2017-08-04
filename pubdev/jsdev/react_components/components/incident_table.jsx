@@ -93,8 +93,8 @@ var IncidentTable = React.createClass({
             success: function(data) {
                 console.log('successfully changed incident data');
             }.bind(this),
-            error: function() {
-                this.props.errorToggle('Failed to updated incident data') 
+            error: function(data) {
+                this.props.errorToggle('Failed to updated incident data', data) 
             }.bind(this)
         })
     },
@@ -158,8 +158,8 @@ var IncidentDates = React.createClass({
             success: function(data) {
                 console.log('successfully changed incident data');
             }.bind(this),
-            error: function() {
-                this.props.errorToggle('Failed to updated incident data') 
+            error: function(data) {
+                this.props.errorToggle('Failed to updated incident data', data) 
             }.bind(this)
         })
 
