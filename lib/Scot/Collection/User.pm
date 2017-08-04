@@ -10,7 +10,7 @@ with    qw(
     Scot::Role::GetTagged
 );
 
-sub create_from_api {
+override api_create {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
@@ -43,7 +43,7 @@ sub create_from_api {
     }
 
     return $user;
-}
+};
 
 sub autocomplete {
     my $self    = shift;
