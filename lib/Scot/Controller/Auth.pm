@@ -283,7 +283,7 @@ sub ldap_authenticates {
     my $user    = shift;
     my $pass    = shift;
     my $env     = $self->env;
-    my $log     = $self->log;
+    my $log     = $env->log;
     my $ldap    = $env->ldap;
 
     $log->debug("seeing if ldap will authenticate");
