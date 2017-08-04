@@ -219,7 +219,7 @@ sub do_bind {
     $msg = $ldap->bind($dn, 'password' => $pass);
 
     if ( $msg->is_error ) {
-        $log->error("LDAP error: ".$msg->errorMessage);
+        $log->error("LDAP error: ",{filter=>\&Dumper, value=>$msg});
         return undef;
     }
     $log->debug("Ldap return ",{filter=>\&Dumper, value=>$msg});
