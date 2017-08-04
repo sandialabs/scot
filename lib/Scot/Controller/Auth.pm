@@ -70,7 +70,14 @@ sub check {
 
     $log->error("Failed Authentication Check");
     $self->session(orig_url => $request->url->to_string );
-    $self->redirect_to('/login');
+    # $self->redirect_to('/login');
+    $self->render(
+        status  => 401,
+        json    => { 
+            error => "Authentication Required",
+            csrf  => $self->csrf_token,
+        }
+    );
     return undef;
 }
 
