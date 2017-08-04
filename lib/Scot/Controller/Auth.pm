@@ -130,7 +130,7 @@ sub auth {
     my $origurl = $self->session('orig_url');
 
     $log->debug("Form based Login.  User = $user orig_url = $origurl");
-    $log->debug("Auth Type = ".$self->auth_type);
+    $log->debug("Auth Type = ".$env->auth_type);
 
     # remove leading and trailing spaces from password
     # sometimes happens with forms
