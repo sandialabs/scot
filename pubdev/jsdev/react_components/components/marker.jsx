@@ -1,6 +1,6 @@
 import React, { PureComponent, Component } from 'react';
 import PropTypes from 'prop-types';
-import { Modal } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import ReactTable from 'react-table';
 
 class Marker extends Component {
@@ -8,21 +8,28 @@ class Marker extends Component {
         super( props );
 
         this.state = {
-            marked: [],
             isMarked: false,
         }
         
+        this.removeMarkedItemsHandler = this.removeMarkedItemsHandler.bind(this);
+        this.getMarkedItemsHandler = this.getMarkedItemsHandler.bind(this);
+        this.setMarkedItemsHandler = this.setMarkedItemsHandler.bind(this);
+
     }
 
     componentWillMount() {
         this.mounted = true;
         
-        for (let key of this.getMarkedItems() ) {
-            if ( key.id === this.props.id && key.type === this.props.type ) {
-                this.setState({ isMarked: true });
+        let currentMarked = this.getMarkedItemsHandler();
+
+        if ( currentMarked ) {
+            for (let key of currentMarked ) {
+                if ( key.id === this.props.id && key.type === this.props.type ) {
+                    this.setState({ isMarked: true });
+                }
             }
         }
-        this.setState( { marked: JSON.parse( marked ) } );
+
     }
     
     componentWillUnmount() {
@@ -31,44 +38,75 @@ class Marker extends Component {
     
     render() {
         return (
-            <div onClick={ `${ this.state.isMarked ? this.removeMarkedItems : this.setMarkedItems }` }>
-                <i style={color: `${ this.state.isMarked ? 'green' : '' } `} className={`fa fa${this.state.isMarked ? '-check' : '' }-square-o`} aria-hidden="true"></i>
-                { this.state.isMarked ? <div>Marked</div> : <div>Mark</div> }
-            </div>
+            <Button bsSize='xsmall' onClick={ this.state.isMarked ? this.removeMarkedItemsHandler : this.setMarkedItemsHandler }>
+                <i style={{color: `${ this.state.isMarked ? 'green' : '' } `}} className={`fa fa${this.state.isMarked ? '-check' : '' }-square-o`} aria-hidden="true"></i>
+                { this.state.isMarked ? <span>Marked</span> : <span>Mark</span> }
+            </Button>
         )
     }
     
-    getMarkedItems() {
-        let markedItems = JSON.parse( getLocalStorage( 'marked' ) );
-        this.setState({ marked : markedItems });
-        return { markedItems };
+    getMarkedItemsHandler() {
+        let markedItems = getMarkedItems();
+        return ( markedItems );
     }
 
-    removeMarkedItems( type, id ) {
-        
+    removeMarkedItemsHandler( type, id ) {
+        removeMarkedItems( this.props.type, this.props.id );
+        this.setState( { isMarked: false } );
     }
 
-    setMarkedItems ( type, id, subject ) {
-        //let setMarked = new Set();
-        //setMarked.add( JSON.stringify( getMarkedItems() ) );
-        //setMarked.add( JSON.stringify( { 'type': type, 'id' : id, 'subject' : subject } ) );
-        if ( !this.state.isMarked ) {
-            for ( let key of this.getMarkedItems ) {
-                let currentMarked = getMarkedItems();
-            }
-            let nextMarked = {};
-            setLocalStorage( 'marked' , JSON.stringify( [ nextMarked, currentMarked ] );
-        }
-    }
+   setMarkedItemsHandler() {
+        setMarkedItems( this.props.type, this.props.id, this.props.string )
+        this.setState({ isMarked: true});
+    } 
     
 }
 
-Mark.propTypes = {
+export const removeMarkedItems = ( type, id ) => {
+    let currentMarked = getMarkedItems();
+
+    if ( currentMarked ) {
+        for ( let i= 0; i < currentMarked.length ; i++ ) {
+            if ( currentMarked[i].type == type && currentMarked[i].id == id ) {
+                currentMarked.splice(i, 1);
+                break;
+            }
+        }
+
+        setLocalStorage( 'marked' , JSON.stringify( currentMarked ) );
+    }
+}
+
+export const getMarkedItems = () => {
+    let markedItems = getLocalStorage( 'marked' );
+    if ( markedItems ) {
+        markedItems = JSON.parse( markedItems );
+        return (markedItems) ;
+    }
+}
+
+export const setMarkedItems = ( type, id, string ) => {
+    let nextMarked = []; 
+    let currentMarked = getMarkedItems();
+
+    if ( currentMarked.markedItems ) {
+        for ( let key of currentMarked.markedItems ) {
+            if ( key.type != type || key.id != id ) {
+                nextMarked.push( key );
+            }
+        }
+    }
+    
+    nextMarked.push( { id: id, type: type, subject: string.substring(0,120) } );
+    setLocalStorage( 'marked' , JSON.stringify( nextMarked ));
+}
+
+Marker.propTypes = {
     isMarked: PropTypes.bool
 }
 
-Mark.defaultProps = {
+Marker.defaultProps = {
     isMarked: false
 }
 
-export default Mark;
+export default Marker;
