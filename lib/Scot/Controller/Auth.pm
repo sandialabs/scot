@@ -246,8 +246,11 @@ sub authenticate_via_ldap {
 
     $log->debug("attempting authentication of $user by ldap");
 
-    if ( defined $type ) {
-        if ( $type eq "ldap" ) {
+    # what we want here is an attempt to use ldap, if it failes or ldap
+    # not configured we move on
+
+    # if ( defined $type ) {
+    #     if ( $type eq "ldap" ) {
             if ( $self->ldap_authenticates($user, $pass) ) {
                 $log->debug("$user authenticated via ldap");
                 return 1;
@@ -256,17 +259,17 @@ sub authenticate_via_ldap {
                 $log->error("$user failed ldap authentication");
                 return undef;
             }
-        }
-        else {
-            $log->debug("skipping ldap attempt");
-            return undef;
-        }
-    }
-    else {
-        $log->error("environment did not define auth_type, ".
-                    "skipping ldap attempt");
-        return undef;
-    }
+    #     }
+    #    else {
+    #       $log->debug("skipping ldap attempt");
+    #        return undef;
+    #   }
+    #}
+    #else {
+    #    $log->error("environment did not define auth_type, ".
+    #                "skipping ldap attempt");
+    #    return undef;
+    #}
 }
 
 =item B<ldap_authenticates>
