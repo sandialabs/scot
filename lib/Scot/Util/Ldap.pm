@@ -230,8 +230,11 @@ sub do_bind {
     }
     catch {
         $log->error("Failed to bind for $dn");
-        return 0;
+        return undef;
     };
+    if ( ! defined $msg ) {
+        return undef;
+    }
     return 1;
 }
 
