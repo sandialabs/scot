@@ -233,6 +233,7 @@ sub do_bind {
         return undef;
     };
     if ( ! defined $msg ) {
+        $log->warn("message not defined");
         return undef;
     }
     return 1;
