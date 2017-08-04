@@ -27,8 +27,9 @@ module.exports = React.createClass({
                 success: function() {
                     this.setState({buttonStatus:'success', buttonText:'Sent', buttonLoading:false});
                 }.bind(this),
-                error: function() {
+                error: function(data) {
                     this.setState({buttonStatus:'danger', buttonText:'Failed - Try Again?', buttonLoading:false});
+                    this.props.errorToggle('Failed to send message', data);
                 }.bind(this)
             });
         }
