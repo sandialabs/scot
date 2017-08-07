@@ -142,7 +142,7 @@ function wait_for_mongo {
         sleep 1
         let COUNTER+=1
         echo "~ waiting for mongo to initialize ($COUNTER seconds have passed)"
-        grep -q 'waiting for connections on port' /var/log/mongod.log
+        grep -q 'waiting for connections on port' /var/log/mongodb/mongod.log
     done
 
     if [[ $? -ne 0 ]]; then
