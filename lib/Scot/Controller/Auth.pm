@@ -48,9 +48,9 @@ sub check {
     if ( $env->auth_type eq "Testing" ) {
         $log->warn("in test mode, NO AUTHENTICATION");
         $user   = "scot-testing";
-        return $self->sucessful_auth(
+        return $self->sucessful_auth({
             user    => $user,
-            method  => "testing");
+            method  => "testing"});
     }
 
     if ( $user = $self->valid_mojo_session ) {
@@ -66,15 +66,15 @@ sub check {
     }
 
     if ( $user = $self->valid_authorization_header($headers) ) {
-        return $self->sucessful_auth(
+        return $self->sucessful_auth({
             user    => $user,
-            method  => "apikey");
+            method  => "apikey"});
     }
 
     if ( $user = $self->sso($headers) ) {
-        return $self->sucessful_auth(
+        return $self->sucessful_auth({
             user    => $user,
-            method  => "sso" );
+            method  => "sso"});
     }
 
     $log->error("Failed Authentication Check");
@@ -158,18 +158,18 @@ sub auth {
 
     $log->debug("attempting to authenticate via ldap");
     if ( $self->authenticate_via_ldap($user, $pass) ) {
-        return $self->sucessful_auth(
+        return $self->sucessful_auth({
             user    => $user, 
             url     => $origurl,
-            method  => "ldap" );
+            method  => "ldap"});
     }
 
     $log->debug("attempting to authenticate via local");
     if ( $self->authenticate_via_local($user, $pass) ) {
-        return $self->sucessful_auth(
+        return $self->sucessful_auth({
             user    => $user,
             url     => $origurl,
-            method  => "local");
+            method  => "local"});
     }
      
     # all hope is lost
@@ -216,10 +216,10 @@ sub sso {
     $log->debug("Remoteuser set by Webserver as $remoteuser");
 
     if ( my $user = $self->valid_remoteuser($headers) ) {
-        $self->sucessful_auth(
+        $self->sucessful_auth({
             user    => $user,
             url     => $url,
-            method  => "remoteuser");
+            method  => "remoteuser"});
         return $user;
     }
     $self->render(
