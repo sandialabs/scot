@@ -68,8 +68,8 @@ var TagDataIterator = React.createClass({
             success: function(data) {
                 console.log('deleted tag success: ' + data);
             }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to delete tag');
+            error: function(data) {
+                this.props.errorToggle('Failed to delete tag', data);
             }.bind(this)
         });
     },
@@ -117,21 +117,28 @@ var NewTag = React.createClass({
                 console.log('success: tag added');
                 this.props.toggleTagEntry();
             }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to add tag');
+            error: function(data) {
+                this.props.errorToggle('Failed to add tag', data);
                 this.props.toggleTagEntry();
             }.bind(this)
         });
     },
     handleInputChange: function(input) {
         var arr = [];
-        this.serverRequest = $.get('/scot/api/v2/ac/tag/' + input, function (result) {
-            var result = result.records;
-            for (var i=0; i < result.length; i++) {
-                arr.push(result[i].value)
-            }
-            this.setState({suggestions:arr})
-        }.bind(this));
+        $.ajax({
+            type:'get',
+            url:'/scot/api/v2/ac/tag/' + input, 
+            success: function (result) {
+                var result = result.records;
+                for (var i=0; i < result.length; i++) {
+                    arr.push(result[i].value)
+                }
+                this.setState({suggestions:arr})
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('Failed to get autocomplete data for tag', data)
+            }.bind(this)
+        })
     },
     handleDelete: function () {
         //blank since buttons are handled outside of this
