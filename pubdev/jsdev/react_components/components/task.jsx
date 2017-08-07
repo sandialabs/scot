@@ -28,8 +28,8 @@ var Task = React.createClass({
             success: function(data) {
                 console.log('success: ' + data);
             }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to close task');
+            error: function(data) {
+                this.props.errorToggle('Failed to close task', data);
             }.bind(this)
         }); 
     },
@@ -43,8 +43,8 @@ var Task = React.createClass({
             success: function(data) {
                 console.log('success: ' + data);
             }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to close task');
+            error: function(data) {
+                this.props.errorToggle('Failed to close task', data);
             }.bind(this)
         });
     },
@@ -58,8 +58,8 @@ var Task = React.createClass({
             success: function(data) {
                 console.log('success: ' + data);
            }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to make Task owner');
+            error: function(data) {
+                this.props.errorToggle('Failed to make Task owner', data);
             }.bind(this)
         });
     },

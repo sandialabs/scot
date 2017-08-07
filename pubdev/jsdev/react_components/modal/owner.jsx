@@ -24,10 +24,17 @@ var Owner = React.createClass({
         }
     },
     componentDidMount: function() {
-        this.whoamiRequest = $.get('scot/api/v2/whoami', function (result) {
-            var result = result.user;
-            this.setState({whoami:result})
-        }.bind(this)); 
+        $.ajax({
+            type:'get',
+            url:'scot/api/v2/whoami', 
+            success: function (result) {
+                var result = result.user;
+                this.setState({whoami:result})
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get whoami data', data)
+            }.bind(this)
+        })
     },
     componentWillReceiveProps: function() {
         this.setState({currentOwner:this.props.data});
@@ -42,8 +49,8 @@ var Owner = React.createClass({
             success: function(data) {
                 var key = this.state.key;
             }.bind(this),
-            error: function() {
-                this.props.errorToggle('Failed to change owner');
+            error: function(data) {
+                this.props.errorToggle('Failed to change owner', data);
             }.bind(this)
         }); 
         this.ownerToggle();
