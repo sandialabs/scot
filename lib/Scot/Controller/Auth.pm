@@ -41,18 +41,23 @@ sub check {
     my $user    = '';
     my $headers = $request->headers;
 
+    $log->level(Log::Log4perl::Level::to_priority('INFO'));
+
     $log->debug("Authentication Check Begins...");
 
     if ( $env->auth_type eq "Testing" ) {
         $log->warn("in test mode, NO AUTHENTICATION");
         $user   = "scot-testing";
-        return $self->sucessful_auth($user);
+        return $self->sucessful_auth(
+            user    => $user,
+            method  => "testing");
     }
 
     if ( $user = $self->valid_mojo_session ) {
-        $log->debug("Successful Prior Authentication Still Valid");
         $self->update_lastvisit($user);
-        if ($self->set_group_membership($user)) {
+        my $groups = $self->set_group_membership($user);
+        if (defined $groups) {
+            $log->info("User $user (".join(',',@$groups).") Authenticated via Mojo session");
             return 1;
         }
         else {
@@ -61,11 +66,15 @@ sub check {
     }
 
     if ( $user = $self->valid_authorization_header($headers) ) {
-        return $self->sucessful_auth($user);
+        return $self->sucessful_auth(
+            user    => $user,
+            method  => "apikey");
     }
 
     if ( $user = $self->sso($headers) ) {
-        return $self->sucessful_auth($user);
+        return $self->sucessful_auth(
+            user    => $user,
+            method  => "sso" );
     }
 
     $log->error("Failed Authentication Check");
@@ -149,12 +158,18 @@ sub auth {
 
     $log->debug("attempting to authenticate via ldap");
     if ( $self->authenticate_via_ldap($user, $pass) ) {
-        return $self->sucessful_auth($user, $origurl);
+        return $self->sucessful_auth(
+            user    => $user, 
+            url     => $origurl,
+            method  => "ldap" );
     }
 
     $log->debug("attempting to authenticate via local");
     if ( $self->authenticate_via_local($user, $pass) ) {
-        return $self->sucessful_auth($user, $origurl);
+        return $self->sucessful_auth(
+            user    => $user,
+            url     => $origurl,
+            method  => "local");
     }
      
     # all hope is lost
@@ -201,7 +216,10 @@ sub sso {
     $log->debug("Remoteuser set by Webserver as $remoteuser");
 
     if ( my $user = $self->valid_remoteuser($headers) ) {
-        $self->sucessful_auth($user,$url);
+        $self->sucessful_auth(
+            user    => $user,
+            url     => $url,
+            method  => "remoteuser");
         return $user;
     }
     $self->render(
@@ -556,7 +574,7 @@ sub set_group_membership {
         $log->debug("Groups set in Mojo Session");
         $log->debug("$user Groups are ".join(', ',@$groups));
         if ( scalar(@$groups) > 0 ) {
-            return 1;
+            return $groups;
         }
     }
 
@@ -566,7 +584,7 @@ sub set_group_membership {
     if ( scalar(@$groups) > 0 ) {
         $log->debug("Got 1 or more groups, storing in session");
         $self->session(groups => $groups);
-        return 1;
+        return $groups;
     }
     else {
         $log->error("User has null group set!");
@@ -741,15 +759,17 @@ sub update_user_failure {
 
 sub sucessful_auth {
     my $self    = shift;
-    my $user    = shift;
-    my $url     = shift;
+    my $href    = shift;
+    my $user    = $href->{user};
+    my $url     = $href->{url};
+    my $method  = $href->{method};
     my $env     = $self->env;
     my $log     = $env->log;
 
-    $log->warn("User $user sucessfully authenticated");
+    $log->debug("User $user sucessfully authenticated");
 
     if ( $user eq "scot-testing" ) {
-        $log->warn("setting default groups for $user since in test mode");
+        $log->debug("setting default groups for $user since in test mode");
     }
 
     my $groups  = $self->get_groups($user);
@@ -772,6 +792,8 @@ sub sucessful_auth {
         secure  => 1,
         expiration  => $expiration,
     );
+
+    $log->info("User $user (".join(',',@$groups).") Authenticated via $method");
 
     if ( defined $url ) {
         $self->redirect_to($url);
