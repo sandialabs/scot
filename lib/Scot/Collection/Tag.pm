@@ -13,7 +13,7 @@ with    qw(
 # tags can be created from a post to /scot/v2/tag
 # ( also "put"ting a tag on a thing will create one but not in this function
 
-sub create_from_api {
+override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
@@ -50,17 +50,20 @@ sub create_from_api {
 
     return $tag_obj;
 
-}
-
+};
 
 sub autocomplete { 
     my $self    = shift;
     my $string  = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    $log->debug("Tag autocomplete! $string");
     my @results = ();
     my $cursor  = $self->find({
-        value    => /$string/i
+        value    => qr/$string/i
     });
-    @results    = map { $_->value } $cursor->all;
+    @results    = map { $_->{value} } $cursor->all;
     return wantarray ? @results : \@results;
 }
 
