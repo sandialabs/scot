@@ -155,6 +155,10 @@ relies on the browser BasicAuth popup.
     $r  ->route ( '/sso' )    
         ->to    ($authclass.'#sso') 
         ->name  ('sso');
+
+    $r  ->route ( '/logout' )
+        ->to    ($authclass."#logout")
+        ->name  ('logout');
     
     # make sure that we have passed authentication
 
