@@ -112,7 +112,7 @@ sub logout {
     $self->session( expires => 1 );
     $self->render(
         status  => 200,
-        orig_url => '/'
+        orig_url => '/',
         json    => {
             result  => "user logged out"
         });
@@ -183,7 +183,7 @@ need to otherwise lock this connection down
 sub sso {
     my $self    = shift;
     my $log     = $self->env->log;
-    my $url     = $self->param('orig_url');
+    my $url     = $self->param('orig_url') // '/';
     $log->debug("SSO authentication attempt ($url)");
     if ( $url eq "/login" ) {
         $url    = "/";
