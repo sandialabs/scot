@@ -189,6 +189,20 @@ var App = React.createClass({
             this.props.history.push( this.state.origurl );
         }
     },
+    
+    LogOut: function() {
+        //Logs out of SCOT
+        $.ajax({ 
+            type: 'get',
+            url: '/scot/api/v2/logout',
+            success: function(data) {
+                console.log('Successfully logged out');
+            }.bind(this), 
+            error: function(data) {
+                this.error('Failed to log out', data);
+            }.bind(this)
+        })
+    },
 
     render: function() {
         var IH = 'Incident Handler: ' + this.state.handler;
@@ -235,6 +249,8 @@ var App = React.createClass({
                                 <MenuItem divider />
                                 <MenuItem href='/admin/index.html'>Administration</MenuItem>
                                 <MenuItem href='/docs/index.html'>Documentation</MenuItem>
+                                <MenuItem divider />
+                                <MenuItem href='/#/' onClick={this.LogOut} >Log Out</MenuItem>
                             </NavDropdown>
                             <NavItem href='/incident_handler.html'>{IH}</NavItem>
                         </Nav>
@@ -243,7 +259,7 @@ var App = React.createClass({
                     </Navbar.Collapse>
                 </Navbar>
                 <div className='mainNavPadding'>
-                    <Login csrf={this.state.csrf} modalActive={this.state.login} loginToggle={this.loginToggle} errorToggle={this.props.errorToggle} />
+                    <Login csrf={this.state.csrf} modalActive={this.state.login} loginToggle={this.loginToggle} errorToggle={this.errorToggle} />
                     <Notification ref='notificationSystem' />
                     {!this.props.match.params.value || this.props.match.params.value == 'home' ? 
                     <div className="homePageDisplay">
