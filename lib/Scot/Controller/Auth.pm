@@ -110,6 +110,7 @@ sub logout {
     $self->session( user    => '' );
     $self->session( groups  => '' );
     $self->session( expires => 1 );
+    $self->render( orig_url => '/');
 }
 
 =item B<auth>
