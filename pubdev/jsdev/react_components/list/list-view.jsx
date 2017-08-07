@@ -127,63 +127,71 @@ module.exports = React.createClass({
 	        url: url,
 	        data: data,
             traditional:true,
-	    }).then(function(response){
-  	        datasource = response	
-	        $.each(datasource.records, function(key, value){
-	            finalarray[key] = {}
-	            $.each(value, function(num, item){
-	                if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
-	                {
-	                    var date = new Date(1000 * item)
-	                    finalarray[key][num] = date.toLocaleString()
-	                }
-                    else if (num == 'sources' || num == 'source'){
-                        if (item != undefined) {
-                            var sourcearr = item.join(', ')
-                            finalarray[key]["source"] = sourcearr;
+	        success: function(response){
+                datasource = response	
+                $.each(datasource.records, function(key, value){
+                    finalarray[key] = {}
+                    $.each(value, function(num, item){
+                        if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
+                        {
+                            var date = new Date(1000 * item)
+                            finalarray[key][num] = date.toLocaleString()
                         }
-                    }
-                    else if (num == 'tags' || num == 'tag'){
-                        if (item != undefined) {
-                            var tagarr = item.join(', ')
-                            finalarray[key]["tag"] = tagarr;
+                        else if (num == 'sources' || num == 'source'){
+                            if (item != undefined) {
+                                var sourcearr = item.join(', ')
+                                finalarray[key]["source"] = sourcearr;
+                            }
                         }
+                        else if (num == 'tags' || num == 'tag'){
+                            if (item != undefined) {
+                                var tagarr = item.join(', ')
+                                finalarray[key]["tag"] = tagarr;
+                            }
+                        }
+                        else{
+                            finalarray[key][num] = item
+                        }
+                        if (num == 'id') {
+                            Store.storeKey(item)
+                            Store.addChangeListener(this.reloadactive)
+                            idsarray.push(item);            
+                        }
+                    }.bind(this))
+                    if(key %2 == 0){
+                        finalarray[key]["classname"] = 'table-row roweven'
                     }
-	                else{
-	                    finalarray[key][num] = item
-	                }
-                    if (num == 'id') {
-                        Store.storeKey(item)
-                        Store.addChangeListener(this.reloadactive)
-                        idsarray.push(item);            
+                    else {
+                        finalarray[key]["classname"] = 'table-row rowodd'
                     }
                 }.bind(this))
-                if(key %2 == 0){
-                    finalarray[key]["classname"] = 'table-row roweven'
-                }
-                else {
-                    finalarray[key]["classname"] = 'table-row rowodd'
-                }
-            }.bind(this))
-            this.setState({scrollheight:height, objectarray: finalarray, totalcount: response.totalRecordCount, loading:false, idsarray:idsarray});
-            if (this.props.type == 'alert' && this.state.showSelectedContainer == false) {
-                this.setState({showSelectedContainer:false})
-            } else if (this.state.id == undefined) {
-                this.setState({showSelectedContainer: false})
-            } else {
-                this.setState({showSelectedContainer: true})
-            };
-            
-        }.bind(this))
+                this.setState({scrollheight:height, objectarray: finalarray, totalcount: response.totalRecordCount, loading:false, idsarray:idsarray});
+                if (this.props.type == 'alert' && this.state.showSelectedContainer == false) {
+                    this.setState({showSelectedContainer:false})
+                } else if (this.state.id == undefined) {
+                    this.setState({showSelectedContainer: false})
+                } else {
+                    this.setState({showSelectedContainer: true})
+                };
+                
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get list data', data)
+            }.bind(this)
+        })
         
         //get incident handler
         $.ajax({
             type: 'get',
-            url: '/scot/api/v2/handler?current=1'
-        }).success(function(response){
-            this.setState({handler: response.records})
-        }.bind(this))
-        
+            url: '/scot/api/v2/handler?current=1',
+            success: function(response){
+                this.setState({handler: response.records})
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get incident handler', data)
+            }.bind(this)
+        })
+
         $('#list-view-container').keydown(function(e){
             if ($('input').is(':focus')) {return};
             if (e.ctrlKey != true && e.metaKey != true) {
@@ -288,7 +296,7 @@ module.exports = React.createClass({
                                         <div className='tableview' style={{display: 'flex'}}>
                                             <div id='fluid2' className="container-fluid2" style={{width:'100%', maxHeight: this.state.maxheight, marginLeft: '0px',height: this.state.scrollheight, 'overflow': 'hidden',paddingLeft:'5px', display:'flex', flexFlow: 'column'}}>                 
                                                 <table style={{width:'100%'}}>
-                                                    <ListViewHeader data={this.state.objectarray} columns={this.state.columns} columnsDisplay={this.state.columnsDisplay} columnsClassName={this.state.columnsClassName} handleSort={this.handleSort} sort={this.state.sort} filter={this.state.filter} handleFilter={this.handleFilter} startepoch={this.state.startepoch} endepoch={this.state.endepoch} type={this.props.type}/>
+                                                    <ListViewHeader data={this.state.objectarray} columns={this.state.columns} columnsDisplay={this.state.columnsDisplay} columnsClassName={this.state.columnsClassName} handleSort={this.handleSort} sort={this.state.sort} filter={this.state.filter} handleFilter={this.handleFilter} startepoch={this.state.startepoch} endepoch={this.state.endepoch} type={this.props.type} errorToggle={this.props.errorToggle}/>
                                                 </table>
                                                 <div id='list-view-data-div' style={{height:this.state.scrollheight}} className='list-view-overflow'>
                                                     <div className='list-view-data-div' style={{display:'block'}}>
@@ -355,11 +363,15 @@ module.exports = React.createClass({
         if (this.props.type == 'alert') {
             $.ajax({
                 type: 'get',
-                url: 'scot/api/v2/alert/' + id
-            }).success(function(response1){
-                var newresponse = response1
-                this.setState({id: newresponse.alertgroup, showSelectedContainer:true})
-            }.bind(this))
+                url: 'scot/api/v2/alert/' + id,
+                success: function(response1) {
+                    var newresponse = response1
+                    this.setState({id: newresponse.alertgroup, showSelectedContainer:true})
+                }.bind(this),
+                error: function(data) {
+                    this.props.errorToggle('failed to convert alert id to alertgroup id', data);
+                }.bind(this),
+            })
         };
     },
 
@@ -513,61 +525,70 @@ module.exports = React.createClass({
 	        url: '/scot/api/v2/'+this.state.type,
 	        data: data,
             traditional: true,
-	    }).then(function(response){
-  	        datasource = response	
-	        $.each(datasource.records, function(key, value){
-	            newarray[key] = {}
-	            $.each(value, function(num, item){
-	                if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
-	                {
-	                    var date = new Date(1000 * item)
-	                    newarray[key][num] = date.toLocaleString()
-	                }
-                    else if (num == 'sources' || num == 'source'){
-                        if (item != undefined) {
-                            var sourcearr = item.join(', ')
-                            newarray[key]["source"] = sourcearr;
+	        success: function(response){
+                datasource = response	
+                $.each(datasource.records, function(key, value){
+                    newarray[key] = {}
+                    $.each(value, function(num, item){
+                        if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
+                        {
+                            var date = new Date(1000 * item)
+                            newarray[key][num] = date.toLocaleString()
                         }
-                    }
-                    else if (num == 'tags' || num == 'tag'){
-                        if (item != undefined) {
-                            var tagarr = item.join(', ')
-                            newarray[key]["tag"] = tagarr;
-                        }
-                    } 
-	                else{
-	                    newarray[key][num] = item
-	                }
-                    if (num == 'id') {
-                        var idalreadyadded = false;
-                        for (var i=0; i < idsarray.length; i++) {
-                            if (item == idsarray[i]) {
-                                idalreadyadded = true;
+                        else if (num == 'sources' || num == 'source'){
+                            if (item != undefined) {
+                                var sourcearr = item.join(', ')
+                                newarray[key]["source"] = sourcearr;
                             }
                         }
-                        if (idalreadyadded == false) {
-                            Store.storeKey(item)
-                            Store.addChangeListener(this.reloadactive)
+                        else if (num == 'tags' || num == 'tag'){
+                            if (item != undefined) {
+                                var tagarr = item.join(', ')
+                                newarray[key]["tag"] = tagarr;
+                            }
+                        } 
+                        else{
+                            newarray[key][num] = item
                         }
-                        newidsarray.push(item);
+                        if (num == 'id') {
+                            var idalreadyadded = false;
+                            for (var i=0; i < idsarray.length; i++) {
+                                if (item == idsarray[i]) {
+                                    idalreadyadded = true;
+                                }
+                            }
+                            if (idalreadyadded == false) {
+                                Store.storeKey(item)
+                                Store.addChangeListener(this.reloadactive)
+                            }
+                            newidsarray.push(item);
+                        }
+                    }.bind(this))
+                    if(key %2 == 0){
+                        newarray[key]['classname'] = 'table-row roweven'
                     }
-	            }.bind(this))
-                if(key %2 == 0){
-                    newarray[key]['classname'] = 'table-row roweven'
-                }
-                else {
-                    newarray[key]['classname'] = 'table-row rowodd'
-                }
-	        }.bind(this))
+                    else {
+                        newarray[key]['classname'] = 'table-row rowodd'
+                    }
+                }.bind(this)),
                 this.setState({totalcount: response.totalRecordCount, activepage: {page:pageNumber, limit:pageLimit}, objectarray: newarray, loading:false, idsarray:newidsarray})
-        }.bind(this))
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get list data', data); 
+            }
+        });
+
         //get incident handler
         $.ajax({
             type: 'get',
-            url: '/scot/api/v2/handler?current=1'
-        }).success(function(response){
-            this.setState({handler: response.records})
-        }.bind(this))
+            url: '/scot/api/v2/handler?current=1',
+            success: function(response) {
+                this.setState({handler: response.records})
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get incident handler', data);
+            }.bind(this)
+        })
     },
 
     exportCSV: function(){
@@ -689,22 +710,23 @@ module.exports = React.createClass({
         )
     },
     createNewThing: function(){
-    var data;
-    if (this.props.type == 'signature') {
-        data = JSON.stringify({name:'Name your Signature', status: 'disabled'});   
-    } else {
-        data = JSON.stringify({subject: 'No Subject'});
-    }
+        var data;
+        if (this.props.type == 'signature') {
+            data = JSON.stringify({name:'Name your Signature', status: 'disabled'});   
+        } else {
+            data = JSON.stringify({subject: 'No Subject'});
+        }
         $.ajax({
             type: 'POST',
             url: '/scot/api/v2/'+this.props.type,
-            data: data
-        }).success(function(response){
-            this.selected(this.props.type, response.id);
-            //this.props.history.push( '/' + this.props.type + '/' + response.id );
-            //this.launchEvent(this.props.type,response.id)
-            //window.history.pushState('Page', 'SCOT', '/#/'+this.props.type+'/'+response.id);
-        }.bind(this))
+            data: data,
+            success: function(response){
+                this.selected(this.props.type, response.id);
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to create new thing', data);
+            }.bind(this)
+        })
     }, 
 });
 
