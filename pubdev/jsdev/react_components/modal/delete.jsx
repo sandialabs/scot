@@ -29,8 +29,8 @@ var DeleteEvent = React.createClass({
                 console.log('success: ' + data);
                 this.props.deleteToggle();
             }.bind(this),
-            error: function() {
-                this.props.errorToggle('Failed to delete');  
+            error: function(data) {
+                this.props.errorToggle('Failed to delete', data);  
                 this.props.deleteToggle();
             }.bind(this)
         });         
@@ -67,8 +67,8 @@ var DeleteEntry = React.createClass({
                console.log('success: ' + data);
                var key = this.state.key;
            }.bind(this),
-           error: function() {
-               this.props.errorToggle('Failed to delete entry');
+           error: function(data) {
+               this.props.errorToggle('Failed to delete entry', data);
            }.bind(this)
         }); 
         this.props.deleteToggle();
