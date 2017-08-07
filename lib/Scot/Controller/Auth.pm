@@ -110,7 +110,12 @@ sub logout {
     $self->session( user    => '' );
     $self->session( groups  => '' );
     $self->session( expires => 1 );
-    $self->render( orig_url => '/');
+    $self->render(
+        status  => 200,
+        orig_url => '/'
+        json    => {
+            result  => "user logged out"
+        });
 }
 
 =item B<auth>
