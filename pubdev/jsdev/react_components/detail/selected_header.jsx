@@ -134,10 +134,9 @@ var SelectedHeader = React.createClass({
                             this.setState({showEntityData:true, entityData:entityResult})
                             var waitForEntry = {
                                 waitEntry: function() {
-                                    if(this.state.showEntryData == false && alertgroupforentity === false) {
+                                    if(this.state.showEntryData == false ) {
                                         setTimeout(waitForEntry.waitEntry,50);
                                     } else {
-                                        alertgroupforentity = false;
                                         setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,this.scrollTo)}.bind(this));
                                         if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                                             this.setState({loading:false});        
@@ -253,10 +252,9 @@ var SelectedHeader = React.createClass({
                     this.setState({showEntityData:true, entityLoaded:true, entityData:entityResult})
                     var waitForEntry = {
                         waitEntry: function() {
-                            if(this.state.entryLoaded == false && alertgroupforentity === false){
+                            if(this.state.entryLoaded == false ){
                                 setTimeout(waitForEntry.waitEntry,50);
                             } else {
-                                alertgroupforentity = false;
                                 setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
                                 if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                                     this.setState({refreshing:false});
