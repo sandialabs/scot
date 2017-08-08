@@ -20,15 +20,7 @@ class Marker extends Component {
     componentWillMount() {
         this.mounted = true;
         
-        let currentMarked = this.getMarkedItemsHandler();
-
-        if ( currentMarked ) {
-            for (let key of currentMarked ) {
-                if ( key.id === this.props.id && key.type === this.props.type ) {
-                    this.setState({ isMarked: true });
-                }
-            }
-        }
+        this.getMarkedItemsHandler();
 
     }
     
@@ -36,18 +28,44 @@ class Marker extends Component {
         this.mounted = false;
     }
     
+    componentWillReceiveProps() {
+        this.getMarkedItemsHandler();
+    }
+
     render() {
-        return (
-            <Button bsSize='xsmall' onClick={ this.state.isMarked ? this.removeMarkedItemsHandler : this.setMarkedItemsHandler }>
-                <i style={{color: `${ this.state.isMarked ? 'green' : '' } `}} className={`fa fa${this.state.isMarked ? '-check' : '' }-square-o`} aria-hidden="true"></i>
-                { this.state.isMarked ? <span>Marked</span> : <span>Mark</span> }
-            </Button>
-        )
+        if ( this.props.type == 'entry' ) {
+            
+            return (
+                <span onClick={ this.state.isMarked ? this.removeMarkedItemsHandler : this.setMarkedItemsHandler }>
+                    <i style={{color: `${ this.state.isMarked ? 'green' : '' } `}} className={`fa fa${this.state.isMarked ? '-check' : '' }-square-o`} aria-hidden="true"></i>
+                    { this.state.isMarked ? <span>Marked</span> : <span>Mark</span> }
+                </span>
+            )
+
+        } else {
+            
+            return (
+                <Button bsSize='xsmall' onClick={ this.state.isMarked ? this.removeMarkedItemsHandler : this.setMarkedItemsHandler }>
+                    <i style={{color: `${ this.state.isMarked ? 'green' : '' } `}} className={`fa fa${this.state.isMarked ? '-check' : '' }-square-o`} aria-hidden="true"></i>
+                    { this.state.isMarked ? <span>Marked</span> : <span>Mark</span> }
+                </Button>
+            )
+        }
     }
     
     getMarkedItemsHandler() {
         let markedItems = getMarkedItems();
-        return ( markedItems );
+        let isMarked = false;
+
+        if ( markedItems ) {
+            for (let key of markedItems ) {
+                if ( key.id === this.props.id && key.type === this.props.type ) {
+                    isMarked = true;
+                    break;
+                }
+            }
+        }
+        this.setState({ isMarked: isMarked });
     }
 
     removeMarkedItemsHandler( type, id ) {
@@ -89,8 +107,8 @@ export const setMarkedItems = ( type, id, string ) => {
     let nextMarked = []; 
     let currentMarked = getMarkedItems();
 
-    if ( currentMarked.markedItems ) {
-        for ( let key of currentMarked.markedItems ) {
+    if ( currentMarked ) {
+        for ( let key of currentMarked ) {
             if ( key.type != type || key.id != id ) {
                 nextMarked.push( key );
             }
