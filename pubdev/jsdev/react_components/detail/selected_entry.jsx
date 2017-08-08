@@ -19,6 +19,8 @@ var LinkWarning             = require('../modal/link_warning.jsx');
 var Link                    = require('react-router-dom').Link;
 var IncidentTable           = require('../components/incident_table.jsx');
 var SignatureTable          = require('../components/signature_table.jsx');
+var Marker                  = require('../components/marker.jsx').default;
+
 var SelectedEntry = React.createClass({
     getInitialState: function() {
         var entityDetailKey = Math.floor(Math.random()*1000);
@@ -908,6 +910,7 @@ var EntryParent = React.createClass({
                                     { type != 'entity' ? <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem> : null}
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} /></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items} /></MenuItem>
+                                    <MenuItem><Marker type={'entry'} id={items.id} string={items.body_plain} /></MenuItem>
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
                                     <MenuItem onClick={this.reparseFlair}>Reparse Flair</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
