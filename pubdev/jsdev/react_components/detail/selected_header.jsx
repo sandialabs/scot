@@ -71,7 +71,7 @@ var SelectedHeader = React.createClass({
             runWatcher: false,
             entityDetailKey: entityDetailKey,
             showSignatureOptions: false,
-            isDeleted: false,
+            isDeleted: false,       
         }
     },
     componentWillMount: function() {
