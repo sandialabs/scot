@@ -16,9 +16,16 @@ var Task = React.createClass({
     getInitialState: function () {
         return {
             key:this.props.id,
+            whoami: undefined,
         }
     },
-    makeTask: function () {
+
+    componentDidMount: function() {
+        var whoami = getSessionStorage('whoami');
+        this.setState({whoami:whoami});
+    },
+
+    makeTask: function () {   
         var json = {'make_task':1}
         $.ajax({
             type: 'put',
@@ -69,19 +76,19 @@ var Task = React.createClass({
         if (this.props.taskData.metadata.status === undefined || this.props.taskData.metadata.status === null || this.props.taskData.class != 'task') {
             taskDisplay = 'Make Task';
             onClick = this.makeTask;
-        } else if (whoami != this.props.taskData.metadata.who && this.props.taskData.metadata.status == 'open') {
+        } else if (this.state.whoami != this.props.taskData.metadata.who && this.props.taskData.metadata.status == 'open') {
             taskDisplay = 'Assign task to me';
             onClick = this.takeTask;
-        } else if (whoami == this.props.taskData.metadata.who && this.props.taskData.metadata.status == 'open') {
+        } else if (this.state.whoami == this.props.taskData.metadata.who && this.props.taskData.metadata.status == 'open') {
             taskDisplay = 'Close Task';
             onClick = this.closeTask;
         } else if (this.props.taskData.metadata.status == 'closed' || this.props.taskData.metadata.status == 'completed') {
             taskDisplay = 'Reopen Task';
             onClick = this.makeTask;
-        } else if (whoami == this.props.taskData.metadata.who && this.props.taskData.metadata.status == 'assigned') {
+        } else if (this.state.whoami == this.props.taskData.metadata.who && this.props.taskData.metadata.status == 'assigned') {
             taskDisplay = 'Close Task';
             onClick = this.closeTask;
-        } else if (whoami != this.props.taskData.metadata.who && this.props.taskData.metadata.status == 'assigned') {
+        } else if (this.state.whoami != this.props.taskData.metadata.who && this.props.taskData.metadata.status == 'assigned') {
             taskDisplay = 'Assign task to me';
             onClick = this.takeTask;
         }
