@@ -16,7 +16,7 @@ var Status = React.createClass({
                 this.setState({StatusData:response});
             }.bind(this),
             error: function(data) {
-                this.errorToggle('failed to get status', data)
+                this.props.errorToggle('failed to get status', data)
             }.bind(this)
         })
     },
