@@ -1,7 +1,8 @@
 import React, { PureComponent, Component } from 'react';
 import PropTypes from 'prop-types';
-import { Modal } from 'react-bootstrap';
+import { Modal, Button } from 'react-bootstrap';
 import ReactTable from 'react-table';
+import { removeMarkedItems } from '../components/marker';
 
 class Mark extends Component {
     constructor( props ) { 
@@ -15,14 +16,13 @@ class Mark extends Component {
         this.handleTHeadCheckboxSelection = this.handleTHeadCheckboxSelection.bind(this);
         this.handleRowSelection = this.handleRowSelection.bind(this);
         this.handleCheckboxSelection = this.handleCheckboxSelection.bind(this);
+        this.getMarkedItems = this.getMarkedItems.bind(this);
     }
 
     componentWillMount() {
         this.mounted = true;
         
-        const data = this.getMarkedItems();
-
-        this.setState({ data: data.markedItems });
+        this.getMarkedItems();
     }
 
     componentWillUnmount() {
@@ -89,7 +89,7 @@ class Mark extends Component {
                     />
                 </Modal.Body>
                 <Modal.Footer>
-                    Buttons go here
+                    <Actions data={this.state.data} id={this.props.id} type={this.props.type} getMarkedItems={this.getMarkedItems} errorToggle={this.props.errorToggle} />
                 </Modal.Footer>
             </Modal>
         )
@@ -174,8 +174,163 @@ class Mark extends Component {
         if ( markedItems ) {
             markedItems = JSON.parse( markedItems );
         }
-        return { markedItems }; 
+        
+        this.setState({ data: markedItems });
     }
+}
+
+class Actions extends Component {
+    constructor( props ) {
+        super( props );
+
+        this.state = {
+            entry: false,
+            thing: false,
+            actionSuccess: false,
+        }
+        
+        this.RemoveSelected = this.RemoveSelected.bind(this);
+        this.MoveEntry = this.MoveEntry.bind(this);
+        this.CopyEntry = this.CopyEntry.bind(this);
+        this.EntryAjax = this.EntryAjax.bind(this);
+        this.ToggleActionSuccess = this.ToggleActionSuccess.bind(this);
+    }
+
+    componentWillMount() {
+        this.mounted = true;
+    }
+
+    componentWillUnmount() {
+        this.mounted = false;
+    }
+
+    render() {
+        let buttons = [];
+        let entry = false;
+        let thing = false;
+
+        for ( let key of this.props.data ) {
+            if ( key.type && key.selected ) {
+                if ( key.type == 'entry' ) { 
+                    entry = true;
+                } else {
+                    thing = true;
+                }
+            }
+        }
+         
+        return (
+            <div>
+                {this.state.actionSuccess ? 
+                    <div>
+                        <Button bsStyle='success' onClick={this.RemoveSelected}>Action Successful! Remove Selected?</Button>
+                        <Button onClick={this.ToggleActionSuccess}>Keep Selected</Button>
+                    </div>
+                :
+                    <div>
+                        {entry && !thing ? <Button onClick={this.MoveEntry}>Move Selected Entry to current thing (DELETES ORIGINAL ENTRY)</Button> : null }
+                        {entry && !thing ? <Button onClick={this.CopyEntry}>Copy Selected Entry to current thing</Button> : null }
+                        {thing || entry ? <Button disabled>Link Selected to current thing</Button> : null } 
+                        {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Remove Selected</Button> : null }
+                    </div>                
+                }   
+            </div>
+        )
+    }
+
+    RemoveSelected() {
+        for ( let key of this.props.data ) {
+            if ( key.selected ) {
+                removeMarkedItems( key.type, key.id );
+            }
+        }
+        
+        //update marked items after removal
+        this.props.getMarkedItems();
+        
+        //turn off the action success buttons after removal
+        if ( this.state.actionSuccess ) {
+            this.setState({ actionSuccess: false });
+        }
+    }
+    
+    MoveEntry() {
+        for (let key of this.props.data ) {
+            if ( key.selected && key.type =='entry' ) {
+                this.EntryAjax( key.id, true ); 
+            }
+        }
+    }
+    
+    CopyEntry() {
+        for (let key of this.props.data ) {
+            if ( key.selected && key.type =='entry' ) {
+                this.EntryAjax( key.id, false );
+            }
+        } 
+    }
+
+    EntryAjax(id, removeOriginal) {
+        
+        $.ajax({
+            type: 'get',
+            url: '/scot/api/v2/entry/' + id,
+            success: function( response ) {
+                let data ={};
+                data= {parent: 0, body: response.body, target_id: parseInt(this.props.id), target_type: this.props.type}; 
+                $.ajax({
+                    type: 'post',
+                    url: '/scot/api/v2/entry',
+                    data: JSON.stringify(data),
+                    contentType: 'application/json; charset=UTF-8',
+                    dataType: 'json',
+                    success: function( response ) {
+                        
+                        if ( removeOriginal ) {
+                            this.RemoveEntryAfterMove ( id );   
+                            this.RemoveSelected();
+                        } else {
+                          this.ToggleActionSuccess();
+                        }
+
+                    }.bind(this),
+                    error: function ( data ) {
+                        this.props.errorToggle('failed to create new entry', data);
+                    }.bind(this)
+                })
+            }.bind(this),
+            error: function( data ) {
+                this.props.errorToggle('failed to get entry data', data);
+            }.bind(this)
+        })
+        
+    }
+    
+    RemoveEntryAfterMove( id ) {
+        $.ajax({
+            type: 'delete',
+            url: '/scot/api/v2/entry/' + id,
+            success: function( response ) {
+                console.log('removed original entry');
+            }.bind(this),
+            error: function( data ) {
+                this.props.errorToggle('Failed to remove original entry', data);
+            }.bind(this),
+        });
+    }
+
+    ToggleActionSuccess() {
+        let newActionSuccess = !this.state.actionSuccess;
+        this.setState({ actionSuccess: newActionSuccess });
+    }
+}
+
+Actions.propTypes = {
+    data: PropTypes.object
+}
+
+Actions.defaultProps = {
+    data: {}
 }
 
 Mark.propTypes = {
