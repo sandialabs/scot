@@ -18,7 +18,7 @@ var Gamification = React.createClass({
                 this.setState({GameData:response});
             }.bind(this),
             error: function(data) {
-                this.errorToggle('unable to get game data', data);
+                this.props.errorToggle('unable to get game data', data);
             }.bind(this)
         })
     },
