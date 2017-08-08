@@ -128,7 +128,7 @@ var AddEntryModal = React.createClass({
                         <div>Loading Editor...</div> 
                         }
                     </div> 
-                    <Prompt when={this.state.leaveCatch} message="Unsubmitted entry detected. You may want to submit or copy the contents of the entry before navigating elsewhere." />
+                    <Prompt when={this.state.leaveCatch} message="Unsubmitted entry detected. You may want to submit or copy the contents of the entry before navigating elsewhere. Click CANCEL to prevent navigation elsewhere." />
                 </div>
             )
     },
