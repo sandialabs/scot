@@ -14,7 +14,7 @@ var Online = React.createClass({
             url: '/scot/api/v2/who',
             success: function(response) {
                 this.setState({OnlineData:response.records});
-            },
+            }.bind(this),
             error: function(data) {
                 this.props.errorToggle('failed to get current user', data);
             }.bind(this)

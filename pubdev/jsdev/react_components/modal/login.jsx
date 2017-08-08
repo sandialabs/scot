@@ -12,8 +12,8 @@ class Login extends Component {
         }
         this.SSO = this.SSO.bind(this);
         this.NormalAuth = this.NormalAuth.bind(this);
-        this.HandleInput = this.HandleInput.bind(this); 
         this.Reset = this.Reset.bind(this);
+        this.isEnterPressed = this.isEnterPressed.bind(this);
     }
 
     componentWillMount() {
@@ -40,11 +40,11 @@ class Login extends Component {
                     <br />
                     <div>
                         <label>Username </label>
-                        <input id='user' type='user' ref='user' onBlur={this.HandleInput} />
+                        <input id='user' type='user' ref='user' defaultValue=''  />
                     </div>
                     <div>
                         <label>Password </label>
-                        <input id='pass' type='password' ref='pass' onBlur={this.HandleInput} />
+                        <input id='pass' type='password' ref='pass' defaultValue='' onKeyPress={this.isEnterPressed}  />
                     </div>
                     <input type='submit' onClick={this.NormalAuth} />
                     <input type='reset' onClick={this.Reset} />
@@ -53,18 +53,16 @@ class Login extends Component {
             </Modal>
         )
     }
-     
-    Reset() {
-        this.refs.user.value = '';
-        this.refs.pass.value = '';
+    
+    isEnterPressed(e) {
+        if ( e.key == 'Enter' ) {
+            this.NormalAuth();
+        }
     }
 
-    HandleInput(e) {
-        let key = e.target.id;
-        let val = e.target.value;
-        let obj = {};
-        obj[key] = val;
-        this.setState(obj);
+    Reset() {
+       this.refs.user.value == '';
+       this.refs.pass.value == '';
     }
 
     SSO() {
@@ -80,14 +78,14 @@ class Login extends Component {
             }.bind(this),
             error: function(data) {
                 this.props.errorToggle('Failed to log in using SSO');
-            },
+            }.bind(this),
         });
     }
 
     NormalAuth () {
         let data = {}
-        data['user'] = this.state.user;
-        data['pass'] = this.state.pass;
+        data['user'] = this.refs.user.value;
+        data['pass'] = this.refs.pass.value;
         data['csrf_token'] = this.props.csrf;
 
         $.ajax({
@@ -99,8 +97,12 @@ class Login extends Component {
                 this.props.loginToggle( null, true );
             }.bind(this),
             error: function(data) {
-                this.props.errorToggle('Failed to log in using normal auth');
-            }
+                if (data.responseText == 'Failed CSRF check') {
+                    this.props.errorToggle('Failed to log in due to bad CSRF token. Please reload the page and then log in. Error: ' + data.responseText);
+                } else {
+                    this.props.errorToggle('Failed to log in using normal auth: ' + data.responseText);
+                }
+            }.bind(this),
         });
     }
 }
