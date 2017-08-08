@@ -65,7 +65,7 @@ module.exports = React.createClass({
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: [], listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, };
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, };
     },
     componentWillMount: function() {
         if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
@@ -180,18 +180,6 @@ module.exports = React.createClass({
             }.bind(this)
         })
         
-        //get incident handler
-        $.ajax({
-            type: 'get',
-            url: '/scot/api/v2/handler?current=1',
-            success: function(response){
-                this.setState({handler: response.records})
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('failed to get incident handler', data)
-            }.bind(this)
-        })
-
         $('#list-view-container').keydown(function(e){
             if ($('input').is(':focus')) {return};
             if (e.ctrlKey != true && e.metaKey != true) {
@@ -261,15 +249,13 @@ module.exports = React.createClass({
     render: function() {
         var listViewContainerHeight;
         var showClearFilter = false;
-        var handler = []; 
+        
         if (this.state.listViewContainerDisplay == null) {
             listViewContainerHeight = null;
         } else {
             listViewContainerHeight = '0px'
         }
-        for (var i=0; i < this.state.handler.length; i++) {
-            handler.push(this.state.handler[i].username + ' ' )
-        }
+        
         if (this.state.id != null && this.state.typeCapitalized != null) {
             document.title = this.state.typeCapitalized.charAt(0) + '-' + this.state.id
         }
@@ -578,17 +564,6 @@ module.exports = React.createClass({
             }
         });
 
-        //get incident handler
-        $.ajax({
-            type: 'get',
-            url: '/scot/api/v2/handler?current=1',
-            success: function(response) {
-                this.setState({handler: response.records})
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('failed to get incident handler', data);
-            }.bind(this)
-        })
     },
 
     exportCSV: function(){

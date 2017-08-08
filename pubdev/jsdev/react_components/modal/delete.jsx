@@ -1,6 +1,7 @@
 var React               = require('react');
 var Modal               = require('react-modal');
 var Button              = require('react-bootstrap/lib/Button');
+
 const customStyles = {
     content : {
         top     : '50%',
@@ -26,8 +27,10 @@ var DeleteEvent = React.createClass({
             type: 'delete',
             url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id,
             success: function(data) {
+                this.props.history.push( '/' + this.props.type );
                 console.log('success: ' + data);
                 this.props.deleteToggle();
+                
             }.bind(this),
             error: function(data) {
                 this.props.errorToggle('Failed to delete', data);  
