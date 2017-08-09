@@ -70,7 +70,8 @@ var SelectedHeader = React.createClass({
             isNotFound: false,
             runWatcher: false,
             entityDetailKey: entityDetailKey,
-            showSignatureOptions: false,        
+            showSignatureOptions: false,
+            isDeleted: false,       
         }
     },
     componentWillMount: function() {
@@ -134,10 +135,9 @@ var SelectedHeader = React.createClass({
                             this.setState({showEntityData:true, entityData:entityResult})
                             var waitForEntry = {
                                 waitEntry: function() {
-                                    if(this.state.showEntryData == false && alertgroupforentity === false) {
+                                    if(this.state.showEntryData == false ) {
                                         setTimeout(waitForEntry.waitEntry,50);
                                     } else {
-                                        alertgroupforentity = false;
                                         setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id,this.scrollTo)}.bind(this));
                                         if (this.state.showEventData == true && this.state.showEntryData == true && this.state.showEntityData == true) {
                                             this.setState({loading:false});        
@@ -197,87 +197,88 @@ var SelectedHeader = React.createClass({
         this.setState({runWatcher:false});
     },
     updated: function(_type,_message) { 
-        this.setState({refreshing:true, eventLoaded:false,entryLoaded:false,entityLoaded:false});
-        var entryType = 'entry';
-        if (this.props.type == 'alertgroup') {entryType = 'alert'};
-        //main type load
-        $.ajax({
-            type:'get',
-            url:'scot/api/v2/' + this.props.type + '/' + this.props.id,
-            success:function(result) {
-                if (this.isMounted()) {
-                    var eventResult = result;
-                    this.setState({headerData:eventResult,showEventData:true, eventLoaded:true, isNotFound:false, tagData:eventResult.tag, sourceData:eventResult.source})
+        if ( !this.state.isDeleted ) {
+            this.setState({refreshing:true, eventLoaded:false,entryLoaded:false,entityLoaded:false});
+            var entryType = 'entry';
+            if (this.props.type == 'alertgroup') {entryType = 'alert'};
+            //main type load
+            $.ajax({
+                type:'get',
+                url:'scot/api/v2/' + this.props.type + '/' + this.props.id,
+                success:function(result) {
+                    if (this.isMounted()) {
+                        var eventResult = result;
+                        this.setState({headerData:eventResult,showEventData:true, eventLoaded:true, isNotFound:false, tagData:eventResult.tag, sourceData:eventResult.source})
+                        if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                            this.setState({refreshing:false})
+                        }
+                    }
+                }.bind(this),
+                error: function(result) {
+                    this.setState({showEventData:true, eventLoaded:true, isNotFound:true})
                     if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                         this.setState({refreshing:false})
                     }
-                }
-            }.bind(this),
-            error: function(result) {
-                this.setState({showEventData:true, eventLoaded:true, isNotFound:true})
-                if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                    this.setState({refreshing:false})
-                }
-                this.props.errorToggle("Error: Failed to reload detail data. Error message: " + result.responseText, result);
-            }.bind(this),
-        });    
-        //entry load
-        $.ajax({
-            type: 'get',
-            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType,
-            success: function(result) {
-                if (this.isMounted()) {
-                    var entryResult = result.records;
-                    this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult, runWatcher:true})
-                    this.Watcher();
+                    this.props.errorToggle("Error: Failed to reload detail data. Error message: " + result.responseText, result);
+                }.bind(this),
+            });    
+            //entry load
+            $.ajax({
+                type: 'get',
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/' + entryType,
+                success: function(result) {
+                    if (this.isMounted()) {
+                        var entryResult = result.records;
+                        this.setState({showEntryData:true, entryLoaded:true, entryData:entryResult, runWatcher:true})
+                        this.Watcher();
+                        if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                            this.setState({refreshing:false});
+                        } 
+                    }
+                }.bind(this),
+                error: function(result) {
+                    this.setState({showEntryData:true, entryLoaded:true})
                     if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
                         this.setState({refreshing:false});
                     } 
+                    this.props.errorToggle("Error: Failed to reload entry data. Error message: " + result.responseText, result);
                 }
-            }.bind(this),
-            error: function(result) {
-                this.setState({showEntryData:true, entryLoaded:true})
-                if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                    this.setState({refreshing:false});
-                } 
-                this.props.errorToggle("Error: Failed to reload entry data. Error message: " + result.responseText, result);
-            }
-        });
-        //entity load
-        $.ajax({
-            type: 'get',
-            url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
-            success: function(result) {
-                if (this.isMounted()) {
-                    var entityResult = result.records;
-                    this.setState({showEntityData:true, entityLoaded:true, entityData:entityResult})
-                    var waitForEntry = {
-                        waitEntry: function() {
-                            if(this.state.entryLoaded == false && alertgroupforentity === false){
-                                setTimeout(waitForEntry.waitEntry,50);
-                            } else {
-                                alertgroupforentity = false;
-                                setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
-                                if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                                    this.setState({refreshing:false});
+            });
+            //entity load
+            $.ajax({
+                type: 'get',
+                url: 'scot/api/v2/' + this.props.type + '/' + this.props.id + '/entity',
+                success: function(result) {
+                    if (this.isMounted()) {
+                        var entityResult = result.records;
+                        this.setState({showEntityData:true, entityLoaded:true, entityData:entityResult})
+                        var waitForEntry = {
+                            waitEntry: function() {
+                                if(this.state.entryLoaded == false ){
+                                    setTimeout(waitForEntry.waitEntry,50);
+                                } else {
+                                    setTimeout(function(){AddFlair.entityUpdate(entityResult,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+                                    if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                                        this.setState({refreshing:false});
+                                    }
                                 }
-                            }
-                        }.bind(this)
-                    };
-                    waitForEntry.waitEntry(); 
-                }
-            }.bind(this),
-            error: function(result) {
-                this.setState({showEntityData:true})
-                if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
-                    this.setState({refreshing:false});
-                } 
-                this.props.errorToggle("Error: Failed to reload entity data.", result);
-            }.bind(this)
-        });
-        //error popup if an error occurs
-        if (_type!= undefined && _message != undefined) {
-            this.props.errorToggle(_message);
+                            }.bind(this)
+                        };
+                        waitForEntry.waitEntry(); 
+                    }
+                }.bind(this),
+                error: function(result) {
+                    this.setState({showEntityData:true})
+                    if (this.state.eventLoaded == true && this.state.entryLoaded == true && this.state.entityLoaded == true) {
+                        this.setState({refreshing:false});
+                    } 
+                    this.props.errorToggle("Error: Failed to reload entity data.", result);
+                }.bind(this)
+            });
+            //error popup if an error occurs
+            if (_type!= undefined && _message != undefined) {
+                this.props.errorToggle(_message);
+            }
         }
     },
     flairToolbarToggle: function(id,value,type,entityoffset,entityobj){
@@ -317,12 +318,14 @@ var SelectedHeader = React.createClass({
             }*/
         }
     },
-    deleteToggle: function() {
+    deleteToggle: function(isDeleted) {
         if (this.state.deleteToolbar == false) {
             this.setState({deleteToolbar:true})
         } else {
             this.setState({deleteToolbar:false})
-        } 
+        }
+        //set isDeleted to true so notifications won't fire
+        if ( isDeleted ) { this.setState({ isDeleted: true }); }
     },
     changeHistoryToggle: function() {
         if (this.state.changeHistoryToolbar == false) {
@@ -564,7 +567,7 @@ var SelectedHeader = React.createClass({
                     {this.state.viewedByHistoryToolbar ? <ViewedByHistory viewedByHistoryToggle={this.viewedByHistoryToggle} id={id} type={type} subjectType={subjectType} viewedby={viewedby} errorToggle={this.props.errorToggle} /> : null}
                     {this.state.changeHistoryToolbar ? <ChangeHistory changeHistoryToggle={this.changeHistoryToggle} id={id} type={type} subjectType={subjectType} errorToggle={this.props.errorToggle}/> : null} 
                     {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} /> : null}
-                    {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} errorToggle={this.props.errorToggle} /> :null}
+                    {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} errorToggle={this.props.errorToggle} history={this.props.history}/> :null}
                     {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} guideRedirectToAlertListWithFilter={this.guideRedirectToAlertListWithFilter} showSignatureOptionsToggle={this.showSignatureOptionsToggle} errorToggle={this.props.errorToggle}/> : null} 
                     {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated} errorToggle={this.props.errorToggle} /> : null}
                 </div>
