@@ -4,7 +4,7 @@ use Data::Dumper;
 use Moose 2;
 extends 'Scot::Collection';
 
-sub create_from_api {
+override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
@@ -18,7 +18,7 @@ sub create_from_api {
     }
     $log->error("Failed to create GROUP from ", { fitler => \&Dumper, value => $request });
     return undef;
-}
+};
 
 override get_subthing => sub {
     my $self        = shift;
