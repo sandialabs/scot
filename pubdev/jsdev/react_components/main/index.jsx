@@ -39,7 +39,7 @@ var App = React.createClass({
 
     getInitialState: function(){
         Listener.activeMq();   //register for amq updates
-        return{handler: "Scot", viewMode:'default', notificationSetting: 'on', eestring: '', login: false, csrf: '', origurl: ''}	
+        return{handler: "Scot", viewMode:'default', notificationSetting: 'on', eestring: '', login: false, csrf: '', origurl: '', sensitivity: '', whoami: undefined, }	
     },
 
     componentDidMount: function() {
@@ -49,6 +49,21 @@ var App = React.createClass({
 	    }).success(function(response){
 	        this.setState({handler: response.records[0].username})
 	    }.bind(this))
+        
+        $.ajax({
+            type:'get',
+            url:'scot/api/v2/whoami',
+            success: function (result) {
+                setSessionStorage( 'whoami', result.user );
+                if ( result.data ) {
+                    this.setState({sensitivity: result.data.sensitivity, whoami: result.user});
+                }
+            }.bind(this),
+            error: function(data) {
+                this.errorToggle('Failed to get current user', data);
+            }.bind(this)
+        }) 
+        
         Store.storeKey('wall');
         Store.addChangeListener(this.wall);
         Store.storeKey('notification');
@@ -103,6 +118,11 @@ var App = React.createClass({
         $('#content').css('transform','rotateX(0deg)');
         $('#ee').remove();
     },
+
+    componentWillUnmount: function() {
+        removeSessionStorage('whoami');
+    },
+
     componentWillMount: function() {
         //Get landscape/portrait view if the cookie exists
         var viewModeSetting = checkCookie('viewMode');
@@ -121,7 +141,7 @@ var App = React.createClass({
         //Notification display in update as it will run on every amq message matching 'main'.
         var notification = this.refs.notificationSystem
         //not showing notificaiton on entity due to "flooding" on an entry update that has many entities causing a storm of AMQ messages
-        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && activemqwho!= 'scot-flair' && notification != undefined && activemqwho != whoami &&activemqwho != "" &&  activemqwho != 'api' && activemqwall != true && activemqtype != 'entity' && this.state.notificationSetting == 'on'){  
+        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && activemqwho!= 'scot-flair' && notification != undefined && activemqwho != this.state.whoami &&activemqwho != "" &&  activemqwho != 'api' && activemqwall != true && activemqtype != 'entity' && this.state.notificationSetting == 'on'){  
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
@@ -194,8 +214,9 @@ var App = React.createClass({
         //Logs out of SCOT
         $.ajax({ 
             type: 'get',
-            url: '/scot/api/v2/logout',
+            url: '/logout',
             success: function(data) {
+                this.setState({login: true})
                 console.log('Successfully logged out');
             }.bind(this), 
             error: function(data) {
@@ -254,7 +275,7 @@ var App = React.createClass({
                             </NavDropdown>
                             <NavItem href='/incident_handler.html'>{IH}</NavItem>
                         </Nav>
-                        <span id='ouo_warning' className='ouo-warning'>{sensitivity}</span>
+                        <span id='ouo_warning' className='ouo-warning'>{this.state.sensitivity}</span>
                         <Search errorToggle={this.errorToggle} />
                     </Navbar.Collapse>
                 </Navbar>
@@ -266,12 +287,22 @@ var App = React.createClass({
                         <div className='col-md-4'>
                             <img src='/images/scot-600h.png' style={{maxWidth:'350px',width:'100%',marginLeft:'auto', marginRight:'auto', display: 'block'}}/>
                             <h1>Sandia Cyber Omni Tracker 3.5</h1>
-                            <h1>{sensitivity}</h1>
-                            <Status errorToggle={this.errorToggle} />
+                            <h1>{this.state.sensitivity}</h1>
+                            { !this.state.login ? 
+                                <Status errorToggle={this.errorToggle} />
+                            :
+                                null
+                            }
                         </div>
-                        <Gamification errorToggle={this.errorToggle} />
-                        <Online errorToggle={this.errorToggle} />
-                        <Report frontPage={true} errorToggle={this.errorToggle}/>
+                        { !this.state.login ? 
+                            <div>
+                                <Gamification errorToggle={this.errorToggle} />
+                                <Online errorToggle={this.errorToggle} />
+                                <Report frontPage={true} errorToggle={this.errorToggle}/>
+                            </div>
+                        :
+                            null
+                        }
                     </div>
                     :
                     null}
