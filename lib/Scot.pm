@@ -78,8 +78,13 @@ sub startup {
         }
     };
     $SIG{'__DIE__'} = sub {
-        $log->error(@_);
-        $log->warn(longmess());
+        if ( $^S ){
+            # in eval, don't log, catch later
+            return;
+        }
+        $Log::Log4perl::caller_depth++;
+        $log->fatal(@_);
+        die @_;
     };
 
 
@@ -155,14 +160,18 @@ relies on the browser BasicAuth popup.
     $r  ->route ( '/sso' )    
         ->to    ($authclass.'#sso') 
         ->name  ('sso');
+
+    $r  ->route ( '/logout' )
+        ->to    ($authclass."#logout")
+        ->name  ('logout');
     
     # make sure that we have passed authentication
 
     my $auth    = $r->under('/')->to($authclass.'#check');
 
     # necessary to get default index.html from /opt/scot/public
-    # and have it remain so that only authenticated users can see
-    $auth   ->get('/')
+    # and have it remain so that non authenticated users can see
+    $r   ->get('/')
             ->to( cb => sub {
                 my $c = shift;
                 $log->debug("Hitting Static /");

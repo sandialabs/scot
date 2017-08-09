@@ -216,23 +216,36 @@ sub do_bind {
 
     my $msg;
 
-    retry {
-        $msg    = $ldap->bind($dn, 'password' => $pass);
-        if ( $msg->is_error ) {
-            $log->error("Bind Error: ".$msg->errorMessage);
-            die "bind error";
-        }
+    $msg = $ldap->bind($dn, 'password' => $pass);
+
+    if ( $msg->is_error ) {
+        $log->error("LDAP error: ",{filter=>\&Dumper, value=>$msg});
+        return undef;
     }
-    delay_exp { 3, 1e5 }
-    on_retry {
-        $log->warn("clearing ldap connection and retrying bind");
-        $self->clear_ldap_cache;
-    }
-    catch {
-        $log->error("Failed to bind for $dn");
-        return 0;
-    };
+    $log->debug("Ldap return ",{filter=>\&Dumper, value=>$msg});
     return 1;
+
+#    retry {
+#        $msg    = $ldap->bind($dn, 'password' => $pass);
+#        if ( $msg->is_error ) {
+#            $log->error("Bind Error: ".$msg->errorMessage);
+#            die "bind error";
+#        }
+#    }
+#    delay_exp { 3, 1e5 }
+#    on_retry {
+#        $log->warn("clearing ldap connection and retrying bind");
+#        $self->clear_ldap_cache;
+#    }
+#    catch {
+#        $log->error("Failed to bind for $dn");
+#        return undef;
+#    };
+#    if ( ! defined $msg ) {
+#        $log->warn("message not defined");
+#        return undef;
+#    }
+#    return 1;
 }
 
 

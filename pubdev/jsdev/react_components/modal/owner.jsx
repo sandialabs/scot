@@ -3,6 +3,7 @@ var Modal               = require('react-modal');
 var Button              = require('react-bootstrap/lib/Button');
 var DropdownButton      = require('react-bootstrap/lib/DropdownButton');
 var MenuItem            = require('react-bootstrap/lib/MenuItem');
+
 const customStyles = {
     content : {
         top     : '50%',
@@ -18,34 +19,38 @@ var Owner = React.createClass({
     getInitialState: function() {
         return {
             currentOwner:this.props.data,
-            whoami:'', 
+            whoami:undefined, 
             ownerToolbar: false,
             key:this.props.id,
         }
     },
     componentDidMount: function() {
-        this.whoamiRequest = $.get('scot/api/v2/whoami', function (result) {
-            var result = result.user;
-            this.setState({whoami:result})
-        }.bind(this)); 
+        var whoami = getSessionStorage('whoami');
+        if ( whoami ) {
+            this.setState({whoami:whoami});
+        }
     },
     componentWillReceiveProps: function() {
         this.setState({currentOwner:this.props.data});
     },
-    toggle: function() { 
-        var json = {'owner':this.state.whoami} 
-        $.ajax({
-            type: 'put',
-            url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id,
-            data: JSON.stringify(json),
-            contentType: 'application/json; charset=UTF-8',
-            success: function(data) {
-                var key = this.state.key;
-            }.bind(this),
-            error: function() {
-                this.props.errorToggle('Failed to change owner');
-            }.bind(this)
-        }); 
+    toggle: function() {
+        if (this.state.whoami != undefined ) {
+            var json = {'owner':this.state.whoami} 
+            $.ajax({
+                type: 'put',
+                url: 'scot/api/v2/' + this.props.type + '/'  + this.props.id,
+                data: JSON.stringify(json),
+                contentType: 'application/json; charset=UTF-8',
+                success: function(data) {
+                    var key = this.state.key;
+                }.bind(this),
+                error: function(data) {
+                    this.props.errorToggle('Failed to change owner', data);
+                }.bind(this)
+            }); 
+        } else {
+            this.props.errorToggle('Failed to detect current user');
+        }
         this.ownerToggle();
     },
     ownerToggle: function() {
