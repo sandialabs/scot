@@ -10,7 +10,7 @@ with    qw(
     Scot::Role::GetTagged
 );
 
-sub create_from_api {
+override api_create => sub {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
@@ -43,7 +43,7 @@ sub create_from_api {
     }
 
     return $user;
-}
+};
 
 sub autocomplete {
     my $self    = shift;
@@ -54,7 +54,7 @@ sub autocomplete {
     return wantarray ? @records : \@records;
 }
 
-sub api_list {
+override api_list => sub {
     my $self    = shift;
     my $href    = shift;
     my $user    = shift;
@@ -92,6 +92,6 @@ sub api_list {
     }
 
     return ($cursor, $total);
-}
+};
 
 1;
