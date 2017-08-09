@@ -39,30 +39,12 @@ var App = React.createClass({
 
     getInitialState: function(){
         Listener.activeMq();   //register for amq updates
-        return{handler: "Scot", viewMode:'default', notificationSetting: 'on', eestring: '', login: false, csrf: '', origurl: '', sensitivity: '', whoami: undefined, }	
+        return{handler: undefined, viewMode:'default', notificationSetting: 'on', eestring: '', login: false, csrf: '', origurl: '', sensitivity: '', whoami: undefined, }	
     },
 
     componentDidMount: function() {
-	    $.ajax({
-	        type: 'get',
-	        url: '/scot/api/v2/handler?current=1'
-	    }).success(function(response){
-	        this.setState({handler: response.records[0].username})
-	    }.bind(this))
-        
-        $.ajax({
-            type:'get',
-            url:'scot/api/v2/whoami',
-            success: function (result) {
-                setSessionStorage( 'whoami', result.user );
-                if ( result.data ) {
-                    this.setState({sensitivity: result.data.sensitivity, whoami: result.user});
-                }
-            }.bind(this),
-            error: function(data) {
-                this.errorToggle('Failed to get current user', data);
-            }.bind(this)
-        }) 
+        this.GetHandler();
+        this.WhoAmiIQuery();    
         
         Store.storeKey('wall');
         Store.addChangeListener(this.wall);
@@ -88,6 +70,15 @@ var App = React.createClass({
         if (notificationSetting == undefined) {
             notificationSetting = 'on';
         }
+        
+        if ( !this.state.handler ) { 
+            this.GetHandler();
+        }
+        
+        if ( !this.state.whoami ) {
+            this.WhoAmiIQuery();
+        }
+
         this.setState({viewMode:viewModeSetting, notificationSetting:notificationSetting, listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting})
     },
 
@@ -224,6 +215,33 @@ var App = React.createClass({
             }.bind(this)
         })
     },
+
+    WhoAmiIQuery: function() {
+
+        $.ajax({
+            type:'get',
+            url:'scot/api/v2/whoami',
+            success: function (result) {
+                setSessionStorage( 'whoami', result.user );
+                if ( result.data ) {
+                    this.setState({sensitivity: result.data.sensitivity, whoami: result.user});
+                }
+            }.bind(this),
+            error: function(data) {
+                this.errorToggle('Failed to get current user', data);
+            }.bind(this)
+        })
+ 
+    },
+    
+    GetHandler: function() {
+        $.ajax({
+            type: 'get',
+            url: '/scot/api/v2/handler?current=1'
+        }).success(function(response){
+            this.setState({handler: response.records[0].username})
+        }.bind(this))
+    },   
 
     render: function() {
         var IH = 'Incident Handler: ' + this.state.handler;
