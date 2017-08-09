@@ -50,8 +50,9 @@ sub autocomplete {
     my $fragment    = shift;
 
     my $cursor  =  $self->find({ value   => qr/$fragment/i });
-    my @records = map { { id => $_->{id}, key => $_->{value} } } 
-                    $cursor->all;
+    # my @records = map { { id => $_->{id}, key => $_->{value} } } 
+    #                 $cursor->all;
+    my @records = map { $_->{value}  } $cursor->all;
     return wantarray ? @records : \@records;
 }
 
