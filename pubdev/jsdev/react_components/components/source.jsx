@@ -65,6 +65,7 @@ var SourceDataIterator = React.createClass({
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id, 
             data: JSON.stringify({'source':newSourceArr}),
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('deleted source success: ' + data);
             }.bind(this),
@@ -131,7 +132,7 @@ var NewSource = React.createClass({
             success: function (result) {
                 var result = result.records;
                 for (var i=0; i < result.length; i++) {
-                    arr.push(result[i].value)
+                    arr.push(result[i])
                 }
                 this.setState({suggestions:arr})
             }.bind(this),

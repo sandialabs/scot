@@ -26,7 +26,7 @@ var Tag = React.createClass({
 
         if (data != undefined) {
             for (var i=0; i < data.length; i++) {
-                rows.push(<TagDataIterator data={data} dataOne={data[i]} id={id} type={type} updated={this.props.updated} key={i} />);
+                rows.push(<TagDataIterator data={data} dataOne={data[i]} id={id} type={type} updated={this.props.updated} key={i} errorToggle={this.props.errorToggle} />);
             }
         }
         return (
@@ -36,7 +36,7 @@ var Tag = React.createClass({
                 </th>
                 <td>
                     {rows}
-                    {this.state.tagEntry ? <NewTag data={data} type={type} id={id} toggleTagEntry={this.toggleTagEntry} updated={this.props.updated}/>: null}
+                    {this.state.tagEntry ? <NewTag data={data} type={type} id={id} toggleTagEntry={this.toggleTagEntry} updated={this.props.updated} errorToggle={this.props.errorToggle}/>: null}
                     {this.state.tagEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-minus' aria-hidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-plus' aria-hidden='true'></span></Button>}
                 </td>
             </th>
@@ -65,6 +65,7 @@ var TagDataIterator = React.createClass({
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id,
             data: JSON.stringify({'tag':newTagArr}),
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('deleted tag success: ' + data);
             }.bind(this),
@@ -131,7 +132,7 @@ var NewTag = React.createClass({
             success: function (result) {
                 var result = result.records;
                 for (var i=0; i < result.length; i++) {
-                    arr.push(result[i].value)
+                    arr.push(result[i])
                 }
                 this.setState({suggestions:arr})
             }.bind(this),
