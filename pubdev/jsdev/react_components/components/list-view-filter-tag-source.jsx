@@ -53,7 +53,7 @@ var TagSourceFilter = React.createClass({
             success: function (result) {
                 var result = result.records;
                 for (var i=0; i < result.length; i++) {
-                    arr.push(result[i].value)
+                    arr.push(result[i])
                 }
                 this.setState({suggestions:arr})
             }.bind(this),
