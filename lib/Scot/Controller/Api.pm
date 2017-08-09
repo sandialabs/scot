@@ -322,6 +322,9 @@ sub get_one {
         }
 
         my $object  = $collection->api_find($req_href);
+        if (! defined $object ) {
+            die "Object not found";
+        }
         my $objhref = $self->post_get_one_process($object, $req_href);
 
         # special case for file downloads
@@ -678,6 +681,26 @@ sub pre_update_process {
         $log->debug("entities aref is ",{filter=>\&Dumper, value=>$entity_aref});
         my $collection  = $self->env->mongo->collection('Entity');
         $collection->update_entities($object, $entity_aref);
+    }
+    
+    # if the object does tags or source, we need to adjust the appearances collection
+    # to reflect the changes, because we store tags/sources as an array in the object
+    # and create appearance records 
+
+    if ( $object->meta->does_role("Scot::Role::Tags") or
+         $object->meta->does_role("Scot::Role::Sources") ) {
+
+        my $new_tag_set = $req->{request}->{json}->{tag};
+        my $new_src_set = $req->{request}->{json}->{source};
+
+        if (defined $new_tag_set ) {
+            $mongo->collection('Appearance')
+                   ->adjust_appearances($object,$new_tag_set,"tag");
+        }
+        if (defined $new_src_set ) {
+            $mongo->collection('Appearance')
+                   ->adjust_appearances($object,$new_src_set,"source");
+        }
     }
 }
 
