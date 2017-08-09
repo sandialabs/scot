@@ -78,8 +78,13 @@ sub startup {
         }
     };
     $SIG{'__DIE__'} = sub {
-        $log->error(@_);
-        $log->warn(longmess());
+        if ( $^S ){
+            # in eval, don't log, catch later
+            return;
+        }
+        $Log::Log4perl::caller_depth++;
+        $log->fatal(@_);
+        die @_;
     };
 
 
