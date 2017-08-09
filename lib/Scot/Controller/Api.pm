@@ -328,7 +328,7 @@ sub get_one {
         if ( ref($object) eq "Scot::Model::File" ) {
             my $download    = $self->param('download');
             if ( defined $download ) {
-                $self->render_file_download($object);
+                $self->download_file($object);
                 return;
             }
         }
