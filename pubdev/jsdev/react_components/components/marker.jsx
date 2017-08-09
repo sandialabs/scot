@@ -1,6 +1,6 @@
 import React, { PureComponent, Component } from 'react';
 import PropTypes from 'prop-types';
-import { Button } from 'react-bootstrap';
+import { Button, MenuItem } from 'react-bootstrap';
 import ReactTable from 'react-table';
 
 class Marker extends Component {
@@ -36,10 +36,10 @@ class Marker extends Component {
         if ( this.props.type == 'entry' ) {
             
             return (
-                <span onClick={ this.state.isMarked ? this.removeMarkedItemsHandler : this.setMarkedItemsHandler }>
+                <MenuItem onClick={ this.state.isMarked ? this.removeMarkedItemsHandler : this.setMarkedItemsHandler }>
                     <i style={{color: `${ this.state.isMarked ? 'green' : '' } `}} className={`fa fa${this.state.isMarked ? '-check' : '' }-square-o`} aria-hidden="true"></i>
                     { this.state.isMarked ? <span>Marked</span> : <span>Mark</span> }
-                </span>
+                </MenuItem>
             )
 
         } else {
@@ -47,7 +47,7 @@ class Marker extends Component {
             return (
                 <Button bsSize='xsmall' onClick={ this.state.isMarked ? this.removeMarkedItemsHandler : this.setMarkedItemsHandler }>
                     <i style={{color: `${ this.state.isMarked ? 'green' : '' } `}} className={`fa fa${this.state.isMarked ? '-check' : '' }-square-o`} aria-hidden="true"></i>
-                    { this.state.isMarked ? <span>Marked</span> : <span>Mark</span> }
+                    {/* { this.state.isMarked ? <span>Marked</span> : <span>Mark</span> }*/}
                 </Button>
             )
         }
