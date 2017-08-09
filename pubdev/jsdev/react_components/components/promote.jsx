@@ -28,8 +28,8 @@ var Promote = React.createClass({
                 console.log('successfully promoted');
                 window.location.assign('#/'+this.state.newURL+'/'+data.pid);
             }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to promote');
+            error: function(data) {
+                this.props.errorToggle('error','Failed to promote', data);
             }.bind(this)
         });
     },
