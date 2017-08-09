@@ -19,27 +19,33 @@ var AddEntryModal = React.createClass({
         if (this.props.entryAction == 'Add' || this.props.entryAction == 'Reply'){
             content = '';
             return {
-                tinyID: tinyID, key: key, content: content, asyncContentLoaded: true, leaveCatch: true,
+                tinyID: tinyID, key: key, content: content, asyncContentLoaded: true, leaveCatch: true, whoami: undefined,
             }
         } else if (this.props.entryAction == 'Copy To Entry') {
             content = this.props.content;
             return {
-                tinyID: tinyID, key: key, content: content, asyncContentLoaded: true, leaveCatch: true,
+                tinyID: tinyID, key: key, content: content, asyncContentLoaded: true, leaveCatch: true, whoami: undefined,
             }
         } else if (this.props.entryAction == 'Edit') {
            return {
-                tinyID: tinyID, key: key, content: '', asyncContentLoaded: false, leaveCatch: true, //Wait until componentDidMount to add the content
+                tinyID: tinyID, key: key, content: '', asyncContentLoaded: false, leaveCatch: true, whoami: undefined,//Wait until componentDidMount to add the content
            }
         }
         else {            //This is just in case a condition is missed
             content = ''
             return {
-                tinyID: tinyID, key: key, content: content, asyncContentLoaded: true, leaveCatch: true,
+                tinyID: tinyID, key: key, content: content, asyncContentLoaded: true, leaveCatch: true, whoami: undefined,
             }
         }
 	},
 
 	componentDidMount: function(){
+        
+        var whoami = getSessionStorage('whoami');
+        if ( whoami ) {
+            this.setState({whoami:whoami});
+        }
+
         if (this.props.entryAction == 'Edit') {
             $.ajax({
                 type: 'GET',
@@ -71,7 +77,7 @@ var AddEntryModal = React.createClass({
                 <div id={not_saved_entry_id} className={'not_saved_entry'}>
                     <div className={'row-fluid entry-outer'} style={{border: '3px solid blue',marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
                         <div className={'row-fluid entry-header'}>
-                            <div className="entry-header-inner">[<Link style={{color:'black'}} to={"not_saved_0"}>Not_Saved_0</Link>]by {whoami}
+                            <div className="entry-header-inner">[<Link style={{color:'black'}} to={"not_saved_0"}>Not_Saved_0</Link>]by {this.state.whoami}
                                 <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
                                     <Button bsSize={'xsmall'} onClick={this.submit}>Submit</Button>
                                     <Button bsSize={'xsmall'} onClick={this.onCancel}>Cancel</Button>
@@ -122,7 +128,7 @@ var AddEntryModal = React.createClass({
                         <div>Loading Editor...</div> 
                         }
                     </div> 
-                    <Prompt when={this.state.leaveCatch} message="Unsubmitted entry detected. You may want to submit or copy the contents of the entry before navigating elsewhere." />
+                    <Prompt when={this.state.leaveCatch} message="Unsubmitted entry detected. You may want to submit or copy the contents of the entry before navigating elsewhere. Click CANCEL to prevent navigation elsewhere." />
                 </div>
             )
     },
