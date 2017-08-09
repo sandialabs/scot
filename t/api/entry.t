@@ -156,7 +156,7 @@ $t  ->get_ok("/scot/api/v2/entry/$entry1")
     ->status_is(200)
     ->json_is('/body'   => 'Updated Entry');
 
-  print Dumper($t->tx->res->json);
+ print Dumper($t->tx->res->json);
  done_testing();
  exit 0;
 
