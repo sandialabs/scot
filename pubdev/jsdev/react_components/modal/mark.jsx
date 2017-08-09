@@ -74,7 +74,7 @@ class Mark extends Component {
             <Modal dialogClassName='mark-modal' show={ this.props.modalActive } onHide={ this.props.markModalToggle }>
                 <Modal.Header closeButton={ true } >
                     <Modal.Title>
-                        Items Marked
+                        Marked Actions
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -223,15 +223,15 @@ class Actions extends Component {
             <div>
                 {this.state.actionSuccess ? 
                     <div>
-                        <Button bsStyle='success' onClick={this.RemoveSelected}>Action Successful! Remove Selected?</Button>
-                        <Button onClick={this.ToggleActionSuccess}>Keep Selected</Button>
+                        <Button bsStyle='success' onClick={this.RemoveSelected}>Action Successful! Remove Mark?</Button>
+                        <Button onClick={this.ToggleActionSuccess}>Keep Marked</Button>
                     </div>
                 :
                     <div>
-                        {entry && !thing ? <Button onClick={this.MoveEntry}>Move Selected Entry to current thing (DELETES ORIGINAL ENTRY)</Button> : null }
-                        {entry && !thing ? <Button onClick={this.CopyEntry}>Copy Selected Entry to current thing</Button> : null }
-                        {thing || entry ? <Button disabled>Link Selected to current thing</Button> : null } 
-                        {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Remove Selected</Button> : null }
+                        {entry && !thing ? <Button onClick={this.MoveEntry}>Move to {this.props.type} {this.props.id}</Button> : null }
+                        {entry && !thing ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
+                        {thing || entry ? <Button disabled>Link to {this.props.type} {this.props.id}</Button> : null } 
+                        {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Unmark</Button> : null }
                     </div>                
                 }   
             </div>
@@ -290,7 +290,9 @@ class Actions extends Component {
                             this.RemoveEntryAfterMove ( id );   
                             this.RemoveSelected();
                         } else {
-                          this.ToggleActionSuccess();
+                            if ( !this.state.actionSuccess ) {
+                                this.ToggleActionSuccess();
+                            }
                         }
 
                     }.bind(this),
