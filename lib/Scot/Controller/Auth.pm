@@ -41,6 +41,7 @@ sub check {
     my $user    = '';
     my $headers = $request->headers;
 
+    my $loglevel = $log->level;
     $log->level(Log::Log4perl::Level::to_priority('INFO'));
 
     $log->debug("Authentication Check Begins...");
@@ -48,6 +49,7 @@ sub check {
     if ( $env->auth_type eq "Testing" ) {
         $log->warn("in test mode, NO AUTHENTICATION");
         $user   = "scot-testing";
+        $log->level($loglevel);
         return $self->sucessful_auth({
             user    => $user,
             method  => "testing"});
@@ -58,20 +60,24 @@ sub check {
         my $groups = $self->set_group_membership($user);
         if (defined $groups) {
             $log->info("User $user (".join(',',@$groups).") Authenticated via Mojo session");
+            $log->level($loglevel);
             return 1;
         }
         else {
+            $log->level($loglevel);
             return undef;
         }
     }
 
     if ( $user = $self->valid_authorization_header($headers) ) {
+        $log->level($loglevel);
         return $self->sucessful_auth({
             user    => $user,
             method  => "apikey"});
     }
 
     if ( $user = $self->sso($headers) ) {
+        $log->level($loglevel);
         return $self->sucessful_auth({
             user    => $user,
             method  => "sso"});
@@ -87,6 +93,7 @@ sub check {
             csrf  => $self->csrf_token,
         }
     );
+    $log->level($loglevel);
     return undef;
 }
 
