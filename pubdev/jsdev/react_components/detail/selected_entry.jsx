@@ -910,7 +910,7 @@ var EntryParent = React.createClass({
                                     { type != 'entity' ? <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem> : null}
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} /></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items} /></MenuItem>
-                                    <MenuItem><Marker type={'entry'} id={items.id} string={items.body_plain} /></MenuItem>
+                                    <Marker type={'entry'} id={items.id} string={items.body_plain} />
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
                                     <MenuItem onClick={this.reparseFlair}>Reparse Flair</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
