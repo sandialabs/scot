@@ -233,8 +233,8 @@ class Actions extends Component {
                     </div>
                 :
                     <div>
-                        {entry && !thing ? <Button onClick={this.MoveEntry}>Move to {this.props.type} {this.props.id}</Button> : null }
-                        {entry && !thing ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
+                        {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.MoveEntry}>Move to {this.props.type} {this.props.id}</Button> : null }
+                        {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
                         {thing || entry ? <Button disabled>Link to {this.props.type} {this.props.id}</Button> : null } 
                         {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Unmark</Button> : null }
                     </div>                
