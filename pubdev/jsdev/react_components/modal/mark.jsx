@@ -1,6 +1,6 @@
 import React, { PureComponent, Component } from 'react';
 import PropTypes from 'prop-types';
-import { Modal, Button } from 'react-bootstrap';
+import { Modal, Button, ButtonGroup } from 'react-bootstrap';
 import ReactTable from 'react-table';
 import { removeMarkedItems } from '../components/marker';
 
@@ -74,7 +74,7 @@ class Mark extends Component {
             <Modal dialogClassName='mark-modal' show={ this.props.modalActive } onHide={ this.props.markModalToggle }>
                 <Modal.Header closeButton={ true } >
                     <Modal.Title>
-                        Marked Actions
+                        Marked Objects
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -233,10 +233,13 @@ class Actions extends Component {
                     </div>
                 :
                     <div>
-                        {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.MoveEntry}>Move to {this.props.type} {this.props.id}</Button> : null }
-                        {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
-                        {thing || entry ? <Button disabled>Link to {this.props.type} {this.props.id}</Button> : null } 
-                        {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Unmark</Button> : null }
+                        { thing || entry ? <h4 style={{float: 'left'}}>Actions</h4> : <div> { this.props.data.length > 0 ? <h4 style={{float: 'left'}}>Select a Marked Object</h4> : null } </div> }
+                        <ButtonGroup style={{float: 'right'}}>
+                            {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.MoveEntry}>Move to {this.props.type} {this.props.id}</Button> : null }
+                            {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
+                            {thing || entry ? <Button disabled>Link to {this.props.type} {this.props.id}</Button> : null } 
+                            {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Unmark</Button> : null }
+                        </ButtonGroup>
                     </div>                
                 }   
             </div>
