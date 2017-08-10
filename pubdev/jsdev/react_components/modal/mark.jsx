@@ -9,7 +9,7 @@ class Mark extends Component {
         super( props );
 
         this.state = {
-            data: {},
+            data: [],
             allSelected: false,
         }
         
@@ -78,15 +78,20 @@ class Mark extends Component {
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <ReactTable 
-                        columns = { columns } 
-                        data = { this.state.data } 
-                        defaultPageSize = { 10 }
-                        getTdProps = { this.handleCheckboxSelection }
-                        getTheadThProps = { this.handleTHeadCheckboxSelection }
-                        getTrProps = { this.handleRowSelection }
-                        minRows = { 0 }
-                    />
+                    { this.state.data.length > 0 ?
+                        <ReactTable 
+                            columns = { columns } 
+                            data = { this.state.data } 
+                            defaultPageSize = { 10 }
+                            getTdProps = { this.handleCheckboxSelection }
+                            getTheadThProps = { this.handleTHeadCheckboxSelection }
+                            getTrProps = { this.handleRowSelection }
+                            minRows = { 0 }
+                            noDataText= 'No items marked.'
+                        />
+                    :
+                        <h3>No marked items detected.</h3>
+                    }
                 </Modal.Body>
                 <Modal.Footer>
                     <Actions data={this.state.data} id={this.props.id} type={this.props.type} getMarkedItems={this.getMarkedItems} errorToggle={this.props.errorToggle} />
