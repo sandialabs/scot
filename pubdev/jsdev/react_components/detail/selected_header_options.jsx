@@ -390,7 +390,7 @@ var SelectedHeaderOptions = React.createClass({
                         <Button bsStyle='danger' eventKey="17" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button> 
                         <ButtonGroup style={{float:'right'}}>
                             {/*<Marker type={type} id={id} string={string} />*/}
-                            <Button onClick={this.props.markModalToggle} bsSize='xsmall'>Marked Actions</Button>
+                            {/*<Button onClick={this.props.markModalToggle} bsSize='xsmall'>Marked Actions</Button>*/}
                             <Button bsStyle='info' eventKey="16" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                         </ButtonGroup>
                     </div>
@@ -409,7 +409,7 @@ var SelectedHeaderOptions = React.createClass({
                         <Button bsStyle='danger' eventKey="8" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button>
                         <ButtonGroup style={{float:'right'}}>
                             {/*<Marker type={type} id={id} string={string} />*/}
-                            <Button onClick={this.props.markModalToggle} bsSize='xsmall'>Marked Actions</Button>
+                            {/*<Button onClick={this.props.markModalToggle} bsSize='xsmall'>Marked Actions</Button>*/}
                             <Button bsStyle='info' eventKey="9" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                         </ButtonGroup>
                     </div>
