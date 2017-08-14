@@ -668,7 +668,7 @@ sub is_health_check {
 
     my $subject = $href->{subject};
 
-    if ( $subject =~ /SCOT-ALERTS Health Check/i ) {
+    if ( $subject =~ /SCOT Health Check/i ) {
         $log->trace("It is!");
         # ok, last version had this, but I think it was a kludge
         # keeping this to ignore them when they come in.
