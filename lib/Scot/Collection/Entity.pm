@@ -119,24 +119,23 @@ sub upsert_link {
     my $target  = shift; # href
 
     my $linkcol = $self->env->mongo->collection('Link');
-    my $linkobj = $linkcol->find_one({
-        entity_id       => $entity->id,
-        'target.id'     => $target->{id},
-        'target.type'   => $target->{type},
-    });
+    my $v1 = {
+        id     => $target->{id},
+        type   => $target->{type},
+    };
 
-    if ( defined $linkobj and
-         ref($linkobj) eq "Scot::Model::Link" ) {
+    if ( $linkcol->link_exists($entity,$v1) ) {
         $self->env->log->debug("Entity already linked to target");
         return;
     }
 
-    $linkobj    = $linkcol->create_link(
+    my $linkobj    = $linkcol->link_objects(
         $entity, { 
             type    => $target->{type},
             id      => $target->{id}, 
         }
     );
+    return $linkobj;
 }
 
 sub create_entity_links {
@@ -181,24 +180,18 @@ sub api_subthing {
          $subthing  eq "event" or
          $subthing  eq "intel" or
          $subthing  eq "incident" ) {
-        my @links = map { $_->{target}->{id} } 
-                        $mongo->collection('Link')->find({
-                            entity_id       => $id,
-                            'target.type'   => $subthing,
-                        })->all;
-        $log->debug("Links found: ",{filter=>\&Dumper, value => \@links});
-        return $mongo->collection(ucfirst($subthing))->find({
-            id  => { '$in'  => \@links }
-        });
+        return $mongo->collection('Link')
+                     ->get_linked_objects_cursor(
+                        { id => $id, type => 'entity' },
+                        $subthing);
     }
 
     if ( $subthing eq "entity" ) {
-        my @links = map { $_->{id} } 
-                        $mongo->collection('Link')->get_links_by_target({
-                            id      => $id,
-                            type    => 'entity',
-                        })->all;
-        return $self->find({id => {'$in' => \@links}});
+        # entities linking to entities, oh my, what could go wrong
+        return $mongo->collection('Link')
+                     ->get_linked_objects_cursor(
+                        { id => $id, type => 'entity' },
+                        'entity' );
     }
     if ( $subthing eq "entry" ) {
         return $mongo->collection('Entry')->get_entries_by_target({
@@ -223,62 +216,6 @@ sub api_subthing {
     die "Unsupported subthing request ($subthing) for Entity";
 
 }
-
-override get_subthing => sub {
-    my $self        = shift;
-    my $thing       = shift;
-    my $id          = shift;
-    my $subthing    = shift;
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $log         = $env->log;
-
-    $id += 0;
-
-    if ( $subthing  eq "alert" or
-         $subthing  eq "event" or
-         $subthing  eq "intel" or
-         $subthing  eq "incident" ) {
-        my $timer   = $env->get_timer("getting links");
-        my $col = $mongo->collection('Link');
-        my $cur = $col->find({entity_id     => $id,
-                              'target.type' => $subthing,});
-        my @ids         = map { $_->{target}->{id} } $cur->all;
-        my $subcursor   = $mongo->collection(ucfirst($subthing))->find({
-            id  => { '$in' => \@ids }
-        });
-        &$timer;
-        return $subcursor;
-    }
-    elsif ( $subthing eq "entity" ) {
-        my $lc  = $mongo->collection('Link');
-        my $cc  = $lc->get_links_by_target({
-            id  => $id, type => 'entity'
-        });
-        my @lnk = map { $_->{id} } $cc->all;
-        my $cur = $self->find({id => {'$in' => \@lnk}});
-        return $cur;
-    }
-    elsif ( $subthing eq "entry" ) {
-        my $col = $mongo->collection('Entry');
-        my $cur = $col->get_entries_by_target({
-            id  => $id,
-            type    => 'entity',
-        });
-        return $cur;
-    }
-    elsif ( $subthing eq "file" ) {
-        my $col = $mongo->collection('File');
-        my $cur = $col->find({
-            'entry_target.type' => 'entity',
-            'entry_target.id'   => $id,
-        });
-        return $cur;
-    }
-    else {
-        $log->error("unsupported subthing $subthing!");
-    }
-};
 
 sub get_by_value {
     my $self    = shift;
@@ -316,22 +253,10 @@ sub get_cidr_ipaddrs {
     });
 
     while ( my $entity = $cursor->next ) {
-        # get all linked targets
-        my @targets    = map { $_->{target} } 
-            $mongo->collection('Link')->get_links_by_entity_id($entity->id)->all;
+        my $linkcursor = $mongo->collection('Link')->
+            get_object_links_of_type($entity, undef);
 
-        my %seen;
-        my @final;
-        # filter out duplicates
-        foreach my $target (@targets) {
-            next if ( $target->{type} eq "alertgroup" );
-            if (! defined $seen{$target->{type}}{$target->{id}} ) {
-                $seen{$target->{type}}{$target->{id}}++;
-                push @final, $target;
-            }
-        }
-        # create record and store
-
+        push my @final, map { $_->{vertices} } $linkcursor->all;
         my $href = {
             id      => $entity->id,
             value   => $entity->value,
