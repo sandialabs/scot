@@ -9,6 +9,8 @@ my $collection      = $mongo->get_collection('link');
 my $newcollection   = $mongo->get_collection('newlink');
 my $cursor          = $collection->find();
 
+$cursor->immortal(1);
+
 print "starting...\n";
 my %lookup  = ();
 
