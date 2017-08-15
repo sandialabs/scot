@@ -62,7 +62,7 @@ A numerical score on the link.  In case you want one.
 
 =cut
 
-has value   => (
+has weight   => (
     is          => 'ro',
     isa         => 'Num',
     required    => 1,
