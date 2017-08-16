@@ -47,10 +47,11 @@ while (my $link = $cursor->next) {
     push @batch, $new_record;
     $batch_count++;
 
-    if ( $batch_count > 99 ) {
+    if ( $batch_count > 499 ) {
         $newcollection->insert_many(\@batch);
         $remain -= $batch_count;
         $batch_count = 0;
+        @batch = ();
         printf("%15d links remain to update\n", $remain);
     }
 
