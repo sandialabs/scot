@@ -504,13 +504,10 @@ sub api_subthing {
     }
 
     if ( $subthing eq "entity" ) {
-        my @lnk = map { $_->{entity_id} } 
-            $mongo->collection('Link')->get_links_by_target({
-                id  => $id, type => 'entry'
-            })->all;
-
-        return $mongo->collection('Entity')
-                ->find({id => { '$in' => \@lnk } });
+        return $mongo->collection('Link')
+                     ->get_linked_objects_cursor(
+                        { id => $id, type => 'entry' },
+                        'entity' );
     }
 
     if ( $subthing eq "file" ) {
@@ -520,52 +517,6 @@ sub api_subthing {
 
     die "unsupported subthing $subthing!";
 }
-
-override get_subthing => sub {
-    my $self        = shift;
-    my $thing       = shift;
-    my $id          = shift;
-    my $subthing    = shift;
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $log         = $env->log;
-
-    $id += 0;
-
-    if ( $subthing eq "history" ) {
-        my $col = $mongo->collection('History');
-        my $cur = $col->find({
-            'target.id'   => $id,
-            'target.type' => 'entry'
-        });
-        return $cur;
-    }
-    elsif ( $subthing eq "entity" ) {
-        my $timer  = $env->get_timer("fetching links");
-        my $col    = $mongo->collection('Link');
-        my $ft  = $env->get_timer('find actual timer');
-        my $cur    = $col->get_links_by_target({ 
-            id => $id, type => 'entry' 
-        });
-        &$ft;
-        my @lnk = map { $_->{entity_id} } $cur->all;
-        &$timer;
-
-        $timer  = $env->get_timer("generating entity cursor");
-        $col    = $mongo->collection('Entity');
-        $cur    = $col->find({id => {'$in' => \@lnk }});
-        &$timer;
-        return $cur;
-    }
-    elsif ( $subthing eq "file" ) {
-        my $col = $mongo->collection('File');
-        my $cur = $col->find({entry => $id});
-        return $cur;
-    }
-    else {
-        $log->error("unsupported subthing $subthing!");
-    }
-};
 
 sub get_entries_by_target {
     my $self    = shift;
