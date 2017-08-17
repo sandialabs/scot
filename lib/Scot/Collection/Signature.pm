@@ -64,45 +64,6 @@ override api_create => sub {
 };
 
 
-sub create_from_api {
-    my $self    = shift;
-    my $request = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-
-    $log->debug("Creating Signature from POST to API");
-    $log->debug(Dumper($request));
-
-    my $user        = $request->{user};
-    my $json        = $request->{request}->{json};
-    $json->{owner}  = $user;
-    my @tags        = $env->get_req_array($json, "tags");
-    my @sources     = $env->get_req_array($json, "sources");
-
-    $log->debug("json is ". Dumper($json));
-    
-    my $signature   = $self->create($json);
-
-    unless ( $signature ) {
-        $log->error("Error creating Signature from ",
-                    { filter => \&Dumper, value => $request });
-        return undef;
-    }
-
-    my $id  = $signature->id;
-
-    if ( scalar(@sources) > 0 ) {
-        my $col = $env->mongo->collection('Source');
-        $col->add_source_to("signature", $id, \@sources);
-    }
-    if ( scalar(@tags) > 0 ) {
-        my $col = $env->mongo->collection('Tag');
-        $col->add_source_to("signature", $id, \@tags);
-    }
-
-    return $signature;
-}
-
 sub get_bundled_sigbody {
     my $self    = shift;
     my $sigobj  = shift;
@@ -152,14 +113,10 @@ sub api_subthing {
     }
 
     if ($subthing eq "entity") {
-        my @links   = map { $_->{entity_id} }
-            $mongo->collection('Link')->get_links_by_target({
-                id      => $id,
-                type    => 'signature',
-            })->all;
-        return $mongo->collection('Entity')->find({
-            id => { '$in' => \@links }
-        });
+        return $mongo->collection('Link')
+                     ->get_linked_objects_cursor(
+                        { id => $id, type => 'signature' },
+                        'entity' );
     }
 
     if ( $subthing eq "tag" ) {
