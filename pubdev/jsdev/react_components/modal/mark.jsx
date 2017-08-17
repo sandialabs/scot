@@ -198,6 +198,8 @@ class Actions extends Component {
         this.MoveEntry = this.MoveEntry.bind(this);
         this.CopyEntry = this.CopyEntry.bind(this);
         this.EntryAjax = this.EntryAjax.bind(this);
+        this.Link = this.Link.bind(this);
+        this.LinkAjax = this.LinkAjax.bind(this);
         this.ToggleActionSuccess = this.ToggleActionSuccess.bind(this);
     }
 
@@ -237,7 +239,7 @@ class Actions extends Component {
                         <ButtonGroup style={{float: 'right'}}>
                             {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.MoveEntry}>Move to {this.props.type} {this.props.id}</Button> : null }
                             {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
-                            {thing || entry ? <Button disabled>Link to {this.props.type} {this.props.id}</Button> : null } 
+                            {thing || entry ? <Button onClick={this.Link} >Link to {this.props.type} {this.props.id}</Button> : null } 
                             {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Unmark</Button> : null }
                         </ButtonGroup>
                     </div>                
@@ -276,6 +278,49 @@ class Actions extends Component {
                 this.EntryAjax( key.id, false );
             }
         } 
+    }
+
+    Link() {
+        let arrayToLink = [];
+
+        for ( let key of this.props.data ) {
+            if ( key.selected ) {
+                let obj = {};
+                obj.id = parseInt( key.id );
+                obj.type = key.type;
+                arrayToLink.push( obj );
+            }
+        }
+
+        if ( arrayToLink.length > 0 ) {
+            //add current thing to be linked to
+            let obj = {};
+            obj.id = parseInt( this.props.id );
+            obj.type = this.props.type;
+
+            arrayToLink.push( obj );
+            this.LinkAjax( arrayToLink );
+        }
+    }
+
+    LinkAjax( arrayToLink ) {
+        let data = {};
+        data.weight = 1; //passed in object
+        data.vertices = arrayToLink; //link to current thing
+
+        $.ajax({
+            type: 'post',
+            url: '/scot/api/v2/link',
+            data: JSON.stringify( data ),
+            contentType: 'application/json; charset=UTF-8',
+            dataType: 'json',
+            success: function( response ) {
+                console.log( 'successfully linked' );
+            }.bind(this),
+            error: function( data ) {
+                this.props.errorToggle( 'failed to link', data );
+            }.bind(this)
+        })
     }
 
     EntryAjax(id, removeOriginal) {
