@@ -359,7 +359,7 @@ var SelectedHeaderOptions = React.createClass({
                     {type == 'signature' ? <Button eventKey='11' onClick={this.props.showSignatureOptionsToggle} bsSize='xsmall' bsStyle='warning'>View Custom Options</Button> : null}
                     <Button bsStyle='danger' eventKey="9" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button>
                     <ButtonGroup style={{float:'right'}}>
-                        {/*<Marker type={type} id={id} string={string} />*/}
+                        <Marker type={type} id={id} string={string} />
                         <Button onClick={this.props.markModalToggle} bsSize='xsmall'>Marked Objects</Button>
                         <Button id='refresh-detail' bsStyle='info' eventKey="10" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                     </ButtonGroup>
@@ -389,8 +389,8 @@ var SelectedHeaderOptions = React.createClass({
                         <Button eventKey='15' onClick={this.alertDeleteSelected} bsSize='xsmall' bsStyle='danger'><i className="fa fa-trash" aria-hidden="true"></i> Delete Selected</Button>
                         <Button bsStyle='danger' eventKey="17" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button> 
                         <ButtonGroup style={{float:'right'}}>
-                            {/*<Marker type={type} id={id} string={string} />*/}
-                            {/*<Button onClick={this.props.markModalToggle} bsSize='xsmall'>Marked Actions</Button>*/}
+                            <Marker type={type} id={id} string={string} />
+                            <Button onClick={this.props.markModalToggle} bsSize='xsmall'>Marked Actions</Button>
                             <Button bsStyle='info' eventKey="16" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                         </ButtonGroup>
                     </div>
@@ -408,8 +408,8 @@ var SelectedHeaderOptions = React.createClass({
                         <Button bsSize='xsmall' onClick={this.createLinkSignature}><i className="fa fa-pencil" aria-hidden="true"></i> Create & Link Signature</Button>
                         <Button bsStyle='danger' eventKey="8" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button>
                         <ButtonGroup style={{float:'right'}}>
-                            {/*<Marker type={type} id={id} string={string} />*/}
-                            {/*<Button onClick={this.props.markModalToggle} bsSize='xsmall'>Marked Actions</Button>*/}
+                            <Marker type={type} id={id} string={string} />
+                            <Button onClick={this.props.markModalToggle} bsSize='xsmall'>Marked Actions</Button>
                             <Button bsStyle='info' eventKey="9" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
                         </ButtonGroup>
                     </div>
