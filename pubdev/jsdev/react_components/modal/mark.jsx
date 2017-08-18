@@ -316,6 +316,7 @@ class Actions extends Component {
             dataType: 'json',
             success: function( response ) {
                 console.log( 'successfully linked' );
+                this.ToggleActionSuccess();
             }.bind(this),
             error: function( data ) {
                 this.props.errorToggle( 'failed to link', data );
