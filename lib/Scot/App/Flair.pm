@@ -376,14 +376,18 @@ sub flair_record {
         if ( $column =~ /^attachment[_-]name$/i  or 
              $column =~ /^attachments$/ ) {
             # each link in this field is a <div>filename</div>, 
+            $log->debug("A File attachment Column detected!");
+            
             my @newlines = ();
             my $regex   = qr{<div.*>(.*?)<\/div>};
             while ( $value =~ /$regex/g ) {
                 my $file    = $1;
+                $log->debug("FOUND FILE = $file");
                 push @entity, { value => $file, type => "filename" };
                 push @newlines, $self->genspan($file, "filename");
             }
             $flair{$column} = join("\n",@newlines);
+            $log->debug("flaired column is ".$flair{$column});
             next COLUMN;
         }
 
