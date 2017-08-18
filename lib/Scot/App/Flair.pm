@@ -373,7 +373,8 @@ sub flair_record {
             next COLUMN;
         }
 
-        if ( $column =~ /^attachment[_-]name$/i ) {
+        if ( $column =~ /^attachment[_-]name$/i  or 
+             $column =~ /^attachments$/ ) {
             # each link in this field is a <div>filename</div>, 
             my @newlines = ();
             my $regex   = qr{<div.*>(.*?)<\/div>};
