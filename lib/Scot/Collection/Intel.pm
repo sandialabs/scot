@@ -88,6 +88,13 @@ sub api_subthing {
                         { id => $id, type => 'intel' },
                         'entity' );
     }
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
+    }
 
     if ( $subthing eq "tag" ) {
         my @appearances = map { $_->{apid} } 
