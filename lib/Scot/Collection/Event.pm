@@ -303,12 +303,27 @@ sub api_subthing {
             type    => 'event',
         });
     }
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
+    }
 
     if ( $subthing eq "entity" ) {
         return $mongo->collection('Link')
                      ->get_linked_objects_cursor(
                         { id => $id, type => 'event' },
                         'entity' );
+    }
+
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
     }
 
     if ( $subthing eq "tag" ) {
