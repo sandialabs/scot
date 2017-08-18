@@ -377,10 +377,11 @@ sub flair_record {
              $column =~ /^attachments$/ ) {
             # each link in this field is a <div>filename</div>, 
             $log->debug("A File attachment Column detected!");
+            $log->debug("value = ",{filter=>\&Dumper, value=>$value});
             
             my @newlines = ();
             my $regex   = qr{<div.*>(.*?)<\/div>};
-            while ( $value =~ /$regex/g ) {
+            while ( $value =~ m/$regex/g ) {
                 my $file    = $1;
                 $log->debug("FOUND FILE = $file");
                 push @entity, { value => $file, type => "filename" };
