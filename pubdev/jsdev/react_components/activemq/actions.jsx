@@ -24,6 +24,7 @@ function register_client(){
         }
     }).success(function(){
         console.log('Registered client as '+client);
+        var set = setTimeout( function() { Actions.updateView() }, 1000 );
     }).error(function() {
         console.log("Error: failed to register client, retry in 1 sec");
         setTimeout(function() {register_client()}, 1000);
