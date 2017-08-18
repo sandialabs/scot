@@ -355,7 +355,7 @@ sub flair_record {
         my $value   = $data->{$column};
         my $html    = '<html>'.encode_entities($value).'</html>';
 
-        if ( $column =~ /^message_id$/i ) {
+        if ( $column =~ /^message[_-]id$/i ) {
             # the data is telling us that this is a email message_id, so flair
             $value = lc($value);
             push @entity, { value => $value, type => "message_id" };
@@ -363,10 +363,26 @@ sub flair_record {
             next COLUMN;
         }
 
-        if ( $column =~ /^lbscanid$/i ) {
+        if ( $column =~ /^(lb){0,1}scanid$/i ) {
             # another special column
+            if ( $value eq "" ) {
+                next COLUMN;
+            }
             push @entity, { value => $value, type => "lb_scan_id" };
             $flair{$column} = $self->genspan($value, "lb_scan_id");
+            next COLUMN;
+        }
+
+        if ( $column =~ /^attachment[_-]name$/i ) {
+            # each link in this field is a <div>filename</div>, 
+            my @newlines = ();
+            my $regex   = qr{<div.*>(.*?)<\/div>};
+            while ( $value =~ /$regex/g ) {
+                my $file    = $1;
+                push @entity, { value => $file, type => "filename" };
+                push @newlines, $self->genspan($value, "filename");
+            }
+            $flair{$column} = join("\n",@newlines);
             next COLUMN;
         }
 
