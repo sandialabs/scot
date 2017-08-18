@@ -138,6 +138,13 @@ sub api_subthing {
                         { id  => $id, type => 'alert' },
                         'entity');
     }
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
+    }
     if ( $subthing eq "event" ) {
         return $mongo->collection('Event')->find({promoted_from => $id});
     }
