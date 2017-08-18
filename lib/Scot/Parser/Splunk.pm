@@ -109,16 +109,19 @@ sub parse_message {
             # </td>
             # so let's loop! and concatenate!
 
-            my @intervalues = ();
-            foreach my $v (@{$values[$i]->{_content}}) {
-                push @intervalues, $v->as_text;
-            }
+           #### OK at some point I thought this was the way to go
+           ### not so sure now, Flair can handle this, I think.
+
+           # my @intervalues = ();
+           # foreach my $v (@{$values[$i]->{_content}}) {
+           #     push @intervalues, $v->as_text;
+           # }
 
             if ( $colname eq "MESSAGE_ID" ) {
                 $log->debug("MESSAGE_ID detection moved to Flair.pm");
             }
-            my $value = join(' ',@intervalues);
-            $rowresult{$colname} = $value;
+           # my $value = join(' ',@intervalues);
+           # $rowresult{$colname} = $value;
         }
         push @results, \%rowresult;
     }
