@@ -381,7 +381,7 @@ sub flair_record {
             while ( $value =~ /$regex/g ) {
                 my $file    = $1;
                 push @entity, { value => $file, type => "filename" };
-                push @newlines, $self->genspan($value, "filename");
+                push @newlines, $self->genspan($file, "filename");
             }
             $flair{$column} = join("\n",@newlines);
             next COLUMN;
