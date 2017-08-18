@@ -26,6 +26,7 @@ var LinkWarning             = require('../modal/link_warning.jsx');
 var Link                    = require('react-router-dom').Link;
 var DetailDataStatus        = require('../components/detail_data_status.jsx');
 var Mark                    = require('../modal/mark.jsx').default;
+var DetailHeaderMoreOptions = require('../components/detail_header_more_options').default;
 var InitialAjaxLoad;
 
 var SelectedHeader = React.createClass({
@@ -533,7 +534,7 @@ var SelectedHeader = React.createClass({
                             {this.state.loading ? <span style={{color:'lightblue'}}>Loading...</span> :null}    
                         </div> 
                         {type != 'entity' ? 
-                            <div className='details-table toolbar'>
+                            <div className='details-table toolbar' style={{display: 'flex'}}>
                                 <table>
                                     <tbody>
                                         <tr>
@@ -566,6 +567,7 @@ var SelectedHeader = React.createClass({
                                         </tr>
                                     </tbody>
                                 </table>
+                                {/*<DetailHeaderMoreOptions type={type} id={id} data={this.state.headerData} errorToggle={this.props.errorToggle} showData={this.state.showEventData} />*/}
                             </div> 
                         :
                             null
@@ -662,76 +664,6 @@ var EntryDataSubject = React.createClass({
             <div>{this.props.subjectType} {this.props.id}: <input type='text' defaultValue={this.state.value} onKeyPress={this.handleEnterKey} onBlur={this.handleChange} style={{width:this.state.width,lineHeight:'normal'}} disabled={isDisabled} /></div>
         )
     }
-});
-
-const customStyles = {
-    content : {
-        top     : '50%',
-        left    : '50%',
-        right   : 'auto',
-        bottom  : 'auto',
-        marginRight: '-50%',
-        transform:  'translate(-50%, -50%)'
-    }
-}
-
-var PromotedData = React.createClass({
-    getInitialState: function() {
-        return {
-            showAllPromotedDataToolbar: false
-        }
-    },
-    showAllPromotedDataToggle: function() {
-        if (this.state.showAllPromotedDataToolbar == false) {
-            this.setState({showAllPromotedDataToolbar: true});  
-        } else {
-            this.setState({showAllPromotedDataToolbar: false});
-        }
-    },
-    render: function() {
-        var promotedFromType = null;
-        var fullarr = [];
-        var shortarr = [];
-        var shortforlength = 3;
-        if (this.props.type == 'event') {
-            promotedFromType = 'alert'
-        } else if (this.props.type == 'incident') {
-            promotedFromType = 'event'
-        }
-        //makes large array for modal
-        for (var i=0; i < this.props.data.length; i++) {
-            if (i > 0) {fullarr.push(<div> , </div>)}
-            var link = '/' + promotedFromType + '/' + this.props.data[i];
-            fullarr.push(<div key={this.props.data[i]}><Link to={link}>{this.props.data[i]}</Link></div>)
-        }
-        //makes small array for quick display in header
-        if (this.props.data.length < 3 ) {
-            shortforlength = this.props.data.length;
-        }
-        for (var i=0; i < shortforlength; i++) {
-            if (i > 0) {shortarr.push(<div> , </div>)}
-            var link = '/' + promotedFromType + '/' + this.props.data[i];
-            shortarr.push(<div key={this.props.data[i]}><Link to={link}>{this.props.data[i]}</Link></div>)
-        } 
-        if (this.props.data.length > 3) {shortarr.push(<div onClick={this.showAllPromotedDataToggle}>,<a href='javascript:;'>...more</a></div>)}
-        return (
-            <td>
-                <span id='promoted_from' style={{display:'flex'}}>{shortarr}</span> 
-                {this.state.showAllPromotedDataToolbar ? <Modal isOpen={true} onRequestClose={this.showAllPromotedDataToggle} style={customStyles}>
-                    <div className='modal-header'>
-                        <img src='images/close_toolbar.png' className='close_toolbar' onClick={this.showAllPromotedDataToggle} />
-                        <h3 id='myModalLabel'>Promoted From</h3>
-                    </div>
-                    <div className='modal-body promoted-from-full'>
-                        {fullarr}    
-                    </div>
-                    <div className='modal-footer'>
-                        <Button id='cancel-modal' onClick={this.showAllPromotedDataToggle}>Close</Button>
-                    </div>
-                </Modal> : null }
-            </td>
-        )
-    }   
 });
 
 module.exports = SelectedHeader;
