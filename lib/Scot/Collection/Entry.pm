@@ -509,6 +509,13 @@ sub api_subthing {
                         { id => $id, type => 'entry' },
                         'entity' );
     }
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
+    }
 
     if ( $subthing eq "file" ) {
         return $mongo->collection('File')
