@@ -22,11 +22,17 @@ override api_create => sub {
 
     $log->debug("api_create link with: ",{filter=>\&Dumper, value=>$vertices});
 
-    return $self->create({
-        vertices   => $vertices,
-        weight      => $weight,
-        when        => $when,
-    });
+    # check if it exists already
+    if ( my $link = $self->find_one({vertices => $vertices}) ) {
+        return $link;
+    }
+    else {
+        return $self->create({
+            vertices   => $vertices,
+            weight      => $weight,
+            when        => $when,
+        });
+    }
 };
 
 sub link_objects {
