@@ -156,11 +156,9 @@ sub get_display_count {
         { 
             '$match' => {
                 vertices    => { 
-                    '$elemMatch' => { 
-                        id      => $entity->id, 
-                        type    => 'entity',
-                    }
-                }
+                    id      => $entity->id, 
+                    type    => 'entity',
+                },
             }
         },
         { '$unwind' => '$vertices' },
