@@ -63,7 +63,7 @@ sub get_object_links {
         type    => $object->get_collection_name,
     };
     my $cursor  = $self->find({
-        vertices    => { '$elemMatch' => $match }
+        vertices    => $match 
     });
     return $cursor;
 }
@@ -120,7 +120,7 @@ sub get_links_by_entity_id {
     my $self    = shift;
     my $id      = shift;
     my $cursor  = $self->find({ 
-        vertices    => { '$elemMatch' => { id => $id, type => "entity" }},
+        vertices    => { id => $id, type => "entity" },
     });
     return $cursor;
 }
