@@ -88,9 +88,7 @@ sub get_object_links_of_type {
     my @agg     = (
         { 
             '$match' => { 
-                vertices => { 
-                    '$elemMatch' => $match,
-                },
+                vertices => $match,
             },
         },
         {
