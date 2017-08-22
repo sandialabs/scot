@@ -165,9 +165,11 @@ var App = React.createClass({
     },
     errorToggle: function(string, result) {
         if ( result ) {
-            if ( result.responseJSON.error === 'Authentication Required') {
-                this.loginToggle( result.responseJSON.csrf );
-                return;
+            if ( result.responseJSON ) {
+                if ( result.responseJSON.error === 'Authentication Required') {
+                    this.loginToggle( result.responseJSON.csrf );
+                    return;
+                }
             }
         } 
 
