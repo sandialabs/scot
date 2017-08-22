@@ -911,7 +911,12 @@ var EntryParent = React.createClass({
             if ( this.props.items.actions ) {
                 for ( let i = 0; i < this.props.items.actions.length; i++ ) {
                     if ( this.props.items.actions[i].send_to_name && this.props.items.actions[i].send_to_url ) {
-                        entryActions.push(<MenuItem><span id={this.props.items.actions[i].send_to_name} data-href={this.props.items.actions[i].send_to_url} onClick={this.entryAction} style={{display:'block'}}>{this.props.items.actions[i].send_to_name} {this.state[this.props.items.actions[i].send_to_name] ? <span style={{color: 'green'}}>success</span> : null}</span></MenuItem>)
+                        entryActions.push(<EntryAction 
+                            id={this.props.items.actions[i].send_to_name} 
+                            datahref={this.props.items.actions[i].send_to_url} 
+                            errorToggle={this.props.errorToggle}
+                            />
+                        )
                     }
                 }
             }
@@ -952,25 +957,48 @@ var EntryParent = React.createClass({
         );
     },
 
-    entryAction: function(e) {
-        if ( e ) {
-            let url = e.target.dataset.href;
-            let id = e.target.id;
-            
-            $.ajax({
-                type: 'post',
-                url: url,
-                success: function(response) {
-                    this.setState({ [id]: true });
-                    console.log('submitted the entry action');
-                }.bind(this),
-                error: function(data) {
-                    this.props.errorToggle('failed to submit the entry action', data);
-                }.bind(this),
-            });
-        }
-    },
 });
+
+let EntryAction = React.createClass({
+    getInitialState: function() {
+
+        return {
+            [this.props.id] : false    
+        }        
+    },
+
+    submit: function() {
+        let url = this.props.datahref;
+        let id = this.props.id;
+
+        $.ajax({
+            type: 'post',
+            url: url,
+            success: function(response) {
+                this.setState({ [id]: true });
+                console.log('submitted the entry action');
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to submit the entry action', data);
+            }.bind(this),
+        });
+    },
+    
+    render: function() {
+        return (
+            <MenuItem>
+                <span id={this.props.id} data-href={this.props.datahref} onClick={this.submit} style={{display:'block'}}>{this.props.id} { 
+                    this.state[this.props.id] ? 
+                        <span style={{color: 'green'}}>success</span> 
+                    : 
+                        null
+                    }
+                </span>
+            </MenuItem> 
+        )
+    }
+});
+
 var EntryData = React.createClass({ 
     getInitialState: function() {
         /*if (this.props.type == 'entity' || this.props.isPopUp == 1) {
