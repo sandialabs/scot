@@ -963,7 +963,8 @@ var EntryParent = React.createClass({
                 success: function(response) {
                     let objSuccess = {};
                     objSuccess[id] = true;
-                    this.setState({ objSuccess });
+                    let newObj = objSuccess;
+                    this.setState({ newObj });
                     console.log('submitted the entry action');
                 }.bind(this),
                 error: function(data) {
