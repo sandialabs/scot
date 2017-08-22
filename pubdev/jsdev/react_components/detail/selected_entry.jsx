@@ -905,6 +905,18 @@ var EntryParent = React.createClass({
             childfunc(prop);
         };
         itemarr.push(subitemarr);
+
+        let entryActions = [];
+        if ( this.props.items ) {
+            if ( this.props.items.actions ) {
+                for ( let i = 0; i < this.props.items.actions.length; i++ ) {
+                    if ( this.props.items.actions[i].send_to_name && this.props.items.actions[i].send_to_url ) {
+                        entryActions.push(<MenuItem><span id={this.props.items.actions[i].send_to_name} data-href={this.props.items.actions[i].send_to_url} onClick={this.entryAction} style={{display:'block'}}>{this.props.items.actions[i].send_to_name} {this.state[this.props.items.actions[i].send_to_name] ? <span style={{color: 'green'}}>success</span> : null}</span></MenuItem>)
+                    }
+                }
+            }
+        }
+
         var header1 = '[' + items.id + '] ';
         var header2 = ' by ' + items.owner + ' ' + taskOwner + '(updated on '; 
         var header3 = ')'; 
@@ -920,6 +932,7 @@ var EntryParent = React.createClass({
                                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
                                     { type != 'entity' ? <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem> : null}
+                                    {entryActions}
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} errorToggle={this.props.errorToggle}/></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items} errorToggle={this.props.errorToggle} /></MenuItem>
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
@@ -937,7 +950,25 @@ var EntryParent = React.createClass({
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} errorToggle={this.props.errorToggle} /> : null}     
             </div>
         );
-    }
+    },
+
+    entryAction: function(e) {
+        let url = e.target.dataset.href;
+
+        $.ajax({
+            type: 'post',
+            url: url,
+            success: function(response) {
+                let objSuccess = {};
+                objSuccess[e.target.id] = 'success';
+                this.setState({ objSuccess });
+                console.log('submitted to sarlacc');
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to submit to sarlacc', data);
+            }.bind(this),
+        });
+    },
 });
 var EntryData = React.createClass({ 
     getInitialState: function() {
