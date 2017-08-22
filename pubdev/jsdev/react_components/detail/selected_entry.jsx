@@ -953,21 +953,24 @@ var EntryParent = React.createClass({
     },
 
     entryAction: function(e) {
-        let url = e.target.dataset.href;
-
-        $.ajax({
-            type: 'post',
-            url: url,
-            success: function(response) {
-                let objSuccess = {};
-                objSuccess[e.target.id] = 'success';
-                this.setState({ objSuccess });
-                console.log('submitted to sarlacc');
-            }.bind(this),
-            error: function(data) {
-                this.props.errorToggle('failed to submit to sarlacc', data);
-            }.bind(this),
-        });
+        if ( e ) {
+            let url = e.target.dataset.href;
+            let id = e.target.id;
+            
+            $.ajax({
+                type: 'post',
+                url: url,
+                success: function(response) {
+                    let objSuccess = {};
+                    objSuccess[id] = 'success';
+                    this.setState({ objSuccess });
+                    console.log('submitted the entry action');
+                }.bind(this),
+                error: function(data) {
+                    this.props.errorToggle('failed to submit the entry action', data);
+                }.bind(this),
+            });
+        }
     },
 });
 var EntryData = React.createClass({ 
