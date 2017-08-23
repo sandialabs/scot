@@ -898,7 +898,7 @@ var EntryParent = React.createClass({
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(<EntryParent  items = {childobj} id={id} type={type} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={isPopUp} errorToggle={errorToggle}/>));  
+                        subitemarr.push(new Array(<EntryParent items = {childobj} id={id} type={type} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={isPopUp} errorToggle={errorToggle}/>));  
                     });
                 }
             }
@@ -963,30 +963,33 @@ let EntryAction = React.createClass({
     getInitialState: function() {
 
         return {
-            [this.props.id] : false    
+            [this.props.id] : false,
+            disabled: false,
         }        
     },
 
     submit: function() {
         let url = this.props.datahref;
         let id = this.props.id;
-
+        
         $.ajax({
             type: 'post',
             url: url,
             success: function(response) {
-                this.setState({ [id]: true });
+                this.setState({ [id]: true, disabled: false });
                 console.log('submitted the entry action');
             }.bind(this),
             error: function(data) {
                 this.props.errorToggle('failed to submit the entry action', data);
+                this.setState({ disabled: false });
             }.bind(this),
         });
+        this.setState({ disabled: true });
     },
     
     render: function() {
         return (
-            <MenuItem>
+            <MenuItem disabled={this.state.disabled} >
                 <span id={this.props.id} data-href={this.props.datahref} onClick={this.submit} style={{display:'block'}}>{this.props.id} { 
                     this.state[this.props.id] ? 
                         <span style={{color: 'green'}}>success</span> 
