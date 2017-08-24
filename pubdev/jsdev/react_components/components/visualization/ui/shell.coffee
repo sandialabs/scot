@@ -1,10 +1,11 @@
 History = require './history'
 Utils = require '../utils/utils'
 Context = require './context'
+ScriptManager = require './script-manager'
 {Result,ResultPromise}= require '../utils/result'
 
 class Shell
-    constructor: (@output)->
+    constructor: (@output,@revl)->
         @history = new History()
         @output ?= (s)->alert "Warning- output function not defined!!!\n\n" + s
         @commands = {}
@@ -13,6 +14,7 @@ class Shell
         @context = new Context() # names accessible from user handlers
         @addCommands @getCommands()
         @editor = undefined
+        @script_manager = new ScriptManager(@,@revl)
 
     registerEditor: (ed) =>
         ed.setCompletionHandler @doCompletion
@@ -49,6 +51,7 @@ class Shell
             
     splitCommands: (cmd) ->
         #find instances of a single backslash
+        console.log "Splitting command #{JSON.stringify cmd}"
         re = /[^\\]\\[^\\]/g
         splits=[-2] # start with 0 to get first command
         i=0
@@ -60,9 +63,17 @@ class Shell
             .map (c)->c.split ' '
             .map (c)->c.map (s)->s.replace "\\\\","\\"
             
-    doCommand: (cmd) =>
+    doCommand: (cmd,data=Result.wrap {}) =>
+        console.log "DoCommand #{cmd}, data=#{JSON.stringify data}"
+        (@doCommandQuiet cmd,data)
+            .map (d) =>
+                result = ((@prettyprint d) + '\n')
+                @output result
+            .map_err (e) => (console.log "fail shell:73,e=#{JSON.stringify e}";@showError e)
+
+    doCommandQuiet: (cmd,data=Result.wrap {}) =>
+        console.log "DoCommandQuiet #{cmd}, data=#{JSON.stringify data}"
         cmds = @splitCommands cmd
-        data = Result.wrap {}
         i = 0
         for cmd in cmds
             if !(cmd[0] of @commands)
@@ -72,12 +83,15 @@ class Shell
                   cmd.unshift "map"
             i=1
         @runCommands data,cmds
-        
+
     runCommands: (data,cmds) =>
+        console.log "runCommands data=#{JSON.stringify data}, commands=#{JSON.stringify cmds}"
+        finish = new ResultPromise().map (d) -> (console.log "runcommands finished with #{d}"; d)
         for i in [0...cmds.length]
             cmd = cmds[i]
+            console.log "run command #{cmd}"
             try
-                data = data.map (d)=>
+                data = data.and_then (d)=>
                     @context.top()._ = d
                     @commands[cmd[0]] cmd[1..],d,@context.top()
             catch e
@@ -85,22 +99,47 @@ class Shell
                 console.log e
             console.log data
             if data instanceof ResultPromise
-                data
-                   .progress ((done,total) =>
-                       console.log "Progress: #{done}/#{total}"
-                       @editor.progress done,total)
-                   .map (result) => @runCommands (Result.wrap result),cmds[i+1..]
-                data.map_err (msg) => @showError msg
-                return
+                return data
+                    .progress ((done,total) =>
+                        console.log "Progress: #{done}/#{total}"
+                        @editor.progress done,total)
+                    .and_then (result) =>(@runCommands (Result.wrap result),cmds[i+1..])
             else if data.is_err()
                 break
-        data.map_err (e) => @showError e
-            .and_then (d) =>
-                result = ((@prettyprint d) + '\n')
-                @output result
+        console.log "succeeded with data ", data, " fulfilling promise ", finish
+        data.and_then (d) -> (console.log "fulfilling now"; finish.fulfill d;finish)
+            .map_err (e) -> (console.log "fail shell:117";finish.fail e; e)
+        finish
+
+    runScript: (data, context, script) =>
+        innerScript = (dat,ctx,scr) =>
+            if scr.length > 0
+                result = (@doCommand scr[0],dat)
+                console.log "Result of innerScript #{scr[0]} = #{JSON.stringify result}"
+                if scr.length > 1
+                    result.map (() => innerScript (Result.wrap {}),ctx,scr[1..])
+                else
+                    result
+            else
+                console.log "Empty script, returning error"
+                result = new ResultPromise()
+                result.fail('Attempted to execute empty script!')
+                result
+        @context.push context
+        # Have to use map here to make sure the context pops *after*
+        # the script completes, otherwise for scripts that have wait
+        # calls, it will pop before the script finishes and problems
+        # will follow.
+        val=(innerScript data,@context,script)
+            .map (r)=>(@context.pop();r)
+            .map_err (e)=>(@context.pop();@showError e)
+        ResultPromise.wait(val)
                 
     showError: (msg) ->
-        @output (msg+"\n")
+        if typeof msg == 'string'
+            @output (msg+"\n")
+        else
+            @output ((JSON.stringify msg)+'\n')
         Result.err msg
 
     complete: (commands,stub) =>
@@ -338,8 +377,8 @@ class Shell
                     if (typeof val) == 'function'
                         ctx.__functions.push {name: name, source: (src)}
                         localStorage.setItem 'context', JSON.stringify ctx
-                    Result.wrap val
-                .map_err (e) -> Result.err ('define: '+e)
+                    val
+                .map_err (e) ->  ('define: '+e)
 
         help__push: () => """
             push [definitions]
@@ -400,7 +439,7 @@ class Shell
                             Result.wrap val
                         else
                             Result.err "Argument must be an object"
-            frame.and_then (f)=>(@context.push(f);data)
+            frame.map (f)=>(@context.push(f);data)
 
         help__pop: ()->"""
             pop
