@@ -195,14 +195,15 @@ sub run {
         my $type    = $href->{data}->{type};
         my $id      = $href->{data}->{id};
         my $who     = $href->{data}->{who};
-        $log->debug("STOMP: $action : $type : $id : $who");
+        my $opts    = $href->{data}->{opts};
+        $log->debug("STOMP: $action : $type : $id : $who : $opts");
 
         return if ($who eq "scot-flair");
 
         #$pm->start(
         #    cb      => sub {
         #        my ($pm, $action, $type, $id) = @_;
-                $self->process_message($action, $type, $id);
+                $self->process_message($action, $type, $id, $opts);
         #    },
         #    args    => [ $action, $type, $id ],
         #);
@@ -219,6 +220,7 @@ sub process_message {
     my $action  = lc(shift);
     my $type    = lc(shift);
     my $id      = shift;
+    my $opts    = shift;
 
     $id += 0;
 
@@ -226,11 +228,11 @@ sub process_message {
 
     if ( $action eq "created" or $action eq "updated" ) {
         if ( $type eq "alertgroup" ) {
-            $self->process_alertgroup($id);
+            $self->process_alertgroup($id,$opts);
             $self->put_stat("alertgroup flaired", 1);
         }
         elsif ( $type eq "entry" ) {
-            $self->process_entry($id);
+            $self->process_entry($id,$opts);
             $self->put_stat("entry flaired", 1);
         }
         else {
@@ -261,10 +263,16 @@ sub get_alertgroup {
 sub process_alertgroup {
     my $self    = shift;
     my $id      = shift;
+    my $opts    = shift;
     my @update  = ();
     my $log     = $self->log;
 
     $self->out("-------- processing alertgroup $id");
+
+    if (defined($opts) && $opts eq "noreflair") {
+        $log->debug("noflair option received, short circuiting out...");
+        return;
+    }
 
     $log->debug("asking scot for /alertgroup/$id/alert");
 
