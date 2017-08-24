@@ -27,7 +27,6 @@ class ContentEditable extends React.Component
     content: () => @refs.element.innerText or @refs.element.textContents or ""
     
     render: () ->
-        console.log "prompt render"
         {span} = React.DOM
         span
             contentEditable: true
@@ -45,7 +44,6 @@ class ContentEditable extends React.Component
     focus: () -> @refs.element.focus()
 
     emitChange: () ->
-        console.log "prompt change"
         text = @refs.element.innerText
         if @props.onChange and text != @lastText
             @props.onChange @content()
@@ -84,9 +82,9 @@ class Prompt extends React.Component
     focus: (e) ->
         console.log "focus prompt"
         @refs.prompt.focus()
-        e.stopPropagation()
-        e.cancelBubble = true
-        e.preventDefault()
+        #e.stopPropagation()
+        #e.cancelBubble = true
+        #e.preventDefault()
         
     moveCaret: (p)-> @refs.prompt.moveCaret(p)
     
