@@ -1,5 +1,4 @@
 Utils = require './utils'
-Revl = require '../revl'
 
 err = (x) -> new Result.Error x
 wrap = (x) -> new Result.Ok x
@@ -11,19 +10,30 @@ Result =
     unwrap: unwrap
     Ok: class Ok
         constructor: (@content) ->
-        map: (fn) -> fn @content
-        and_then: (fn) -> wrap (fn @content)
+        map: (fn) ->
+            res = (fn @content)
+            if res instanceof Result.Ok or res instanceof Result.Error or res instanceof ResultPromise
+                throw "Invalid map call! Please send the command you entered to ejlee@sandia.gov for a bug fix"
+            wrap res
+        and_then: (fn) ->
+            res = fn @content
+            if not (res instanceof Result.Ok or res instanceof Result.Error or res instanceof ResultPromise)
+                throw "Invalid and_then call! Please send the command you entered to ejlee@sandia.gov for a bug fix"
+            res
+        err_and_then: (fn) -> @
         map_err: () -> @
         is_ok: () -> true
         is_err: () -> false
-    
+        as_promise: ()->ResultPromise.fulfilled @content
     Error: class Error
         constructor: (@content) ->
         map: () -> @
         and_then: () -> @
-        map_err: (fn) -> fn @content
+        map_err: (fn) -> err (fn @content)
+        err_and_then: (fn) -> (fn @content)
         is_ok: () -> false
         is_err: () -> true
+        as_promise: ()->ResultPromise.failed @content
 
 # get http://good.stuff/json \ (itm)->{ip: itm.ip, ct: itm.count} \ grid \ eachpoly (p) -> p.color = Utils.heatColor itm.count, maxcount \ draw
 # 
@@ -35,45 +45,87 @@ ResultPromise = class ResultPromise
         @next = undefined
         @success = @__defaultsuccess
         @failure = @__defaultfailure
+    as_promise: ()->@
+    
     fulfill: (content) ->
         if @complete or @error
-            return
+            return @
         @complete = true
         @content = content
         @success content
         @onProgress 1,1
+        @
     fail: (content) ->
         if @complete or @error
-            return
+            return @
         @error = true
         @content = content
+        #console.log "failing promise with: ",content
         @failure content
+        @
     progress: (handler) ->
         @progressHandler = handler
         @onProgress 0,1
         @
-    __defaultsuccess: (content) -> @next?.fulfill content
-    __defaultfailure: (content) -> @next?.fail content
+    __defaultsuccess: (content) => @next?.fulfill content
+    __defaultfailure: (content) => @next?.fail content
 
     onProgress: (done,total) ->
         @progressHandler? done,total
         @next?.onProgress done,total
-        
+
+    @failed: (result) -> (new ResultPromise()).fail result
+    @fulfilled: (result) -> (new ResultPromise()).fulfill result
+    
     map: (fn) ->
         @next = new ResultPromise
-        @success = (result) =>
-            @next.fulfill (fn result)
+        @success = (result) => (@next.fulfill (fn result))
+        @failure = (result) => (@next.fail result)
         if @complete
             @success @content
+        else if @error
+            @failure @content
+        @next
+
+    and_then: (fn) ->
+        @next = new ResultPromise()
+        @success = (result) =>
+            (fn result).as_promise()
+                .map (r)=>(@next.fulfill r)
+                .map_err (e)=>(@next.fail e)
+        @failure = (result) => (@next.fail result)
+        if @complete
+            @success @content
+        else if @error
+            @failure @content
         @next
         
     map_err: (fn) ->
-        @next = new ResultPromise
-        @failure = (result) ->
-            @next.fail (fn result)
+        @next = new ResultPromise()
+        @failure = (result) => (@next.fail (fn result))
+        @success = (result) => (@next.fulfill result)
         if @error
             @failure @content
+        else if @complete
+            @success @content
         @next
+
+    err_and_then: (fn) ->
+        @next = new ResultPromise()
+        @failure = (result) =>
+            console.log "failing in err_and_then"
+            (fn result).as_promise()
+                .map_err (e)=> (console.log "err_and_then..map_err";@next.fail e)
+                .map (r) => (console.log "err_and_then..map";@next.fulfill r)
+        @success = (result)=>(@next.fulfill result)
+        if @error
+            @failure @content
+        else if @complete
+            @success @content
+        @next
+        
+    wait: (timeout=60) ->
+        ResultPromise.wait @,timeout
         
     @wait: (p,timeout=60) ->
         Utils = require './utils'
@@ -117,6 +169,7 @@ ResultPromise = class ResultPromise
         totalholes=0
         holes=0
         timer=undefined
+        cancel = false
         resetTimeout = ()->
             clearTimeout timer
             timer = setTimeout (()->
@@ -132,20 +185,29 @@ ResultPromise = class ResultPromise
             if holes==0
                 clearTimeout timer
                 result.fulfill mixed
-                console.log "Revl: ",Revl
             
         updatemaker = (object,key,hole) ->
             (val)->
                 update object,key,val,hole
                 resetTimeout()
-            
+
+        cancelmaker = (object,key,hole) ->
+            (err) ->
+                resetTimeout()
+                console.log "Error: ",err," Cancelling slot #{hole} in waitreplace"
+                object[key] = undefined
+                holes--
+                result.onProgress (totalholes-holes),totalholes
+                
         replacer = (subitem)->
             for own part,promise of subitem
                 if promise instanceof ResultPromise
                     promise.map (updatemaker subitem,part,holes++)
+                        .map_err (cancelmaker subitem, part, holes-1)
                     totalholes++
                 else if (Utils.isArray promise) or (Utils.isObject promise)
                     replacer promise
+            console.log "Replacing #{totalholes} promises in waitreplace"
         replacer mixed
         if holes == 0
             result.fulfill mixed
