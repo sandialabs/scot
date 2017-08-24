@@ -801,17 +801,26 @@ sub promote {
     my $type = $object->get_collection_name;
     my $id   = $object->id;
     if ( $type eq "alert" ) {
-        $type   = "Alertgroup";
-        $id     = $object->alertgroup;
+        $env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                who     => $user,
+                type    => "Alertgroup",
+                id      => $object->alertgroup,
+                opts    => "noreflair",
+            }
+        });
     }
-    $env->mq->send("scot", {
-        action  => "updated",
-        data    => {
-            who     => $user,
-            type    => $type,
-            id      => $id,
-        }
-    });
+    else {
+        $env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                who     => $user,
+                type    => $type,
+                id      => $id,
+            }
+        });
+    }
 
     my $what = $object->get_collection_name." promoted to ".
                        $promotion_obj->get_collection_name;
