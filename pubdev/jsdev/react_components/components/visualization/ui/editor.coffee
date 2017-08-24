@@ -42,7 +42,6 @@ class Editor extends React.Component
     render: =>
         @trace_accumulator = ""
         {div,span,pre} = React.DOM
-        console.log "editor render"
         div
             id: "revl-shell-panel"
             tabIndex: 0
@@ -118,7 +117,6 @@ class Editor extends React.Component
     isPrintable: (ch) -> (31 < ch < 128) || ch == 13 || ch == 9
 
     onChange: (cmd) ->
-        console.log "Editor command changed to #{cmd}"
         @shell.history.setActive cmd
         @setState cmd: cmd
         
@@ -127,7 +125,6 @@ class Editor extends React.Component
             return false
         switch event.keyCode
             when Enter
-                console.log "Enter pressed in editor"
                 # check to see if we should just continue the entry line
                 if (@state.cmd).trim()[-1..] == '\\'
                     @setState {cmd: @state.cmd+'\n'},()=>@refs.prompt.moveCaret()
