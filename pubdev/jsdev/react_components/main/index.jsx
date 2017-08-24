@@ -275,7 +275,7 @@ var App = React.createClass({
                                 <LinkContainer to='/guide' activeClassName='active'>
                                     <MenuItem>Guide</MenuItem>
                                 </LinkContainer>
-                                <MenuItem href='/revl.html/#/visualization'>Visualization</MenuItem>
+                                <MenuItem href='/revl.html#/visualization'>Visualization</MenuItem>
                                 <LinkContainer to='/signature' activeClassName='active'>
                                     <MenuItem>Signature</MenuItem>
                                 </LinkContainer>
