@@ -35,6 +35,26 @@ override api_create => sub {
     }
 };
 
+sub get_vertex {
+    my $self    = shift;
+    my $thing   = shift;
+    my $vertex  = shift;
+
+    if ( ref($thing) =~ /Scot::Model/ ) {
+        $vertex = { 
+            id      => $thing->id,
+            type    => $thing->get_collection_name,
+        };
+    }
+    elsif (ref($thing) eq "HASH" )  {
+        $vertex = $thing;  # assuming hash
+    }
+    else {
+        die "Invalid Object provided to get_vertex";
+    }
+    return $vertex;
+}
+
 sub link_objects {
     my $self    = shift;
     my $v0      = shift; # object(scot::model) or href
@@ -58,15 +78,23 @@ sub link_objects {
 sub get_object_links {
     my $self    = shift;
     my $object  = shift;
-    my $match   = {
-        id      => $object->id,
-        type    => $object->get_collection_name,
-    };
+    my $type;
+    my $id;
+
+    my $vertext = $self->get_vertex($object);
+
+
     my $cursor  = $self->find({
-        vertices    => $match 
+        vertices    => {
+            '$elemMatch' => {
+                id      => $vertex->{id},
+                type    => $vertex->{type},
+            },
+        },
     });
     return $cursor;
 }
+
 
 sub get_entity_links_by_value {
     my $self    = shift;
@@ -77,6 +105,21 @@ sub get_entity_links_by_value {
 }
 
 sub get_object_links_of_type {
+    my $self    = shift;
+    my $object  = shift;
+    my $type    = shift;
+    my $vertex  = $self->get_vertex($object);
+    my $match   = {
+        '$and'  => [
+            { vertices => { '$elemMatch' => $vertex } },
+            { 'vertices.type'   => $type },
+        ],
+    };
+    my $cursor  = $self->find($match);
+    return $cursor;
+}
+
+sub get_object_links_of_type_agg {
     my $self    = shift;
     my $object  = shift; # scot model or hashref
     my $type    = shift;
@@ -143,6 +186,22 @@ sub get_links_by_target {
 sub get_display_count {
     my $self    = shift;
     my $entity  = shift;
+    my $vertex  = $self->get_vertex($entity);
+    # count times linked to Alergroup, Event, Intel, Incident, Guide, Signature...
+    # excluding alert and entry because that can be multiple times per Event, etc.
+    my $match   = {
+        '$and'  => [
+            {vertices => { '$elemMatch' => $vertex } },
+            {'vertices.type' => { '$nin' => [ 'alert', 'entry' ] } },
+        ],
+    };
+    my $cursor  = $self->find($match);
+    return $cursor->count;
+}
+
+sub get_display_count_agg {
+    my $self    = shift;
+    my $entity  = shift;
     my $log     = $self->env->log;
 
     $log->debug("Counting links to entity");
@@ -201,23 +260,6 @@ sub link_exists {
     my $linkobj = $self->find_one({vertices => { '$all' => \@vertices }});
 
     return defined $linkobj;
-}
-
-sub get_vertex {
-    my $self    = shift;
-    my $thing   = shift;
-    my $vertex  = shift;
-
-    if ( ref($thing) =~ /Scot::Model/ ) {
-        $vertex = { 
-            id      => $thing->id,
-            type    => $thing->get_collection_name,
-        };
-    }
-    else {
-        $vertex = $thing;  # assuming hash
-    }
-    return $vertex;
 }
 
 
