@@ -130,6 +130,7 @@ if ( $new_link_count == 0 ) {
 say "Deleting duplicate Entities...";
 my $entitycol       = $mongo->get_collection('entity');
 my $entrycol        = $mongo->get_collection('entry');
+
 foreach my $dupkey (keys %entitydups) {
     my ($id,$value) = split(/:/,$dupkey,2);
     say "deduplicating $id:$value";
