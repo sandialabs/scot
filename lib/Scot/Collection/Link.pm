@@ -81,7 +81,7 @@ sub get_object_links {
     my $type;
     my $id;
 
-    my $vertext = $self->get_vertex($object);
+    my $vertex = $self->get_vertex($object);
 
 
     my $cursor  = $self->find({
