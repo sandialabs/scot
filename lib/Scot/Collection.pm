@@ -526,7 +526,7 @@ sub api_list {
     }
 
     if ( $href->{task_search} ) {
-        $match->{'task.status'}     = {'$exists'    => 1};
+        # $match->{'task.status'}     = {'$exists'    => 1};
         $match->{'metadata.status'} = {'$exists'    => 1};
     }
 
