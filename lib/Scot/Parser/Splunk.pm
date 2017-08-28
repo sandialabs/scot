@@ -120,8 +120,8 @@ sub parse_message {
             if ( $colname eq "MESSAGE_ID" ) {
                 $log->debug("MESSAGE_ID detection moved to Flair.pm");
             }
-           # my $value = join(' ',@intervalues);
-           # $rowresult{$colname} = $value;
+            my $value = join(' ',@intervalues);
+            $rowresult{$colname} = $value;
         }
         push @results, \%rowresult;
     }
