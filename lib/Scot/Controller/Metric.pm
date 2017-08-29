@@ -435,7 +435,7 @@ sub alert_power {
     my @results = ();
     foreach my $at (keys %$sums) {
         push @results, {
-            date        => $at,
+            name        => $at,
             open        => $sums->{$at}->{open},
             promoted    => $sums->{$at}->{promoted},
             incident    => $sums->{$at}->{incident},
