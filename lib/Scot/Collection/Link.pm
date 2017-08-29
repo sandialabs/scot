@@ -176,8 +176,8 @@ sub get_links_by_target {
 
     $self->env->log->debug("Finding Links to $type $id");
     my $cursor = $self->find({
-    #     vertices    => { '$elemMatch' => { id => $id, type => $type } },  ## SLOW !
-         vertices => { id => $id, type => $type }
+         vertices    => { '$elemMatch' => { id => $id, type => $type } },
+    #     vertices => { id => $id, type => $type }
     });
     $self->env->log->debug("found ".$cursor->count." links");
     return $cursor;
