@@ -450,14 +450,11 @@ sub alert_power {
 
     $log->debug("sorted results: ",{filter=>\&Dumper,value=>\@sorted});
 
-    my @filtered = map { my $s = delete $_->{score}; $_->{date} .= " ($s)"; $_ } @sorted;
 
-    my @slice = splice(@filtered, 0, 20);
-
-    $log->debug("Slice is ",{filter=>\&Dumper, value=>\@slice});
-
-    return \@slice;
-#     return \@sorted;
+    # my @slice = splice(@sorted, 0, 20);
+    # $log->debug("Slice is ",{filter=>\&Dumper, value=>\@slice});
+    # return \@slice;
+    return \@sorted;
 }
 
 
