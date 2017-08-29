@@ -5,6 +5,8 @@ var IncidentTable = React.createClass({
     getInitialState: function() {
             var dropdown =  {
                 'Type': [
+                    'NONE',
+                    'FYI',
                     'Type 1 : Root Comprimise',
                     'Type 1 : User Compromise',
                     'Type 1 : Loss/Theft/Missing Desktop',
