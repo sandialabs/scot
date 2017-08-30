@@ -126,22 +126,25 @@ class ReportAlertpower extends PureComponent {
 		d3.select( '#report_alertpower' ).transition().attr( 'viewBox', `0 0 1000 ${this.height + margin.top + margin.bottom}` )
 
 		this.dataTypes = d3.keys( dataset[0] )
-				.filter( key => ![ 'date', 'values', 'total', 'power', 'max' ].includes( key ) );
+				.filter( key => ![ 'name', 'values', 'total', 'score', 'max' ].includes( key ) );
 
 		// Build color domain from keys except name
         this.colors.domain( this.dataTypes );
 
 		dataset.forEach( d => {
 			// Remove number at the end
-			d.date = d.date.replace( / \([0-9]+\)/, '' );
+			d.name = d.name.replace( / \([0-9]+\)/, '' );
 
 			/* // False Data
 			this.dataTypes.forEach( type => {
 				d[ type ] = Math.round( Math.random() * 5 );
 			} );
+			if ( !d.score ) {
+				d.score = ( Math.random() * 10 ).toPrecision( 2 );
+			}
 			/**/
-			if ( !d.power ) {
-				d.power = ( Math.random() * 10 ).toPrecision( 2 );
+			if ( typeof d.score === 'number' ) {
+				d.score = ''+ d.score;
 			}
 
 			// Calculate bar start/end points
@@ -171,7 +174,7 @@ class ReportAlertpower extends PureComponent {
 		} );
 
 		this.yScale.rangeRound( [0, this.height] )
-			.domain( dataset.map( d => d.date ) );
+			.domain( dataset.map( d => d.name ) );
 
 		/*
 		// Animated, but multiline flashes
@@ -189,7 +192,7 @@ class ReportAlertpower extends PureComponent {
 		/**/
 
         let alerts = this.svg.selectAll( '.alert' )
-			.data( dataset, d => d.date )
+			.data( dataset, d => d.name )
 
 		alerts.exit()
 			.transition()
@@ -199,12 +202,12 @@ class ReportAlertpower extends PureComponent {
 
 		alerts.enter().append( 'g' )
 			.attr( 'class', 'alert' )
-			.attr( 'transform', d => `translate( 1, ${this.yScale( d.date )} )` )
+			.attr( 'transform', d => `translate( 1, ${this.yScale( d.name )} )` )
 			.append( 'text' )
 				.attr( 'dy', '1.2em' )
 
 		alerts.transition()
-			.attr( 'transform', d => `translate( 1, ${this.yScale( d.date )} )` )
+			.attr( 'transform', d => `translate( 1, ${this.yScale( d.name )} )` )
 
 		let alertTypes = this.svg.selectAll( '.alert' ).selectAll( 'rect' )
 			.data( d => d.values )
@@ -287,8 +290,8 @@ class ReportAlertpower extends PureComponent {
 				.attr( 'transform', d => `translate( ${this.xScale( d.total ) + 10}, 0 )` )
 				.tween( 'text', function( d ) {
 					let text = d3.select( this );
-					let i = d3.interpolateNumber( text.text(), d.power ),
-						prec = d.power.split( '.' ),
+					let i = d3.interpolateNumber( text.text(), d.score ),
+						prec = d.score.split( '.' ),
 						round = ( prec.length > 1 ) ? Math.pow( 10, prec[0].length ) : 1;
 
 					return t => text.text( Math.round( i( t ) * round ) / round );
@@ -319,8 +322,8 @@ class ReportAlertpower extends PureComponent {
 				.attr( 'transform', d => `translate( ${this.xScale( d.max ) + 10}, 0 )` )
 				.tween( 'text', function( d ) {
 					let text = d3.select( this );
-					let i = d3.interpolateNumber( text.text(), d.power ),
-						prec = d.power.split( '.' ),
+					let i = d3.interpolateNumber( text.text(), d.score ),
+						prec = d.score.split( '.' ),
 						round = ( prec.length > 1 ) ? Math.pow( 10, prec[0].length ) : 1;
 
 					return t => text.text( Math.round( i( t ) * round ) / round );
