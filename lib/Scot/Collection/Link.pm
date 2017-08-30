@@ -240,8 +240,22 @@ sub get_linked_objects_cursor {
     $log->debug("get_linked_objects_cursor of object ".
                 ref($object)." and type $type");
 
+    my $targetvertex = $self->get_vertex($object);
+
     my $lcursor     = $self->get_object_links_of_type($object,$type);
-    my @linked_ids  = map {$_->{vertices}->{id}} $lcursor->all;
+    # my @linked_ids  = map {$_->{vertices}->{id}} $lcursor->all; # this worked for agg style not other
+    my @linked_ids  = ();
+    while ( my $link = $lcursor->next ) {
+        my $varef   = $link->vertices;
+        if ( $varef->[0]->{type} eq $targetvertex->{type} and
+             $varef->[0]->{id} == $targetvertex->{id} ) {
+            push @linked_ids, $varef->[1]->{id};
+        }
+        else {
+            push @linked_ids, $varef->[0]->{id};
+        }
+    }
+
     my $match       = { id => { '$in' => \@linked_ids }};
     my $lo_cursor   = $mongo->collection(ucfirst($type))->find($match);
     return $lo_cursor;
