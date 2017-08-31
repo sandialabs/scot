@@ -176,11 +176,14 @@ class Mark extends Component {
 
     getMarkedItems () {
         let markedItems = getLocalStorage( 'marked' );
+    
         if ( markedItems ) {
             markedItems = JSON.parse( markedItems );
+            this.setState({ data: markedItems });
+        } else {
+            return; //return if no items are marked
         }
-        
-        this.setState({ data: markedItems });
+    
     }
 }
 
