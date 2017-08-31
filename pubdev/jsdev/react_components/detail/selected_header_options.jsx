@@ -8,7 +8,8 @@ var Promote         = require('../components/promote.jsx');
 var SelectedHeaderOptions = React.createClass({
     getInitialState: function() {
         return {
-            globalFlairState: true
+            globalFlairState: true,
+            promoteRemaining: null,
         }
     },
     toggleFlair: function() { 
@@ -64,6 +65,9 @@ var SelectedHeaderOptions = React.createClass({
             array.push({id:id,status:'open'});
         }.bind(this));
         var data = JSON.stringify({alerts:array})    
+        
+        this.props.ToggleProcessingMessage(true);
+
         $.ajax({
             type:'put',
             url: '/scot/api/v2/'+this.props.type + '/' +this.props.id,
@@ -71,12 +75,15 @@ var SelectedHeaderOptions = React.createClass({
             contentType: 'application/json; charset=UTF-8',
             success: function(response){
                 console.log('success');
+                this.props.ToggleProcessingMessage(false);
             }.bind(this),
             error: function(data) {
                 this.props.errorToggle('failed to open selected alerts', data);
+                this.props.ToggleProcessingMessage(false);
             }.bind(this)
         })
     },
+
     alertCloseSelected: function() {
         var time = Math.round(new Date().getTime() / 1000)
         var array = [];
@@ -85,6 +92,9 @@ var SelectedHeaderOptions = React.createClass({
             array.push({id:id,status:'closed', closed:time});
         }.bind(this)); 
         var data = JSON.stringify({alerts:array})
+        
+        this.props.ToggleProcessingMessage(true);
+        
         $.ajax({
             type:'put',
             url: '/scot/api/v2/'+this.props.type + '/'+ this.props.id,
@@ -92,12 +102,15 @@ var SelectedHeaderOptions = React.createClass({
             contentType: 'application/json; charset=UTF-8',
             success: function(response){
                 console.log('success');
+                this.props.ToggleProcessingMessage(false);
             }.bind(this),
             error: function(data) {
                 this.props.errorToggle('failed to close selected alerts', data);
+                this.props.ToggleProcessingMessage(false);
             }.bind(this)
         })
     },
+
     alertPromoteSelected: function() {
         var data = JSON.stringify({promote:'new'})
         var array = [];
@@ -105,6 +118,9 @@ var SelectedHeaderOptions = React.createClass({
             var id = $(tr).attr('id');
             array.push(id);
         }.bind(this));
+
+        this.props.ToggleProcessingMessage(true);
+
         //Start by promoting the first one in the array
         $.ajax({
             type:'put',
@@ -116,7 +132,11 @@ var SelectedHeaderOptions = React.createClass({
                 var promoteTo = {
                     promote:response.pid
                 }
+                
+                this.setState({promoteRemaining: array.length -1 });
+                
                 for (var i=1; i < array.length; i++) {
+                   
                     $.ajax({
                         type:'put',
                         url: '/scot/api/v2/alert/'+array[i],
@@ -124,9 +144,16 @@ var SelectedHeaderOptions = React.createClass({
                         contentType: 'application/json; charset=UTF-8',
                         success: function(response){
                             console.log('success');
+                            this.setState({promoteRemaining: this.state.promoteRemaining -1})
+                            
+                            if ( this.state.promoteRemaining == 0 ) {
+                                this.props.ToggleProcessingMessage(false);
+                            }
+
                         }.bind(this),
                         error: function(data) {
                             this.props.errorToggle('failed to promoted selected alerts', data);
+                            this.setState({promoteRemaining: this.state.promoteRemaining -1});
                         }.bind(this)
                     })
                 }
