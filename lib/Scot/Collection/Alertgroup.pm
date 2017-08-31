@@ -168,7 +168,7 @@ sub create_from_api {
         push @$data, $data;
     }
 
-    my $row_limit = 200;
+    my $row_limit = 100;
     #if ( defined $env->alertgroup_rowlimit ) {
     #    $row_limit = $env->alertgroup_rowlimit;
     #    $log->debug("Altername rowlimit specified as ".$row_limit);
