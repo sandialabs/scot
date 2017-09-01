@@ -561,7 +561,7 @@ module.exports = React.createClass({
             }.bind(this),
             error: function(data) {
                 this.props.errorToggle('failed to get list data', data); 
-            }
+            }.bind(this)
         });
 
     },
