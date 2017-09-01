@@ -12,4 +12,9 @@ fi
 OS=`lsb_release -i | cut -s -f 2`
 VER=`lsb_release -r | cut -s -f 2 | cut -d. -f 1`
 
+if [[ "$OS" == "RedHatEnterpriseServer" ]]; then
+    echo "- modifying OS variable to CentOS for install purposes"
+    OS="CentOS"
+fi
+
 echo "$DISTRO $OS $VER"
