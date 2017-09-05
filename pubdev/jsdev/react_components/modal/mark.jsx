@@ -153,7 +153,12 @@ class Mark extends Component {
                     let allSelected = !this.state.allSelected;
                     
                     for ( let row of data ) {
-                        row.selected = allSelected;
+                        for ( let pageRow of state.pageRows ) {
+                            if ( row.id == pageRow.id && row.type == pageRow.type ) {                 //compare displayed rows to rows in dataset and only select those
+                                row.selected = allSelected;
+                                break;
+                            }
+                        }
                     }
 
                     this.setState({data: data, allSelected: allSelected});
@@ -284,26 +289,42 @@ class Actions extends Component {
     }
 
     Link() {
-        let arrayToLink = [];
+
 
         for ( let key of this.props.data ) {
             if ( key.selected ) {
+
+                let arrayToLink = [];
                 let obj = {};
+                let currentobj = {};
+
+                //assign new thing to link
                 obj.id = parseInt( key.id );
                 obj.type = key.type;
+                
+                //assign current thing to link to
+                currentobj.id = parseInt( this.props.id );
+                currentobj.type = this.props.type;
+
                 arrayToLink.push( obj );
+                arrayToLink.push ( currentobj );
+            
+                this.LinkAjax( arrayToLink );
             }
+            
+            /*
+                if ( arrayToLink.length > 0 ) {
+                //add current thing to be linked to
+                let obj = {};
+                obj.id = parseInt( this.props.id );
+                obj.type = this.props.type;
+
+                arrayToLink.push( obj );
+                this.LinkAjax( arrayToLink );
+            }*/
         }
 
-        if ( arrayToLink.length > 0 ) {
-            //add current thing to be linked to
-            let obj = {};
-            obj.id = parseInt( this.props.id );
-            obj.type = this.props.type;
-
-            arrayToLink.push( obj );
-            this.LinkAjax( arrayToLink );
-        }
+        
     }
 
     LinkAjax( arrayToLink ) {
@@ -319,7 +340,7 @@ class Actions extends Component {
             dataType: 'json',
             success: function( response ) {
                 console.log( 'successfully linked' );
-                this.ToggleActionSuccess();
+                this.ToggleActionSuccess(true);
             }.bind(this),
             error: function( data ) {
                 this.props.errorToggle( 'failed to link', data );
@@ -348,7 +369,7 @@ class Actions extends Component {
                             this.RemoveSelected();
                         } else {
                             if ( !this.state.actionSuccess ) {
-                                this.ToggleActionSuccess();
+                                this.ToggleActionSuccess(true);
                             }
                         }
 
@@ -378,9 +399,15 @@ class Actions extends Component {
         });
     }
 
-    ToggleActionSuccess() {
-        let newActionSuccess = !this.state.actionSuccess;
-        this.setState({ actionSuccess: newActionSuccess });
+    ToggleActionSuccess(status) {
+        
+        if ( status == true || status == false ) {
+            this.setState({ actionSuccess: status });
+        } else {
+            let newActionSuccess = !this.state.actionSuccess;
+            this.setState({ actionSuccess: newActionSuccess });    
+        }
+        
     }
 }
 
