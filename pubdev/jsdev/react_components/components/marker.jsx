@@ -1,6 +1,6 @@
 import React, { PureComponent, Component } from 'react';
 import PropTypes from 'prop-types';
-import { Button, MenuItem } from 'react-bootstrap';
+import { Button, MenuItem, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import ReactTable from 'react-table';
 
 class Marker extends Component {
@@ -14,7 +14,7 @@ class Marker extends Component {
         this.removeMarkedItemsHandler = this.removeMarkedItemsHandler.bind(this);
         this.getMarkedItemsHandler = this.getMarkedItemsHandler.bind(this);
         this.setMarkedItemsHandler = this.setMarkedItemsHandler.bind(this);
-
+        this.getSelectedAlerts = this.getSelectedAlerts.bind(this);
     }
 
     componentWillMount() {
@@ -28,8 +28,11 @@ class Marker extends Component {
         this.mounted = false;
     }
     
-    componentWillReceiveProps() {
+    componentWillReceiveProps(nextProps) {
         this.getMarkedItemsHandler();
+        if ( nextProps.isAlert ) {              //set marked to false if alert since we can't predict if new ones are selected
+            this.setState({isMarked : false });
+        }
     }
 
     render() {
@@ -45,10 +48,14 @@ class Marker extends Component {
         } else {
             
             return (
-                <Button bsSize='xsmall' onClick={ this.state.isMarked ? this.removeMarkedItemsHandler : this.setMarkedItemsHandler }>
-                    <i style={{color: `${ this.state.isMarked ? 'green' : '' } `}} className={`fa fa${this.state.isMarked ? '-check' : '' }-square-o`} aria-hidden="true"></i>
-                    {/* { this.state.isMarked ? <span>Marked</span> : <span>Mark</span> }*/}
-                </Button>
+                <OverlayTrigger placement='top' overlay={ <Tooltip id='mark_tooltip'>Mark selected { this.props.isAlert ? <span>alerts</span> : this.props.type }</Tooltip> }>
+                    <Button bsSize='xsmall' onClick={ this.state.isMarked ? this.removeMarkedItemsHandler : this.setMarkedItemsHandler }>
+                        <i style={{color: `${ this.state.isMarked ? 'green' : '' } `}} className={`fa fa${this.state.isMarked ? '-check' : '' }-square-o`} aria-hidden="true"></i>
+                        { this.props.isAlert ? <span>Mark selected</span> : null }
+                        
+                        {/* { this.state.isMarked ? <span>Marked</span> : <span>Mark</span> }*/}
+                    </Button>
+                </OverlayTrigger>
             )
         }
     }
@@ -68,16 +75,43 @@ class Marker extends Component {
         this.setState({ isMarked: isMarked });
     }
 
-    removeMarkedItemsHandler( type, id ) {
-        removeMarkedItems( this.props.type, this.props.id );
+    removeMarkedItemsHandler() {
+        
+        if ( this.props.isAlert ) {
+            let selectedAlerts = this.getSelectedAlerts();
+            for ( let i=0; i < selectedAlerts.length; i++ ) {
+                removeMarkedItems ( 'alert', selectedAlerts[i] );
+            }
+        } else {
+            removeMarkedItems( this.props.type, this.props.id );
+        }
         this.setState( { isMarked: false } );
+        
     }
 
    setMarkedItemsHandler() {
-        setMarkedItems( this.props.type, this.props.id, this.props.string )
+        if ( this.props.isAlert ) {                             //parse alerts then iterate through them to add to marking list
+            let selectedAlerts = this.getSelectedAlerts();
+            for ( let i=0; i < selectedAlerts.length; i++ ) {
+                setMarkedItems ( 'alert', selectedAlerts[i], this.props.string ); 
+            }
+
+        } else {
+            setMarkedItems( this.props.type, this.props.id, this.props.string );
+        }
         this.setState({ isMarked: true});
-    } 
+    }
+
+    getSelectedAlerts() {
+        let array = [];
+
+        $('tr.selected').each(function(index,tr) {
+            var id = $(tr).attr('id');
+            array.push(id);
+        }.bind(this));
     
+        return array;
+    }
 }
 
 export const removeMarkedItems = ( type, id ) => {
