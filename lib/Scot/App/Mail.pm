@@ -670,6 +670,7 @@ sub is_health_check {
 
     if ( $subject =~ /SCOT Health Check/i ) {
         $log->trace("It is!");
+        $log->debug("Health check subject is: $subject");
         # ok, last version had this, but I think it was a kludge
         # keeping this to ignore them when they come in.
         # but a better check might be to see if we haven't received
