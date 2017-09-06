@@ -89,6 +89,9 @@ class Links extends Component {
                         minRows = { 0 }
                         noDataText= 'No items Linked.'
                         loading = { this.state.loading }
+                        style={{
+                            maxHeight: "60vh" 
+                        }}
                     />
                     
                 </Modal.Body>
