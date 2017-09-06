@@ -778,6 +778,14 @@ sub promote {
         $mongo->collection('Alertgroup')->refresh_data($object->alertgroup);
         my $entry = $mongo->collection('Entry')
                           ->create_from_promoted_alert($object, $promotion_obj);
+        $env->mq->send("scot", {
+            action  => "created",
+            data    => {
+                who => $user,
+                type    => "entry",
+                id      => $entry->id,
+            }
+        });
     }
 
     # update the promotee
