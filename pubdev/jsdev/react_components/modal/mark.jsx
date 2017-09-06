@@ -88,6 +88,9 @@ class Mark extends Component {
                             getTrProps = { this.handleRowSelection }
                             minRows = { 0 }
                             noDataText= 'No items marked.'
+                            style={{
+                                maxHeight: "60vh"
+                            }} 
                         />
                     :
                         <h3>No marked items detected.</h3>
