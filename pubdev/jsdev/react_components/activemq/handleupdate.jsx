@@ -80,7 +80,7 @@ var ActiveMQ = {
         }
 
         if (payload.action.activemq.action == 'wall') {
-            activemqwho = payload.action.activemq.data.user;
+            activemqwho = payload.action.activemq.data.who;
             activemqmessage = payload.action.activemq.data.message;
             activemqwhen = payload.action.activemq.data.when;
             activemqwall = true;
