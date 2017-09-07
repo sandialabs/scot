@@ -90,7 +90,8 @@ class Mark extends Component {
                             noDataText= 'No items marked.'
                             style={{
                                 maxHeight: "60vh"
-                            }} 
+                            }}
+                            filterable
                         />
                     :
                         <h3>No marked items detected.</h3>
@@ -109,10 +110,10 @@ class Mark extends Component {
                 let data = this.state.data;
                 
                 for (let row of data ) { 
-                    if ( rowInfo.row.id != row.id) {
-                        row.selected =  false;
+                    if ( rowInfo.row.id == row.id && rowInfo.row.type == row.type ) {
+                        row.selected =  true;
                     } else {
-                        row.selected = true;
+                        row.selected = false;
                     }
                 }
 
@@ -132,7 +133,7 @@ class Mark extends Component {
                     var data = this.state.data;
                     
                     for ( let row of data ) { 
-                        if ( rowInfo.row.id == row.id ) {
+                        if ( rowInfo.row.id == row.id && rowInfo.row.type == row.type ) {
                             row.selected = !row.selected
                             break;
                         }
