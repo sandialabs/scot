@@ -92,6 +92,7 @@ class Links extends Component {
                         style={{
                             maxHeight: "60vh" 
                         }}
+                        filterable
                     />
                     
                 </Modal.Body>
@@ -150,10 +151,10 @@ class Links extends Component {
                 let data = this.state.data;
 
                 for (let row of data ) {
-                    if ( rowInfo.row.id != row.id) {
-                        row.selected =  false;
-                    } else {
+                    if ( rowInfo.row.id == row.id && rowInfo.row.type == row.type ) {
                         row.selected = true;
+                    } else {
+                        row.selected = false;
                     }
                 }
 
@@ -173,7 +174,7 @@ class Links extends Component {
                     var data = this.state.data;
 
                     for ( let row of data ) {
-                        if ( rowInfo.row.id == row.id ) {
+                        if ( rowInfo.row.id == row.id && rowInfo.row.type == row.type ) {
                             row.selected = !row.selected
                             break;
                         }
