@@ -35,7 +35,7 @@ var SelectedHeader = React.createClass({
         var entityDetailKey = Math.floor(Math.random()*1000);
         return {
             showEventData:false,
-            headerData:null,
+            headerData:{},
             sourceData:'',
             tagData:'',
             permissionsToolbar:false,
@@ -531,6 +531,18 @@ var SelectedHeader = React.createClass({
         var type = this.props.type;
         var subjectType = this.titleCase(this.props.type);  //in signatures we're using the key "name"
         var id = this.props.id; 
+        var string = '';
+
+        if ( this.state.headerData.subject ) {
+            string = this.state.headerData.subject;
+        } else if ( this.state.headerData.value ) {
+            string = this.state.headerData.value;
+        } else if ( this.state.headerData.name ) {
+            string = this.state.headerData.name;
+        } else if ( this.state.headerData.body ) {
+            string = this.state.headerData.body;
+        } 
+        
         return (
             <div> {this.state.isNotFound ? <h1>No record found.</h1> :
             <div>
@@ -587,7 +599,7 @@ var SelectedHeader = React.createClass({
                     {this.state.changeHistoryToolbar ? <ChangeHistory changeHistoryToggle={this.changeHistoryToggle} id={id} type={type} subjectType={subjectType} errorToggle={this.props.errorToggle}/> : null} 
                     {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} /> : null}
                     {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} errorToggle={this.props.errorToggle} history={this.props.history}/> :null}
-                    {this.state.showMarkModal ? <Mark modalActive={true} type={type} id={id} errorToggle={this.props.errorToggle} markModalToggle={this.markModalToggle} /> : null }
+                    {this.state.showMarkModal ? <Mark modalActive={true} type={type} id={id} string={string} errorToggle={this.props.errorToggle} markModalToggle={this.markModalToggle} /> : null }
                     {this.state.showLinksModal ? <Links modalActive={true} type={type} id={id} errorToggle={this.props.errorToggle} linksModalToggle={this.linksModalToggle} /> : null }
                     {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} headerData={this.state.headerData} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} guideRedirectToAlertListWithFilter={this.guideRedirectToAlertListWithFilter} showSignatureOptionsToggle={this.showSignatureOptionsToggle} markModalToggle={this.markModalToggle} linksModalToggle={this.linksModalToggle} /> : null} 
                     {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated} errorToggle={this.props.errorToggle}/> : null}
