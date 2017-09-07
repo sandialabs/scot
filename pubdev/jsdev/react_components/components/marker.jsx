@@ -1,7 +1,6 @@
 import React, { PureComponent, Component } from 'react';
 import PropTypes from 'prop-types';
 import { Button, MenuItem, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import ReactTable from 'react-table';
 
 class Marker extends Component {
     constructor( props ) { 

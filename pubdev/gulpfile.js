@@ -57,7 +57,7 @@ gulp.task( 'watch-copy', ['watch'], function() {
 					.pipe( gulp.dest( paths.scot ) );
 				    console.log( 'Copied', obj.path, 'to', paths.scot, '\x07' );
 			    }
-                , 100) 
+                , 1000) 
             }
 	} );
 } );
