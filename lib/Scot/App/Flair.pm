@@ -363,10 +363,14 @@ sub flair_record {
     COLUMN:
     foreach my $column (keys %{$data} ) {
 
+        if ( $column eq "columns" ) {
+            next COLUMN;
+        }
+
         if (ref($data->{$column}) ne "ARRAY" ) {
             $log->error("WEIRD! $column is not an ARRAY is ",
                         {filter=>\&Dumper, value=>$data->{$column}});
-            next COLUMN;
+            $data->{$column} = [ $data->{$column} ];
         }
 
         my @values   = @{ $data->{$column} };
