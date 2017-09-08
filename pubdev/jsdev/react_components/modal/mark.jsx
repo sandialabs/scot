@@ -51,6 +51,7 @@ class Mark extends Component {
                     )
                 },
                 maxWidth: 100,
+                filterable: false,
             },
             {
                 Header: 'Type',
@@ -185,9 +186,11 @@ class Mark extends Component {
 
     getMarkedItems () {
         let markedItems = getLocalStorage( 'marked' );
-    
+        let currentItem = { id: this.props.id, type: this.props.type, subject: this.props.string };
+
         if ( markedItems ) {
             markedItems = JSON.parse( markedItems );
+            markedItems.unshift( currentItem );         //Add currently viewed item to the top of the list
             this.setState({ data: markedItems });
         } else {
             return; //return if no items are marked
