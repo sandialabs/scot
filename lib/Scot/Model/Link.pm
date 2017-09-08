@@ -44,7 +44,11 @@ has when  => (
 
 =item B<vertices>
 
-Array of Hashref of { type, id } 
+Array of Hashref of structure: 
+{ 
+  type      => collection_name, 
+  id        => int_id,
+} 
 
 =cut
 
@@ -67,6 +71,36 @@ has weight   => (
     isa         => 'Num',
     required    => 1,
     default     => 1,
+);
+
+=item B<context>
+
+brief explanation for why your are linking
+
+=cut
+
+has context => (
+    is      => 'ro',
+    isa     => 'Str',
+    required => 1,
+    default => ' ',
+);
+
+=item B<memo>
+
+array that matches vertices, but contains
+mnemoic information about each vertex
+
+[ 'memo string for v0', 'memo string for v1' ]
+
+=cut
+
+has memo => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    traits      => [ 'Array' ],
+    required    => 1,
+    default     => sub {[]},
 );
 
 
