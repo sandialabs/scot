@@ -17,42 +17,119 @@ override api_create => sub {
     my $json    = $href->{request}->{json};
 
     my $vertices    = $json->{vertices};
-    my $weight  = $json->{weight} // 1;
-    my $when    = $json->{when} // $self->env->now;
+    my $weight      = $json->{weight}   // 1;
+    my $when        = $json->{when}     // $self->env->now;
+    my $memo        = $json->{memo};
 
     $log->debug("api_create link with: ",{filter=>\&Dumper, value=>$vertices});
 
+    if ( $self->vertices_input_is_invalid($vertices) ) {
+        die "Invalid vertices in link api_create";
+    }
+
+    if ( ref($memo) ne "ARRAY" ) {
+        die "Invalid link memos";
+    }
+
     # check if it exists already
-    if ( my $link = $self->find_one({vertices => $vertices}) ) {
+    my $match = { vertices => { '$all' => $vertices } };
+    if ( my $link = $self->find_one($match) ) {
         return $link;
     }
-    else {
-        return $self->create({
-            vertices   => $vertices,
-            weight      => $weight,
-            when        => $when,
-        });
-    }
+    return $self->create({
+        vertices    => $vertices,
+        weight      => $weight,
+        when        => $when,
+        memo        => $memo,
+    });
 };
+
+sub vertices_input_is_invalid {
+    my $self    = shift;
+    my $v       = shift;
+
+    return 1 if ( ref($v) ne "ARRAY" );
+    return 1 if ( ref($v->[0]) ne "HASH");
+    return 1 if ( ref($v->[1]) ne "HASH");
+    return 1 if ( ! defined $v->[0]->{type} );
+    return 1 if ( ! defined $v->[1]->{type} );
+    return 1 if ( ! defined $v->[0]->{id} );
+    return 1 if ( ! defined $v->[1]->{id} );
+    return undef;
+}
+
+sub thing_is_vertex {
+    my $self    = shift;
+    my $thing   = shift;
+
+    if ( $self->verices_input_is_invalid($thing) ) {
+        return undef;
+    }
+    return 1;
+    # a trickier way to do this:
+    # return ! $self->verices_input_is_invalid($thing);
+}
+
 
 sub get_vertex {
     my $self    = shift;
     my $thing   = shift;
-    my $vertex  = shift;
 
     if ( ref($thing) =~ /Scot::Model/ ) {
-        $vertex = { 
+        return { 
             id      => $thing->id,
             type    => $thing->get_collection_name,
         };
     }
-    elsif (ref($thing) eq "HASH" )  {
-        $vertex = $thing;  # assuming hash
+    if (ref($thing) eq "HASH" )  {
+        return $thing;
     }
-    else {
-        die "Invalid Object provided to get_vertex";
+    die "Invalid Object provided to get_vertex";
+}
+
+sub get_vertex_object {
+    my $self    = shift;
+    my $vertex  = shift;
+
+    if ( ref($vertex) ne "HASH" ) {
+        die "Must provide get_vertex_object with a vertex Hash Ref";
     }
-    return $vertex;
+    my $id      = $vertex->{id};
+    my $type    = $vertex->{type};
+    my $col     = $self->mongo->collection(ucfirst($type));
+    my $obj     = $col->find_iid($id);
+    return $obj;
+}
+
+sub get_vertex_memo {
+    my $self    = shift;
+    my $thing   = shift;
+
+    if ( ! ref($thing) =~ /Scot::Model/ ) {
+        if ( $self->thing_is_vertex ) {
+            $thing = $get_vertex_object($thing);
+        }
+        else {
+            die "Invalid input to get_vertex_memo";
+        }
+    }
+
+    if ( $thing->meta->does_role("Scot::Role::Subject") ) {
+        # Alertgroup, Checklist, Event, Guide, Incident, Intel
+        return $thing->subject;
+    }
+
+    if ( $thing->meta->does_role("Scot::Role::Value") ) {
+        # Appearance, Entity, Source, Stat, Tag
+        return $thing->value;
+    }
+
+    if ( ref($thing) eq "Scot::Model::Signature" ) {
+        return $thing->name;
+    }
+
+    $self->log->warn("Do not know what to provide as memo for ".ref($thing));
+    return " ";
 }
 
 sub link_objects {
@@ -68,10 +145,16 @@ sub link_objects {
         $self->get_vertex($v1),
     );
 
+    my @memos   = (
+        $self->get_vertex_memo($v0),
+        $self->get_vertex_memo($v1),
+    );
+
     return $self->create({
-        vertices  =>  \@vertices,
-        weight  => $weight,
-        when    => $when,
+        vertices    =>  \@vertices,
+        weight      => $weight,
+        when        => $when,
+        memo        => \@memos,
     });
 }
 
@@ -177,7 +260,6 @@ sub get_links_by_target {
     $self->env->log->debug("Finding Links to $type $id");
     my $cursor = $self->find({
          vertices    => { '$elemMatch' => { id => $id, type => $type } },
-    #     vertices => { id => $id, type => $type }
     });
     $self->env->log->debug("found ".$cursor->count." links");
     return $cursor;
