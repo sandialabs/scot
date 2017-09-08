@@ -17,6 +17,7 @@ The model of an individual Tag
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
+    Scot::Role::Value
 );
 
 =head1 Attributes
@@ -25,15 +26,18 @@ with    qw(
 
 =item B<value>
 
+Moved to Role
+
 the text that makes up the tag
 
-=cut
 
 has value  => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
 );
+
+=cut
 
 =item B<note>
 
