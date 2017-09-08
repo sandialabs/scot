@@ -50,6 +50,7 @@ class Links extends Component {
                     )
                 },
                 maxWidth: 100,
+                filterable: false,
             }, 
             {
                 Header: 'Type',
