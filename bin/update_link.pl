@@ -83,7 +83,7 @@ while (my $link = $cursor->next) {
          $ttype eq "intel" or
          $ttype eq "incident" ) {
         my $tobj    = $mongo->get_collection($ttype)->find_one({id => $tid});
-        $tmemo = $tobj->subject;
+        $tmemo = $tobj->{subject};
     }
 
 
@@ -107,6 +107,7 @@ while (my $link = $cursor->next) {
         when    => $when,
         weight  => 1,
         vertices=> $vertices,
+        memo    => $memo,
     };
 
     say $linkupdates "Creating Link $id of Entity $eid to $ttype $tid";
