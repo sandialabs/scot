@@ -20,6 +20,7 @@ override api_create => sub {
     my $weight      = $json->{weight}   // 1;
     my $when        = $json->{when}     // $self->env->now;
     my $memo        = $json->{memo};
+    my $context     = $json->{context} // ' ';
 
     $log->debug("api_create link with: ",{filter=>\&Dumper, value=>$vertices});
 
@@ -28,7 +29,13 @@ override api_create => sub {
     }
 
     if ( ref($memo) ne "ARRAY" ) {
-        die "Invalid link memos";
+        
+        $log->warn( "Invalid link memos");
+        $memo = [ 
+            $self->get_vertex_memo($vertices->[0]),
+            $self->get_vertex_memo($vertices->[1])
+        ];
+        $log->warn( "Setting link memos", {filter=>\&Dumper, value=>$memo});
     }
 
     # check if it exists already
@@ -41,6 +48,7 @@ override api_create => sub {
         weight      => $weight,
         when        => $when,
         memo        => $memo,
+        context     => $context,
     });
 };
 
@@ -61,13 +69,17 @@ sub vertices_input_is_invalid {
 sub thing_is_vertex {
     my $self    = shift;
     my $thing   = shift;
+    my $log     = $self->env->log;
 
-    if ( $self->verices_input_is_invalid($thing) ) {
-        return undef;
+    if ( ref($thing) eq "HASH" ) {
+        $log->debug("thing is a HASH");
+        if ( defined $thing->{id} and defined $thing->{type} ) {
+            $log->debug("thing has an id and type");
+            return 1;
+        }
     }
-    return 1;
-    # a trickier way to do this:
-    # return ! $self->verices_input_is_invalid($thing);
+    return undef;
+
 }
 
 
@@ -96,7 +108,7 @@ sub get_vertex_object {
     }
     my $id      = $vertex->{id};
     my $type    = $vertex->{type};
-    my $col     = $self->mongo->collection(ucfirst($type));
+    my $col     = $self->env->mongo->collection(ucfirst($type));
     my $obj     = $col->find_iid($id);
     return $obj;
 }
@@ -104,15 +116,19 @@ sub get_vertex_object {
 sub get_vertex_memo {
     my $self    = shift;
     my $thing   = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("Thing is ",{filter=>\&Dumper, value=>$thing});
+    if ( $self->thing_is_vertex($thing) ) {
+        $thing = $self->get_vertex_object($thing);
+        $log->debug("Thing is now ".ref($thing));
+    }
+
 
     if ( ! ref($thing) =~ /Scot::Model/ ) {
-        if ( $self->thing_is_vertex ) {
-            $thing = $get_vertex_object($thing);
-        }
-        else {
-            die "Invalid input to get_vertex_memo";
-        }
+        die "Invalid input to get_vertex_memo";
     }
+
 
     if ( $thing->meta->does_role("Scot::Role::Subject") ) {
         # Alertgroup, Checklist, Event, Guide, Incident, Intel
@@ -128,7 +144,7 @@ sub get_vertex_memo {
         return $thing->name;
     }
 
-    $self->log->warn("Do not know what to provide as memo for ".ref($thing));
+    $self->env->log->warn("Do not know what to provide as memo for ".ref($thing));
     return " ";
 }
 

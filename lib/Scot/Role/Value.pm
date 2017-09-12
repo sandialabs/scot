@@ -1,18 +1,19 @@
 package Scot::Role::Value;
 
+use namespace::autoclean;
+
 use Moose::Role;
 
-=item B<value>
+=item C<value>
 
-the name or value 
+ the value or name of something
 
 =cut
 
-has value    => (
-    is          => 'ro',
+has value  => (
+    is          => 'rw',
     isa         => 'Str',
     required    => 1,
-    default     => ' ',
 );
 
 1;
