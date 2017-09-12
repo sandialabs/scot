@@ -76,6 +76,19 @@ while (my $link = $cursor->next) {
         { id => $tid, type => $ttype },
     ];
 
+    my $tmemo   = "";
+
+    if ( $ttype eq "event" or 
+         $ttype eq "alertgroup" or 
+         $ttype eq "intel" or
+         $ttype eq "incident" ) {
+        my $tobj    = $mongo->get_collection($ttype)->find_one({id => $tid});
+        $tmemo = $tobj->subject;
+    }
+
+
+    my $memo    = [ $value, "$tmemo" ];
+
     my $linkkey = join(':',$eid,$ttype,$tid);
 
     if ( defined $linkdups{$linkkey} ) {
