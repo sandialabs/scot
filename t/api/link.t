@@ -149,6 +149,7 @@ $t->post_ok(
     '/scot/api/v2/link' => json => {
         weight      => 2,
         vertices    => \@linkedvertices,
+        context     => "because I said so",
     })->status_is(200);
 
 my $linkid = $t->tx->res->json->{id};
