@@ -1,6 +1,6 @@
 import React, { PureComponent, Component } from 'react';
 import PropTypes from 'prop-types';
-import { Modal, Button, ButtonGroup } from 'react-bootstrap';
+import { Modal, Button, ButtonGroup, Panel, FormControl, Form, Col } from 'react-bootstrap';
 import ReactTable from 'react-table';
 import { removeMarkedItems } from '../components/marker';
 
@@ -207,6 +207,8 @@ class Actions extends Component {
             entry: false,
             thing: false,
             actionSuccess: false,
+            linkContextString: null,
+            linkPanel: false,
         }
         
         this.RemoveSelected = this.RemoveSelected.bind(this);
@@ -216,6 +218,8 @@ class Actions extends Component {
         this.Link = this.Link.bind(this);
         this.LinkAjax = this.LinkAjax.bind(this);
         this.ToggleActionSuccess = this.ToggleActionSuccess.bind(this);
+        this.ExpandLink = this.ExpandLink.bind(this);
+        this.LinkContextChange = this.LinkContextChange.bind(this);
     }
 
     componentWillMount() {
@@ -249,18 +253,52 @@ class Actions extends Component {
                         <Button onClick={this.ToggleActionSuccess}>Keep Marked</Button>
                     </div>
                 :
-                    <div>
-                        { thing || entry ? <h4 style={{float: 'left'}}>Actions</h4> : <div> { this.props.data.length > 0 ? <h4 style={{float: 'left'}}>Select a Marked Object</h4> : null } </div> }
-                        <ButtonGroup style={{float: 'right'}}>
-                            {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.MoveEntry}>Move to {this.props.type} {this.props.id}</Button> : null }
-                            {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
-                            {thing || entry ? <Button onClick={this.Link} >Link to {this.props.type} {this.props.id}</Button> : null } 
-                            {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Unmark</Button> : null }
-                        </ButtonGroup>
+                    <div style={{ display: 'grid' }}>
+                        <div>
+                            { thing || entry ? <h4 style={{float: 'left'}}>Actions</h4> : <div> { this.props.data.length > 0 ? <h4 style={{float: 'left'}}>Select a Marked Object</h4> : null } </div> }
+                            <ButtonGroup style={{float: 'right'}}>
+                                {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.MoveEntry}>Move to {this.props.type} {this.props.id}</Button> : null }
+                                {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
+                                {thing || entry ? <Button onClick={this.ExpandLink} >Link to {this.props.type} {this.props.id}</Button> : null }
+                                {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Unmark</Button> : null }
+                            </ButtonGroup>
+                        </div>
+                        { this.state.linkPanel && ( thing || entry ) ? 
+                            <Panel collapsible expanded={this.state.linkPanel}>
+                                <Form horizontal>
+                                    <Col sm={2}>
+                                        Provide context to this link:
+                                    </Col>
+                                    <Col sm={9}>
+                                        <FormControl
+                                            type="text"
+                                            value={this.state.linkContextString}
+                                            placeholder="optional"
+                                            onChange={this.LinkContextChange}
+                                        />
+                                    </Col>
+                                    <Col sm={1}>
+                                        <Button onClick={this.Link} bsStyle={'success'}>Submit</Button>
+                                    </Col>
+                                </Form>
+                            </Panel>
+                        :
+                            null
+                        }
                     </div>                
                 }   
             </div>
         )
+    }
+    
+    LinkContextChange(e) {
+        this.setState({ linkContextString: e.target.value });
+    }
+
+    ExpandLink() {
+        let linkPanel = !this.state.linkPanel;
+        this.setState({ linkPanel: linkPanel });
+
     }
 
     RemoveSelected() {
@@ -338,6 +376,10 @@ class Actions extends Component {
         let data = {};
         data.weight = 1; //passed in object
         data.vertices = arrayToLink; //link to current thing
+        
+        if ( this.state.linkContextString ) {           //add context string if one was submitted
+            data.context = this.state.linkContextString
+        }
 
         $.ajax({
             type: 'post',
@@ -347,6 +389,7 @@ class Actions extends Component {
             dataType: 'json',
             success: function( response ) {
                 console.log( 'successfully linked' );
+                this.ExpandLink();                          //disable link panel
                 this.ToggleActionSuccess(true);
             }.bind(this),
             error: function( data ) {
