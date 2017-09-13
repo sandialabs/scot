@@ -218,7 +218,7 @@ class Actions extends Component {
         this.Link = this.Link.bind(this);
         this.LinkAjax = this.LinkAjax.bind(this);
         this.ToggleActionSuccess = this.ToggleActionSuccess.bind(this);
-        this.ExpandLink = this.ExpandLink.bind(this);
+        this.ExpandLinkToggle = this.ExpandLinkToggle.bind(this);
         this.LinkContextChange = this.LinkContextChange.bind(this);
     }
 
@@ -259,7 +259,7 @@ class Actions extends Component {
                             <ButtonGroup style={{float: 'right'}}>
                                 {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.MoveEntry}>Move to {this.props.type} {this.props.id}</Button> : null }
                                 {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
-                                {thing || entry ? <Button onClick={this.ExpandLink} >Link to {this.props.type} {this.props.id}</Button> : null }
+                                {thing || entry ? <Button onClick={this.ExpandLinkToggle} >Link to {this.props.type} {this.props.id}</Button> : null }
                                 {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Unmark</Button> : null }
                             </ButtonGroup>
                         </div>
@@ -295,10 +295,13 @@ class Actions extends Component {
         this.setState({ linkContextString: e.target.value });
     }
 
-    ExpandLink() {
-        let linkPanel = !this.state.linkPanel;
-        this.setState({ linkPanel: linkPanel });
-
+    ExpandLinkToggle( newState ) {
+        if ( newState == true || newState == false ) {
+            this.setState({ linkPanel: newState, linkContextString: '' });
+        } else {
+            let linkPanel = !this.state.linkPanel;
+            this.setState({ linkPanel: linkPanel, linkContextString: '' });
+        }
     }
 
     RemoveSelected() {
@@ -389,7 +392,7 @@ class Actions extends Component {
             dataType: 'json',
             success: function( response ) {
                 console.log( 'successfully linked' );
-                this.ExpandLink();                          //disable link panel
+                this.ExpandLinkToggle(false);                          //disable link panel
                 this.ToggleActionSuccess(true);
             }.bind(this),
             error: function( data ) {
