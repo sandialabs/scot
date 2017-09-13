@@ -35,7 +35,7 @@ class Links extends Component {
                 Header: cell => {
                     return (
                         <div>
-                            <div className='mark-checkbox'><i className={`fa fa${this.state.allSelected ? '-check' : '' }-square-o`} aria-hidden="true"></i></div>
+                            <div className='links-checkbox'><i className={`fa fa${this.state.allSelected ? '-check' : '' }-square-o`} aria-hidden="true"></i></div>
 
                         </div>
                     )
@@ -45,7 +45,7 @@ class Links extends Component {
                 Cell: row => {
                     return (
                         <div>
-                            <div className='mark-checkbox'><i className={`fa fa${row.row.selected ? '-check' : '' }-square-o`} aria-hidden="true"></i></div>
+                            <div className='links-checkbox'><i className={`fa fa${row.row.selected ? '-check' : '' }-square-o`} aria-hidden="true"></i></div>
                         </div>
                     )
                 },
@@ -61,6 +61,20 @@ class Links extends Component {
             {   Header: 'ID',
                 accessor: 'id',
                 maxWidth: 100,
+                sortable: true,
+            },
+            {
+                Header: 'Context',
+                accessor: 'context',
+                minWidth: 100,
+                maxWidth: 800,
+                sortable: true,
+            },
+            {
+                Header: 'Memo',
+                accessor: 'memo',
+                minWidth: 100,
+                maxWidth: 800,
                 sortable: true,
             },
             {   Header: 'Link ID',
@@ -114,25 +128,25 @@ class Links extends Component {
                 let arr = [];
                 
                 for ( let i = 0; i < data.records.length; i++ ) {
-                    let verticeObject = {};
-                    verticeObject.linkid = data.records[i].id;
+                    let verticeObject       = {};
+                    verticeObject.linkid    = data.records[i].id;
+                    verticeObject.context   = data.records[i].context; 
                     for ( let j = 0; j < data.records[i].vertices.length; j++ ) {
                         //if ids are equal, check if the type is equal. If so, it's what is displayed so don't show it.
                         if ( data.records[i].vertices[j].id == this.props.id  ) {
                             if ( data.records[i].vertices[j].type != this.props.type ) {
-                                verticeObject.id = data.records[i].vertices[j].id;
-                                verticeObject.type = data.records[i].vertices[j].type;
-                                //arr.push( data.records[i].vertices[j] );
+                                verticeObject.id    = data.records[i].vertices[j].id;
+                                verticeObject.type  = data.records[i].vertices[j].type;
+                                verticeObject.memo  = data.records[i].memo[j]; 
                                 arr.push( verticeObject );
                             } else {
                                 continue;
                             }
                         } else {
-                            verticeObject.id = data.records[i].vertices[j].id;
-                            verticeObject.type = data.records[i].vertices[j].type;
-                            //arr.push( data.records[i].vertices[j] );
+                            verticeObject.id    = data.records[i].vertices[j].id;
+                            verticeObject.type  = data.records[i].vertices[j].type;
+                            verticeObject.memo  = data.records[i].memo[j];
                             arr.push( verticeObject );
-                            //arr.push( data.records[i].vertices[j] );
                         }
                     }
                 }
