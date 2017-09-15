@@ -13,18 +13,26 @@ output  = output + timestamp.toLocaleString()
 var FileUpload = React.createClass({
 	getInitialState: function(){
 	return {
-	    files: [], edit: false, stagecolor: '#000',enable: true, addentry: true, saved: true, enablesave: true}
+	    files: [], edit: false, stagecolor: '#000',enable: true, addentry: true, saved: true, enablesave: true, whoami: undefined}
 	},
+
     componentDidMount: function() {
-        $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top)
+        var whoami = getSessionStorage('whoami');
+        if ( whoami ) {
+            this.setState({whoami:whoami});
+        }  
+
+        $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#not_saved_entry_'+this.props.id).position().top);
+
     },
+
 	render: function() {
         var not_saved_entry_id = 'not_saved_entry_'+this.props.id
             return (
                 <div id={not_saved_entry_id}>
                     <div className={'row-fluid entry-outer'} style={{border: '3px solid blue',marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
                         <div className={'row-fluid entry-header'}>
-                            <div className="entry-header-inner">[<Link style={{color:'black'}} to={"not_saved_0"}>Not_Saved_0</Link>]by {whoami}
+                            <div className="entry-header-inner">[<Link style={{color:'black'}} to={"not_saved_0"}>Not_Saved_0</Link>]by {this.state.whoami}
                                 <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
                                     <Button bsSize={'xsmall'} onClick={this.submit}>Submit</Button>
                                     <Button bsSize={'xsmall'} onClick={this.onCancel}>Cancel</Button>
