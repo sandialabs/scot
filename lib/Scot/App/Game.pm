@@ -339,7 +339,7 @@ sub tattler {
     
     my $match   = {
         '$match'    => { 
-            what => 'event promotion to incident',
+            what => 'event promoted to incident',
             when => { '$gte' => $when },
         },
     };

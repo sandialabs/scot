@@ -845,6 +845,7 @@ sub promote {
         handler => $self,
         object  => $object,
         changes => $what,
+        who     => $user,
     });
 
     # render and return
@@ -967,6 +968,7 @@ sub post_update_process {
             what    => "Entry update",
         };
         $env->mq->send("scot", $mq_msg);
+        $self->add_history("updated entry ".$object->id, $object);
     }
 
     if ( ref($object) eq "Scot::Model::Sigbody" ) {
@@ -1241,6 +1243,7 @@ sub post_delete_process {
     my $audit_rec = {
         handler => $self,
         object  => $object,
+        who     => $self->session('user'),
     };
     $self->env->mq->send("scot",{
         action  => "deleted",
