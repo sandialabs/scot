@@ -1,4 +1,4 @@
-* TODO Save useful commands/scripts (In progress)
+* DONE Save useful commands/scripts (In progress)
   Users should be able to save and parameterize sequences of commands
   they like. Saved scripts should be publishable to the server with a
   tag to indicate which user owns it and whether it is public or not.
@@ -6,6 +6,10 @@
   The command should then be invoked by typing its alias on the prompt
   along with any arguments it needs.
   
+** DONE Next step
+   Save scripts to localstorage and restore them, then load them as
+   commands into the shell. After that, upload to signature API and it
+   will be ready.
 ** Design
     Users can create a script, which is a sequence of commands, a set
     of parameters, and a documentation string. The script will be
@@ -28,7 +32,7 @@
     you change a subfield of a global object, the global object will
     be changed. If you redefine a name in the namespace though, it
     will be preserved. 
-*** Editor
+*** DONE Editor
     Creating a command script will require a special editor because
     the environment would become polluted with old data and error
     commands if the base command prompt was used.
@@ -42,7 +46,7 @@
     popped and the shell returned to its original state. This should
     allow the user to test the script as it is being developed without
     polluting the environment and causing unexpected errors later.
-*** Storage
+*** DONE Storage
     Scripts need to have a name, the command list, required
     parameters, and some documentation. A simple js object should
     suffice, which can be dumped into localstorage by simple
@@ -57,7 +61,7 @@
     code: ["list","of","commands"]
   }
 #+end_src
-*** Upload
+*** DONE Upload
     After scripts can be stored locally, I want to be able to push
     them to the server for sharing. The tricky part of this will be to
     allow the user to decide when a script should be pulled down from
@@ -70,6 +74,88 @@
     choose to import scripts from other collections via some kind of
     UI feature or command (e.g. import user/ejlee at the command line
     to import all scripts with the 'user/ejlee' collection name).
+
+*** Sharing
+    Users should be able to import scripts from other users and keep
+    them up to date.
+
+* TODO Viz module uniform interface
+  The visualization modules need to have a simple and consistent
+  interface for letting the users interact with them. Some basic
+  options that would be universally useful:
+ 
+** Increment/Decrement detail
+   Several tools have to decide what proportion of data to display,
+   leaving some of it out. If there was a simple way for the user to
+   tell it to increase the level of information being displayed, the
+   user would be able to control how busy the picture was. For
+   example, the chart viz tools could start out with no labels, then
+   for level one they could display a substring of the label, and for
+   level two they could display the full label.
+
+** Filter visible elements
+   It would be nice to be able to filter out or at least to
+   deemphasize elements based on their data fields. A user might want
+   to see labels only if they match a regex, or only display data
+   points if they're greater than a threshold, etc. Filter conditions
+   on what is being displayed would be useful. Each visualization
+   would have its own set of things that can be filtered, and they
+   should be settable via an auto-hide on-screen dialog that tells the
+   user what fields are available along with their current values.
+
+** Zoom and pan
+   Every viz should support the ability to zoom in and pan around.
+
+** Snapshot
+   The viz should be able to recreate the exact view being displayed
+   from a saved data structure. This is intended to make it easy to
+   save particular views to the server, and to make them searchable
+   (as opposed to saving an image screenshot).  The view should
+   therefore be fully parametric, with the zoom/pan, filters, detail
+   levels, etc. set in a datastructure that is just rendered by a dumb
+   renderer. A view model that is drawn by a view-viewer and edited by
+   a view-controller. The view controller could be a component that is
+   shared by all views potentially. The view model would be everything
+   needed to fully recreate the view, and it would be what the user
+   generates using the data manipulation primitives.
+
+** Subwindow views
+   If the user could specify subwindows that have their own view
+   models and viewers, it would allow things like picking an item in
+   one view and seeing details about it in the subwindow view. The
+   view should automatically support the subwindow functionality and
+   allow the user to do something like right-click and send the data
+   through a user-defined pipeline into the subview renderer.
+
+** Selections
+   If a view has discrete objects, they should be selectable. The
+   selection should be represented in a way that can be operated on by
+   the pipeline system - i.e. a list of entities that were used to
+   generate the selected objects. That list (or maybe object) could
+   then be sent to other views or saved and restored. Each
+   view-renderer would be responsible for identifying the items that
+   were selected, and the view controller would keep the list of
+   selections as a data item in the view model.
+
+* TODO Configuration to support multi-proxy setups
+  One of the features that seems to get the attention of the IR guys
+  more than anything else is the ability to access data from more than
+  just the SCOT API. To do that, I need to have better support for
+  proxying to different servers.
+
+  The simplest way to get that started I think is to have a collection
+  of API command groups, each of which is stashed under a descriptive
+  root directory from the URL. Then the apache proxy would just split
+  out the proxies based on that information and send data to
+  appropriate servers as needed.
+
+  To support that, I need to be able to tell REVL what the proxy root
+  url configs are for each reachable API, which means I need a
+  storable setting for each user that keeps track of their API
+  endpoints and the urls associated with them. I also need a UI front
+  end for managing that configuration (or at least a command to
+  display the proxy settings and update the mappings - this is
+  probably the right way actually).
 
 * TODO Server-side default analysis pipelines
   We want to be able to have everything but the rendering done by the
@@ -245,17 +331,6 @@ data Graphic  ::
   accumulator would create, update, and destroy components of the viz,
   and the renderer would just display its current state at any given
   time. The user could control the behavior of the accumulator.
-
-  The viz modules would then be modified to take an iterator, and to
-  treat each item from the iterator as an updated model to
-  render. They would add viz-computed annotations to the model to hold
-  things that are only relevant for the rendering (node positions in a
-  force-layout graph for example, or point coordinates for a voronoi
-  diagram).
-
-  Models should be structural, indicating only the relationships and
-  generating data for the entities. The viz should have the power to
-  actually turn that into graphics objects.
 
 * TODO Interactivity
   Viz primitives need to support clicking, dragging, pan and zoom, and
