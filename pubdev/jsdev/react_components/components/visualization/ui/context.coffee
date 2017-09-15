@@ -11,7 +11,7 @@ class Context
         if @stack.length > 1
            @stack = @stack[1..]
         
-    push: (initial={}) -> initial['--parent'] = @top(); @stack.unshift (newscope initial,@top())
+    push: (initial={}) -> initial['--parent--'] = @top(); @stack.unshift (newscope initial,@top())
 
     clear: ()->@stack = [{}]
 
@@ -22,7 +22,11 @@ class Context
             for own name of ctx
                 if not name.match illegal
                     names[name] = true
-            ctx = ctx['--parent']    
+            console.log "update parent to #{parent}"
+            if ctx == ctx['--parent--']
+                console.log "Parent context problem detected"
+                break
+            ctx = ctx['--parent--']    
         Object.keys names
 
     @argvals: (ctx,names) -> ctx[name] for name in names
