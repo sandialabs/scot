@@ -1,6 +1,6 @@
 import React, { PureComponent, Component } from 'react';
 import PropTypes from 'prop-types';
-import { Modal, Button } from 'react-bootstrap';
+import { Modal, Button, ButtonGroup, Panel, FormControl, Form, Col } from 'react-bootstrap';
 import ReactTable from 'react-table';
 import { removeMarkedItems } from '../components/marker';
 
@@ -9,7 +9,7 @@ class Mark extends Component {
         super( props );
 
         this.state = {
-            data: {},
+            data: [],
             allSelected: false,
         }
         
@@ -51,6 +51,7 @@ class Mark extends Component {
                     )
                 },
                 maxWidth: 100,
+                filterable: false,
             },
             {
                 Header: 'Type',
@@ -74,19 +75,28 @@ class Mark extends Component {
             <Modal dialogClassName='mark-modal' show={ this.props.modalActive } onHide={ this.props.markModalToggle }>
                 <Modal.Header closeButton={ true } >
                     <Modal.Title>
-                        Items Marked
+                        Marked Objects
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <ReactTable 
-                        columns = { columns } 
-                        data = { this.state.data } 
-                        defaultPageSize = { 10 }
-                        getTdProps = { this.handleCheckboxSelection }
-                        getTheadThProps = { this.handleTHeadCheckboxSelection }
-                        getTrProps = { this.handleRowSelection }
-                        minRows = { 0 }
-                    />
+                    { this.state.data.length > 0 ?
+                        <ReactTable 
+                            columns = { columns } 
+                            data = { this.state.data } 
+                            defaultPageSize = { 10 }
+                            getTdProps = { this.handleCheckboxSelection }
+                            getTheadThProps = { this.handleTHeadCheckboxSelection }
+                            getTrProps = { this.handleRowSelection }
+                            minRows = { 0 }
+                            noDataText= 'No items marked.'
+                            style={{
+                                maxHeight: "60vh"
+                            }}
+                            filterable
+                        />
+                    :
+                        <h3>No marked items detected.</h3>
+                    }
                 </Modal.Body>
                 <Modal.Footer>
                     <Actions data={this.state.data} id={this.props.id} type={this.props.type} getMarkedItems={this.getMarkedItems} errorToggle={this.props.errorToggle} />
@@ -101,10 +111,10 @@ class Mark extends Component {
                 let data = this.state.data;
                 
                 for (let row of data ) { 
-                    if ( rowInfo.row.id != row.id) {
-                        row.selected =  false;
+                    if ( rowInfo.row.id == row.id && rowInfo.row.type == row.type ) {
+                        row.selected =  true;
                     } else {
-                        row.selected = true;
+                        row.selected = false;
                     }
                 }
 
@@ -124,7 +134,7 @@ class Mark extends Component {
                     var data = this.state.data;
                     
                     for ( let row of data ) { 
-                        if ( rowInfo.row.id == row.id ) {
+                        if ( rowInfo.row.id == row.id && rowInfo.row.type == row.type ) {
                             row.selected = !row.selected
                             break;
                         }
@@ -148,7 +158,12 @@ class Mark extends Component {
                     let allSelected = !this.state.allSelected;
                     
                     for ( let row of data ) {
-                        row.selected = allSelected;
+                        for ( let pageRow of state.pageRows ) {
+                            if ( row.id == pageRow.id && row.type == pageRow.type ) {                 //compare displayed rows to rows in dataset and only select those
+                                row.selected = allSelected;
+                                break;
+                            }
+                        }
                     }
 
                     this.setState({data: data, allSelected: allSelected});
@@ -171,11 +186,16 @@ class Mark extends Component {
 
     getMarkedItems () {
         let markedItems = getLocalStorage( 'marked' );
+        let currentItem = { id: this.props.id, type: this.props.type, subject: this.props.string };
+
         if ( markedItems ) {
             markedItems = JSON.parse( markedItems );
+            markedItems.unshift( currentItem );         //Add currently viewed item to the top of the list
+            this.setState({ data: markedItems });
+        } else {
+            return; //return if no items are marked
         }
-        
-        this.setState({ data: markedItems });
+    
     }
 }
 
@@ -187,13 +207,19 @@ class Actions extends Component {
             entry: false,
             thing: false,
             actionSuccess: false,
+            linkContextString: null,
+            linkPanel: false,
         }
         
         this.RemoveSelected = this.RemoveSelected.bind(this);
         this.MoveEntry = this.MoveEntry.bind(this);
         this.CopyEntry = this.CopyEntry.bind(this);
         this.EntryAjax = this.EntryAjax.bind(this);
+        this.Link = this.Link.bind(this);
+        this.LinkAjax = this.LinkAjax.bind(this);
         this.ToggleActionSuccess = this.ToggleActionSuccess.bind(this);
+        this.ExpandLinkToggle = this.ExpandLinkToggle.bind(this);
+        this.LinkContextChange = this.LinkContextChange.bind(this);
     }
 
     componentWillMount() {
@@ -223,19 +249,59 @@ class Actions extends Component {
             <div>
                 {this.state.actionSuccess ? 
                     <div>
-                        <Button bsStyle='success' onClick={this.RemoveSelected}>Action Successful! Remove Selected?</Button>
-                        <Button onClick={this.ToggleActionSuccess}>Keep Selected</Button>
+                        <Button bsStyle='success' onClick={this.RemoveSelected}>Action Successful! Remove Mark?</Button>
+                        <Button onClick={this.ToggleActionSuccess}>Keep Marked</Button>
                     </div>
                 :
-                    <div>
-                        {entry && !thing ? <Button onClick={this.MoveEntry}>Move Selected Entry to current thing (DELETES ORIGINAL ENTRY)</Button> : null }
-                        {entry && !thing ? <Button onClick={this.CopyEntry}>Copy Selected Entry to current thing</Button> : null }
-                        {thing || entry ? <Button disabled>Link Selected to current thing</Button> : null } 
-                        {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Remove Selected</Button> : null }
+                    <div style={{ display: 'grid' }}>
+                        <div>
+                            { thing || entry ? <h4 style={{float: 'left'}}>Actions</h4> : <div> { this.props.data.length > 0 ? <h4 style={{float: 'left'}}>Select a Marked Object</h4> : null } </div> }
+                            <ButtonGroup style={{float: 'right'}}>
+                                {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.MoveEntry}>Move to {this.props.type} {this.props.id}</Button> : null }
+                                {entry && !thing && this.props.type != 'alertgroup' ? <Button onClick={this.CopyEntry}>Copy to {this.props.type} {this.props.id}</Button> : null }
+                                {thing || entry ? <Button onClick={this.ExpandLinkToggle} >Link to {this.props.type} {this.props.id}</Button> : null }
+                                {thing || entry ? <Button bsStyle='danger' onClick={this.RemoveSelected} >Unmark</Button> : null }
+                            </ButtonGroup>
+                        </div>
+                        { this.state.linkPanel && ( thing || entry ) ? 
+                            <Panel collapsible expanded={this.state.linkPanel}>
+                                <Form horizontal>
+                                    <Col sm={2}>
+                                        Provide context to this link:
+                                    </Col>
+                                    <Col sm={9}>
+                                        <FormControl
+                                            type="text"
+                                            value={this.state.linkContextString}
+                                            placeholder="optional"
+                                            onChange={this.LinkContextChange}
+                                        />
+                                    </Col>
+                                    <Col sm={1}>
+                                        <Button onClick={this.Link} bsStyle={'success'}>Submit</Button>
+                                    </Col>
+                                </Form>
+                            </Panel>
+                        :
+                            null
+                        }
                     </div>                
                 }   
             </div>
         )
+    }
+    
+    LinkContextChange(e) {
+        this.setState({ linkContextString: e.target.value });
+    }
+
+    ExpandLinkToggle( newState ) {
+        if ( newState == true || newState == false ) {
+            this.setState({ linkPanel: newState, linkContextString: '' });
+        } else {
+            let linkPanel = !this.state.linkPanel;
+            this.setState({ linkPanel: linkPanel, linkContextString: '' });
+        }
     }
 
     RemoveSelected() {
@@ -270,6 +336,71 @@ class Actions extends Component {
         } 
     }
 
+    Link() {
+
+
+        for ( let key of this.props.data ) {
+            if ( key.selected ) {
+
+                let arrayToLink = [];
+                let obj = {};
+                let currentobj = {};
+
+                //assign new thing to link
+                obj.id = parseInt( key.id );
+                obj.type = key.type;
+                
+                //assign current thing to link to
+                currentobj.id = parseInt( this.props.id );
+                currentobj.type = this.props.type;
+
+                arrayToLink.push( obj );
+                arrayToLink.push ( currentobj );
+            
+                this.LinkAjax( arrayToLink );
+            }
+            
+            /*
+                if ( arrayToLink.length > 0 ) {
+                //add current thing to be linked to
+                let obj = {};
+                obj.id = parseInt( this.props.id );
+                obj.type = this.props.type;
+
+                arrayToLink.push( obj );
+                this.LinkAjax( arrayToLink );
+            }*/
+        }
+
+        
+    }
+
+    LinkAjax( arrayToLink ) {
+        let data = {};
+        data.weight = 1; //passed in object
+        data.vertices = arrayToLink; //link to current thing
+        
+        if ( this.state.linkContextString ) {           //add context string if one was submitted
+            data.context = this.state.linkContextString
+        }
+
+        $.ajax({
+            type: 'post',
+            url: '/scot/api/v2/link',
+            data: JSON.stringify( data ),
+            contentType: 'application/json; charset=UTF-8',
+            dataType: 'json',
+            success: function( response ) {
+                console.log( 'successfully linked' );
+                this.ExpandLinkToggle(false);                          //disable link panel
+                this.ToggleActionSuccess(true);
+            }.bind(this),
+            error: function( data ) {
+                this.props.errorToggle( 'failed to link', data );
+            }.bind(this)
+        })
+    }
+
     EntryAjax(id, removeOriginal) {
         
         $.ajax({
@@ -290,7 +421,9 @@ class Actions extends Component {
                             this.RemoveEntryAfterMove ( id );   
                             this.RemoveSelected();
                         } else {
-                          this.ToggleActionSuccess();
+                            if ( !this.state.actionSuccess ) {
+                                this.ToggleActionSuccess(true);
+                            }
                         }
 
                     }.bind(this),
@@ -319,9 +452,15 @@ class Actions extends Component {
         });
     }
 
-    ToggleActionSuccess() {
-        let newActionSuccess = !this.state.actionSuccess;
-        this.setState({ actionSuccess: newActionSuccess });
+    ToggleActionSuccess(status) {
+        
+        if ( status == true || status == false ) {
+            this.setState({ actionSuccess: status });
+        } else {
+            let newActionSuccess = !this.state.actionSuccess;
+            this.setState({ actionSuccess: newActionSuccess });    
+        }
+        
     }
 }
 
