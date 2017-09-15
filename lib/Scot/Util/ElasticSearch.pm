@@ -131,6 +131,26 @@ sub search {
     return $results;
 }
 
+sub create_index {
+    my $self    = shift;
+    my $index   = shift;
+    my $body    = shift;
+    my $es      = $self->es;
+    my $results = $es->indices->create(
+        index   => $index,
+        body    => $body,
+    );
+    return $results;
+}
+
+sub close_index {
+    my $self    = shift;
+    my $index   = shift;
+    my $es      = $self->es;
+    return $es->indices->close( index => $index );
+}
+
+
 sub delete_index {
     my $self    = shift;
     my $index   = shift;
@@ -141,12 +161,7 @@ sub delete_index {
 sub start_snapshot {
     my $self    = shift;
     my $conf    = $self->config;
-
     my $repo    = $conf->{repository};
-
-}
-
-sub get_snapshot_status {
 
 }
 
@@ -154,11 +169,12 @@ sub delete_repo {
 
 }
 
-sub delete_snapshot {
+sub get_snapshot_status {
 
 }
 
-sub close_index {
+
+sub delete_snapshot {
 
 }
 
