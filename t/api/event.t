@@ -5,6 +5,7 @@ use lib '../../lib';
 
 use Test::More;
 use Test::Mojo;
+use Test::Deep;
 use Data::Dumper;
 use Mojo::JSON qw(decode_json encode_json);
 
@@ -191,9 +192,6 @@ $t  ->get_ok("/scot/api/v2/event/$event_id/entry")
     ->json_is('/records/0/id'   => $entry1)
     ->json_is('/records/1/id'   => $entry2);
 
-# print Dumper($t->tx->res->json);
-# done_testing();
-# exit 0;
 
 my $tx  = $t->ua->build_tx(
     PUT =>"/scot/api/v2/event/$event_id" => json =>{
@@ -207,10 +205,16 @@ $t  ->request_ok($tx)
 
 
 $t->get_ok("/scot/api/v2/event/$event_id/tag")
-    ->status_is(200)
-    ->json_is('/records/0/value' => "test")
-    ->json_is('/records/1/value' => "foo")
-    ->json_is('/records/2/value' => "boo");
+    ->status_is(200);
+#    ->json_is('/records/0/value' => "foo")
+#    ->json_is('/records/1/value' => "boo");
+
+my @got_tags        = map { $_->{value} } @{$t->tx->res->json->{records}};
+cmp_deeply(\@got_tags, bag(qw(foo boo)), "Got correct tags");
+
+# print Dumper($t->tx->res->json);
+# done_testing();
+# exit 0;
 
 $t->get_ok("/scot/api/v2/event/$event_id")
     ->status_is(200);

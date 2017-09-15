@@ -1,5 +1,7 @@
 var Dispatcher = require('./dispatcher.jsx');
 var client;
+var whoami;
+
 function s4(){
     return Math.floor((1+ Math.random()) * 0x10000).toString(16).substring(1);
 }
@@ -10,6 +12,7 @@ function get_guid(){
 
 function register_client(){
     client = get_guid()
+    whoami = getSessionStorage('whoami');
     $.ajax({
         type: 'POST',
         url:'/scotaq/amq',
@@ -21,6 +24,7 @@ function register_client(){
         }
     }).success(function(){
         console.log('Registered client as '+client);
+        var set = setTimeout( function() { Actions.updateView() }, 1000 );
     }).error(function() {
         console.log("Error: failed to register client, retry in 1 sec");
         setTimeout(function() {register_client()}, 1000);
@@ -30,7 +34,7 @@ function register_client(){
 var Actions = {
 
    getClient: function(){
-        register_client()
+        register_client();
     },
     updateView: function(){
         var now = new Date();

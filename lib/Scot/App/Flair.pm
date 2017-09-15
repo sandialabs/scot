@@ -195,14 +195,15 @@ sub run {
         my $type    = $href->{data}->{type};
         my $id      = $href->{data}->{id};
         my $who     = $href->{data}->{who};
-        $log->debug("STOMP: $action : $type : $id : $who");
+        my $opts    = $href->{data}->{opts};
+        $log->debug("STOMP: $action : $type : $id : $who : $opts");
 
         return if ($who eq "scot-flair");
 
         #$pm->start(
         #    cb      => sub {
         #        my ($pm, $action, $type, $id) = @_;
-                $self->process_message($action, $type, $id);
+                $self->process_message($action, $type, $id, $opts);
         #    },
         #    args    => [ $action, $type, $id ],
         #);
@@ -219,6 +220,7 @@ sub process_message {
     my $action  = lc(shift);
     my $type    = lc(shift);
     my $id      = shift;
+    my $opts    = shift;
 
     $id += 0;
 
@@ -226,11 +228,11 @@ sub process_message {
 
     if ( $action eq "created" or $action eq "updated" ) {
         if ( $type eq "alertgroup" ) {
-            $self->process_alertgroup($id);
+            $self->process_alertgroup($id,$opts);
             $self->put_stat("alertgroup flaired", 1);
         }
         elsif ( $type eq "entry" ) {
-            $self->process_entry($id);
+            $self->process_entry($id,$opts);
             $self->put_stat("entry flaired", 1);
         }
         else {
@@ -261,10 +263,16 @@ sub get_alertgroup {
 sub process_alertgroup {
     my $self    = shift;
     my $id      = shift;
+    my $opts    = shift;
     my @update  = ();
     my $log     = $self->log;
 
     $self->out("-------- processing alertgroup $id");
+
+    if (defined($opts) && $opts eq "noreflair") {
+        $log->debug("noflair option received, short circuiting out...");
+        return;
+    }
 
     $log->debug("asking scot for /alertgroup/$id/alert");
 
@@ -349,43 +357,82 @@ sub flair_record {
     $log->debug("Flairing Alert $record->{id}");
 
     my $data    = $record->{data};
+
+    $log->debug("    Alert data is ",{filter=>\&Dumper, value=>$data});
     
     COLUMN:
     foreach my $column (keys %{$data} ) {
-        my $value   = $data->{$column};
-        my $html    = '<html>'.encode_entities($value).'</html>';
 
-        if ( $column =~ /^message_id$/i ) {
-            # the data is telling us that this is a email message_id, so flair
-            $value = lc($value);
-            push @entity, { value => $value, type => "message_id" };
-            $flair{$column}  = $self->genspan($value, "message_id");
+        if ( $column eq "columns" ) {
             next COLUMN;
         }
 
-        if ( $column =~ /^lbscanid$/i ) {
-            # another special column
-            push @entity, { value => $value, type => "lb_scan_id" };
-            $flair{$column} = $self->genspan($value, "lb_scan_id");
-            next COLUMN;
+        if (ref($data->{$column}) ne "ARRAY" ) {
+            $log->error("WEIRD! $column is not an ARRAY is ",
+                        {filter=>\&Dumper, value=>$data->{$column}});
+            $data->{$column} = [ $data->{$column} ];
         }
 
-        if ( $column =~ /^columns$/i ) {
-            # no flairing on the "columns" attribute
-            $flair{$column} = $value;
-            next COLUMN;
-        }
+        my @values   = @{ $data->{$column} };
 
-        my $extraction = $extract->process_html($html);
+        $log->debug("The cell has ".scalar(@values)." values in it");
 
-        $flair{$column} = $extraction->{flair};
+        VALUE:
+        foreach my $value (@values) {
 
-        foreach my $entity_href (@{$extraction->{entities}}) {
-            my $value   = $entity_href->{value};
-            my $type    = $entity_href->{type};
-            unless ( $seen{$value} ) {
-                push @entity, $entity_href;
-                $seen{$value}++;
+            $log->debug("WORKING ON CELL VALUE $value");
+
+            if ( $column =~ /^message[_-]id$/i ) {
+                # the data is telling us that this is a email message_id, so flair
+                my ($eref, $flair) = $self->process_cell($value, "message_id");
+                push @entity, $eref;
+                $flair{$column} = $flair{$column} . "<br>" . $flair;
+                $log->debug("Flair for $column is now ".$flair{$column});
+                next VALUE;
+            }
+            if ( $column =~ /^(lb){0,1}scanid$/i ) {
+                # another special column
+                my ($eref, $flair) = $self->process_cell($value, "lb_scan_id");
+                push @entity, $eref;
+                $flair{$column} = $flair{$column} . "<br>" . $flair;
+                $log->debug("Flair for $column is now ".$flair{$column});
+                next VALUE;
+            }
+            if ( $column =~ /^attachment[_-]name$/i  or 
+                $column =~ /^attachments$/ ) {
+                # each link in this field is a <div>filename</div>, 
+                $log->debug("A File attachment Column detected!");
+                $log->debug("value = ",{filter=>\&Dumper, value=>$value});
+
+                my ($eref, $flair) = $self->process_cell($value, "filename");
+                push @entity, $eref;
+                $flair{$column} = $flair{$column} . "<br>" . $flair;
+                $log->debug("Flair for $column is now ".$flair{$column});
+                next VALUE;
+            }
+
+            if ( $column =~ /^columns$/i ) {
+                # no flairing on the "columns" attribute
+                $flair{$column} = $value;
+                $log->debug("Flair for $column is now ".$flair{$column});
+                next COLUMN;
+            }
+
+            my $html        = '<html>'.encode_entities($value).'</html>';
+            my $extraction  = $extract->process_html($html);
+
+            $log->debug("todds dumb code extracted: ",{filter=>\&Dumper, value=>$extraction});
+
+            $flair{$column} = $extraction->{flair};
+            $log->debug("Flair for $column is now ".$flair{$column});
+
+            foreach my $entity_href (@{$extraction->{entities}}) {
+                my $value   = $entity_href->{value};
+                my $type    = $entity_href->{type};
+                unless ( $seen{$value} ) {
+                    push @entity, $entity_href;
+                    $seen{$value}++;
+                }
             }
         }
     }
@@ -395,6 +442,42 @@ sub flair_record {
         entities        => \@entity,
         parsed          => 1,
     };
+}
+
+sub process_cell {
+    my $self    = shift;
+    my $text    = shift;
+    my $header  = shift;
+    my $log     = $self->env->log;
+
+    $log->debug("text = $text");
+    $log->debug("header = $header");
+    my $flair   = $self->genspan($text,$header);
+    $log->debug("text = $text");
+    $log->debug("header = $header");
+    $log->debug("flair = $flair");
+
+    my $entity_href = { value => $text, type => $header };
+    $log->debug("entity_href = ",{filter=>\&Dumper, value=>$entity_href});
+
+    return $entity_href, $flair;
+
+}
+
+sub process_cell_x {
+    my $self    = shift;
+    my $cell    = shift; # html snippet, most likely <div style="white-space: pre-wrap;">foo</div>
+    my $header  = shift; # the TH heading of this cell
+    my $regex1  = qr{(div.*>)(.*?)(<\/div>)};
+    my $regex2  = qr{div.*>(.*?)<\/div>};
+    my $flair   = $cell;
+
+    $flair          =~ s/$regex1/$1.$self->genspan($2).$3/ge;
+    my @entities    =  map {
+        { value => $_, type => $header }
+    } ($cell =~ m/$regex2/g);
+
+    return \@entities, $flair;
 }
 
 sub get_entry {
