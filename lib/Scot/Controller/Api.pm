@@ -244,7 +244,10 @@ sub post_list_process {
     my $self        = shift;
     my $cursor      = shift;
     my $req_href    = shift;
+    my $log         = $self->env->log;
     my @records     = $cursor->all;
+
+    $log->debug("post_list_processing");
 
     my $collection  = $self->get_collection_req($req_href);
 
@@ -778,12 +781,12 @@ sub promote {
         $mongo->collection('Alertgroup')->refresh_data($object->alertgroup);
         my $entry = $mongo->collection('Entry')
                           ->create_from_promoted_alert($object, $promotion_obj);
-        $env->mq->send("scot", {
+        $self->env->mq->send("scot",{
             action  => "created",
             data    => {
-                who => $user,
-                type    => "entry",
-                id      => $entry->id,
+                who => $req->{user},
+                type=> "entry",
+                id  => $entry->id,
             }
         });
     }
