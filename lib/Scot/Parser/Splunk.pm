@@ -101,6 +101,18 @@ sub parse_message {
                 $log->warn("replacing column name with $colname");
             }
 
+            my $cell = $values[$i];
+            # $rowresult{$colname} = $cell;
+            my @children   = map {
+              if ( ref($_) eq "HTML::Element" ) {
+                $_->as_text;
+              } 
+              else {
+                $_;
+              }
+            } $cell->content_list;
+            $rowresult{$colname} = \@children
+
             # OK, thanks to splunk changing stuff we now have to look that
             # a cell my contain multiple divs like
             # <td>
@@ -109,16 +121,19 @@ sub parse_message {
             # </td>
             # so let's loop! and concatenate!
 
-            my @intervalues = ();
-            foreach my $v (@{$values[$i]->{_content}}) {
-                push @intervalues, $v->as_text;
-            }
+           #### OK at some point I thought this was the way to go
+           ### not so sure now, Flair can handle this, I think.
 
-            if ( $colname eq "MESSAGE_ID" ) {
-                $log->debug("MESSAGE_ID detection moved to Flair.pm");
-            }
-            my $value = join(' ',@intervalues);
-            $rowresult{$colname} = $value;
+            #my @intervalues = ();
+            #foreach my $v (@{$values[$i]->{_content}}) {
+            #    push @intervalues, $v->as_text;
+            #}
+
+            #if ( $colname eq "MESSAGE_ID" ) {
+            #    $log->debug("MESSAGE_ID detection moved to Flair.pm");
+            #}
+            #my $value = join(' ',@intervalues);
+            #$rowresult{$colname} = $value;
         }
         push @results, \%rowresult;
     }

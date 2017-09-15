@@ -115,7 +115,7 @@ List =
         # each position. Proc must accept n arguments.
         if ls.length < n
             throw "Window of #{n} too large for list of #{ls.length} elements"
-        (proc.apply {},ls[i...i+n]) for i in [0...ls.length-n]
+        (proc.apply {},ls[i...i+n]) for i in [0..ls.length-n]
 
     # Take a list of lists and optionally a function, and generate the
     # set intersection of all of the lists based on what the function

@@ -20,6 +20,7 @@ function install_ubuntu_packages {
         apache2
         apache2-utils
         bc
+        libgmp3-dev
     '
     # for some reason, maxmind ppa is foobar'ed and these packages
     # won't install unless we force them to with allow unauth
@@ -142,6 +143,7 @@ function install_cent_packages {
         GeoIP
         libmaxminddb.x86_64
         libmaxminddb-devel.x86_64
+        libgmp3-dev
     '
 
     for pkg in $YUMPACKAGES; do
