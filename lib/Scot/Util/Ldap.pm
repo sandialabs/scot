@@ -216,6 +216,15 @@ sub do_bind {
 
     my $msg;
 
+#    $msg = $ldap->bind($dn, 'password' => $pass);
+#
+#    if ( $msg->is_error ) {
+#        $log->error("LDAP error: ",{filter=>\&Dumper, value=>$msg});
+#        return undef;
+#    }
+#    $log->debug("Ldap return ",{filter=>\&Dumper, value=>$msg});
+#    return 1;
+
     retry {
         $msg    = $ldap->bind($dn, 'password' => $pass);
         if ( $msg->is_error ) {
@@ -230,8 +239,12 @@ sub do_bind {
     }
     catch {
         $log->error("Failed to bind for $dn");
-        return 0;
+        return undef;
     };
+    if ( ! defined $msg ) {
+        $log->warn("message not defined");
+        return undef;
+    }
     return 1;
 }
 

@@ -32,7 +32,7 @@ sub get_users_apikeys {
     return $cursor;
 }
 
-sub api_list {
+override api_list => sub {
     my $self    = shift;
     my $req     = shift;
     my $user    = shift;
@@ -66,7 +66,7 @@ sub api_list {
     }
 
     return ($cursor, $total);
-}
+};
 
 
 
