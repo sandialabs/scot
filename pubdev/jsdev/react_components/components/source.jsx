@@ -65,11 +65,12 @@ var SourceDataIterator = React.createClass({
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id, 
             data: JSON.stringify({'source':newSourceArr}),
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('deleted source success: ' + data);
             }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to delete the source');
+            error: function(data) {
+                this.props.errorToggle('Failed to delete the source', data);
             }.bind(this)
         });
     },
@@ -117,21 +118,28 @@ var NewSource = React.createClass({
                 console.log('success: source added');
                 this.props.toggleSourceEntry();
             }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to add source');
+            error: function(data) {
+                this.props.errorToggle('Failed to add source', data);
                 this.props.toggleSourceEntry();
             }.bind(this)
         });
     },
     handleInputChange: function(input) {
         var arr = [];
-        this.serverRequest = $.get('/scot/api/v2/ac/source/' + input, function (result) {
-            var result = result.records;
-            for (var i=0; i < result.length; i++) {
-                arr.push(result[i].value)
-            }
-            this.setState({suggestions:arr})
-        }.bind(this));
+        $.ajax({
+            type:'get',
+            url:'/scot/api/v2/ac/source/' + input, 
+            success: function (result) {
+                var result = result.records;
+                for (var i=0; i < result.length; i++) {
+                    arr.push(result[i])
+                }
+                this.setState({suggestions:arr})
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get source autocomplete data', data);
+            }.bind(this)
+        })
     },
     handleDelete: function () {
         //blank since buttons are handled outside of this

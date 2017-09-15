@@ -9,7 +9,8 @@ var Marker          = require('../components/marker.jsx').default;
 var SelectedHeaderOptions = React.createClass({
     getInitialState: function() {
         return {
-            globalFlairState: true
+            globalFlairState: true,
+            promoteRemaining: null,
         }
     },
     toggleFlair: function() { 
@@ -65,6 +66,9 @@ var SelectedHeaderOptions = React.createClass({
             array.push({id:id,status:'open'});
         }.bind(this));
         var data = JSON.stringify({alerts:array})    
+        
+        this.props.ToggleProcessingMessage(true);
+
         $.ajax({
             type:'put',
             url: '/scot/api/v2/'+this.props.type + '/' +this.props.id,
@@ -72,12 +76,15 @@ var SelectedHeaderOptions = React.createClass({
             contentType: 'application/json; charset=UTF-8',
             success: function(response){
                 console.log('success');
+                this.props.ToggleProcessingMessage(false);
             }.bind(this),
-            error: function() {
-                console.log('failure');
+            error: function(data) {
+                this.props.errorToggle('failed to open selected alerts', data);
+                this.props.ToggleProcessingMessage(false);
             }.bind(this)
         })
     },
+
     alertCloseSelected: function() {
         var time = Math.round(new Date().getTime() / 1000)
         var array = [];
@@ -86,6 +93,9 @@ var SelectedHeaderOptions = React.createClass({
             array.push({id:id,status:'closed', closed:time});
         }.bind(this)); 
         var data = JSON.stringify({alerts:array})
+        
+        this.props.ToggleProcessingMessage(true);
+        
         $.ajax({
             type:'put',
             url: '/scot/api/v2/'+this.props.type + '/'+ this.props.id,
@@ -93,12 +103,15 @@ var SelectedHeaderOptions = React.createClass({
             contentType: 'application/json; charset=UTF-8',
             success: function(response){
                 console.log('success');
+                this.props.ToggleProcessingMessage(false);
             }.bind(this),
-            error: function() {
-                console.log('failure');
+            error: function(data) {
+                this.props.errorToggle('failed to close selected alerts', data);
+                this.props.ToggleProcessingMessage(false);
             }.bind(this)
         })
     },
+
     alertPromoteSelected: function() {
         var data = JSON.stringify({promote:'new'})
         var array = [];
@@ -106,6 +119,9 @@ var SelectedHeaderOptions = React.createClass({
             var id = $(tr).attr('id');
             array.push(id);
         }.bind(this));
+
+        this.props.ToggleProcessingMessage(true);
+
         //Start by promoting the first one in the array
         $.ajax({
             type:'put',
@@ -117,7 +133,11 @@ var SelectedHeaderOptions = React.createClass({
                 var promoteTo = {
                     promote:response.pid
                 }
+                
+                this.setState({promoteRemaining: array.length -1 });
+                
                 for (var i=1; i < array.length; i++) {
+                   
                     $.ajax({
                         type:'put',
                         url: '/scot/api/v2/alert/'+array[i],
@@ -125,15 +145,22 @@ var SelectedHeaderOptions = React.createClass({
                         contentType: 'application/json; charset=UTF-8',
                         success: function(response){
                             console.log('success');
+                            this.setState({promoteRemaining: this.state.promoteRemaining -1})
+                            
+                            if ( this.state.promoteRemaining == 0 ) {
+                                this.props.ToggleProcessingMessage(false);
+                            }
+
                         }.bind(this),
-                        error: function() {
-                            console.log('failure');
+                        error: function(data) {
+                            this.props.errorToggle('failed to promoted selected alerts', data);
+                            this.setState({promoteRemaining: this.state.promoteRemaining -1});
                         }.bind(this)
                     })
                 }
             }.bind(this),
-            error: function() {
-                console.log('failure');
+            error: function(data) {
+                this.props.errorToggle('failed to promoted selected alerts', data);
             }.bind(this)
         })
         
@@ -184,8 +211,8 @@ var SelectedHeaderOptions = React.createClass({
                                 window.location = '#/event/' + text
                             }
                         }.bind(this),
-                        error: function() {
-                            console.log('failure');
+                        error: function(data) {
+                            this.props.errorToggle('failed to promote into existing event', data);
                         }.bind(this)
                     })
                 } else {
@@ -232,8 +259,8 @@ var SelectedHeaderOptions = React.createClass({
                     success: function(response){
                         console.log('success');
                     }.bind(this),
-                    error: function() {
-                        console.log('failure');
+                    error: function(data) {
+                        this.props.errorToggle('failed to delete selected alerts' , data)
                     }.bind(this)
                 });
             }        
@@ -269,9 +296,13 @@ var SelectedHeaderOptions = React.createClass({
             url: '/scot/api/v2/guide',
             data: data,
             contentType: 'application/json; charset=UTF-8',
-        }).success(function(response){
-            window.open('/#/guide/' + response.id);        
-        }.bind(this)) 
+            success: function(response){
+                window.open('/#/guide/' + response.id);        
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to create a new guide', data);
+            }.bind(this)
+        })
     },
     reparseFlair: function() {
         $.ajax({
@@ -279,9 +310,13 @@ var SelectedHeaderOptions = React.createClass({
             url: '/scot/api/v2/'+this.props.type+'/'+this.props.id,
             data: JSON.stringify({parsed:0}),
             contentType: 'application/json; charset=UTF-8',
-        }).success(function(response){
-            console.log('reparsing started');
-        }.bind(this))
+            success: function(response){
+                console.log('reparsing started');
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to reparse flair', data);
+            }.bind(this)
+        })
     },
 
     createLinkSignature: function() {
@@ -290,10 +325,14 @@ var SelectedHeaderOptions = React.createClass({
             url: '/scot/api/v2/signature',
             data: JSON.stringify({target: {id:this.props.id, type: this.props.type}, name: 'Name your Signature', status: 'disabled'}),
             contentType: 'application/json; charset=UTF-8',
-        }).success(function(response) {
-            const url = '/#/signature/'+response.id;
-            window.open(url,'_blank');
-        }.bind(this))
+            success: function(response) {
+                const url = '/#/signature/'+response.id;
+                window.open(url,'_blank');
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to create a signature', data); 
+            }.bind(this)
+        })
     },
 
     manualUpdate: function() {
@@ -342,7 +381,7 @@ var SelectedHeaderOptions = React.createClass({
                     {type != 'entity' ? <Button eventKey="6" onClick={this.props.permissionsToggle} bsSize='xsmall'><i className="fa fa-users" aria-hidden="true"></i> Permissions</Button> : null } 
                     <Button eventKey="7" onClick={this.props.entitiesToggle} bsSize='xsmall'><span className='entity'>__</span> View Entities</Button>
                     {type == 'guide' ? <Button eventKey='8' onClick={this.props.guideRedirectToAlertListWithFilter} bsSize='xsmall'><i className="fa fa-table" aria-hidden='true'></i> View Related Alerts</Button> : null}
-                    {showPromote ? <Promote type={type} id={id} updated={this.props.updated} /> : null}
+                    {showPromote ? <Promote type={type} id={id} updated={this.props.updated} errorToggle={this.props.errorToggle} /> : null}
                     {type != 'signature' ? <Button bsSize='xsmall' onClick={this.createLinkSignature}><i className="fa fa-pencil" aria-hidden="true"></i> Create & Link Signature</Button> : null}
                     {type == 'signature' ? <Button eventKey='11' onClick={this.props.showSignatureOptionsToggle} bsSize='xsmall' bsStyle='warning'>View Custom Options</Button> : null}
                     <Button bsStyle='danger' eventKey="9" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button>
