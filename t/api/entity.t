@@ -68,6 +68,10 @@ $t  ->get_ok("/scot/api/v2/event/$event_id/entity")
     ->json_is('/records/google.com/type'   => 'domain')
     ->json_is('/records/10.12.14.16/type'   => 'ipaddr');
 
+# print Dumper($t->tx->res->json);
+# done_testing();
+# exit 0;
+
 my $googleid = $t->tx->res->json->{records}->{'google.com'}->{id};
 my $ipid     = $t->tx->res->json->{records}->{'10.12.14.16'}->{id};
 

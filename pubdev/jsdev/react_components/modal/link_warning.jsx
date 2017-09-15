@@ -20,15 +20,17 @@ var LinkWarning = React.createClass({
     },
     componentWillMount: function() {
         var myDomain = window.location.href; 
-        var reg = new RegExp(/((https?|ftp):\/\/[a-zA-Z0-9\-_\.]+\.)?([a-zA-Z0-9\-_\.]+\.([A-Z]{4}|com|org|new|edu|gov|mil|biz|info|mobi|name|aero|asia|jobs|museum))/,'i');
+        var reg = new RegExp(/((https?|ftp):\/\/[a-zA-Z0-9\-_\.]+\.)?([a-zA-Z0-9\-_\.]+\.([a-zA-Z]{1,63}))/,'i');
         var linkRegResult = this.props.link.match(reg);
         var myDomainRegResult = myDomain.match(reg);
         if (linkRegResult != undefined && myDomainRegResult != undefined) {
             var linkDomain = linkRegResult[3];
             var myDomain = myDomainRegResult[3];
-            if (linkDomain == myDomain) {
+            if (linkDomain == myDomain ) {   
                 this.proceed();
             }
+        } else if ( linkRegResult == undefined ) {
+           this.proceed(); 
         }
         /*
         if ($.isUrlInternal(this.props.link)) {
