@@ -37,7 +37,7 @@ var Tag = React.createClass({
                 <td>
                     {rows}
                     {this.state.tagEntry ? <NewTag data={data} type={type} id={id} toggleTagEntry={this.toggleTagEntry} updated={this.props.updated} errorToggle={this.props.errorToggle}/>: null}
-                    {this.state.tagEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-minus' aria-hidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-plus' aria-hidden='true'></span></Button>}
+                    {this.state.tagEntry ? <span className='add-tag-button'><Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-minus' aria-hidden='true'></span></Button></span> : <span className='remove-tag-button'><Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleTagEntry}><span className='glyphicon glyphicon-plus' aria-hidden='true'></span></Button></span>}
                 </td>
             </th>
         )
@@ -85,7 +85,7 @@ var TagDataIterator = React.createClass({
             }
         }
         return (
-            <span id="event_tag" className='tagButton'>{value} <i onClick={this.tagDelete} className="fa fa-times tagButtonClose"/></span>
+            <span id="event_tag" className='tagButton'>{value} <span className='tagButtonClose'><i onClick={this.tagDelete} className="fa fa-times"/></span></span>
         )
     }
 });
