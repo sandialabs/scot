@@ -7,7 +7,6 @@ class Progress extends React.Component
 
     render: () =>
         {div} = React.DOM
-        console.log "progress bar #{@props.done}/#{@props.total} (running: #{@props.running})"
         div
             style:
                 width:'100%'

@@ -14,9 +14,13 @@ var Gamification = React.createClass({
         $.ajax({
             type: 'get',
             url: '/scot/api/v2/game',
-        }).success(function(response) {
-            this.setState({GameData:response});
-        }.bind(this))
+            success: function(response) {
+                this.setState({GameData:response});
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('unable to get game data', data);
+            }.bind(this)
+        })
     },
     titleCase: function(string) {
         var newstring = string.charAt(0).toUpperCase() + string.slice(1)
