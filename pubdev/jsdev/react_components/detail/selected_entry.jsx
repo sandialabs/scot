@@ -60,7 +60,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntryData:true});
-                        this.props.errorToggle("Failed to load entry data.");
+                        this.props.errorToggle("Failed to load entry data.", result);
                     }
                 }.bind(this)
             });
@@ -86,7 +86,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntityData: true})
-                        this.props.errorToggle("Failed to load entity data.");
+                        this.props.errorToggle("Failed to load entity data.", result);
                     }
                 }.bind(this)
             });
@@ -124,7 +124,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntryData:true});
-                        this.props.errorToggle("Failed to load entry data ");
+                        this.props.errorToggle("Failed to load entry data ", result);
                     }
                 }.bind(this)
             }); 
@@ -150,7 +150,7 @@ var SelectedEntry = React.createClass({
                 error: function(result) {
                     if (this.isMounted()) {
                         this.setState({showEntityData: true})
-                        this.props.errorToggle("Failed to load entity data");
+                        this.props.errorToggle("Failed to load entity data", result);
                     }
                 }.bind(this)
             }); 
@@ -302,7 +302,7 @@ var SelectedEntry = React.createClass({
                 {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar}/> : <span>Loading...</span>} 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry entryAction={'Add'} type={this.props.type} targetid={this.props.id} id={null} addedentry={this.props.entryToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
                 {this.props.fileUploadToolbar ? <div>{this.props.isAlertSelected == false ? <FileUpload type={this.props.type} targetid={this.props.id} id={'file_upload'} fileUploadToggle={this.props.fileUploadToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
-                {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} aID={this.props.aID} aType={this.props.aType} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj} linkWarningToggle={this.linkWarningToggle}/>: null}
+                {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} aID={this.props.aID} aType={this.props.aType} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj} linkWarningToggle={this.linkWarningToggle} errorToggle={this.props.errorToggle}/>: null}
                 {this.state.linkWarningToolbar ? <LinkWarning linkWarningToggle={this.linkWarningToggle} link={this.state.link}/> : null}
             </div>       
         );
@@ -626,12 +626,17 @@ var AlertBody = React.createClass({
         if (this.props.data.status == 'promoted') {
             $.ajax({
                 type: 'GET',
-                url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
-            }).success(function(response){
-                if (this.isMounted()) {
-                    this.setState({promotedNumber:response.records[0].id});
-                }
-            }.bind(this))
+                url: '/scot/api/v2/alert/'+this.props.data.id+ '/event',
+                success: function(response){
+                    if (this.isMounted()) {
+                        this.setState({promotedNumber:response.records[0].id});
+                    }
+                }.bind(this),
+                error: function(data) {
+                    this.props.errorToggle('failed to get promoted id' , data)
+                }.bind(this)
+            })
+            
             if (this.isMounted()) {
                 this.setState({promoteFetch:true})
             }
@@ -648,12 +653,17 @@ var AlertBody = React.createClass({
             if (this.props.data.status == 'promoted') {
                 $.ajax({
                     type: 'GET',
-                    url: '/scot/api/v2/alert/'+this.props.data.id+ '/event'
-                }).success(function(response){
-                    if (this.isMounted()) {
-                        this.setState({promotedNumber:response.records[0].id});             
-                    }
-                }.bind(this))
+                    url: '/scot/api/v2/alert/'+this.props.data.id+ '/event',
+                    success: function(response){
+                        if (this.isMounted()) {
+                            this.setState({promotedNumber:response.records[0].id});             
+                        }
+                    }.bind(this),
+                    error: function(data) {
+                        this.props.errorToggle('failed to get promoted id', data);
+                    }.bind(this),
+                })
+                
                 if (this.isMounted()) {    
                     this.setState({promoteFetch:true});
                 }
@@ -833,9 +843,13 @@ var EntryParent = React.createClass({
             url: '/scot/api/v2/entry/'+this.props.items.id,
             data: JSON.stringify({parsed:0}),
             contentType: 'application/json; charset=UTF-8',
-        }).success(function(response){
-            console.log('reparsing started');
-        }.bind(this))
+            success: function(response){
+                console.log('reparsing started');
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to start reparsing of data', data)
+            }.bind(this)
+        })
     },
     fileUploadToggle: function() {
         if (this.state.fileUploadToolbar == false) {
@@ -908,9 +922,9 @@ var EntryParent = React.createClass({
                                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
                                     { type != 'entity' ? <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem> : null}
-                                    <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} /></MenuItem>
-                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items} /></MenuItem>
                                     <MenuItem><Marker type={'entry'} id={items.id} string={items.body_plain} /></MenuItem>
+                                    <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} errorToggle={this.props.errorToggle}/></MenuItem>
+                                    <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items} errorToggle={this.props.errorToggle} /></MenuItem>
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
                                     <MenuItem onClick={this.reparseFlair}>Reparse Flair</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>

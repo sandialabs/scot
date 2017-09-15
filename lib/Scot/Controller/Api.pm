@@ -322,15 +322,24 @@ sub get_one {
         }
 
         my $object  = $collection->api_find($req_href);
+        if (! defined $object ) {
+            die "Object not found";
+        }
         my $objhref = $self->post_get_one_process($object, $req_href);
 
-        # special case for file downloads
+        # special case for file downloads or pushes
         if ( ref($object) eq "Scot::Model::File" ) {
             my $download    = $self->param('download');
             if ( defined $download ) {
                 $self->download_file($object);
                 return;
             }
+            # future push actions through the server instead of in the client
+            #my $push        = $self->param('push');
+            #if ( defined $push ) {
+            #    $self->push_file($object, $req_href);
+            #    return;
+            #}
         }
         $self->do_render($objhref);
     }
@@ -451,6 +460,28 @@ sub download_file {
     $static->serve($self, $object->filename);
     $self->rendered;
     return;
+}
+
+# not used since pushes to sarlacc can have an apikey in client from entry_actions in config
+# keeping here for future use, potentially.
+sub push_file {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my $json    = $req->{request}->{json};
+    my $send_name   = $json->{send_to_name};
+    my $send_url    = $json->{send_to_url};
+    my $apikey      = $$self->env->apikey->{$send_name};
+    $send_url .= "&".$apikey;
+
+    my $ua = Mojo::UserAgent->new();
+    my $tx = $ua->post($send_url);
+    my $response = $tx->success;
+
+    if ( defined $response ) {
+        return $response->json;
+    }
+    die "Failed File Push to $send_url, Error: ".$tx->error->{code}." ".$tx->error->{message};
 }
 
 =item B<get_subthing>
@@ -679,6 +710,26 @@ sub pre_update_process {
         my $collection  = $self->env->mongo->collection('Entity');
         $collection->update_entities($object, $entity_aref);
     }
+    
+    # if the object does tags or source, we need to adjust the appearances collection
+    # to reflect the changes, because we store tags/sources as an array in the object
+    # and create appearance records 
+
+    if ( $object->meta->does_role("Scot::Role::Tags") or
+         $object->meta->does_role("Scot::Role::Sources") ) {
+
+        my $new_tag_set = $req->{request}->{json}->{tag};
+        my $new_src_set = $req->{request}->{json}->{source};
+
+        if (defined $new_tag_set ) {
+            $mongo->collection('Appearance')
+                   ->adjust_appearances($object,$new_tag_set,"tag");
+        }
+        if (defined $new_src_set ) {
+            $mongo->collection('Appearance')
+                   ->adjust_appearances($object,$new_src_set,"source");
+        }
+    }
 }
 
 sub get_promotion_collection {
@@ -727,6 +778,14 @@ sub promote {
         $mongo->collection('Alertgroup')->refresh_data($object->alertgroup);
         my $entry = $mongo->collection('Entry')
                           ->create_from_promoted_alert($object, $promotion_obj);
+        $env->mq->send("scot", {
+            action  => "created",
+            data    => {
+                who => $user,
+                type    => "entry",
+                id      => $entry->id,
+            }
+        });
     }
 
     # update the promotee
@@ -750,17 +809,26 @@ sub promote {
     my $type = $object->get_collection_name;
     my $id   = $object->id;
     if ( $type eq "alert" ) {
-        $type   = "Alertgroup";
-        $id     = $object->alertgroup;
+        $env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                who     => $user,
+                type    => "Alertgroup",
+                id      => $object->alertgroup,
+                opts    => "noreflair",
+            }
+        });
     }
-    $env->mq->send("scot", {
-        action  => "updated",
-        data    => {
-            who     => $user,
-            type    => $type,
-            id      => $id,
-        }
-    });
+    else {
+        $env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                who     => $user,
+                type    => $type,
+                id      => $id,
+            }
+        });
+    }
 
     my $what = $object->get_collection_name." promoted to ".
                        $promotion_obj->get_collection_name;

@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-use lib '../lib';
+use lib '/opt/scot/lib';
 use Scot::Util::ScotClient;
 use MIME::Base64;
 use Data::Dumper;
