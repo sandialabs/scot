@@ -61,7 +61,9 @@ API =
 
     tag: (params) ->
         @fetch (@url "/scot/api/v2/tag",params)
-        
+
+    putSignature: (sig) ->
+        Http.asyncjson "POST",
     commands:
         server: (argv,data,ctx) ->
             if argv.length < 1
@@ -139,8 +141,8 @@ API =
             
         entry: (argv, data, ctx) ->
             Utils.parsevalue (argv.join ' '), ctx
-                .map (p)-> API.entry p
-                .map_err (e) -> Result.err ('entry: '+e)
+                .and_then (p)-> API.entry p
+                .map_err (e) ->  ('entry: '+e)
                 
         help__alertgroup: ()->"""
             alertgroup [params]
@@ -174,8 +176,8 @@ API =
            
         alertgroup: (argv, data, ctx) ->
             Utils.parsevalue (argv.join ' '), ctx
-                .map (p)-> API.alertgroup p
-                .map_err (e) -> Result.err ('alertgroup: '+e)
+                .and_then (p)-> API.alertgroup p
+                .map_err (e) ->  ('alertgroup: '+e)
         help__entity: ()->"""
             entity [params]
 
@@ -208,8 +210,8 @@ API =
 
         entity: (argv, data, ctx) ->
             Utils.parsevalue (argv.join ' '), ctx
-                .map (p)-> API.entity p
-                .map_err (e) -> Result.err ('entity: '+e)
+                .and_then (p)-> API.entity p
+                .map_err (e) ->  ('entity: '+e)
 
 
         help__alert: ()->"""
@@ -244,8 +246,8 @@ API =
            
         alert: (argv, data, ctx) ->
             Utils.parsevalue (argv.join ' '), ctx
-                .map (p)-> API.alert p
-                .map_err (e) -> Result.err ('alert: '+e)
+                .and_then (p)-> API.alert p
+                .map_err (e) ->  ('alert: '+e)
                 
         help__event: ()->"""
             event [params]
@@ -279,12 +281,12 @@ API =
             
         event: (argv, data, ctx) ->
             Utils.parsevalue (argv.join ' '), ctx
-                .map (p)-> API.event p
-                .map_err (e) -> Result.err ('event: '+e)
+                .and_then (p)-> API.event p
+                .map_err (e) ->  ('event: '+e)
 
         tag: (argv, data, ctx) ->
             Utils.parsevalue (argv.join ' '), ctx
-                .map (p)->API.tag p
-                .map_err (e)->Result.err ('tag: '+e)
+                .and_then (p)->API.tag p
+                .map_err (e)-> ('tag: '+e)
                 
 module.exports = API

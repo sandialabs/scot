@@ -194,7 +194,11 @@ Readonly my $IP_REGEX   => qr{
         # last octet
         (?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)
     )
-    (?!\.)\b
+    (?!\.[0-9a-zA-Z])\b
+    # this is how it was, but there is a bug
+    # ipaddrs at the end of a sentance can have a period like 10.1.1.1. 
+    # above is an attempt to fix and needs testing 
+    # (?!\.)\b
 }xms;
 
 Readonly my $LAT_LONG_REGEX => qr{

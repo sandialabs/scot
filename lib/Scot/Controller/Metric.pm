@@ -189,56 +189,52 @@ sub response_avg_last_x_days {
     else {
         $dt = DateTime->today();
     }
-
     my $json    = {};
+
     my $averages = $self->get_alltime_alert_responsetime_avg;
-    push @{ $json->{lines} }, {
-        name    => "All Avg",
-        value   => $averages->{all} // 0,
-    }, {
-        name    => "Promoted Avg",
-        value   => $averages->{promoted} // 0,
-    }, {
-        name    => "Incident Avg",
-        value   => $averages->{incident} // 0,
-    };
+    ## want-> json = {
+    ##     lines: [ { name: " ", value: x },...], 
+    ##     dates: [ { date: " ",name:" ", value: x }...]
+    ## }
+    push @{$json->{lines}}, 
+        { name => "All Avg", value => $averages->{all} // 0 },
+        { name => "Promoted Avg", value => $averages->{promoted} // 0},
+        { name => "Incident Avg", value => $averages->{incident} // 0};
 
 
-     ## desire {
-     ##     lines: [ { name: " ", value: x },...], dates: [ { date: " ",name:" ", value: x }...]
 
-     for ( my $i = $x -1; $i >= 0; $i-- ) {
+    for ( my $i = $x-1; $i >= 0; $i-- ) {
         my $next_start_dt   = $dt->clone();
         $next_start_dt->subtract(days => $i);
         my $next_end_dt     = $next_start_dt->clone();
         $next_end_dt->set(hour=>23, minute=>59, second=>59);
-        my $request = { 
-            range => [ $next_start_dt, $next_end_dt ] 
+        my $request = {
+            range   => [ $next_start_dt, $next_end_dt ]
         };
         if ( defined $limit ) {
             $request->{limit} = $limit;
         }
         my $dayresult   = $self->response_time($request);
-
-        push @{ $json->{dates} }, {
+        push @{$json->{dates}}, {
             date    => $next_start_dt->ymd('-'),
             values  => [
-                {
-                    name    => 'All',
-                    value   => $dayresult->{all}->{avg} // 0,
+                { 
+                    name  => 'All', 
+                    value => $dayresult->{all}->{avg} // 0
                 },
-                {
-                    name    => 'Promoted',
-                    value   => $dayresult->{promoted}->{avg} // 0,
+                { 
+                    name  => 'Promoted', 
+                    value => $dayresult->{promoted}->{avg} // 0
                 },
-                {
-                    name    => 'Incident',
-                    value   => $dayresult->{incident}->{avg} // 0,
-                }
-            ]
+                { 
+                    name  => 'Incident', 
+                    value => $dayresult->{incident}->{avg} // 0
+                },
+            ],
         };
     }
     return $json;
+
 }
         
 
@@ -439,7 +435,7 @@ sub alert_power {
     my @results = ();
     foreach my $at (keys %$sums) {
         push @results, {
-            date        => $at,
+            name        => $at,
             open        => $sums->{$at}->{open},
             promoted    => $sums->{$at}->{promoted},
             incident    => $sums->{$at}->{incident},
@@ -454,14 +450,11 @@ sub alert_power {
 
     $log->debug("sorted results: ",{filter=>\&Dumper,value=>\@sorted});
 
-    my @filtered = map { my $s = delete $_->{score}; $_->{date} .= " ($s)"; $_ } @sorted;
 
-    my @slice = splice(@filtered, 0, 20);
-
-    $log->debug("Slice is ",{filter=>\&Dumper, value=>\@slice});
-
-    return \@slice;
-#     return \@sorted;
+    # my @slice = splice(@sorted, 0, 20);
+    # $log->debug("Slice is ",{filter=>\&Dumper, value=>\@slice});
+    # return \@slice;
+    return \@sorted;
 }
 
 
@@ -503,7 +496,7 @@ sub alert_power_sums {
     while ( my $href = $aggcursor->next ) {
         my $score   = $self->calculate_score($href);
         $r{$href->{_id}} = {
-            open        => $href->{open },
+            open        => $href->{open},
             promoted    => $href->{promoted},
             incident    => $href->{incident},
             score       => $score,
@@ -524,7 +517,7 @@ sub calculate_score {
 #    if ( $total > 0 ) {
 #        $score = (($href->{promoted} + ($multiple * $href->{incident}) )/$total);
 #    }
-    $score  = $href->{promoted} + $multiple*$href->{incident} - $href->{open};
+    $score  = $href->{promoted} + $multiple*$href->{incident};# - $href->{open};
     # return int($score * 1000);
     return $score;
 }

@@ -312,13 +312,24 @@ sub process_by_date {
     my $start       = shift;    # epoch
     my $end         = shift;    # epoch
     my $limit       = shift;
-    $limit  = 0 unless $limit;
+    $limit          = 0 unless $limit;
+    my $mongo       = $self->env->mongo;
     my $scot        = $self->scot;
     my $es          = $self->es;
-    my $json    = $scot->get("$collection?created=$start&created=$end&limit=$limit");
+#    my $json    = $scot->get("$collection?created=$start&created=$end&limit=$limit");
 
-    foreach my $href (@{$json->{records}}) {
-        $es->index($collection, $href, 'scot');
+    my $cursor  = $mongo->collection(ucfirst($collection))->find({
+        when    => {
+            '$gte'  => $start,
+            '$lte'  => $end,
+        }
+    });
+    $cursor->immortal(1);
+
+    while ( my $obj = $cursor->next ) {
+        my $href    = $obj->as_hash;
+        my $id      = $obj->id;
+        $es->index($collection, $id, $href, "scot");
     }
 }
 
