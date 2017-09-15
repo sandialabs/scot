@@ -376,15 +376,18 @@ sub api_subthing {
     }
 
     if ( $subthing eq "entity" ) {
-        # build array of entity ids linked to this alertgroup
-        my @links = map { $_->{entity_id} } 
-            $mongo->collection('Link')->get_links_by_target({
-                id  => $id, type => 'alertgroup'
-            })->all;
-        # return all matching entities
-        return $mongo->collection('Entity')->find({
-            id  => { '$in' => \@links }
-        });
+        return $mongo->collection('Link')
+                     ->get_linked_objects_cursor(
+                        { id => $id, type => 'alertgroup' },
+                        'entity' );
+    }
+
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
     }
 
     if ( $subthing eq "tag" ) {
@@ -426,88 +429,6 @@ sub api_subthing {
     die "Unsupported subthing: $subthing";
 }
     
-
-override get_subthing => sub {
-    my $self        = shift;
-    my $thing       = shift;
-    my $id          = shift;
-    my $subthing    = shift;
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $log         = $env->log;
-
-    $id += 0;
-
-    if ( $subthing  eq "alert" ) {
-        my $col = $mongo->collection('Alert');
-        my $cur = $col->find({alertgroup => $id});
-        return $cur;
-    }
-    elsif ( $subthing eq "entry" ) {
-        my $col = $mongo->collection('Entry');
-        my $cur = $col->get_entries_by_target({
-            id      => $id,
-            type    => 'alertgroup'
-        });
-        return $cur;
-    }
-    elsif ( $subthing eq "entity" ) {
-        my $timer  = $env->get_timer("fetching links");
-        my $col    = $mongo->collection('Link');
-        my $ft  = $env->get_timer('find actual timer');
-        my $cur    = $col->get_links_by_target({ 
-            id => $id, type => 'alertgroup' 
-        });
-        &$ft;
-        my @lnk = map { $_->{entity_id} } $cur->all;
-        &$timer;
-
-        $timer  = $env->get_timer("generating entity cursor");
-        $col    = $mongo->collection('Entity');
-        $cur    = $col->find({id => {'$in' => \@lnk }});
-        &$timer;
-        return $cur;
-    }
-    elsif ( $subthing eq "tag" ) {
-        my $col = $mongo->collection('Appearance');
-        my $cur = $col->find({
-            type            => 'tag',
-            'target.type'   => 'alertgroup',
-            'target.id'     => $id,
-        });
-        my @ids = map { $_->{apid} } $cur->all;
-        $col    = $mongo->collection('Tag');
-        $cur    = $col->find({ id => {'$in' => \@ids }});
-        return $cur;
-    }
-    elsif ( $subthing eq "source" ) {
-        my $col = $mongo->collection('Appearance');
-        my $cur = $col->find({
-            type            => 'source',
-            'target.type'   => 'alertgroup',
-            'target.id'     => $id,
-        });
-        my @ids = map { $_->{apid} } $cur->all;
-        $col    = $mongo->collection('Source');
-        $cur    = $col->find({ id => {'$in' => \@ids }});
-        return $cur;
-    }
-    elsif ( $subthing eq "guide" ) {
-        my $ag  = $self->find_iid($id);
-        my $col = $mongo->collection('Guide');
-        my $cur = $col->find({applies_to => $ag->subject});
-        return $cur;
-    }
-    elsif ( $subthing eq "history" ) {
-        my $col = $mongo->collection('History');
-        my $cur = $col->find({'target.id'   => $id,
-                              'target.type' => 'alertgroup',});
-        return $cur;
-    }
-    else {
-        $log->error("unsupported subthing $subthing!");
-    }
-};
 
 sub update_alerts_in_alertgroup {
     my $self     = shift;
