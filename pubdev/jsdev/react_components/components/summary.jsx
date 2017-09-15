@@ -34,8 +34,8 @@ var Summary = React.createClass({
             success: function(data) {
                 console.log('success: ' + data);
             }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to make summary');
+            error: function(data) {
+                this.props.errorToggle('Failed to make summary', data);
             }.bind(this)
         });
     },

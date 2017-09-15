@@ -149,7 +149,13 @@ sub build_table {
     foreach my $key ( @{$columns} ) {
         next if ($key eq "columns");
         my $value   = $data->{$key};
-        $html .= qq|<td>$value</td>|;
+        $html .= qq|<td>|;
+        if ( ref($value) eq "ARRAY" ) {
+            $html .= join("<br>\n",@$value)."</td>";
+        }
+        else {
+            $html .= $value . "</td>";
+        }
     }
     $html .= qq|\n</tr>\n</table>\n|;
     return $html;
