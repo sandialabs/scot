@@ -431,12 +431,7 @@ var EntityValue = React.createClass({
     render: function() {
         if (this.props.data != undefined) {  //Entity Detail Popup showing the entity type
             var entityurl = '/' + 'entity/' + this.props.data.id;
-            var statusClass = '';
-            if (this.props.data.status == 'untracked') {
-                statusClass = 'entity-untracked';
-            } else if (this.props.data.status == 'tracked') {
-                statusClass = 'entity-tracked';
-            }
+            
             return (
                 <div className='flair_header'>
                     <Link to={entityurl} target="_blank">
