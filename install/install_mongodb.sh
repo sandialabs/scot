@@ -60,7 +60,7 @@ EOF
 
 function add_failIndexKeyTooLong {
 
-    MONGO_SRC_DIR=$DEVDIR/src/mongodb
+    MONGO_SRC_DIR=$DEVDIR/install/src/mongodb
     MONGO_SYSTEMD_INIT=/lib/systemd/system/mongod.service
     MONGO_INIT=/etc/init/mongod.conf
     MONGO_INIT_SRC=$MONGO_SRC_DIR/init-mongod.conf
@@ -164,7 +164,7 @@ function configure_for_scot {
 
     if [[ $MONGO_REFRESH_CONFIG == "yes" ]]; then
         echo "-- copying scot mongo config into place"
-        MONGO_CONF_SRC=$DEVDIR/src/mongodb
+        MONGO_CONF_SRC=$DEVDIR/install/src/mongodb
         MONGO_SYSTEMD_SERVICE=/lib/systemd/system/mongod.service
 
         if [[ $OS == "Ubuntu" ]]; then

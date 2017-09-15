@@ -68,8 +68,8 @@ var DetailDataStatus = React.createClass({
             success: function(data) {
                 console.log('success status change to: ' + data);
             }.bind(this),
-            error: function() {
-                this.props.errorToggle('Failed to change status');
+            error: function(data) {
+                this.props.errorToggle('Failed to change status', data);
             }.bind(this)
         });
     },
