@@ -772,6 +772,10 @@ sub promote {
         }
     });
 
+    $mongo->collection('Link')->link_objects($object,$promotion_obj,{
+        context => "promotion"
+    });
+
     # update mq and other bookkeeping
     $env->mq->send("scot", {
         action  => "created",

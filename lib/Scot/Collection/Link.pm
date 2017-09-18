@@ -155,6 +155,7 @@ sub link_objects {
     my $options = shift; # href 
     my $weight  = $options->{weight} // 1;
     my $when    = $options->{when} // $self->env->now;
+    my $context = $options->{context} // ' ';
 
     my @vertices = (
         $self->get_vertex($v0),
@@ -171,6 +172,7 @@ sub link_objects {
         weight      => $weight,
         when        => $when,
         memo        => \@memos,
+        context     => $context,
     });
 }
 
