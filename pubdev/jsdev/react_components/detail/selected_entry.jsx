@@ -19,6 +19,8 @@ var LinkWarning             = require('../modal/link_warning.jsx');
 var Link                    = require('react-router-dom').Link;
 var IncidentTable           = require('../components/incident_table.jsx');
 var SignatureTable          = require('../components/signature_table.jsx');
+var Marker                  = require('../components/marker.jsx').default;
+
 var SelectedEntry = React.createClass({
     getInitialState: function() {
         var entityDetailKey = Math.floor(Math.random()*1000);
@@ -916,12 +918,14 @@ var EntryParent = React.createClass({
                     <span className="anchor" id={"/"+ type + '/' + id + '/' + items.id}/>
                     <div className={innerClassName}>
                         <div className="entry-header-inner">[<Link style={{color:'black'}} to={'/' + type + '/' + id + '/' + items.id}>{items.id}</Link>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
+                            { this.props.items.body_flair != '' && this.props.items.parsed == 0 ? <span style={{color: 'green', fontWeight: 'bold' }}> Entry awaiting flair engine. Content may be inaccurate.</span> : null }
                             <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
                                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
                                     { type != 'entity' ? <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem> : null}
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} errorToggle={this.props.errorToggle}/></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items} errorToggle={this.props.errorToggle} /></MenuItem>
+                                    <Marker type={'entry'} id={items.id} string={items.body_plain} />
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
                                     <MenuItem onClick={this.reparseFlair}>Reparse Flair</MenuItem>
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
