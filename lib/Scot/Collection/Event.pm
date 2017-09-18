@@ -77,54 +77,6 @@ override api_create => sub {
 };
 
 
-sub create_from_api {
-    my $self    = shift;
-    my $request = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-
-    $log->trace("Create Event from API");
-
-    my $user    = $request->{user};
-    my $json    = $request->{request}->{json};
-
-    $json->{owner} = $user;
-
-    my @tags    = $env->get_req_array($json, "tags");
-    my @sources = $env->get_req_array($json, "sources");
-
-    if ( defined $json->{from_alerts} ) {
-        $self->process_alerts($request);
-    }
-
-    my $entry_body = $request->{entry};
-    delete $request->{entry};
-
-    my $event   = $self->create($json);
-
-    unless ($event) {
-        $log->error("ERROR creating Event from ",
-            { filter => \&Dumper, value => $request});
-        return undef;
-    }
-
-    if ($entry_body) {
-        $self->create_alert_entry($event, $entry_body);
-    }
-
-    my $id      = $event->id;
-    if ( scalar(@sources) > 0 ) {
-        my $col = $env->mongo->collection('Source');
-        $col->add_source_to("event", $event->id, \@sources);
-    }
-    if ( scalar(@tags) > 0 ) {
-        my $col = $env->mongo->collection('Tag');
-        $col->add_source_to("event", $event->id, \@tags);
-    }
-
-    return $event;
-}
-
 sub process_alerts {
     my $self    = shift;
     my $bhref   = shift;
@@ -351,16 +303,27 @@ sub api_subthing {
             type    => 'event',
         });
     }
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
+    }
 
     if ( $subthing eq "entity" ) {
-        my @links   = map { $_->{entity_id} }
-            $mongo->collection('Link')->get_links_by_target({
-                id      => $id,
-                type    => 'event',
-            })->all;
-        return $mongo->collection('Entity')->find({
-            id => { '$in' => \@links }
-        });
+        return $mongo->collection('Link')
+                     ->get_linked_objects_cursor(
+                        { id => $id, type => 'event' },
+                        'entity' );
+    }
+
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
     }
 
     if ( $subthing eq "tag" ) {
@@ -403,99 +366,6 @@ sub api_subthing {
     die "Unsupported subthing $subthing";
 
 }
-
-
-
-override get_subthing => sub {
-    my $self        = shift;
-    my $thing       = shift;
-    my $id          = shift;
-    my $subthing    = shift;
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $log         = $env->log;
-
-    $id += 0;
-
-    if ( $subthing  eq "alert" ) {
-        my $event = $self->find_iid($id);
-        my $col = $mongo->collection('Alert');
-        my $cur = $col->find({ id => { '$in' => $event->promoted_from }});
-        $log->debug("get_subthing for alerts promoted to this event has ".$cur->count. " members");
-        return $cur;
-    }
-    elsif ( $subthing eq "incident" ) {
-        my $col = $mongo->collection('Incident');
-        my $cur = $col->find({promoted_from => $id});
-        return $cur;
-    }
-    elsif ( $subthing eq "entry" ) {
-        my $col = $mongo->collection('Entry');
-        my $cur = $col->get_entries_by_target({
-            id      => $id,
-            type    => 'event'
-        });
-        return $cur;
-    }
-    elsif ( $subthing eq "entity" ) {
-        my $timer  = $env->get_timer("fetching links");
-        my $col    = $mongo->collection('Link');
-        my $ft  = $env->get_timer('find actual timer');
-        my $cur    = $col->get_links_by_target({ 
-            id => $id, type => 'event' 
-        });
-        &$ft;
-        my @lnk = map { $_->{entity_id} } $cur->all;
-        &$timer;
-
-        $timer  = $env->get_timer("generating entity cursor");
-        $col    = $mongo->collection('Entity');
-        $cur    = $col->find({id => {'$in' => \@lnk }});
-        &$timer;
-        return $cur;
-    }
-    elsif ( $subthing eq "tag" ) {
-        my $col = $mongo->collection('Appearance');
-        my $cur = $col->find({
-            type            => 'tag',
-            'target.type'   => 'event',
-            'target.id'     => $id,
-        });
-        my @ids = map { $_->{apid} } $cur->all;
-        $col    = $mongo->collection('Tag');
-        $cur    = $col->find({ id => {'$in' => \@ids }});
-        return $cur;
-    }
-    elsif ( $subthing eq "source" ) {
-        my $col = $mongo->collection('Appearance');
-        my $cur = $col->find({
-            type            => 'source',
-            'target.type'   => 'event',
-            'target.id'     => $id,
-        });
-        my @ids = map { $_->{apid} } $cur->all;
-        $col    = $mongo->collection('Source');
-        $cur    = $col->find({ id => {'$in' => \@ids }});
-        return $cur;
-    }
-    elsif ( $subthing eq "history" ) {
-        my $col = $mongo->collection('History');
-        my $cur = $col->find({'target.id'   => $id,
-                              'target.type' => 'event',});
-        return $cur;
-    }
-    elsif ( $subthing eq "file" ) {
-        my $col = $mongo->collection('File');
-        my $cur = $col->find({
-            'entry_target.id'     => $id,
-            'entry_target.type'   => 'event',
-        });
-        return $cur;
-    }
-    else {
-        $log->error("unsupported subthing $subthing!");
-    }
-};
 
 sub get_promotion_obj {
     my $self    = shift;

@@ -70,11 +70,13 @@ sub startup {
     # capture stuff that normally would go to STDERR and put in log
     $SIG{'__WARN__'} = sub {
         do {
+            $Log::Log4perl::caller_depth++;
             no warnings 'uninitialized';
             $log->warn(@_);
             unless ( grep { /uninitialized/ } @_ ) {
                 $log->warn(longmess());
             }
+            $Log::Log4perl::caller_depth--;
         }
     };
     $SIG{'__DIE__'} = sub {
