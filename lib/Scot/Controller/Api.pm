@@ -330,13 +330,19 @@ sub get_one {
         }
         my $objhref = $self->post_get_one_process($object, $req_href);
 
-        # special case for file downloads
+        # special case for file downloads or pushes
         if ( ref($object) eq "Scot::Model::File" ) {
             my $download    = $self->param('download');
             if ( defined $download ) {
                 $self->download_file($object);
                 return;
             }
+            # future push actions through the server instead of in the client
+            #my $push        = $self->param('push');
+            #if ( defined $push ) {
+            #    $self->push_file($object, $req_href);
+            #    return;
+            #}
         }
         $self->do_render($objhref);
     }
@@ -457,6 +463,28 @@ sub download_file {
     $static->serve($self, $object->filename);
     $self->rendered;
     return;
+}
+
+# not used since pushes to sarlacc can have an apikey in client from entry_actions in config
+# keeping here for future use, potentially.
+sub push_file {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my $json    = $req->{request}->{json};
+    my $send_name   = $json->{send_to_name};
+    my $send_url    = $json->{send_to_url};
+    my $apikey      = $$self->env->apikey->{$send_name};
+    $send_url .= "&".$apikey;
+
+    my $ua = Mojo::UserAgent->new();
+    my $tx = $ua->post($send_url);
+    my $response = $tx->success;
+
+    if ( defined $response ) {
+        return $response->json;
+    }
+    die "Failed File Push to $send_url, Error: ".$tx->error->{code}." ".$tx->error->{message};
 }
 
 =item B<get_subthing>
@@ -788,17 +816,26 @@ sub promote {
     my $type = $object->get_collection_name;
     my $id   = $object->id;
     if ( $type eq "alert" ) {
-        $type   = "Alertgroup";
-        $id     = $object->alertgroup;
+        $env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                who     => $user,
+                type    => "Alertgroup",
+                id      => $object->alertgroup,
+                opts    => "noreflair",
+            }
+        });
     }
-    $env->mq->send("scot", {
-        action  => "updated",
-        data    => {
-            who     => $user,
-            type    => $type,
-            id      => $id,
-        }
-    });
+    else {
+        $env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                who     => $user,
+                type    => $type,
+                id      => $id,
+            }
+        });
+    }
 
     my $what = $object->get_collection_name." promoted to ".
                        $promotion_obj->get_collection_name;
