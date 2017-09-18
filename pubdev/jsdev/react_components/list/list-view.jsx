@@ -267,7 +267,7 @@ module.exports = React.createClass({
                 <div className="black-border-line">
                     <div className='mainview'>
                         <div>
-                           <div style={{display: 'inline-flex'}}>
+                           <div className='list-buttons' style={{display: 'inline-flex'}}>
                                 {this.props.notificationSetting == 'on'?
                                     <Button eventKey='1' onClick={this.props.notificationToggle} bsSize='xsmall'>Mute Notifications</Button> :
                                     <Button eventKey='2' onClick={this.props.notificationToggle} bsSize='xsmall'>Turn On Notifications</Button>
