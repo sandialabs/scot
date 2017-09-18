@@ -39,6 +39,7 @@ The "type" of entry.
 "entry"     => normal user entered
 "task"      => a task entry
 "file"      => holder of files uploaded entries
+"json"      => json data
 
 =cut
 
