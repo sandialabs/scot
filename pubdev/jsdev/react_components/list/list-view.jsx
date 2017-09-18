@@ -54,7 +54,7 @@ module.exports = React.createClass({
             filter = JSON.parse(this.props.listViewFilter);
         }
         if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; alertPreSelectedId=id;};
-
+        
         return {
             splitter: true, 
             selectedColor: '#AEDAFF',
@@ -75,7 +75,11 @@ module.exports = React.createClass({
         } else if (this.props.viewMode == 'portrait') {
             this.Portrait();
         }
+        //If alert id is passed, convert the id to its alertgroup id.
+        this.ConvertAlertIdToAlertgroupId(this.props.id) 
         
+        //if the type is entry, convert the id and type to the actual type and id
+        this.ConvertEntryIdToType( this.props.id );
     },
     componentDidMount: function(){
         var height = this.state.scrollheight
@@ -94,9 +98,7 @@ module.exports = React.createClass({
                 }
             }
         }
-        //If alert id is passed, convert the id to its alertgroup id.
-        this.ConvertAlertIdToAlertgroupId(this.props.id)
-
+        
         var array = []
         var finalarray = [];
         //register for creation
@@ -108,6 +110,7 @@ module.exports = React.createClass({
         if (this.props.type == 'alert') {
             url = '/scot/api/v2/alertgroup'
         }
+
         //get page number
         if  (pageNumber != 0){
             newPage = (pageNumber - 1) * pageLimit
@@ -263,44 +266,50 @@ module.exports = React.createClass({
             showClearFilter = true
         } 
         return (
-            <div key={this.state.listViewKey} className="allComponents">
-                <div className="black-border-line">
-                    <div className='mainview'>
-                        <div>
-                           <div className='list-buttons' style={{display: 'inline-flex'}}>
-                                {this.props.notificationSetting == 'on'?
-                                    <Button eventKey='1' onClick={this.props.notificationToggle} bsSize='xsmall'>Mute Notifications</Button> :
-                                    <Button eventKey='2' onClick={this.props.notificationToggle} bsSize='xsmall'>Turn On Notifications</Button>
-                                }
-                                {this.props.type == 'event' || this.props.type == 'intel' || this.props.type == 'incident' || this.props.type == 'signature' ? <Button onClick={this.createNewThing} eventKey='6' bsSize='xsmall'>Create {this.state.typeCapitalized}</Button> : null}
-                                <Button eventKey='5' bsSize='xsmall' onClick={this.exportCSV}>Export to CSV</Button> 
-                                <Button bsSize='xsmall' onClick={this.toggleView}>Full Screen Toggle (f)</Button>
-                                {showClearFilter ? <Button onClick={this.clearAll} eventKey='3' bsSize='xsmall' bsStyle={'info'}>Clear All Filters</Button> : null}
-                            </div>
-                                <div id='list-view-container' style={{display:this.state.listViewContainerDisplay, height:listViewContainerHeight, opacity:this.state.loading ? '.2' : '1'}} tabIndex='1'>
-                                    <div id={this.state.listViewOrientation} tabIndex='2'>
-                                        <div className='tableview' style={{display: 'flex'}}>
-                                            <div id='fluid2' className="container-fluid2" style={{width:'100%', maxHeight: this.state.maxheight, marginLeft: '0px',height: this.state.scrollheight, 'overflow': 'hidden',paddingLeft:'5px', display:'flex', flexFlow: 'column'}}>                 
-                                                <table style={{width:'100%'}}>
-                                                    <ListViewHeader data={this.state.objectarray} columns={this.state.columns} columnsDisplay={this.state.columnsDisplay} columnsClassName={this.state.columnsClassName} handleSort={this.handleSort} sort={this.state.sort} filter={this.state.filter} handleFilter={this.handleFilter} startepoch={this.state.startepoch} endepoch={this.state.endepoch} type={this.props.type} errorToggle={this.props.errorToggle}/>
-                                                </table>
-                                                <div id='list-view-data-div' style={{height:this.state.scrollheight}} className='list-view-overflow'>
-                                                    <div className='list-view-data-div' style={{display:'block'}}>
+            <div> 
+                {this.state.type != 'entry' ?
+                    <div key={this.state.listViewKey} className="allComponents">
+                        <div className="black-border-line">
+                            <div className='mainview'>
+                                <div>
+                                <div className='list-buttons' style={{display: 'inline-flex'}}>
+                                        {this.props.notificationSetting == 'on'?
+                                            <Button eventKey='1' onClick={this.props.notificationToggle} bsSize='xsmall'>Mute Notifications</Button> :
+                                            <Button eventKey='2' onClick={this.props.notificationToggle} bsSize='xsmall'>Turn On Notifications</Button>
+                                        }
+                                        {this.props.type == 'event' || this.props.type == 'intel' || this.props.type == 'incident' || this.props.type == 'signature' ? <Button onClick={this.createNewThing} eventKey='6' bsSize='xsmall'>Create {this.state.typeCapitalized}</Button> : null}
+                                        <Button eventKey='5' bsSize='xsmall' onClick={this.exportCSV}>Export to CSV</Button> 
+                                        <Button bsSize='xsmall' onClick={this.toggleView}>Full Screen Toggle (f)</Button>
+                                        {showClearFilter ? <Button onClick={this.clearAll} eventKey='3' bsSize='xsmall' bsStyle={'info'}>Clear All Filters</Button> : null}
+                                    </div>
+                                        <div id='list-view-container' style={{display:this.state.listViewContainerDisplay, height:listViewContainerHeight, opacity:this.state.loading ? '.2' : '1'}} tabIndex='1'>
+                                            <div id={this.state.listViewOrientation} tabIndex='2'>
+                                                <div className='tableview' style={{display: 'flex'}}>
+                                                    <div id='fluid2' className="container-fluid2" style={{width:'100%', maxHeight: this.state.maxheight, marginLeft: '0px',height: this.state.scrollheight, 'overflow': 'hidden',paddingLeft:'5px', display:'flex', flexFlow: 'column'}}>                 
                                                         <table style={{width:'100%'}}>
-                                                            <ListViewData data={this.state.objectarray} columns={this.state.columns} columnsClassName={this.state.columnsClassName} type={this.state.type} selected={this.selected} selectedId={this.state.id}/>
+                                                            <ListViewHeader data={this.state.objectarray} columns={this.state.columns} columnsDisplay={this.state.columnsDisplay} columnsClassName={this.state.columnsClassName} handleSort={this.handleSort} sort={this.state.sort} filter={this.state.filter} handleFilter={this.handleFilter} startepoch={this.state.startepoch} endepoch={this.state.endepoch} type={this.props.type} errorToggle={this.props.errorToggle}/>
                                                         </table>
+                                                        <div id='list-view-data-div' style={{height:this.state.scrollheight}} className='list-view-overflow'>
+                                                            <div className='list-view-data-div' style={{display:'block'}}>
+                                                                <table style={{width:'100%'}}>
+                                                                    <ListViewData data={this.state.objectarray} columns={this.state.columns} columnsClassName={this.state.columnsClassName} type={this.state.type} selected={this.selected} selectedId={this.state.id}/>
+                                                                </table>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
+                                            <Page pagefunction={this.getNewData} defaultPageSize={50} count={this.state.totalcount} pagination={true} type={this.props.type} defaultpage={this.state.activepage.page}/>
+                                            <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
                                         </div>
-                                    </div>
-                                    <Page pagefunction={this.getNewData} defaultPageSize={50} count={this.state.totalcount} pagination={true} type={this.props.type} defaultpage={this.state.activepage.page}/>
-                                    <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
+                                    {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter} errorToggle={this.props.errorToggle} history={this.props.history}/> : null}
                                 </div>
-                            {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter} errorToggle={this.props.errorToggle} history={this.props.history}/> : null}
+                            </div>
                         </div>
                     </div>
-                </div>
+                :
+                    null
+                }
             </div>
         )
     },
@@ -337,6 +346,7 @@ module.exports = React.createClass({
         } else if (nextProps.id != this.props.id) {
             if (this.props.type == 'alert') {
                 this.ConvertAlertIdToAlertgroupId(nextProps.id);        
+                this.ConvertEntryIdToType(nextProps.id);        
                 this.setState({ type : nextProps.type, alertPreSelectedId: nextProps.id });    
             } else {
                 this.setState({type: nextProps.type, id: nextProps.id});
@@ -359,6 +369,25 @@ module.exports = React.createClass({
                 }.bind(this),
             })
         };
+    },
+    
+    ConvertEntryIdToType: function(id) {
+    //if the type is alert, convert the id to the alertgroup id
+        if (this.props.type == 'entry') {
+            $.ajax({
+                type: 'get',
+                url: 'scot/api/v2/entry/' + id,
+                async: false,
+                success: function(response) {
+                    this.selected( response.target.type, response.target.id, this.props.id );
+                    //this.setState({id: response.target.id, type: response.target.type, showSelectedContainer:true});
+                
+                }.bind(this),
+                error: function(data) {
+                    this.props.errorToggle('failed to convert alert id to alertgroup id', data);
+                }.bind(this),
+            })
+        };   
     },
 
     stopdrag: function(e){
@@ -437,15 +466,17 @@ module.exports = React.createClass({
         deleteCookie('listViewSort'+this.props.type) //clear sort cookie
         deleteCookie('listViewPage'+this.props.type) //clear page cookie
     },
-    selected: function(type,rowid,taskid){
-        if (taskid == null) {
+    selected: function(type,rowid, subid, taskid){
+        if ( taskid == null && subid == null ) {
             //window.history.pushState('Page', 'SCOT', '/#/' + type +'/'+rowid)  
             this.props.history.push( '/' + type + '/' + rowid );
             //this.launchEvent(type, rowid)
+        } else if ( taskid == null && subid != null ) {
+            this.props.history.push( '/' + type + '/' + rowid + '/' + subid );
         } else {
             //If a task, swap the rowid and the taskid
             //window.history.pushState('Page', 'SCOT', '/#/' + type + '/' + taskid + '/' + rowid)
-            this.props.history.push( '/' + type + '/' + taskid + '/' + rowid );
+            this.props.history.push( '/' + type + '/' + taskid + '/' + rowid + '/'  );
             //this.launchEvent(type, taskid, rowid);
         }
         //scrolled = $('.list-view-data-div').scrollTop()
@@ -465,7 +496,10 @@ module.exports = React.createClass({
         
         //if the type is alert, convert the id to the alertgroup id
         this.ConvertAlertIdToAlertgroupId(this.props.id)        
-                    
+        
+        //if the type is entry, convert the id and type to the actual type and id
+        this.ConvertEntryIdToType( this.props.id );       
+        
         //defaultpage = page.page
         if (page == undefined) {
             pageNumber = this.state.activepage.page;
