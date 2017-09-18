@@ -11,7 +11,7 @@ SCOT Online Demo
 ----------------
 Give SCOT a try: [https://scotdemo.com](https://scotdemo.com) with the **username**: `admin`/ **password**: `admin`
 
-> ###### For this demo, the app is reverted every hour on the hour.  We are currently using a self signed cert for the demo, but that will change in the next few days.
+> ###### For this demo, the app is reverted every hour on the hour.  
 
 SCOT Mailing List
 -----------------

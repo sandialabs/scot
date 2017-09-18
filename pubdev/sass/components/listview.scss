@@ -1,3 +1,5 @@
+// Styles for List View Component
+
 .list-header-column-container {
     display:flex;
     flex-flow: column;
@@ -55,7 +57,7 @@
 
 .source-list-header-column {
     flex-grow: 1;
-    min-width:100px; 
+    min-width:100px;
 }
 
 .tag-list-header-column {
