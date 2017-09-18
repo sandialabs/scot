@@ -1,19 +1,20 @@
 #!/usr/bin/env perl
+use lib '../../../Scot-Internal-Modules/lib';
 use lib '../../lib';
+
 
 use Test::More;
 use Test::Deep;
 use Data::Dumper;
-use Scot::Util::EntityExtractor;
-use Scot::Util::Config;
-use Scot::Util::LoggerFactory;
-my $logfactory = Scot::Util::LoggerFactory->new({
-    config_file => 'logger_test.cfg',
-    paths       => [ '../../../Scot-Internal-Modules/etc' ],
+use Scot::Env;
+$ENV{'scot_config_file'}    = '../../../Scot-Internal-Modules/etc/scot.test.cfg.pl';
+my $config_file = $ENV{'scot_config_file'};
+my $env = Scot::Env->new({
+    config_file => $config_file
 });
-my $log = $logfactory->get_logger;
+my $log = $env->log;
+my $extractor   = $env->extractor;
 
-my $extractor   = Scot::Util::EntityExtractor->new({log=>$log});
 my $source      = <<'EOF';
 <html>Lets make sure that the router at <em>192</em>.<em>168</em>.<em>0</em>.<em>1</em> is still working</html>
 EOF
@@ -40,6 +41,49 @@ my @entities = (
 ok(defined($result), "We have a result");
 is(ref($result), "HASH", "and its a hash");
 cmp_bag(\@entities, $result->{entities}, "entities correct");
+is($result->{flair}, $flair, "Flair correct");
+
+$source = "<html>Test with ip ending a sentance 10.10.1.3. Next sentance</html>";
+$flair = <<'EOF';
+<div>Test with ip ending a sentance <span class="entity ipaddr" data-entity-type="ipaddr" data-entity-value="10.10.1.3">10.10.1.3</span>. Next sentance </div>
+EOF
+
+chomp($flair);
+
+$plain  = <<'EOF';
+Test with ip ending a sentance 10.10.1.3. Next sentance
+EOF
+
+@entities = ( 
+    {   'value' => '10.10.1.3', type => 'ipaddr' }
+);
+
+$result = $extractor->process_html($source);
+ok(defined($result), "We have a result");
+is(ref($result), "HASH", "and its a hash");
+cmp_bag(\@entities, $result->{entities}, "entities correct");
+is($result->{flair}, $flair, "Flair correct");
+
+$source = "<html>Test with ip ending a sentance 10.10.1.3.a Next sentance</html>";
+$flair = <<'EOF';
+<div>Test with ip ending a sentance 10.10.1.3.a Next sentance </div>
+EOF
+
+chomp($flair);
+
+$plain  = <<'EOF';
+Test with ip ending a sentance 10.10.1.3.a Next sentance
+EOF
+
+@entities = ( 
+);
+
+$result = $extractor->process_html($source);
+print Dumper($result),"\n";
+ok(defined($result), "We have a result");
+is(ref($result), "HASH", "and its a hash");
+my $gotentities = $result->{entities};
+ok(! defined ($gotentities), "entities correct");
 is($result->{flair}, $flair, "Flair correct");
 
 done_testing();

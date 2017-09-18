@@ -20,12 +20,16 @@ my $collection;
 my $limit       = 0;
 my $all;
 my $id  = 0;
+my $start;
+my $end;
 
 GetOptions(
     'l=i'       => \$limit,
     'col=s'     => \$collection,
     'a'         => \$all,
     'id=s'      => \$id,
+    'rs=s'      => \$start,
+    're=s'      => \$end,
 ) or die <<EOF
 
 Invalid option!
@@ -34,11 +38,10 @@ Invalid option!
         [-l=100]            limit to 100 items
         [-col=collection]   process collection 
         [-a]                all
+        [-rs m-d-yyyy]      date range reprocess start 
+        [-re m-d-yyyy]      date range reprocess end
 EOF
 ;
-
-
-
 
 my $env = Scot::Env->new(
     config_file => $config_file,
@@ -52,6 +55,29 @@ my $loop    = Scot::App::Stretch->new(
 
 if ( $all ) {
     $loop->process_all($collection,$id+0);
+}
+elsif ( defined $start  and defined $end ) {
+    my ($sm,$sd,$sy) = split(/-/,$start);
+    my $startdt = DateTime->new(
+        year    => $sy,
+        month   => $sm,
+        day     => $sd,
+        hour    => 0,
+        minute  => 0,
+        second  => 0,
+    );
+    my ($em,$ed,$ey) = split(/-/,$end);
+    my $enddt = DateTime->new(
+        year    => $ey,
+        month   => $em,
+        day     => $ed,
+        hour    => 0,
+        minute  => 0,
+        second  => 0,
+    );
+    my $endepoch    = $enddt->epoch;
+    my $startepoch  = $startdt->epoch;
+    $loop->process_by_date($collection, $startepoch, $endepoch);
 }
 else {
     $loop->run();

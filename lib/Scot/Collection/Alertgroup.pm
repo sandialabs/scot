@@ -43,7 +43,7 @@ sub split_alertgroups {
     push @$data, $data if ( ref($data) ne "ARRAY" );
         
     my $alert_rows  = scalar(@$data);
-    my $row_limit   = $env->get_config_item("row_limit")//200;
+    my $row_limit   = $env->get_config_item("row_limit")//100;
     my @ag_requests = ();
     my $parts       = int($alert_rows/$row_limit);
     my $remainder   = $alert_rows % $row_limit;
