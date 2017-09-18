@@ -166,6 +166,7 @@ var App = React.createClass({
     errorToggle: function(string, result) {
         if ( result ) {
             if ( result.responseJSON.error === 'Authentication Required') {
+                this.setState({csrf: result.responseJSON.csrf}); //set csrf here since it can change after the login prompt loads
                 this.loginToggle( result.responseJSON.csrf );
                 return;
             }
@@ -194,7 +195,7 @@ var App = React.createClass({
         if ( !this.state.login && loggedin != true ) {
             let origurl = this.props.location.pathname;;
             this.props.history.push( '/' );
-            this.setState({login: true, csrf: csrf, origurl: origurl}); 
+            this.setState({login: true, origurl: origurl}); 
         } else if ( this.state.login && loggedin == true ) {
             this.setState({login: false}); 
             this.props.history.push( this.state.origurl );
@@ -275,7 +276,7 @@ var App = React.createClass({
                                 <LinkContainer to='/guide' activeClassName='active'>
                                     <MenuItem>Guide</MenuItem>
                                 </LinkContainer>
-                                <MenuItem href='/revl.html/#/visualization'>Visualization</MenuItem>
+                                <MenuItem href='/revl.html#/visualization'>Visualization</MenuItem>
                                 <LinkContainer to='/signature' activeClassName='active'>
                                     <MenuItem>Signature</MenuItem>
                                 </LinkContainer>
