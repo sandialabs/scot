@@ -10,7 +10,7 @@ function get_guid(){
     return s4()+s4()+s4()+s4()+s4()+s4()+s4()+s4()
 }
 
-function register_client(){
+function register_client( restart ){
     client = get_guid()
     whoami = getSessionStorage('whoami');
     $.ajax({
@@ -24,7 +24,9 @@ function register_client(){
         }
     }).success(function(){
         console.log('Registered client as '+client);
-        var set = setTimeout( function() { Actions.updateView() }, 1000 );
+        if ( !restart ) {   //only start the update if this is not a restart. Restart will just use the new clientid once it is live.
+            var set = setTimeout( function() { Actions.updateView() }, 1000 );
+        }
     }).error(function() {
         console.log("Error: failed to register client, retry in 1 sec");
         setTimeout(function() {register_client()}, 1000);
@@ -33,8 +35,11 @@ function register_client(){
 
 var Actions = {
 
-   getClient: function(){
+    getClient: function(){
         register_client();
+    },
+    restartClient: function() {
+        register_client( true );  //restart client
     },
     updateView: function(){
         var now = new Date();
@@ -70,6 +75,4 @@ var Actions = {
     }
 }
 
-
-
-module.exports = Actions
+export default Actions;
