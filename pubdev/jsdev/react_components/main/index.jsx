@@ -28,7 +28,7 @@ var Online          = require('../components/dashboard/online.jsx');
 var Report          = require('../components/dashboard/report.jsx');
 var Notification    = require('react-notification-system');
 var Login           = require('../modal/login.jsx').default;
-var isalert = false
+
 {
 	window.React = React;	
 	var $ = window.$;
@@ -330,6 +330,10 @@ var App = React.createClass({
                     :
                     null}
                     { this.props.match.params.value == 'alertgroup' ? 
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    :
+                    null}
+                    { this.props.match.params.value == 'entry' ?
                         <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                     :
                     null}
