@@ -106,9 +106,10 @@ sub aggregate {
     my $tt      = $self->tooltip->{$type};
 
     $log->debug("Aggregating $type");
+    $log->debug("Aggregate Count Parameter:" .Dumper($agcmd));
 
     my $result  = $col->get_aggregate_count($agcmd);
-
+    
     $log->debug("Results: ",{filter=>\&Dumper, value=>$result});
 
     my $gamecol = $mongo->collection('Game');
