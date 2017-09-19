@@ -159,7 +159,7 @@ sub api_subthing {
     if ( $subthing eq "entity" ) {
         return $mongo->collection('Link')
                      ->get_linked_objects_cursor(
-                        { id => $id, "incident" },
+                        { id => $id, type => "incident" },
                         "entity"
                     );
     }
