@@ -14,88 +14,69 @@ my $env = Scot::Env->new({ config_file => $ENV{'scot_config_file'}});
 my $es  = $env->es;
 $Search::Elasticsearch::Error::DEBUG = 2;
 
+my $index   = "entry_test";
 my @entries = (
     {
         id      => 1,
         owner   => "sydney",
-        groups  => {
-            read    => [ 'rios', 'bruner' ],
-            modify  => [ 'bruner' ],
-        },
         target  => {
             id      => 1,
             type    => 'event',
         },
         body_plain  => "The quick brown fox jump over the lazy dog",
         updated     => time(),
-        created     => time() - 10,
-        when        => time() - 20,
-        parsed      => 1,
-        summary     => 0,
-        task        => {},
-        is_task     => 0,
         parent      => 0,
     },
     {
         id      => 2,
         owner   => "maddox",
-        groups  => {
-            read    => [ 'rios', 'bruner' ],
-            modify  => [ 'bruner' ],
-        },
         target  => {
             id      => 2,
             type    => 'event',
         },
         body_plain  => "The google.com address is 10.10.10.1",
         updated     => time(),
-        created     => time() - 10,
-        when        => time() - 20,
-        parsed      => 1,
-        summary     => 0,
-        task        => {},
-        is_task     => 0,
         parent      => 0,
     },
     {
         id      => 3,
         owner   => "todd",
-        groups  => {
-            read    => [ 'bruner' ],
-            modify  => [ 'bruner' ],
-        },
         target  => {
             id      => 3,
             type    => 'incident',
         },
         body_plain  => "foobar is a boombaz of kitkilly casterian finish",
         updated     => time(),
-        created     => time() - 10,
-        when        => time() - 20,
-        parsed      => 1,
-        summary     => 0,
-        task        => {},
-        is_task     => 0,
+        parent      => 0,
+    },
+    {
+        id      => 4,
+        owner   => "todd",
+        target  => {
+            id      => 3,
+            type    => 'incident',
+        },
+        body_plain  => "this has 1010101 in it and 10 10 10 1 in it",
+        updated     => time(),
         parent      => 0,
     },
 );
 
-my $index   = "entry_test";
 my $body    = {
-#     settings    => {
-#         analysis    => {
-#             analyzer    => {
-#                 scot_analyzer   => {
-#                     tokenizer   => "my_tokenizer",
-#                 },
-#             },
-#             tokenizer   => {
-#                 my_tokenizer    => {
-#                     type    => "uax_url_email", # what is this?
-#                 }
-#             },
-#         },
-#     },
+     settings    => {
+         analysis    => {
+             analyzer    => {
+                 scot_analyzer   => {
+                     tokenizer   => "my_tokenizer",
+                 },
+             },
+             tokenizer   => {
+                 my_tokenizer    => {
+                     type    => "uax_url_email", # what is this?
+                 }
+             },
+         },
+     },
     mappings    => {
         entry   => {
             _all    => {
@@ -108,11 +89,11 @@ my $body    = {
                     properties  => {
                         read    => { 
                             type    => "string",
-#                            index   => "not_analyzed",
+                            index   => "not_analyzed",
                         },
                         modify    => { 
                             type    => "string",
-#                            index   => "not_analyzed",
+                            index   => "not_analyzed",
                         },
                     }
                 },
@@ -121,11 +102,11 @@ my $body    = {
                         id      => { type   => "integer" },
                         type    => { 
                             type    => "string",
-#                            index   => "not_analyzed",
+                            index   => "not_analyzed",
                         },
                     },
                 },
-                plain  => {
+                body_plain  => {
                     type    => "string",
                     # index   => "not_analyzed",
                     index   => "analyzed",
@@ -159,11 +140,11 @@ my $body    = {
                         },
                         who    => { 
                             type    => "string",
-#                            index   => "not_analyzed",
+                           index   => "not_analyzed",
                         },
                         status  => {
                             type    => "string",
-#                            index   => "not_analyzed",
+                           index   => "not_analyzed",
                         },
                     }
                 },
@@ -176,7 +157,7 @@ my $body    = {
 
 try {
     say "    dropping existing index $index";
-    my $results = $es->delete_index($index, 1);
+    my $results = $es->delete_index($index);
     say Dumper($results);
 }
 catch {
@@ -194,37 +175,28 @@ foreach my $entry (@entries) {
     say Dumper($results);
 }
 
-say "Performing empty search";
+say "Performing search for owner sydney";
 my $query   = {
-    explain => 1,
+#    explain => 1,
     query   => {
         match   => { 
             owner => 'sydney'
         },
     }
 };
-# my $results = $es->search($index, { query => $query });
+sleep 2;
 my $results = $es->search($index, "entry", $query );
 say Dumper($results);
 
-say "Direct e client with index";
-my $e = $es->es;
-my $results = $e->search(index => $index, type=>"entry",  body => $query );
+say "Performing search for 10.10.10.1";
+
+my $query   = { 
+    query   => {
+        match   => {
+            _all    => '10.10.10.1',
+        }
+    }
+};
+my $results = $es->search($index, "entry", $query );
 say Dumper($results);
 
-say "Direct e client with no index";
-my $e = $es->es;
-my $results = $e->search(body => $query );
-say Dumper($results);
-
-say "Get Source of doc 1";
-my $results = $e->get_source(index => "entry_test", type=>"entry", id=>1);
-
-say Dumper($results);
-
-say "HEalth";
-my $results = $e->cluster->health;
-say Dumper($results);
-
-my $results = $e->search();
-say Dumper($results);
