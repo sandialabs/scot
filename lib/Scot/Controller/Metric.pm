@@ -430,7 +430,7 @@ sub alert_power {
     my $request = $self->get_request_params;
 
     my $report  = $request->{report}; # all, top10, bottom10
-    my $sums    = $self->alert_power_sums($request->{target});
+    my $sums    = $self->alert_power_sums($request);
 
     my @results = ();
     foreach my $at (keys %$sums) {
@@ -460,7 +460,8 @@ sub alert_power {
 
 sub alert_power_sums {
     my $self    = shift;
-    my $target  = shift;
+    my $request = shift;
+    my $target  = $request->{target};
     my $env     = $self->env;
     my $log     = $env->log;
     my $mongo   = $env->mongo;
@@ -492,6 +493,11 @@ sub alert_power_sums {
     $log->debug("running agg command: ",{filter=>\&Dumper, value=>\@agg});
     my $collection  = $mongo->collection('Atmetric');
     my $aggcursor   = $collection->get_aggregate_cursor(\@agg);
+    my $stype       = $request->{sort};
+    my $sort        = $request->{dir} eq "asc" ? 1 : -1;
+    $aggcursor->sort({$stype => $sort});
+    my $limit       = $request->{count} // 10;
+    $aggcursor->limit($limit);
     my %r = ();
     while ( my $href = $aggcursor->next ) {
         my $score   = $self->calculate_score($href);
