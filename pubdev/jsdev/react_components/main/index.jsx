@@ -44,7 +44,7 @@ var App = React.createClass({
 
     componentDidMount: function() {
         this.GetHandler();
-        this.WhoAmiIQuery();    
+        this.WhoAmIQuery();    
         
         Store.storeKey('wall');
         Store.addChangeListener(this.wall);
@@ -76,7 +76,7 @@ var App = React.createClass({
         }
         
         if ( !this.state.whoami ) {
-            this.WhoAmiIQuery();
+            this.WhoAmIQuery();
         }
 
         this.setState({viewMode:viewModeSetting, notificationSetting:notificationSetting, listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting})
@@ -217,7 +217,7 @@ var App = React.createClass({
         })
     },
 
-    WhoAmiIQuery: function() {
+    WhoAmIQuery: function() {
 
         $.ajax({
             type:'get',
@@ -299,7 +299,7 @@ var App = React.createClass({
                     </Navbar.Collapse>
                 </Navbar>
                 <div className='mainNavPadding'>
-                    <Login csrf={this.state.csrf} modalActive={this.state.login} loginToggle={this.loginToggle} errorToggle={this.errorToggle} />
+                    <Login csrf={this.state.csrf} modalActive={this.state.login} loginToggle={this.loginToggle} WhoAmIQuery={this.WhoAmIQuery} GetHandler={this.GetHandler} errorToggle={this.errorToggle} />
                     <Notification ref='notificationSystem' />
                     {!this.props.match.params.value || this.props.match.params.value == 'home' ? 
                     <div className="homePageDisplay">
