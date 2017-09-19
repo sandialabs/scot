@@ -477,6 +477,9 @@ sub alert_power_sums {
 
     my @range   = $env->date_util->get_time_range({range=>"lastyear"}, $tdt);
     my $match   = $self->generate_range_match(\@range, undef);
+    my $stype   = $request->{sort};
+    my $sort    = $request->{dir} eq "asc" ? 1 : -1;
+    my $limit   = $request->{count} // 10;
     my @agg     = (
         {
             '$match'    => $match,
@@ -488,16 +491,19 @@ sub alert_power_sums {
                 promoted    => { '$sum' => '$promoted' },
                 incident    => { '$sum' => '$incident' },
             },
-        }
+        },
+        {
+            '$sort' => {
+                $stype  => $sort
+            },
+        },
+        {
+            '$limit'    => $limit
+        },
     );
     $log->debug("running agg command: ",{filter=>\&Dumper, value=>\@agg});
     my $collection  = $mongo->collection('Atmetric');
     my $aggcursor   = $collection->get_aggregate_cursor(\@agg);
-    my $stype       = $request->{sort};
-    my $sort        = $request->{dir} eq "asc" ? 1 : -1;
-    $aggcursor->sort({$stype => $sort});
-    my $limit       = $request->{count} // 10;
-    $aggcursor->limit($limit);
     my %r = ();
     while ( my $href = $aggcursor->next ) {
         my $score   = $self->calculate_score($href);
