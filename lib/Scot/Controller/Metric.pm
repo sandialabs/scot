@@ -475,11 +475,12 @@ sub alert_power_sums {
     }
 
 
-    my @range   = $env->date_util->get_time_range({range=>"lastyear"}, $tdt);
+    my @range   = $env->date_util->get_time_range({range=>"thisyear"}, $tdt);
     my $match   = $self->generate_range_match(\@range, undef);
     my $stype   = $request->{sort};
     my $sort    = $request->{dir} eq "asc" ? 1 : -1;
     my $limit   = $request->{count} // 10;
+    $limit += 0;
     my @agg     = (
         {
             '$match'    => $match,
