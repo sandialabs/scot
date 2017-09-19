@@ -75,7 +75,9 @@ class Login extends Component {
             data: data,
             success: function(data) {
                 console.log('success logging in');
-                Actions.restartClient();
+                Actions.restartClient();                //restart the amq client after successful login
+                this.props.WhoAmIQuery();              //get new whoami after successful login
+                this.props.GetHandler();                //get new handler after succesful login
                 this.props.loginToggle( null, true );
             }.bind(this),
             error: function(data) {
@@ -96,7 +98,9 @@ class Login extends Component {
             data: data,
             success: function() {
                 console.log('success logging in');
-                Actions.restartClient();
+                Actions.restartClient();                //restart the amq client after successful login
+                this.props.WhoAmIQuery();              //get new whoami after successful login
+                this.props.GetHandler();                //get new handler after succesful login
                 this.props.loginToggle( null, true );
             }.bind(this),
             error: function(data) {
