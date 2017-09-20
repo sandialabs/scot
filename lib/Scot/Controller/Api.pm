@@ -855,6 +855,11 @@ sub promote {
         who     => $user,
     });
 
+    # add stat here
+    $self->env->mongo->collection('Stat')->put_stat(
+        $object->get_collection_name." promoted", 1
+    );
+
     # render and return
     $self->do_render({
         id      => $object->id,
