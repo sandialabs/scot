@@ -808,6 +808,92 @@ var EntityReferences = React.createClass({
                 this.props.errorToggle('failed to get entity references for intel') 
             }.bind(this)
         })
+        
+        this.signatureRequest = $.ajax({
+            type: 'get',
+            url: 'scot/api/v2/entity/' + this.props.entityid + '/signature',
+            data: {sort:JSON.stringify({'id':-1})},
+            traditional: true,
+            success: function(result) {
+                var result = result.records
+                var arr = [];
+                var arrPromoted = [];
+                var arrClosed = [];
+                var arrOpen = [];
+                var recordNumber = this.state.maxRecords;
+                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+                for(var i=0; i < recordNumber; i++) {
+                    if (result[i] != null) {
+                        if (result[i].status == 'promoted'){
+                            arrPromoted.push(<ReferencesBody type={'signature'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else if (result[i].status == 'closed') {
+                            arrClosed.push(<ReferencesBody type={'signature'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else {
+                            arrOpen.push(<ReferencesBody type={'signature'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        }
+                    }
+                }
+                arr.push(arrPromoted);
+                arr.push(arrClosed);
+                arr.push(arrOpen);
+                if (this.isMounted()) {
+                    if (result.length >= 100) {
+                        this.props.showFullEntityButton();
+                    }
+                    this.props.updateAppearances(result.length);
+                    this.setState({entityDataIntel:arr, loadingIntel:false})
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                        this.setState({loading:false});
+                    }
+                }
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get entity references for signature') 
+            }.bind(this)
+        })
+        
+        this.entityRequest = $.ajax({
+            type: 'get',
+            url: 'scot/api/v2/entity/' + this.props.entityid + '/entity',
+            data: {sort:JSON.stringify({'id':-1})},
+            traditional: true,
+            success: function(result) {
+                var result = result.records
+                var arr = [];
+                var arrPromoted = [];
+                var arrClosed = [];
+                var arrOpen = [];
+                var recordNumber = this.state.maxRecords;
+                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+                for(var i=0; i < recordNumber; i++) {
+                    if (result[i] != null) {
+                        if (result[i].status == 'promoted'){
+                            arrPromoted.push(<ReferencesBody type={'entity'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else if (result[i].status == 'closed') {
+                            arrClosed.push(<ReferencesBody type={'entity'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else {
+                            arrOpen.push(<ReferencesBody type={'entity'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        }
+                    }
+                }
+                arr.push(arrPromoted);
+                arr.push(arrClosed);
+                arr.push(arrOpen);
+                if (this.isMounted()) {
+                    if (result.length >= 100) {
+                        this.props.showFullEntityButton();
+                    }
+                    this.props.updateAppearances(result.length);
+                    this.setState({entityDataIntel:arr, loadingIntel:false})
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                        this.setState({loading:false});
+                    }
+                }
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get entity references for entity') 
+            }.bind(this)
+        })
         $('#sortableentitytable'+this.props.entityid).tablesorter();
     },
     componentDidUpdate: function() {
