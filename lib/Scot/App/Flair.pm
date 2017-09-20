@@ -411,6 +411,10 @@ sub flair_record {
                 next VALUE;
             }
 
+            if ( $column =~ /urls\{\}/ ) {
+                $log->debug("URLS column detected!");
+            }
+
             if ( $column =~ /^columns$/i ) {
                 # no flairing on the "columns" attribute
                 $flair{$column} = $value;
@@ -423,7 +427,7 @@ sub flair_record {
 
             $log->debug("todds dumb code extracted: ",{filter=>\&Dumper, value=>$extraction});
 
-            $flair{$column} = $extraction->{flair};
+            $flair{$column} = $flair{$column} . "<br>". $extraction->{flair};
             $log->debug("Flair for $column is now ".$flair{$column});
 
             foreach my $entity_href (@{$extraction->{entities}}) {

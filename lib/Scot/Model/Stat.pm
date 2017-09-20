@@ -20,6 +20,7 @@ extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
     Scot::Role::Hashable
+    Scot::Role::Value
 );
 
 =head1 Attributes
@@ -116,12 +117,16 @@ has metric  => (
     default     => 'unknown',
 );
 
+=item 
+
 has value   => (
     is          => 'ro',
     isa         => 'Num',
     required    => 1,
     default     => 0,
 );
+
+=cut
 
 __PACKAGE__->meta->make_immutable;
 
