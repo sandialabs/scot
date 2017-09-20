@@ -132,90 +132,6 @@ sub get_promotion_obj {
     return $incident;
 }
 
-override get_subthing => sub {
-    my $self        = shift;
-    my $thing       = shift;
-    my $id          = shift;
-    my $subthing    = shift;
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $log         = $env->log;
-
-    $id += 0;
-
-    if ( $subthing eq "entry" ) {
-        my $col = $mongo->collection('Entry');
-        my $cur = $col->get_entries_by_target({
-            id      => $id,
-            type    => 'incident'
-        });
-        return $cur;
-    }
-    elsif ( $subthing eq "event" ) {
-        my $inc = $self->find_iid($id);
-        my $col = $mongo->collection('Event');
-        my $cur = $col->find({ id => { '$in' => $inc->promoted_from } });
-        return $cur;
-    }
-    elsif ( $subthing eq "entity" ) {
-        my $timer  = $env->get_timer("fetching links");
-        my $col    = $mongo->collection('Link');
-        my $ft  = $env->get_timer('find actual timer');
-        my $cur    = $col->get_links_by_target({ 
-            id => $id, type => 'incident' 
-        });
-        &$ft;
-        my @lnk = map { $_->{entity_id} } $cur->all;
-        &$timer;
-
-        $timer  = $env->get_timer("generating entity cursor");
-        $col    = $mongo->collection('Entity');
-        $cur    = $col->find({id => {'$in' => \@lnk }});
-        &$timer;
-        return $cur;
-    }
-    elsif ( $subthing eq "tag" ) {
-        my $col = $mongo->collection('Appearance');
-        my $cur = $col->find({
-            type            => 'tag',
-            'target.type'   => 'incident',
-            'target.id'     => $id,
-        });
-        my @ids = map { $_->{apid} } $cur->all;
-        $col    = $mongo->collection('Tag');
-        $cur    = $col->find({ id => {'$in' => \@ids }});
-        return $cur;
-    }
-    elsif ( $subthing eq "source" ) {
-        my $col = $mongo->collection('Appearance');
-        my $cur = $col->find({
-            type            => 'source',
-            'target.type'   => 'incident',
-            'target.id'     => $id,
-        });
-        my @ids = map { $_->{apid} } $cur->all;
-        $col    = $mongo->collection('Source');
-        $cur    = $col->find({ id => {'$in' => \@ids }});
-        return $cur;
-    }
-    elsif ( $subthing eq "history" ) {
-        my $col = $mongo->collection('History');
-        my $cur = $col->find({'target.id'   => $id,
-                              'target.type' => 'incident',});
-        return $cur;
-    }
-    elsif ( $subthing eq "file" ) {
-        my $col = $mongo->collection('File');
-        my $cur = $col->find({
-            'entry_target.type' => 'incident',
-            'entry_target.id'   => $id,
-        });
-        return $cur;
-    }
-    else {
-        $log->error("unsupported subthing $subthing!");
-    }
-};
 
 sub api_subthing {
     my $self    = shift;
@@ -241,14 +157,18 @@ sub api_subthing {
     }
 
     if ( $subthing eq "entity" ) {
-        my @links   = map { $_->{entity_id} }
-            $mongo->collection('Link')->get_links_by_target({
-                id      => $id,
-                type    => 'event',
-            })->all;
-        return $mongo->collection('Entity')->find({
-            id => { '$in' => \@links }
-        });
+        return $mongo->collection('Link')
+                     ->get_linked_objects_cursor(
+                        { id => $id, type => "incident" },
+                        "entity"
+                    );
+    }
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
     }
 
     if ( $subthing eq "tag" ) {

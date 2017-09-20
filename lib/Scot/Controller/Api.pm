@@ -244,7 +244,10 @@ sub post_list_process {
     my $self        = shift;
     my $cursor      = shift;
     my $req_href    = shift;
+    my $log         = $self->env->log;
     my @records     = $cursor->all;
+
+    $log->debug("post_list_processing");
 
     my $collection  = $self->get_collection_req($req_href);
 
@@ -778,12 +781,12 @@ sub promote {
         $mongo->collection('Alertgroup')->refresh_data($object->alertgroup);
         my $entry = $mongo->collection('Entry')
                           ->create_from_promoted_alert($object, $promotion_obj);
-        $env->mq->send("scot", {
+        $self->env->mq->send("scot",{
             action  => "created",
             data    => {
-                who => $user,
-                type    => "entry",
-                id      => $entry->id,
+                who => $req->{user},
+                type=> "entry",
+                id  => $entry->id,
             }
         });
     }
@@ -795,6 +798,10 @@ sub promote {
             promotion_id    => $promotion_obj->id,
             status          => "promoted",
         }
+    });
+
+    $mongo->collection('Link')->link_objects($object,$promotion_obj,{
+        context => "promotion"
     });
 
     # update mq and other bookkeeping
@@ -845,7 +852,13 @@ sub promote {
         handler => $self,
         object  => $object,
         changes => $what,
+        who     => $user,
     });
+
+    # add stat here
+    $self->env->mongo->collection('Stat')->put_stat(
+        $object->get_collection_name." promoted", 1
+    );
 
     # render and return
     $self->do_render({
@@ -967,6 +980,7 @@ sub post_update_process {
             what    => "Entry update",
         };
         $env->mq->send("scot", $mq_msg);
+        $self->add_history("updated entry ".$object->id, $object);
     }
 
     if ( ref($object) eq "Scot::Model::Sigbody" ) {
@@ -1241,6 +1255,7 @@ sub post_delete_process {
     my $audit_rec = {
         handler => $self,
         object  => $object,
+        who     => $self->session('user'),
     };
     $self->env->mq->send("scot",{
         action  => "deleted",

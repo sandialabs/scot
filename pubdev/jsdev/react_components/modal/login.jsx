@@ -1,6 +1,7 @@
 import React, { PureComponent, Component } from 'react';
 import PropTypes from 'prop-types';
 import { Modal } from 'react-bootstrap';
+import Actions from '../activemq/actions';
 
 class Login extends Component {
     constructor( props ) { 
@@ -74,6 +75,9 @@ class Login extends Component {
             data: data,
             success: function(data) {
                 console.log('success logging in');
+                Actions.restartClient();                //restart the amq client after successful login
+                this.props.WhoAmIQuery();              //get new whoami after successful login
+                this.props.GetHandler();                //get new handler after succesful login
                 this.props.loginToggle( null, true );
             }.bind(this),
             error: function(data) {
@@ -94,6 +98,9 @@ class Login extends Component {
             data: data,
             success: function() {
                 console.log('success logging in');
+                Actions.restartClient();                //restart the amq client after successful login
+                this.props.WhoAmIQuery();              //get new whoami after successful login
+                this.props.GetHandler();                //get new handler after succesful login
                 this.props.loginToggle( null, true );
             }.bind(this),
             error: function(data) {
