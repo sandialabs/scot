@@ -385,7 +385,10 @@ sub flair_record {
             if ( $column =~ /^message[_-]id$/i ) {
                 # the data is telling us that this is a email message_id, so flair
                 my ($eref, $flair) = $self->process_cell($value, "message_id");
-                push @entity, $eref;
+                if ( ! defined $seen{$eref->{value}} ) {
+                    push @entity, $eref;
+                    $seen{$eref->{value}}++;
+                }
                 $flair{$column} = $flair{$column} . "<br>" . $flair;
                 $log->debug("Flair for $column is now ".$flair{$column});
                 next VALUE;
@@ -393,7 +396,10 @@ sub flair_record {
             if ( $column =~ /^(lb){0,1}scanid$/i ) {
                 # another special column
                 my ($eref, $flair) = $self->process_cell($value, "lb_scan_id");
-                push @entity, $eref;
+                if ( ! defined $seen{$eref->{value}} ) {
+                    push @entity, $eref;
+                    $seen{$eref->{value}}++;
+                }
                 $flair{$column} = $flair{$column} . "<br>" . $flair;
                 $log->debug("Flair for $column is now ".$flair{$column});
                 next VALUE;
@@ -405,7 +411,10 @@ sub flair_record {
                 $log->debug("value = ",{filter=>\&Dumper, value=>$value});
 
                 my ($eref, $flair) = $self->process_cell($value, "filename");
-                push @entity, $eref;
+                if ( ! defined $seen{$eref->{value}} ) {
+                    push @entity, $eref;
+                    $seen{$eref->{value}}++;
+                }
                 $flair{$column} = $flair{$column} . "<br>" . $flair;
                 $log->debug("Flair for $column is now ".$flair{$column});
                 next VALUE;
