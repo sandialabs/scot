@@ -28,7 +28,7 @@ var Online          = require('../components/dashboard/online.jsx');
 var Report          = require('../components/dashboard/report.jsx');
 var Notification    = require('react-notification-system');
 var Login           = require('../modal/login.jsx').default;
-var isalert = false
+
 {
 	window.React = React;	
 	var $ = window.$;
@@ -44,7 +44,7 @@ var App = React.createClass({
 
     componentDidMount: function() {
         this.GetHandler();
-        this.WhoAmiIQuery();    
+        this.WhoAmIQuery();    
         
         Store.storeKey('wall');
         Store.addChangeListener(this.wall);
@@ -76,7 +76,7 @@ var App = React.createClass({
         }
         
         if ( !this.state.whoami ) {
-            this.WhoAmiIQuery();
+            this.WhoAmIQuery();
         }
 
         this.setState({viewMode:viewModeSetting, notificationSetting:notificationSetting, listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting})
@@ -217,7 +217,7 @@ var App = React.createClass({
         })
     },
 
-    WhoAmiIQuery: function() {
+    WhoAmIQuery: function() {
 
         $.ajax({
             type:'get',
@@ -299,7 +299,7 @@ var App = React.createClass({
                     </Navbar.Collapse>
                 </Navbar>
                 <div className='mainNavPadding'>
-                    <Login csrf={this.state.csrf} modalActive={this.state.login} loginToggle={this.loginToggle} errorToggle={this.errorToggle} />
+                    <Login csrf={this.state.csrf} modalActive={this.state.login} loginToggle={this.loginToggle} WhoAmIQuery={this.WhoAmIQuery} GetHandler={this.GetHandler} errorToggle={this.errorToggle} />
                     <Notification ref='notificationSystem' />
                     {!this.props.match.params.value || this.props.match.params.value == 'home' ? 
                     <div className="homePageDisplay">
@@ -330,6 +330,10 @@ var App = React.createClass({
                     :
                     null}
                     { this.props.match.params.value == 'alertgroup' ? 
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    :
+                    null}
+                    { this.props.match.params.value == 'entry' ?
                         <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                     :
                     null}

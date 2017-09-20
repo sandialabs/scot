@@ -53,6 +53,13 @@ sub api_subthing {
             type    => 'checklist'
         });
     }
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
+    }
 
     die "Unsupported subthing $subthing";
 }

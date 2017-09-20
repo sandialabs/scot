@@ -19,6 +19,7 @@ Link collection
 extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
+    Scot::Role::Value
 );
 
 =head1 Attributes
@@ -27,15 +28,18 @@ with    qw(
 
 =item B<value>
 
+Moved to ROLE
+
 the name of the source
 
-=cut
 
 has value  => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
 );
+
+=cut
 
 =item B<notes>
 

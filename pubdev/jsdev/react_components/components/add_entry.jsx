@@ -305,7 +305,8 @@ var AddEntryModal = React.createClass({
                 parent: Number(this.props.parent), 
                 body: $('#tiny_' + this.state.key + '_ifr').contents().find("#tinymce").html(), 
                 target_id: Number(this.props.targetid) , 
-                target_type: this.props.type
+                target_type: this.props.type,
+                parsed: 0,
             }
             $.ajax({
                 type: 'put',
