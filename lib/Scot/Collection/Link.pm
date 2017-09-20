@@ -292,7 +292,7 @@ sub get_display_count {
     my $match   = {
         '$and'  => [
             {vertices => { '$elemMatch' => $vertex } },
-            {'vertices.type' => { '$nin' => [ 'alert', 'entry' ] } },
+            {'vertices.type' => { '$nin' => [ 'alertgroup', 'entry' ] } },
         ],
     };
     my $cursor  = $self->find($match);
