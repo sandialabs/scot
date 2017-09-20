@@ -3,8 +3,8 @@
 use strict;
 use warnings;
 use v5.18;
-use lib '../../lib';
-use lib '../lib';
+use lib '../../../lib';
+use lib '/opt/scot/lib';
 use Scot::Env;
 use Scot::App::Metric;
 use Test::More;

@@ -95,9 +95,11 @@ my $curl    = "curl -s";
 
 my $repo_cmd        = $env->es_server . "/_snapshot/scot_backup";
 my $repo_status     = `curl -XGET $repo_cmd`;
-my $repo_loc        = "location\": ".$env->es_backup_location;
+my $repo_loc        = "location\":\"".$env->es_backup_location;
 
 if ( $repo_status !~ /$repo_loc/ ) {
+    print "repo status output: $repo_status";
+    print "expected location: $repo_loc";
     print "\nElasticSearch Repo back up is not storing snapshots in ".
           "expected location\nFixing...\n";
     my $stat    = `$curl -XDELETE $repo_cmd`;
@@ -130,6 +132,8 @@ my $escmd   = $env->es_server."/_snapshot/scot_backup/snapshot_1";
 
 print "Deleting existing snapshot...\n";
 my $del_stat = `$curl -XDELETE $escmd`;
+
+sleep 2;
 
 print "Request new snapshot...\n";
 my $snap_stat   = `$curl -XPUT $escmd`;
