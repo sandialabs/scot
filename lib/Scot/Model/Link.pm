@@ -12,8 +12,10 @@ Scot::Model::Link
 
 The model of a Link Record
 
-Adding {target,id} to an array in Entity.pm is a performance killer
-So Link records will link an Entity to a thing that contains it's entity
+SCOT will allow you to associate just about anything with anything else.
+A link is an "edge" in a graph sense.  Common "verticies" could include
+"alerts", "entities", "events", etc.
+
 
 =cut
 
@@ -21,7 +23,6 @@ extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
     Scot::Role::Hashable
-    Scot::Role::Target
 );
 
 =head1 Attributes
@@ -31,7 +32,6 @@ with    qw(
 =item B<when>
 
 when it linked
-allows us to keep track of timeseries like views of tags/entities etc.
 
 =cut
 
@@ -42,36 +42,66 @@ has when  => (
     default     => sub { time(); },
 );
 
-=item B<entity_id>
+=item B<vertices>
 
-the id of the entity
+Array of Hashref of structure: 
+{ 
+  type      => collection_name, 
+  id        => int_id,
+} 
 
 =cut
 
-has entity_id   => (
+has vertices   => (
     is          => 'ro',
-    isa         => 'Int',
+    isa         => 'ArrayRef',
+    traits      => [ 'Array' ],
     required    => 1,
+    default     => sub {[]},
 );
 
-=item B<value>
+=item B<weight>
 
-a copy of the entity value, makes some queries easier
+A numerical score on the link.  In case you want one.
 
 =cut
 
-has value   => (
+has weight   => (
     is          => 'ro',
-    isa         => 'Str',
+    isa         => 'Num',
     required    => 1,
+    default     => 1,
 );
 
-=item B<target>
+=item B<context>
 
-from role Target.pm
-what the entity is linked to
+brief explanation for why your are linking
 
 =cut
+
+has context => (
+    is      => 'ro',
+    isa     => 'Str',
+    required => 1,
+    default => ' ',
+);
+
+=item B<memo>
+
+array that matches vertices, but contains
+mnemoic information about each vertex
+
+[ 'memo string for v0', 'memo string for v1' ]
+
+=cut
+
+has memo => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    traits      => [ 'Array' ],
+    required    => 1,
+    default     => sub {[]},
+);
 
 
 __PACKAGE__->meta->make_immutable;

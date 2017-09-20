@@ -48,7 +48,7 @@ override 'create' => sub {
         $self->get_group_permissions(\@args);
     }
 
-    $log->trace("creating with : ",{filter=>\&Dumper, value=>\@args});
+    $log->debug("creating with : ",{filter=>\&Dumper, value=>\@args});
 
     my $obj = $self->class->new( @args, _collection => $self );
     $self->_save($obj);
@@ -165,6 +165,8 @@ sub get_next_id {
     return $id;
 }
 
+### NOT USED
+### but kept because doing some cool stuff might want to reuse later
 sub get_subthing {
     my $self        = shift;
     my $thing       = shift;
@@ -233,12 +235,9 @@ sub get_subthing {
 
         $log->trace("Getting Entities matching $thing:$id!");
 
-        my $col     = $mongo->collection('Link');
-        my $match   = {
-            'target.id'     => $id+0,
-            'target.type'   => $thing,
-        };
-        my $subcursor   = $col->find($match);
+        my $col         = $mongo->collection('Link');
+        my $subcursor   = $col->get_linked_objects_cursor(
+            { id    => $id + 0, type => $thing}, "entity" );
         return $subcursor;
     }
 
@@ -247,16 +246,8 @@ sub get_subthing {
         $log->trace("Getting $subthing related to entity $id");
 
         my $col     = $mongo->collection('Link');
-        my $match   = {
-            'target.type' => $subthing,
-            entity_id   => $id + 0,
-        };
-        $log->debug("match is ",{filter=>\&Dumper, value=>$match});
-        my $bcursor   = $col->find($match);
-        my @ids       = map { $_->{target}->{id} } $bcursor->all;
-        my $subcursor = $mongo->collection(ucfirst($subthing))->find({
-            id => { '$in' => \@ids }
-        });
+        my $subcursor   = $col->get_linked_objects_cursor(
+            { id => $id + 0, type => 'entity' }, $subthing);
         return $subcursor;
     }
 
