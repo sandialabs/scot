@@ -40,6 +40,13 @@ override get_subthing => sub {
 
         return $cur;
     }
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
+    }
 
 };
 

@@ -49,17 +49,17 @@ gulp.task( 'sass', function() {
 } );
 
 gulp.task( 'watch-copy', ['watch'], function() {
-    console.log( "REMINDER: Run as 'sudo -E gulp watch-copy'" );
-    return gulp.watch( paths.build +'**/*', function( obj ) {
-            if ( obj.type === 'changed' ) {
-                setTimeout( function() {
+	console.log( "REMINDER: Run as 'sudo -E gulp watch-copy'" );
+	return gulp.watch( paths.build +'**/*', function( obj ) {
+			if ( obj.type === 'changed' ) {
+				setTimeout( function() {
                     gulp.src( obj.path, { base: paths.build } )
-                    .pipe( gulp.dest( paths.scot ) );
-                    console.log( 'Copied', obj.path, 'to', paths.scot, '\x07' );
-                }
-                , 100) 
+					.pipe( gulp.dest( paths.scot ) );
+				    console.log( 'Copied', obj.path, 'to', paths.scot, '\x07' );
+			    }
+                , 1000) 
             }
-    } );
+	} );
 } );
 
 gulp.task( 'build', ['scripts', 'sass', 'buildadmin'] );
