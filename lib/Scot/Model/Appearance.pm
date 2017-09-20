@@ -24,6 +24,7 @@ with    qw(
     Meerkat::Role::Document
     Scot::Role::Hashable
     Scot::Role::Target
+    Scot::Role::Value
 );
 
 =head1 Attributes
@@ -44,15 +45,18 @@ has type    => (
 
 =item B<value>
 
+Moved to Role
+
 the string of the tag, source or entity being tracked
 
-=cut
 
 has value   => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
 );
+
+=cut
 
 =item B<apid>
 

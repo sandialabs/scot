@@ -11,12 +11,12 @@ var Draggable               = require('react-draggable');
 var DetailDataStatus        = require('../components/detail_data_status.jsx');
 var Link                    = require('react-router-dom').Link;
 var Store                   = require('../activemq/store.jsx');
+var Marker                  = require('../components/marker.jsx').default;
 
 var startX;
 var startY;
 var startWidth;
 var startHeight;
-
 
 var EntityDetail = React.createClass({
     getInitialState: function() {
@@ -431,20 +431,20 @@ var EntityValue = React.createClass({
     render: function() {
         if (this.props.data != undefined) {  //Entity Detail Popup showing the entity type
             var entityurl = '/' + 'entity/' + this.props.data.id;
-            var statusClass = '';
-            if (this.props.data.status == 'untracked') {
-                statusClass = 'entity-untracked';
-            } else if (this.props.data.status == 'tracked') {
-                statusClass = 'entity-tracked';
-            }
+            
             return (
                 <div className='flair_header'>
-                    <Link to={entityurl} target="_blank">
-                        Entity {this.props.data.id} 
-                    </Link>
-                    <div style={{display: 'flex'}}>
-                        <DetailDataStatus status={this.props.data.status} id={this.props.data.id} type={'entity'} errorToggle={this.props.errorToggle} />
+                    <div>
+                        <Link to={entityurl} target="_blank">
+                            Entity {this.props.data.id}
+                        </Link>
                         <span>&nbsp;</span>
+                        <DetailDataStatus status={this.props.data.status} id={this.props.data.id} type={'entity'} errorToggle={this.props.errorToggle} /> 
+                        <span>&nbsp;</span>   
+                        <Marker type='entity' id={this.props.data.id} string={this.props.value} />
+                    </div>
+                    <div style={{display: 'flex'}}>
+                        
                         <div style={{display:'flex'}}>
                             {this.props.data.type}: {this.props.value}
                         </div> 
@@ -851,7 +851,7 @@ var EntityReferences = React.createClass({
                 this.props.errorToggle('failed to get entity references for signature') 
             }.bind(this)
         })
-        
+        /*
         this.entityRequest = $.ajax({
             type: 'get',
             url: 'scot/api/v2/entity/' + this.props.entityid + '/entity',
@@ -893,7 +893,7 @@ var EntityReferences = React.createClass({
             error: function(data) {
                 this.props.errorToggle('failed to get entity references for entity') 
             }.bind(this)
-        })
+        })*/
         $('#sortableentitytable'+this.props.entityid).tablesorter();
     },
     componentDidUpdate: function() {
