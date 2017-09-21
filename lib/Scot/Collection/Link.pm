@@ -167,6 +167,13 @@ sub link_objects {
         $self->get_vertex_memo($v1),
     );
 
+    my $match = { vertices => { '$all' => \@vertices } };
+    if ( my $link = $self->find_one($match) ) {
+        $self->env->log->debug("Link exists, returning a pointer");
+        return $link;
+    }
+    $self->env->log->debug("Link does not exist already, creating...");
+
     return $self->create({
         vertices    =>  \@vertices,
         weight      => $weight,
