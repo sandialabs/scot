@@ -662,14 +662,46 @@ sub update {
     };
 }
 
-sub update_permitted {
-    my $self    = shift;
-    my $object  = shift;
-    my $req     = shift;
 
+sub update_permitted {
+    my $self    = shift;  
+    my $object  = shift;    
+    my $req     = shift;
+    my $env     = $self->env;
+
+    ## 
+    ## Permission has the groups that are allowd to modify
+    ## 
     if ( $object->meta->does_role('Scot::Role::Permission') ) {
         my $group_aref  = $self->get_groups;
         return $object->is_modifiable($group_aref);
+    }
+
+    ##
+    ## Admin's can modify all
+    ## but a user can only modify their password and Full name
+    ## 
+    if ( ref($object) eq "Scot::Model::User" ) {
+        if ( $env->is_admin ) {
+            return 1;
+        }
+        if ( $req->{request}->{username} eq $self->session('user') ) {
+            delete $req->{request}->{active};
+            delete $req->{request}->{groups};
+            delete $req->{request}->{username};
+            return 1;
+        }
+        return undef;
+    }
+    ##
+    ## Admin's can modify all
+    ## but a user can not do it 
+    ## 
+    if ( ref($object) eq "Scot::Model::Group" ) {
+        if ( $env->is_admin ) {
+            return 1;
+        }
+        return undef;
     }
     return 1;
 }
