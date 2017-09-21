@@ -138,6 +138,8 @@ sub upsert_link {
         return;
     }
 
+    $self->env->log->debug("Link does not exist, creating...");
+
     my $linkobj    = $linkcol->link_objects(
         $entity, { 
             type    => $target->{type},
