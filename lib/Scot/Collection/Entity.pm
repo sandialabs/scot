@@ -82,11 +82,20 @@ sub update_entities {
     
     my @created_ids = ();
     my @updated_ids = ();
+    my %seen        = ();
 
+    ENTITY:
     foreach my $entity (@$earef) {
 
         my $value   = $entity->{value};
         my $etype   = $entity->{type};
+
+        if ( defined $seen{$etype.$value} ) {
+            next ENTITY;
+        }
+
+        $seen{$etype.$value}++;
+
         my $entity  = $self->find_one({
             value   => $value,
             type    => $etype
@@ -95,7 +104,7 @@ sub update_entities {
         if ($entity) {
             my $entity_status   = $entity->status;
             if ( $entity_status eq "untracked" ) {
-                next;
+                next ENTITY;
             }
             $log->debug("Found matching $type entity $value");
             push @updated_ids, $entity->id;
