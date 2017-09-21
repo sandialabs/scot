@@ -89,7 +89,7 @@ sub get_vertex {
 
     if ( ref($thing) =~ /Scot::Model/ ) {
         return { 
-            id      => $thing->id,
+            id      => $thing->id + 0,
             type    => $thing->get_collection_name,
         };
     }
@@ -106,7 +106,7 @@ sub get_vertex_object {
     if ( ref($vertex) ne "HASH" ) {
         die "Must provide get_vertex_object with a vertex Hash Ref";
     }
-    my $id      = $vertex->{id};
+    my $id      = $vertex->{id} + 0;
     my $type    = $vertex->{type};
     my $col     = $self->env->mongo->collection(ucfirst($type));
     my $obj     = $col->find_iid($id);
