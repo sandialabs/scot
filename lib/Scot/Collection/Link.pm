@@ -167,8 +167,16 @@ sub link_objects {
         $self->get_vertex_memo($v1),
     );
 
-    my $match = { vertices => { '$all' => \@vertices } };
-    if ( my $link = $self->find_one($match) ) {
+    my $match = { vertices => { '$all' => [
+        { '$elemMatch'  => $vertices[0] },
+        { '$elemMatch'  => $vertices[1] },
+    ]}};
+    my $link = $self->find_one($match); 
+
+    $self->env->log->debug("HEY DUDE: Link match is ",{filter=>\&Dumper, value=>$match});
+    $self->env->log->debug("HEY DUDE: Link match is ",{filter=>\&Dumper, value=>$link});
+
+    if (defined $link ) {
         $self->env->log->debug("Link exists, returning a pointer");
         return $link;
     }
@@ -378,7 +386,11 @@ sub link_exists {
         $self->get_vertex($obj2)
     );
 
-    my $linkobj = $self->find_one({vertices => { '$all' => \@vertices }});
+    my $match = { vertices => { '$all' => [
+        { '$elemMatch'  => $vertices[0] },
+        { '$elemMatch'  => $vertices[1] },
+    ]}};
+    my $linkobj = $self->find_one($match);
 
     return defined $linkobj;
 }
