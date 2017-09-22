@@ -122,14 +122,23 @@ sub get_promotion_obj {
     my $promotion_id    = $req->{request}->{json}->{promote}
                           // $req->{request}->{params}->{promote};
     my $incident;
+    if ($promotion_id eq "new" or ! defined $promotion_id ) {
+        $incident = $self->create_promotion($object, $req);
+        return $incident;
+    }
 
     if ( $promotion_id =~ /\d+/ ) {
         $incident = $self->find_iid($promotion_id);
+        if ( defined $incident and ref($incident) eq "Scot::Model::Incident") {
+            return $incident;
+        }
+        else {
+            die "Incident $promotion_id does not exist, can not promote to non-existing incident";
+        }
     }
-    if ( ! defined $incident ) {
-        $incident = $self->create_promotion($object, $req);
+    else {
+        die "Invalid promotion id";
     }
-    return $incident;
 }
 
 

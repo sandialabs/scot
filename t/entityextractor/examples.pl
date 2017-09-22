@@ -394,5 +394,24 @@ EOF
                 },
             ],
         },
-    }, # 600 series
+    }, # 700 series
+    '800'   => {
+        'domains'   => {
+            source  => <<'EOF',
+<html>paziapm.co.id</html>
+EOF
+            plain   => <<'EOF',
+paziapm.co.id
+EOF
+            flair   => <<'EOF',
+<div><span class="entity domain" data-entity-type="domain" data-entity-value="paziapm.co.id">paziapm.co.id</span> </div>
+EOF
+            entities    => [
+                {
+                    value   => 'paziapm.co.id',
+                    type    => 'domain',
+                },
+            ],
+        },
+    },
 );
