@@ -367,6 +367,8 @@ sub api_subthing {
 
 }
 
+## issue 401 requests that if the analyst tries to promote to a non-existant
+## event, that it should error instead of create the non-existant object
 sub get_promotion_obj {
     my $self    = shift;
     my $object  = shift;
@@ -381,16 +383,24 @@ sub get_promotion_obj {
     $log->debug("The object being promoted is a ".ref($object));
 
     my $event;
-    if ( defined $promotion_id ) {
-        if ( $promotion_id =~ /\d+/ ) { 
-            $event = $self->find_iid($promotion_id);
-        }
+    if ( $promotion_id eq "new" or ! defined $promotion_id ) {
+        # no promotion id provided, so let's create the event
+        $event   = $self->create_promotion($object, $req);
+        return $event;
     }
 
-    if ( ! defined $event ) {
-        $event   = $self->create_promotion($object, $req);
+    if ( $promotion_id =~ /\d+/ ) { 
+        $event = $self->find_iid($promotion_id);
+        if ( defined $event and ref($event) eq "Scot::Model::Event" ) {
+            return $event;
+        }
+        else {
+            die "Event $promotion_id does not exists.  Can not promote to non-existant event!";
+        }
     }
-    return $event;
+    else {
+        die "Invalid promotion id";
+    }
 }
 
 sub autocomplete {
