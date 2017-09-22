@@ -1,0 +1,110 @@
+version: '3'
+services:
+  apache:
+    build: ./docker/apache
+    volumes: 
+     - "/etc/apache2/ssl:/etc/apache2/ssl/"
+     - "/etc/timezone:/etc/timezone:ro"
+     - "/etc/localtime:/etc/localtime:ro"
+    ports:
+     - "443:443"
+    networks:
+     scot-docker-net:
+      ipv4_address: 172.18.0.2
+      aliases:
+       - apache-docker
+  activemq:
+    volumes:
+     - "/var/log/activemq:/var/log/activemq/log/"
+     - "/opt/activemq/webapps/scot:/opt/activemq/webapps/scot/"
+    build: ./docker/activemq
+    ports:
+     - "8161:8161"
+     - "61613:61613"
+    networks:
+     scot-docker-net:
+      ipv4_address: 172.18.0.3
+      aliases:
+       - activemq-docker
+  
+  mongodb:
+    build: ./docker/mongodb
+    volumes:
+     - "/home/bemonta/mongod.log:/var/log/mongodb/mongod.log"
+     - "/etc/timezone:/etc/timezone:ro"
+     - "/etc/localtime:/etc/localtime:ro"
+    networks:
+     scot-docker-net:
+      ipv4_address: 172.18.0.4
+      aliases:
+       - mongodb-docker
+    ports:
+     - "27017:27017"
+  
+  elastic:
+    healthcheck:
+      test:  ["CMD", "curl", "--noproxy", "localhost",  "vvv","-u", "elastic:changeme", "http://localhost:9200/"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+    build: ./docker/elastic
+    volumes:
+     - "/etc/timezone:/etc/timezone:ro"
+     - "/etc/localtime:/etc/localtime:ro"
+    networks:
+     scot-docker-net:
+      ipv4_address: 172.18.0.5
+      aliases:
+       - elastic-docker
+    ports:
+     - "9200:9200"
+
+  mapping:
+    build: ./docker/mapping
+    depends_on:
+     - elastic
+    networks:
+     scot-docker-net:
+      ipv4_address: 172.18.0.6
+      aliases:
+       - mapping-docker
+  scot:
+    build: .
+    volumes:
+     - "/var/log/scot:/var/log/scot/"
+     - "/etc/timezone:/etc/timezone:ro"
+     - "/etc/localtime:/etc/localtime:ro"
+    depends_on:
+     - mongodb
+     - activemq
+    networks:
+     scot-docker-net:
+      ipv4_address: 172.18.0.7
+      aliases:
+       - scot-docker
+    ports:
+     - "3000:3000"
+
+  flair:
+   build: ./docker/flair
+   volumes:
+    - "/var/log/scot:/var/log/scot/"
+    - "/opt/scot/lib/Scot:/opt/scot/lib/Scot/"
+    - "/opt/scot/lib:/opt/scot/lib/" 
+    - "/opt/scot/install/src/scot:/opt/scot/etc/"
+   depends_on:
+    - mongodb
+    - activemq
+    - scot
+   networks:
+     scot-docker-net:
+      ipv4_address: 172.18.0.8
+      aliases:
+       - scot-docker 
+networks:
+  scot-docker-net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.0.0/16
