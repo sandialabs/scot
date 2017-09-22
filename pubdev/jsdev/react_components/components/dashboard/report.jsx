@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Panel, Button } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 import ReportHeatmap from './report_heatmap';
 import ReportArt from './report_art';
@@ -34,13 +35,20 @@ const reportTitleByType = ( reportType ) => {
 	}
 }
 
-const reportPanelHeader = ( title, expand = null, back = null ) => (
-	<span>
-		{title}
-		{expand &&
-			<Button bsSize="small" href={expand} style={{ float: 'right' }}>+</Button>
+const reportPanelHeader = ( type, expandButton = false, backButton = false ) => (
+	<div style={{ position: 'relative' }}>
+		{reportTitleByType( type )}
+		{expandButton &&
+				<Link to={`/reports/${type}`} className="panel-button right"><Button bsSize="small">
+					<i className="fa fa-external-link" aria-hidden />
+				</Button></Link>
 		}
-	</span>
+		{backButton &&
+				<Link to='/reports' className="panel-button left"><Button bsSize="small">
+					<i className="fa fa-arrow-left" aria-hidden />
+				</Button></Link>
+		}
+	</div>
 )
 
 export const ReportDashboard = () => (
@@ -70,18 +78,18 @@ export const ReportPage = () => (
 		</div>
 		<div className='container-fluid'>
 			<div className='col-md-6'>
-				<Panel header="Heatmap">
+				<Panel header={reportPanelHeader( 'heatmap', true )}>
 					<ReportHeatmap />
 				</Panel>
-				<Panel header='Alert Power'>
+				<Panel header={reportPanelHeader( 'alertpower', true )}>
 					<ReportAlertpower />
 				</Panel>
 			</div>
 			<div className='col-md-6'>
-				<Panel header='Alert Response Time'>
+				<Panel header={reportPanelHeader( 'art', true )}>
 					<ReportArt />
 				</Panel>
-				<Panel header='Items Created'>
+				<Panel header={reportPanelHeader( 'created', true )}>
 					<ReportCreated />
 				</Panel>
 			</div>
@@ -92,7 +100,7 @@ export const ReportPage = () => (
 export const SingleReport = ( { reportType = 'heatmap' } ) => (
 	<div id='report' className='dashboard' style={{height: 'calc( 100vh - 51px )', overflow: 'auto'}}>
 		<div className='container'>
-			<Panel header={reportTitleByType( reportType )}>
+			<Panel header={reportPanelHeader( reportType, false, true )}>
 				{reportComponentByType( reportType )}
 			</Panel>
 		</div>
