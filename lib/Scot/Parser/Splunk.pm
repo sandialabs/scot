@@ -62,6 +62,8 @@ sub parse_message {
         return undef;
     }
 
+    my @ahrefs = $tree->look_down('_tag',"a");
+
     my ($alertname, $search, $tagaref) = $self->get_splunk_report_info($tree);
 
     my $report  = ( $tree->look_down('_tag','table') )[1];
@@ -118,6 +120,7 @@ sub parse_message {
     $json{data}     = \@results;
     $json{columns}  = \@columns;
     $json{tag}      = $tagaref;
+    $json{ahrefs}   = $ahrefs;
     return wantarray ? %json : \%json;
 }
 
