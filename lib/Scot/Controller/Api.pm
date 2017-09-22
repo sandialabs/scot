@@ -804,6 +804,7 @@ sub promote {
     else {
         die "Unable to promote a ".ref($object);
     }
+
     my $promotion_obj = $promotion_col->get_promotion_obj($object,$req);
     $promotion_obj->update({
         '$addToSet' => { promoted_from => $object->id }
