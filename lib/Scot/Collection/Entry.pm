@@ -565,5 +565,20 @@ sub move_entry {
     });
 }
 
+sub tasks_not_completed_count {
+    my $self    = shift;
+    my $obj     = shift; # the target
+    my $type    = $obj->get_collection_name;
+    my $id      = $obj->id;
+    my $match   = {
+        'target.type'   => $type,
+        'target.id'     => $id,
+        'is_task'       => 1,
+        'task.status'   => { '$ne' => 'completed' }
+    };
+
+    my $cursor  = $self->find($match);
+    return $cursor->count;
+}
 
 1;
