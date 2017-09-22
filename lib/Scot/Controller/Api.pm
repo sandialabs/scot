@@ -80,13 +80,17 @@ sub create {
 
         foreach my $object (@objects) {
             push @returnjson, $self->post_create_process($object);
+            my $data = {
+                who => $req_href->{user},
+                type=> $object->get_collection_name,
+                id  => $object->id,
+            };
+            if ( ref($object) eq "Scot::Model::Entry" ) {
+                $data->{target} = $object->target;
+            }
             $self->env->mq->send("scot",{
                 action  => "created",
-                data    => {
-                    who => $req_href->{user},
-                    type=> $object->get_collection_name,
-                    id  => $object->id,
-                }
+                data    => $data,
             });
         }
         if ( scalar(@returnjson) > 1 ) {
@@ -993,14 +997,16 @@ sub post_update_process {
         $self->apply_sources($object);
     }
 
+    my $mqdata  = {
+        who     => $self->session('user'),
+        type    => $colname,
+        id      => $object->id,
+        what    => $self->changed_attributes($updates),
+    };
+
     my $mq_msg  = {
         action  => "updated",
-        data    => {
-            who     => $self->session('user'),
-            type    => $colname,
-            id      => $object->id,
-            what    => $self->changed_attributes($updates),
-        }
+        data    => $mqdata,
     };
 
     $env->mq->send("scot", $mq_msg);
@@ -1008,8 +1014,8 @@ sub post_update_process {
     if ( ref($object) eq "Scot::Model::Entry" ) {
         $mq_msg->{data} = {
             who     => $self->session('user'),
-            type    => $object->target->{type},
-            id      => $object->target->{id},
+            target  => { type => $object->target->{type},
+                         id   => $object->target->{id}, },
             what    => "Entry update",
         };
         $env->mq->send("scot", $mq_msg);
@@ -1272,8 +1278,15 @@ sub post_delete_process {
     my $mongo   = $self->env->mongo;
     my $log     = $self->env->log;
 
+    my $mqdata  = {
+        type    => $object->get_collection_name,
+        id      => $object->id,
+        who     => $self->session('user'),
+    };
+
     if ( $object->meta->does_role('Scot::Role::Target') ) {
         $self->update_target($object, "delete");
+        $mqdata->{target} = $object->target;
     }
 
     if ( ref($object) eq 'Scot::Model::Entry' ) {
@@ -1292,11 +1305,7 @@ sub post_delete_process {
     };
     $self->env->mq->send("scot",{
         action  => "deleted",
-        data    => {
-            type    => $object->get_collection_name,
-            id      => $object->id,
-            who     => $self->session('user'),
-        }
+        data    => $mqdata,
     });
     $self->env->mongo->collection('Audit')->create_audit_rec($audit_rec);
     $self->env->mongo->collection('Stat')->put_stat($object->get_collection_name." deleted", 1);
