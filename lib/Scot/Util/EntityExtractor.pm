@@ -70,6 +70,11 @@ sub _build_suffixfile {
     return $self->get_config_value($attr, $default, $envname);
 }
 
+Readonly my $CVE_REGEX  => qr{
+    \b
+    (CVE-(?\d{4})-(?\d{4,}))
+    \b
+}xms;
 
 Readonly my $DOMAIN_REGEX_2 => qr{
     \b                                  # word boundary
