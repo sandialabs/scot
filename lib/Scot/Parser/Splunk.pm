@@ -62,7 +62,7 @@ sub parse_message {
         return undef;
     }
 
-    my ($alertname, $search) = $self->get_splunk_report_info($tree);
+    my ($alertname, $search, $tagaref) = $self->get_splunk_report_info($tree);
 
     my $report  = ( $tree->look_down('_tag','table') )[1];
     unless ($report) {
@@ -112,33 +112,12 @@ sub parse_message {
               }
             } $cell->content_list;
             $rowresult{$colname} = \@children
-
-            # OK, thanks to splunk changing stuff we now have to look that
-            # a cell my contain multiple divs like
-            # <td>
-            #   <div style="white-space: pre-wrap;">2</div>
-            #   <div style="white-space: pre-wrap;">2</div>
-            # </td>
-            # so let's loop! and concatenate!
-
-           #### OK at some point I thought this was the way to go
-           ### not so sure now, Flair can handle this, I think.
-
-            #my @intervalues = ();
-            #foreach my $v (@{$values[$i]->{_content}}) {
-            #    push @intervalues, $v->as_text;
-            #}
-
-            #if ( $colname eq "MESSAGE_ID" ) {
-            #    $log->debug("MESSAGE_ID detection moved to Flair.pm");
-            #}
-            #my $value = join(' ',@intervalues);
-            #$rowresult{$colname} = $value;
         }
         push @results, \%rowresult;
     }
     $json{data}     = \@results;
     $json{columns}  = \@columns;
+    $json{tag}      = $tagaref;
     return wantarray ? %json : \%json;
 }
 
@@ -159,7 +138,30 @@ sub get_splunk_report_info {
     if ( defined $top_table_tds[0] ) {
         $alertname = $top_table_tds[0]->as_text;
     }
-    return $alertname, $search;
+
+    my @tags    = $self->extract_splunk_tags($search);
+
+    return $alertname, $search, \@tags;
+}
+
+sub extract_splunk_tags {
+    my $self    = shift;
+    my $search  = shift;
+    my @tags    = ();
+    # XXX put regexes to pull them out here
+
+    my $regex = qr{
+        (sourcetype=.*?)\ |
+        (index=.*?)\ |
+        (tag=.*?)\ 
+    }xms;
+
+    foreach my $m ($search =~ m/$regex/g) {
+        next if ( $m eq '');
+        push @tags, $m;
+    }
+
+    return wantarray ? @tags : \@tags;
 }
 
 sub build_html_tree {
