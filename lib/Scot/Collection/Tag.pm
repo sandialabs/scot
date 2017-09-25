@@ -24,7 +24,7 @@ override api_create => sub {
 
     my $json    = $request->{request}->{json};
 
-    my $value       = $json->{value};
+    my $value       = lc($json->{value});
     my $note        = $json->{note};
 
     unless ( defined $value ) {
