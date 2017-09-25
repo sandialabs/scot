@@ -140,10 +140,6 @@ var App = React.createClass({
                 action: activemqstate != 'delete' ? {
                     label: 'View',
                     callback: function(){
-                        if(activemqtype == 'entry' || activemqtype == 'alert'){
-                            activemqid = activemqsetentry
-                            activemqtype = activemqsetentrytype
-                        }
                         window.open('/#/' + activemqtype + '/' + activemqid)
                     }
                 } : null
