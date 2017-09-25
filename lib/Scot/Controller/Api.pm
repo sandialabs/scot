@@ -249,7 +249,19 @@ sub post_list_process {
     my $cursor      = shift;
     my $req_href    = shift;
     my $log         = $self->env->log;
-    my @records     = $cursor->all;
+    my @records     = ();
+    my $collection  = $req_href->{collection};
+    my $entrycol    = $self->env->mongo->collection('Entry');
+
+    if ( $collection eq "alertgroup" or $collection eq "event" ) {
+        while ( my $obj = $cursor->next ) {
+            my $href    = $obj->as_hash;
+            $href->{has_tasks} = $entrycol->tasks_not_completed_count;
+            push @records, $href;
+        }
+    else {
+        @records     = $cursor->all;
+    }
 
     $log->debug("post_list_processing");
 
