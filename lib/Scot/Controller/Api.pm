@@ -259,6 +259,7 @@ sub post_list_process {
             $href->{has_tasks} = $entrycol->tasks_not_completed_count;
             push @records, $href;
         }
+    }
     else {
         @records     = $cursor->all;
     }
