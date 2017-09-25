@@ -1,0 +1,20 @@
+FROM gitlab.sandia.gov:3434/docker/ubuntu
+
+ENV no_proxy 172.18.0.5,sso.sandia.gov
+ENV NO_PROXY 172.18.0.5,sso.sandia.gov,127.0.0.1,localhost,*.sandia.gov
+RUN apt-get update && \
+  apt-get install -y apache2 iputils-ping python-dev libldap2-dev libsasl2-dev libssl-dev apache2 libapache2-mod-wsgi libapache2-mod-shib2 libapache2-mod-auth-cas  && apt-get clean && \
+  a2enmod proxy_http && a2enmod proxy && \
+  a2enmod ssl && \
+  a2ensite default-ssl && \
+  a2enmod rewrite && \
+  a2enmod proxy_html && \
+  a2enmod headers 
+
+
+COPY scot-revproxy-ubuntu.conf /etc/apache2/sites-enabled
+COPY shibby.conf /etc/apache2/conf-enabled
+COPY CA.txt /etc/ssl/certs/
+EXPOSE 443 80
+
+CMD apachectl -D FOREGROUND
