@@ -224,6 +224,7 @@ sub _build_regexes {
         { type  => "domain",    regex  => $DOMAIN_REGEX_2 },
         { type  => "file",      regex  => $FILE_REGEX },
         { type  => "snumber",   regex => $SNUMBER_REGEX },
+        { type  => "cve",       regex  => $CVE_REGEX },
     ];
 }
 
