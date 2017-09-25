@@ -383,11 +383,6 @@ sub get_promotion_obj {
     $log->debug("The object being promoted is a ".ref($object));
 
     my $event;
-    if ( $promotion_id eq "new" or ! defined $promotion_id ) {
-        # no promotion id provided, so let's create the event
-        $event   = $self->create_promotion($object, $req);
-        return $event;
-    }
 
     if ( $promotion_id =~ /\d+/ ) { 
         $event = $self->find_iid($promotion_id);
@@ -398,9 +393,14 @@ sub get_promotion_obj {
             die "Event $promotion_id does not exists.  Can not promote to non-existant event!";
         }
     }
-    else {
-        die "Invalid promotion id";
+
+    if ( $promotion_id eq "new" or ! defined $promotion_id ) {
+        # no promotion id provided, so let's create the event
+        $event   = $self->create_promotion($object, $req);
+        return $event;
     }
+
+    die "Invalid promotion id";
 }
 
 sub autocomplete {
