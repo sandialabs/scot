@@ -1,0 +1,9 @@
+
+#ActiveMQ dockerfile
+FROM ubuntu:16.04
+
+
+ENV no_proxy 172.18.0.5
+COPY docker-configs/mapping/mapping.sh /usr/bin/mapping.sh
+
+CMD ["/bin/sh", "/usr/bin/mapping.sh"]
