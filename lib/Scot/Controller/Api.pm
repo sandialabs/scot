@@ -250,13 +250,30 @@ sub post_list_process {
     my $req_href    = shift;
     my $log         = $self->env->log;
     my @records     = ();
-    my $collection  = $req_href->{collection};
+    my $thing       = $req_href->{collection};
     my $entrycol    = $self->env->mongo->collection('Entry');
 
-    if ( $collection eq "alertgroup" or $collection eq "event" ) {
+    if ( $thing      eq "event" ) {
         while ( my $obj = $cursor->next ) {
             my $href    = $obj->as_hash;
             $href->{has_tasks} = $entrycol->tasks_not_completed_count($obj);
+            push @records, $href;
+        }
+    }
+    elsif ( $thing      eq "alertgroup" ) {
+        while ( my $obj = $cursor->next ) {
+            my $agid = $obj->id;
+            my $href = $obj->as_hash;
+            $href->{has_tasks} = 0;
+            my $acur = $self->env->mongo->collection('Alert')->find({alertgroup => $agid});
+            ALERT:
+            while ( my $aobj = $acur->next ) {
+                my $tc = $entrycol->tasks_not_completed_count($aobj);
+                if ( $tc > 0 ) {
+                    $href->{has_tasks} = $tc;
+                    last ALERT;
+                }
+            }
             push @records, $href;
         }
     }
