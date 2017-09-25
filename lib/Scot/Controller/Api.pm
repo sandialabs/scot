@@ -256,7 +256,7 @@ sub post_list_process {
     if ( $collection eq "alertgroup" or $collection eq "event" ) {
         while ( my $obj = $cursor->next ) {
             my $href    = $obj->as_hash;
-            $href->{has_tasks} = $entrycol->tasks_not_completed_count;
+            $href->{has_tasks} = $entrycol->tasks_not_completed_count($obj);
             push @records, $href;
         }
     }
