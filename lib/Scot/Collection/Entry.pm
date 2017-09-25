@@ -578,7 +578,7 @@ sub tasks_not_completed_count {
     };
 
     my $cursor  = $self->find($match);
-    return $cursor->count;
+    return $cursor->count // 0;
 }
 
 1;
