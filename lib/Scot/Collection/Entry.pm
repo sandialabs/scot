@@ -573,8 +573,8 @@ sub tasks_not_completed_count {
     my $match   = {
         'target.type'   => $type,
         'target.id'     => $id,
-        'is_task'       => 1,
-        'task.status'   => { '$ne' => 'completed' }
+        'class'         => "task",
+        'metadata.status'   => { '$ne' => 'completed' }
     };
 
     my $cursor  = $self->find($match);
