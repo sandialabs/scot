@@ -160,17 +160,22 @@ var App = React.createClass({
         }
     },
     errorToggle: function(string, result) {
+        let errorString = string;
         if ( result ) {
-            if ( result.responseJSON.error === 'Authentication Required') {
-                this.setState({csrf: result.responseJSON.csrf}); //set csrf here since it can change after the login prompt loads
-                this.loginToggle( result.responseJSON.csrf );
-                return;
+            if ( result.responseJSON ) {
+                if ( result.responseJSON.error === 'Authentication Required') {
+                    this.setState({csrf: result.responseJSON.csrf}); //set csrf here since it can change after the login prompt loads
+                    this.loginToggle( result.responseJSON.csrf );
+                    return;
+                }
+            } else if ( result.statusText ) {
+                errorString = result.statusText;  //Use server error message if available.
             }
         } 
 
         var notification = this.refs.notificationSystem
         notification.addNotification({
-            message: string,
+            message: errorString,
             level: 'error',
             autoDismiss: 0,
         });
