@@ -27,6 +27,7 @@ with    qw(
     Scot::Role::Promotable
     Scot::Role::Status
     Scot::Role::Times
+    Scot::Role::TLP
 );
 
 =head1 Attributes

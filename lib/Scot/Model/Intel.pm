@@ -25,6 +25,7 @@ with    qw(
     Scot::Role::Subject
     Scot::Role::Tags
     Scot::Role::Times
+    Scot::Role::TLP
     Scot::Role::Views
 );
 
