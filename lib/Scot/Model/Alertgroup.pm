@@ -40,6 +40,7 @@ with    qw(
     Scot::Role::Sources
     Scot::Role::Tags
     Scot::Role::Times
+    Scot::Role::TLP
     Scot::Role::Views
 );
 
@@ -56,6 +57,7 @@ with    qw(
     Scot::Role::Sources
     Scot::Role::Tags
     Scot::Role::Times
+    Scot::Role::TLP
     Scot::Role::Views
 
 =head1 Attributes
