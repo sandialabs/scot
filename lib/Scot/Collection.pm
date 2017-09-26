@@ -523,7 +523,13 @@ sub api_list {
 
     $self->env->log->debug("match is ",{filter=>\&Dumper, value=>$match});
 
-    my $cursor  = $self->find($match);
+    my $cursor;
+    if ( ref($self) eq "Scot::Collection::Alertgroup" ) {
+        $cursor = $self->find($match,{body => 0, body_plain => 0});
+    }
+    else {
+        $cursor  = $self->find($match);
+    }
     my $total   = $cursor->count;
 
     my $limit   = $self->build_limit($href);
