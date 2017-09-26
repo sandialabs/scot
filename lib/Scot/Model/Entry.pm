@@ -25,6 +25,7 @@ with    qw(
     Scot::Role::Permission
     Scot::Role::Target
     Scot::Role::Times
+    Scot::Role::TLP
 );
 
 =head1 Attributes
