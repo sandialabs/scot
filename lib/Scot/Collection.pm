@@ -654,6 +654,8 @@ sub api_update {
     my @uprecs  = ();
     $req->{request}->{json}->{updated} = $self->env->now;
     my %update  = $self->env->mongoquerymaker->build_update_command($req);
+    
+    $self->env->log->debug("api_update attempting: ",{filter => \&Dumper, value => \%update});
 
     foreach my $key (keys %update) {
         my $old = '';
