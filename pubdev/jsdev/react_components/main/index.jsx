@@ -247,7 +247,12 @@ var App = React.createClass({
 
     render: function() {
         var IH = 'Incident Handler: ' + this.state.handler;
-        let type = this.props.match.params.value.toLowerCase();
+        let type;
+        
+        if ( this.props.match.params.value ) {
+            type = this.props.match.params.value.toLowerCase();   
+        }
+
         return (
             <div>
                 <Navbar inverse fixedTop={true} fluid={true}>
