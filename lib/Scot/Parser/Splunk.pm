@@ -121,6 +121,12 @@ sub parse_message {
     $json{columns}  = \@columns;
     $json{tag}      = $tagaref;
     $json{ahrefs}   = $ahrefs;
+
+    if ( length($json->{body}) > 1000000 ) {
+        $json->{body} = qq|Email Body too large.  View in Email client.|;
+        $json->{body_plain} = qq|Email Body too large.  View in Email client.|;
+    }
+
     return wantarray ? %json : \%json;
 }
 
