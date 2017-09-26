@@ -72,7 +72,7 @@ sub _build_suffixfile {
 
 Readonly my $CVE_REGEX  => qr{
     \b
-    (CVE-(?\d{4})-(?\d{4,}))
+    (CVE-(\d{4})-(\d{4,}))
     \b
 }xms;
 
