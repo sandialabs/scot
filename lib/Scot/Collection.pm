@@ -525,7 +525,7 @@ sub api_list {
 
     my $cursor;
     if ( ref($self) eq "Scot::Collection::Alertgroup" ) {
-        $cursor = $self->find($match,{body => 0, body_plain => 0});
+        $cursor = $self->find($match);
     }
     else {
         $cursor  = $self->find($match);
