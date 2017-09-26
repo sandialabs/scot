@@ -191,7 +191,7 @@ sub load_parsers  {
     while ( my $filename = readdir(DIR) ) {
         next if ( $filename =~ /^\.+$/ );
         next if ( $filename =~ /.*swp/ );
-        $log->debug("filename is $filename");
+        $log->debug("requiring module $filename");
         $filename =~ m/^([A-Za-z0-9]+)\.pm$/;
         my $rootname = $1;
         my $attrname = lc($rootname);
@@ -577,18 +577,21 @@ sub already_processed {
     my $return      = $self->get_alertgroup_by_msgid($message_id);
     my $log         = $self->log;
 
-    $log->debug("Got ag processed ", {filter=>\&Dumper,value=>$return});
-
     if (defined($return->{queryRecordCount}) and 
         $return->{queryRecordCount} > 0) {
+        $log->debug("already processed");
         return 1;
     }
+    $log->debug('not processed yet');
     return undef;
 }
 
 sub get_alertgroup_by_msgid {
     my $self    = shift;
     my $msgid   = shift;
+    my $log     = $self->log;
+   
+    $log->debug("Looking for AG with msgid of ".$msgid);
 
     if ( $self->get_method  eq "scot_api" ) {
         return $self->scot->get_alertgroup_by_mesgid($msgid);
@@ -598,9 +601,11 @@ sub get_alertgroup_by_msgid {
         my $col     = $mongo->collection('Alertgroup');
         my $obj     = $col->find_one({message_id => $msgid});
         if ( $obj ) {
+            $log->debug("found match at ag:".$obj->id);
             return { queryRecordCount => 1 };
         }
     }
+    $log->debug("no matching alertgroups");
     return { error => 1 };
 }
 
