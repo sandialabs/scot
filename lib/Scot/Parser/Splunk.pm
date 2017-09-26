@@ -63,6 +63,7 @@ sub parse_message {
     }
 
     my @ahrefs = $tree->look_down('_tag',"a");
+    @ahrefs = map { $_->as_HTML; } @ahrefs;
 
     my ($alertname, $search, $tagaref) = $self->get_splunk_report_info($tree);
 
@@ -120,11 +121,11 @@ sub parse_message {
     $json{data}     = \@results;
     $json{columns}  = \@columns;
     $json{tag}      = $tagaref;
-    $json{ahrefs}   = $ahrefs;
+    $json{ahrefs}   = \@ahrefs;
 
-    if ( length($json->{body}) > 1000000 ) {
-        $json->{body} = qq|Email Body too large.  View in Email client.|;
-        $json->{body_plain} = qq|Email Body too large.  View in Email client.|;
+    if ( length($json{body}) > 1000000 ) {
+        $json{body}         = qq|Email Body too large.  View in Email client.|;
+        $json{body_plain}   = qq|Email Body too large.  View in Email client.|;
     }
 
     return wantarray ? %json : \%json;
@@ -157,6 +158,7 @@ sub extract_splunk_tags {
     my $self    = shift;
     my $search  = shift;
     my @tags    = ();
+    my $log     = $self->log;
     # XXX put regexes to pull them out here
 
     my $regex = qr{
@@ -166,7 +168,8 @@ sub extract_splunk_tags {
     }xms;
 
     foreach my $m ($search =~ m/$regex/g) {
-        next if ( $m eq '');
+        next if ( ! defined $m );
+        next if ( $m eq '' );
         push @tags, $m;
     }
 
