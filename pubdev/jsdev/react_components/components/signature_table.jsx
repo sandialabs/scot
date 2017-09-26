@@ -535,6 +535,7 @@ var SignatureGroup = React.createClass({
             type: 'put',
             url: 'scot/api/v2/signature/' + this.props.id,
             data: JSON.stringify({'signature_group':newSignatureGroupArr}),
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('deleted signature_group success: ' + data);
             }.bind(this),
