@@ -168,7 +168,7 @@ var App = React.createClass({
                     this.loginToggle( result.responseJSON.csrf );
                     return;
                 }
-            } else if ( result.statusText ) {
+            } else if ( result.statusText == 'Service Unavailable' ) {
                 errorString = result.statusText;  //Use server error message if available.
             }
         } 
