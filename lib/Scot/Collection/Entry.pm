@@ -3,6 +3,7 @@ package Scot::Collection::Entry;
 use lib '../../../lib';
 use Moose 2;
 use Data::Dumper;
+use HTML::Element;
 
 extends 'Scot::Collection';
 
@@ -348,9 +349,80 @@ override api_create => sub {
         id      => $target_id,
     };
     $json->{owner}  = $user;
+    if ( $json->{class} eq "json" ) {
+        # we need to create body from json in metadata
+        $json->{body}   = $self->create_json_html($json->metadata);
+    }
     return $self->create($json);
 };
 
+sub create_json_html {
+    my $self    = shift;
+    my $data    = shift;
+    my $tree    = HTML::Element->new('div',class=>"json_view");
+    $self->build_tree($tree,$data);
+    return $tree->as_HTML(undef, "    ", {});
+}
+
+sub build_tree {
+    my $self    = shift;
+    my $stem    = shift;
+    my $data    = shift;
+    my $nodetype    = ref($data);
+    my $element;
+
+    if ( $nodetype eq '' ) {
+        $element    = HTML::Element->new("span");
+        $element->push_content($data);
+        return;
+    }
+
+    if ( $nodetype eq "ARRAY" ) {
+        $element = HTML::Element->new("ol","role" => "group",);
+        foreach my $item (@$data) {
+            my $li  = HTML::Element->new(
+                "li",
+                "role"  => "treeitem",
+                "aria-expanded" => "true",
+            );
+            $self->build_tree($li, $item);
+            $element->push_content($li);
+        }
+    }
+
+    if ( $nodetype eq "HASH" ) {
+        $element    = HTML::Element->new(
+            "li",
+            "role"  => "treeitem",
+            "aria-expanded" => "true",
+        );
+        my $div     = HTML::Element->new('div');
+        my $span    = HTML::Element->new('span');
+        $span->push_content('Object');
+        $div->push_content($span);
+        $element->push_content($div);
+        my $ol  = HTML::Element->new(
+            "ol",
+            "role"  => "group",
+        );
+        foreach my $key ( sort keys %$data ) {
+            my $value   = $data->{$key};
+            my $li      = HTML::Element->new(
+                "li",
+                "role"  => "treeitem",
+                "aria-expanded" => "false",
+            );
+            my $keyspan = HTML::Element->new("span");
+            $keyspan->push_content($key);
+            $li->push_content($keyspan);
+            $self->build_tree($li, $value);
+            $ol->push_content($li);
+        }
+        $element->push_content($ol);
+    }
+
+    $stem->push_content($element);
+}
 
 sub validate_task {
     my $self    = shift;
