@@ -35,7 +35,8 @@ sub create_from_promoted_alert {
     };
     my $id  = $alert->id;
     $json->{body}              = 
-        qq|<h3>From Alert <a href="/#/alert/$id">$id</h3>|.
+        qq|<h3>From Alert <a href="/#/alert/$id">$id</h3><br>|.
+        qq|<h4>|.$alert->subject.qq|</h4>|.
         $self->build_table($alert);
     $log->debug("Using : ",{filter=>\&Dumper, value => $json});
 
