@@ -657,6 +657,14 @@ sub api_update {
     
     $self->env->log->debug("api_update attempting: ",{filter => \&Dumper, value => \%update});
 
+    my $objtype = $object->get_collection_name;
+    # disallow the changing of alertgroup subjects
+    if ( $objtype eq "alertgroup" ) {
+        if ( defined $update{subject} ) {
+            delete $update{subject};
+        }
+    }
+
     foreach my $key (keys %update) {
         my $old = '';
         if ( $object->meta->has_attribute($key) ) {
