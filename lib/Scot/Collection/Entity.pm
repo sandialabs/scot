@@ -179,6 +179,7 @@ sub api_subthing {
     if ( $subthing  eq "alert" or
          $subthing  eq "event" or
          $subthing  eq "intel" or
+         $subthing  eq "signature" or
          $subthing  eq "incident" ) {
         return $mongo->collection('Link')
                      ->get_linked_objects_cursor(
@@ -219,7 +220,7 @@ sub api_subthing {
             'target.id'     => $id,
         });
     }
-    
+
     die "Unsupported subthing request ($subthing) for Entity";
 
 }
