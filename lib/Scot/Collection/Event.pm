@@ -22,7 +22,7 @@ Custom collection operations for Events
 
 =over 4
 
-=item B<create_from_api($api_ref)>
+=item B<api_create($api_ref)>
 
 Create an event and from a POST to the handler
 
