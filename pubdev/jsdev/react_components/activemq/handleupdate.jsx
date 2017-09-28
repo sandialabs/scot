@@ -2,21 +2,13 @@ var set;
 
 function update(state, callback, payload){
     activemqstate = 'update'
-    if (state == 'event' || state  == 'intel' || state == 'guide' || state == 'incident' || state == 'alertgroup' || state == 'signature') {
-        activemqwho = payload.action.activemq.data.who
-        activemqmessage = " updated " + state + " : " 
-        activemqid = payload.action.activemq.data.id
-        activemqtype = state
-        activemqsetentry = activemqid
-        activemqsetentrytype = state;
-        callback.emitChange(payload.action.activemq.data.id)
-    } else {
-        activemqwho = payload.action.activemq.data.who
-        activemqmessage = " updated " + state + " : " 
-        activemqid = payload.action.activemq.data.id
-        activemqtype = state
-        callback.emitChange(payload.action.activemq.data.id)
-    }
+    
+    activemqwho = payload.action.activemq.data.who
+    activemqmessage = " updated " + state + " : " 
+    activemqid = payload.action.activemq.data.id
+    activemqtype = state.toLowerCase();
+    callback.emitChange(payload.action.activemq.data.id)
+    
     callback.emitChange('notification');
 }
 function creation(state, callback, payload){
