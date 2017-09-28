@@ -177,3 +177,22 @@ up logrotate to avoid filling you disk.  Create a /etc/logrotate.d/scot like
    :linenos:
 
 
+Manual Password Reset for Local Auth
+------------------------------------
+
+Let's say you forgot the admin password, what to do?  
+
+1.  Run /opt/scot/bin/passwd.pl
+
+    $ /opt/scot/bin/passwd.pl
+    Enter New Admin Password : ***
+    Reenter Admin Password   : ***
+    {X-PBKDF2}HMACSHA2+512:AAAnEA:2/oQYlnzjibzWoCs2aPv:KAZIhhNUgPBw4M7ZOVU1/2yT/P07FRe2bhacBw6J6ru4jwFRM9dMpxOARc9IfxrQs7ltxSn1ceW76dgJ4kL0Ng==
+
+2.  Enter mongodb shell and issue the following:
+
+   $ mongo scot-prod
+   > db.user.update({username:"admin"},{$set:{hash:'{X-PBKDF2}HMACSHA2+512:AAAnEA:2/oQYlnzjibzWoCs2aPv:KAZIhhNUgPBw4M7ZOVU1/2yT/P07FRe2bhacBw6J6ru4jwFRM9dMpxOARc9IfxrQs7ltxSn1ceW76dgJ4kL0Ng=='}});
+
+3.  Now you (admin) will be able to log in via Local Auth using the password you entered.
+
