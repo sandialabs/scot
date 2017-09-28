@@ -1,4 +1,5 @@
-FROM Ubuntu:16.04
+FROM gitlab.sandia.gov:3434/docker/ubuntu
+#FROM Ubuntu:16.04
 
 RUN apt-get update && \
     apt-get -qy upgrade && \
@@ -64,13 +65,15 @@ COPY install/src/scot/ /opt/scot/etc/
 COPY install/src/scot/scot.service /etc/systemd/system/scot.service
 COPY script/ /opt/scot/script/
 COPY public/ /opt/scot/public
-COPY node_modules /opt/scot/node_modules
+COPY pubdev/node_modules/ /opt/scot/node_modules
 COPY t/ /opt/scot/t/
 COPY lib/ /opt/scot/lib/
 COPY bin/ /opt/scot/bin/
 COPY templates/ /opt/scot/templates/ 
-COPY scot.cfg.pl /opt/scot/etc/
-COPY Sidd.pm /opt/scot/lib/Scot/Util/
+COPY install/src/scot/scot.cfg.pl /opt/scot/etc/
+
+#Sandia - May need to remove
+#COPY Sidd.pm /opt/scot/lib/Scot/Util/
 
 EXPOSE 3000 
 

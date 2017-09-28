@@ -1,4 +1,5 @@
-FROM ubuntu:16.04
+FROM gitlab.sandia.gov:3434/docker/ubuntu
+#FROM ubuntu:16.04
 
 RUN apt-get update && \
     apt-get -qy upgrade && \
@@ -56,7 +57,9 @@ RUN cpanm Array::Split Data::Dumper Data::Dumper::HTML Data::Dumper::Concise Dat
 RUN mkdir -p /var/log/scot
 RUN mkdir -p /opt/scot
 
-COPY flairer.pl /opt/scot/bin/
+COPY install/src/scot/ /opt/scot/etc/
+COPY bin/flairer.pl /opt/scot/bin/
+COPY lib/ /opt/scot/lib/
 #COPY lib/ /opt/scot/
 
 CMD ["/usr/bin/perl", "/opt/scot/bin/flairer.pl"]

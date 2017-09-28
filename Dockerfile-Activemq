@@ -1,6 +1,7 @@
 
 #ActiveMQ dockerfile
-FROM ubuntu:16.04 
+FROM gitlab.sandia.gov:3434/docker/ubuntu
+#FROM ubuntu:16.04 
 
 #jdk
 ENV JDK_VERSION="8" \
@@ -46,9 +47,11 @@ RUN set -x && \
     touch /var/log/activemq/scot.amq.log
 
 #Copy over SCOTAQ config stuffs    
-COPY scot/ /opt/apache-activemq-5.14.3/webapps
-COPY scotamq.xml /opt/activemq/conf/
-COPY jetty.xml /opt/activemq/conf/
+COPY install/src/ActiveMQ/amq/scotaq/ /opt/activemq/webapps/scot
+
+
+COPY install/src/ActiveMQ/amq/scotamq.xml /opt/activemq/conf/
+COPY install/src/ActiveMQ/amq/jetty.xml /opt/activemq/conf/
 
 USER activemq
 WORKDIR $ACTIVEMQ_HOME
