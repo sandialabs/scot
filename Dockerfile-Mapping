@@ -1,6 +1,6 @@
-
+FROM gitlab.sandia.gov:3434/docker/ubuntu
 #ActiveMQ dockerfile
-FROM ubuntu:16.04
+#FROM ubuntu:16.04
 
 
 ENV no_proxy 172.18.0.5

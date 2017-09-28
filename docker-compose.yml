@@ -1,13 +1,15 @@
 version: '3'
 services:
   apache:
-    build: ./docker/apache
+    build:
+      dockerfile: Dockerfile-Apache
+      context: ./
     volumes: 
-     - "/etc/apache2/ssl:/etc/apache2/ssl/"
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
     ports:
      - "443:443"
+     - "80:80"
     networks:
      scot-docker-net:
       ipv4_address: 172.18.0.2
@@ -16,8 +18,10 @@ services:
   activemq:
     volumes:
      - "/var/log/activemq:/var/log/activemq/log/"
-     - "/opt/activemq/webapps/scot:/opt/activemq/webapps/scot/"
-    build: ./docker/activemq
+#     - "/opt/activemq/webapps/scot:/opt/activemq/webapps/scot/"
+    build:
+      dockerfile: Dockerfile-Activemq
+      context: ./
     ports:
      - "8161:8161"
      - "61613:61613"
@@ -28,9 +32,11 @@ services:
        - activemq-docker
   
   mongodb:
-    build: ./docker/mongodb
+    build:
+      dockerfile: Dockerfile-Mongodb
+      context: ./
     volumes:
-     - "/home/bemonta/mongod.log:/var/log/mongodb/mongod.log"
+     - "/var/log/mongodb/mongod.log:/var/log/mongodb/mongod.log"
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
     networks:
@@ -47,7 +53,9 @@ services:
       interval: 2s
       timeout: 5s
       retries: 30
-    build: ./docker/elastic
+    build:
+      dockerfile: Dockerfile-Elastic
+      context: ./
     volumes:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
@@ -60,7 +68,9 @@ services:
      - "9200:9200"
 
   mapping:
-    build: ./docker/mapping
+    build:
+      dockerfile: Dockerfile-Mapping
+      context: ./
     depends_on:
      - elastic
     networks:
@@ -69,7 +79,9 @@ services:
       aliases:
        - mapping-docker
   scot:
-    build: .
+    build:
+      dockerfile: Dockerfile-Scot
+      context: ./
     volumes:
      - "/var/log/scot:/var/log/scot/"
      - "/etc/timezone:/etc/timezone:ro"
@@ -86,12 +98,15 @@ services:
      - "3000:3000"
 
   flair:
-   build: ./docker/flair
+   build:
+     dockerfile: Dockerfile-Flair
+     context: ./
    volumes:
     - "/var/log/scot:/var/log/scot/"
-    - "/opt/scot/lib/Scot:/opt/scot/lib/Scot/"
-    - "/opt/scot/lib:/opt/scot/lib/" 
-    - "/opt/scot/install/src/scot:/opt/scot/etc/"
+#Need to fix below stuff (GROSS!)
+#    - "/opt/scot/lib/Scot:/opt/scot/lib/Scot/"
+#    - "/opt/scot/lib:/opt/scot/lib/" 
+#    - "/opt/scot/install/src/scot:/opt/scot/etc/"
    depends_on:
     - mongodb
     - activemq
