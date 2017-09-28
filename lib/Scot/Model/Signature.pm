@@ -26,6 +26,7 @@ with    qw(
     Scot::Role::Permission
     Scot::Role::Sources
     Scot::Role::Tags
+    Scot::Role::TLP
 );
 
 =head1 Attributes
