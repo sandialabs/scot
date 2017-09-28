@@ -621,18 +621,13 @@ var EntityReferences = React.createClass({
             entityDataEvent:null,
             entityDataIncident:null,
             entityDataIntel:null,
-            entityDataAlertGroupLoading:true,
-            entityDataEventLoading:true,
-            entityDataIncidentLoading:true,
-            entityDataIntelLoading:true,
-            navigateType: '',
-            navigateId: null,
-            selected:{},
+            entityDataSignature: null,
             maxRecords: maxRecords,
             loadingAlerts: true,
             loadingEvents: true,
             loadingIncidents: true,
             loadingIntel: true,
+            loadingSignature: true,
             loading: true,
         }
     },
@@ -670,7 +665,7 @@ var EntityReferences = React.createClass({
                     }
                     this.props.updateAppearances(result.length);
                     this.setState({entityDataAlertGroup:arr,loadingAlerts:false})
-                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false  && this.state.loadingSignature == false) {
                         this.setState({loading:false});
                     }
                 }
@@ -713,7 +708,7 @@ var EntityReferences = React.createClass({
                     }
                     this.props.updateAppearances(result.length);
                     this.setState({entityDataEvent:arr,loadingEvents:false})
-                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false && this.state.loadingSignature ) {
                         this.setState({loading:false});
                     }
                 }
@@ -756,7 +751,7 @@ var EntityReferences = React.createClass({
                     }
                     this.props.updateAppearances(result.length);
                     this.setState({entityDataIncident:arr, loadingIncidents:false})
-                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false && this.state.loadingSignature == false) {
                         this.setState({loading:false});
                     }
                 }
@@ -799,7 +794,7 @@ var EntityReferences = React.createClass({
                     }
                     this.props.updateAppearances(result.length);
                     this.setState({entityDataIntel:arr, loadingIntel:false})
-                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false && this.state.loadingSignature == false) {
                         this.setState({loading:false});
                     }
                 }
@@ -841,8 +836,8 @@ var EntityReferences = React.createClass({
                         this.props.showFullEntityButton();
                     }
                     this.props.updateAppearances(result.length);
-                    this.setState({entityDataIntel:arr, loadingIntel:false})
-                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                    this.setState({entityDataSignature:arr, loadingSignature:false})
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false  && this.state.loadingIntel == false && this.state.loadingSignature == false) {
                         this.setState({loading:false});
                     }
                 }
@@ -906,7 +901,7 @@ var EntityReferences = React.createClass({
         var id = 'sortableentitytable' + this.props.entityid;
         return (
             <div className='entityTableWrapper'>
-            {this.state.loading ? <span>Loading: {this.state.loadingAlerts ? <span>Alerts </span> : null}{this.state.loadingEvents ? <span>Events </span> : null}{this.state.loadingIncidents ? <span>Incidents </span> : null}{this.state.loadingIntel ? <span>Intel </span> : null}</span>: null}
+            {this.state.loading ? <span>Loading: {this.state.loadingAlerts ? <span>Alerts </span> : null}{this.state.loadingEvents ? <span>Events </span> : null}{this.state.loadingIncidents ? <span>Incidents </span> : null}{this.state.loadingIntel ? <span>Intel </span> : null}{this.state.loadingSignature ? <span>Signature </span> : null}</span>: null}
             <table className="tablesorter entityTableHorizontal" id={id} width='100%'>
                 <thead>
                     <tr>
@@ -920,6 +915,7 @@ var EntityReferences = React.createClass({
                     </tr>
                 </thead>
                 <tbody>
+                    {this.state.entityDataSignature}
                     {this.state.entityDataIntel}
                     {this.state.entityDataIncident}
                     {this.state.entityDataEvent}
