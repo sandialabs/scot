@@ -61,7 +61,10 @@ sub create_from_promoted_alert {
         $json->{parent} = $aentry->id;
     }
 
+    #XXX
+
     $log->debug("creating the promoted alert entry");
+    $json->{metadata}          = $alert->as_hash;
     my $entry_obj              = $self->create($json);
 
     $log->debug("Created Entry : ".$entry_obj->id);
@@ -147,13 +150,24 @@ sub build_table {
         $html .= "<th>$key</th>";
     }
     $html .= "\n</tr>\n<tr>\n";
+    
+    # issue #446 states that special columns like message_id, etc. 
+    # are flairing as email instead of message_id.  This is because
+    # the flair engine handles alert data specially, looking at 
+    # column headers.  Here is not quite the right place to do something
+    # similar, though.  446 will have to remain open until we rework
+    # the flair engine to handle this case better.  One idea is to 
+    # wrap these items in special spans with flair "hints"  that the 
+    # flair engine will recognize.  This will be similar to the approach
+    # I'm thinking of using for user defined flair.
 
     foreach my $key ( @{$columns} ) {
         next if ($key eq "columns");
         my $value   = $data->{$key};
         $html .= qq|<td>|;
         if ( ref($value) eq "ARRAY" ) {
-            $html .= join("<br>\n",@$value)."</td>";
+#            $html .= join("<br>\n",@$value)."</td>";
+            $html .= join("\n",map { "    <div>$_</div>" } @$value)."</td>";
         }
         else {
             $html .= $value . "</td>";
