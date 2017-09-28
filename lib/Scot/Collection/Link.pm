@@ -118,7 +118,7 @@ sub get_vertex_memo {
     my $thing   = shift;
     my $log     = $self->env->log;
 
-    $log->debug("Thing is ",{filter=>\&Dumper, value=>$thing});
+    $log->trace("Thing is ",{filter=>\&Dumper, value=>$thing});
     if ( $self->thing_is_vertex($thing) ) {
         $thing = $self->get_vertex_object($thing);
         $log->debug("Thing is now ".ref($thing));

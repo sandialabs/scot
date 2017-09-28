@@ -43,7 +43,8 @@ sub split_alertgroups {
     push @$data, $data if ( ref($data) ne "ARRAY" );
         
     my $alert_rows  = scalar(@$data);
-    my $row_limit   = $env->get_config_item("row_limit")//100;
+    my $row_limit   = $env->get_config_item("row_limit") // 100;
+    $log->debug("row limit is $row_limit");
     my @ag_requests = ();
     my $parts       = int($alert_rows/$row_limit);
     my $remainder   = $alert_rows % $row_limit;
@@ -53,10 +54,12 @@ sub split_alertgroups {
     my $page        = 1;
 
     while ( my @subalerts = splice(@$data, 0, $row_limit) ) {
+        $log->debug("sub alerts contain ".scalar(@subalerts)." rows");
         my $sub = $href->{request}->{json}->{subject};
         $sub .= " (part $page of $parts)" if ($parts != 1);
         my $new = dclone($href);
         $new->{request}->{json}->{subject} = $sub;
+        $log->debug("creating $sub");
         push @{$new->{request}->{json}->{data}}, @subalerts;
         push @ag_requests, $new;
         $page++;
