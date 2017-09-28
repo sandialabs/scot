@@ -533,9 +533,6 @@ sub post_alertgroup {
         $log->debug("Posting via direct mongo access");
         my $mongo   = $self->env->mongo;
         my $agcol   = $mongo->collection('Alertgroup');
-        #my $agobj   = $agcol->create_from_api({
-        #    request => { json   => $data }
-        #});
         my @agobjs  = $agcol->api_create({
             request => { json   => $data }
         });
