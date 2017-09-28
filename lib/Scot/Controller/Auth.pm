@@ -863,7 +863,11 @@ sub get_apikey {
     };
 
     my $collection  = $self->env->mongo->collection('Apikey');
-    my $apikey      = $collection->create_from_api($record);
+    my $apikey      = $collection->api_create({
+        request => {
+            json    => $record
+        }
+    });
 
     $self->do_render({
         status  => 'ok',

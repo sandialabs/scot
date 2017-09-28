@@ -18,25 +18,9 @@ Custom collection operations for Game
 
 =over 4
 
-=item B<create_from_handler($handler_ref)>
-
-Create an event and from a POST to the handler
 
 =cut
 
-sub create_from_api {
-    my $self    = shift;
-    my $request = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-
-    $log->trace("Custom create in Scot::Collection::Guide");
-
-    my $json    = $request->{request}->{json};
-    my $game    = $self->create($json);
-
-    return $game;
-}
 
 sub upsert {
     my $self    = shift;

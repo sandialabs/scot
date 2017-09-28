@@ -62,6 +62,10 @@ $t->put_ok("/scot/api/v2/alert/$alert_1_id" => json =>
 )->status_is(200)
  ->json_is('/status'    => "ok");
 
+# XXX
+#print Dumper($t->tx->res->json), "\n";
+#done_testing();
+#exit 0;
 
 my $event1  = $t->tx->res->json->{id};
 
@@ -118,7 +122,7 @@ $t->get_ok("/scot/api/v2/event/$event1/entry" => {},
     ->json_is('/records/0/children/0/parent'    => 1)
     ->json_is('/records/0/children/1/class'     => 'entry')
     ->json_is('/records/0/children/1/parent'     => 1)
-    ->json_is('/records/0/children/0/body'  => '<h3>From Alert <a href="/#/alert/1">1</h3><table class="tablesorter alertTableHorizontal">
+    ->json_is('/records/0/children/0/body'  => '<h3>From Alert <a href="/#/alert/1">1</h3><br><h4>test message 1</h4><table class="tablesorter alertTableHorizontal">
 <tr>
 <th>foo</th><th>bar</th>
 </tr>
