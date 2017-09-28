@@ -34,9 +34,12 @@ sub create_from_promoted_alert {
         id                    => $event->id,
     };
     my $id  = $alert->id;
+    my $agcol   = $mongo->collection('Alertgroup');
+    my $agobj   = $agcol->find_iid($alert->alertgroup+0);
+    my $subject = $agobj->subject;
     $json->{body}              = 
         qq|<h3>From Alert <a href="/#/alert/$id">$id</h3><br>|.
-        qq|<h4>|.$alert->subject.qq|</h4>|.
+        qq|<h4>|.$subject.qq|</h4>|.
         $self->build_table($alert);
     $log->debug("Using : ",{filter=>\&Dumper, value => $json});
 
@@ -267,69 +270,6 @@ EOF
 
     return $entry_obj;
 
-}
-
-sub create_from_api {
-    my $self    = shift;
-    my $request = shift;
-
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
-    my $mq      = $env->mq;
-
-    $log->trace("Custom create in Scot::Collection::Entry");
-
-    my $user    = $request->{user};
-
-    my $json    = $request->{request}->{json};
-
-    my $target_type = delete $json->{target_type};
-    my $target_id   = delete $json->{target_id};
-
-    unless ( defined $target_type ) {
-        $log->error("Error: Must provide a target type");
-        return {
-            error_msg   => "Entries must have target_type defined",
-        };
-    }
-
-    unless ( defined $target_id ) {
-        $log->error("Error: Must provide a target id");
-        return {
-            error_msg   => "Entries must have target_id defined",
-        };
-    }
-
-    my $task = $self->validate_task($request);
-    if ( $task ) {
-        $json->{class}      = "task";
-        $json->{metadata}   = $task;
-    }
-
-    my $default_permitted_groups = $self->get_default_permissions(
-        $target_type, $target_id
-    );
-
-    unless ( $request->{readgroups} ) {
-        $json->{groups}->{read} = $default_permitted_groups->{read};
-    }
-    unless ( $request->{modifygroups} ) {
-        $json->{groups}->{modify} = $default_permitted_groups->{modify};
-    }
-
-    $json->{target} = {
-        type    => $target_type,
-        id      => $target_id,
-    };
-
-    $json->{owner}  = $user;
-
-    $log->debug("Creating entry with: ", { filter=>\&Dumper, value => $json});
-
-    my $entry_obj   = $self->create($json);
-
-    return $entry_obj;
 }
 
 override api_create => sub {

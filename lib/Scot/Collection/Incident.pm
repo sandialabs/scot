@@ -21,7 +21,7 @@ Custom collection operations for Files
 
 =over 4
 
-=item B<create_from_api($handler_ref)>
+=item B<api_create($handler_ref)>
 
 Create an event and from a POST to the handler
 
@@ -56,37 +56,6 @@ override api_create => sub {
     }
     return $incident;
 };
-
-
-sub create_from_api {
-    my $self    = shift;
-    my $request = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
-
-    $log->trace("Custom create in Scot::Collection::Incident");
-
-    my $user    = $request->{user};
-    my $json    = $request->{request}->{json};
-
-    my @tags    = $env->get_req_array($json, "tags");
-
-    my $incident    = $self->create($json);
-
-    unless ($incident) {
-        $log->error("ERROR creating Incident from ",
-                    { filter => \&Dumper, value => $request});
-        return undef;
-    }
-
-    my $id  = $incident->id;
-
-    if ( scalar(@tags) > 0 ) {
-        $self->upssert_links("Tag", "incident", $id, @tags);
-    }
-    return $incident;
-}
 
 sub create_promotion {
     my $self    = shift;
