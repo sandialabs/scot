@@ -89,7 +89,7 @@ sub get_vertex {
 
     if ( ref($thing) =~ /Scot::Model/ ) {
         return { 
-            id      => $thing->id,
+            id      => $thing->id + 0,
             type    => $thing->get_collection_name,
         };
     }
@@ -106,7 +106,7 @@ sub get_vertex_object {
     if ( ref($vertex) ne "HASH" ) {
         die "Must provide get_vertex_object with a vertex Hash Ref";
     }
-    my $id      = $vertex->{id};
+    my $id      = $vertex->{id} + 0;
     my $type    = $vertex->{type};
     my $col     = $self->env->mongo->collection(ucfirst($type));
     my $obj     = $col->find_iid($id);
@@ -166,6 +166,21 @@ sub link_objects {
         $self->get_vertex_memo($v0),
         $self->get_vertex_memo($v1),
     );
+
+    my $match = { vertices => { '$all' => [
+        { '$elemMatch'  => $vertices[0] },
+        { '$elemMatch'  => $vertices[1] },
+    ]}};
+    my $link = $self->find_one($match); 
+
+    $self->env->log->debug("HEY DUDE: Link match is ",{filter=>\&Dumper, value=>$match});
+    $self->env->log->debug("HEY DUDE: Link match is ",{filter=>\&Dumper, value=>$link});
+
+    if (defined $link ) {
+        $self->env->log->debug("Link exists, returning a pointer");
+        return $link;
+    }
+    $self->env->log->debug("Link does not exist already, creating...");
 
     return $self->create({
         vertices    =>  \@vertices,
@@ -292,7 +307,7 @@ sub get_display_count {
     my $match   = {
         '$and'  => [
             {vertices => { '$elemMatch' => $vertex } },
-            {'vertices.type' => { '$nin' => [ 'alert', 'entry' ] } },
+            {'vertices.type' => { '$nin' => [ 'alertgroup', 'entry' ] } },
         ],
     };
     my $cursor  = $self->find($match);
@@ -371,7 +386,11 @@ sub link_exists {
         $self->get_vertex($obj2)
     );
 
-    my $linkobj = $self->find_one({vertices => { '$all' => \@vertices }});
+    my $match = { vertices => { '$all' => [
+        { '$elemMatch'  => $vertices[0] },
+        { '$elemMatch'  => $vertices[1] },
+    ]}};
+    my $linkobj = $self->find_one($match);
 
     return defined $linkobj;
 }
