@@ -25,7 +25,7 @@ BaseCommands =
     into: (argv,d,ctx) =>
         console.log "into(proc)"
         Utils.parsefunction (argv.join " "),ctx
-            .map (proc) ->
+            .and_then (proc) ->
                 try
                     Result.wrap (proc d)
                 catch e
@@ -55,15 +55,17 @@ BaseCommands =
     map: (argv,ls,ctx) =>
         console.log "map(proc)"
         Utils.parsefunction (argv.join " "),ctx
-            .map (proc) -> 
+            .and_then (proc) -> 
                 try
                     if Utils.isArray ls
                         Result.wrap (List.map ls, proc)
                     else if Utils.isObject ls
                         Result.wrap (Struct.map ls,proc)
+                    else # plain number or something
+                        Result.wrap (proc ls)
                 catch e
                     Result.err (''+e)
-            .map_err (msg) -> Result.err ("map(proc): "+msg)
+            .map_err (msg) ->  ("map(proc): "+msg)
 
     help__tolist: ()->"""
         tolist
@@ -120,12 +122,12 @@ BaseCommands =
     mapall: (argv,ls,ctx) =>
         console.log "mapall"
         Utils.parsefunction (argv.join " "),ctx
-            .map (proc) -> 
+            .and_then (proc) -> 
                 try
                     Result.wrap (List.mapall ls,proc)
                 catch e
                     Result.err (''+e)
-            .map_err (msg) -> Result.err ("mapall(proc): "+msg)
+            .map_err (msg) ->  ("mapall(proc): "+msg)
            
     help__filter: ()->"""
         filter function
@@ -140,14 +142,14 @@ BaseCommands =
         """
     filter: (argv,ls,ctx) =>
         Utils.parsefunction (argv.join " "),ctx
-            .map (proc) ->
+            .and_then (proc) ->
                 if Utils.isArray ls
                     Result.wrap (List.filter ls,proc)
                 else if Utils.isObject ls
                     Result.wrap (Struct.filter ls,proc)
                 else
                     throw "Can't filter something that is neither object nor list"
-            .map_err (msg) -> Result.err ("filter: "+msg)
+            .map_err (msg) ->  ("filter: "+msg)
 
     help__foldl: ()->"""
         foldl &lt;initial_value&gt; &lt;function(accumulator,next_val)&gt;
@@ -192,14 +194,14 @@ BaseCommands =
             Result.err "expected an initial value and a function"
         else
             Utils.parsefunction parts[2],ctx
-                .map (proc) ->
+                .and_then (proc) ->
                     Utils.parsevalue parts[1],ctx
-                        .map (acc) ->
+                        .and_then (acc) ->
                             try
                                 Result.wrap (List.foldl acc, ls, proc)
                             catch e
                                 Result.err (''+e)
-        ).map_err (e) -> Result.err ("foldl: "+e)
+        ).map_err (e) ->  ("foldl: "+e)
 
     help__foldr: ()->"""
         foldr &lt;initial_value&gt; &lt;function(next_val,accumulator)&gt;
@@ -242,14 +244,14 @@ BaseCommands =
             Result.err "expected an initial value and a function"
         else
             Utils.parsefunction parts[2],ctx
-                .map (proc) ->
+                .and_then (proc) ->
                     Utils.parsevalue parts[1],ctx
-                        .map (acc) ->
+                        .and_then (acc) ->
                             try
                                 Result.wrap (List.foldr ls, acc, proc)
                             catch e
                                 Result.err (''+e)
-        ).map_err (e) -> Result.err ("foldr: "+e)
+        ).map_err (e) ->  ("foldr: "+e)
 
     help__group: () ->"""
         group &lt;function(item)&gt;
@@ -269,12 +271,12 @@ BaseCommands =
     group: (argv,d,ctx) =>
         console.log "group"
         Utils.parsefunction (argv.join " "),ctx
-            .map (proc) ->
+            .and_then (proc) ->
                 try
                     Result.wrap (List.group d, proc)
                 catch e
                     Result.err (''+e)
-            .map_err (e) -> Result.err ("group: "+e)
+            .map_err (e) ->  ("group: "+e)
 
     help__zip: ()->"""
         zip
@@ -299,7 +301,7 @@ BaseCommands =
                 Result.wrap (List.zip ls)
             catch e
                 Result.err (''+e)
-        ).map_err (msg)-> Result.err ("zip: "+msg)
+        ).map_err (msg)->  ("zip: "+msg)
 
     help__unzip: ()->"""
         unzip
@@ -324,7 +326,7 @@ BaseCommands =
                 Result.wrap (List.zip ls)
             catch e
                 Result.err (''+e)
-        ).map_err (msg)-> Result.err ("unzip: "+msg)
+        ).map_err (msg)->  ("unzip: "+msg)
 
     help__flatten: ()->"""
         flatten
@@ -352,7 +354,7 @@ BaseCommands =
                 Result.wrap (List.flatten ls)
             catch e
                 Result.err (''+e)
-        ).map_err (msg)-> Result.err ("flatten: "+msg)
+        ).map_err (msg)->  ("flatten: "+msg)
 
     help__squash: ()->"""
         squash
@@ -375,7 +377,7 @@ BaseCommands =
                 Result.wrap (List.squash ls)
             catch e
                 Result.err (''+e)
-        ).map_err (msg)-> Result.err ("squash: "+msg)
+        ).map_err (msg)->  ("squash: "+msg)
 
     help__sort: ()->"""
         sort [function(a,b)]
@@ -407,15 +409,15 @@ BaseCommands =
         cmp = Utils.smartcmp
         (if argv.length > 0
             Utils.parsefunction (argv.join " "),ctx
-                .map_err (e) -> Result.err "sort: expected a comparison function, or nothing"
-                .map (cmp) ->
+                .map_err (e) ->  "sort: expected a comparison function, or nothing"
+                .and_then (cmp) ->
                     try
                         Result.wrap (List.sort ls,cmp)
                     catch e
                         Result.err (''+e)
         else
             Result.wrap (List.sort ls,cmp)
-        ).map_err (e) -> Result.err ("sort: "  + e)
+        ).map_err (e) ->  ("sort: "  + e)
 
     help__uniq: ()->"""
         uniq [compare]
@@ -450,11 +452,11 @@ BaseCommands =
         cmp = Utils.smartcmp
         (if argv.length > 0
             Utils.parsefunction (argv.join ' '),ctx
-                .map_err (e)->Result.err "expected a list"
-                .map (proc)-> Result.wrap (List.uniq ls,proc)
+                .map_err (e)-> "expected a list"
+                .and_then (proc)-> Result.wrap (List.uniq ls,proc)
         else
             Result.wrap (List.uniq ls,cmp)
-        ).map_err (e)->Result.err ("uniq: "+e)
+        ).map_err (e)-> ("uniq: "+e)
         
     help__wrap: ()->"""
         wrap &lt;value&gt;
@@ -477,7 +479,7 @@ BaseCommands =
     
     wrap: (argv,data,ctx) =>
         Utils.parsevalue (argv.join " "),ctx
-            .map_err (e) -> Result.err ("wrap: "+e)
+            .map_err (e) ->  ("wrap: "+e)
 
     help__nest: ()->"""
         nest &lt;path_function&gt;
@@ -505,8 +507,8 @@ BaseCommands =
 
     nest: (argv,d,ctx) =>
         (Utils.parsefunction (argv.join " "),ctx
-            .map_err (e) -> Result.err "expected a function"
-            .map (pathmkr) ->
+            .map_err (e) ->  "expected a function"
+            .and_then (pathmkr) ->
                 try
                     Result.wrap (List.nest d,pathmkr)
                 catch e
@@ -535,8 +537,8 @@ BaseCommands =
  
     bfs: (argv,d,ctx) =>
         (Utils.parsefunction (argv.join " "),ctx
-            .map_err (e) -> Result.err "expected a function"
-            .map (proc) ->
+            .map_err (e) ->  "expected a function"
+            .and_then (proc) ->
                 try
                     if Utils.isArray d
                         Result.wrap (List.bfs d,proc)
@@ -545,7 +547,7 @@ BaseCommands =
                     else Result.wrap (proc d)
                 catch e
                     Result.err (''+e))
-        .map_err (e) -> Result.err ("bfs: "+e)
+        .map_err (e) ->  ("bfs: "+e)
 
     help__histogram: ()->"""
         histogram
@@ -567,7 +569,7 @@ BaseCommands =
             Result.wrap (List.histogram d)
         catch e
             Result.err (''+e))
-        .map_err (e)->Result.err ("pdf: "+e)
+        .map_err (e)-> ("pdf: "+e)
 
     help__tabulate: () -> """
         tabulate [basevalue]
@@ -616,7 +618,7 @@ BaseCommands =
 
     tabulate: (argv,data,ctx) =>
         (Utils.parsevalue argv,ctx)
-            .map (baseval) ->
+            .and_then (baseval) ->
                 baseval ?= {}
                 try
                     rows = (key for own key of data).sort()
@@ -635,7 +637,7 @@ BaseCommands =
                     Result.wrap result
                 catch e
                     Result.err e
-        .map_err (e)->Result.err ("tabulate: "+e)
+        .map_err (e)-> ("tabulate: "+e)
 
     help__deepmap: ()->"""
         deepmap <proc>
@@ -657,12 +659,12 @@ BaseCommands =
 
     deepmap: (argv,d,ctx) =>
         (Utils.parsefunction argv.join ' ',ctx)
-            .map (proc) ->
+            .and_then (proc) ->
                 if Utils.isArray d
                     Result.wrap (List.deepmap d,proc)
                 else
                     Result.wrap (Struct.deepmap d,proc)
-            .map_err (e) -> Result.err ("deepmap: "+e)
+            .map_err (e) ->  ("deepmap: "+e)
     help__cmb: () ->"""
         cmb <n> 
 
@@ -682,9 +684,9 @@ BaseCommands =
     
     cmb: (argv,d,ctx) =>
         (Utils.parsevalue argv.join ' ', ctx)
-            .map (ct) ->
+            .and_then (ct) ->
                 Result.wrap (List.cmb d,ct)
-            .map_err (e)->Result.err ("cmb: "+e)
+            .map_err (e)-> ("cmb: "+e)
 
     help__window: ()->"""
         window n proc
@@ -696,7 +698,7 @@ BaseCommands =
 
         Example:
             $ [0...10] \\ window 3 (a,b,c)->a+b+c
-            [3, 6, 9, 12, 15, 18, 21]
+            [3, 6, 9, 12, 15, 18, 21, 24]
 
         The example just sums the current three elements for every
         consecutive group of three elements in the list. The input
@@ -705,11 +707,11 @@ BaseCommands =
         
     window: (argv,d,ctx) =>
         (Utils.parsevalue argv[0],ctx)
-            .map (n) ->
+            .and_then (n) ->
                 (Utils.parsefunction argv[1..].join ' ',ctx)
-                    .map (proc) ->
+                    .and_then (proc) ->
                         Result.wrap (List.window d,n,proc)
-            .map_err (e)-> Result.err ("window: "+e)
+            .map_err (e)->  ("window: "+e)
 
     help__intersect: ()->"""
         intersect [proc]
@@ -755,9 +757,8 @@ BaseCommands =
         else
             proc = Utils.parsefunction '(x)->x'
         proc
-            .map (p)->
-                Result.wrap (List.intersect data,p)
-            .map_err (e) -> Result.err ("intersect: "+e)
+            .map (p)->List.intersect data,p
+            .map_err (e) ->  ("intersect: "+e)
 
      help__select: ()->"""
         select [list,of,keys]
@@ -780,10 +781,11 @@ BaseCommands =
         
      select: (argv, data, ctx) =>
          Utils.parsevalue argv.join ' ',ctx
-             .map (idx) ->
+             .and_then (idx) ->
                  if Utils.isArray data
                      Result.wrap (List.select data,idx)
                  else
                      Result.wrap (Struct.select data,idx)
-             .map_err (e) -> Result.err ("select: "+e)
+             .map_err (e) ->  ("select: "+e)
+
 module.exports = BaseCommands

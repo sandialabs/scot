@@ -11,12 +11,12 @@ var Draggable               = require('react-draggable');
 var DetailDataStatus        = require('../components/detail_data_status.jsx');
 var Link                    = require('react-router-dom').Link;
 var Store                   = require('../activemq/store.jsx');
+var Marker                  = require('../components/marker.jsx').default;
 
 var startX;
 var startY;
 var startWidth;
 var startHeight;
-
 
 var EntityDetail = React.createClass({
     getInitialState: function() {
@@ -431,20 +431,20 @@ var EntityValue = React.createClass({
     render: function() {
         if (this.props.data != undefined) {  //Entity Detail Popup showing the entity type
             var entityurl = '/' + 'entity/' + this.props.data.id;
-            var statusClass = '';
-            if (this.props.data.status == 'untracked') {
-                statusClass = 'entity-untracked';
-            } else if (this.props.data.status == 'tracked') {
-                statusClass = 'entity-tracked';
-            }
+            
             return (
                 <div className='flair_header'>
-                    <Link to={entityurl} target="_blank">
-                        Entity {this.props.data.id} 
-                    </Link>
-                    <div style={{display: 'flex'}}>
-                        <DetailDataStatus status={this.props.data.status} id={this.props.data.id} type={'entity'} errorToggle={this.props.errorToggle} />
+                    <div>
+                        <Link to={entityurl} target="_blank">
+                            Entity {this.props.data.id}
+                        </Link>
                         <span>&nbsp;</span>
+                        <DetailDataStatus status={this.props.data.status} id={this.props.data.id} type={'entity'} errorToggle={this.props.errorToggle} /> 
+                        <span>&nbsp;</span>   
+                        <Marker type='entity' id={this.props.data.id} string={this.props.value} />
+                    </div>
+                    <div style={{display: 'flex'}}>
+                        
                         <div style={{display:'flex'}}>
                             {this.props.data.type}: {this.props.value}
                         </div> 
@@ -621,18 +621,13 @@ var EntityReferences = React.createClass({
             entityDataEvent:null,
             entityDataIncident:null,
             entityDataIntel:null,
-            entityDataAlertGroupLoading:true,
-            entityDataEventLoading:true,
-            entityDataIncidentLoading:true,
-            entityDataIntelLoading:true,
-            navigateType: '',
-            navigateId: null,
-            selected:{},
+            entityDataSignature: null,
             maxRecords: maxRecords,
             loadingAlerts: true,
             loadingEvents: true,
             loadingIncidents: true,
             loadingIntel: true,
+            loadingSignature: true,
             loading: true,
         }
     },
@@ -670,7 +665,7 @@ var EntityReferences = React.createClass({
                     }
                     this.props.updateAppearances(result.length);
                     this.setState({entityDataAlertGroup:arr,loadingAlerts:false})
-                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false  && this.state.loadingSignature == false) {
                         this.setState({loading:false});
                     }
                 }
@@ -713,7 +708,7 @@ var EntityReferences = React.createClass({
                     }
                     this.props.updateAppearances(result.length);
                     this.setState({entityDataEvent:arr,loadingEvents:false})
-                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false && this.state.loadingSignature ) {
                         this.setState({loading:false});
                     }
                 }
@@ -756,7 +751,7 @@ var EntityReferences = React.createClass({
                     }
                     this.props.updateAppearances(result.length);
                     this.setState({entityDataIncident:arr, loadingIncidents:false})
-                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false && this.state.loadingSignature == false) {
                         this.setState({loading:false});
                     }
                 }
@@ -799,7 +794,7 @@ var EntityReferences = React.createClass({
                     }
                     this.props.updateAppearances(result.length);
                     this.setState({entityDataIntel:arr, loadingIntel:false})
-                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false && this.state.loadingSignature == false) {
                         this.setState({loading:false});
                     }
                 }
@@ -808,6 +803,92 @@ var EntityReferences = React.createClass({
                 this.props.errorToggle('failed to get entity references for intel') 
             }.bind(this)
         })
+        
+        this.signatureRequest = $.ajax({
+            type: 'get',
+            url: 'scot/api/v2/entity/' + this.props.entityid + '/signature',
+            data: {sort:JSON.stringify({'id':-1})},
+            traditional: true,
+            success: function(result) {
+                var result = result.records
+                var arr = [];
+                var arrPromoted = [];
+                var arrClosed = [];
+                var arrOpen = [];
+                var recordNumber = this.state.maxRecords;
+                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+                for(var i=0; i < recordNumber; i++) {
+                    if (result[i] != null) {
+                        if (result[i].status == 'promoted'){
+                            arrPromoted.push(<ReferencesBody type={'signature'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else if (result[i].status == 'closed') {
+                            arrClosed.push(<ReferencesBody type={'signature'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else {
+                            arrOpen.push(<ReferencesBody type={'signature'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        }
+                    }
+                }
+                arr.push(arrPromoted);
+                arr.push(arrClosed);
+                arr.push(arrOpen);
+                if (this.isMounted()) {
+                    if (result.length >= 100) {
+                        this.props.showFullEntityButton();
+                    }
+                    this.props.updateAppearances(result.length);
+                    this.setState({entityDataSignature:arr, loadingSignature:false})
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false  && this.state.loadingIntel == false && this.state.loadingSignature == false) {
+                        this.setState({loading:false});
+                    }
+                }
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get entity references for signature') 
+            }.bind(this)
+        })
+        /*
+        this.entityRequest = $.ajax({
+            type: 'get',
+            url: 'scot/api/v2/entity/' + this.props.entityid + '/entity',
+            data: {sort:JSON.stringify({'id':-1})},
+            traditional: true,
+            success: function(result) {
+                var result = result.records
+                var arr = [];
+                var arrPromoted = [];
+                var arrClosed = [];
+                var arrOpen = [];
+                var recordNumber = this.state.maxRecords;
+                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+                for(var i=0; i < recordNumber; i++) {
+                    if (result[i] != null) {
+                        if (result[i].status == 'promoted'){
+                            arrPromoted.push(<ReferencesBody type={'entity'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else if (result[i].status == 'closed') {
+                            arrClosed.push(<ReferencesBody type={'entity'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else {
+                            arrOpen.push(<ReferencesBody type={'entity'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        }
+                    }
+                }
+                arr.push(arrPromoted);
+                arr.push(arrClosed);
+                arr.push(arrOpen);
+                if (this.isMounted()) {
+                    if (result.length >= 100) {
+                        this.props.showFullEntityButton();
+                    }
+                    this.props.updateAppearances(result.length);
+                    this.setState({entityDataIntel:arr, loadingIntel:false})
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                        this.setState({loading:false});
+                    }
+                }
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get entity references for entity') 
+            }.bind(this)
+        })*/
         $('#sortableentitytable'+this.props.entityid).tablesorter();
     },
     componentDidUpdate: function() {
@@ -820,7 +901,7 @@ var EntityReferences = React.createClass({
         var id = 'sortableentitytable' + this.props.entityid;
         return (
             <div className='entityTableWrapper'>
-            {this.state.loading ? <span>Loading: {this.state.loadingAlerts ? <span>Alerts </span> : null}{this.state.loadingEvents ? <span>Events </span> : null}{this.state.loadingIncidents ? <span>Incidents </span> : null}{this.state.loadingIntel ? <span>Intel </span> : null}</span>: null}
+            {this.state.loading ? <span>Loading: {this.state.loadingAlerts ? <span>Alerts </span> : null}{this.state.loadingEvents ? <span>Events </span> : null}{this.state.loadingIncidents ? <span>Incidents </span> : null}{this.state.loadingIntel ? <span>Intel </span> : null}{this.state.loadingSignature ? <span>Signature </span> : null}</span>: null}
             <table className="tablesorter entityTableHorizontal" id={id} width='100%'>
                 <thead>
                     <tr>
@@ -834,6 +915,7 @@ var EntityReferences = React.createClass({
                     </tr>
                 </thead>
                 <tbody>
+                    {this.state.entityDataSignature}
                     {this.state.entityDataIntel}
                     {this.state.entityDataIncident}
                     {this.state.entityDataEvent}

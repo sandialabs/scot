@@ -4,11 +4,13 @@ var Button          = require('react-bootstrap/lib/Button.js');
 var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
 var DropdownButton  = require('react-bootstrap/lib/DropdownButton.js');
 var Promote         = require('../components/promote.jsx');
+var Marker          = require('../components/marker.jsx').default;
 
 var SelectedHeaderOptions = React.createClass({
     getInitialState: function() {
         return {
-            globalFlairState: true
+            globalFlairState: true,
+            promoteRemaining: null,
         }
     },
     toggleFlair: function() { 
@@ -64,6 +66,9 @@ var SelectedHeaderOptions = React.createClass({
             array.push({id:id,status:'open'});
         }.bind(this));
         var data = JSON.stringify({alerts:array})    
+        
+        this.props.ToggleProcessingMessage(true);
+
         $.ajax({
             type:'put',
             url: '/scot/api/v2/'+this.props.type + '/' +this.props.id,
@@ -71,12 +76,15 @@ var SelectedHeaderOptions = React.createClass({
             contentType: 'application/json; charset=UTF-8',
             success: function(response){
                 console.log('success');
+                this.props.ToggleProcessingMessage(false);
             }.bind(this),
             error: function(data) {
                 this.props.errorToggle('failed to open selected alerts', data);
+                this.props.ToggleProcessingMessage(false);
             }.bind(this)
         })
     },
+
     alertCloseSelected: function() {
         var time = Math.round(new Date().getTime() / 1000)
         var array = [];
@@ -85,6 +93,9 @@ var SelectedHeaderOptions = React.createClass({
             array.push({id:id,status:'closed', closed:time});
         }.bind(this)); 
         var data = JSON.stringify({alerts:array})
+        
+        this.props.ToggleProcessingMessage(true);
+        
         $.ajax({
             type:'put',
             url: '/scot/api/v2/'+this.props.type + '/'+ this.props.id,
@@ -92,12 +103,15 @@ var SelectedHeaderOptions = React.createClass({
             contentType: 'application/json; charset=UTF-8',
             success: function(response){
                 console.log('success');
+                this.props.ToggleProcessingMessage(false);
             }.bind(this),
             error: function(data) {
                 this.props.errorToggle('failed to close selected alerts', data);
+                this.props.ToggleProcessingMessage(false);
             }.bind(this)
         })
     },
+
     alertPromoteSelected: function() {
         var data = JSON.stringify({promote:'new'})
         var array = [];
@@ -105,6 +119,9 @@ var SelectedHeaderOptions = React.createClass({
             var id = $(tr).attr('id');
             array.push(id);
         }.bind(this));
+
+        this.props.ToggleProcessingMessage(true);
+
         //Start by promoting the first one in the array
         $.ajax({
             type:'put',
@@ -116,7 +133,11 @@ var SelectedHeaderOptions = React.createClass({
                 var promoteTo = {
                     promote:response.pid
                 }
+                
+                this.setState({promoteRemaining: array.length -1 });
+                
                 for (var i=1; i < array.length; i++) {
+                   
                     $.ajax({
                         type:'put',
                         url: '/scot/api/v2/alert/'+array[i],
@@ -124,9 +145,16 @@ var SelectedHeaderOptions = React.createClass({
                         contentType: 'application/json; charset=UTF-8',
                         success: function(response){
                             console.log('success');
+                            this.setState({promoteRemaining: this.state.promoteRemaining -1})
+                            
+                            if ( this.state.promoteRemaining == 0 ) {
+                                this.props.ToggleProcessingMessage(false);
+                            }
+
                         }.bind(this),
                         error: function(data) {
                             this.props.errorToggle('failed to promoted selected alerts', data);
+                            this.setState({promoteRemaining: this.state.promoteRemaining -1});
                         }.bind(this)
                     })
                 }
@@ -238,6 +266,7 @@ var SelectedHeaderOptions = React.createClass({
             }        
         }
     },
+
     componentDidMount: function() {
         //open, close SELECTED alerts
        if (this.props.type == 'alertgroup' || this.props.type == 'alert') { 
@@ -252,17 +281,20 @@ var SelectedHeaderOptions = React.createClass({
             }.bind(this))
        }
     },
+
     componentWillUnmount: function() {
         if (this.props.type == 'alertgroup' || this.props.type == 'alert') {
             $('#main-detail-container').unbind('keydown');
         }
     },
+
     guideToggle: function() {
         var entityoffset = {top: 0, left: 0} //set to 0 so it appears in a default location.
         this.props.flairToolbarToggle(this.props.guideID,null,'guide', entityoffset, null)
     },
+
     createGuide: function() {
-       var data = JSON.stringify({subject: 'ENTER A GUIDE NAME',applies_to:[this.props.subjectName],entry:[]})
+       var data = JSON.stringify({subject: 'ENTER A GUIDE NAME',applies_to:[this.props.headerData.subjectName],entry:[]})
         $.ajax({
             type: 'POST',
             url: '/scot/api/v2/guide',
@@ -315,6 +347,19 @@ var SelectedHeaderOptions = React.createClass({
         var type = this.props.type;
         var id = this.props.id;
         var status = this.props.status;
+
+        var string = '';
+
+        if ( this.props.headerData.subject ) {
+            string = this.props.headerData.subject;
+        } else if ( this.props.headerData.value ) {
+            string = this.props.headerData.value;
+        } else if ( this.props.headerData.name ) {
+            string = this.props.headerData.name;  
+        } else if ( this.props.headerData.body ) {
+            string = this.props.headerData.body;
+        } 
+
         if (type != 'alertgroup') {
             var newType = null;
             var showPromote = true;
@@ -340,11 +385,17 @@ var SelectedHeaderOptions = React.createClass({
                     {type != 'entity' ? <Button eventKey="6" onClick={this.props.permissionsToggle} bsSize='xsmall'><i className="fa fa-users" aria-hidden="true"></i> Permissions</Button> : null } 
                     <Button eventKey="7" onClick={this.props.entitiesToggle} bsSize='xsmall'><span className='entity'>__</span> View Entities</Button>
                     {type == 'guide' ? <Button eventKey='8' onClick={this.props.guideRedirectToAlertListWithFilter} bsSize='xsmall'><i className="fa fa-table" aria-hidden='true'></i> View Related Alerts</Button> : null}
+                    <Button onClick={this.props.linksModalToggle} bsSize='xsmall'><i className='fa fa-link' aria-hidden='true'></i> Links</Button>
                     {showPromote ? <Promote type={type} id={id} updated={this.props.updated} errorToggle={this.props.errorToggle} /> : null}
                     {type != 'signature' ? <Button bsSize='xsmall' onClick={this.createLinkSignature}><i className="fa fa-pencil" aria-hidden="true"></i> Create & Link Signature</Button> : null}
                     {type == 'signature' ? <Button eventKey='11' onClick={this.props.showSignatureOptionsToggle} bsSize='xsmall' bsStyle='warning'>View Custom Options</Button> : null}
                     <Button bsStyle='danger' eventKey="9" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button>
-                    <Button id='refresh-detail' bsStyle='info' eventKey="10" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
+                    <ButtonGroup style={{float:'right'}}>
+                        <Marker type={type} id={id} string={string} />
+                        <Button onClick={this.props.markModalToggle} bsSize='xsmall'>Marked Objects</Button>
+                        <Button id='refresh-detail' bsStyle='info' eventKey="10" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
+                    </ButtonGroup>
+                    
                 </div>
             )
         } else {
@@ -366,10 +417,16 @@ var SelectedHeaderOptions = React.createClass({
                         <Button eventKey='12' onClick={this.props.entryToggle} bsSize='xsmall'><i className="fa fa-plus-circle" aria-hidden="true"></i> Add Entry</Button>
                         <Button eventKey="13" onClick={this.props.fileUploadToggle} bsSize='xsmall'><i className="fa fa-upload" aria-hidden="true"></i> Upload File</Button>
                         <Button eventKey='14' onClick={this.alertExportCSV} bsSize='xsmall'><img src='/images/csv_text.png'/> Export to CSV</Button>
+                        <Button onClick={this.props.linksModalToggle} bsSize='xsmall'><i className='fa fa-link' aria-hidden='true'></i> Links</Button>
+                        <Marker type={type} id={id} string={string} isAlert={true} getSelectedAlerts={this.getSelectedAlerts} />
                         <Button bsSize='xsmall' onClick={this.createLinkSignature}><i className="fa fa-pencil" aria-hidden="true"></i> Create & Link Signature</Button>
                         <Button eventKey='15' onClick={this.alertDeleteSelected} bsSize='xsmall' bsStyle='danger'><i className="fa fa-trash" aria-hidden="true"></i> Delete Selected</Button>
                         <Button bsStyle='danger' eventKey="17" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button> 
-                        <Button bsStyle='info' eventKey="16" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
+                        <ButtonGroup style={{float:'right'}}>
+                            <Marker type={type} id={id} string={string} />
+                            <Button onClick={this.props.markModalToggle} bsSize='xsmall'>Marked Actions</Button>
+                            <Button bsStyle='info' eventKey="16" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
+                        </ButtonGroup>
                     </div>
                 )
             } else { 
@@ -382,9 +439,14 @@ var SelectedHeaderOptions = React.createClass({
                         <Button eventKey='5' onClick={this.props.entitiesToggle} bsSize='xsmall'><span className='entity'>__</span> View Entities</Button>
                         {type == 'alertgroup' || type == 'event' || type == 'intel' ? <Button eventKey="6" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button> : null}
                         <Button eventKey='7' onClick={this.props.changeHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> {subjectType} History</Button>
+                        <Button onClick={this.props.linksModalToggle} bsSize='xsmall'><i className='fa fa-link' aria-hidden='true'></i> Links</Button>
                         <Button bsSize='xsmall' onClick={this.createLinkSignature}><i className="fa fa-pencil" aria-hidden="true"></i> Create & Link Signature</Button>
                         <Button bsStyle='danger' eventKey="8" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button>
-                        <Button bsStyle='info' eventKey="9" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
+                        <ButtonGroup style={{float:'right'}}>
+                            <Marker type={type} id={id} string={string} />
+                            <Button onClick={this.props.markModalToggle} bsSize='xsmall'>Marked Actions</Button>
+                            <Button bsStyle='info' eventKey="9" onClick={this.manualUpdate} bsSize='xsmall' style={{float:'right'}}><i className='fa fa-refresh' aria-hidden='true'></i></Button>
+                        </ButtonGroup>
                     </div>
                 )
             }

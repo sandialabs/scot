@@ -50,7 +50,7 @@ var ListViewDataEach = React.createClass({
                 }
             }
         }
-        this.props.selected(type,rowid,taskid)
+        this.props.selected(type,rowid, undefined, taskid)
         
     },
     render: function() {

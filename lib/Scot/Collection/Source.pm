@@ -18,7 +18,7 @@ override api_create => sub {
     $log->trace("Create Source from API");
 
     my $json    = $request->{request}->{json};
-    my $value   = $json->{value};
+    my $value   = lc($json->{value});
     my $note    = $json->{note};
 
     unless ( defined $value ) {

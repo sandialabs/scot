@@ -79,14 +79,10 @@ sub api_subthing {
     }
 
     if ( $subthing eq "entity" )  {
-        my @links   = map { $_->{entity_id} }
-            $mongo->collection('Link')->get_links_by_target({
-                id      => $id,
-                type    => 'guide',
-            })->all;
-        return $mongo->collection('Entity')->find({
-            id => { '$in' => \@links }
-        });
+        return $mongo->collection('Link')
+                     ->get_linked_objects_cursor(
+                        { id => $id, type => 'guide' },
+                        'entity' );
     }
 
     if ( $subthing eq "history" ) {
