@@ -24,7 +24,7 @@ override api_create => sub {
 
     my $json    = $request->{request}->{json};
 
-    my $value       = $json->{value};
+    my $value       = lc($json->{value});
     my $note        = $json->{note};
 
     unless ( defined $value ) {
@@ -130,26 +130,6 @@ sub syncro_tags {
     
 }
 
-override get_subthing => sub {
-    my $self        = shift;
-    my $thing       = shift;
-    my $id          = shift;
-    my $subthing    = shift;
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $log         = $env->log;
-
-    $id += 0;
-
-    my $col = $mongo->collection("Appearance");
-    my $cur = $col->find({
-        type    => "tag",
-        apid    => $id,
-        'target.type'   => $subthing,
-    });
-
-    return $cur;
-};
 
 
 
