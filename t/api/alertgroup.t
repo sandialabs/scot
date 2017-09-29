@@ -71,6 +71,7 @@ $t->get_ok("/scot/api/v2/alertgroup" => {},
     ->json_is('/records/0/source/0'    => 'todd')
     ->json_is('/records/0/source/1'    => 'scot');
 
+
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
            "Get alertgroup $alertgroup_id" )
   ->status_is(200)

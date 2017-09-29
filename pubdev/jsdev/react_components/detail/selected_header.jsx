@@ -24,7 +24,10 @@ var AddFlair                = require('../components/add_flair.jsx').AddFlair;
 var EntityDetail            = require('../modal/entity_detail.jsx');
 var LinkWarning             = require('../modal/link_warning.jsx');
 var Link                    = require('react-router-dom').Link;
+var Links                   = require('../modal/links.jsx').default;
 var DetailDataStatus        = require('../components/detail_data_status.jsx');
+var Mark                    = require('../modal/mark.jsx').default;
+var DetailHeaderMoreOptions = require('../components/detail_header_more_options').default;
 var InitialAjaxLoad;
 
 var SelectedHeader = React.createClass({
@@ -32,7 +35,7 @@ var SelectedHeader = React.createClass({
         var entityDetailKey = Math.floor(Math.random()*1000);
         return {
             showEventData:false,
-            headerData:null,
+            headerData:{},
             sourceData:'',
             tagData:'',
             permissionsToolbar:false,
@@ -70,7 +73,10 @@ var SelectedHeader = React.createClass({
             isNotFound: false,
             runWatcher: false,
             entityDetailKey: entityDetailKey,
-            showSignatureOptions: false,
+            processing: false,
+            showSignatureOptions: false,        
+            showMarkModal: false,
+            showLinksModal: false,
             isDeleted: false,       
         }
     },
@@ -507,12 +513,41 @@ var SelectedHeader = React.createClass({
             this.setState({showSignatureOptions: false});
         }
     },
+    markModalToggle: function() {
+        if (this.state.showMarkModal == false) {
+            this.setState({showMarkModal: true});
+        } else {
+            this.setState({showMarkModal: false});
+        }
+    },
+    ToggleProcessingMessage: function(status) {
+        this.setState({processing: status});
+   
+    },
+    
+    linksModalToggle: function() {
+        let showLinksModal = !this.state.showLinksModal;
+        this.setState({ showLinksModal: showLinksModal });
+    },
+
     render: function() {
         var headerData = this.state.headerData;         
         var viewedby = this.viewedbyfunc(headerData);
         var type = this.props.type;
         var subjectType = this.titleCase(this.props.type);  //in signatures we're using the key "name"
         var id = this.props.id; 
+        var string = '';
+
+        if ( this.state.headerData.subject ) {
+            string = this.state.headerData.subject;
+        } else if ( this.state.headerData.value ) {
+            string = this.state.headerData.value;
+        } else if ( this.state.headerData.name ) {
+            string = this.state.headerData.name;
+        } else if ( this.state.headerData.body ) {
+            string = this.state.headerData.body;
+        } 
+        
         return (
             <div> {this.state.isNotFound ? <h1>No record found.</h1> :
             <div>
@@ -522,9 +557,10 @@ var SelectedHeader = React.createClass({
                             {this.state.showEventData ? <EntryDataSubject data={this.state.headerData} subjectType={subjectType} type={type} id={this.props.id} errorToggle={this.props.errorToggle} />: null}
                             {this.state.refreshing ? <span style={{color:'lightblue'}}>Refreshing Data...</span> :null }
                             {this.state.loading ? <span style={{color:'lightblue'}}>Loading...</span> :null}    
+                            {this.state.processing ? <span style={{color: 'lightblue'}}>Processing Actions...</span> : null }
                         </div> 
                         {type != 'entity' ? 
-                            <div className='details-table toolbar'>
+                            <div className='details-table toolbar' style={{display: 'flex'}}>
                                 <table>
                                     <tbody>
                                         <tr>
@@ -557,6 +593,7 @@ var SelectedHeader = React.createClass({
                                         </tr>
                                     </tbody>
                                 </table>
+                                {/*<DetailHeaderMoreOptions type={type} id={id} data={this.state.headerData} errorToggle={this.props.errorToggle} showData={this.state.showEventData} />*/}
                             </div> 
                         :
                             null
@@ -568,8 +605,10 @@ var SelectedHeader = React.createClass({
                     {this.state.changeHistoryToolbar ? <ChangeHistory changeHistoryToggle={this.changeHistoryToggle} id={id} type={type} subjectType={subjectType} errorToggle={this.props.errorToggle}/> : null} 
                     {this.state.entitiesToolbar ? <Entities entitiesToggle={this.entitiesToggle} entityData={this.state.entityData} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} /> : null}
                     {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} errorToggle={this.props.errorToggle} history={this.props.history}/> :null}
-                    {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} guideRedirectToAlertListWithFilter={this.guideRedirectToAlertListWithFilter} showSignatureOptionsToggle={this.showSignatureOptionsToggle} errorToggle={this.props.errorToggle}/> : null} 
-                    {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated} errorToggle={this.props.errorToggle} /> : null}
+                    {this.state.showMarkModal ? <Mark modalActive={true} type={type} id={id} string={string} errorToggle={this.props.errorToggle} markModalToggle={this.markModalToggle} /> : null }
+                    {this.state.showLinksModal ? <Links modalActive={true} type={type} id={id} errorToggle={this.props.errorToggle} linksModalToggle={this.linksModalToggle} /> : null }
+                    {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} headerData={this.state.headerData} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} guideRedirectToAlertListWithFilter={this.guideRedirectToAlertListWithFilter} showSignatureOptionsToggle={this.showSignatureOptionsToggle} markModalToggle={this.markModalToggle} linksModalToggle={this.linksModalToggle} ToggleProcessingMessage={this.ToggleProcessingMessage} errorToggle={this.props.errorToggle} /> : null} 
+                    {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated} errorToggle={this.props.errorToggle}/> : null}
                 </div>
                 {this.state.showEventData && type != 'entity' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.props.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} showSignatureOptions={this.state.showSignatureOptions}/> : null}
                 {this.state.showEventData && type == 'entity' ? <EntityDetail entityid={id} entitytype={'entity'} id={id} type={'entity'} fullScreen={true} errorToggle={this.props.errorToggle} linkWarningToggle={this.linkWarningToggle}/> : null} 
@@ -723,5 +762,6 @@ var PromotedData = React.createClass({
         )
     }   
 });
+
 
 module.exports = SelectedHeader;

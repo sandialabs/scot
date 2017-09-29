@@ -191,7 +191,7 @@ sub load_parsers  {
     while ( my $filename = readdir(DIR) ) {
         next if ( $filename =~ /^\.+$/ );
         next if ( $filename =~ /.*swp/ );
-        $log->debug("filename is $filename");
+        $log->debug("requiring module $filename");
         $filename =~ m/^([A-Za-z0-9]+)\.pm$/;
         my $rootname = $1;
         my $attrname = lc($rootname);
@@ -354,26 +354,29 @@ sub reprocess_alertgroup {
     $log->debug("Json to Post = ", {filter=>\&Dumper, value=>$json_to_post});
     $log->debug("posting to $path");
 
-    my $json_returned = $self->post_alertgroup($json_to_post);
+    my $json_returned_aref = $self->post_alertgroup($json_to_post);
     # use this when update is implemented
     # my $json_returned = $self->put_alertgroup($agid, $json_to_post);
 
-    unless (defined $json_returned) {
+    unless (defined $json_returned_aref) {
         $log->error("ERROR! Undefined transaction object $path ",
                     {filter=>\&Dumper, value=>$json_to_post});
         $self->output("Post to SCOT failed\n");
         return;
     }
-    
-    if ( $json_returned->{status} ne "ok" ) {
-        $log->error("Failed posting new alertgroup mgs_uid:", $msghref->{imap_uid});
-        $log->debug("tx->res is ",{filter=>\&Dumper, value=>$json_returned});
-        $self->imap->mark_uid_unseen($msghref->{imap_uid});
-        $self->output("Post to SCOT failed.\n");
-        return;
+
+    foreach my $json_returned (@$json_returned_aref) {
+        if ( $json_returned->{status} ne "ok" ) {
+            $log->error("Failed posting new alertgroup mgs_uid:", $msghref->{imap_uid});
+            $log->debug("tx->res is ",{filter=>\&Dumper, value=>$json_returned});
+            $self->imap->mark_uid_unseen($msghref->{imap_uid});
+            $self->output("Post to SCOT failed.\n");
+        }
+        else {
+            $self->output("---- posted to SCOT.\n");
+            $log->trace("Created alertgroup ". $json_returned->{id});
+        }
     }
-    $self->output("---- posted to SCOT.\n");
-    $log->trace("Created alertgroup ". $json_returned->{id});
     return 1;
 }
 
@@ -462,25 +465,30 @@ sub process_message {
     $log->debug("Json to Post = ", {filter=>\&Dumper, value=>$json_to_post});
     $log->debug("posting to $path");
 
-    my $json_returned = $self->post_alertgroup($json_to_post);
+    # my $json_returned = $self->post_alertgroup($json_to_post);
+    my @returned = $self->post_alertgroup($json_to_post);
 
-    unless (defined $json_returned) {
+    unless (scalar(@returned) > 0 ) {
         $log->error("ERROR! Undefined transaction object $path ",
                     {filter=>\&Dumper, value=>$json_to_post});
         $self->output("Post to SCOT failed\n");
         return "postfailed";
     }
+
+    foreach my $json_returned (@returned) {
     
-    if ( $json_returned->{status} ne "ok" ) {
-        $log->error("Failed posting new alertgroup mgs_uid:", $msghref->{imap_uid});
-        $log->debug("tx->res is ",{filter=>\&Dumper, value=>$json_returned});
-        $self->imap->mark_uid_unseen($msghref->{imap_uid});
-        $self->output("Post to SCOT failed.\n");
-        return "postfailed";
+        if ( $json_returned->{status} ne "ok" ) {
+            $log->error("Failed posting new alertgroup mgs_uid:", $msghref->{imap_uid});
+            $log->debug("tx->res is ",{filter=>\&Dumper, value=>$json_returned});
+            $self->imap->mark_uid_unseen($msghref->{imap_uid});
+            $self->output("Post to SCOT failed.\n");
+        }
+        else {
+            $self->output("---- posted to SCOT.\n");
+            $log->trace("Created alertgroup ". $json_returned->{id});
+            $imap->see($msghref->{imap_uid});
+        }
     }
-    $self->output("---- posted to SCOT.\n");
-    $log->trace("Created alertgroup ". $json_returned->{id});
-    $imap->see($msghref->{imap_uid});
     return 1;
 }
 
@@ -513,6 +521,7 @@ sub post_alertgroup {
     my $log     = $self->log;
     my $response;
 
+    my @responses;
     if ( $self->get_method eq "scot_api" ) {
         $log->debug("Posting via scot api webaccess");
         $response = $self->scot->post({
@@ -524,40 +533,45 @@ sub post_alertgroup {
         $log->debug("Posting via direct mongo access");
         my $mongo   = $self->env->mongo;
         my $agcol   = $mongo->collection('Alertgroup');
-        my $agobj   = $agcol->create_from_api({
+        my @agobjs  = $agcol->api_create({
             request => { json   => $data }
         });
-        $self->env->mq->send("scot", {
-            action  => "created",
-            data    => {
-                type    => "alertgroup",
-                id      => $agobj->id,
+
+        foreach my $ag (@agobjs) {
+
+            $self->env->mq->send("scot", {
+                action  => "created",
+                data    => {
+                    type    => "alertgroup",
+                    id      => $ag->id,
+                    who     => "scot-alerts",
+                }
+            });
+            $response = { 
+                status  => 'ok',
+                thing   => 'alertgroup',
+                id      => $ag->id,
+            };
+            push @responses, $response;
+            $mongo->collection('History')->add_history_entry({
                 who     => "scot-alerts",
-            }
-        });
-        $response = { 
-            status  => 'ok',
-            thing   => 'alertgroup',
-            id      => $agobj->id,
-        };
-        $mongo->collection('History')->add_history_entry({
-            who     => "scot-alerts",
-            what    => "created alertgroup",
-            when    => time(),
-            target  => {
-                id      => $agobj->id,
-                type    => 'alertgroup',
-            },
-        });
-        my $now = DateTime->now;
-        $mongo->collection('Stat')->increment($now,
-                                              "alertgroups created",
-                                              1);
-        $mongo->collection('Stat')->increment($now,
-                                              "alerts created",
-                                              $agobj->alert_count);
+                what    => "created alertgroup",
+                when    => time(),
+                target  => {
+                    id      => $ag->id,
+                    type    => 'alertgroup',
+                },
+            });
+            my $now = DateTime->now;
+            $mongo->collection('Stat')->increment($now,
+                                                "alertgroups created",
+                                                1);
+            $mongo->collection('Stat')->increment($now,
+                                                "alerts created",
+                                                $ag->alert_count);
+        }
     }
-    return $response;
+    return wantarray ? @responses : \@responses;
 }
 
 
@@ -577,18 +591,21 @@ sub already_processed {
     my $return      = $self->get_alertgroup_by_msgid($message_id);
     my $log         = $self->log;
 
-    $log->debug("Got ag processed ", {filter=>\&Dumper,value=>$return});
-
     if (defined($return->{queryRecordCount}) and 
         $return->{queryRecordCount} > 0) {
+        $log->debug("already processed");
         return 1;
     }
+    $log->debug('not processed yet');
     return undef;
 }
 
 sub get_alertgroup_by_msgid {
     my $self    = shift;
     my $msgid   = shift;
+    my $log     = $self->log;
+   
+    $log->debug("Looking for AG with msgid of ".$msgid);
 
     if ( $self->get_method  eq "scot_api" ) {
         return $self->scot->get_alertgroup_by_mesgid($msgid);
@@ -598,9 +615,11 @@ sub get_alertgroup_by_msgid {
         my $col     = $mongo->collection('Alertgroup');
         my $obj     = $col->find_one({message_id => $msgid});
         if ( $obj ) {
+            $log->debug("found match at ag:".$obj->id);
             return { queryRecordCount => 1 };
         }
     }
+    $log->debug("no matching alertgroups");
     return { error => 1 };
 }
 
@@ -670,6 +689,7 @@ sub is_health_check {
 
     if ( $subject =~ /SCOT Health Check/i ) {
         $log->trace("It is!");
+        $log->debug("Health check subject is: $subject");
         # ok, last version had this, but I think it was a kludge
         # keeping this to ignore them when they come in.
         # but a better check might be to see if we haven't received

@@ -43,7 +43,8 @@ sub split_alertgroups {
     push @$data, $data if ( ref($data) ne "ARRAY" );
         
     my $alert_rows  = scalar(@$data);
-    my $row_limit   = $env->get_config_item("row_limit")//200;
+    my $row_limit   = $env->get_config_item("row_limit") // 100;
+    $log->debug("row limit is $row_limit");
     my @ag_requests = ();
     my $parts       = int($alert_rows/$row_limit);
     my $remainder   = $alert_rows % $row_limit;
@@ -53,10 +54,12 @@ sub split_alertgroups {
     my $page        = 1;
 
     while ( my @subalerts = splice(@$data, 0, $row_limit) ) {
+        $log->debug("sub alerts contain ".scalar(@subalerts)." rows");
         my $sub = $href->{request}->{json}->{subject};
         $sub .= " (part $page of $parts)" if ($parts != 1);
         my $new = dclone($href);
         $new->{request}->{json}->{subject} = $sub;
+        $log->debug("creating $sub");
         push @{$new->{request}->{json}->{data}}, @subalerts;
         push @ag_requests, $new;
         $page++;
@@ -133,154 +136,6 @@ override api_create => sub {
     return wantarray ? @alertgroups : \@alertgroups;
 };
 
-=item B<create_from_api(request_href)>
-
-Create an alertgroup and sub alerts from a POST to the handler
-
-=cut
-
-sub create_from_api {
-    my $self    = shift;
-    my $href    = shift;
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
-    my $log     = $env->log;
-    my $mq      = $env->mq;
-
-    $log->trace("Create Alertgroup");
-
-    # alertgroup creation will receive the following in the 
-    # json portion of the request
-    # request => {
-    #    message_id  => '213123',
-    #    subject     => 'subject',
-    #    data       => [ { ... href structure ...      }, { ... } ... ],
-    #    tags       => [],
-    #    sources    => [],
-    # }
-
-    my $request = $href->{request}->{json};
-
-    my $data    = $request->{data};
-    delete $request->{data};
-
-    if ( ref($data) ne "ARRAY" ) {
-        push @$data, $data;
-    }
-
-    my $row_limit = 200;
-    #if ( defined $env->alertgroup_rowlimit ) {
-    #    $row_limit = $env->alertgroup_rowlimit;
-    #    $log->debug("Altername rowlimit specified as ".$row_limit);
-    #}
-
-    if ( scalar(@$data) > $row_limit ) {
-        $log->warn("Large number of rows in Alertgroup, splitting...");
-        my @created_alertgroup;
-
-        my $x = 1;
-        my $subject = $href->{request}->{json}->{subject};
-        while ( my @subalerts = splice(@$data, 0, $row_limit) ) {
-            push @{$href->{request}->{json}->{data}}, @subalerts;
-            $href->{request}->{json}->{subject} = $subject . " part $x";
-            $log->debug("splitting alertgroup : ",
-                        {filter=>\&Dumper, value => $href});
-            push @created_alertgroup, $self->create_from_api($href);
-            $x++;
-        }
-        return \@created_alertgroup;
-    }
-
-    my $tags    = $request->{tags};
-    # delete $request->{tags};  # store a copy here and there
-
-    my $sources = $request->{sources};
-    # delete $request->{sources}; # store a copy in obj and in sources.pm
-
-    my $alertgroup  = $self->create($request);
-
-    unless ( defined $alertgroup ) {
-        $log->error("Failed to create Alertgroup with data ",
-                    { filter => \&Dumper, value => $request});
-        return undef;
-    }
-
-    my $id          = $alertgroup->id;
-
-    if ( defined $tags && scalar(@$tags) > 0 ) {
-        my $col = $mongo->collection('Tag');
-        foreach my $tag (@$tags) {
-            my $t = $col->add_tag_to("alertgroup",$id, $tag);
-        }
-    }
-
-    if ( defined $sources && scalar(@$sources) > 0 ) {
-        my $col = $mongo->collection('Source');
-        foreach my $src (@$sources) {
-            my $s = $col->add_source_to("alertgroup", $id, $src);
-        }
-    }
-
-    $log->trace("Creating alerts belonging to Alertgroup ". $id);
-
-    my $alert_count     = 0;
-    my $open_count      = 0;
-    my $closed_count    = 0;
-    my $promoted_count  = 0;
-            
-    foreach my $alert_href (@$data) {
-
-        my $chref   = {
-            data        => $alert_href,
-            alertgroup  => $id,
-            status      => 'open',
-            columns     => $alertgroup->columns,
-        };
-
-
-
-        $log->debug("Creating alert ", {filter=>\&Dumper, value => $chref});
-
-        my $alert = $mongo->collection("Alert")->create($chref);
-
-        unless ( defined $alert ) {
-            $log->error("Failed to create Alert from ",
-                         { filter => \&Dumper, value => $chref });
-            next;
-        }
-
-        # amq stuff should originate out of Api.pm
-        #$mq->send("scot", {
-        #    action  => "created", 
-        #    data    => {
-        #        type        => "alert",
-        #        id          => $alert->id,
-        #        who         => $request->{user},
-        #    }
-        #});
-
-        # not sure we need a notification for every alert, maybe just alertgroup
-        # alert triage may want this at some point though
-        # $env->amq->send_amq_notification("creation", $alert);
-
-        $alert_count++;
-        $open_count++       if ( $alert->status eq "open" );
-        $closed_count++     if ( $alert->status eq "closed" );
-        $promoted_count++   if ( $alert->status eq "promoted");
-    }
-
-    $log->debug("updating alertgroup ", $alertgroup->id);
-
-    $alertgroup->update({
-        '$set'  => {
-            open_count      => $open_count,
-            closed_count    => $closed_count,
-            promoted_count  => $promoted_count,
-            alert_count     => $alert_count,
-        }
-    });
-    return $alertgroup;
-}
 
 sub refresh_data {
     my $self    = shift;
@@ -376,15 +231,18 @@ sub api_subthing {
     }
 
     if ( $subthing eq "entity" ) {
-        # build array of entity ids linked to this alertgroup
-        my @links = map { $_->{entity_id} } 
-            $mongo->collection('Link')->get_links_by_target({
-                id  => $id, type => 'alertgroup'
-            })->all;
-        # return all matching entities
-        return $mongo->collection('Entity')->find({
-            id  => { '$in' => \@links }
-        });
+        return $mongo->collection('Link')
+                     ->get_linked_objects_cursor(
+                        { id => $id, type => 'alertgroup' },
+                        'entity' );
+    }
+
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
     }
 
     if ( $subthing eq "tag" ) {
@@ -426,88 +284,6 @@ sub api_subthing {
     die "Unsupported subthing: $subthing";
 }
     
-
-override get_subthing => sub {
-    my $self        = shift;
-    my $thing       = shift;
-    my $id          = shift;
-    my $subthing    = shift;
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $log         = $env->log;
-
-    $id += 0;
-
-    if ( $subthing  eq "alert" ) {
-        my $col = $mongo->collection('Alert');
-        my $cur = $col->find({alertgroup => $id});
-        return $cur;
-    }
-    elsif ( $subthing eq "entry" ) {
-        my $col = $mongo->collection('Entry');
-        my $cur = $col->get_entries_by_target({
-            id      => $id,
-            type    => 'alertgroup'
-        });
-        return $cur;
-    }
-    elsif ( $subthing eq "entity" ) {
-        my $timer  = $env->get_timer("fetching links");
-        my $col    = $mongo->collection('Link');
-        my $ft  = $env->get_timer('find actual timer');
-        my $cur    = $col->get_links_by_target({ 
-            id => $id, type => 'alertgroup' 
-        });
-        &$ft;
-        my @lnk = map { $_->{entity_id} } $cur->all;
-        &$timer;
-
-        $timer  = $env->get_timer("generating entity cursor");
-        $col    = $mongo->collection('Entity');
-        $cur    = $col->find({id => {'$in' => \@lnk }});
-        &$timer;
-        return $cur;
-    }
-    elsif ( $subthing eq "tag" ) {
-        my $col = $mongo->collection('Appearance');
-        my $cur = $col->find({
-            type            => 'tag',
-            'target.type'   => 'alertgroup',
-            'target.id'     => $id,
-        });
-        my @ids = map { $_->{apid} } $cur->all;
-        $col    = $mongo->collection('Tag');
-        $cur    = $col->find({ id => {'$in' => \@ids }});
-        return $cur;
-    }
-    elsif ( $subthing eq "source" ) {
-        my $col = $mongo->collection('Appearance');
-        my $cur = $col->find({
-            type            => 'source',
-            'target.type'   => 'alertgroup',
-            'target.id'     => $id,
-        });
-        my @ids = map { $_->{apid} } $cur->all;
-        $col    = $mongo->collection('Source');
-        $cur    = $col->find({ id => {'$in' => \@ids }});
-        return $cur;
-    }
-    elsif ( $subthing eq "guide" ) {
-        my $ag  = $self->find_iid($id);
-        my $col = $mongo->collection('Guide');
-        my $cur = $col->find({applies_to => $ag->subject});
-        return $cur;
-    }
-    elsif ( $subthing eq "history" ) {
-        my $col = $mongo->collection('History');
-        my $cur = $col->find({'target.id'   => $id,
-                              'target.type' => 'alertgroup',});
-        return $cur;
-    }
-    else {
-        $log->error("unsupported subthing $subthing!");
-    }
-};
 
 sub update_alerts_in_alertgroup {
     my $self     = shift;
