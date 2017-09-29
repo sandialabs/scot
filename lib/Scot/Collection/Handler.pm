@@ -19,7 +19,7 @@ Custom collection operations for Files
 
 =over 4
 
-=item B<create_from_api($request)>
+=item B<api_create($request)>
 
 Create an handler and from a POST to the handler
 
@@ -89,29 +89,6 @@ override api_list => sub {
     return ($cursor,$total);
 
 };
-
-
-
-sub create_from_api {
-    my $self    = shift;
-    my $href    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
-
-    $log->trace("Custom create in Scot::Collection::Handler");
-
-    my $json    = $href->{request}->{json};
-    my $params  = $href->{request}->{params};
-
-    my $build_href  = $json // $params;
-
-    $log->debug("creating handler with ",{filter=>\&Dumper, value=>$build_href});
-
-    my $handler   = $self->create($build_href);
-
-    return $handler;
-}
 
 sub get_handler {
     my $self    = shift;

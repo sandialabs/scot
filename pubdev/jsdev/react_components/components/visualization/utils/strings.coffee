@@ -47,6 +47,6 @@ Strings =
                     if not re instanceof RegExp
                         return Result.err "Please supply a regular expression on the command line"
                     Result.wrap Strings.pick re,d
-                .map_err (e) -> Result.err ("pick: "+e)
+                .map_err (e) ->  ("pick: "+e)
 
 module.exports = Strings

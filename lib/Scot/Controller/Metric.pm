@@ -435,7 +435,7 @@ sub alert_power {
     my @results = ();
     foreach my $at (keys %$sums) {
         push @results, {
-            date        => $at,
+            name        => $at,
             open        => $sums->{$at}->{open},
             promoted    => $sums->{$at}->{promoted},
             incident    => $sums->{$at}->{incident},
@@ -450,14 +450,11 @@ sub alert_power {
 
     $log->debug("sorted results: ",{filter=>\&Dumper,value=>\@sorted});
 
-    my @filtered = map { my $s = delete $_->{score}; $_->{date} .= " ($s)"; $_ } @sorted;
 
-    my @slice = splice(@filtered, 0, 20);
-
-    $log->debug("Slice is ",{filter=>\&Dumper, value=>\@slice});
-
-    return \@slice;
-#     return \@sorted;
+    # my @slice = splice(@sorted, 0, 20);
+    # $log->debug("Slice is ",{filter=>\&Dumper, value=>\@slice});
+    # return \@slice;
+    return \@sorted;
 }
 
 
