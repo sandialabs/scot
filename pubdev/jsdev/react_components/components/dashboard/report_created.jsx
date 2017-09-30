@@ -11,23 +11,13 @@ const margin = {
 	timeWindow = 7 * 24 * 3600 * 1000,
 	legendHeight = 20, legendSpacing = 15, legendTextSpacing = 5;
 
-let dataTypes = [ 'alerts', 'alertgroups', 'events', 'incidents', 'entries', 'intel' ];
 
 class ReportCreated extends Component {
 	constructor( props ) {
 		super( props );
 
-		let lineData = [];
-		dataTypes.forEach( d => {
-			lineData.push( {
-				name: d,
-				data: [],
-				shown: true,
-			} );
-		} );
-
         this.state = {
-			chartData: lineData,
+			chartData: [],
         }
 
 		// LoadData is automatically debounced
@@ -48,7 +38,9 @@ class ReportCreated extends Component {
 			.domain( [0, 0] )
 
 		this.colors = d3.scaleOrdinal( d3.schemeCategory10 )
-			.domain( dataTypes )
+			.domain( this.state.chartData.map( line => {
+				return line.name;
+			} ) )
 
 		this.xAxis = d3.axisBottom()
 			.scale( this.xScale );
@@ -95,25 +87,62 @@ class ReportCreated extends Component {
 			.y( d => this.yScale( d.value ) );
 
 
-		this.svg.append( 'g' )
+		this.lineHolder = this.svg.append( 'g' )
 			.attr( 'class', 'lines' )
 			.attr( 'clip-path', 'url(#bounds)' )
-			.selectAll( '.line' )
+
+
+		// Legend
+		this.LegendHolder = this.svg.append( 'g' )
+			.attr( 'class', 'legend-holder' )
+			.style( 'font-family', 'sans-serif' )
+
+
+		this.chartInit = true;
+	}
+
+	updateChart( initial = false ) {
+		if ( !initial ) {
+			this.yScale.domain( [
+				0,
+				Math.max(
+					d3.max( this.state.chartData, d => {
+						if ( !d.shown || !d.data.length ) return 0;
+
+						return d3.max( d.data, b => b.value );
+					} )
+				, 10 )
+			] ).nice()
+		}
+		this.yAxisEl.transition().call( this.yAxis )
+
+		this.colors = d3.scaleOrdinal( d3.schemeCategory10 )
+			.domain( this.state.chartData.map( line => {
+				return line.name;
+			} ) )
+
+		let lines = this.lineHolder.selectAll( '.line' )
 			.data( this.state.chartData, d => d.name )
-			.enter().append( 'path' )
+
+		lines.exit()
+			.transition()
+				.style( 'opacity', 0 )
+			.remove()
+
+		lines.enter().append( 'path' )
 				.attr( 'class', d => `line ${d.name}` )
 				.style( 'stroke', d => this.colors( d.name ) )
 				.style( 'stroke-width', 2 )
 				.style( 'fill', 'none' )
 				.attr( 'd', d => this.statusLine( d.data ) )
 
-		// Legend
-		let LegendHolder = this.svg.append( 'g' )
-			.attr( 'class', 'legend-holder' )
-			.style( 'font-family', 'sans-serif' )
-
-		let legend = LegendHolder.selectAll( '.legend' )
+		let legend = this.LegendHolder.selectAll( '.legend' )
 			.data( this.state.chartData )
+
+		legend.exit()
+			.transition()
+				.style( 'opacity', 0 )
+			.remove()
 
 		legend = legend.enter().append( 'g' )
 			.attr( 'class', 'legend' )
@@ -148,32 +177,14 @@ class ReportCreated extends Component {
 
 		// Legend Position
 		let widthSums = 0
-		LegendHolder.selectAll( '.legend' )
+		this.LegendHolder.selectAll( '.legend' )
 			.attr( 'transform', function( d, i ) {
 				let value = widthSums;
 				widthSums += this.getBBox().width + legendSpacing;
 				return `translate( ${value}, 0 )`;
 			} );
-		let legendWidth = LegendHolder.node().getBBox().width;
-		LegendHolder.attr( 'transform', `translate( ${width / 2 - legendWidth / 2}, ${ height + margin.bottom - legendHeight * 2 } )` );
-
-		this.chartInit = true;
-	}
-
-	updateChart( initial = false ) {
-		if ( !initial ) {
-			this.yScale.domain( [
-				0,
-				Math.max(
-					d3.max( this.state.chartData, d => {
-						if ( !d.shown || !d.data.length ) return 0;
-
-						return d3.max( d.data, b => b.value );
-					} )
-				, 10 )
-			] ).nice()
-		}
-		this.yAxisEl.transition().call( this.yAxis )
+		let legendWidth = this.LegendHolder.node().getBBox().width;
+		this.LegendHolder.attr( 'transform', `translate( ${width / 2 - legendWidth / 2}, ${ height + margin.bottom - legendHeight * 2 } )` );
 
 		this.svg.selectAll( '.legend rect' )
 			.transition()
@@ -186,20 +197,27 @@ class ReportCreated extends Component {
 	}
 
 	loadData() {
-		let url = '/scot/api/v2/metric/alert_power';
-		let opts = `?`;
+		let url = '/scot/api/v2/metric/creation_bullet';
+		let opts = `?range=7`;
 
-		/*
 		d3.json( url+opts, dataset => {
+			console.log( dataset );
+			dataset = this.genData();
+
+			dataset = dataset.map( line => {
+				line.shown = true;
+
+				return line;
+			} );
+
 			this.setState( {
 				chartData: dataset,
 			} )
 		} );
-		*/
-		this.genData();
 	}
 	
 	genData() {
+		let dataTypes = [ 'alerts', 'alertgroups', 'events', 'incidents', 'entries', 'intel' ];
 		let dataMaxes = {
 			alerts: 5000,
 			alertgroups: 500,
@@ -211,7 +229,13 @@ class ReportCreated extends Component {
 
 		let now = new Date(),
 			date = new Date( Date.now() - timeWindow );
-		let lineData = [ ...this.state.chartData ];
+		let lineData = [];
+		dataTypes.forEach( d => {
+			lineData.push( {
+				name: d,
+				data: [],
+			} );
+		} );
 		for( ; date <= now; date = new Date( date.getTime() + 6 * 3600 * 1000 ) ) {
 			lineData.forEach( line => {
 				line.data.push( {
@@ -221,15 +245,13 @@ class ReportCreated extends Component {
 			} );
 		}
 
-		this.setState( {
-			chartData: lineData,
-		} );
+		return lineData;
 	}
 
 
     componentDidMount() {
 		this.initChart();
-		this.updateChart( true );
+		// this.updateChart( true );
 		this.loadData(); 
     }
 
