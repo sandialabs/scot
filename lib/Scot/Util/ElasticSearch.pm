@@ -50,14 +50,15 @@ sub _build_es {
     $log->debug("Creating ES client");
 
     my @noproxy = map { m/^(.*):\d+$/ } @{$self->config->{nodes}};
+    push @noproxy, '127.0.0.1';
     $ENV{'no_proxy'} = join ',', @noproxy;
 
     say "NODES : ", Dumper($self->config->{nodes});
 
     my %conparams   = (
         nodes   => $self->config->{nodes},
-        cxn_pool    => 'Static',
-        log_to  => 'Stderr',
+        cxn_pool    => 'Sniff',
+        trace_to  => 'Stderr',
     );
 
     try {
@@ -75,9 +76,9 @@ sub _build_es {
 
 sub index {
     my $self    = shift;
+    my $index   = shift;
     my $type    = shift;    # collection
     my $href    = shift;    # the mongo json document
-    my $index   = shift // 'scot'; # allow for submitting to a test index
     my $log     = $self->log;
     my $es      = $self->es;
     
@@ -90,7 +91,13 @@ sub index {
 
     $log->debug("Sending ES INDEX message: ",{filter=>\&Dumper, value=>\%msg});
 
-    $es->index(%msg);
+    # $es->index(%msg);
+    $es->index(
+        index   => $index,
+        type    => $type,
+        id      => $href->{id},
+        body    => $href,
+    );
 
 }
 
@@ -115,13 +122,15 @@ sub delete {
 
 sub search {
     my $self    = shift;
+    my $index   = shift;
+    my $type    = shift;
     my $body    = shift;    # elastic search query doc
-    my $index   = shift // 'scot';
     my $es      = $self->es;
     my $log     = $self->log;
 
     my %msg = (
         index   => $index,
+        type    => $type,
         body    => $body,
     );
 
@@ -130,6 +139,26 @@ sub search {
     my $results = $es->search(%msg);
     return $results;
 }
+
+sub create_index {
+    my $self    = shift;
+    my $index   = shift;
+    my $body    = shift;
+    my $es      = $self->es;
+    my $results = $es->indices->create(
+        index   => $index,
+        body    => $body,
+    );
+    return $results;
+}
+
+sub close_index {
+    my $self    = shift;
+    my $index   = shift;
+    my $es      = $self->es;
+    return $es->indices->close( index => $index );
+}
+
 
 sub delete_index {
     my $self    = shift;
@@ -141,12 +170,7 @@ sub delete_index {
 sub start_snapshot {
     my $self    = shift;
     my $conf    = $self->config;
-
     my $repo    = $conf->{repository};
-
-}
-
-sub get_snapshot_status {
 
 }
 
@@ -154,11 +178,12 @@ sub delete_repo {
 
 }
 
-sub delete_snapshot {
+sub get_snapshot_status {
 
 }
 
-sub close_index {
+
+sub delete_snapshot {
 
 }
 

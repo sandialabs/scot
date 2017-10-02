@@ -59,6 +59,15 @@
             },
         },
         {
+            attr    => 'mq',
+            class   => 'Scot::Util::Messageq',
+            config  => {
+                destination => "scot",
+                stomp_host  => "localhost",
+                stomp_port  => 61613,
+            },
+        },
+        {
             attr    => 'enrichments',
             class   => 'Scot::Util::Enrichments',
             config  => {

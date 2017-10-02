@@ -18,7 +18,7 @@ Custom collection operations on sigbody
 
 =over 4
 
-=item B<create_from_api>
+=item B<api_create>
 
 Create Signature from POST to API
 

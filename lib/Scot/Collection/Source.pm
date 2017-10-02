@@ -9,7 +9,7 @@ with    qw(
 );
 
 # source creation or update
-sub create_from_api {
+override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
@@ -18,7 +18,7 @@ sub create_from_api {
     $log->trace("Create Source from API");
 
     my $json    = $request->{request}->{json};
-    my $value   = $json->{value};
+    my $value   = lc($json->{value});
     my $note    = $json->{note};
 
     unless ( defined $value ) {
@@ -43,6 +43,17 @@ sub create_from_api {
         });
     }
     return $source_obj;
+};
+
+sub autocomplete {
+    my $self        = shift;
+    my $fragment    = shift;
+
+    my $cursor  =  $self->find({ value   => qr/$fragment/i });
+    # my @records = map { { id => $_->{id}, key => $_->{value} } } 
+    #                 $cursor->all;
+    my @records = map { $_->{value}  } $cursor->all;
+    return wantarray ? @records : \@records;
 }
 
 sub autocomplete {

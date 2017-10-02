@@ -41,36 +41,59 @@ sub check {
     my $user    = '';
     my $headers = $request->headers;
 
+    my $loglevel = $log->level;
+    $log->level(Log::Log4perl::Level::to_priority('INFO'));
+
     $log->debug("Authentication Check Begins...");
 
     if ( $env->auth_type eq "Testing" ) {
         $log->warn("in test mode, NO AUTHENTICATION");
         $user   = "scot-testing";
-        return $self->sucessful_auth($user);
+        $log->level($loglevel);
+        return $self->sucessful_auth({
+            user    => $user,
+            method  => "testing"});
     }
 
     if ( $user = $self->valid_mojo_session ) {
-        $log->debug("Successful Prior Authentication Still Valid");
         $self->update_lastvisit($user);
-        if ($self->set_group_membership($user)) {
+        my $groups = $self->set_group_membership($user);
+        if (defined $groups) {
+            $log->info("User $user (".join(',',@$groups).") Authenticated via Mojo session");
+            $log->level($loglevel);
             return 1;
         }
         else {
+            $log->level($loglevel);
             return undef;
         }
     }
 
     if ( $user = $self->valid_authorization_header($headers) ) {
-        return $self->sucessful_auth($user);
+        $log->level($loglevel);
+        return $self->sucessful_auth({
+            user    => $user,
+            method  => "apikey"});
     }
 
     if ( $user = $self->sso($headers) ) {
-        return $self->sucessful_auth($user);
+        $log->level($loglevel);
+        return $self->sucessful_auth({
+            user    => $user,
+            method  => "sso"});
     }
 
     $log->error("Failed Authentication Check");
     $self->session(orig_url => $request->url->to_string );
-    $self->redirect_to('/login');
+    # $self->redirect_to('/login');
+    $self->render(
+        status  => 401,
+        json    => { 
+            error => "Authentication Required",
+            csrf  => $self->csrf_token,
+        }
+    );
+    $log->level($loglevel);
     return undef;
 }
 
@@ -103,6 +126,12 @@ sub logout {
     $self->session( user    => '' );
     $self->session( groups  => '' );
     $self->session( expires => 1 );
+    $self->render(
+        status  => 200,
+        orig_url => '/',
+        json    => {
+            result  => "user logged out"
+        });
 }
 
 =item B<auth>
@@ -123,6 +152,7 @@ sub auth {
     my $origurl = $self->session('orig_url');
 
     $log->debug("Form based Login.  User = $user orig_url = $origurl");
+    $log->debug("Auth Type = ".$env->auth_type);
 
     # remove leading and trailing spaces from password
     # sometimes happens with forms
@@ -135,12 +165,18 @@ sub auth {
 
     $log->debug("attempting to authenticate via ldap");
     if ( $self->authenticate_via_ldap($user, $pass) ) {
-        return $self->sucessful_auth($user, $origurl);
+        return $self->sucessful_auth({
+            user    => $user, 
+            url     => $origurl,
+            method  => "ldap"});
     }
 
     $log->debug("attempting to authenticate via local");
     if ( $self->authenticate_via_local($user, $pass) ) {
-        return $self->sucessful_auth($user, $origurl);
+        return $self->sucessful_auth({
+            user    => $user,
+            url     => $origurl,
+            method  => "local"});
     }
      
     # all hope is lost
@@ -169,7 +205,7 @@ need to otherwise lock this connection down
 sub sso {
     my $self    = shift;
     my $log     = $self->env->log;
-    my $url     = $self->param('orig_url');
+    my $url     = $self->param('orig_url') // '/';
     $log->debug("SSO authentication attempt ($url)");
     if ( $url eq "/login" ) {
         $url    = "/";
@@ -187,9 +223,19 @@ sub sso {
     $log->debug("Remoteuser set by Webserver as $remoteuser");
 
     if ( my $user = $self->valid_remoteuser($headers) ) {
-        $self->sucessful_auth($user,$url);
+        $self->sucessful_auth({
+            user    => $user,
+            url     => $url,
+            method  => "remoteuser"});
         return $user;
     }
+    $self->render(
+        status  => 401,
+        json    => { 
+            error => "Authentication Required",
+            csrf  => $self->csrf_token,
+        }
+    );
 }
 
 =item B<invalid_user_pass>
@@ -238,8 +284,11 @@ sub authenticate_via_ldap {
 
     $log->debug("attempting authentication of $user by ldap");
 
-    if ( defined $type ) {
-        if ( $type eq "ldap" ) {
+    # what we want here is an attempt to use ldap, if it failes or ldap
+    # not configured we move on
+
+    # if ( defined $type ) {
+    #     if ( $type eq "ldap" ) {
             if ( $self->ldap_authenticates($user, $pass) ) {
                 $log->debug("$user authenticated via ldap");
                 return 1;
@@ -248,17 +297,17 @@ sub authenticate_via_ldap {
                 $log->error("$user failed ldap authentication");
                 return undef;
             }
-        }
-        else {
-            $log->debug("skipping ldap attempt");
-            return undef;
-        }
-    }
-    else {
-        $log->error("environment did not define auth_type, ".
-                    "skipping ldap attempt");
-        return undef;
-    }
+    #     }
+    #    else {
+    #       $log->debug("skipping ldap attempt");
+    #        return undef;
+    #   }
+    #}
+    #else {
+    #    $log->error("environment did not define auth_type, ".
+    #                "skipping ldap attempt");
+    #    return undef;
+    #}
 }
 
 =item B<ldap_authenticates>
@@ -272,7 +321,7 @@ sub ldap_authenticates {
     my $user    = shift;
     my $pass    = shift;
     my $env     = $self->env;
-    my $log     = $self->log;
+    my $log     = $env->log;
     my $ldap    = $env->ldap;
 
     $log->debug("seeing if ldap will authenticate");
@@ -532,7 +581,7 @@ sub set_group_membership {
         $log->debug("Groups set in Mojo Session");
         $log->debug("$user Groups are ".join(', ',@$groups));
         if ( scalar(@$groups) > 0 ) {
-            return 1;
+            return $groups;
         }
     }
 
@@ -542,7 +591,7 @@ sub set_group_membership {
     if ( scalar(@$groups) > 0 ) {
         $log->debug("Got 1 or more groups, storing in session");
         $self->session(groups => $groups);
-        return 1;
+        return $groups;
     }
     else {
         $log->error("User has null group set!");
@@ -553,6 +602,7 @@ sub set_group_membership {
 sub get_groups {
     my $self    = shift;
     my $user    = shift;
+    my $env     = $self->env;
     my $log     = $self->env->log;
     my $mode    = $self->env->group_mode;
     my @groups  = ();
@@ -566,27 +616,35 @@ sub get_groups {
         return wantarray ? @groups :\@groups;
     }
 
-    if ( $mode =~ /ldap/i ) {
+    my $envmeta = $env->meta;
+
+    if ( $envmeta->has_attribute('ldap') ) {
         my $ldap = $self->env->ldap;
 
         if ( defined $ldap ) {
             $results = $ldap->get_users_groups($user);
-            if ( $results < 0 ) { # TODO: refactor to check for empty array?
-                $log->error("LDAP group ERROR!");
+            if ( ref($results) eq "ARRAY" ) {
+                # return array
+                push @groups, grep {/scot/i} @$results;
+                return wantarray ? @groups : \@groups;
+            }
+            else {
+                $log->warn("ldap failed to get groups: ".$results);
             }
         }
+
+    }
+
+    $log->debug("last attempt to get groups, local");
+    my $mongo   = $self->env->mongo;
+    my $ucol    = $mongo->collection("User");
+    my $userobj    = $ucol->find_one({username => $user});
+
+    if ( defined $userobj ) {
+        $results    = $userobj->groups;
     }
     else {
-        my $mongo   = $self->env->mongo;
-        my $ucol    = $mongo->collection("User");
-        my $user    = $ucol->find_one({username => $user});
-
-        if ( defined $user ) {
-            $results    = $user->groups;
-        }
-        else {
-            $log->error("User $user, not in local user collection!");
-        }
+        $log->error("User $user, not in local user collection!");
     }
     $log->debug("Got these groups: ",{filter=>\&Dumper, value=>$results});
     if ( ref($results) eq "ARRAY" ) {
@@ -708,15 +766,17 @@ sub update_user_failure {
 
 sub sucessful_auth {
     my $self    = shift;
-    my $user    = shift;
-    my $url     = shift;
+    my $href    = shift;
+    my $user    = $href->{user};
+    my $url     = $href->{url};
+    my $method  = $href->{method};
     my $env     = $self->env;
     my $log     = $env->log;
 
-    $log->warn("User $user sucessfully authenticated");
+    $log->debug("User $user sucessfully authenticated");
 
     if ( $user eq "scot-testing" ) {
-        $log->warn("setting default groups for $user since in test mode");
+        $log->debug("setting default groups for $user since in test mode");
     }
 
     my $groups  = $self->get_groups($user);
@@ -739,6 +799,8 @@ sub sucessful_auth {
         secure  => 1,
         expiration  => $expiration,
     );
+
+    $log->info("User $user (".join(',',@$groups).") Authenticated via $method");
 
     if ( defined $url ) {
         $self->redirect_to($url);
@@ -768,7 +830,14 @@ sub failed_auth {
     $self->update_user_failure($user);
 
     $self->flash("Failed Authentication");
-    $self->redirect_to("/login");
+    # $self->redirect_to("/login");
+    $self->render(
+        status  => 401,
+        json    => { 
+            error => "Authentication Required",
+            csrf  => $self->csrf_token,
+        }
+    );
     return;
 }
 
@@ -794,7 +863,11 @@ sub get_apikey {
     };
 
     my $collection  = $self->env->mongo->collection('Apikey');
-    my $apikey      = $collection->create_from_api($record);
+    my $apikey      = $collection->api_create({
+        request => {
+            json    => $record
+        }
+    });
 
     $self->do_render({
         status  => 'ok',
