@@ -124,20 +124,6 @@ sub get_vertex_memo {
         $log->debug("Thing is now ".ref($thing));
     }
 
-<<<<<<< HEAD
-    my $link;
-    try {
-        $link    = $self->create({
-            when        => $when,
-            entity_id   => $eid,
-            value       => $value,
-            target      => $target,
-        });
-    }
-    catch {
-        $self->env->log->error("Failed to create Link!: ", $_);
-    };
-=======
 
     if ( ! ref($thing) =~ /Scot::Model/ ) {
         die "Invalid input to get_vertex_memo";
@@ -210,7 +196,6 @@ sub get_object_links {
     my $object  = shift;
     my $type;
     my $id;
->>>>>>> Internal-master
 
     my $vertex = $self->get_vertex($object);
 
@@ -329,11 +314,7 @@ sub get_display_count {
     return $cursor->count;
 }
 
-<<<<<<< HEAD
-sub get_display_count {
-=======
 sub get_display_count_agg {
->>>>>>> Internal-master
     my $self    = shift;
     my $entity  = shift;
     my $log     = $self->env->log;
@@ -343,46 +324,8 @@ sub get_display_count_agg {
     if ( $entity->status eq "untracked" ) {
         $log->debug("untracked entity");
         return 0;
-<<<<<<< HEAD
     }
 
-    my $cursor  = $self->find({
-        'entity_id'   => $entity->id,
-        'target.type' => {
-            # '$in'  => [ 'alert', 'incident', 'intel', 'event' ]
-            '$nin'  => [ 'alertgroup', 'entry' ]
-        }
-    });
-
-    if ( $cursor->count > 1000 ) {
-        # return a quicker esitmate
-        return $cursor->count;
-    }
-
-    my %seen;
-    while (my $link = $cursor->next) {
-        my $key = $link->target->{type} . $link->target->{id};
-        $seen{$key}++;
-=======
->>>>>>> Internal-master
-    }
-
-<<<<<<< HEAD
-sub get_display_count_buggy_but_fast {
-    my $self    = shift;
-    my $entity  = shift;
-    my $collection  = $self->collection_name;
-    my $log     = $self->env->log;
-    my %command;
-    my $tie = tie(%command, "Tie::IxHash");
-    %command = (
-        'distinct'  => 'link',
-        'key'       => 'target.id',
-        'query'     => { 
-            value => $entity->value,
-            'target.type'   => {
-                '$in'   => [ 'alert', 'event', 'intel', 'incident' ]
-=======
     my @agg = (
         { 
             '$match' => {
@@ -390,7 +333,6 @@ sub get_display_count_buggy_but_fast {
                     id      => $entity->id, 
                     type    => 'entity',
                 },
->>>>>>> Internal-master
             }
         },
         { '$unwind' => '$vertices' },
@@ -398,29 +340,9 @@ sub get_display_count_buggy_but_fast {
             'vertices.type' => { '$nin' => [ 'alertgroup', 'entry' ] }
         }},
     );
-<<<<<<< HEAD
-    $self->env->log->debug("display count command is ",{filter=>\&Dumper, value=>\%command});
-
-    my $mongo   = $self->meerkat;
-    my $result  = $self->_try_mongo_op(
-        get_distinct    => sub {
-            my $dbn  = $mongo->database_name;
-            my $db   = $mongo->_mongo_database($dbn);
-            my $job  = $db->run_command(\%command);
-            # $self->env->log->debug("job is ",{filter=>\&Dumper, value=>$job});
-            return $job->{values};
-        }
-    );
-    $self->env->log->debug("got result: ",{filter=>\&Dumper, value=>$result});
-    unless (defined $result) {
-        return 0;
-    }
-    return scalar(@$result);
-=======
     # need to benchmark, if this is slow, it can kill scot workers
     my $query_result  = $self->_mongo_collection->aggregate(\@agg);
     return scalar($query_result->all);
->>>>>>> Internal-master
 }
 
 sub get_linked_objects_cursor {

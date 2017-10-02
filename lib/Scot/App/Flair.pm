@@ -224,8 +224,6 @@ sub process_message {
 
     $id += 0;
 
-    $id += 0;
-
     $self->log->debug("Processing Message: $action $type $id");
 
     if ( $action eq "created" or $action eq "updated" ) {
