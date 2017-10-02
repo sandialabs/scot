@@ -56,16 +56,6 @@ sub autocomplete {
     return wantarray ? @records : \@records;
 }
 
-sub autocomplete {
-    my $self        = shift;
-    my $fragment    = shift;
-
-    my $cursor  =  $self->find({ value   => /$fragment/ });
-    my @records = map { { id => $_->{id}, key => $_->{value} } } 
-                    $cursor->all;
-    return wantarray ? @records : \@records;
-}
-
 sub get_source_completion { 
     my $self    = shift;
     my $string  = shift;

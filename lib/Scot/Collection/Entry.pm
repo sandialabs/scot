@@ -573,6 +573,7 @@ sub move_entry {
     my $object  = shift;
     my $thref   = shift;
     my $mongo   = $self->env->mongo;
+
     my $current = $mongo->collection(
         ucfirst($object->target->{type})
     )->find_iid($object->target->{id});
