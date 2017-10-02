@@ -80,13 +80,17 @@ sub create {
 
         foreach my $object (@objects) {
             push @returnjson, $self->post_create_process($object);
+            my $data = {
+                who => $req_href->{user},
+                type=> $object->get_collection_name,
+                id  => $object->id,
+            };
+            if ( ref($object) eq "Scot::Model::Entry" ) {
+                $data->{target} = $object->target;
+            }
             $self->env->mq->send("scot",{
                 action  => "created",
-                data    => {
-                    who => $req_href->{user},
-                    type=> $object->get_collection_name,
-                    id  => $object->id,
-                }
+                data    => $data,
             });
         }
         if ( scalar(@returnjson) > 1 ) {
@@ -244,7 +248,40 @@ sub post_list_process {
     my $self        = shift;
     my $cursor      = shift;
     my $req_href    = shift;
-    my @records     = $cursor->all;
+    my $log         = $self->env->log;
+    my @records     = ();
+    my $thing       = $req_href->{collection};
+    my $entrycol    = $self->env->mongo->collection('Entry');
+
+    if ( $thing      eq "event" ) {
+        while ( my $obj = $cursor->next ) {
+            my $href    = $obj->as_hash;
+            $href->{has_tasks} = $entrycol->tasks_not_completed_count($obj);
+            push @records, $href;
+        }
+    }
+    elsif ( $thing      eq "alertgroup" ) {
+        while ( my $obj = $cursor->next ) {
+            my $agid = $obj->id;
+            my $href = $obj->as_hash;
+            $href->{has_tasks} = 0;
+            my $acur = $self->env->mongo->collection('Alert')->find({alertgroup => $agid});
+            ALERT:
+            while ( my $aobj = $acur->next ) {
+                my $tc = $entrycol->tasks_not_completed_count($aobj);
+                if ( $tc > 0 ) {
+                    $href->{has_tasks} = $tc;
+                    last ALERT;
+                }
+            }
+            push @records, $href;
+        }
+    }
+    else {
+        @records     = $cursor->all;
+    }
+
+    $log->debug("post_list_processing");
 
     my $collection  = $self->get_collection_req($req_href);
 
@@ -322,15 +359,24 @@ sub get_one {
         }
 
         my $object  = $collection->api_find($req_href);
+        if (! defined $object ) {
+            die "Object not found";
+        }
         my $objhref = $self->post_get_one_process($object, $req_href);
 
-        # special case for file downloads
+        # special case for file downloads or pushes
         if ( ref($object) eq "Scot::Model::File" ) {
             my $download    = $self->param('download');
             if ( defined $download ) {
-                $self->render_file_download($object);
+                $self->download_file($object);
                 return;
             }
+            # future push actions through the server instead of in the client
+            #my $push        = $self->param('push');
+            #if ( defined $push ) {
+            #    $self->push_file($object, $req_href);
+            #    return;
+            #}
         }
         $self->do_render($objhref);
     }
@@ -451,6 +497,28 @@ sub download_file {
     $static->serve($self, $object->filename);
     $self->rendered;
     return;
+}
+
+# not used since pushes to sarlacc can have an apikey in client from entry_actions in config
+# keeping here for future use, potentially.
+sub push_file {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my $json    = $req->{request}->{json};
+    my $send_name   = $json->{send_to_name};
+    my $send_url    = $json->{send_to_url};
+    my $apikey      = $$self->env->apikey->{$send_name};
+    $send_url .= "&".$apikey;
+
+    my $ua = Mojo::UserAgent->new();
+    my $tx = $ua->post($send_url);
+    my $response = $tx->success;
+
+    if ( defined $response ) {
+        return $response->json;
+    }
+    die "Failed File Push to $send_url, Error: ".$tx->error->{code}." ".$tx->error->{message};
 }
 
 =item B<get_subthing>
@@ -628,14 +696,46 @@ sub update {
     };
 }
 
-sub update_permitted {
-    my $self    = shift;
-    my $object  = shift;
-    my $req     = shift;
 
+sub update_permitted {
+    my $self    = shift;  
+    my $object  = shift;    
+    my $req     = shift;
+    my $env     = $self->env;
+
+    ## 
+    ## Permission has the groups that are allowd to modify
+    ## 
     if ( $object->meta->does_role('Scot::Role::Permission') ) {
         my $group_aref  = $self->get_groups;
         return $object->is_modifiable($group_aref);
+    }
+
+    ##
+    ## Admin's can modify all
+    ## but a user can only modify their password and Full name
+    ## 
+    if ( ref($object) eq "Scot::Model::User" ) {
+        if ( $env->is_admin ) {
+            return 1;
+        }
+        if ( $req->{request}->{username} eq $self->session('user') ) {
+            delete $req->{request}->{active};
+            delete $req->{request}->{groups};
+            delete $req->{request}->{username};
+            return 1;
+        }
+        return undef;
+    }
+    ##
+    ## Admin's can modify all
+    ## but a user can not do it 
+    ## 
+    if ( ref($object) eq "Scot::Model::Group" ) {
+        if ( $env->is_admin ) {
+            return 1;
+        }
+        return undef;
     }
     return 1;
 }
@@ -679,6 +779,26 @@ sub pre_update_process {
         my $collection  = $self->env->mongo->collection('Entity');
         $collection->update_entities($object, $entity_aref);
     }
+    
+    # if the object does tags or source, we need to adjust the appearances collection
+    # to reflect the changes, because we store tags/sources as an array in the object
+    # and create appearance records 
+
+    if ( $object->meta->does_role("Scot::Role::Tags") or
+         $object->meta->does_role("Scot::Role::Sources") ) {
+
+        my $new_tag_set = $req->{request}->{json}->{tag};
+        my $new_src_set = $req->{request}->{json}->{source};
+
+        if (defined $new_tag_set ) {
+            $mongo->collection('Appearance')
+                   ->adjust_appearances($object,$new_tag_set,"tag");
+        }
+        if (defined $new_src_set ) {
+            $mongo->collection('Appearance')
+                   ->adjust_appearances($object,$new_src_set,"source");
+        }
+    }
 }
 
 sub get_promotion_collection {
@@ -718,6 +838,7 @@ sub promote {
     else {
         die "Unable to promote a ".ref($object);
     }
+
     my $promotion_obj = $promotion_col->get_promotion_obj($object,$req);
     $promotion_obj->update({
         '$addToSet' => { promoted_from => $object->id }
@@ -727,6 +848,14 @@ sub promote {
         $mongo->collection('Alertgroup')->refresh_data($object->alertgroup);
         my $entry = $mongo->collection('Entry')
                           ->create_from_promoted_alert($object, $promotion_obj);
+        $self->env->mq->send("scot",{
+            action  => "created",
+            data    => {
+                who => $req->{user},
+                type=> "entry",
+                id  => $entry->id,
+            }
+        });
     }
 
     # update the promotee
@@ -736,6 +865,10 @@ sub promote {
             promotion_id    => $promotion_obj->id,
             status          => "promoted",
         }
+    });
+
+    $mongo->collection('Link')->link_objects($object,$promotion_obj,{
+        context => "promotion"
     });
 
     # update mq and other bookkeeping
@@ -750,17 +883,26 @@ sub promote {
     my $type = $object->get_collection_name;
     my $id   = $object->id;
     if ( $type eq "alert" ) {
-        $type   = "Alertgroup";
-        $id     = $object->alertgroup;
+        $env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                who     => $user,
+                type    => "Alertgroup",
+                id      => $object->alertgroup,
+                opts    => "noreflair",
+            }
+        });
     }
-    $env->mq->send("scot", {
-        action  => "updated",
-        data    => {
-            who     => $user,
-            type    => $type,
-            id      => $id,
-        }
-    });
+    else {
+        $env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                who     => $user,
+                type    => $type,
+                id      => $id,
+            }
+        });
+    }
 
     my $what = $object->get_collection_name." promoted to ".
                        $promotion_obj->get_collection_name;
@@ -777,7 +919,13 @@ sub promote {
         handler => $self,
         object  => $object,
         changes => $what,
+        who     => $user,
     });
+
+    # add stat here
+    $self->env->mongo->collection('Stat')->put_stat(
+        $object->get_collection_name." promoted", 1
+    );
 
     # render and return
     $self->do_render({
@@ -879,14 +1027,16 @@ sub post_update_process {
         $self->apply_sources($object);
     }
 
+    my $mqdata  = {
+        who     => $self->session('user'),
+        type    => $colname,
+        id      => $object->id,
+        what    => $self->changed_attributes($updates),
+    };
+
     my $mq_msg  = {
         action  => "updated",
-        data    => {
-            who     => $self->session('user'),
-            type    => $colname,
-            id      => $object->id,
-            what    => $self->changed_attributes($updates),
-        }
+        data    => $mqdata,
     };
 
     $env->mq->send("scot", $mq_msg);
@@ -894,11 +1044,12 @@ sub post_update_process {
     if ( ref($object) eq "Scot::Model::Entry" ) {
         $mq_msg->{data} = {
             who     => $self->session('user'),
-            type    => $object->target->{type},
-            id      => $object->target->{id},
+            target  => { type => $object->target->{type},
+                         id   => $object->target->{id}, },
             what    => "Entry update",
         };
         $env->mq->send("scot", $mq_msg);
+        $self->add_history("updated entry ".$object->id, $object);
     }
 
     if ( ref($object) eq "Scot::Model::Sigbody" ) {
@@ -1157,8 +1308,15 @@ sub post_delete_process {
     my $mongo   = $self->env->mongo;
     my $log     = $self->env->log;
 
+    my $mqdata  = {
+        type    => $object->get_collection_name,
+        id      => $object->id,
+        who     => $self->session('user'),
+    };
+
     if ( $object->meta->does_role('Scot::Role::Target') ) {
         $self->update_target($object, "delete");
+        $mqdata->{target} = $object->target;
     }
 
     if ( ref($object) eq 'Scot::Model::Entry' ) {
@@ -1173,14 +1331,11 @@ sub post_delete_process {
     my $audit_rec = {
         handler => $self,
         object  => $object,
+        who     => $self->session('user'),
     };
     $self->env->mq->send("scot",{
         action  => "deleted",
-        data    => {
-            type    => $object->get_collection_name,
-            id      => $object->id,
-            who     => $self->session('user'),
-        }
+        data    => $mqdata,
     });
     $self->env->mongo->collection('Audit')->create_audit_rec($audit_rec);
     $self->env->mongo->collection('Stat')->put_stat($object->get_collection_name." deleted", 1);

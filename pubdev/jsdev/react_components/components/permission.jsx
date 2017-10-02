@@ -134,8 +134,8 @@ var PermissionIterator = React.createClass({
             success: function(data) {
                 console.log('success');
             }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to delete group');
+            error: function(data) {
+                this.props.errorToggle('error Failed to delete group', data);
             }.bind(this)
         })
    },
@@ -187,9 +187,9 @@ var NewPermission = React.createClass({
                 console.log('success: permission added');
                 toggle();
             }.bind(this),
-            error: function() {
+            error: function(data) {
                 toggle();
-                this.props.updated('error','Failed to add group');
+                this.props.errorToggle('error Failed to add group', data);
             }.bind(this)
         });
     },

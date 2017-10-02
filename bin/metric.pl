@@ -3,8 +3,8 @@
 use strict;
 use warnings;
 use v5.18;
-use lib '../../lib';
-use lib '../lib';
+use lib '../../../lib';
+use lib '/opt/scot/lib';
 use Scot::Env;
 use Scot::App::Metric;
 use Test::More;
@@ -23,7 +23,7 @@ $stopdt->subtract(days => 70);
 $stopdt->set(hour=>0, minute=>0, second=>0);
 
 #$m->march([qw(alert_response_time alerttype_metrics promoted_count alert_open_closed)],
-$m->march([qw(alert_response_time)],
+$m->march([qw(alert_response_time alerttype_metrics)],
           $todaydt, $stopdt);
 
 

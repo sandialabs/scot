@@ -22,6 +22,7 @@ with    qw(
     Meerkat::Role::Document
     Scot::Role::Entriable
     Scot::Role::Hashable
+    Scot::Role::Value
 );
 
 =head1 Attributes
@@ -30,9 +31,10 @@ with    qw(
 
 =item B<value>
 
+Moved to Role
+
 the string that is the entity
 
-=cut
 
 has value  => (
     is          => 'ro',
@@ -40,6 +42,8 @@ has value  => (
     required    => 1,
     default     => '',
 );
+
+=cut
 
 =item B<type>
 

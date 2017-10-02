@@ -54,7 +54,7 @@ module.exports = React.createClass({
             filter = JSON.parse(this.props.listViewFilter);
         }
         if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; alertPreSelectedId=id;};
-
+        
         return {
             splitter: true, 
             selectedColor: '#AEDAFF',
@@ -65,7 +65,7 @@ module.exports = React.createClass({
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', handler: [], listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, };
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, };
     },
     componentWillMount: function() {
         if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
@@ -75,7 +75,11 @@ module.exports = React.createClass({
         } else if (this.props.viewMode == 'portrait') {
             this.Portrait();
         }
+        //If alert id is passed, convert the id to its alertgroup id.
+        this.ConvertAlertIdToAlertgroupId(this.props.id) 
         
+        //if the type is entry, convert the id and type to the actual type and id
+        this.ConvertEntryIdToType( this.props.id );
     },
     componentDidMount: function(){
         var height = this.state.scrollheight
@@ -94,9 +98,7 @@ module.exports = React.createClass({
                 }
             }
         }
-        //If alert id is passed, convert the id to its alertgroup id.
-        this.ConvertAlertIdToAlertgroupId(this.props.id)
-
+        
         var array = []
         var finalarray = [];
         //register for creation
@@ -108,6 +110,7 @@ module.exports = React.createClass({
         if (this.props.type == 'alert') {
             url = '/scot/api/v2/alertgroup'
         }
+
         //get page number
         if  (pageNumber != 0){
             newPage = (pageNumber - 1) * pageLimit
@@ -127,62 +130,58 @@ module.exports = React.createClass({
 	        url: url,
 	        data: data,
             traditional:true,
-	    }).then(function(response){
-  	        datasource = response	
-	        $.each(datasource.records, function(key, value){
-	            finalarray[key] = {}
-	            $.each(value, function(num, item){
-	                if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
-	                {
-	                    var date = new Date(1000 * item)
-	                    finalarray[key][num] = date.toLocaleString()
-	                }
-                    else if (num == 'sources' || num == 'source'){
-                        if (item != undefined) {
-                            var sourcearr = item.join(', ')
-                            finalarray[key]["source"] = sourcearr;
+	        success: function(response){
+                datasource = response	
+                $.each(datasource.records, function(key, value){
+                    finalarray[key] = {}
+                    $.each(value, function(num, item){
+                        if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
+                        {
+                            var date = new Date(1000 * item)
+                            finalarray[key][num] = date.toLocaleString()
                         }
-                    }
-                    else if (num == 'tags' || num == 'tag'){
-                        if (item != undefined) {
-                            var tagarr = item.join(', ')
-                            finalarray[key]["tag"] = tagarr;
+                        else if (num == 'sources' || num == 'source'){
+                            if (item != undefined) {
+                                var sourcearr = item.join(', ')
+                                finalarray[key]["source"] = sourcearr;
+                            }
                         }
+                        else if (num == 'tags' || num == 'tag'){
+                            if (item != undefined) {
+                                var tagarr = item.join(', ')
+                                finalarray[key]["tag"] = tagarr;
+                            }
+                        }
+                        else{
+                            finalarray[key][num] = item
+                        }
+                        if (num == 'id') {
+                            Store.storeKey(item)
+                            Store.addChangeListener(this.reloadactive)
+                            idsarray.push(item);            
+                        }
+                    }.bind(this))
+                    if(key %2 == 0){
+                        finalarray[key]["classname"] = 'table-row roweven'
                     }
-	                else{
-	                    finalarray[key][num] = item
-	                }
-                    if (num == 'id') {
-                        Store.storeKey(item)
-                        Store.addChangeListener(this.reloadactive)
-                        idsarray.push(item);            
+                    else {
+                        finalarray[key]["classname"] = 'table-row rowodd'
                     }
                 }.bind(this))
-                if(key %2 == 0){
-                    finalarray[key]["classname"] = 'table-row roweven'
-                }
-                else {
-                    finalarray[key]["classname"] = 'table-row rowodd'
-                }
-            }.bind(this))
-            this.setState({scrollheight:height, objectarray: finalarray, totalcount: response.totalRecordCount, loading:false, idsarray:idsarray});
-            if (this.props.type == 'alert' && this.state.showSelectedContainer == false) {
-                this.setState({showSelectedContainer:false})
-            } else if (this.state.id == undefined) {
-                this.setState({showSelectedContainer: false})
-            } else {
-                this.setState({showSelectedContainer: true})
-            };
-            
-        }.bind(this))
-        
-        //get incident handler
-        $.ajax({
-            type: 'get',
-            url: '/scot/api/v2/handler?current=1'
-        }).success(function(response){
-            this.setState({handler: response.records})
-        }.bind(this))
+                this.setState({scrollheight:height, objectarray: finalarray, totalcount: response.totalRecordCount, loading:false, idsarray:idsarray});
+                if (this.props.type == 'alert' && this.state.showSelectedContainer == false) {
+                    this.setState({showSelectedContainer:false})
+                } else if (this.state.id == undefined) {
+                    this.setState({showSelectedContainer: false})
+                } else {
+                    this.setState({showSelectedContainer: true})
+                };
+                
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get list data', data)
+            }.bind(this)
+        })
         
         $('#list-view-container').keydown(function(e){
             if ($('input').is(':focus')) {return};
@@ -253,15 +252,13 @@ module.exports = React.createClass({
     render: function() {
         var listViewContainerHeight;
         var showClearFilter = false;
-        var handler = []; 
+        
         if (this.state.listViewContainerDisplay == null) {
             listViewContainerHeight = null;
         } else {
             listViewContainerHeight = '0px'
         }
-        for (var i=0; i < this.state.handler.length; i++) {
-            handler.push(this.state.handler[i].username + ' ' )
-        }
+        
         if (this.state.id != null && this.state.typeCapitalized != null) {
             document.title = this.state.typeCapitalized.charAt(0) + '-' + this.state.id
         }
@@ -269,44 +266,50 @@ module.exports = React.createClass({
             showClearFilter = true
         } 
         return (
-            <div key={this.state.listViewKey} className="allComponents">
-                <div className="black-border-line">
-                    <div className='mainview'>
-                        <div>
-                           <div style={{display: 'inline-flex'}}>
-                                {this.props.notificationSetting == 'on'?
-                                    <Button eventKey='1' onClick={this.props.notificationToggle} bsSize='xsmall'>Mute Notifications</Button> :
-                                    <Button eventKey='2' onClick={this.props.notificationToggle} bsSize='xsmall'>Turn On Notifications</Button>
-                                }
-                                {this.props.type == 'event' || this.props.type == 'intel' || this.props.type == 'incident' || this.props.type == 'signature' ? <Button onClick={this.createNewThing} eventKey='6' bsSize='xsmall'>Create {this.state.typeCapitalized}</Button> : null}
-                                <Button eventKey='5' bsSize='xsmall' onClick={this.exportCSV}>Export to CSV</Button> 
-                                <Button bsSize='xsmall' onClick={this.toggleView}>Full Screen Toggle (f)</Button>
-                                {showClearFilter ? <Button onClick={this.clearAll} eventKey='3' bsSize='xsmall' bsStyle={'info'}>Clear All Filters</Button> : null}
-                            </div>
-                                <div id='list-view-container' style={{display:this.state.listViewContainerDisplay, height:listViewContainerHeight, opacity:this.state.loading ? '.2' : '1'}} tabIndex='1'>
-                                    <div id={this.state.listViewOrientation} tabIndex='2'>
-                                        <div className='tableview' style={{display: 'flex'}}>
-                                            <div id='fluid2' className="container-fluid2" style={{width:'100%', maxHeight: this.state.maxheight, marginLeft: '0px',height: this.state.scrollheight, 'overflow': 'hidden',paddingLeft:'5px', display:'flex', flexFlow: 'column'}}>                 
-                                                <table style={{width:'100%'}}>
-                                                    <ListViewHeader data={this.state.objectarray} columns={this.state.columns} columnsDisplay={this.state.columnsDisplay} columnsClassName={this.state.columnsClassName} handleSort={this.handleSort} sort={this.state.sort} filter={this.state.filter} handleFilter={this.handleFilter} startepoch={this.state.startepoch} endepoch={this.state.endepoch} type={this.props.type}/>
-                                                </table>
-                                                <div id='list-view-data-div' style={{height:this.state.scrollheight}} className='list-view-overflow'>
-                                                    <div className='list-view-data-div' style={{display:'block'}}>
+            <div> 
+                {this.state.type != 'entry' ?
+                    <div key={this.state.listViewKey} className="allComponents">
+                        <div className="black-border-line">
+                            <div className='mainview'>
+                                <div>
+                                <div className='list-buttons' style={{display: 'inline-flex'}}>
+                                        {this.props.notificationSetting == 'on'?
+                                            <Button eventKey='1' onClick={this.props.notificationToggle} bsSize='xsmall'>Mute Notifications</Button> :
+                                            <Button eventKey='2' onClick={this.props.notificationToggle} bsSize='xsmall'>Turn On Notifications</Button>
+                                        }
+                                        {this.props.type == 'event' || this.props.type == 'intel' || this.props.type == 'incident' || this.props.type == 'signature' ? <Button onClick={this.createNewThing} eventKey='6' bsSize='xsmall'>Create {this.state.typeCapitalized}</Button> : null}
+                                        <Button eventKey='5' bsSize='xsmall' onClick={this.exportCSV}>Export to CSV</Button> 
+                                        <Button bsSize='xsmall' onClick={this.toggleView}>Full Screen Toggle (f)</Button>
+                                        {showClearFilter ? <Button onClick={this.clearAll} eventKey='3' bsSize='xsmall' bsStyle={'info'}>Clear All Filters</Button> : null}
+                                    </div>
+                                        <div id='list-view-container' style={{display:this.state.listViewContainerDisplay, height:listViewContainerHeight, opacity:this.state.loading ? '.2' : '1'}} tabIndex='1'>
+                                            <div id={this.state.listViewOrientation} tabIndex='2'>
+                                                <div className='tableview' style={{display: 'flex'}}>
+                                                    <div id='fluid2' className="container-fluid2" style={{width:'100%', maxHeight: this.state.maxheight, marginLeft: '0px',height: this.state.scrollheight, 'overflow': 'hidden',paddingLeft:'5px', display:'flex', flexFlow: 'column'}}>                 
                                                         <table style={{width:'100%'}}>
-                                                            <ListViewData data={this.state.objectarray} columns={this.state.columns} columnsClassName={this.state.columnsClassName} type={this.state.type} selected={this.selected} selectedId={this.state.id}/>
+                                                            <ListViewHeader data={this.state.objectarray} columns={this.state.columns} columnsDisplay={this.state.columnsDisplay} columnsClassName={this.state.columnsClassName} handleSort={this.handleSort} sort={this.state.sort} filter={this.state.filter} handleFilter={this.handleFilter} startepoch={this.state.startepoch} endepoch={this.state.endepoch} type={this.props.type} errorToggle={this.props.errorToggle}/>
                                                         </table>
+                                                        <div id='list-view-data-div' style={{height:this.state.scrollheight}} className='list-view-overflow'>
+                                                            <div className='list-view-data-div' style={{display:'block'}}>
+                                                                <table style={{width:'100%'}}>
+                                                                    <ListViewData data={this.state.objectarray} columns={this.state.columns} columnsClassName={this.state.columnsClassName} type={this.state.type} selected={this.selected} selectedId={this.state.id}/>
+                                                                </table>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
+                                            <Page pagefunction={this.getNewData} defaultPageSize={50} count={this.state.totalcount} pagination={true} type={this.props.type} defaultpage={this.state.activepage.page}/>
+                                            <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
                                         </div>
-                                    </div>
-                                    <Page pagefunction={this.getNewData} defaultPageSize={50} count={this.state.totalcount} pagination={true} type={this.props.type} defaultpage={this.state.activepage.page}/>
-                                    <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
+                                    {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter} errorToggle={this.props.errorToggle} history={this.props.history}/> : null}
                                 </div>
-                            {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter} errorToggle={this.props.errorToggle}/> : null}
+                            </div>
                         </div>
                     </div>
-                </div>
+                :
+                    null
+                }
             </div>
         )
     },
@@ -343,6 +346,7 @@ module.exports = React.createClass({
         } else if (nextProps.id != this.props.id) {
             if (this.props.type == 'alert') {
                 this.ConvertAlertIdToAlertgroupId(nextProps.id);        
+                this.ConvertEntryIdToType(nextProps.id);        
                 this.setState({ type : nextProps.type, alertPreSelectedId: nextProps.id });    
             } else {
                 this.setState({type: nextProps.type, id: nextProps.id});
@@ -355,12 +359,35 @@ module.exports = React.createClass({
         if (this.props.type == 'alert') {
             $.ajax({
                 type: 'get',
-                url: 'scot/api/v2/alert/' + id
-            }).success(function(response1){
-                var newresponse = response1
-                this.setState({id: newresponse.alertgroup, showSelectedContainer:true})
-            }.bind(this))
+                url: 'scot/api/v2/alert/' + id,
+                success: function(response1) {
+                    var newresponse = response1
+                    this.setState({id: newresponse.alertgroup, showSelectedContainer:true})
+                }.bind(this),
+                error: function(data) {
+                    this.props.errorToggle('failed to convert alert id to alertgroup id', data);
+                }.bind(this),
+            })
         };
+    },
+    
+    ConvertEntryIdToType: function(id) {
+    //if the type is alert, convert the id to the alertgroup id
+        if (this.props.type == 'entry') {
+            $.ajax({
+                type: 'get',
+                url: 'scot/api/v2/entry/' + id,
+                async: false,
+                success: function(response) {
+                    this.selected( response.target.type, response.target.id, this.props.id );
+                    //this.setState({id: response.target.id, type: response.target.type, showSelectedContainer:true});
+                
+                }.bind(this),
+                error: function(data) {
+                    this.props.errorToggle('failed to convert alert id to alertgroup id', data);
+                }.bind(this),
+            })
+        };   
     },
 
     stopdrag: function(e){
@@ -439,15 +466,17 @@ module.exports = React.createClass({
         deleteCookie('listViewSort'+this.props.type) //clear sort cookie
         deleteCookie('listViewPage'+this.props.type) //clear page cookie
     },
-    selected: function(type,rowid,taskid){
-        if (taskid == null) {
+    selected: function(type,rowid, subid, taskid){
+        if ( taskid == null && subid == null ) {
             //window.history.pushState('Page', 'SCOT', '/#/' + type +'/'+rowid)  
             this.props.history.push( '/' + type + '/' + rowid );
             //this.launchEvent(type, rowid)
+        } else if ( taskid == null && subid != null ) {
+            this.props.history.push( '/' + type + '/' + rowid + '/' + subid );
         } else {
             //If a task, swap the rowid and the taskid
             //window.history.pushState('Page', 'SCOT', '/#/' + type + '/' + taskid + '/' + rowid)
-            this.props.history.push( '/' + type + '/' + taskid + '/' + rowid );
+            this.props.history.push( '/' + type + '/' + taskid + '/' + rowid + '/'  );
             //this.launchEvent(type, taskid, rowid);
         }
         //scrolled = $('.list-view-data-div').scrollTop()
@@ -467,7 +496,10 @@ module.exports = React.createClass({
         
         //if the type is alert, convert the id to the alertgroup id
         this.ConvertAlertIdToAlertgroupId(this.props.id)        
-                    
+        
+        //if the type is entry, convert the id and type to the actual type and id
+        this.ConvertEntryIdToType( this.props.id );       
+        
         //defaultpage = page.page
         if (page == undefined) {
             pageNumber = this.state.activepage.page;
@@ -513,61 +545,59 @@ module.exports = React.createClass({
 	        url: '/scot/api/v2/'+this.state.type,
 	        data: data,
             traditional: true,
-	    }).then(function(response){
-  	        datasource = response	
-	        $.each(datasource.records, function(key, value){
-	            newarray[key] = {}
-	            $.each(value, function(num, item){
-	                if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
-	                {
-	                    var date = new Date(1000 * item)
-	                    newarray[key][num] = date.toLocaleString()
-	                }
-                    else if (num == 'sources' || num == 'source'){
-                        if (item != undefined) {
-                            var sourcearr = item.join(', ')
-                            newarray[key]["source"] = sourcearr;
+	        success: function(response){
+                datasource = response	
+                $.each(datasource.records, function(key, value){
+                    newarray[key] = {}
+                    $.each(value, function(num, item){
+                        if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
+                        {
+                            var date = new Date(1000 * item)
+                            newarray[key][num] = date.toLocaleString()
                         }
-                    }
-                    else if (num == 'tags' || num == 'tag'){
-                        if (item != undefined) {
-                            var tagarr = item.join(', ')
-                            newarray[key]["tag"] = tagarr;
-                        }
-                    } 
-	                else{
-	                    newarray[key][num] = item
-	                }
-                    if (num == 'id') {
-                        var idalreadyadded = false;
-                        for (var i=0; i < idsarray.length; i++) {
-                            if (item == idsarray[i]) {
-                                idalreadyadded = true;
+                        else if (num == 'sources' || num == 'source'){
+                            if (item != undefined) {
+                                var sourcearr = item.join(', ')
+                                newarray[key]["source"] = sourcearr;
                             }
                         }
-                        if (idalreadyadded == false) {
-                            Store.storeKey(item)
-                            Store.addChangeListener(this.reloadactive)
+                        else if (num == 'tags' || num == 'tag'){
+                            if (item != undefined) {
+                                var tagarr = item.join(', ')
+                                newarray[key]["tag"] = tagarr;
+                            }
+                        } 
+                        else{
+                            newarray[key][num] = item
                         }
-                        newidsarray.push(item);
+                        if (num == 'id') {
+                            var idalreadyadded = false;
+                            for (var i=0; i < idsarray.length; i++) {
+                                if (item == idsarray[i]) {
+                                    idalreadyadded = true;
+                                }
+                            }
+                            if (idalreadyadded == false) {
+                                Store.storeKey(item)
+                                Store.addChangeListener(this.reloadactive)
+                            }
+                            newidsarray.push(item);
+                        }
+                    }.bind(this))
+                    if(key %2 == 0){
+                        newarray[key]['classname'] = 'table-row roweven'
                     }
-	            }.bind(this))
-                if(key %2 == 0){
-                    newarray[key]['classname'] = 'table-row roweven'
-                }
-                else {
-                    newarray[key]['classname'] = 'table-row rowodd'
-                }
-	        }.bind(this))
+                    else {
+                        newarray[key]['classname'] = 'table-row rowodd'
+                    }
+                }.bind(this)),
                 this.setState({totalcount: response.totalRecordCount, activepage: {page:pageNumber, limit:pageLimit}, objectarray: newarray, loading:false, idsarray:newidsarray})
-        }.bind(this))
-        //get incident handler
-        $.ajax({
-            type: 'get',
-            url: '/scot/api/v2/handler?current=1'
-        }).success(function(response){
-            this.setState({handler: response.records})
-        }.bind(this))
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get list data', data); 
+            }.bind(this)
+        });
+
     },
 
     exportCSV: function(){
@@ -689,22 +719,23 @@ module.exports = React.createClass({
         )
     },
     createNewThing: function(){
-    var data;
-    if (this.props.type == 'signature') {
-        data = JSON.stringify({name:'Name your Signature', status: 'disabled'});   
-    } else {
-        data = JSON.stringify({subject: 'No Subject'});
-    }
+        var data;
+        if (this.props.type == 'signature') {
+            data = JSON.stringify({name:'Name your Signature', status: 'disabled'});   
+        } else {
+            data = JSON.stringify({subject: 'No Subject'});
+        }
         $.ajax({
             type: 'POST',
             url: '/scot/api/v2/'+this.props.type,
-            data: data
-        }).success(function(response){
-            this.selected(this.props.type, response.id);
-            //this.props.history.push( '/' + this.props.type + '/' + response.id );
-            //this.launchEvent(this.props.type,response.id)
-            //window.history.pushState('Page', 'SCOT', '/#/'+this.props.type+'/'+response.id);
-        }.bind(this))
+            data: data,
+            success: function(response){
+                this.selected(this.props.type, response.id);
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to create new thing', data);
+            }.bind(this)
+        })
     }, 
 });
 

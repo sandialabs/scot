@@ -410,6 +410,8 @@ function install_perl_modules {
         Term::ANSIColor
         Courriel
         Statistics::Descriptive
+        Net::SSH::Perl
+        Net::SFTP
     '
 
     # install_cpanm
