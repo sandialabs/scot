@@ -19,14 +19,8 @@ EXPOSE 27017
 
 ADD docker-configs/mongodb/mongod.conf /etc/mongod.conf
 ADD install/src/mongodb/ /opt/scot/install/src/mongodb/
-
-ADD docker-configs/mongodb/run.sh /run.sh
-ADD docker-configs/mongodb/set_mongodb_config.sh /set_mongodb_config.sh
-
-RUN chmod +x /run.sh
-RUN chmod +x /set_mongodb_config.sh
 # Set /usr/bin/mongod as the dockerized entry-point application
 
-CMD ["/run.sh"]
+CMD ["/usr/bin/mongod"]
 
 
