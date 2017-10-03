@@ -337,7 +337,7 @@ sub ldap_authenticates {
         }
     }
     else {
-        $log->error("ldap not loaded in env.  Config file problem?");
+        $log->error("ldap not loaded in env.  Assuming no LDAP configured.");
         return undef;
     }
 }
