@@ -175,7 +175,7 @@ sub run {
     my $pm      = AnyEvent::ForkManager->new(max_workers => $self->max_workers);
     my $stomp;
 
-    if ( $self->stomphost ne "localhost" ) {
+    if ( $self->stomp_host ne "localhost" ) {
         $stomp   = AnyEvent::STOMP::Client->new($self->stomp_host, $self->stomp_port);
     }
     else {
