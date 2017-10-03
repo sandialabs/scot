@@ -613,6 +613,9 @@ sub do_span {
     my $log     = $self->log;
     my $class   = "entity $type";
 
+    $text =~ s/^(<)|(&lt;)//;
+    $text =~ s/(>)|(&gt;)$//;
+
     my $element = HTML::Element->new(
         'span',
         'class'     => $class,
