@@ -3,6 +3,7 @@ package Scot::Collection::Entry;
 use lib '../../../lib';
 use Moose 2;
 use Data::Dumper;
+use HTML::Element;
 
 extends 'Scot::Collection';
 
@@ -33,8 +34,12 @@ sub create_from_promoted_alert {
         id                    => $event->id,
     };
     my $id  = $alert->id;
+    my $agcol   = $mongo->collection('Alertgroup');
+    my $agobj   = $agcol->find_iid($alert->alertgroup+0);
+    my $subject = $agobj->subject;
     $json->{body}              = 
-        qq|<h3>From Alert <a href="/#/alert/$id">$id</h3>|.
+        qq|<h3>From Alert <a href="/#/alert/$id">$id</h3><br>|.
+        qq|<h4>|.$subject.qq|</h4>|.
         $self->build_table($alert);
     $log->debug("Using : ",{filter=>\&Dumper, value => $json});
 
@@ -59,7 +64,10 @@ sub create_from_promoted_alert {
         $json->{parent} = $aentry->id;
     }
 
+    #XXX
+
     $log->debug("creating the promoted alert entry");
+    $json->{metadata}          = $alert->as_hash;
     my $entry_obj              = $self->create($json);
 
     $log->debug("Created Entry : ".$entry_obj->id);
@@ -145,13 +153,24 @@ sub build_table {
         $html .= "<th>$key</th>";
     }
     $html .= "\n</tr>\n<tr>\n";
+    
+    # issue #446 states that special columns like message_id, etc. 
+    # are flairing as email instead of message_id.  This is because
+    # the flair engine handles alert data specially, looking at 
+    # column headers.  Here is not quite the right place to do something
+    # similar, though.  446 will have to remain open until we rework
+    # the flair engine to handle this case better.  One idea is to 
+    # wrap these items in special spans with flair "hints"  that the 
+    # flair engine will recognize.  This will be similar to the approach
+    # I'm thinking of using for user defined flair.
 
     foreach my $key ( @{$columns} ) {
         next if ($key eq "columns");
         my $value   = $data->{$key};
         $html .= qq|<td>|;
         if ( ref($value) eq "ARRAY" ) {
-            $html .= join("<br>\n",@$value)."</td>";
+#            $html .= join("<br>\n",@$value)."</td>";
+            $html .= join("\n",map { "    <div>$_</div>" } @$value)."</td>";
         }
         else {
             $html .= $value . "</td>";
@@ -253,69 +272,6 @@ EOF
 
 }
 
-sub create_from_api {
-    my $self    = shift;
-    my $request = shift;
-
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
-    my $mq      = $env->mq;
-
-    $log->trace("Custom create in Scot::Collection::Entry");
-
-    my $user    = $request->{user};
-
-    my $json    = $request->{request}->{json};
-
-    my $target_type = delete $json->{target_type};
-    my $target_id   = delete $json->{target_id};
-
-    unless ( defined $target_type ) {
-        $log->error("Error: Must provide a target type");
-        return {
-            error_msg   => "Entries must have target_type defined",
-        };
-    }
-
-    unless ( defined $target_id ) {
-        $log->error("Error: Must provide a target id");
-        return {
-            error_msg   => "Entries must have target_id defined",
-        };
-    }
-
-    my $task = $self->validate_task($request);
-    if ( $task ) {
-        $json->{class}      = "task";
-        $json->{metadata}   = $task;
-    }
-
-    my $default_permitted_groups = $self->get_default_permissions(
-        $target_type, $target_id
-    );
-
-    unless ( $request->{readgroups} ) {
-        $json->{groups}->{read} = $default_permitted_groups->{read};
-    }
-    unless ( $request->{modifygroups} ) {
-        $json->{groups}->{modify} = $default_permitted_groups->{modify};
-    }
-
-    $json->{target} = {
-        type    => $target_type,
-        id      => $target_id,
-    };
-
-    $json->{owner}  = $user;
-
-    $log->debug("Creating entry with: ", { filter=>\&Dumper, value => $json});
-
-    my $entry_obj   = $self->create($json);
-
-    return $entry_obj;
-}
-
 override api_create => sub {
     my $self    = shift;
     my $req     = shift;
@@ -348,9 +304,80 @@ override api_create => sub {
         id      => $target_id,
     };
     $json->{owner}  = $user;
+    if ( $json->{class} eq "json" ) {
+        # we need to create body from json in metadata
+        $json->{body}   = $self->create_json_html($json->metadata);
+    }
     return $self->create($json);
 };
 
+sub create_json_html {
+    my $self    = shift;
+    my $data    = shift;
+    my $tree    = HTML::Element->new('div',class=>"json_view");
+    $self->build_tree($tree,$data);
+    return $tree->as_HTML(undef, "    ", {});
+}
+
+sub build_tree {
+    my $self    = shift;
+    my $stem    = shift;
+    my $data    = shift;
+    my $nodetype    = ref($data);
+    my $element;
+
+    if ( $nodetype eq '' ) {
+        $element    = HTML::Element->new("span");
+        $element->push_content($data);
+        return;
+    }
+
+    if ( $nodetype eq "ARRAY" ) {
+        $element = HTML::Element->new("ol","role" => "group",);
+        foreach my $item (@$data) {
+            my $li  = HTML::Element->new(
+                "li",
+                "role"  => "treeitem",
+                "aria-expanded" => "true",
+            );
+            $self->build_tree($li, $item);
+            $element->push_content($li);
+        }
+    }
+
+    if ( $nodetype eq "HASH" ) {
+        $element    = HTML::Element->new(
+            "li",
+            "role"  => "treeitem",
+            "aria-expanded" => "true",
+        );
+        my $div     = HTML::Element->new('div');
+        my $span    = HTML::Element->new('span');
+        $span->push_content('Object');
+        $div->push_content($span);
+        $element->push_content($div);
+        my $ol  = HTML::Element->new(
+            "ol",
+            "role"  => "group",
+        );
+        foreach my $key ( sort keys %$data ) {
+            my $value   = $data->{$key};
+            my $li      = HTML::Element->new(
+                "li",
+                "role"  => "treeitem",
+                "aria-expanded" => "false",
+            );
+            my $keyspan = HTML::Element->new("span");
+            $keyspan->push_content($key);
+            $li->push_content($keyspan);
+            $self->build_tree($li, $value);
+            $ol->push_content($li);
+        }
+        $element->push_content($ol);
+    }
+
+    $stem->push_content($element);
+}
 
 sub validate_task {
     my $self    = shift;
@@ -565,5 +592,20 @@ sub move_entry {
     });
 }
 
+sub tasks_not_completed_count {
+    my $self    = shift;
+    my $obj     = shift; # the target
+    my $type    = $obj->get_collection_name;
+    my $id      = $obj->id;
+    my $match   = {
+        'target.type'   => $type,
+        'target.id'     => $id,
+        'class'         => "task",
+        'metadata.status'   => { '$nin' => ['completed','closed'] }
+    };
+
+    my $cursor  = $self->find($match);
+    return $cursor->count // 0;
+}
 
 1;

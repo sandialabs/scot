@@ -463,12 +463,12 @@ sub process_cell {
     my $header  = shift;
     my $log     = $self->env->log;
 
-    $log->debug("text = $text");
+    $log->debug("text   = $text");
     $log->debug("header = $header");
     my $flair   = $self->genspan($text,$header);
-    $log->debug("text = $text");
+    $log->debug("text   = $text");
     $log->debug("header = $header");
-    $log->debug("flair = $flair");
+    $log->debug("flair  = $flair");
 
     my $entity_href = { value => $text, type => $header };
     $log->debug("entity_href = ",{filter=>\&Dumper, value=>$entity_href});

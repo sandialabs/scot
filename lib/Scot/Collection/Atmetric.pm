@@ -11,18 +11,6 @@ with    qw(
     Scot::Role::GetTagged
 );
 
-sub create_from_api {
-    my $self    = shift;
-    my $request = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-
-    $log->trace("Create AtMetric from API");
-    
-    my $stat = $self->create($request);
-    return $stat;
-}
-
 sub upsert_metric {
     my $self    = shift;
     my $doc     = shift;

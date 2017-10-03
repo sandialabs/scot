@@ -523,7 +523,13 @@ sub api_list {
 
     $self->env->log->debug("match is ",{filter=>\&Dumper, value=>$match});
 
-    my $cursor  = $self->find($match);
+    my $cursor;
+    if ( ref($self) eq "Scot::Collection::Alertgroup" ) {
+        $cursor = $self->find($match);
+    }
+    else {
+        $cursor  = $self->find($match);
+    }
     my $total   = $cursor->count;
 
     my $limit   = $self->build_limit($href);
@@ -648,6 +654,16 @@ sub api_update {
     my @uprecs  = ();
     $req->{request}->{json}->{updated} = $self->env->now;
     my %update  = $self->env->mongoquerymaker->build_update_command($req);
+    
+    $self->env->log->debug("api_update attempting: ",{filter => \&Dumper, value => \%update});
+
+    my $objtype = $object->get_collection_name;
+    # disallow the changing of alertgroup subjects
+    if ( $objtype eq "alertgroup" ) {
+        if ( defined $update{subject} ) {
+            delete $update{subject};
+        }
+    }
 
     foreach my $key (keys %update) {
         my $old = '';
