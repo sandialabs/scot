@@ -37,11 +37,6 @@ class ReportCreated extends Component {
 			.rangeRound( [height, 0] )
 			.domain( [0, 0] )
 
-		this.colors = d3.scaleOrdinal( d3.schemeCategory10 )
-			.domain( this.state.chartData.map( line => {
-				return line.name;
-			} ) )
-
 		this.xAxis = d3.axisBottom()
 			.scale( this.xScale );
 
@@ -86,35 +81,29 @@ class ReportCreated extends Component {
 			.x( d => this.xScale( d.time ) )
 			.y( d => this.yScale( d.value ) );
 
-
 		this.lineHolder = this.svg.append( 'g' )
 			.attr( 'class', 'lines' )
 			.attr( 'clip-path', 'url(#bounds)' )
-
 
 		// Legend
 		this.LegendHolder = this.svg.append( 'g' )
 			.attr( 'class', 'legend-holder' )
 			.style( 'font-family', 'sans-serif' )
 
-
 		this.chartInit = true;
 	}
 
-	updateChart( initial = false ) {
-		if ( !initial ) {
-			this.yScale.domain( [
-				0,
-				Math.max(
-					d3.max( this.state.chartData, d => {
-						if ( !d.shown || !d.data.length ) return 0;
+	updateChart() {
+		this.yScale.domain( [
+			0,
+			Math.max(
+				d3.max( this.state.chartData, d => {
+					if ( !d.shown || !d.data.length ) return 0;
 
-						return d3.max( d.data, b => b.value );
-					} )
-				, 10 )
-			] ).nice()
-		}
-		this.yAxisEl.transition().call( this.yAxis )
+					return d3.max( d.data, b => b.value );
+				} )
+			, 10 )
+		] ).nice()
 
 		this.colors = d3.scaleOrdinal( d3.schemeCategory10 )
 			.domain( this.state.chartData.map( line => {
@@ -136,21 +125,23 @@ class ReportCreated extends Component {
 				.style( 'fill', 'none' )
 				.attr( 'd', d => this.statusLine( d.data ) )
 
-		let legend = this.LegendHolder.selectAll( '.legend' )
-			.data( this.state.chartData )
+		this.LegendHolder.selectAll( '.legend' ).remove()
 
-		legend.exit()
-			.transition()
-				.style( 'opacity', 0 )
-			.remove()
+		let legend = this.LegendHolder.selectAll( '.legend' )
+			.data( this.state.chartData, d => d.name )
 
 		legend = legend.enter().append( 'g' )
 			.attr( 'class', 'legend' )
 			.style( 'cursor', 'pointer' )
 			.on( 'click', d => {
-				d.shown = !d.shown;
+				let newData = this.state.chartData.map( row => {
+					if ( row.name === d.name ) {
+						row.shown = !d.shown;
+					}
+					return row;
+				} );
 				this.setState( {
-					chartData: this.state.chartData,
+					chartData: newData,
 				} );
 			} );
 
@@ -186,11 +177,16 @@ class ReportCreated extends Component {
 		let legendWidth = this.LegendHolder.node().getBBox().width;
 		this.LegendHolder.attr( 'transform', `translate( ${width / 2 - legendWidth / 2}, ${ height + margin.bottom - legendHeight * 2 } )` );
 
-		this.svg.selectAll( '.legend rect' )
-			.transition()
-				.style( 'fill', d => d.shown ? this.colors( d.name ) : 'transparent' )
+		// Animate changes
+		this.yAxisEl.transition().call( this.yAxis )
 
-		this.svg.selectAll( '.line' )
+		this.LegendHolder.selectAll( '.legend' ).selectAll( 'rect' )
+			.transition()
+			.style( 'fill', d => {
+				return d.shown ? this.colors( d.name ) : 'transparent'
+			} )
+
+		lines
 			.transition()
 				.attr( 'd', d => this.statusLine( d.data ) )
 				.style( 'stroke', d => d.shown ? this.colors( d.name ) : 'transparent' )
@@ -204,8 +200,11 @@ class ReportCreated extends Component {
 			console.log( dataset );
 			dataset = this.genData();
 
+			// Add line visibility to data
 			dataset = dataset.map( line => {
-				line.shown = true;
+				line.shown = this.state.chartData.reduce( ( shown, d ) => {
+					return shown && ( d.name === line.name ? d.shown : true );
+				}, true );
 
 				return line;
 			} );
@@ -251,7 +250,6 @@ class ReportCreated extends Component {
 
     componentDidMount() {
 		this.initChart();
-		// this.updateChart( true );
 		this.loadData(); 
     }
 
