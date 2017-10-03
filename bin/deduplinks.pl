@@ -7,6 +7,8 @@ use v5.18;
 my $mongo           = MongoDB->connect->db('scot-prod');
 my $collection      = $mongo->get_collection('link');
 my $cursor          = $collection->find();
+$cursor->sort({id => -1});
+$cursor->limit(150000);
 my %seen            = ();
 my $duplicates      = 0;
 
@@ -22,11 +24,13 @@ while (my $link = $cursor->next) {
     if ( defined $seen{$m0} ) {
         say "Link $id is a duplicate of ".$seen{$m0};
         $duplicates++;
+        $collection->delete_one({id => $id});
         next LINK;
     }
     if ( defined $seen{$m1} ) {
         say "Link $id is a duplicate of ".$seen{$m1}." (inv)";
         $duplicates++;
+        $collection->delete_one({id => $id});
         next LINK;
     }
     say "Link $id is first occurrence of $m0";

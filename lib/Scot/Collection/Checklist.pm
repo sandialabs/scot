@@ -64,47 +64,6 @@ sub api_subthing {
     die "Unsupported subthing $subthing";
 }
 
-
-sub create_from_api {
-    my $self        = shift;
-    my $request     = shift;
-    my $env         = $self->env;
-    my $json        = $request->{request}->{json};
-    my $log         = $env->log;
-
-    my @entries     = @{$json->{entry}};
-    delete $json->{entry};
-
-    my $checklist   = $self->create($json);
-
-    $log->debug("created checklist ".$checklist->id);
-
-    if ( scalar(@entries) > 0 ) {
-        # entries were posted in
-        my $mongo   = $self->env->mongo;
-        my $ecoll   = $mongo->collection('Entry');
-
-        foreach my $entry (@entries) {
-            $entry->{owner}         = $entry->{owner} // $request->{user};
-            $entry->{task}          = {
-                when    => $env->now(),
-                who     => $request->{user},
-                status  => 'open',
-            };
-            $entry->{body}      = $entry->{body};
-            $entry->{is_task}   = 1;
-            $entry->{target}    = {
-                type    => "checklist",
-                id      => $checklist->id,
-            };
-
-            my $obj = $ecoll->create($entry);
-        }
-    }
-    
-    return $checklist;
-}
-
 sub autocomplete {
     my $self    = shift;
     my $frag    = shift;

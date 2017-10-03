@@ -394,5 +394,41 @@ EOF
                 },
             ],
         },
-    }, # 600 series
+    }, # 700 series
+    '800'   => {
+        'id_domain'   => {
+            source  => <<'EOF',
+<html>paziapm.co.id</html>
+EOF
+            plain   => <<'EOF',
+paziapm.co.id
+EOF
+            flair   => <<'EOF',
+<div><span class="entity domain" data-entity-type="domain" data-entity-value="paziapm.co.id">paziapm.co.id</span> </div>
+EOF
+            entities    => [
+                {
+                    value   => 'paziapm.co.id',
+                    type    => 'domain',
+                },
+            ],
+        },
+        'cve_flair' => {
+            source  => <<'EOF',
+<html>It was CVE-2017-12345</html>
+EOF
+            plain   => <<'EOF',
+It was CVE-2017-12345
+EOF
+            flair   => <<'EOF',
+<div>It was <span class="entity cve" data-entity-type="cve" data-entity-value="CVE-2017-12345">CVE-2017-12345</span> </div>
+EOF
+            entities    => [
+                {
+                    value   => 'cve-2017-12345',
+                    type    => 'cve',
+                },
+            ],
+        },
+    },
 );

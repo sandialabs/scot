@@ -143,8 +143,8 @@ sub _build_ldap_connection {
     }
     delay_exp { 3, 1e5 }
     catch {
-        $log->error("Failed to Connect to IMAP Server: $_");
-        die "Failed to Connect to IMAP server";
+        $log->error("Failed to Connect to LDAP Server: $_");
+        die "Failed to Connect to LDAP server";
     };
     return $ldap;
 }

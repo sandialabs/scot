@@ -53,10 +53,6 @@ module.exports = React.createClass({
                 action: {
                     label: 'View',
                     callback: function(){
-                        if(activemqtype == 'entry' || activemqtype == 'alert'){
-                            activemqid = activemqsetentry
-                            activemqtype = activemqsetentrytype
-                        } 
                         window.open('#/' + activemqtype + '/' + activemqid)
                     }
                 } 

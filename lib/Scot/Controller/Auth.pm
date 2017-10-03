@@ -322,7 +322,7 @@ sub ldap_authenticates {
     my $pass    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $ldap    = $env->ldap;
+    my $ldap    = $env->get_handle('ldap');
 
     $log->debug("seeing if ldap will authenticate");
 
@@ -337,7 +337,7 @@ sub ldap_authenticates {
         }
     }
     else {
-        $log->error("ldap not loaded in env.  Config file problem?");
+        $log->error("ldap not loaded in env.  Assuming no LDAP configured.");
         return undef;
     }
 }
@@ -863,7 +863,11 @@ sub get_apikey {
     };
 
     my $collection  = $self->env->mongo->collection('Apikey');
-    my $apikey      = $collection->create_from_api($record);
+    my $apikey      = $collection->api_create({
+        request => {
+            json    => $record
+        }
+    });
 
     $self->do_render({
         status  => 'ok',
