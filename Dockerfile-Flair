@@ -60,6 +60,8 @@ RUN mkdir -p /opt/scot
 COPY install/src/scot/ /opt/scot/etc/
 COPY bin/flairer.pl /opt/scot/bin/
 COPY lib/ /opt/scot/lib/
-#COPY lib/ /opt/scot/
+COPY install/src/scot /opt/scot/etc/
+COPY docker-configs/flair/flair.cfg.pl /opt/scot/etc/
+COPY docker-configs/scot/scot.cfg.pl /opt/scot/etc/
 
 CMD ["/usr/bin/perl", "/opt/scot/bin/flairer.pl"]
