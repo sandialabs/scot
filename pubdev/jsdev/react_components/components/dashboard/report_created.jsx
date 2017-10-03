@@ -197,21 +197,39 @@ class ReportCreated extends Component {
 		let opts = `?range=7`;
 
 		d3.json( url+opts, dataset => {
-			console.log( dataset );
-			dataset = this.genData();
+			try {
+				// Add line visibility to data
+				dataset = dataset.map( line => {
+					line.shown = this.state.chartData.reduce( ( shown, d ) => {
+						return shown && ( d.name === line.name ? d.shown : true );
+					}, true );
 
-			// Add line visibility to data
-			dataset = dataset.map( line => {
-				line.shown = this.state.chartData.reduce( ( shown, d ) => {
-					return shown && ( d.name === line.name ? d.shown : true );
-				}, true );
+					return line;
+				} );
 
-				return line;
-			} );
+				this.setState( {
+					chartData: dataset,
+				} )
+			} catch ( e ) {
+				console.log( "Malformed data" )
+				console.log( dataset )
+				console.log( "Replacing with random data" )
+				
+				dataset = this.genData();
 
-			this.setState( {
-				chartData: dataset,
-			} )
+				// Add line visibility to data
+				dataset = dataset.map( line => {
+					line.shown = this.state.chartData.reduce( ( shown, d ) => {
+						return shown && ( d.name === line.name ? d.shown : true );
+					}, true );
+
+					return line;
+				} );
+
+				this.setState( {
+					chartData: dataset,
+				} )
+			}
 		} );
 	}
 	
