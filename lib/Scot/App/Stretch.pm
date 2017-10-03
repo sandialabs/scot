@@ -95,6 +95,37 @@ sub _get_max_workers {
     return $self->get_config_value($attr, $default, $envname);
 }
 
+has stomp_host  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_stomp_host',
+);
+
+sub _build_stomp_host {
+    my $self    = shift;
+    my $attr    = "stomp_host";
+    my $default = "localhost";
+    my $envname = "scot_util_stomphost";
+    return $self->get_config_value($attr, $default, $envname);
+}
+has stomp_port  => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_stomp_port',
+);
+
+sub _build_stomp_port {
+    my $self    = shift;
+    my $attr    = "stomp_port";
+    my $default = 61613;
+    my $envname = "scot_util_stompport";
+    return $self->get_config_value($attr, $default, $envname);
+}
+
 =head2 Autonomous
 
 $stretch->run();
@@ -112,7 +143,15 @@ sub run {
     $log->debug("Starting STOMP watcher");
     $log->debug("SCOT access mode is ".$self->scot_get_method);
 
-    my $stomp   = AnyEvent::STOMP::Client->new();
+    my $stomp;
+
+    if ( $self->stomp_host eq "localhost" ) {
+        $stomp   = AnyEvent::STOMP::Client->new();
+    }
+    else {
+        $stomp   = AnyEvent::STOMP::Client->new($self->stomp_host, $self->stomp_port);
+    }
+
     my $pm      = AnyEvent::ForkManager->new( 
         max_workers => $self->max_workers 
     );
