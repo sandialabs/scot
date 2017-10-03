@@ -7,6 +7,7 @@ services:
     volumes: 
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
+     - "/var/log/apache2:/var/log/apache2/"
     ports:
      - "443:443"
      - "80:80"
