@@ -83,19 +83,36 @@ sub _get_img_munger {
     return $env->img_munger;
 };
 
-#has scot        => (
-#    is          => 'ro',
-#    isa         => 'Scot::Util::Scot2',
-#    required    => 1,
-#    lazy        => 1,
-#    builder     => '_build_scot_scot',
-#);
+has stomp_host  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_stomp_host',
+);
 
-#sub _build_scot_scot {
-#    my $self    = shift;
-#    my $env     = shift;
-#    return $env->scot;
-#}
+sub _build_stomp_host {
+    my $self    = shift;
+    my $attr    = "stomp_host";
+    my $default = "localhost";
+    my $envname = "scot_util_stomphost";
+    return $self->get_config_value($attr, $default, $envname);
+}
+has stomp_port  => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_stomp_port',
+);
+
+sub _build_stomp_port {
+    my $self    = shift;
+    my $attr    = "stomp_port";
+    my $default = 61613;
+    my $envname = "scot_util_stompport";
+    return $self->get_config_value($attr, $default, $envname);
+}
 
 has interactive => (
     is          => 'ro',
@@ -156,7 +173,14 @@ sub run {
     my $self    = shift;
     my $log     = $self->log;
     my $pm      = AnyEvent::ForkManager->new(max_workers => $self->max_workers);
-    my $stomp   = AnyEvent::STOMP::Client->new();
+    my $stomp;
+
+    if ( $self->stomphost ne "localhost" ) {
+        $stomp   = AnyEvent::STOMP::Client->new($self->stomp_host, $self->stomp_port);
+    }
+    else {
+        $stomp = AnyEvent::STOMP::Client->new;
+    }
 
     $stomp->connect();
     $stomp->on_connected(sub {
