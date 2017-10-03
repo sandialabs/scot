@@ -151,7 +151,7 @@ class ReportCreated extends Component {
 			.attr( 'x', 0 )
 			.attr( 'y', ( legendHeight - 5 ) / 2 )
 			.attr( 'height', 5 )
-			.style( 'fill', d => this.colors( d.name ) )
+			.style( 'fill', d => d.shown ? this.colors( d.name ) : 'transparent' )
 			.style( 'stroke', d => this.colors( d.name ) )
 			.style( 'stroke-width', 1 )
 
@@ -179,12 +179,6 @@ class ReportCreated extends Component {
 
 		// Animate changes
 		this.yAxisEl.transition().call( this.yAxis )
-
-		this.LegendHolder.selectAll( '.legend' ).selectAll( 'rect' )
-			.transition()
-			.style( 'fill', d => {
-				return d.shown ? this.colors( d.name ) : 'transparent'
-			} )
 
 		lines
 			.transition()
