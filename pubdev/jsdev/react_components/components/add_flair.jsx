@@ -21,13 +21,13 @@ var AddFlair = {
                                 if ($(entity).find('.extras')[0] == null) {
                                     var currentEntityValue = $(entity).attr('data-entity-value');
                                     if (currentEntityValue != undefined && entityResult != undefined) {
-                                        if (entityResult[currentEntityValue.toLowerCase()] != undefined ) {
-                                            var entityType = entityResult[currentEntityValue.toLowerCase()].type;
-                                            var entityid = entityResult[currentEntityValue.toLowerCase()].id;
-                                            var entityCount = abbreviateNumber(parseInt(entityResult[currentEntityValue.toLowerCase()].count),0);
-                                            var entitydata = entityResult[currentEntityValue.toLowerCase()].data;
-                                            var entityEntryCount = entityResult[currentEntityValue.toLowerCase()].entry;
-                                            var entitystatus = entityResult[currentEntityValue.toLowerCase()].status;
+                                        if (entityResult[currentEntityValue] != undefined ) {
+                                            var entityType = entityResult[currentEntityValue].type;
+                                            var entityid = entityResult[currentEntityValue].id;
+                                            var entityCount = abbreviateNumber(parseInt(entityResult[currentEntityValue].count),0);
+                                            var entitydata = entityResult[currentEntityValue].data;
+                                            var entityEntryCount = entityResult[currentEntityValue].entry;
+                                            var entitystatus = entityResult[currentEntityValue].status;
                                             var circle = $('<span class="noselect">');
                                             circle.addClass('circleNumber');
                                             circle.addClass('extras');
@@ -76,7 +76,7 @@ var AddFlair = {
                                             }*/
                                             if (entityEntryCount != undefined) {
                                                 if (entityEntryCount != 0) {
-                                                    var entityEntry = entityResult[currentEntityValue.toLowerCase()].entries[0].body_plain
+                                                    var entityEntry = entityResult[currentEntityValue].entries[0].body_plain
                                                     $(entity).append($('<img class="extras" title="'+ entityEntry +'">').attr('src', '/images/flair/note.gif'));
                                                 }
                                             }
@@ -97,13 +97,13 @@ var AddFlair = {
                         subtable.find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
                         var currentEntityValue = $(entity).attr('data-entity-value');
                         if (currentEntityValue != undefined && entityResult != undefined) {
-                            if (entityResult[currentEntityValue.toLowerCase()] != undefined ) {
-                                var entityType = entityResult[currentEntityValue.toLowerCase()].type;
-                                var entityid = entityResult[currentEntityValue.toLowerCase()].id;
-                                var entityCount = abbreviateNumber(entityResult[currentEntityValue.toLowerCase()].count);
-                                var entitydata = entityResult[currentEntityValue.toLowerCase()].data;
-                                var entityEntryCount = entityResult[currentEntityValue.toLowerCase()].entry;
-                                var entitystatus = entityResult[currentEntityValue.toLowerCase()].status;
+                            if (entityResult[currentEntityValue] != undefined ) {
+                                var entityType = entityResult[currentEntityValue].type;
+                                var entityid = entityResult[currentEntityValue].id;
+                                var entityCount = abbreviateNumber(entityResult[currentEntityValue].count);
+                                var entitydata = entityResult[currentEntityValue].data;
+                                var entityEntryCount = entityResult[currentEntityValue].entry;
+                                var entitystatus = entityResult[currentEntityValue].status;
                                 var circle = $('<span class="noselect">');
                                 circle.addClass('circleNumber');
                                 circle.addClass('extras');
@@ -152,7 +152,7 @@ var AddFlair = {
                                 }*/
                                 if (entityEntryCount != undefined) {
                                     if (entityEntryCount != 0) {
-                                        var entityEntry = entityResult[currentEntityValue.toLowerCase()].entries[0].body_plain
+                                        var entityEntry = entityResult[currentEntityValue].entries[0].body_plain
                                         $(entity).append($('<img class="extras" title="'+ entityEntry +'">').attr('src', '/images/flair/note.gif'));
                                     }
                                 }

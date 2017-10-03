@@ -9,42 +9,6 @@ with    qw(
     Scot::Role::GetTargeted
 );
 
-sub create_from_api {
-    my $self    = shift;
-    my $href    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mq      = $env->mq;
-
-    $log->trace("Creating Entity via API");
-
-    my $request = $href->{request}->{json};
-    my $value   = $request->{value};
-    my $type    = $request->{type};
-
-    if ( $self->entity_exists($value, $type) ) {
-        $log->error("Error! Entity already exists");
-        return undef;
-    }
-
-    my $entity  = $self->create($request);
-
-    unless ( defined $entity ) {
-        $log->error("Error! Failed to create Entity with data ",
-                    { filter => \&Dumper, value => $request } );
-        return undef;
-    }
-    # Api.pm should do this
-    #$env->mq->send("scot", {
-    #    action  => "created",
-    #    data    => {
-    #        type    => "entity",
-    #        id      => $entity->id,
-    #    }
-    #});
-    return $entity;
-}
-
 sub entity_exists {
     my $self    = shift;
     my $value   = shift;
@@ -190,6 +154,7 @@ sub api_subthing {
     if ( $subthing  eq "alert" or
          $subthing  eq "event" or
          $subthing  eq "intel" or
+         $subthing  eq "signature" or
          $subthing  eq "incident" ) {
         return $mongo->collection('Link')
                      ->get_linked_objects_cursor(
@@ -230,7 +195,7 @@ sub api_subthing {
             'target.id'     => $id,
         });
     }
-    
+
     die "Unsupported subthing request ($subthing) for Entity";
 
 }
