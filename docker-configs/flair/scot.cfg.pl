@@ -71,7 +71,7 @@
             class   => 'Scot::Util::MongoFactory',
             config  => {
                 db_name         => 'scot-prod',
-                host            => 'mongodb://localhost',
+                host            => 'mongodb://172.18.0.4',
                 write_safety    => 1,
                 find_master     => 1,
             },
@@ -80,13 +80,13 @@
             attr    => 'es',
             class   => 'Scot::Util::ESProxy',
             config  => {
-                nodes       => [ qw(localhost:9200) ],
+                nodes       => [ qw(172.18.0.5:9200) ],
                 max_workers => 1,
                 proto       => 'http',
-                servername  => 'localhost',
+                servername  => '172.18.0.5',
                 serverport  => 9200,
-                username    => ' ',
-                password    => ' ',
+                username    => 'elastic',
+                password    => 'changeme',
             },
         },
         {
@@ -100,7 +100,7 @@
             class   => 'Scot::Util::Messageq',
             config  => {
                 destination => "scot",
-                stomp_host  => "localhost",
+                stomp_host  => "172.18.0.3",
                 stomp_port  => 61613,
             },
         },
@@ -167,26 +167,26 @@
                     },
                 }, # end enrichment module enrichers
             }, # end ennrichmenst config stanza
-        }, # end enrichments stanza
-        {
-            attr    => 'ldap',
-            class   => 'Scot::Util::Ldap',
-            config  => {
-                servername  => 'ldap.domain.tld',
-                dn          => 'cn=cn_name,ou=local config,dc=tld',
-                password    => 'changemenow',
-                scheme      => 'ldap',
-                group_search    => {
-                    base    => 'ou=groups,ou=orgname1,dc=dcname1,dc=dcname2,dc=dcname3',
-                    filter  => '(| (cn=wg-scot*))',
-                    attrs   => [ 'cn' ],
-                },
-                user_groups => {
-                    base    => 'ou=accounts,ou=ouname,dc=dcname1,dc=dcname1,dc=dcname1',
-                    filter  => 'uid=%s',
-                    attrs   => ['memberOf'],
-                }
-            }, # end ldap config
-        }, # end ldap
+        } # end enrichments stanza
+        #{
+        #    attr    => 'ldap',
+        #    class   => 'Scot::Util::Ldap',
+        #    config  => {
+        #        servername  => 'ldap.domain.tld',
+        #        dn          => 'cn=cn_name,ou=local config,dc=tld',
+        #        password    => 'changemenow',
+        #        scheme      => 'ldap',
+        #        group_search    => {
+        #            base    => 'ou=groups,ou=orgname1,dc=dcname1,dc=dcname2,dc=dcname3',
+        #            filter  => '(| (cn=wg-scot*))',
+        #            attrs   => [ 'cn' ],
+        #        },
+        #        user_groups => {
+        #            base    => 'ou=accounts,ou=ouname,dc=dcname1,dc=dcname1,dc=dcname1',
+        #            filter  => 'uid=%s',
+        #            attrs   => ['memberOf'],
+        #        }
+        #    }, # end ldap config
+        #}, # end ldap
     ],
 );
