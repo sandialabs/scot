@@ -112,6 +112,8 @@ for an example:
     you can store the binary form of Ip addr for better matching
     data.binip = 11101101101010110110...
 
+This data structure will expand with enrichment 
+
 =cut
 
 has data    => (

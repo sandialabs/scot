@@ -331,6 +331,12 @@ sub get_config_item {
     return undef;
 }
 
+sub get_handle {
+    my $self    = shift;
+    my $name    = shift;
+    return $self->get_config_item($name);
+}
+
 sub is_admin {
     my $self        = shift;
     my $user        = shift;
