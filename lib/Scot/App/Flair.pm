@@ -488,6 +488,8 @@ sub process_cell {
     my $log     = $self->env->log;
 
     $log->debug("text   = $text");
+    $text = encode_entities($text);
+    $log->debug("encoded text   = $text");
     $log->debug("header = $header");
     my $flair   = $self->genspan($text,$header);
     $log->debug("text   = $text");
