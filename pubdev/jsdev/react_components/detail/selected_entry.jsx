@@ -1027,6 +1027,9 @@ var EntryData = React.createClass({
                     if (!$(ifrContentsHead).find('link')) {
                         ifrContentsHead.append($("<link/>", {rel: "stylesheet", href: 'css/sandbox.css', type: "text/css"}))
                     }
+                    if (!$(ifrContentsHead).find('script')) {
+                        ifrContentsHead.append($("<script/>", {src: "js/json-viewer.js", type: "text/javascript" }))
+                    } 
                 }
                 //if (this.props.type != 'entity') {
                     setTimeout(function() {
@@ -1062,7 +1065,7 @@ var EntryData = React.createClass({
             <div id={entry_body_id} key={this.props.id} className={'row-fluid entry-body'}>
                 <div id={entry_body_inner_id} className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
                     {this.props.editEntryToolbar ? <AddEntry entryAction={'Edit'} type={this.props.type} targetid={this.props.targetid} id={id} addedentry={this.props.editEntryToggle} parent={this.props.subitem.parent} errorToggle={this.props.errorToggle} /> : 
-                    <Frame frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}> 
+                    <Frame frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-same-origin'} styleSheets={['/css/sandbox.css', '/css/json-viewer.css']} style={{width:'100%',height:this.state.height}}> 
                         <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
                     </Frame>}
                 </div>
