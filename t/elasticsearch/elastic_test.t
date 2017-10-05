@@ -175,7 +175,18 @@ sub load_entries {
 sub load_alerts {
 
     my @alerts = (
+        {
+            message_id  => '1',
+            subject     => "Alertgroup 1",
+            tag         => [qw(hardees tacobell pizzahut)],
+            source      => [qw(splunk)],
+            data        => [
+                {
 
+                },
+            ],
+            columns     => [ ],
+        },
     );
     return wantarray ? @alerts : \@alerts;
 }
