@@ -48,6 +48,10 @@ sub is_permitted {
     my $perm_href   = $self->groups;
     my $perm_aref   = $perm_href->{$operation};
 
+    unless (ref($users_groups) eq "ARRAY" ) {
+        $users_groups = [ $users_groups ];
+    }
+
     $log->debug("Permitted groups for $operation: " . 
                 join(',', @{$perm_aref}) );
 

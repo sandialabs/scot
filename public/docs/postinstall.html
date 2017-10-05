@@ -17,8 +17,7 @@
         VERSION:     '3.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -26,6 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="Migration" href="migration.html" />
     <link rel="prev" title="Installing SCOT" href="install.html" /> 
   </head>
@@ -69,282 +69,14 @@ as soon as possible.</p>
 <p>The following sections details the parameters in the varios configuration files
 available in SCOT.  Use your favorite editor to adjust the values to your site.
 You can test your changes for syntax erros by using the following command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ perl -wc scot_env.cfg
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ perl -wc scot.cfg.pl
 </pre></div>
 </div>
 <p>Correct any syntax errors reported before continuing.  Typically you will need
 to resart SCOT for any changes to be recognized.</p>
-<div class="section" id="scot-env-cfg">
-<h3>scot_env.cfg<a class="headerlink" href="#scot-env-cfg" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="scot-cfg-pl">
+<h3>scot.cfg.pl<a class="headerlink" href="#scot-cfg-pl" title="Permalink to this headline">¶</a></h3>
 <p>This config controls many aspects of the SCOT application server.</p>
-<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">environment</span> <span class="o">=</span> <span class="p">(</span>
-    
-    <span class="c1"># modules to load a run time into Scot::Env</span>
-    <span class="c1"># if you create a new module that you want to be accessable to the SCOT</span>
-    <span class="c1"># application server, add it here</span>
-    
-    <span class="n">modules</span> <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="c1"># attribute_name    =&gt; perl_module_to_load</span>
-        <span class="n">imap</span>                <span class="o">=&gt;</span> <span class="s1">&#39;Scot::Util::Imap&#39;</span><span class="p">,</span>
-        <span class="n">mq</span>                  <span class="o">=&gt;</span> <span class="s1">&#39;Scot::Util::Messageq&#39;</span><span class="p">,</span>
-        <span class="n">enrichments</span>         <span class="o">=&gt;</span> <span class="s1">&#39;Scot::Util::Enrichments&#39;</span><span class="p">,</span>
-        <span class="n">mongo</span>               <span class="o">=&gt;</span> <span class="s1">&#39;Scot::Util::Mongo&#39;</span><span class="p">,</span>
-        <span class="n">log</span>                 <span class="o">=&gt;</span> <span class="s1">&#39;Scot::Util::Logger&#39;</span><span class="p">,</span>
-    <span class="p">},</span>
-
-    <span class="c1"># filenames of the config files to use for these modules</span>
-
-    <span class="n">configs</span> <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="n">imap</span>        <span class="o">=&gt;</span> <span class="s1">&#39;imap.cfg&#39;</span><span class="p">,</span>
-        <span class="n">mq</span>          <span class="o">=&gt;</span> <span class="s1">&#39;activemq.cfg&#39;</span><span class="p">,</span>
-        <span class="n">enrichments</span> <span class="o">=&gt;</span> <span class="s1">&#39;enrichments.cfg&#39;</span><span class="p">,</span>
-        <span class="n">mongo</span>       <span class="o">=&gt;</span> <span class="s1">&#39;mongo.cfg&#39;</span><span class="p">,</span>
-        <span class="n">log</span>         <span class="o">=&gt;</span> <span class="s1">&#39;logger.cfg&#39;</span><span class="p">,</span>
-    <span class="p">},</span>
-
-    <span class="c1"># paths to search for the config files</span>
-    <span class="c1"># allows you to keep config files in alternative locations</span>
-
-    <span class="n">config_path</span> <span class="o">=&gt;</span> <span class="p">[</span> 
-        <span class="s1">&#39;/opt/scot/etc&#39;</span><span class="p">,</span>
-    <span class="p">],</span>
-
-    <span class="c1"># specify the authentication type to use in SCOT</span>
-    <span class="c1"># valid types are: &quot;Local&quot;, &quot;Remoteuser&quot;, and &quot;LDAP&quot;</span>
-    <span class="c1"># you can also create your own Authentication modules</span>
-    <span class="c1"># in /opt/scot/lib/Scot/Auth.  for example if you created </span>
-    <span class="c1"># one called &quot;Foo.pm&quot;  you could then set authtype to &quot;Foo&quot; </span>
-    <span class="c1"># to use it.</span>
-
-    <span class="n">authtype</span>    <span class="o">=&gt;</span> <span class="s1">&#39;Local&#39;</span><span class="p">,</span> <span class="c1"># or Local, or LDAP</span>
-
-    <span class="c1"># group mode is either local or ldap and </span>
-    <span class="c1"># specifies where you are getting your scot group info</span>
-    <span class="c1"># Local = from the SCOT database</span>
-    <span class="c1"># Ldap  = group info from your LDAP/AD service</span>
-
-    <span class="n">group_mode</span>  <span class="o">=&gt;</span> <span class="s1">&#39;local&#39;</span><span class="p">,</span>
-
-    <span class="c1"># the username for the default user </span>
-
-    <span class="n">default_owner</span>   <span class="o">=&gt;</span> <span class="s1">&#39;scot-admin&#39;</span><span class="p">,</span>
-
-    <span class="c1"># default set of groups to apply to newly created &quot;things&quot; (alerts, events, etc.) </span>
-    <span class="c1"># there should match groups that exists in LDAP/AD or your Local group collection</span>
-
-    <span class="n">default_groups</span>  <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="n">read</span>    <span class="o">=&gt;</span> <span class="p">[</span> <span class="s1">&#39;wg-scot-ir&#39;</span><span class="p">,</span> <span class="s1">&#39;wg-scot-researchers&#39;</span> <span class="p">],</span>
-        <span class="n">modify</span>  <span class="o">=&gt;</span> <span class="p">[</span> <span class="s1">&#39;wg-scot-ir&#39;</span><span class="p">,</span> <span class="p">],</span>
-    <span class="p">},</span>
-
-    <span class="c1"># you must be in this group to admin stuff</span>
-    <span class="n">admin_group</span> <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="n">group</span>   <span class="o">=&gt;</span> <span class="s1">&#39;wg-scot-admin&#39;</span><span class="p">,</span>
-    <span class="p">},</span>
-
-    <span class="c1"># default config items for Mojolicious</span>
-    <span class="n">mojo_defaults</span>   <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="c1"># change these!  These are used to hash the cookies and should be unique to your site</span>
-        <span class="n">secrets</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="n">qw</span><span class="p">(</span><span class="n">scot1sfun</span> <span class="n">sc0t1sc00l</span><span class="p">)],</span>
-        <span class="c1"># see mojolicious documentation for more details</span>
-        <span class="n">default_expiration</span>  <span class="o">=&gt;</span> <span class="mi">14400</span><span class="p">,</span>
-    <span class="p">},</span>
-
-<span class="p">);</span>
-</pre></div>
-</td></tr></table></div>
-</div>
-<div class="section" id="ldap-cfg">
-<h3>ldap.cfg<a class="headerlink" href="#ldap-cfg" title="Permalink to this headline">¶</a></h3>
-<p>If you plan on using LDAP for authentication or for Group membership, you will need
-to update this configuration file.</p>
-<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">environment</span>    <span class="o">=</span> <span class="p">(</span>
-    <span class="c1">#</span>
-    <span class="c1"># My best advice to you is to buy your LDAP administrator lunch.  Ther are many</span>
-    <span class="c1"># ways to (mis)configure LDAP, and telling you how to do it is beyond the scope</span>
-    <span class="c1"># and ability for the SCOT dev team to help.  The params below should be sufficient</span>
-    <span class="c1"># though to get SCOT to talk to LDAP/AD</span>
-    <span class="c1"># </span>
-
-    <span class="c1"># the fully qualified hostname for the LDAP/AD server</span>
-
-    <span class="n">hostname</span>    <span class="o">=&gt;</span> <span class="s2">&quot;ldap.foo.com&quot;</span><span class="p">,</span>
-
-    <span class="c1"># dn is the distinguised name.  I&#39;d like to explain but I my LDAP expert confused me...</span>
-
-    <span class="n">dn</span>  <span class="o">=&gt;</span> <span class="s1">&#39;cn=something,ou=local config, dc=com&#39;</span><span class="p">,</span>
-
-    <span class="c1"># password.  sometimes the LDAP admin requires this.</span>
-
-    <span class="n">password</span>    <span class="o">=&gt;</span> <span class="s1">&#39;ldapproxypass&#39;</span><span class="p">,</span>
-
-    <span class="c1"># group search is controlled by this stanza.  this is how scot gets a list of valid scot</span>
-    <span class="c1"># group names from LDAP/AD.  This is why it i a best practice to put a common string</span>
-    <span class="c1"># like &quot;wg-scot&quot; in every scot group name.</span>
-
-    <span class="n">group_search</span>    <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="n">base</span>    <span class="o">=&gt;</span> <span class="s1">&#39;ou=groups,ou=companyname,dc=orgname,dc=anotherorgname&#39;</span><span class="p">,</span>
-        <span class="nb">filter</span>  <span class="o">=&gt;</span> <span class="s1">&#39;(| (cn=wg-scot*))&#39;</span><span class="p">,</span>  <span class="c1"># change wg-scot if you want to use a different string</span>
-        <span class="n">attrs</span>   <span class="o">=&gt;</span> <span class="p">[</span> <span class="s1">&#39;cn&#39;</span> <span class="p">],</span>
-    <span class="p">},</span>
-
-    <span class="c1"># user_groups is the query to LDAP/AD that lists the groups a user belongs to</span>
-    <span class="c1"># you may have to adjust all three attributes depending on your LDAP set up.</span>
-
-    <span class="n">user_groups</span> <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="n">base</span>    <span class="o">=&gt;</span> <span class="s1">&#39;ou=accounts,ou=companyname,dc=orgname,dc=anotherorg&#39;</span><span class="p">,</span>
-        <span class="nb">filter</span>  <span class="o">=&gt;</span> <span class="s1">&#39;uid=</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="c1"># %s is the user id put in by SCOT at run time</span>
-        <span class="n">attrs</span>   <span class="o">=&gt;</span> <span class="p">[</span> <span class="s1">&#39;memberOf&#39;</span> <span class="p">],</span>
-    <span class="p">},</span>
-<span class="p">);</span>
-</pre></div>
-</td></tr></table></div>
-</div>
-<div class="section" id="logger-cfg">
-<h3>logger.cfg<a class="headerlink" href="#logger-cfg" title="Permalink to this headline">¶</a></h3>
-<p>How to configure the SCOT logger.</p>
-<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">environment</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="c1"># shouldn&#39;t need to change the logger name</span>
-    <span class="n">logger_name</span>     <span class="o">=&gt;</span> <span class="s1">&#39;SCOT&#39;</span><span class="p">,</span>
-    <span class="c1"># perldoc Log::Log4perl for layout details</span>
-    <span class="n">layout</span>          <span class="o">=&gt;</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> %7p [%P] </span><span class="si">%15F{1}</span><span class="s1">: %4L %m%n&#39;</span><span class="p">,</span>
-    <span class="c1"># shouldn&#39;t need to change the appender name</span>
-    <span class="n">appender_name</span>   <span class="o">=&gt;</span> <span class="s1">&#39;scot_log&#39;</span><span class="p">,</span>
-    <span class="c1"># if you want to log to an alternative file change this</span>
-    <span class="n">logfile</span>         <span class="o">=&gt;</span> <span class="s1">&#39;/var/log/scot/scot.log&#39;</span><span class="p">,</span>
-    <span class="c1"># TRACE will generate enourmous logs,  </span>
-    <span class="c1"># WARN will greatly reduce the log size</span>
-    <span class="n">log_level</span>       <span class="o">=&gt;</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">,</span>
-<span class="p">);</span>
-</pre></div>
-</td></tr></table></div>
-</div>
-<div class="section" id="mail-app-cfg">
-<h3>mail.app.cfg<a class="headerlink" href="#mail-app-cfg" title="Permalink to this headline">¶</a></h3>
-<p>This config file controls how alerts are received from an IMAP server.</p>
 <div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
   2
   3
@@ -457,180 +189,283 @@ to update this configuration file.</p>
 110
 111
 112
-113</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">environment</span>    <span class="o">=</span> <span class="p">(</span>
-
-    <span class="c1"># interactive =&gt; [ yes | no ]</span>
-    <span class="c1"># pauses processing after each message and writes to console </span>
-
-    <span class="n">interatcive</span>     <span class="o">=&gt;</span> <span class="s1">&#39;no&#39;</span><span class="p">,</span>   
-
-    <span class="c1"># max_processes =&gt; 0 to positive int</span>
-    <span class="c1"># number of child processes to fork to parse messages in parallel</span>
-    <span class="c1"># 0 = disable forking and do all messages sequentially</span>
-    <span class="c1"># NOTE:  forking has problems and is not recommended yet.</span>
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
     
-    <span class="n">max_processes</span>   <span class="o">=&gt;</span> <span class="mi">0</span><span class="p">,</span>       
+    time_zone   =&gt; &#39;America/Denver&#39;,
+    # scot version
+    version     =&gt; &#39;3.5.1&#39;,
 
-    <span class="c1"># fetch_mode    =&gt; [ unseen | time ]</span>
-    <span class="c1"># unseen looks for unseen messages via imap protocol</span>
-    <span class="c1"># time gets all message since a given time</span>
-    <span class="c1"># both modes check the unique message_id and will not reprocess something</span>
-    <span class="c1"># already in SCOT database</span>
-    
-    <span class="n">fetch_mode</span>      <span class="o">=&gt;</span> <span class="s1">&#39;unseen&#39;</span><span class="p">,</span> 
+    # set this to hostname of the scot server
+    servername  =&gt; &#39;127.0.0.1&#39;,
 
-    <span class="c1"># since     =&gt; { unit =&gt; amount }</span>
-    <span class="c1"># hashref where key is the unit [ day, hour, minute ]</span>
-    <span class="c1"># amount is integer value</span>
-    <span class="c1"># used by time fetch_mode </span>
-    
-    <span class="n">since</span>           <span class="o">=&gt;</span> <span class="p">{</span> <span class="n">hour</span> <span class="o">=&gt;</span> <span class="mi">2</span> <span class="p">},</span>
+    # the mode can be prod or dev
+    mode        =&gt; &#39;prod&#39;,
 
-    <span class="c1"># logfile   =&gt; path &amp; filename of where you wish to log file to be written</span>
-    
-    <span class="n">logfile</span>     <span class="o">=&gt;</span> <span class="s1">&#39;/var/log/scot/scot.mail.log&#39;</span><span class="p">,</span>
+    # authentication can be &quot;Remoteuser&quot;, &quot;Local&quot;, or &quot;Ldap&quot;
+    auth_type   =&gt; &#39;Local&#39;, 
 
-    <span class="c1"># approved_alert_domains =&gt; [ &#39;domain1\.org&#39;, ... ]</span>
-    <span class="c1"># only domains listed in this array can send email to scot</span>
-    <span class="c1"># periods need to be escaped by \</span>
-    <span class="c1"># Examples:</span>
-    <span class="c1">#    &#39;dmz\.foo\.com&#39;  -&gt; allows email from system1.dmz.foo.com but not system1.foo.com</span>
-    <span class="c1">#    &#39;bar\.org&#39; -&gt; allows email from system2.bar.org and system2.dc.bar.org, etc.</span>
-    
-    <span class="n">approved_alert_domains</span>  <span class="o">=&gt;</span> <span class="p">[</span> <span class="s1">&#39;yourdomain\.com&#39;</span> <span class="p">],</span>
+    authclass   =&gt; &#39;Controller::Auth::Local&#39;,
 
-    <span class="c1"># approve_accounts =&gt; [ &#39;user@email.addr&#39; ];</span>
-    <span class="c1"># account in this domain can also send to scot</span>
-    
-    <span class="n">approved_accounts</span>   <span class="o">=&gt;</span> <span class="p">[</span> <span class="s1">&#39;user@eamil\.server\.com&#39;</span> <span class="p">],</span>
+    # group mode can be &quot;local&quot; or &quot;ldap&quot;
+    group_mode  =&gt; &#39;local&#39;,
 
-    <span class="c1"># imap</span>
-    <span class="c1"># configuration for the IMAP module </span>
-    <span class="c1"># this is an example of you you can &quot;inline&quot; the configuration</span>
-    <span class="c1"># in this case, IMAP communication will be controlled by this stanza</span>
-    <span class="c1"># as opposed to a seperate &quot;imap.cfg&quot;</span>
-    <span class="c1"># if you wanted to use an already created imap.cfg</span>
-    <span class="c1"># you would remove imap =&gt; {...}</span>
-    <span class="c1"># and add</span>
-    <span class="c1"># configs =&gt; {</span>
-    <span class="c1">#      imap =&gt; imap.cfg</span>
-    <span class="c1"># }</span>
+    # default owner of new stuff
+    default_owner   =&gt; &#39;scot-admin&#39;,
 
-    <span class="n">imap</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    # default set of groups to apply to stuff
+    default_groups  =&gt; {
+        read    =&gt; [ &#39;wg-scot-ir&#39;, &#39;wg-scot-researchers&#39; ],
+        modify  =&gt; [ &#39;wg-scot-ir&#39; ],
+    },
 
-        <span class="c1"># mailbox, typically INBOX</span>
-        <span class="n">mailbox</span>     <span class="o">=&gt;</span> <span class="s1">&#39;INBOX&#39;</span><span class="p">,</span>
+    # the group that can perform admin functions
+    admin_group =&gt; &#39;wg-scot-admin&#39;,
 
-        <span class="c1"># hostname of the imap server</span>
-        <span class="n">hostname</span>    <span class="o">=&gt;</span> <span class="s1">&#39;imap.yourdomain.com&#39;</span><span class="p">,</span>
+    # filestore is where scot stores uploaded and extracted files
+    file_store_root =&gt; &#39;/opt/scotfiles&#39;,
 
-        <span class="c1"># port of the imap server</span>
-        <span class="n">port</span>        <span class="o">=&gt;</span> <span class="mi">993</span><span class="p">,</span>
+    epoch_cols  =&gt; [ qw(when updated created occurred) ],
 
-        <span class="c1"># username  of the account receiving alert email</span>
-        <span class="n">username</span>    <span class="o">=&gt;</span> <span class="s1">&#39;scot-alerts&#39;</span><span class="p">,</span>
+    int_cols    =&gt; [ qw(views) ],
 
-        <span class="c1"># password  </span>
-        <span class="n">password</span>    <span class="o">=&gt;</span> <span class="s1">&#39;changemenow&#39;</span><span class="p">,</span>
+    site_identifier =&gt; &#39;Sandia&#39;,
 
-        <span class="c1"># ssl options, see perldoc IO::SSL</span>
-        <span class="c1"># verify_mode of zero allows for self signed certs </span>
-        <span class="c1"># and disables all validity checks, please use with caution</span>
-        <span class="n">ssl</span>     <span class="o">=&gt;</span> <span class="p">[</span> <span class="s1">&#39;SSL_verify_mode&#39;</span><span class="p">,</span> <span class="mi">0</span> <span class="p">],</span>
+    default_share_policy =&gt; 1,
 
-        <span class="c1"># uid   IMAP config item </span>
-        <span class="n">uid</span>     <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">,</span>
+    share_after_time    =&gt; 10, # minutes
 
-        <span class="c1"># ignore_size_errors </span>
-        <span class="n">ignore_size_errors</span>  <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="p">},</span>
+    # mojo defaults are values for the mojolicious startup
+    mojo_defaults   =&gt; {
+        # change this after install and restart scot
+        secrets =&gt; [qw(scot1sfun sc0t1sc00l)],
 
-    <span class="c1"># the Scot::Util::Scot module init config</span>
-    <span class="n">scot</span>    <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="c1"># server name of the SCOT server</span>
-        <span class="n">servername</span>  <span class="o">=&gt;</span> <span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
+        # see mojolicious docs 
+        default_expiration  =&gt; 14400,
 
-        <span class="c1"># username with sufficient scot perms to create alert(groups)</span>
-        <span class="n">username</span>    <span class="o">=&gt;</span> <span class="s1">&#39;scot-alerts&#39;</span><span class="p">,</span>
+        # hypnotoad workers, 50-100 heavy use, 20 - 50 light
+        hypnotoad_workers   =&gt; 75,
+    },
 
-        <span class="c1"># the password for that user</span>
-        <span class="n">password</span>    <span class="o">=&gt;</span> <span class="s1">&#39;changemenow&#39;</span><span class="p">,</span>
+    log_config =&gt; {
+        logger_name     =&gt; &#39;SCOT&#39;,
+        layout          =&gt; &#39;%d %7p [%P] %15F{1}: %4L %m%n&#39;,
+        appender_name   =&gt; &#39;scot_log&#39;,
+        logfile         =&gt; &#39;/var/log/scot/scot.log&#39;,
+        log_level       =&gt; &#39;DEBUG&#39;,
+    },
 
-        <span class="c1"># authentication type: RemoteUser, LDAP, Local</span>
-        <span class="n">authtype</span>    <span class="o">=&gt;</span> <span class="s1">&#39;RemoteUser&#39;</span><span class="p">,</span>
-    <span class="p">},</span>
+    # modules to instantiate at Env.pm startup. will be done in 
+    # order of the array
+    modules =&gt; [
+        {
+            attr    =&gt; &#39;mongo&#39;,
+            class   =&gt; &#39;Scot::Util::MongoFactory&#39;,
+            config  =&gt; {
+                db_name         =&gt; &#39;scot-prod&#39;,
+                host            =&gt; &#39;mongodb://localhost&#39;,
+                write_safety    =&gt; 1,
+                find_master     =&gt; 1,
+            },
+        },
+        {
+            attr    =&gt; &#39;es&#39;,
+            class   =&gt; &#39;Scot::Util::ESProxy&#39;,
+            config  =&gt; {
+                nodes       =&gt; [ qw(localhost:9200) ],
+                max_workers =&gt; 1,
+                proto       =&gt; &#39;http&#39;,
+                servername  =&gt; &#39;localhost&#39;,
+                serverport  =&gt; 9200,
+                username    =&gt; &#39; &#39;,
+                password    =&gt; &#39; &#39;,
+            },
+        },
+        {
+            attr    =&gt; &#39;mongoquerymaker&#39;,
+            class   =&gt; &#39;Scot::Util::MongoQueryMaker&#39;,
+            config  =&gt; {
+            },
+        },
+        {
+            attr    =&gt; &#39;mq&#39;,
+            class   =&gt; &#39;Scot::Util::Messageq&#39;,
+            config  =&gt; {
+                destination =&gt; &quot;scot&quot;,
+                stomp_host  =&gt; &quot;localhost&quot;,
+                stomp_port  =&gt; 61613,
+            },
+        },
+        {
+            attr    =&gt; &#39;imap&#39;,
+            class   =&gt; &#39;Scot::Util::Imap&#39;,
+            config  =&gt; {
+                mailbox     =&gt; &#39;INBOX&#39;,          # mailbox, typically INBOX
+                hostname    =&gt; &#39;mail.domain.tld&#39;,# hostname of the imap server
+                port        =&gt; 993,              # port of the imap server
+                username    =&gt; &#39;scot-alerts&#39;,    # username  of the 
+                                                 # account receiving alert email
+                password    =&gt; &#39;changemenow&#39;,    # password  
+                ssl         =&gt; [ 
+                    &#39;SSL_verify_mode&#39;, 0         # ssl options 
+                ],                               # see perldoc IO::SSL
+                uid         =&gt; 1,                # uid   IMAP config item 
+                ignore_size_errors  =&gt; 1,        # ignore_size_errors 
+            },
+        },
+        {
+            attr    =&gt; &#39;enrichments&#39;,
+            class   =&gt; &#39;Scot::Util::Enrichments&#39;,
+            config  =&gt; {
+                # mappings map the enrichments that are available 
+                # for a entity type
+                mappings    =&gt; {
+                    ipaddr      =&gt; [ qw(splunk geoip robtex_ip ) ],
+                    email       =&gt; [ qw(splunk ) ],
+                    md5         =&gt; [ qw(splunk ) ],
+                    sha1        =&gt; [ qw(splunk ) ],
+                    sha256      =&gt; [ qw(splunk ) ],
+                    domain      =&gt; [ qw(splunk robtex_dns ) ],
+                    file        =&gt; [ qw(splunk  ) ],
+                    ganalytics  =&gt; [ qw(splunk  ) ],
+                    snumber     =&gt; [ qw(splunk ) ],
+                    message_id  =&gt; [ qw(splunk ) ],
+                },
 
-    <span class="c1"># see perldoc Log::Log4perl for documentation on how to change layout</span>
-    <span class="n">log</span> <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="n">logger_name</span>     <span class="o">=&gt;</span> <span class="s1">&#39;SCOT&#39;</span><span class="p">,</span>
-        <span class="n">layout</span>          <span class="o">=&gt;</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> %7p [%P] </span><span class="si">%15F{1}</span><span class="s1">: %4L %m%n&#39;</span><span class="p">,</span>
-        <span class="n">appender_name</span>   <span class="o">=&gt;</span> <span class="s1">&#39;scot_log&#39;</span><span class="p">,</span>
-        <span class="n">logfile</span>         <span class="o">=&gt;</span> <span class="s1">&#39;/var/log/scot/scot.mail.log&#39;</span><span class="p">,</span>
-        <span class="n">log_level</span>       <span class="o">=&gt;</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">,</span>
-    <span class="p">},</span>
-
-<span class="p">);</span>
+                # foreach enrichment listed above place any 
+                # config info for it here
+                enrichers =&gt; {
+                    geoip   =&gt; {
+                        type    =&gt; &#39;native&#39;,
+                        module  =&gt; &#39;Scot::Util::Geoip&#39;,
+                    },
+                    robtex_ip   =&gt; {
+                        type    =&gt; &#39;external_link&#39;,
+                        url     =&gt; &#39;https://www.robtex.com/ip/%s.html&#39;,
+                        field   =&gt; &#39;value&#39;,
+                        title   =&gt; &#39;Lookup on Robtex (external)&#39;,
+                    },
+                    robtex_dns   =&gt; {
+                        type    =&gt; &#39;external_link&#39;,
+                        url     =&gt; &#39;https://www.robtex.com/dns/%s.html&#39;,
+                        field   =&gt; &#39;value&#39;,
+                        title   =&gt; &#39;Lookup on Robtex (external)&#39;,
+                    },
+                    splunk      =&gt; {
+                        type    =&gt; &#39;internal_link&#39;,
+                        url     =&gt; &#39;https://splunk.domain.tld/en-US/app/search/search?q=search%%20%s&#39;,
+                        field   =&gt; &#39;value&#39;,
+                        title   =&gt; &#39;Search on Splunk&#39;,
+                    },
+                }, # end enrichment module enrichers
+            }, # end ennrichmenst config stanza
+        }, # end enrichments stanza
+        {
+            attr    =&gt; &#39;ldap&#39;,
+            class   =&gt; &#39;Scot::Util::Ldap&#39;,
+            config  =&gt; {
+                servername  =&gt; &#39;ldap.domain.tld&#39;,
+                dn          =&gt; &#39;cn=cn_name,ou=local config,dc=tld&#39;,
+                password    =&gt; &#39;changemenow&#39;,
+                scheme      =&gt; &#39;ldap&#39;,
+                group_search    =&gt; {
+                    base    =&gt; &#39;ou=groups,ou=orgname1,dc=dcname1,dc=dcname2,dc=dcname3&#39;,
+                    filter  =&gt; &#39;(| (cn=wg-scot*))&#39;,
+                    attrs   =&gt; [ &#39;cn&#39; ],
+                },
+                user_groups =&gt; {
+                    base    =&gt; &#39;ou=accounts,ou=ouname,dc=dcname1,dc=dcname1,dc=dcname1&#39;,
+                    filter  =&gt; &#39;uid=%s&#39;,
+                    attrs   =&gt; [&#39;memberOf&#39;],
+                }
+            }, # end ldap config
+        }, # end ldap
+    ],
+);
 </pre></div>
 </td></tr></table></div>
 </div>
-<div class="section" id="flair-app-cfg">
-<h3>flair.app.cfg<a class="headerlink" href="#flair-app-cfg" title="Permalink to this headline">¶</a></h3>
-<p>The Flair app automatically detects enties, see <span class="xref std std-ref">entities</span>.  This config file look like:</p>
-<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">environment</span>    <span class="o">=</span> <span class="p">(</span>
-
-    <span class="c1"># logfile   =&gt; path &amp; filename of where you wish to log file to be written</span>
-    
-    <span class="n">logfile</span>     <span class="o">=&gt;</span> <span class="s1">&#39;/var/log/scot/scot.flair.log&#39;</span><span class="p">,</span>
-
-    <span class="c1"># config file of the entity enrichments module</span>
-
-    <span class="n">enrichments</span>    <span class="o">=&gt;</span> <span class="s1">&#39;/opt/scot/etc/enrichments.cfg&#39;</span><span class="p">,</span>
-
-    <span class="c1"># the Scot::Util::Scot module init config</span>
-    <span class="n">scot</span>    <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="c1"># server name of the SCOT server</span>
-        <span class="n">servername</span>  <span class="o">=&gt;</span> <span class="s1">&#39;localhost&#39;</span><span class="p">,</span>
-
-        <span class="c1"># username with sufficient scot perms to create alert(groups)</span>
-        <span class="n">username</span>    <span class="o">=&gt;</span> <span class="s1">&#39;scot-alerts&#39;</span><span class="p">,</span>
-
-        <span class="c1"># the password for that user</span>
-        <span class="n">password</span>    <span class="o">=&gt;</span> <span class="s1">&#39;changemenow&#39;</span><span class="p">,</span>
-
-        <span class="c1"># authentication type: RemoteUser, LDAP, Local</span>
-        <span class="n">authtype</span>    <span class="o">=&gt;</span> <span class="s1">&#39;RemoteUser&#39;</span><span class="p">,</span>
-    <span class="p">},</span>
-<span class="p">);</span>
-</pre></div>
-</td></tr></table></div>
-</div>
-<div class="section" id="enrichments-cfg">
-<h3>enrichments.cfg<a class="headerlink" href="#enrichments-cfg" title="Permalink to this headline">¶</a></h3>
-<p>This config file is lists the entity enrichments and is used in the Flairing process.</p>
+<div class="section" id="alert-cfg-pl">
+<h3>alert.cfg.pl<a class="headerlink" href="#alert-cfg-pl" title="Permalink to this headline">¶</a></h3>
+<p>This config file controls how alerts are received from an IMAP server.</p>
 <div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -701,77 +536,490 @@ to update this configuration file.</p>
 68
 69
 70
-71</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">environment</span> <span class="o">=</span> <span class="p">(</span>
-    
-    <span class="c1">##</span>
-    <span class="c1">## mappings tell SCOT what enrichments are available for a given entity type</span>
-    <span class="c1">##</span>
-    <span class="n">mappings</span>    <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="c1"># type      =&gt; [ qw(enrichment1 enrichment2 .. ) ]</span>
-        <span class="n">ipaddr</span>      <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span> <span class="n">geoip</span> <span class="n">robtex_ip</span><span class="p">)</span> <span class="p">],</span>
-        <span class="n">email</span>       <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span> <span class="p">)</span> <span class="p">],</span>
-        <span class="n">md5</span>         <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span> <span class="p">)</span> <span class="p">],</span>
-        <span class="n">sha1</span>        <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span> <span class="p">)</span> <span class="p">],</span>
-        <span class="n">sha256</span>      <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span> <span class="p">)</span> <span class="p">],</span>
-        <span class="n">domain</span>      <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span> <span class="n">robtex_dns</span> <span class="p">)</span> <span class="p">],</span>
-        <span class="n">file</span>        <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span>  <span class="p">)</span> <span class="p">],</span>
-        <span class="n">ganalytics</span>  <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span>  <span class="p">)</span> <span class="p">],</span>
-        <span class="n">snumber</span>     <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span>  <span class="p">)</span> <span class="p">],</span>
-        <span class="n">message_id</span>  <span class="o">=&gt;</span> <span class="p">[</span> <span class="n">qw</span><span class="p">(</span><span class="n">splunk</span> <span class="p">)</span> <span class="p">],</span>
-    <span class="p">},</span>
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+    time_zone   =&gt; &#39;America/Denver&#39;,
+    log_config  =&gt; {
+        logger_name     =&gt; &#39;SCOT&#39;,
+        layout          =&gt; &#39;%d %7p [%P] %15F{1}: %4L %m%n&#39;,
+        appender_name   =&gt; &#39;scot_log&#39;,
+        logfile         =&gt; &#39;/var/log/scot/scot.mail.log&#39;,
+        log_level       =&gt; &#39;DEBUG&#39;,
+    },
+    modules =&gt; [
+        {
+            attr    =&gt; &#39;imap&#39;,
+            class   =&gt; &#39;Scot::Util::Imap&#39;,
+            config  =&gt; {
+                mailbox     =&gt; &#39;INBOX&#39;,          # mailbox, typically INBOX
+                hostname    =&gt; &#39;mail.domain.tld&#39;,# hostname of the imap server
+                port        =&gt; 993,              # port of the imap server
+                username    =&gt; &#39;scot-alerts&#39;,    # username  of the 
+                                                 # account receiving alert email
+                password    =&gt; &#39;changemenow&#39;,    # password  
+                ssl         =&gt; [ 
+                    &#39;SSL_verify_mode&#39;, 0         # ssl options 
+                ],                               # see perldoc IO::SSL
+                uid         =&gt; 1,                # uid   IMAP config item 
+                ignore_size_errors  =&gt; 1,        # ignore_size_errors 
+            },
+        },
+        {
+            attr    =&gt; &#39;scot&#39;,
+            class   =&gt; &#39;Scot::Util::ScotClient&#39;,
+            config  =&gt; {
+                servername  =&gt; &#39;scotserver&#39;,
+                # username with sufficient scot perms to create alert(groups)
+                username    =&gt; &#39;scot-alerts&#39;,
+                # the password for that user
+                password    =&gt; &#39;changemenow&#39;,
+                # authentication type: RemoteUser, LDAP, Local
+                authtype    =&gt; &#39;Local&#39;,
+            },
+        },
+        {
+            attr    =&gt; &#39;mongo&#39;,
+            class   =&gt; &#39;Scot::Util::MongoFactory&#39;,
+            config  =&gt; {
+                db_name         =&gt; &#39;scot-prod&#39;,
+                host            =&gt; &#39;mongodb://localhost&#39;,
+                write_safety    =&gt; 1,
+                find_master     =&gt; 1,
+            },
+        },
+        {
+            attr    =&gt; &#39;mq&#39;,
+            class   =&gt; &#39;Scot::Util::Messageq&#39;,
+            config  =&gt; {
+                destination =&gt; &quot;scot&quot;,
+                stomp_host  =&gt; &quot;localhost&quot;,
+                stomp_port  =&gt; 61613,
+            },
+        },
+        {
+            attr    =&gt; &#39;es&#39;,
+            class   =&gt; &#39;Scot::Util::ElasticSearch&#39;,
+            config  =&gt; {
+                nodes       =&gt; [ qw(localhost:9200) ],
+                max_workers =&gt; 1,
+            },
+        },
+    ],
+    parser_dir  =&gt; &#39;/opt/scot/lib/Scot/Parser&#39;,
+    get_method      =&gt; &quot;mongo&quot;,     # other value is &quot;rest&quot;
+    leave_unseen    =&gt; 1,
+    # interactive =&gt; [ yes | no ]
+    # pauses processing after each message and writes to console 
+    interactive     =&gt; &#39;no&#39;,   
+    verbose         =&gt; 1,
+    # max_processes =&gt; 0 to positive int
+    # number of child processes to fork to parse messages in parallel
+    # 0 = disable forking and do all messages sequentially
+    max_processes   =&gt; 0,       
+    # fetch_mode    =&gt; [ unseen | time ]
+    # unseen looks for unseen messages via imap protocol
+    # time gets all message since a given time
+    # both modes check unique message_id and will not reprocess something
+    # already in SCOT database
+    fetch_mode      =&gt; &#39;unseen&#39;, 
+    # since     =&gt; { unit =&gt; amount }
+    # hashref where key is the unit [ day, hour, minute ]
+    # amount is integer value
+    # used by time fetch_mode 
+    since           =&gt; { hour =&gt; 2 },
+    # approved_alert_domains =&gt; [ &#39;domain1\.org&#39;, ... ]
+    # only domains listed in this array can send email to scot
+    # periods need to be escaped by \
+    approved_alert_domains  =&gt; [ &#39;domain.tld&#39; ],
+    # approve_accounts =&gt; [ &#39;user@email.addr&#39; ];
+    # account in this domain can also send to scot
+    approved_accounts   =&gt; [ &#39;user@server.domain.tld&#39; ],
+);
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="flair-cfg-pl">
+<h3>flair.cfg.pl<a class="headerlink" href="#flair-cfg-pl" title="Permalink to this headline">¶</a></h3>
+<p>The Flair app automatically detects enties, see <span class="xref std std-ref">entities</span>.  This config file look like:</p>
+<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+    time_zone   =&gt; &#39;America/Denver&#39;,
+    # server name of the SCOT server
+    servername  =&gt; &#39;localhost&#39;,
+    # username with sufficient scot perms to create alert(groups)
+    username    =&gt; &#39;scot-alerts&#39;,
+    # the password for that user
+    password    =&gt; &#39;changemenow&#39;,
+    # authentication type: RemoteUser, LDAP, Local
+    authtype    =&gt; &#39;Local&#39;,
+    # interactive
+    interactive =&gt; 0,
+    # max workers
+    max_workers =&gt; 20,
+    # log config
+    log_config  =&gt; {
+        logger_name     =&gt; &#39;SCOT&#39;,
+        layout          =&gt; &#39;%d %7p [%P] %15F{1}: %4L %m%n&#39;,
+        appender_name   =&gt; &#39;scot_log&#39;,
+        logfile         =&gt; &#39;/var/log/scot/scot.flair.log&#39;,
+        log_level       =&gt; &#39;DEBUG&#39;,
+    },
+    # modules used by flair app
+    modules =&gt; [
+        {
+            attr    =&gt; &#39;img_munger&#39;,
+            class   =&gt; &#39;Scot::Util::ImgMunger&#39;,
+            config  =&gt; {
+            },
+        },
+        {
+            attr    =&gt; &#39;extractor&#39;,
+            class   =&gt; &#39;Scot::Util::EntityExtractor&#39;,
+            config  =&gt; {
+                suffixfile  =&gt; &#39;/opt/scot/etc/effective_tld_names.dat&#39;,
+            },
+        },
+        {
+            attr    =&gt; &#39;scot&#39;,
+            class   =&gt; &#39;Scot::Util::ScotClient&#39;,
+            config  =&gt; {
+                servername  =&gt; &#39;localhost&#39;,
+                # username with sufficient scot perms to create alert(groups)
+                username    =&gt; &#39;scot-alerts&#39;,
+                # the password for that user
+                password    =&gt; &#39;changemenow&#39;,
+                # authentication type: RemoteUser, LDAP, Local
+                authtype    =&gt; &#39;Local&#39;,
+            },
+        },
+        {
+            attr    =&gt; &#39;mongo&#39;,
+            class   =&gt; &#39;Scot::Util::MongoFactory&#39;,
+            config  =&gt; {
+                db_name         =&gt; &#39;scot-prod&#39;,
+                host            =&gt; &#39;mongodb://localhost&#39;,
+                write_safety    =&gt; 1,
+                find_master     =&gt; 1,
+            },
+        },
+        {
+            attr    =&gt; &#39;enrichments&#39;,
+            class   =&gt; &#39;Scot::Util::Enrichments&#39;,
+            config  =&gt; {
+                # mappings map the enrichments that are available 
+                # for a entity type
+                mappings    =&gt; {
+                    ipaddr      =&gt; [ qw(splunk geoip robtex_ip ) ],
+                    email       =&gt; [ qw(splunk ) ],
+                    md5         =&gt; [ qw(splunk ) ],
+                    sha1        =&gt; [ qw(splunk ) ],
+                    sha256      =&gt; [ qw(splunk ) ],
+                    domain      =&gt; [ qw(splunk robtex_dns ) ],
+                    file        =&gt; [ qw(splunk  ) ],
+                    ganalytics  =&gt; [ qw(splunk  ) ],
+                    snumber     =&gt; [ qw(splunk ) ],
+                    message_id  =&gt; [ qw(splunk ) ],
+                },
 
-    <span class="c1">## </span>
-    <span class="c1">## foreach enrichment listed above place any config info for it here</span>
-    <span class="c1">## </span>
-    <span class="n">configs</span> <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="c1"># </span>
-        <span class="c1"># Native enrichments have the form of</span>
-        <span class="c1"># </span>
-        <span class="c1"># enrichment_name =&gt; {</span>
-        <span class="c1">#       type    =&gt; &#39;native&#39;,</span>
-        <span class="c1">#       module  =&gt; &#39;Perl::Style::Module&#39;,</span>
-        <span class="c1">#       config  =&gt; {        # hash of config data that module might need</span>
-        <span class="c1">#           foo =&gt; &#39;bar&#39;,</span>
-        <span class="c1">#       },</span>
-        <span class="c1"># }</span>
-
-        <span class="n">geoip</span>   <span class="o">=&gt;</span> <span class="p">{</span>
-            <span class="nb">type</span>    <span class="o">=&gt;</span> <span class="s1">&#39;native&#39;</span><span class="p">,</span>
-            <span class="n">module</span>  <span class="o">=&gt;</span> <span class="s1">&#39;Scot::Util::Geoip&#39;</span><span class="p">,</span>
-            <span class="c1"># config =&gt; { file =&gt; &#39;foo&#39; }</span>
-        <span class="p">},</span>
-
-        <span class="c1"># </span>
-        <span class="c1"># Link enrichments have the form of</span>
-        <span class="c1"># </span>
-        <span class="c1"># enrichment_name =&gt; {</span>
-        <span class="c1">#       type    =&gt; &#39;external_link&#39;, # or &#39;internal_link&#39;</span>
-        <span class="c1">#       url     =&gt; &#39;https://www.foo.com/search?term=%s&#39;, # sprintf consumes this</span>
-        <span class="c1">#       field   =&gt; &#39;value&#39;, # field of entity to pump into url via sprintf</span>
-        <span class="c1">#       title   =&gt; &#39;DoIt&#39;, # text to place in button</span>
-        <span class="c1"># }</span>
-
-        <span class="n">robtex_ip</span>   <span class="o">=&gt;</span> <span class="p">{</span>
-            <span class="nb">type</span>    <span class="o">=&gt;</span> <span class="s1">&#39;external_link&#39;</span><span class="p">,</span>
-            <span class="n">url</span>     <span class="o">=&gt;</span> <span class="s1">&#39;https://www.robtex.com/ip/</span><span class="si">%s</span><span class="s1">.html&#39;</span><span class="p">,</span>
-            <span class="n">field</span>   <span class="o">=&gt;</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span>
-            <span class="n">title</span>   <span class="o">=&gt;</span> <span class="s1">&#39;Lookup on Robtex (external)&#39;</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="n">robtex_dns</span>   <span class="o">=&gt;</span> <span class="p">{</span>
-            <span class="nb">type</span>    <span class="o">=&gt;</span> <span class="s1">&#39;external_link&#39;</span><span class="p">,</span>
-            <span class="n">url</span>     <span class="o">=&gt;</span> <span class="s1">&#39;https://www.robtex.com/dns/</span><span class="si">%s</span><span class="s1">.html&#39;</span><span class="p">,</span>
-            <span class="n">field</span>   <span class="o">=&gt;</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span>
-            <span class="n">title</span>   <span class="o">=&gt;</span> <span class="s1">&#39;Lookup on Robtex (external)&#39;</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="n">splunk</span>      <span class="o">=&gt;</span> <span class="p">{</span>
-            <span class="nb">type</span>    <span class="o">=&gt;</span> <span class="s1">&#39;internal_link&#39;</span><span class="p">,</span>
-            <span class="n">url</span>     <span class="o">=&gt;</span> <span class="s1">&#39;https://splunkserver.your.gov/en-US/app/search/flashtimeline?q=search</span><span class="si">%%</span><span class="s1">20</span><span class="si">%s</span><span class="s1">&amp;earliest=15m&amp;latest=now&#39;</span><span class="p">,</span>
-            <span class="n">field</span>   <span class="o">=&gt;</span> <span class="s1">&#39;value&#39;</span><span class="p">,</span>
-            <span class="n">title</span>   <span class="o">=&gt;</span> <span class="s1">&#39;Search Last 15 minutes on Splunk&#39;</span><span class="p">,</span>
-        <span class="p">},</span>
-    <span class="p">},</span>
-<span class="p">);</span>
-
+                # foreach enrichment listed above place any 
+                # config info for it here
+                enrichers =&gt; {
+                    geoip   =&gt; {
+                        type    =&gt; &#39;native&#39;,
+                        module  =&gt; &#39;Scot::Util::Geoip&#39;,
+                    },
+                    robtex_ip   =&gt; {
+                        type    =&gt; &#39;external_link&#39;,
+                        url     =&gt; &#39;https://www.robtex.com/ip/%s.html&#39;,
+                        field   =&gt; &#39;value&#39;,
+                        title   =&gt; &#39;Lookup on Robtex (external)&#39;,
+                    },
+                    robtex_dns   =&gt; {
+                        type    =&gt; &#39;external_link&#39;,
+                        url     =&gt; &#39;https://www.robtex.com/dns/%s.html&#39;,
+                        field   =&gt; &#39;value&#39;,
+                        title   =&gt; &#39;Lookup on Robtex (external)&#39;,
+                    },
+                    splunk      =&gt; {
+                        type    =&gt; &#39;internal_link&#39;,
+                        url     =&gt; &#39;https://splunk.domain.tld/en-US/app/search/search?q=search%%20%s&#39;,
+                        field   =&gt; &#39;value&#39;,
+                        title   =&gt; &#39;Search on Splunk&#39;,
+                    },
+                }, # end enrichment module enrichers
+            }, # end ennrichmenst config stanza
+        }, # end enrichments stanza
+    ],
+);
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="game-cfg-pl">
+<h3>game.cfg.pl<a class="headerlink" href="#game-cfg-pl" title="Permalink to this headline">¶</a></h3>
+<p>This controls aspects of the gamification system.</p>
+<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+    log_config  =&gt; {
+        logger_name     =&gt; &#39;SCOT&#39;,
+        layout          =&gt; &#39;%d %7p [%P] %15F{1}: %4L %m%n&#39;,
+        appender_name   =&gt; &#39;scot_log&#39;,
+        logfile         =&gt; &#39;/var/log/scot/scot.game.log&#39;,
+        log_level       =&gt; &#39;DEBUG&#39;,
+    },
+    days_ago    =&gt; 30,
+    modules =&gt; [
+        {
+            attr    =&gt; &#39;mongo&#39;,
+            class   =&gt; &#39;Scot::Util::MongoFactory&#39;,
+            config  =&gt; {
+                db_name         =&gt; &#39;scot-prod&#39;,
+                host            =&gt; &#39;mongodb://localhost&#39;,
+                write_safety    =&gt; 1,
+                find_master     =&gt; 1,
+            },
+        },
+    ],
+);
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="stretch-cfg-pl">
+<h3>stretch.cfg.pl<a class="headerlink" href="#stretch-cfg-pl" title="Permalink to this headline">¶</a></h3>
+<p>This controls aspects of the elastic search input system.</p>
+<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41</pre></div></td><td class="code"><div class="highlight"><pre><span></span>%environment = (
+    time_zone   =&gt; &#39;America/Denver&#39;,
+    max_workers =&gt; 1,
+    log_config  =&gt; {
+        logger_name     =&gt; &#39;SCOT&#39;,
+        layout          =&gt; &#39;%d %7p [%P] %15F{1}: %4L %m%n&#39;,
+        appender_name   =&gt; &#39;scot_log&#39;,
+        logfile         =&gt; &#39;/var/log/scot/scot.stretch.log&#39;,
+        log_level       =&gt; &#39;DEBUG&#39;,
+    },
+    default_owner   =&gt; &#39;scot-admin&#39;,
+    modules =&gt; [
+        {
+            attr    =&gt; &#39;es&#39;,
+            class   =&gt; &#39;Scot::Util::ElasticSearch&#39;,
+            config  =&gt; {
+                nodes   =&gt; [ qw(localhost:9200) ],
+            },
+        },
+        {
+            attr    =&gt; &#39;scot&#39;,
+            class   =&gt; &#39;Scot::Util::ScotClient&#39;,
+            config  =&gt; {
+                servername  =&gt; &quot;localhost&quot;,
+                username    =&gt; &quot;scot-alerts&quot;,
+                password    =&gt; &quot;changemenow&quot;,
+                auth_type    =&gt; &quot;basic&quot;,
+            },
+        },
+        {
+            attr    =&gt; &#39;mongo&#39;,
+            class   =&gt; &#39;Scot::Util::MongoFactory&#39;,
+            config  =&gt; {
+                db_name         =&gt; &#39;scot-prod&#39;,
+                host            =&gt; &#39;mongodb://localhost&#39;,
+                write_safety    =&gt; 1,
+                find_master     =&gt; 1,
+            },
+        },
+    ],
+);
 </pre></div>
 </td></tr></table></div>
 </div>
@@ -802,12 +1050,11 @@ entry.  It is recommended to run this every 2 to 5 minutes.  Here&#8217;s the cr
 <li><a class="reference internal" href="#migration">Migration</a></li>
 <li><a class="reference internal" href="#ssl-certs">SSL Certs</a></li>
 <li><a class="reference internal" href="#configuration-files">Configuration Files</a><ul>
-<li><a class="reference internal" href="#scot-env-cfg">scot_env.cfg</a></li>
-<li><a class="reference internal" href="#ldap-cfg">ldap.cfg</a></li>
-<li><a class="reference internal" href="#logger-cfg">logger.cfg</a></li>
-<li><a class="reference internal" href="#mail-app-cfg">mail.app.cfg</a></li>
-<li><a class="reference internal" href="#flair-app-cfg">flair.app.cfg</a></li>
-<li><a class="reference internal" href="#enrichments-cfg">enrichments.cfg</a></li>
+<li><a class="reference internal" href="#scot-cfg-pl">scot.cfg.pl</a></li>
+<li><a class="reference internal" href="#alert-cfg-pl">alert.cfg.pl</a></li>
+<li><a class="reference internal" href="#flair-cfg-pl">flair.cfg.pl</a></li>
+<li><a class="reference internal" href="#game-cfg-pl">game.cfg.pl</a></li>
+<li><a class="reference internal" href="#stretch-cfg-pl">stretch.cfg.pl</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#cron-jobs">CRON Jobs</a></li>
@@ -824,7 +1071,7 @@ entry.  It is recommended to run this every 2 to 5 minutes.  Here&#8217;s the cr
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/postinstall.rst.txt"
+      <li><a href="_sources/postinstall.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>

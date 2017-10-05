@@ -165,7 +165,7 @@ function configure_startup {
                         sed -i 's=instdir='$SCOTDIR'=g' /etc/init.d/scot
                     else
                         echo "-- install /etc/init.d/$service"
-                        /opt/scot/bin/${service}.pl > /etc/init.d/$service
+                        /opt/scot/bin/${service}.pl get_init_file > /etc/init.d/$service
                         chmod +x /etc/init.d/$service
                     fi
                 fi
@@ -358,6 +358,18 @@ function selinux_to_permissive {
     setenforce 0
 }
 
+function start_mongo {
+    if [[ $OS == "Ubuntu" ]]; then
+        if [[ $OSVERSION == "16" ]]; then
+            systemctl start mongod.service
+        else 
+            service mongod start
+        fi
+    else
+        systemctl start mongod.service
+    fi
+}
+
 function install_scot {
     
     echo "---"
@@ -409,6 +421,7 @@ function install_scot {
     install_private_modules
     configure_startup
     restart_daemons
+    start_mongo
     start_scot
     start_apache
 }

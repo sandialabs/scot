@@ -22,6 +22,7 @@ with    qw(
     Meerkat::Role::Document
     Scot::Role::Entriable
     Scot::Role::Hashable
+    Scot::Role::Value
 );
 
 =head1 Attributes
@@ -30,9 +31,10 @@ with    qw(
 
 =item B<value>
 
+Moved to Role
+
 the string that is the entity
 
-=cut
 
 has value  => (
     is          => 'ro',
@@ -40,6 +42,8 @@ has value  => (
     required    => 1,
     default     => '',
 );
+
+=cut
 
 =item B<type>
 
@@ -104,7 +108,11 @@ has status  => (
 =item B<data>
 
 hold data in a key value store about the entity.
-not sure what this will be but it is a safety valve 
+for an example:
+    you can store the binary form of Ip addr for better matching
+    data.binip = 11101101101010110110...
+
+This data structure will expand with enrichment 
 
 =cut
 
