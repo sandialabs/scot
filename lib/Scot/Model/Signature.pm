@@ -19,12 +19,14 @@ with    qw(
     Meerkat::Role::Document
     Scot::Role::Entriable
     Scot::Role::Hashable
+    Scot::Role::Historable
     Scot::Role::Permission
     Scot::Role::Target
     Scot::Role::Times
     Scot::Role::Permission
     Scot::Role::Sources
     Scot::Role::Tags
+    Scot::Role::TLP
 );
 
 =head1 Attributes
@@ -41,6 +43,7 @@ has name  => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
+    default     => 'new sig',
 );
 
 =item B<type>
@@ -51,8 +54,9 @@ the type of signature: yara, extractor, sourcefire, pipeline, etc.
 
 has type    => (
     is          => 'ro',
-    isa         => 'Str',
+    isa         => 'Maybe[Str]',
     required    => 1,
+    default     => '',
 );
 
 =item B<status>
@@ -65,7 +69,7 @@ has status  => (
     is          =>  'ro',
     isa         => 'Str',
     required    => 1,
-    default     => 'enabled',
+    default     => 'disabled',
 );
 
 =item B<prod_sigbody_id>
@@ -164,10 +168,10 @@ the description of the signature
 =cut
 
 has description => (
-    is      => 'ro',
-    isa     => 'Str',
+    is          => 'ro',
+    isa         => 'Str',
     required    => 1,
-    default => '',
+    default     => '',
 );
 
 __PACKAGE__->meta->make_immutable;

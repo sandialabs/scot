@@ -60,7 +60,12 @@ $t->put_ok("/scot/api/v2/alert/$alert_1_id" => json =>
         promote => "new",
     } 
 )->status_is(200)
- ->json_is('/status'    => "successfully promoted");
+ ->json_is('/status'    => "ok");
+
+# XXX
+#print Dumper($t->tx->res->json), "\n";
+#done_testing();
+#exit 0;
 
 my $event1  = $t->tx->res->json->{id};
 
@@ -84,9 +89,6 @@ $t->get_ok("/scot/api/v2/event/$event1/alert" => {},
     ->json_is('/records/0/status'       => 'promoted')
     ->json_is('/records/0/alertgroup'   => 1);
 
-#print Dumper($t->tx->res->json), "\n";
-#done_testing();
-#exit 0;
 
 $t->get_ok("/scot/api/v2/alert/$alert_1_id/event" => {},
     "Get Event(s) that this alert was promoted to")
@@ -108,7 +110,8 @@ $t->put_ok("/scot/api/v2/alert/$alert_2_id" => json =>
 )->status_is(200)
  ->json_is('/id'        => $alert_2_id)                     
  ->json_is('/pid'        => $event1)                     
- ->json_is('/status'    => "successfully promoted");    # expect the id of the promoted object
+ ->json_is('/status'    => "ok");    # expect the id of the promoted object
+
 
 $t->get_ok("/scot/api/v2/event/$event1/entry" => {},
     "Get the entries from the new event" )
@@ -119,7 +122,7 @@ $t->get_ok("/scot/api/v2/event/$event1/entry" => {},
     ->json_is('/records/0/children/0/parent'    => 1)
     ->json_is('/records/0/children/1/class'     => 'entry')
     ->json_is('/records/0/children/1/parent'     => 1)
-    ->json_is('/records/0/children/0/body'  => '<h3>From Alert <a href="/#/alert/1">1</h3><table class="tablesorter alertTableHorizontal">
+    ->json_is('/records/0/children/0/body'  => '<h3>From Alert <a href="/#/alert/1">1</h3><br><h4>test message 1</h4><table class="tablesorter alertTableHorizontal">
 <tr>
 <th>foo</th><th>bar</th>
 </tr>
@@ -128,10 +131,6 @@ $t->get_ok("/scot/api/v2/event/$event1/entry" => {},
 </tr>
 </table>
 ');
-
- print Dumper($t->tx->res->json), "\n";
- done_testing();
- exit 0;
 
 $t->get_ok("/scot/api/v2/event/$event1/alert" => {},
     "Get alerts promoted to Event $event1")
@@ -143,7 +142,6 @@ $t->get_ok("/scot/api/v2/event/$event1/alert" => {},
     ->json_is('/records/1/id'           => $alert_2_id)
     ->json_is('/records/1/status'       => 'promoted')
     ->json_is('/records/1/alertgroup'   => $alertgroup_id);
-
 
 $t->get_ok("/scot/api/v2/alertgroup/$alertgroup_id" => {},
     "Get Alertgroup $alertgroup_id")
@@ -160,7 +158,7 @@ $t->put_ok("/scot/api/v2/event/$event1" => json =>
     }
 )->status_is(200)
     ->json_is('/id'     =>  $event1)
-    ->json_is('/status' =>  "successfully promoted");
+    ->json_is('/status' =>  "ok");
 
 my $incident1   = $t->tx->res->json->{id};
 
@@ -170,11 +168,6 @@ $t->get_ok("/scot/api/v2/incident/$incident1/event" => {},
     ->json_is('/queryRecordCount'       => 1)
     ->json_is('/records/0/id'           => $event1)
     ->json_is('/records/0/status'       => 'promoted');
-
-#XXX
-# print Dumper($t->tx->res->json), "\n";
-# done_testing();
-# exit 0;
 
 $t->get_ok("/scot/api/v2/event/$event1/incident" => {},
     "Get alerts promoted to Event $event1")
@@ -199,7 +192,7 @@ $t->put_ok("/scot/api/v2/event/$event2" => json =>
     }
 )->status_is(200)
     ->json_is('/id'     =>  $event2)
-    ->json_is('/status' =>  "successfully promoted")
+    ->json_is('/status' =>  "ok")
     ->json_is('/pid'    => $incident1);
 
 
@@ -236,7 +229,7 @@ $t->get_ok("/scot/api/v2/incident/$incident1/event" => {},
 #    ->json_is('/records/0/status'       => 'promoted');
     
 
-# print Dumper($t->tx->res->json), "\n";
+print Dumper($t->tx->res->json), "\n";
 done_testing();
 exit 0;
 

@@ -22,9 +22,16 @@ var ViewedByHistory = React.createClass({
         }
     },
     componentDidMount: function() {
-        this.serverRequest = $.get('/scot/api/v2/'+ this.props.type + '/' + this.props.id, function (result) {
-            this.setState({historyBody:true, data:result})
-        }.bind(this));
+        $.ajax({
+            type:'get',
+            url:'/scot/api/v2/'+ this.props.type + '/' + this.props.id,
+            success: function (result) {
+                this.setState({historyBody:true, data:result})
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get user change history', data);
+            }.bind(this)
+        })
     }, 
     render: function() {
         return (
@@ -37,7 +44,7 @@ var ViewedByHistory = React.createClass({
                         <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.viewedByHistoryToggle} />
                         <h3 id="myModalLabel">{this.props.subjectType} Viewed By</h3>
                     </div>
-                    <div className="modal-body" style={{height: '600px',overflowY:'auto'}}>
+                    <div className="modal-body" style={{maxHeight: '30vh',overflowY:'auto'}}>
                        {this.state.historyBody ? <ViewedByHistoryData data={this.state.data} /> : null }
                     </div>
                     <div className="modal-footer">

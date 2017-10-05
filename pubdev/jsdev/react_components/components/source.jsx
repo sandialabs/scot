@@ -37,7 +37,7 @@ var Source = React.createClass({
                 <td>
                     {rows}
                     {this.state.sourceEntry ? <NewSource data={data} type={type} id={id} toggleSourceEntry={this.toggleSourceEntry} updated={this.props.updated}/>: null}
-                    {this.state.sourceEntry ? <Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-minus' aria-hidden='true'></span></Button> : <Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-plus' aria-hidden='true'></span></Button>} 
+                    {this.state.sourceEntry ? <span className='add-source-button'><Button bsSize={'xsmall'} bsStyle={'danger'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-minus' aria-hidden='true'></span></Button></span> : <span className='remove-source-button'><Button bsSize={'xsmall'} bsStyle={'success'} onClick={this.toggleSourceEntry}><span className='glyphicon glyphicon-plus' aria-hidden='true'></span></Button></span>} 
                 </td>
             </th>
         )
@@ -65,11 +65,12 @@ var SourceDataIterator = React.createClass({
             type: 'put',
             url: 'scot/api/v2/' + this.props.type + '/' + this.props.id, 
             data: JSON.stringify({'source':newSourceArr}),
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('deleted source success: ' + data);
             }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to delete the source');
+            error: function(data) {
+                this.props.errorToggle('Failed to delete the source', data);
             }.bind(this)
         });
     },
@@ -84,7 +85,7 @@ var SourceDataIterator = React.createClass({
             }
         }
         return (
-            <span id="event_source" className='sourceButton'>{value} <i onClick={this.sourceDelete} className="fa fa-times sourceButtonClose"/></span>
+            <span id="event_source" className='sourceButton'>{value} <span className='sourceButtonClose'><i onClick={this.sourceDelete} className="fa fa-times"/></span></span>
         )
     }
 });
@@ -117,21 +118,28 @@ var NewSource = React.createClass({
                 console.log('success: source added');
                 this.props.toggleSourceEntry();
             }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to add source');
+            error: function(data) {
+                this.props.errorToggle('Failed to add source', data);
                 this.props.toggleSourceEntry();
             }.bind(this)
         });
     },
     handleInputChange: function(input) {
         var arr = [];
-        this.serverRequest = $.get('/scot/api/v2/ac/source/' + input, function (result) {
-            var result = result.records;
-            for (var i=0; i < result.length; i++) {
-                arr.push(result[i].value)
-            }
-            this.setState({suggestions:arr})
-        }.bind(this));
+        $.ajax({
+            type:'get',
+            url:'/scot/api/v2/ac/source/' + input, 
+            success: function (result) {
+                var result = result.records;
+                for (var i=0; i < result.length; i++) {
+                    arr.push(result[i])
+                }
+                this.setState({suggestions:arr})
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get source autocomplete data', data);
+            }.bind(this)
+        })
     },
     handleDelete: function () {
         //blank since buttons are handled outside of this

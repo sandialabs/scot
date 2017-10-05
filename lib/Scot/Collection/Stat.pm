@@ -11,19 +11,6 @@ with    qw(
     Scot::Role::GetTagged
 );
 
-sub create_from_api {
-    my $self    = shift;
-    my $request = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-
-    $log->trace("Create Stat from API");
-    
-    my $stat = $self->create($request);
-
-    return $stat;
-}
-
 sub upsert_metric {
     my $self    = shift;
     my $doc     = shift;
@@ -33,15 +20,24 @@ sub upsert_metric {
     delete $match->{value};
     my $obj = $self->find_one($match);
     unless (defined $obj) {
-        $log->debug("New Metric, inserting");
+        $log->trace("New Metric, inserting");
         $self->create($doc);
     }
     else {
-        $log->debug("Updating existing metric");
+        $log->trace("Updating existing metric");
         $obj->update({
             '$set'  => $doc
         });
     }
+}
+
+sub put_stat {
+    my $self    = shift;
+    my $metric  = shift;
+    my $value   = shift;
+    my $env     = $self->env;
+    my $dt      = DateTime->from_epoch( epoch => $env->now );
+    $self->increment($dt, $metric, $value);
 }
 
 sub increment {
