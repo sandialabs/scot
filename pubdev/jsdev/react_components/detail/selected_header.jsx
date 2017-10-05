@@ -587,7 +587,7 @@ var SelectedHeader = React.createClass({
                                             :
                                                 null
                                             }
-                                            <td><span><TrafficLightProtocol type={this.props.type} id={this.props.id} /></span></td>
+                                            {this.state.showEventData ? <td><span><TrafficLightProtocol type={this.props.type} id={this.props.id} tlp={this.state.headerData.tlp} errorToggle={this.props.errorToggle}/></span></td> : null }
                                             {(type == 'event' || type == 'incident') && this.state.showEventData ? <th>Promoted From:</th> : null}
                                             {(type == 'event' || type == 'incident') && this.state.showEventData ? <PromotedData data={this.state.headerData.promoted_from} type={type} id={id} /> : null}
                                             {(type != 'entity') && this.state.showEventData ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated} errorToggle={this.props.errorToggle} /> : null}
