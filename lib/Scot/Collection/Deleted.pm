@@ -9,5 +9,17 @@ sub create_from_handler {
     };
 }
 
+sub preserve {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my $href    = $object->as_hash;
+    $self->create({
+        when    => $self->env->now,
+        who     => $req->{user},
+        type    => ref($object),
+        data    => $href,
+    });
+}
 
 1;

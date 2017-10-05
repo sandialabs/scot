@@ -95,6 +95,37 @@ sub _get_max_workers {
     return $self->get_config_value($attr, $default, $envname);
 }
 
+has stomp_host  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_stomp_host',
+);
+
+sub _build_stomp_host {
+    my $self    = shift;
+    my $attr    = "stomp_host";
+    my $default = "localhost";
+    my $envname = "scot_util_stomphost";
+    return $self->get_config_value($attr, $default, $envname);
+}
+has stomp_port  => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_stomp_port',
+);
+
+sub _build_stomp_port {
+    my $self    = shift;
+    my $attr    = "stomp_port";
+    my $default = 61613;
+    my $envname = "scot_util_stompport";
+    return $self->get_config_value($attr, $default, $envname);
+}
+
 =head2 Autonomous
 
 $stretch->run();
@@ -112,7 +143,15 @@ sub run {
     $log->debug("Starting STOMP watcher");
     $log->debug("SCOT access mode is ".$self->scot_get_method);
 
-    my $stomp   = AnyEvent::STOMP::Client->new();
+    my $stomp;
+
+    if ( $self->stomp_host eq "localhost" ) {
+        $stomp   = AnyEvent::STOMP::Client->new();
+    }
+    else {
+        $stomp   = AnyEvent::STOMP::Client->new($self->stomp_host, $self->stomp_port);
+    }
+
     my $pm      = AnyEvent::ForkManager->new( 
         max_workers => $self->max_workers 
     );
@@ -312,13 +351,24 @@ sub process_by_date {
     my $start       = shift;    # epoch
     my $end         = shift;    # epoch
     my $limit       = shift;
-    $limit  = 0 unless $limit;
+    $limit          = 0 unless $limit;
+    my $mongo       = $self->env->mongo;
     my $scot        = $self->scot;
     my $es          = $self->es;
-    my $json    = $scot->get("$collection?created=$start&created=$end&limit=$limit");
+#    my $json    = $scot->get("$collection?created=$start&created=$end&limit=$limit");
 
-    foreach my $href (@{$json->{records}}) {
-        $es->index($collection, $href, 'scot');
+    my $cursor  = $mongo->collection(ucfirst($collection))->find({
+        when    => {
+            '$gte'  => $start,
+            '$lte'  => $end,
+        }
+    });
+    $cursor->immortal(1);
+
+    while ( my $obj = $cursor->next ) {
+        my $href    = $obj->as_hash;
+        my $id      = $obj->id;
+        $es->index($collection, $id, $href, "scot");
     }
 }
 

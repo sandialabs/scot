@@ -52,10 +52,13 @@ gulp.task( 'watch-copy', ['watch'], function() {
 	console.log( "REMINDER: Run as 'sudo -E gulp watch-copy'" );
 	return gulp.watch( paths.build +'**/*', function( obj ) {
 			if ( obj.type === 'changed' ) {
-				gulp.src( obj.path, { base: paths.build } )
+				setTimeout( function() {
+                    gulp.src( obj.path, { base: paths.build } )
 					.pipe( gulp.dest( paths.scot ) );
-				console.log( 'Copied', obj.path, 'to', paths.scot, '\x07' );
-			}
+				    console.log( 'Copied', obj.path, 'to', paths.scot, '\x07' );
+			    }
+                , 1000) 
+            }
 	} );
 } );
 

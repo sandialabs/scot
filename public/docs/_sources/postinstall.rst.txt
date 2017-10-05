@@ -21,58 +21,49 @@ The following sections details the parameters in the varios configuration files
 available in SCOT.  Use your favorite editor to adjust the values to your site.
 You can test your changes for syntax erros by using the following command::
 
-  $ perl -wc scot_env.cfg
+  $ perl -wc scot.cfg.pl
 
 Correct any syntax errors reported before continuing.  Typically you will need
 to resart SCOT for any changes to be recognized.
 
-scot_env.cfg
+scot.cfg.pl
 ^^^^^^^^^^^^
 
 This config controls many aspects of the SCOT application server.  
 
-.. literalinclude:: ../../etcsrc/templates/scot_env.cfg
+.. literalinclude:: ../../install/src/scot/scot.cfg.pl
    :linenos:
 
-ldap.cfg
-^^^^^^^^
-
-If you plan on using LDAP for authentication or for Group membership, you will need
-to update this configuration file.
-
-.. literalinclude:: ../../etcsrc/templates/ldap.cfg
-   :linenos:
-
-logger.cfg
-^^^^^^^^^^
-
-How to configure the SCOT logger.
-
-.. literalinclude:: ../../etcsrc/templates/logger.cfg
-   :linenos:
-
-mail.app.cfg
+alert.cfg.pl
 ^^^^^^^^^^^^
 
 This config file controls how alerts are received from an IMAP server.  
 
-.. literalinclude:: ../../etcsrc/templates/mail.app.cfg
+.. literalinclude:: ../../install/src/scot/alert.cfg.pl
    :linenos:
 
-flair.app.cfg
+flair.cfg.pl
 ^^^^^^^^^^^^^
 
 The Flair app automatically detects enties, see :ref:`entities`.  This config file look like:
 
-.. literalinclude:: ../../etcsrc/templates/flair.app.cfg
+.. literalinclude:: ../../install/src/scot/flair.cfg.pl
    :linenos:
 
-enrichments.cfg
-^^^^^^^^^^^^^^^
+game.cfg.pl
+^^^^^^^^^^^
 
-This config file is lists the entity enrichments and is used in the Flairing process.
+This controls aspects of the gamification system.
 
-.. literalinclude:: ../../etcsrc/templates/enrichments.cfg
+.. literalinclude:: ../../install/src/scot/game.cfg.pl
+   :linenos:
+
+stretch.cfg.pl
+^^^^^^^^^^^
+
+This controls aspects of the elastic search input system.
+
+.. literalinclude:: ../../install/src/scot/stretch.cfg.pl
    :linenos:
 
 

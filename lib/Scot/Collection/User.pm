@@ -10,7 +10,7 @@ with    qw(
     Scot::Role::GetTagged
 );
 
-sub create_from_api {
+override api_create => sub {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
@@ -43,7 +43,55 @@ sub create_from_api {
     }
 
     return $user;
+};
+
+sub autocomplete {
+    my $self    = shift;
+    my $frag    = shift;
+    my $cursor  = $self->find({username => /$frag/});
+    my @records = map { { id => $_->{id}, key => $_->{username} } }
+                  $cursor->all;
+    return wantarray ? @records : \@records;
 }
 
+override api_list => sub {
+    my $self    = shift;
+    my $href    = shift;
+    my $user    = shift;
+    my $groups  = shift;
+
+    my $match   = $self->build_match_ref($href->{request});
+
+    my $cursor  = $self->find($match);
+    my $total   = $cursor->count;
+
+    unless ( $self->env->is_admin($user,$groups) ) {
+        $cursor->fields({
+            id          => 1,
+            username    => 1,
+        });
+    }
+
+    my $limit = $self->build_limit($href);
+    if ( defined $limit ) {
+        $cursor->limit($limit);
+    }
+    else {
+        $cursor->limit(50);
+    }
+
+    if ( my $sort   = $self->build_sort($href)) {
+        $cursor->sort($sort);
+    }
+    else {
+        $cursor->sort({id => -1});
+    }
+
+    if ( my $offset = $self->build_offset($href) ) {
+        $cursor->skip($offset);
+    }
+
+    return ($cursor, $total);
+};
 
 1;

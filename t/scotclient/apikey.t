@@ -30,7 +30,7 @@ ok(defined($env), "Env is defined");
 
 my $client  = Scot::Util::ScotClient->new(
     log     => $env->log,
-        api_key     => $apikey,
+    api_key => $apikey,
     config  => {
         servername  => $env->servername,
         serverport  => $env->serverport,
