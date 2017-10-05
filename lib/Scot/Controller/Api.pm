@@ -1,31 +1,65 @@
 package Scot::Controller::Api;
 
-
-=head1 Name
-
-Scot::Controller::Api
-
-=head1 Description
-
-Perform the CRUD operations based on JSON input and provide JSON output
-
-=cut
-
+use Carp qw(longmess);
 use Data::Dumper;
-use Data::UUID;
-use Try::Tiny;
-use DateTime;
-use Mojo::JSON qw(decode_json encode_json);
 use Data::Dumper::HTML qw(dumper_html);
+use Data::UUID;
+use Mojo::JSON qw(decode_json encode_json);
+use Try::Tiny;
+use Net::IP;
 use strict;
 use warnings;
 use base 'Mojolicious::Controller';
 
-=head1 Routes
+=item B<create>
 
-=over 4
+This function is called for POSTs to the API.  Data is passed in via
+Mojolicious' handling of posted JSON and/or params. See 
+get_request_params for further info.
 
-=item I<CREATE> B<POST /scot/api/v2/:thing>
+It expects a JSON blob that matches the description of the model we are 
+attempting to create.  See Scot::Model::* for details.
+
+This function returns the following JSON to the http client
+    {
+        id      : the_integer_id_of_created_thing,
+        action  : "post",
+        thing   : model_name_of_created_thing,
+        status  : 'ok',
+    }
+
+This function emits the following messages on the SCOT activemq topic:
+
+    {
+        action : "created",
+        data   : {
+            who     : "user_name",
+            type    : "model_name_of_thing_created",
+            id      : integer_id_of_thing_created
+        }
+    }
+
+This function writes the following record to the history collection
+    {
+        who     => $user,
+        what    => "created via api",
+        when    => $self->env->now,
+        target  => { 
+            id      => $object->id,
+            type    => $colname,
+        }
+    }
+
+additionaly, if the object is targetable, the target object
+will receive a similar history record.
+
+This function creates the following record to the audit collection
+    {
+        who     => $self->session('user') // 'unknown',
+        when    => $env->now(),
+        what    => $what,
+        data    => $data,
+    }
 
 =cut
 
@@ -36,310 +70,229 @@ sub create {
     my $mongo   = $env->mongo;
     my $user    = $self->session('user');
 
-    $user = "unknown" unless ($user);
-
-    $log->trace("------------");
-    $log->trace("Handler is processing a POST (create) from $user");
-    $log->trace("------------");
-
-    my $req_href    = $self->get_request_params;
-    #   req_href = {
-    #       collection  => "collection name",
-    #       id          => $int_id,
-    #       subthing    => $if_it_exists,
-    #       user        => $username,
-    #       request     => {
-    #           params  => $href_of_params_from_web_request,
-    #           json    => $href_of_json_submitted
-    #       }
-    # }
-    
-
-    my $thing   = $req_href->{collection};
-    my $colname = ucfirst($thing);
-
-    unless ($colname) {
-        $log->error("No collection Name provided!");
-        $self->do_error(400, { error_msg => "missing collection" });
-        return;
-    }
-    
-    my $collection;
-
-    $log->debug("Getting Collection for $colname");
+    $log->debug("CREATE");
 
     try {
-        $collection  = $mongo->collection($colname);
+        my $req_href    = $self->get_request_params;
+        my $collection  = $self->get_collection_req($req_href);
+        my @objects     = $collection->api_create($req_href);
+        my @returnjson  = ();
+
+        foreach my $object (@objects) {
+            push @returnjson, $self->post_create_process($object);
+            my $data = {
+                who => $req_href->{user},
+                type=> $object->get_collection_name,
+                id  => $object->id,
+            };
+            if ( ref($object) eq "Scot::Model::Entry" ) {
+                $data->{target} = $object->target;
+            }
+            $self->env->mq->send("scot",{
+                action  => "created",
+                data    => $data,
+            });
+        }
+        if ( scalar(@returnjson) > 1 ) {
+            $self->do_render(\@returnjson);
+        }
+        else {
+            $self->do_render(pop @returnjson);
+        }
     }
     catch {
-        $self->do_error(400, {
-            error_msg   => "Invalid Collection: $colname"
-        });
-        return;
+        $log->error("In API create, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
+    };
+}
+
+sub post_create_process {
+    my $self    = shift;
+    my $object  = shift;
+    my $objtype = ref($object);
+    my $model   = lc((split(/::/,$objtype))[-1]);
+    my $mongo   = $self->env->mongo;
+    my $json        = {
+        id      => $object->id,
+        action  => "post",
+        thing   => $model,
+        status  => 'ok',
     };
 
-    $log->debug("collection is ".ref($collection));
-
-    unless ( defined $collection ) {
-        $self->do_error(400,{
-            error_msg => "Collection Error: $colname"
-        });
-        return;
-    }
-
-
-    my $object  = $collection->create_from_api($req_href);
-
-    unless ( defined $object ) {
-        $self->do_error(400, {
-            error_msg => "Failed to Create $colname"
-        });
-        return;
-    }
-
-    if ( ref($object) eq "ARRAY" ) {
-        # this fugly hack is the result of splitting alertgroups that are 
-        # too large.  in that case we return an array of alertgroups created
-        # ideally, we would be smart and be able to branch to return an array
-        # but then the client would need to be updated... so I just pop off
-        # the first alertgroup created and be happy...  I a have an idea
-        # that I will rue the day I made this decision.  I've been warned.
-        $object = pop @$object;
-    }
-
-    if ( ref($object) eq "HASH" ) {
-        # a specific error condition is in the object hashref
-        $self->do_error(400, $object);
-        return;
-    }
-
     if ( ref($object) eq "Scot::Model::Entry" ) {
-        # need to update entry_count in target
-        my $thref   = $object->target;
-        my $target  = $mongo->collection(ucfirst($thref->{type}))
-                            ->find_iid($thref->{id});
-        if ( $target->meta->does_role("Scot::Role::Entriable") ) {
-            $target->update_inc( entry_count => 1 );
-            if ( $target->meta->does_role("Scot::Role::Times") ) {
-                $target->update_set( updated => $env->now );
-            }
-        }
-        $env->mq->send("scot", {
-            action  => "updated",
-            data    => {
-                type    => $thref->{type},
-                id      => $thref->{id},
-                who     => $user,
-            }
-        });
+        $self->update_target($object, "create");
     }
-    if ( ref($object) eq "Scot::Model::Sigbody") {
-        $env->mq->send("scot", { 
-            action  => "updated",
-            data    => {
-                who  => $user,
-                type => "signature",
-                id   => $object->{signature_id},
-                what => "Signature Update",
-            }
-        });
+
+    if ( ref($object) eq "Scot::Model::Sigbody" ) {
+        $json->{revision} = $object->revision;
     }
 
     if ( $object->meta->does_role("Scot::Role::Tags") ) {
-        $self->apply_tags($req_href, $colname, $object->id);
+        $self->apply_tags($object);
     }
+
     if ( $object->meta->does_role("Scot::Role::Sources") ) {
-        $self->apply_sources($req_href, $colname, $object->id);
+        $self->apply_sources($object);
     }
 
-    # $env->amq->send_amq_notification("creation", $object, $user);
-    $log->debug("HEY USER IS $user");
-    $env->mq->send("scot", {
-        action  => "created",
-        data    => {
-            type    => $object->get_collection_name,
-            id      => $object->id,
-            who     => $user,
-        }
-    });
-
-    if ( ref($object) eq "Scot::Model::Sigbody") {
-        $self->do_render({
-            action      => 'post',
-            thing       => $colname,
-            id          => $object->id,
-            revision    => $object->revision,
-            status      => 'ok',
-        });
-    }
-    else {
-        $self->do_render({
-            action  => 'post',
-            thing   => $colname,
-            id      => $object->id,
-            status  => 'ok',
-        });
-    }
-
-    $log->debug("Checking if $thing object is Historable");
     if ( $object->meta->does_role("Scot::Role::Historable") ) {
-        $log->debug("Historable: let's write history!");
-        $mongo->collection('History')->add_history_entry({
-            who     => $user,
-            what    => "created via api",
-            when    => $env->now,
-            target  => { id => $object->id, type => $thing },
-        });
-        if ( ref($object) eq "Scot::Model::Entry" ) {
-            $mongo->collection('History')->add_history_entry({
-                who     => $user,
-                what    => "entry ".$object->id." added",
-                when    => $env->now,
-                target  => { id => $object->target->{id}, type => $object->target->{type} },
-            });
-        }
+        $self->add_create_history($object);
     }
 
-    $self->audit("create_thing", {
-        thing   => $self->get_object_collection($object),
-        id      => $object->id,
+    $mongo->collection('Audit')->create_audit_rec({
+        handler => $self, 
+        object  => $object,
     });
-    $self->put_stat("$colname created", 1);
+    $mongo->collection('Stat')->put_stat(
+        $object->get_collection_name." created", 1
+    );
+
+    return $json;
 }
 
-sub put_stat {
+sub add_create_history {
     my $self    = shift;
-    my $metric  = shift;
-    my $value   = shift;
-    my $env     = $self->env;
-    my $nowdt   = DateTime->from_epoch( epoch => $env->now );
-    my $col     = $env->mongo->collection('Stat');
-    $col->increment($nowdt, $metric, $value);
-}
+    my $object  = shift;
+    my $colname = $object->get_collection_name;
+    my $collection  = $self->env->mongo->collection('History');
+    my $user    = $self->session('user');
 
-sub apply_tags {
-    my $self        = shift;
-    my $req         = shift;
-    my $col         = shift;
-    my $id          = shift;
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $tag_aref    = $self->get_value_from_request($req, "tag");
-    if ( $tag_aref ) {
-        foreach my $tag (@$tag_aref) {
-            $mongo->collection('Tag')->add_tag_to($col, $id, $tag);
+    $collection->add_history_entry({
+        who     => $user,
+        what    => "created via api",
+        when    => $self->env->now,
+        target  => { 
+            id      => $object->id,
+            type    => $colname,
         }
-    }
-    $self->audit("tag_thing", {
-        thing   => $col,
-        id      => $id,
     });
-}
-
-sub apply_sources {
-    my $self        = shift;
-    my $req         = shift;
-    my $col         = shift;
-    my $id          = shift;
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $source      = $self->get_value_from_request($req, "source");
-    if ( $source ) {
-        $mongo->collection('Source')->add_source_to($col, $id, $source);
+    # entries, mostly.  add history to target as well
+    if ( $object->meta->does_role('Scot::Role::Target') ) {
+        $collection->add_history_entry({
+            who     => $user,
+            what    => "$colname ". $object->id." added",
+            when    => $self->env->now,
+            target  => { 
+                id      => $object->target->{id},
+                type    => $object->target->{type},
+            }
+        });
     }
 }
 
-=item B<GET /scot/api/v2/:thing>
+=item B<list>
+
+This function is called for GETs to the API with out explicit ID provided.
+
+It can have a JSON blob that specifies the "filter" to apply to the list
+as well as sorting, limit, and offset parameters.  The user's group membership
+also determines if anything is display, e.g.  unless the user has permission
+to read an object it will not appear in the list (change from 3.5.1)
+
+This function returns the following JSON to the http client
+    {
+        records : [
+            { JSON object },
+            ...
+        ],
+        queryRecordCount : number_of_rec_in_records_array,
+        totalRecordCount : number_of_matching_in_entire_db,
+
+    }
+
+This function does not emit any messages on the SCOT topic in activemq
+
+This function does not write any records to the history collection
+
+This function does not create any record to the audit collection
+
 
 =cut
+
+sub get_groups {
+    my $self    = shift;
+    my $aref    = $self->session('groups');
+    my @groups  = map { lc($_) } @{$aref};
+    return wantarray ? @groups : \@groups;
+}
 
 sub list {
     my $self    = shift;
     my $env     = $self->env;
-    my $mongo   = $env->mongo;
     my $log     = $env->log;
     my $user    = $self->session('user');
+    my $groups  = $self->get_groups;
 
-    $log->trace("Handler is processing a GET MANY request from $user");
-
-    my $req_href    = $self->get_request_params;
-    #   req_href = {
-    # collection  => "collection name",
-    # id          => $int_id,
-    # subthing    => $if_it_exists,
-    # user        => $username,
-    # request     => {
-    #     params  => $href_of_params_from_web_request,
-    #     json    => $href_of_json_submitted
-    # }
-    # where params or json is
-    #  {
-    #    col_name_1: condition,
-    #    col_name_2: condition,
-    #    sort  : { mongo sorting },
-    #    columns: [ col1, ... ], # display only these columns
-    #    limit: x,
-    #    offset: y
-    #  }
-
-    # where condition is one of the following:
-    # 1. simple string get's put into a /string/ regex search
-    # 2. (tag,source)comma seperated strings, do AND (string may be prepended with ! (not)
-    # 3. (tag,source)| seperated strings, do OR (string may be prepended with ! for not
-    # 4. if field is datetime, a string of form begin=epoch,end=epoch
-    # 5. if field is a numeric, a string of form
-    #    >=x,<=y  (greater than or equal to x AND less than or equal to y)
-    #    <x|>y    (less than x or greater than y)
-    #   =x|=y|=z  (equal to x, y, OR z)
-
-    $log->debug("Request = ", {filter=>\&Dumper, value=>$req_href});
-
-    my $col_name    = $req_href->{collection};
-
-    my $tasksearch  = 0;
-    if ( $col_name eq "task" ) {
-        $tasksearch = 1;
-        $col_name   = "entry";
-    }
-
-
-    my $collection;
-    my $match_ref;
+    $log->debug("LIST");
 
     try {
-        $collection  = $mongo->collection(ucfirst($col_name));
+        my $req_href        = $self->get_request_params;
+        my $collection      = $self->get_collection_req($req_href);
+        my ($cursor,$count) = $collection->api_list($req_href, $user, $groups);
+        my @records         = $self->post_list_process( $cursor, $req_href);
+        my $return_href = {
+            records             => \@records,
+            queryRecordCount    => scalar(@records),
+            totalRecordCount    => $count,
+        };
+        $self->do_render($return_href);
     }
     catch {
-        $log->error("Failed to get collection ". ucfirst($col_name).".");
-        $log->error("collection = ",{filter=>\&Dumper,value=>$collection});
-        $self->do_error(400, { error_msg => "missing or invalid collection"});
-        return;
+        $log->error("in API list, Error: $_");
+        $self->render_error(400, { error_msg => $_ } );
     };
+}
 
-    unless (defined $collection) {
-        $self->do_error(400, {
-            error_msg => "No collection matching $col_name" });
-        return;
+sub post_list_process {
+    my $self        = shift;
+    my $cursor      = shift;
+    my $req_href    = shift;
+    my $log         = $self->env->log;
+    my @records     = ();
+    my $thing       = $req_href->{collection};
+    my $entrycol    = $self->env->mongo->collection('Entry');
+
+    if ( $thing      eq "event" ) {
+        while ( my $obj = $cursor->next ) {
+            my $href    = $obj->as_hash;
+            $href->{has_tasks} = $entrycol->tasks_not_completed_count($obj);
+            push @records, $href;
+        }
+    }
+    elsif ( $thing      eq "alertgroup" ) {
+        while ( my $obj = $cursor->next ) {
+            my $agid = $obj->id;
+            my $href = $obj->as_hash;
+            $href->{has_tasks} = 0;
+            my $acur = $self->env->mongo->collection('Alert')->find({alertgroup => $agid});
+            ALERT:
+            while ( my $aobj = $acur->next ) {
+                my $tc = $entrycol->tasks_not_completed_count($aobj);
+                if ( $tc > 0 ) {
+                    $href->{has_tasks} = $tc;
+                    last ALERT;
+                }
+            }
+            push @records, $href;
+        }
+    }
+    else {
+        @records     = $cursor->all;
     }
 
-    my $current = $req_href->{request}->{params}->{current};
+    $log->debug("post_list_processing");
 
-    if ( $col_name eq "handler"  and defined $current ) {
+    my $collection  = $self->get_collection_req($req_href);
 
-        my $handler_cursor  = $collection->get_handler($current);
-
-        my @handler_records;
-        while ( my $handler = $handler_cursor->next ) {
-            my $hhref = $handler->as_hash;
-            push @handler_records, $hhref;
-        }
-
-        if ( scalar(@handler_records) < 1 ) {
-            push @handler_records, { username => 'unassigned' };
+    # special case of the handler 
+    if ( $collection eq "handler" ) {
+        if (scalar(@records) < 1 ) {
+            push @records, { username => 'unassigned' };
         }
 
         $self->do_render({
-            records             => \@handler_records,
+            records             => \@records,
             queryRecordCount    => 1,
             totalRecordCount    => 1,
         });
@@ -347,1855 +300,1140 @@ sub list {
         return;
     }
 
-    #$match_ref   = $req_href->{request}->{params}->{match} // 
-    #               $req_href->{request}->{json}->{match};
-
-    $match_ref  = $self->build_match_ref($req_href->{request});    
-
-    if ( $col_name eq "apikey" and ! $self->user_is_admin) {
-        $match_ref->{username} = $user;
+    # remove any fields that are excluded
+    foreach my $href (@records) {
+        $self->filter_unrequested_columns($collection, $href, $req_href);
     }
-
-    $log->debug("match_ref is ",{filter=>\&Dumper, value=>$match_ref});
-
-    if ( $tasksearch == 1 ) {
-        $match_ref->{'$or'} = [
-            {'task.status' => {'$exists' => 1} },
-            {'metadata.status' => {'$exists' => 1 } }
-        ];
-    }
-
-    unless ( %{$match_ref} ) {
-        $log->debug("Empty match_ref! Easy, peasey");
-        $match_ref  = {};
-    }
-    else {
-        $log->debug("Looking for $col_name matching ",
-                    {filter=>\&Dumper, value=>$match_ref});
-    }
-
-    my $cursor      = $collection->find($match_ref);
-    my $total       = $cursor->count;
-
-    $log->trace("got $total matches");
-
-    unless (defined $cursor) {
-        $self->nothing_matching_error($match_ref);
-        return;
-    }
-    
-        
-    $log->debug("starting sort stuff");
-    if ( my $sort_opts = $self->build_sort_opts($req_href) ) {
-        $log->debug("got sort opts of: ",{filter=>\&Dumper, value=>$sort_opts});
-        $cursor->sort($sort_opts);
-        # $cursor->sort({name=>1});
-    }
-    else {
-        $cursor->sort({id => -1});
-    }
-
-    my $limit  = $self->build_limit($req_href);
-    if ( defined($limit) ) {
-        $cursor->limit($limit);
-    }
-    else {
-        $cursor->limit(50);
-    }
-
-    if ( my $offset = $self->build_offset($req_href) ) {
-        $cursor->skip($offset);
-    }
-
-    my @things = $cursor->all;
-
-    $log->debug("req_href is ",{filter=>\&Dumper, value => $req_href});
-    my $selected_fields = $self->build_fields($req_href);
-    if ( $selected_fields ) {
-        foreach my $thing (@things) {
-            foreach my $key (keys %$thing) {
-                unless ( $selected_fields->{$key} ) {
-                    delete $thing->{$key};
-                }
-            }
-        }
-    }
-
-    $log->debug("submitting for render");
-
-    $self->do_render({
-        records             => \@things,
-        queryRecordCount    => scalar(@things),
-        totalRecordCount    => $total
-    });
-
-    # hack to kil error when '$' appears in match ref
-    delete $req_href->{request}; 
-
-    $self->audit("list", $req_href);
+    return wantarray ? @records : \@records;
 }
 
+=item B<get_one>
 
-# this was a workaround for a bug in Meerkat
-#sub mypack {
-#    my $self    = shift;
-#    my $thing   = shift;
-#    return $thing->pack if ( ref($thing) =~ /Scot::Model/ );
-#    return $thing;
-#}
+This function is called for GETs to the API with an id.
 
-=item B<GET /scot/api/v2/:thing/:id>
+Special case: the id of "maxid" will return the maximum integer id for the
+collection.
+
+Assuming the user has read permission for the object they will get:
+    {
+        object_JSON_representation
+    }
+
+This function does not emit any messages on the SCOT topic in activemq
+
+This function does not write any records to the history collection but
+it will add a view record to the object itself.
+
+This function creates the following record to the audit collection
+    {
+        who     => $self->session('user') // 'unknown',
+        when    => $env->now(),
+        what    => $what,
+        data    => $request_href,
+    }
+
+This function creates a stat record for view count.
 
 =cut
+
 
 sub get_one {
     my $self    = shift;
     my $env     = $self->env;
-    my $mongo   = $env->mongo;
     my $log     = $env->log;
-    my $user    = $self->session('user');
 
-    $log->trace("Handler is processing a GET ONE request");
+    $log->debug("GET ONE");
 
-    my $req_href    = $self->get_request_params;
-    my $id          = $req_href->{id};
-    my $col_name    = $req_href->{collection};
+    try {
+        my $req_href        = $self->get_request_params;
+        my $collection      = $self->get_collection_req($req_href);
+        my $id              = $req_href->{id};
 
-    if ( $id eq "maxid" ) {
-        my $maxid = $self->get_max_id($col_name);
-        $self->do_render({
-            max_id => $maxid
-        });
-        return;
-    }
-
-    $log->debug("Get One ID = $id");
-
-    # $id += 0;
-
-    if ( $col_name ne "entity") {
-        unless ( $self->id_is_valid($id) ) {
-            $self->do_error(400, {
-                error_msg   => "Invalid integer id: $id"
+        # special case
+        if ( $id eq "maxid" ) {
+            $self->do_render({ 
+                max_id      => $collection->get_max_id,
+                collection  => $collection->get_collection_name,
             });
             return;
         }
-    }
 
-    my $collection;
+        my $object  = $collection->api_find($req_href);
+        if (! defined $object ) {
+            die "Object not found";
+        }
+        my $objhref = $self->post_get_one_process($object, $req_href);
 
-    try {
-        $collection  = $mongo->collection(ucfirst($col_name));
+        # special case for file downloads or pushes
+        if ( ref($object) eq "Scot::Model::File" ) {
+            my $download    = $self->param('download');
+            if ( defined $download ) {
+                $self->download_file($object);
+                return;
+            }
+            # future push actions through the server instead of in the client
+            #my $push        = $self->param('push');
+            #if ( defined $push ) {
+            #    $self->push_file($object, $req_href);
+            #    return;
+            #}
+        }
+        $self->do_render($objhref);
     }
     catch {
-        $log->error("Failed to get Collection $col_name");
-        $self->do_error(400, {error_msg => "collection error"});
-        return;
+        $log->error("in API get_one, Error: $_");
+        my $code    = 400;
+        if ( $_ =~ /Object not found/ ) {
+            $code = 404;
+        }
+        $self->render_error($code, { error_msg => $_ });
     };
+}
 
-    unless ( defined $collection ) {
-        $self->do_error(400, { 
-            error_msg => "No collection matching $col_name"
-        });
-        return;
-    }
+sub post_get_one_process {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
 
-    my $object;
+    # handle special get_one cases and convert object into hash
 
-    if ( $col_name eq "entity" ) {
-        $log->debug("Entity Request, check for non numeric id of $id");
-        if ( $id =~ /^[0-9]+$/ ) {
-            $id += 0;
-            $log->debug("id is numeric");
-            $object  = $collection->find_iid($id);
-        }
-        else {
-            $log->debug("id is not numerical");
-            # typically "byname"
-            my $name = $self->param('name');
-            $log->debug("looking for value = $name");
-            $object = $collection->find_one({value => $name});
-        }
-    }
-    else {
-        $id += 0;
-        try { 
-            $object = $collection->find_iid($id);
-        }
-        catch {
-            $log->error("Error getting one: $_");
-        };
-    }
-
-    unless ( defined $object ) {
-        $log->error("No matching Object for $col_name : $id");
-        $self->do_error(404, {
-            error_msg   => "No matching object $col_name: $id"
-        });
-        return;
-    }
-
-    if ( $object->meta->does_role("Scot::Role::Permittable") ) {
-        my $users_groups    = $self->session('groups');
-        unless ( $object->is_readable($users_groups) ) {
+    if ( $object->meta->does_role('Scot::Role::Permittable') ) {
+        unless ( $object->is_readable($self->get_groups) ) {
             $self->read_not_permitted_error;
-            return;
+            die "Read not permitted";
         }
     }
 
-    if ( $object->meta->does_role("Scot::Role::Views") ) {
-        $log->trace("_____ Adding to VIEWS _____");
-        my $from = $self->tx->remote_address;
+    if ( $object->meta->does_role('Scot::Role::Views') ) {
+        my $from_ip = $self->tx->remote_address;
+        my $user    = $self->session('user');
         if ( $user ne "scot-alerts" ) {
-            $object->add_view($user, $from, $env->now);
-        }
-        else {
-            $log->debug("view by entity account $user ignored");
+            $object->add_view($user, $from_ip, $self->env->now);
         }
     }
 
     if ( ref($object) eq "Scot::Model::File" ) {
+        # special handling for file downloads
         my $download    = $self->param('download');
-        if ( $download ) {
-            $log->debug("File download Requested!");
-            $self->res->content->headers->header(
-                'Content-Type', 
-                'application/x-download; name="'.$object->filename.'"');
-            $self->res->content->headers->header(
-                'Content-Disposition', 
-                'attachment; filename="'.$object->filename.'"');
-            my $static = Mojolicious::Static->new( 
-                paths => [ $object->directory ]
-            );
-            $static->serve($self, $object->filename);
-            $self->rendered;
-            return;
+        if (defined $download) {
+            return $self->download_file($object);
         }
     }
 
     if ( ref($object) eq "Scot::Model::Entity" ) {
-        $log->debug("Enity asked for, checking for enrichments");
-        $self->check_entity_enrichments($object);
+        # do entity enrichment refresh
+        $self->refresh_entity_enrichments($object);
     }
 
+    my $href    = $object->as_hash;
 
-
-    my $data_href   = {};
-    if ( $req_href->{columns} and 
-         $object->meta->does_role("Scot::Role::Hashable")) {
-        $log->debug("filtering columns...Yeah!");
-        $data_href  = $object->as_hash($req_href->{columns});
-    }
-    else {
-        $data_href  = $object->as_hash;
-    }
-
+    my $alertcol    = $self->env->mongo->collection('Alertgroup');
     if ( ref($object) eq "Scot::Model::Alert" ) {
-        $log->debug("getting alert subject from alertgroup");
-        my $c   = $mongo->collection('Alertgroup');
-        my $o   = $c->find_one({id => $object->alertgroup});
-        if ( $o ) {
-            $data_href->{subject} = $o->subject;
-        }
+        # add in subject from alertgroup
+        $href->{subject} = $alertcol->get_subject($object->alertgroup);
+        # count alerts
     }
 
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
-        $log->debug("Alertgroup asked for, bundling Alerts");
-        my $col = $mongo->collection('Alertgroup');
-        $data_href = $col->get_bundled_alertgroup($object->id);
+        $href->{alerts} = $alertcol->get_alerts_in_alertgroup($object);
+        $href->{alert_count} = scalar(@{$href->{alerts}});
         if ( $object->firstview == -1 ) {
-            $log->debug("First Time this Alertgroup has been viewed");
-            $object->update_set(firstview => $env->now);
+            $object->update_set(firstview => $self->env->now);
         }
     }
 
     if ( ref($object) eq "Scot::Model::Signature" ) {
-        $log->debug("Signature asked for, bundling sigbodies");
-        my $col = $mongo->collection('Signature');
-        $data_href = $col->get_bundled_sigbody($object);
+        my $signaturecol = $self->env->mongo->collection('Signature');
+        $href->{version} = $signaturecol->get_sigbodies($object);
     }
 
-    my $selected_fields = $self->build_fields($req_href);
-    if ( $selected_fields ) {
-        foreach my $key (keys %$data_href) {
-            unless ( $selected_fields->{$key} ) {
-                delete $data_href->{$key};
+    $self->filter_unrequested_columns($alertcol, $href, $req);
+    return $href;
+}
+
+sub filter_unrequested_columns {
+    my $self    = shift;
+    my $col     = shift;
+    my $href    = shift;
+    my $req     = shift;
+
+    # since operating on reference href, this operates as a side effect.
+
+    # eliminate unrequested fields.  We could move this up and check
+    # columns for the enriched columns above as an optimization but
+    # this really isn't slow in practice
+    # limit_fields is in Collection.pm so we can use any collection ref
+    my $cutfields   = $col->limit_fields($href, $req);
+    if ( defined $cutfields ) {
+        foreach my $key (keys %$href) {
+            if ( ! defined $cutfields->{$key} ) {
+                delete $href->{$key};
             }
         }
     }
-
-    $self->do_render($data_href);
-
-    $self->audit("get_one", $req_href);
-    $self->put_stat($col_name. " viewed", 1);
-#    $env->mq->send("scot", {
-#        action  => "viewed",
-#        data    => {
-#            who     => $user,
-#            type    => $col_name,
-#            id      => $id,
-#        }
-#    });
 }
 
-sub check_entity_enrichments {
-    my $self    = shift;
-    my $entity  = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $timer   = $env->get_timer("checking entity enrichments");
+sub refresh_entity_enrichments {
+    my $self            = shift;
+    my $entity          = shift;
+    my ($updated, $data) = $self->env->enrichments->enrich($entity);
 
-    $log->debug("checking entity enrichments");
-
-    my $enricher         = $env->enrichments;
-    my ($updates, $data) = $enricher->enrich($entity);
-
-    $log->debug("ENRICHMENT of ".$entity->value." is ".{filter=>\&Dumper, value=>$data});
-
-    if ( $updates > 0 ) {
-        $log->debug("updating cache of entity enrichments");
-        $entity->update_set( data => $data );
-        $log->debug("updated cache of entity enrichments");
+    if ( $updated > 0 ) {
+        $entity->update_set(data => $data);
     }
     else {
-        $log->debug("No updates performed...");
+        $self->env->log->debug('No entity updates');
     }
-    &$timer;
 }
 
-
-sub tablify {
+sub download_file {
     my $self    = shift;
-    my $title   = shift;
-    my $href    = shift;
-    my $html    = qq{<div style="font-family: monospace">\n};
-    $html .= dumper_html($href);
-    $html .= "</div>\n";
-    return $html;
+    my $object  = shift;
+    $self->res->content->headers->header(
+        'Content-Type','application/x-download; name="'.$object->filename.'"');
+    $self->res->content->headers->header(
+        'Content-Disposition', 'attachment; filename="'.$object->filename.'"');
+    my $static = Mojolicious::Static->new(paths => [ $object->directory ]);
+    $static->serve($self, $object->filename);
+    $self->rendered;
+    return;
 }
 
-=item B<GET /scot/api/v2/:thing/:id/:subthing>
+# not used since pushes to sarlacc can have an apikey in client from entry_actions in config
+# keeping here for future use, potentially.
+sub push_file {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my $json    = $req->{request}->{json};
+    my $send_name   = $json->{send_to_name};
+    my $send_url    = $json->{send_to_url};
+    my $apikey      = $$self->env->apikey->{$send_name};
+    $send_url .= "&".$apikey;
 
+    my $ua = Mojo::UserAgent->new();
+    my $tx = $ua->post($send_url);
+    my $response = $tx->success;
+
+    if ( defined $response ) {
+        return $response->json;
+    }
+    die "Failed File Push to $send_url, Error: ".$tx->error->{code}." ".$tx->error->{message};
+}
+
+=item B<get_subthing>
+
+This function is called for GETs to the API for objects related to 
+a given :thing :id, e.g.  /scot/api/v2/alergroup/123/alert will return
+an array of alerts that are part of alertgroup 123.
+
+It can have a JSON blob that specifies the "filter" to apply to the list
+as well as sorting, limit, and offset parameters.  The user's group membership
+also determines if anything is display, e.g.  unless the user has permission
+to read an object it will not appear in the list (change from 3.5.1)
+
+This function returns the following JSON to the http client
+    {
+        records : [
+            { JSON object },
+            ...
+        ],
+        queryRecordCount : number_of_rec_in_records_array,
+        totalRecordCount : number_of_matching_in_entire_db,
+
+    }
+
+This function does not emit any messages on the SCOT topic in activemq
+
+This function does not write any records to the history collection
+
+This function does not create any record to the audit collection
 
 =cut
 
 sub get_subthing {
     my $self    = shift;
     my $env     = $self->env;
-    my $mongo   = $env->mongo;
     my $log     = $env->log;
+    my $mongo   = $env->mongo;
+
+    $log->debug("GET SUBTHING");
+
+    try {
+        my $req_href        = $self->get_request_params;
+        my $thing           = $req_href->{collection};
+        my $subcollection   = $req_href->{subthing};
+        my $id              = $req_href->{id};
 
 
-    my $req_href    = $self->get_request_params;
-    my $id          = $req_href->{id};
-    my $thing       = $req_href->{collection};
-    my $subthing    = $req_href->{subthing};
-    my $collection  = $mongo->collection(ucfirst($thing));
-    my $user        = $self->session('user');
+        my $collection  = $mongo->collection(ucfirst($thing));
+        my $cursor      = $collection->api_subthing($req_href);
+        my $records     = $self->post_subthing_process(
+            $collection, $req_href, $cursor
+        );
 
-    $log->debug("-----");
-    $log->debug("----- GET /$thing/$id/$subthing");
-    $log->debug("-----");
-
-    my $cursor      = $collection->get_subthing($thing, $id, $subthing);
-
-    unless ( defined $cursor ) {
-        $log->error("No subthing data");
-        $self->do_error(404, {
-            error_msg   => "No $subthing(s) for object $thing: $id"
-        });
-        return;
-    }
-
-    # allow client to request sorting of subthing
-    if ( my $sort_opts = $self->build_sort_opts($req_href) ) {
-        $log->debug("got sort opts of: ",{filter=>\&Dumper, value=>$sort_opts});
-        $cursor->sort($sort_opts);
-    }
-
-    $log->debug("Subthing $subthing cursor has ".$cursor->count." items");
-
-    my @things;
-    if ( $subthing eq "entry" ) {
-        $log->trace("rendering entry");
-        @things = $self->thread_entries($cursor);
-        $self->do_render({
-            records => \@things,
-            queryRecordCount => scalar(@things),
-            totalRecordCount => scalar(@things),
-        });
-    }
-    elsif ($subthing eq "entity")  {
-        $log->trace("rendering entity");
-        # need to transform from an array of hashes to a a hash
-        # for efficiency in UI code
-
-        my %things  = ();
-        my $count   = $cursor->count();
-        my $entity_xform_timer = $env->get_timer("entity xform timer");
-        my $gec_total   = 0;
-        my $enc_total   = 0;
-
-        # need to get groups of enclosing thing and only show entities
-        # for this thing if the user has rights to view thing
-        my $tobj            = $collection->find_iid($id);
-        my $users_groups    = $self->session('groups');
-
-        if ( $tobj->meta->does_role('Scot::Role::Permittable') ) {
-            unless ( $tobj->is_permitted("read", $users_groups ) ) {
-                $log->debug("User requested entities subthing, ".
-                            "but does not have read permission to ".
-                            "$collection $id");
-                $self->do_error(403, { error_msg => "insufficient permissions" });
-                $self->audit("failed get_subthing", $req_href);
-                return;
-            }
+        my $count = 0;
+        if ( ref ($records) eq "HASH" ) {
+            $count  = scalar(keys %$records);
+        }
+        if ( ref ($records) eq "ARRAY" ) {
+            $count  = scalar(@$records);
         }
 
-        while ( my $entity = $cursor->next ) {
-
-            $log->debug("Entity : ".$entity->value);
-            $self->check_entity_enrichments($entity);
-            my $gec_timer   = $env->get_timer("GEC");
-            my $count = $self->get_entity_count($entity);
-            $gec_total += &$gec_timer;
-            my $entrytimer  = $env->get_timer("EnC");
-            my $entrycount  = $self->get_entry_count($entity);
-            $enc_total  += &$entrytimer;
-
-            my $entrycursor = $mongo->collection('Entry')->find({
-                'target.id' => $entity->id,
-                'target.type'   => "entity",
-            });
-            my @entries = $self->thread_entries($entrycursor);
-            $things{$entity->value} = {
-                id      => $entity->id,
-                count   => $count,
-                entry   => $self->get_entry_count($entity),
-                type    => $entity->type,
-                classes => $entity->classes,
-                data    => $entity->data,
-                status  => $entity->status,
-                entries => \@entries,
-            };
-        }
-
-        $log->debug("Getting Entity Count total: $gec_total");
-        $log->debug("Getting Entry Count total: $enc_total");
-
-        &$entity_xform_timer;
-
-        $log->debug("rendering subthing");
         $self->do_render({
-            records             => \%things,
-            queryRecordCount    => scalar(keys %things),
-            totalRecordCount    => scalar(keys %things),
+            records => $records,
+            queryRecordCount    => $count,
+            totalRecordCount    => $count,
         });
     }
-    else {
-        @things = $cursor->all;
-        my $selected_fields = $self->build_fields($req_href);
-        if ( $selected_fields ) {
-            foreach my $thing (@things) {
-                foreach my $key (keys %$thing) {
-                    unless ( $selected_fields->{$key} ) {
-                        delete $thing->{$key};
-                    }
-                }
-            }
-        }
-        $log->trace("rendering default",{filter=>\&Dumper, value=>\@things});
-        $self->do_render({
-            records => \@things,
-            queryRecordCount => scalar(@things),
-            totalRecordCount => scalar(@things),
-        });
-    }
-
-    # $log->trace("Records are ",{ filter => \&Dumper, value =>\@things});
-
-
-    $self->audit("get_subthing", $req_href);
-#    $env->mq->send("scot", {
-#        action  => "viewed",
-#        data    => {
-#            who     => $user,
-#            type    => $thing,
-#            id      => $id,
-#            subtype => $subthing,
-#        }
-#    });
+    catch {
+        $log->error("in API get_subthing, Error: $_");
+        $self->render_error(400, { error_msg => $_ });
+    };
 }
 
-=item B<PUT /scot/api/v2/:thing/:id>
+sub post_subthing_process {
+    my $self        = shift;
+    my $collection  = shift;
+    my $req_href    = shift;
+    my $cursor      = shift;
+    my $subthing    = $req_href->{subthing};
+    my $log         = $self->env->log;
 
+    if ( $subthing eq "entry" ) {
+        my @records    = $self->thread_entries($cursor);
+        return \@records;
+    }
+
+    if ( $subthing eq "entity" ) {
+        my %entities    = $self->process_entities($cursor);
+        return \%entities;
+    }
+
+    my @records = $cursor->all;
+
+    # $log->debug("records prior to filtering: ",{filter=>\&Dumper, value=>\@records});
+
+    foreach my $href (@records) {
+        $collection->filter_fields($req_href, $href);
+    }
+    return \@records;
+}
+
+
+
+=item B<update>
+
+This function is called for POSTs to the API with an id.
+
+Assuming the user has modify permission for the object they will get:
+    {
+        id : int_id_of_object_updated,
+        status : "ok"
+    }
+
+This function emits messages on the SCOT topic in activemq
+    {
+        action : "updated",
+        data   : {
+            who : username,
+            type : collection_name,
+            id : id updated,
+            what : [ things, that, were, done ]
+        }
+    }
+and messages for the target objects if updated object is targetable.
+
+This function does write records to the history collection 
+
+This function creates the following record to the audit collection
+    {
+        who     => $self->session('user') // 'unknown',
+        when    => $env->now(),
+        what    => $what,
+        data    => $request_href,
+    }
+
+This function creates a stat record for "$collection updated"
 
 =cut
-
-sub move_entry {
-    my $self    = shift;
-    my $req     = shift;
-    my $obj     = shift;
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
-    my $log     = $env->log;
-
-    $log->debug("moving entry");
-
-    my $current = $obj->target;
-    my $new     = $req->{target};
-
-    my $current_target  = $mongo->collection(ucfirst($current->{type}))
-                          ->find_iid($current->{id});
-    my $new_target      = $mongo->collection(ucfirst($new->{type}))
-                          ->find_iid($new->{id});
-
-    $current_target->update({
-        '$set' => { updated     => $env->now },
-        '$inc' => { entry_count => -1 },
-    });
-    $new_target->update({
-        '$set' => { updated     => $env->now },
-        '$inc' => { entry_count => 1 },
-    });
-}
 
 sub update {
     my $self    = shift;
     my $env     = $self->env;
-    my $mongo   = $env->mongo;
     my $log     = $env->log;
-    my $user    = $self->session('user');
-    my @what    = ();
 
-    $log->debug("User $user trying to update something");
+    $log->debug("UPDATE");
 
-    my $req_href    = $self->get_request_params;
-    my $id          = $req_href->{id};
-    my $col_name    = $req_href->{collection};
+    try {
+        my $req_href    = $self->get_request_params;
 
-    $log->debug("looks like $col_name $id is the target");
+        
+        my $collection  = $self->get_collection_req($req_href);
+        if ($self->id_is_invalid($req_href)) { 
+            die "Invalid id"; 
+        }
+        my $object  = $collection->api_find($req_href);
+        if ( ! $self->update_permitted($object, $req_href)) { 
+            die "Insufficent Privilege"; 
+        }
+        # special case of promotion
+        if ( defined $req_href->{request}->{json}->{promote} ) {
+            return $self->promote($object, $req_href);
+        }
+        $self->pre_update_process($object, $req_href);
+        my @updates = $collection->api_update($object, $req_href);
+        $self->post_update_process($object, $req_href, \@updates);
+        $self->do_render({id => $object->id, status => 'ok'});
+    }
+    catch {
+        $log->error("in API update, Error: $_");
+        my $code = 400;
+        if ( $_ =~ /Insufficent Privilege/ ) {
+            $code = 403;
+        }
+        $self->render_error($code, { error_msg => $_ });
+    };
+}
 
-    # update requires a valid id
-    return undef unless ( $self->invalid_id_check($req_href) );
 
-    $log->debug("id is valid");
+sub update_permitted {
+    my $self    = shift;  
+    my $object  = shift;    
+    my $req     = shift;
+    my $env     = $self->env;
 
-    my $collection  = $self->get_update_collection($col_name);
-    return undef unless ( $collection );
+    ## 
+    ## Permission has the groups that are allowd to modify
+    ## 
+    if ( $object->meta->does_role('Scot::Role::Permission') ) {
+        my $group_aref  = $self->get_groups;
+        return $object->is_modifiable($group_aref);
+    }
 
-    $log->debug("collection is ok");
+    ##
+    ## Admin's can modify all
+    ## but a user can only modify their password and Full name
+    ## 
+    if ( ref($object) eq "Scot::Model::User" ) {
+        if ( $env->is_admin ) {
+            return 1;
+        }
+        if ( $req->{request}->{username} eq $self->session('user') ) {
+            delete $req->{request}->{active};
+            delete $req->{request}->{groups};
+            delete $req->{request}->{username};
+            return 1;
+        }
+        return undef;
+    }
+    ##
+    ## Admin's can modify all
+    ## but a user can not do it 
+    ## 
+    if ( ref($object) eq "Scot::Model::Group" ) {
+        if ( $env->is_admin ) {
+            return 1;
+        }
+        return undef;
+    }
+    return 1;
+}
 
-    my $object      = $self->get_update_object($collection, $id);
-    return undef unless ( $object );
 
-    $log->debug("got the target object");
+sub pre_update_process {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my $mongo   = $self->env->mongo;
+    my $log     = $self->env->log;
 
-    return undef unless ( $self->check_update_permission($req_href, $object));
+    $log->debug("PRE UPDATE");
 
-    $log->debug("user has update privs");
+    # my $usersgroups = $self->session('groups');
+    my $usersgroups  = $self->get_groups;
 
-    my $usersgroups = $self->session('groups');
     if ( ref($object) eq "Scot::Model::Apikey" ) {
-	my $updated_groups = [];
-	foreach my $g ($req_href->{groups}) {
+        my $updated_groups = [];
+        foreach my $g ($req->{groups}) {
             if ( grep {/$g/} @$usersgroups ) {
                 push @$updated_groups, $g;
             }
         }
-        $req_href->{groups} = $updated_groups;
+        $req->{groups} = $updated_groups;
     }
 
     if ( ref($object) eq "Scot::Model::Alertgroup" ) {
-        # this updates any alerts in request, doing it this way instead
-        # of PUT /scot/api/v2/alert/123...  because that action causes
-        # the alertgroup to be updated, wich generates an AMQ message
-        # that causes a reload and reparse of all alerts in alertgroup
-        # on big alerts or when a large number of alerts are updated
-        # this can cause a storm of refreshes.  
-        my $status = 
-            $collection->update_alerts_in_alertgroup($object,$req_href);
-        # side effect in update_alet_in_group is the deletion of the keys
-        # req_href->{request}->{data} and req_href->{request}->{alerts}
-
-        if ( scalar(@{$status->{updated}}) > 0 ) {
-            push @what, "alerts_updated";
-            foreach my $aid (@{$status->{updated}}) {
-                $env->mq->send("scot", {
-                    action  => "updated",
-                    data    => { who => $user, type => "alert", id => $aid },
-                });
-            }
-        }
-
-        # if we refactor some day, this may not be necessary
-        delete $req_href->{request}->{json}->{status}; # this should be set by the refresh of alertgroup
-
-#        OLD WAY
-#        $log->debug("ALERTGROUP ALERTGROUP ALERTGROUP !!!!!!!!!!!!!!!!!!!");
-#        if ( $req_href->{request}->{json}->{parsed} ) {
-#            push @what,"reparsed";
-#        }
-#        if ( $req_href->{request}->{json}->{status} ) {
-#            push @what,"status";
-#        }
-#        my @updated_alert_ids = $self->update_alertgroup($req_href, $object);
-#        foreach my $aid (@updated_alert_ids) {
-#            $log->debug("Alert $aid was updated");
-#            $env->mq->send("scot", {
-#                action  => "updated",
-#                data    => {
-#                    who     => $user,
-#                    type    => "alert",
-#                    id      => $aid,
-#                }
-#            });
-#        }
+        $self->update_alerts($object,$req);
+        delete $req->{request}->{json}->{status}; # set by above function
     }
 
     if ( ref($object) eq "Scot::Model::Entry" ) {
-        $self->do_task_checks($req_href);
-        if ( $req_href->{target} ) {
-            $self->move_entry($req_href,$object);
-            push @what,"entry_moved";
-        }
+        $self->process_task_commands($object, $req);
     }
 
     if ( $object->meta->does_role("Scot::Role::Entitiable") ) {
-        $log->debug("entitieable thing this object");
-        $self->process_entities($req_href, $object);
-        push @what,"process_entities";
+        $log->debug("object is entitiable");
+        my $entity_aref = delete $req->{request}->{json}->{entities};
+        $log->debug("entities aref is ",{filter=>\&Dumper, value=>$entity_aref});
+        my $collection  = $self->env->mongo->collection('Entity');
+        $collection->update_entities($object, $entity_aref);
     }
-    if ( $object->meta->does_role("Scot::Role::Tags") ) {
-        $log->debug("taggable thins this object");
-        $self->apply_tags($req_href, $col_name, $id);
-        push @what , "tag";
-    }
-    if ( $object->meta->does_role("Scot::Role::Sources") ) {
-        $self->apply_sources($req_href, $col_name, $id);
-        push @what , "source";
-    }
+    
+    # if the object does tags or source, we need to adjust the appearances collection
+    # to reflect the changes, because we store tags/sources as an array in the object
+    # and create appearance records 
 
-    if ( $object->meta->does_role("Scot::Role::Promotable") ) {
-        if ($self->process_promotion($req_href, $object, $user)) {
-            $log->debug("we did a promotion, we're done.");
-            return;
+    if ( $object->meta->does_role("Scot::Role::Tags") or
+         $object->meta->does_role("Scot::Role::Sources") ) {
+
+        my $new_tag_set = $req->{request}->{json}->{tag};
+        my $new_src_set = $req->{request}->{json}->{source};
+
+        if (defined $new_tag_set ) {
+            $mongo->collection('Appearance')
+                   ->adjust_appearances($object,$new_tag_set,"tag");
+        }
+        if (defined $new_src_set ) {
+            $mongo->collection('Appearance')
+                   ->adjust_appearances($object,$new_src_set,"source");
         }
     }
-
-    my %update  = $self->build_update_doc($req_href);
-
-    $log->debug("Updating ". ref($object). " id = $id with ",
-                { filter => \&Dumper, value => {'$set' => \%update }});
-
-    push @what, keys %update;
-
-    unless ( $object->update({ '$set' => \%update }) ) {
-        $log->error("Error applying Update!");
-        $self->do_error(445, { error_msg => "failed update" });
-        return;
-    }
-
-    $self->do_render({
-        id     => $object->id,
-        status => "successfully updated",
-    });
-
-    if ( grep {/status/} @what ) {
-        my $status    = $update{status};
-        $self->put_stat("$col_name status changed to $status", 1);
-        $mongo->collection('History')->add_history_entry({
-            who     => $user,
-            what    => "$col_name status changed to $status",
-            when    => $self->env->now,
-            target => { id => $object->id, type => $col_name },
-        });
-    }
-
-    if ( $object->meta->does_role("Scot::Role::Historable") ) {
-        $self->update_history($object, $user, $col_name);
-    }
-
-    $self->audit("update_thing", $req_href);
-
-    $env->mq->send("scot", { 
-        action  => "updated",
-        data    => {
-            who  => $user,
-            type => $col_name,
-            id   => $id,
-            what => \@what,
-        }
-    });
-    if ( ref($object) eq "Scot::Model::Entry" ) {
-        $env->mq->send("scot", { 
-            action  => "updated",
-            data    => {
-                who  => $user,
-                type => $object->target->{type},
-                id   => $object->target->{id},
-                what => "Entry Update",
-            }
-        });
-    }
-    if ( ref($object) eq "Scot::Model::Sigbody") {
-        $env->mq->send("scot", { 
-            action  => "updated",
-            data    => {
-                who  => $user,
-                type => "signature",
-                id   => $object->{signature_id},
-                what => "Signature Update",
-            }
-        });
-    }
-    $self->put_stat("$col_name updated", 1);
-}
-
-sub invalid_id_check {
-    my $self    = shift;
-    my $href    = shift;
-    my $id      = $href->{id};
-
-    if ( $self->id_is_valid($href->{id}) ) {
-        return 1;
-    }
-    $self->do_error(400, {
-        error_msg   => "Invalid integer id: $id"
-    });
-    return undef;
-}
-
-sub get_update_collection {
-    my $self    = shift;
-    my $name    = shift;
-    my $log     = $self->env->log;
-    my $col;
-
-    try {
-        $col    = $self->env->mongo->collection(ucfirst($name));
-    }
-    catch {
-        $log->error("Weird collection error!");
-        $self->do_error(400, {
-            error_msg   => "collection def error"
-        });
-        return undef;
-    };
-    return $col;
-}
-
-sub get_update_object {
-    my $self    = shift;
-    my $col     = shift;
-    my $id      = shift;
-    my $log     = $self->env->log;
-    my $obj;
-
-    try {
-        $obj    = $col->find_iid($id);
-    }
-    catch {
-        $log->error("Error finding ".ref($col)." id = $id");
-        return undef;
-    };
-    return $obj;
-}
-
-sub check_update_permission {
-    my $self    = shift;
-    my $href    = shift;
-    my $object  = shift;
-    my $log     = $self->env->log;
-
-    if ( $object->meta->does_role("Scot::Role::Permission") ) {
-
-        my $groups = $self->session('groups');
-
-        unless ( $object->is_modifiable($groups) ) {
-            $self->modify_not_permitted_error($object,$groups);
-            return undef;
-        }
-
-        my $newowner    = $href->{request}->{params}->{owner} //
-                          $href->{request}->{json}->{owner};
-
-        unless ($newowner) {
-            return 1;
-        }
-
-        if ( $self->ownership_change_permitted($href, $object) ) {
-            $log->warn("Ownership change of ".
-                        ref($object) . " ". $object->id. 
-                        " from ". $object->owner. " to ".
-                        $newowner);
-            return 1;
-        }
-        $log->error("Non permitted ownership change attempt! ".
-                    ref($object). " ". $object->id. " to ". $newowner
-        );
-        $self->do_error(403, {
-            error_msg => "insufficient privilege to change ownership"
-        });
-        return undef;
-    }
-    return 1;
-}
-
-sub update_alertgroup {
-    my $self    = shift;
-    my $href    = shift;
-    my $obj     = shift;
-    my $log     = $self->env->log;
-    my $mongo   = $self->env->mongo;
-
-    $log->debug("UPDATING ALERTGROUP");
-
-    my $json   = $href->{request}->{json};
-
-    $log->debug("json request: ", {filter=>\&Dumper, value=>$json});
-
-    my $targets = $json->{ids}; # only apply to these alerts
-    my $status = $json->{status};
-    my $parsed = $json->{parsed};
-    my $col    = $mongo->collection('Alert');
-    my @ids    = ();
-
-    if ( defined $status ) {
-        push @ids, @{$col->update_alert_status($obj->id, $status, $targets)};
-    }
-    if ( defined $parsed ) {
-        push @ids, @{$col->update_alert_parsed($obj->id, $status, $targets)};
-    }
-    return wantarray ? @ids : \@ids;
-}
-
-sub process_entities {
-    my $self    = shift;
-    my $href    = shift;
-    my $obj     = shift;
-    my $log     = $self->env->log;
-    my $mongo   = $self->env->mongo;
-
-    $log->debug("processing entities");
-
-    my $json    = $href->{request}->{json};
-    my $earef   = delete $json->{entities};
-
-    if ( defined $earef ) {
-        if ( scalar(@$earef) > 0 ) {
-            $log->debug("we have entities!");
-            $mongo->collection('Entity')->update_entities($obj,$earef);
-        }
-    }
-}
-
-sub process_promotion {
-    my $self    = shift;
-    my $href    = shift;
-    my $object  = shift;
-    my $user    = shift;
-    my $env     = $self->env;
-    my $log     = $self->env->log;
-    my $mongo   = $self->env->mongo;
-
-    $log->debug("processing promotion");
-
-    my $promote_to      = $self->get_value_from_request($href, "promote");
-    my $unpromote_from  = $self->get_value_from_request($href, "unpromote");
-
-    unless ( $self->check_promotion_input($promote_to, $unpromote_from) ) {
-        $log->error("failed promotion input check!");
-        return undef;
-    }
-
-    unless ( $promote_to ) {
-        $log->warn("no promotion for you");
-        return undef;
-    }
-
-    my $object_type         = $object->get_collection_name;
-    my ($proname, $procol)  = $self->get_promotion_collection($object_type);
-    my $proobj              = $self->get_promotion_obj( $href, 
-                                                        $object, 
-                                                        $procol, 
-                                                        $promote_to);
-    unless ( $proobj ) {
-        $log->error("failed creation/retrieval of promotion object");
-        $self->do_error(444, {
-            error_msg => "failed to create promotion target"
-        });
-        return 1;
-    }
-
-    $promote_to = $proobj->id; # to catch id if "new" was requested
-    $proobj->update_push(promoted_from => $object->id);
-
-    $self->put_stat(lc($object_type)." promoted", 1);
-
-    $env->mq->send("scot", {
-        action  => 'created',
-        data    => {
-            who     => $self->session('user'),
-            type    => $proobj->get_collection_name,
-            id      => $proobj->id,
-        }
-    });
-
-
-    if ( ref($object) eq "Scot::Model::Alert" ) {
-
-        $log->debug("refreshing alertgroup data");
-        $mongo->collection('Alertgroup')
-                ->refresh_data($object->alertgroup, $user);
-
-        $env->mq->send("scot", {
-            action  => "updated",
-            data    => {
-                who     => $user,
-                type    => "alertgroup",
-                id      => $object->alertgroup,
-            },
-        });
-
-        # copy alert data into an entry for that event
-        my $entrycol = $mongo->collection('Entry');
-        my $entryobj = $entrycol->create_from_promoted_alert($object,$proobj);
-        $env->mq->send("scot", {
-            action  => "created",
-            data    => {
-                who => $user,
-                type    => "entry",
-                id      => $entryobj->id,
-            }
-        });
-    }
-
-    try {
-        $object->update({
-            '$set'  => {
-                status          => 'promoted',
-                updated         => $env->now(),
-                promotion_id    => $promote_to
-            }
-        });
-    }
-    catch {
-        $log->error("Failed update of promoted object");
-        return 1;
-    };
-
-    $self->do_render({
-        id      => $object->id,
-        pid     => $proobj->id,
-        status  => "successfully promoted",
-    });
-
-    if ( $object->meta->does_role("Scot::Role::Historable") ) {
-        $mongo->collection('History')->add_history_entry({
-            who     => $self->session('user'),
-            what    => "$object_type promotion to $proname",
-            when    => $env->now(),
-            target => { id => $object->id, type => $object_type },
-        });
-    }
-
-    $env->mq->send("scot", {
-        action  => "updated",
-        data    => {
-            who     => $user,
-            type    => $object->get_collection_name,
-            id      => $object->id,
-        }
-    });
-    $self->audit("promotion", {
-        type    => $object->get_collection_name . " to ". 
-                   $proobj->get_collection_name,
-        source => { 
-            type    => $object->get_collection_name,
-            id      => $object->id,
-        },
-        destination => {
-            type    => $proobj->get_collection_name,
-            id      => $proobj->id,
-        },
-    });
-}
-
-
-sub update_history {
-    my $self    = shift;
-    my $obj     = shift;
-    my $user    = shift;
-    my $colname = shift;
-    my $log     = $self->env->log;
-    my $mongo   = $self->env->mongo;
-
-    $mongo->collection('History')->add_history_entry({
-        who     => $user,
-        what    => "updated via api",
-        when    => $self->env->now,
-        target => { id => $obj->id, type => $colname },
-    });
-}
-
-sub build_update_doc {
-    my $self    = shift;
-    my $request = shift;
-    my $params  = $request->{request}->{params};
-    my $json    = $request->{request}->{json};
-    my %update  = ();
-    my $env     = $self->env;
-    my $log     = $env->log;
-
-    $log->trace("Building Update command");
-
-    if ( defined $params ) {
-
-        $log->trace("Params are present...");
-
-        foreach my $key ( keys %{$params} ) {
-            my $value       = $params->{$key};
-            if ( $key eq "groups" ) {
-                if ( scalar(@{$value->{read}}) < 1 ) {
-                    $update{$key}   = $env->admin_groups;    
-                }
-                if ( scalar(@{$value->{modify}}) < 1 ) {
-                    $update{$key}   = $env->admin_groups;    
-                }
-            } 
-            else {
-                $update{$key}   = $value;
-            }
-        }
-    }
-    if (defined $json) {
-
-        $log->trace("JSON is present...");
-
-        foreach my $key ( keys %{$json} ) {
-            if ( $key =~ /^\{/ ) {
-                $log->warn("funky char in json");
-                next;
-            }
-            $update{$key}   = $json->{$key};
-        }
-    }
-    $update{updated} = $env->now();
-    $log->debug("Update command is: ",{filter=>\&Dumper, value=>\%update});
-    return wantarray ? %update : \%update;
 }
 
 sub get_promotion_collection {
     my $self    = shift;
-    my $type    = shift;
+    my $object  = shift;
     my $mongo   = $self->env->mongo;
 
-    if ( $type  eq "alert" ) {
-        return "event", $mongo->collection('Event');
+    if ( ref($object) eq "Scot::Model::Alert" ) {
+        return $mongo->collection('Event');
     }
-    if ( $type eq "event" ) {
-        return "incident", $mongo->collection('Incident');
+    if ( ref($object) eq "Scot::Model::Event" ) {
+        return $mongo->collection('Incident');
     }
-    $self->env->log->error("INVALID PROMOTION TYPE!");
-    return undef, undef;
+    die "invalid promotion attempt";
 }
-sub check_promotion_input {
+
+# this function replaces the update function for promotions
+sub promote {
     my $self    = shift;
-    my $to      = shift;
-    my $from    = shift;
-    my $log     = $self->env->log;
-
-    $log->debug("Checking promotion input");
-    # $log->debug("from is $from");
-    
-    if ( defined $from ) {
-        $log->error("unpromotion not supported!");
-        return undef;
-    }
-
-
-    unless ( defined $to ) {
-        $log->trace("No promoting or unpromoting in update.");
-        return undef;
-    }
-    $log->debug("to is $to");
-    return 1;
-}
-
-sub get_promotion_obj {
-    my $self          = shift;
-    my $req           = shift;
-    my $object        = shift;
-    my $procollection = shift;
-    my $promote_to    = shift;
-    my $user          = $self->session('user');
-    my $log           = $self->env->log;
-
-
-    $log->debug("geting Promotion object");
-
-    my $promotion_obj;
-
-    if ( $promote_to    =~ /\d+/ ) {
-
-        $log->debug("We have a numeric id, looking for existing");
-        $promotion_obj = $procollection->find_iid($promote_to+0);
-
-    }
-
-    unless ( ref($promotion_obj) ) {
-
-        $log->debug("promotion object does not exist, creating one...");
-        $promotion_obj = $procollection->create_promotion($object, $req,$user);
-
-    }
-
-    unless ( ref($promotion_obj) ) {
-        $log->error("failed to create a promotion object.");
-        return undef;
-    }
-    
-    return $promotion_obj;
-}
-
-    
-
-
-sub get_value_from_request {
-    my $self    = shift;
+    my $object  = shift;
     my $req     = shift;
-    my $attr    = shift;
-    $self->env->log->debug("getting value for $attr");
-    return  $req->{request}->{params}->{$attr} // 
-            $req->{request}->{json}->{$attr};
-}
-
-sub write_promotion_history_notification {
-    my $self    = shift;
-    my $object  = shift;
-    my $user    = shift;
-    my $what    = shift;
-    my $when    = $self->env->now;
-    my $targets = shift;
-    my $type    = shift // "update";
-    my $mongo   = $self->env->mongo;
-
-    if ( $object->meta->does_role("Scot::Role::Historable") ) {
-        $mongo->collection('History')->add_history_entry({
-            who     => $user,
-            what    => $what,
-            when    => $when,
-            target => $targets ,
-        });
-    }
-    # $self->env->amq->send_amq_notification($type, $object, $user);
-}
-
-sub do_task_checks {
-    my $self        = shift;
-    my $req_href    = shift;
-    my $user        = $self->session('user');
-    my $env         = $self->env;
-    my $log         = $env->log;
-
-    my $key     = '';
-    my $status;
-    my $now     = $env->now();
-    my $params  = $req_href->{request}->{json} // 
-                    $req_href->{request}->{params} ;
-
-    $log->debug("Checking For Task Changes: ", { 
-                filter =>\&Dumper, value=>$params });
-
-    if ( defined $params->{make_task} ) {
-        $key = "make_task";
-        $params->{class}  = 'task';
-        $status = "open";
-    }
-    elsif ( defined $params->{take_task} ) {
-        $key    = "take_task";
-        $status = "assigned";
-    }
-    elsif ( defined $params->{close_task} ) {
-        $key    = "close_task";
-        $status = "closed";
-    }
-
-    if ( $key ne '' ) {
-        delete $params->{$key};
-        $params->{metadata} = {
-            who     => $user,
-            when    => $now,
-            status  => $status,
-        };
-        $self->put_stat("task $status", 1);
-    }
-}
-
-sub ownership_change_permitted {
-    my $self    = shift;
-    my $request = shift;
-    my $object  = shift;
-
-    if ( $self->user_is_admin ) {
-        # admin user can change any ownership
-        return 1;
-    }
-
-    if ( ref($object) eq "Scot::Model::Entry" ) {
-        # task ownership can be assumed by a normal person
-        if ( $object->is_task ) {
-            if ( $request->{params}->{owner} eq $self->session('user') ) {
-                # but only assumed by the requestor not pushed onto someone else
-                return 1;
-            }
-            else {
-                return undef;
-            }
-        }
-        else {
-            return undef;
-        }
-    }
-
-    if ( $object->meta->does_role("Scot::Role::Permission") ) {
-        if ( $object->is_modifiable($self->session('groups')) ) {
-            return 1;
-        }
-    }
-    return undef;
-}
-
-sub undelete {
-    my $self    = shift;
     my $env     = $self->env;
     my $mongo   = $env->mongo;
     my $log     = $env->log;
     my $user    = $self->session('user');
 
-    my $req_href    = $self->get_request_params;
-    my $id          = $req_href->{id};
-    my $status      = $req_href->{status};
+    $log->debug("processing promotion");
 
-    if ( $status ne "undelete" ) {
-        $log->error("invalid undelete status");
-        $self->do_error(400,{
-            error_msg => "invalid status"
-        });
-        return;
+    # find or create the promotion target
+    my $promotion_col;
+    if ( ref($object) eq "Scot::Model::Alert" ) {
+        $promotion_col  = $mongo->collection("Event");
+    }
+    elsif ( ref($object) eq "Scot::Model::Event" ) {
+        $promotion_col  = $mongo->collection("Incident");
+    }
+    else {
+        die "Unable to promote a ".ref($object);
     }
 
-    my $delobj      = $mongo->collection('Deleted')->find_iid($id);
+    my $promotion_obj = $promotion_col->get_promotion_obj($object,$req);
+    $promotion_obj->update({
+        '$addToSet' => { promoted_from => $object->id }
+    });
 
-    if (defined $delobj) {
-        my $data    = $delobj->data;
-        my $type    = $delobj->type;
-        my $colname = (split(/::/,$type))->[-1];
-        my $col     = $mongo->collection($colname);
-        my $obj     = $col->exact_create($data);
-        if ( defined $obj ) {
-            $log->debug("Restored $type $id");
-            $self->do_render(
-                action      => 'undelete',
-                thing       => $colname,
-                id          => $obj->id,
-                status      => 'ok',
-            );
+    if ( ref($object) eq "Scot::Model::Alert") {
+        $mongo->collection('Alertgroup')->refresh_data($object->alertgroup);
+        my $entry = $mongo->collection('Entry')
+                          ->create_from_promoted_alert($object, $promotion_obj);
+        $self->env->mq->send("scot",{
+            action  => "created",
+            data    => {
+                who => $req->{user},
+                type=> "entry",
+                id  => $entry->id,
+            }
+        });
+    }
+
+    # update the promotee
+    $object->update({
+        '$set'  => {
+            updated         => $env->now,
+            promotion_id    => $promotion_obj->id,
+            status          => "promoted",
         }
-        else {
-            $log->error("Failed to create $type $id");
-            $self->do_error(400, {
-                error_msg => "unable to resotre $type $id"
+    });
+
+    $mongo->collection('Link')->link_objects($object,$promotion_obj,{
+        context => "promotion"
+    });
+
+    # update mq and other bookkeeping
+    $env->mq->send("scot", {
+        action  => "created",
+        data    => {
+            who     => $user,
+            type    => $promotion_obj->get_collection_name,
+            id      => $promotion_obj->id,
+        }
+    });
+    my $type = $object->get_collection_name;
+    my $id   = $object->id;
+    if ( $type eq "alert" ) {
+        $env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                who     => $user,
+                type    => "Alertgroup",
+                id      => $object->alertgroup,
+                opts    => "noreflair",
+            }
+        });
+    }
+    else {
+        $env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                who     => $user,
+                type    => $type,
+                id      => $id,
+            }
+        });
+    }
+
+    my $what = $object->get_collection_name." promoted to ".
+                       $promotion_obj->get_collection_name;
+    if ( $object->meta->does_role("Scot::Role::Historable") ) {
+        $mongo->collection('History')->add_history_entry({
+            who     => $user,
+            what    => $what,
+            when    => $env->now,
+            target  => {id => $object->id, type => $object->get_collection_name},
+        });
+    }
+
+    $mongo->collection('Audit')->create_audit_rec({
+        handler => $self,
+        object  => $object,
+        changes => $what,
+        who     => $user,
+    });
+
+    # add stat here
+    $self->env->mongo->collection('Stat')->put_stat(
+        $object->get_collection_name." promoted", 1
+    );
+
+    # render and return
+    $self->do_render({
+        id      => $object->id,
+        pid     => $promotion_obj->id,
+        status  => "ok",
+    });
+}
+
+
+sub update_alerts {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my $mongo   = $self->env->mongo;
+    my $col     = $mongo->collection('Alertgroup');
+    my $status  = $col->update_alerts_in_alertgroup($object, $req);
+    if ( scalar(@{$status->{updated}}) > 0 ) {
+        foreach my $aid (@{$status->{updated}}) {
+            $self->env->mq->send("scot",{
+                action  => "updated",
+                data    => {
+                    who => $self->session('user'),
+                    type=> "alert",
+                    id  => $aid,
+                }
             });
         }
     }
+}
+
+sub process_task_commands {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my $json    = $req->{request}->{json};
+    my $action  = '';
+    my $status  = '';
+
+    ## relies on side effect, 
+    ## we are modifying the req_href in place based on task data
+
+    if ( defined $json->{make_task} ) {
+        $action         = "make_task";
+        $json->{class}  = 'task';
+        $status         = "open";
+    }
+    elsif ( defined $json->{take_task} ) {
+        $action         = "take_task";
+        $status         = "assigned";
+    }
     else {
-        $log->error("Failed to find deleted object $id");
-        $self->do_error(404,{
-            error_msg => "unable to find deleted object $id"
-        });
+        $action         = "close_task";
+        $status         = "closed";
+    }
+
+    if ( $action ne '' ) {
+        delete $json->{$action}; # not an attribute in model
+        $json->{metadata}   = {  # but this is
+            who     => $self->session('user'),
+            when    => $self->env->now,
+            status  => $status,
+        };
+        $self->env->mongo->collection('Stat')->put_stat(
+            "task $status", 1
+        );
     }
 }
 
-=item B<DELETE /scot/api/v2/:thing/:id>
+sub post_update_process {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my $updates = shift; # aref of { what =>  , attribute=> ,old_value, new_value}
+    my $env     = $self->env;
+    my $colname = (split(/::/,ref($object)))[-1];
+
+
+    foreach my $uphref (@$updates) {
+        if ( $uphref->{attribute} eq "status" ) {
+            my $msg = "$colname status change to ". $uphref->{new_value};
+            $env->mongo->collection('Stat')->put_stat($msg,1);
+            $self->add_history($msg, $object);
+        }
+        if ( $uphref->{attribute} eq "target" ) {
+            if ( ref($object) eq "Scot::Model::Entry" ) {
+                $self->env->log->debug("processing entry move");
+                $self->process_entry_moves($object, $req);
+            }
+        }
+        $self->create_change_audit($object, $uphref);
+    }
+
+    if ( $object->meta->does_role("Scot::Role::Tags") ) {
+        $self->apply_tags($object);
+    }
+
+    if ( $object->meta->does_role("Scot::Role::Sources") ) {
+        $self->apply_sources($object);
+    }
+
+    my $mqdata  = {
+        who     => $self->session('user'),
+        type    => $colname,
+        id      => $object->id,
+        what    => $self->changed_attributes($updates),
+    };
+
+    my $mq_msg  = {
+        action  => "updated",
+        data    => $mqdata,
+    };
+
+    $env->mq->send("scot", $mq_msg);
+
+    if ( ref($object) eq "Scot::Model::Entry" ) {
+        $mq_msg->{data} = {
+            who     => $self->session('user'),
+            target  => { type => $object->target->{type},
+                         id   => $object->target->{id}, },
+            what    => "Entry update",
+        };
+        $env->mq->send("scot", $mq_msg);
+        $self->add_history("updated entry ".$object->id, $object);
+    }
+
+    if ( ref($object) eq "Scot::Model::Sigbody" ) {
+        $mq_msg->{data} = {
+            who     => $self->session('user'),
+            type    => "signature",
+            id      => $object->{signature_id},
+            what    => "Signature Update",
+        };
+        $env->mq->send("scot", $mq_msg);
+    }
+    $env->mongo->collection('Stat')->put_stat("$colname updated", 1);
+}
+
+sub process_entry_moves {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my $target  = $req->{target};
+
+    $self->env->mongo->collection('Entry')->move_entry($object,$target);
+}
+
+sub process_entities {
+    my $self    = shift;
+    my $cursor  = shift;
+    my %things  = ();
+    my $mongo   = $self->env->mongo;
+    my $log     = $self->env->log;
+
+    $log->debug("PROCESSING ENTITIES ".$cursor->count);
+
+    while ( my $entity = $cursor->next ) {
+
+        $log->debug("    entity = ".$entity->value);
+
+        my $entry_cursor        = $mongo->collection('Entry')->get_entries(
+            target_id   => $entity->id,
+            target_type => 'entity',
+        );
+        my @threaded_entries    = $self->thread_entries($entry_cursor);
+
+        $log->debug("    has ".scalar(@threaded_entries)." entries");
+
+        my $appearance_count    = $self->get_entity_count($entity);
+
+        $log->debug("    has $appearance_count appearances in scot");
+
+        my $entry_count     = $self->get_entry_count($entity);
+
+        $log->debug("    has $entry_count entries ");
+
+        $things{$entity->value} = {
+            id      => $entity->id,
+            count   => $appearance_count,
+            entry   => $entry_count,
+            type    => $entity->type,
+            classes => $entity->classes,
+            data    => $entity->data,
+            status  => $entity->status,
+            entries => \@threaded_entries,
+        };
+        $log->debug("thing{".$entity->value."} = ",
+                    {filter=>\&Dumper, value=>$things{$entity->value}});
+
+    }
+    $log->debug("done processing entities");
+    return wantarray ? %things : \%things;
+}
+
+sub get_entity_count {
+    my $self    = shift;
+    my $entity  = shift;
+    my $mongo   = $self->env->mongo;
+    return $mongo->collection('Link')->get_display_count($entity);
+}
+
+sub get_entry_count {
+    my $self    = shift;
+    my $entity  = shift;
+    my $mongo   = $self->env->mongo;
+    return $mongo->collection('Entry')->get_entries(
+        target_id   => $entity->id,
+        target_type => 'entity',
+    )->count;
+}
+
+sub changed_attributes {
+    my $self    = shift;
+    my $aref    = shift;
+    my @changes = map { $_->{attribute}; } @$aref;
+    return \@changes;
+}
+
+sub create_change_audit {
+    my $self    = shift;
+    my $object  = shift;
+    my $href    = shift;
+    my $name    = $object->get_collection_name;
+
+    my $auditcol    = $self->env->mongo->collection('Audit');
+    my $what    = $href->{attribute} . " updated";
+    my $record      = $auditcol->create_audit_rec({
+        handler => $self,
+        object  => $object,
+        changes => {
+            old => $href->{old_value},
+            new => $href->{new_value},
+        }
+    });
+}
+
+sub apply_tags {
+    my $self    = shift;
+    my $object  = shift;
+    my $thing   = $object->get_collection_name;
+    my $id      = $object->id;
+    my $tagcol  = $self->env->mongo->collection('Tag');
+    $tagcol->add_tag_to($thing, $id, $object->tag);
+}
+
+sub apply_sources {
+    my $self    = shift;
+    my $object  = shift;
+    my $thing   = $object->get_collection_name;
+    my $id      = $object->id;
+    my $srccol  = $self->env->mongo->collection('Source');
+    $srccol->add_source_to($thing, $id, $object->source);
+}
+
+sub update_target {
+    my $self        = shift;
+    my $object      = shift;
+    my $update_type = shift;
+    my $mongo       = $self->env->mongo;
+    my $target      = $mongo->collection(
+        ucfirst($object->target->{type})
+    )->find_iid($object->target->{id});
+
+    $self->env->log->debug("updating target ",{filter=>\&Dumper, value=>$object->target});
+
+    my $tmphref = $target->as_hash;
+#    $self->env->log->debug("found target       = ",{filter=>\&Dumper, value=>$tmphref});
+#    $self->env->log->debug("updating type      = $update_type");
+#    $self->env->log->debug("target entry_count = ".$target->entry_count);
+
+    if ( defined $target ) {
+        my $updated = 0;
+        if ( $target->meta->does_role("Scot::Role::Entriable") ) {
+            if ( $update_type eq "create" ) {
+                $target->update_inc(entry_count => 1);
+                $updated++;
+            }
+            if ( $update_type eq "delete" ) {
+                $target->update_inc(entry_count => -1);
+                $updated++;
+            }
+           #$self->env->log->debug("target entry_count = ".$target->entry_count);
+        }
+        if ( $target->meta->does_role("Scot::Role::Times") ) {
+            $target->update_set(updated => $self->env->now);
+            $updated++;
+        }
+        if ($updated > 0) {
+            $self->mq_obj_update($target);
+        }
+        $self->env->log->debug("target entry_count = ". $target->entry_count);
+    }
+    else {
+        $self->env->log->error("Failed to find target object to update");
+    }
+}
+
+=item B<delete>
+
+This function is called for DELETEs to the API.  you can only delete by id.
+
+This function returns the following JSON to the http client
+    {
+        id      : the_integer_id_of_created_thing,
+        action  : "delete",
+        thing   : model_name_of_created_thing,
+        status  : 'ok',
+    }
+
+This function emits the following messages on the SCOT activemq topic:
+
+    {
+        action : "deleted",
+        data   : {
+            who     : "user_name",
+            type    : "model_name_of_thing_created",
+            id      : integer_id_of_thing_created
+        }
+    }
+
+This function writes the following record to the history collection
+    {
+        who     => $user,
+        what    => "deleted via api",
+        when    => $self->env->now,
+        target  => { 
+            id      => $object->id,
+            type    => $colname,
+        }
+    }
+
+additionaly, if the object is targetable, the target object
+will receive a similar history record.
+
+This function creates the following record to the audit collection
+    {
+        who     => $self->session('user') // 'unknown',
+        when    => $env->now(),
+        what    => $what,
+        data    => $data,
+    }
 
 =cut
 
 sub delete {
     my $self    = shift;
     my $env     = $self->env;
-    my $mongo   = $env->mongo;
     my $log     = $env->log;
-    my $user    = $self->session('user');
 
-    $log->trace("Handler is processing a DELETE ONE request by $user");
-
-    #
-    # delete actually just moves the data to the deleted collection
-    # UNLESS, $req_href->{request}->{params}->{purge} is true
-    # and then it is truly deleted from the collection (no undo)
-    # if the user is an admin
-    #
-
-    my $req_href    = $self->get_request_params;
-    my $id          = $req_href->{id};
-    my $col_name    = $req_href->{collection};
-
-    my $purge       = $req_href->{request}->{param}->{purge} // 
-                      $req_href->{request}->{json}->{purge};
-
-    unless ( $self->id_is_valid($id) ) {
-        $self->do_error(400, {
-            error_msg   => "Invalid integer id: $id"
-        });
-        return;
-    }
-    
-    my $collection;
+    $log->debug("DELETE");
 
     try {
-        $collection  = $mongo->collection(ucfirst($col_name));
+        my $req_href    = $self->get_request_params;
+        my $collection  = $self->get_collection_req($req_href);
+        if ($self->id_is_invalid($req_href)) { 
+            die "Invalid id"; 
+        }
+        my $id          = $req_href->{id};
+        my $object      = $collection->find_iid($id);
+        if ( ! defined $object ) {
+            die "Object Not Found";
+        }
+        if ( $self->delete_not_permitted($object) ) {
+            die "Insufficent Privilege";
+        }
+        $self->delete_or_purge($object, $req_href);
+        $self->post_delete_process($object, $req_href);
+        $self->do_render({id => $object->id, status => 'ok'});
     }
     catch {
-        $self->do_error(400, {
-            error_msg   => "Collection problem"
-        });
-        return;
+        $log->error("in API delete, Error: $_");
+        $self->render_error(400, { error_msg => $_ } );
     };
-
-    unless ( defined $collection ) {
-        $self->do_error(400, {
-            error_msg => "No collection matching $col_name"
-        });
-        return;
-    }
-
-    my $object  = $collection->find_iid($id);
-
-    unless ( defined $object ) {
-        $log->error("No matching Object for $col_name : $id");
-        $self->do_error(404, {
-            error_msg   => "No matching object $col_name: $id"
-        });
-        return;
-    }
-
-    if ( $object->meta->does_role("Scot::Role::Permittable") ) {
-        my $users_groups    = $self->session('groups');
-        unless ( $object->is_modifiable($users_groups) ) {
-            $self->modify_not_permitted_error($object, $users_groups);
-            return;
-        }
-    }
-
-
-    if  ( $purge and $self->user_is_admin ) {
-        $log->warn( "Object is being purged.", 
-                    { filter=>\&Dumper, value => $object->as_hash});
-    } 
-    else {
-        my $del_collection  = $mongo->collection("Deleted");
-        my $href            = $object->as_hash;
-        my $del_obj         = $del_collection->create({
-            when    => $env->now(),
-            who     => $self->session('user'),
-            type    => ref($object),
-            data    => $href,
-        });
-    }
-
-    # TODO:
-    #OK. Issue 153, says there is problem deleting.
-    # looks like we need special handling of tags/sources
-    # because we really don't want to delete the "tag" record,
-    # just the link between the tag and the target.
-
-    $object->remove;
-    
-    # $env->amq->send_amq_notification("delete", $object, $user);
-
-    $self->do_render({
-        action      => 'delete',
-        thing       => $col_name,
-        id          => $object->id,
-        status      => 'ok',
-    });
-    
-    $self->audit("delete_thing", $req_href);
-    $env->mq->send("scot", {
-        action  => "deleted",
-        data    => {
-            type    => $col_name,
-            id      => $object->id,
-            who     => $user,
-        }
-    });
-
-    if ( ref($object) eq "Scot::Model::Entry" ) {
-        my $targetcol   = $mongo->collection(ucfirst($object->target->{type}));
-        my $targetobj   = $targetcol->find_iid($object->target->{id});
-        # this is preferable but, getting error so...
-        #$targetobj->update({
-        #    '$set'  => {
-        #        updated => $env->now,
-        #    },
-        #    '$inc'  => {
-        #        entry_count => -1
-        #    },
-        #});
-        my $now = $env->now // time();
-        $targetobj->update_set( updated => $now );
-        $targetobj->update_inc( entry_count => -1 );
-        $env->mq->send("scot", {
-            action  => 'updated',
-            data    => {
-                type    => $object->target->{type},
-                id      => $object->target->{id},
-                who     => $user,
-            },
-        });
-        # need to update any child entries
-        my $entrycol = $mongo->collection('Entry');
-        my $match    = {
-            parent_id   => $object->id,
-        };
-        my $ccursor  = $entrycol->find($match);
-        while ( my $child = $ccursor->next ) {
-            $child->update_set( parent_id => 0 );
-        }
-    }
-    $self->put_stat("$col_name deleted", 1);
 }
 
-=item B<DELETE /scot/api/v2/:thing/:id/:/subthing/:subid>
-
-
-=cut
-
-sub breaklink {
-    my $self    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mongo   = $env->mongo;
-    my $user    = $self->session('user');
-
-    $log->trace("Handler is processing a BreakLink request");
-
-    my $thing       = $self->stash('thing');
-    my $id          = $self->stash('id');
-    my $subthing    = $self->stash('subthing');
-    my $subid       = $self->stash('subid');
-
-    if ( $subthing ne "tag" and $subthing ne "source" ) {
-        $log->error("only tags and sources can breaklink");
-        $self->do_error(403, {
-            error_msg   => "Breaklink Not Permitted"
-        });
-        return;
-    }
-
-    $log->trace("thing    is $thing    : $id");
-    $log->trace("subthing is $subthing : $subid");
-
-    my $col = $mongo->collection('Appearance');
-    my $cur = $col->find({
-        'apid'          => $subid + 0,
-        'type'          => $subthing,
-        'target.id'     => $id + 0,
-        'target.type'   => $thing,
-    });
-
-    $log->trace("Found ".$cur->count." appearances");
-
-    while ( my $obj = $cur->next ) {
-        $log->debug("Removing Appearance Obj $subid");
-        $self->audit("delete appearance", {
-            thing   => $thing,
-            id      => $id,
-            subthing    => $subthing,
-            subid   => $subid,
-            apid    => $obj->id,
-            when    => $obj->when,
-            value   => $obj->value,
-        });
-        $obj->remove;
-    }
-
-    my $subobj = $mongo->collection(ucfirst($subthing))->find_iid($subid);
-    if ( $subobj ) {
-        my $thingobj = $mongo->collection(ucfirst($thing))->find_iid($id);
-        if ( $thingobj ) {
-            my @values;
-            push @values, $subobj->value;
-            $log->debug("attempting to remove ".$subobj->value.
-                        " from $thing $id");
-            try {
-                if ( $thingobj->meta->does_role('Scot::Role::Tags') ) {
-                    $log->debug("does tags");
-                }
-                # TODO ERROR
-                # this isn't removeing this from events for some reason!
-                if ( $thingobj->update_remove( $subthing => @values ) ) {
-                    $log->debug("remove syncronized");
-                }
-                else {
-                    $log->error("failed to remove");
-                }
-            }
-            catch {
-                $log->error("Error: $_");
-            };
-        }
-    }
-    $log->debug("get ready to render!");
-
-    $self->do_render({
-        action  => 'break link',
-        status  => 'ok',
-        thing   => $thing,
-        id      => $id,
-        subthing    => $subthing,
-        subid   => $subid,
-    });
-
-    my $msg = {
-            type    => $subthing,
-            id      => $subid,
-            who     => $user,
-    };
-    $log->debug("Sending MQ message of ",{filter=>\&Dumper, value=>$msg});
-    
-    $env->mq->send("scot", {
-        action  => "deleted",
-        data    => $msg,
-    });
-
-    $env->mq->send("scot", {
-        action  => 'updated',
-        data    => {
-            type    => $thing,
-            id      => $id,
-            who     => $user,
-        },
-    });
-
-}
-
-
-=item B<user_is_admin>
-
-returns true if one of the user's groups is "admin"
-
-=cut
-
-sub user_is_admin {
-    my $self    = shift;
-    my $groups  = $self->session('groups');
-    my $env     = $self->env;
-    my $log     = $env->log;
-
-    $log->debug("checking if user is in admin group");
-    $log->debug({filter => \&Dumper, value=>$groups});
-
-    if ( grep { /admin/ } @{$groups} ) {
-        return 1;
-    }
-    return undef;
-}
-
-sub get_object_collection {
+sub post_delete_process {
     my $self    = shift;
     my $object  = shift;
-    my $thing   = lc((split(/::/,ref($object)))[-1]);
-    return $thing;
+    my $req     = shift;
+    my $mongo   = $self->env->mongo;
+    my $log     = $self->env->log;
+
+    my $mqdata  = {
+        type    => $object->get_collection_name,
+        id      => $object->id,
+        who     => $self->session('user'),
+    };
+
+    if ( $object->meta->does_role('Scot::Role::Target') ) {
+        $self->update_target($object, "delete");
+        $mqdata->{target} = $object->target;
+    }
+
+    if ( ref($object) eq 'Scot::Model::Entry' ) {
+
+        # may need to point children entries
+        my $entrycol = $mongo->collection('Entry');
+        my $cursor   = $entrycol->find({parent_id => $object->id});
+        while ( my $child = $cursor->next ) {
+            $child->update_set( parent_id => $object->parent_id );
+        }
+    }
+    my $audit_rec = {
+        handler => $self,
+        object  => $object,
+        who     => $self->session('user'),
+    };
+    $self->env->mq->send("scot",{
+        action  => "deleted",
+        data    => $mqdata,
+    });
+    $self->env->mongo->collection('Audit')->create_audit_rec($audit_rec);
+    $self->env->mongo->collection('Stat')->put_stat($object->get_collection_name." deleted", 1);
 }
 
-sub do_error {
+sub delete_or_purge {
     my $self    = shift;
-    my $code    = shift;
-    my $href    = shift;
-    $self->render(
-        status  => $code,
-        json    => $href,
-    );
+    my $object  = shift;
+    my $req     = shift;
+    my $params  = $req->{request}->{param};
+    my $json    = $req->{request}->{json};
+    my $purge   = $params->{purge} // $params->{purge};
+
+    if ( ! defined $purge ) {
+        # save copy to trashcan
+        my $del_col = $self->env->mongo->collection('Deleted');
+        $del_col->preserve($object);
+    }
+    $object->remove;
 }
 
-sub do_render {
+sub delete_not_permitted {
     my $self    = shift;
-    my $code    = 200;
-    my $href    = shift;
-    $self->render(
-        status  => $code,
-        json    => $href,
-    );
-}
+    my $object  = shift;
+    my $users_groups    = $self->get_groups;
 
-=item B<id_is_valid($id)>
-
-returns true if $id looks like an integer.
-currently a simplistic check of /^\d+$/
-
-=cut
-
-sub id_is_valid {
-    my $self    = shift;
-    my $id      = shift;
-
-    if ( $id =~ /^\d+$/ ) {
+    if ($object->meta->does_role('Scot::Role::Permittable')) {
+        if ( $object->is_modifiable($users_groups) ) {
+            return undef;
+        }
+        $self->modify_not_permitted_error($object, $users_groups);
         return 1;
     }
     return undef;
 }
 
-=item B<read_not_permitted_error()>
-
-sends a 403 to client with error message 
-
-=cut
-
-sub read_not_permitted_error {
-    my $self    = shift;
-    my $obj     = shift;
-    my $log     = $self->env->log;
-    my $user    = $self->session('user');
-    $log->error("User $user attempted to access ". ref($obj) . " ".
-                $obj->id . "readgroups [ ".join(',', $obj->all_readgroups) 
-                ."]");
-    $self->do_error(403, {
-        error_msg   => "Read Not Permitted"
-    });
-}
-
-=item B<modify_not_permitted_error()>
-
-sends a 403 to client with error message 
-
-=cut
-
-sub modify_not_permitted_error {
-    my $self    = shift;
-    my $obj     = shift;
-    my $users_groups    = shift;
-    my $log     = $self->env->log;
-    my $user    = $self->session('user');
-
-    $log->error("User $user [". join(',', @{$users_groups}). 
-                "] attempted to access ". ref($obj) . " ".
-                $obj->id . " modifygroups [ ".join(',', @{$obj->groups->{modify}}) 
-                ."]");
-    $self->do_error(403, {
-        error_msg   => "Modify Not Permitted"
-    });
-}
-
-=item B<nothing_matching_error()>
-
-sends a 404 to client with error message 
-
-=cut
-
-sub nothing_matching_error {
-    my $self    = shift;
-    my $match   = shift;
-    my $log     = $self->env->log;
-    $log->error("Nothing matches: ",{ filter => \&Dumper, value=>$match});
-    $self->do_error(404, {
-        error_msg       => "Nothing Matches",
-        match_condition => $match,
-    });
-}
-
-=item B< build_sort_opts($href)>
-
-expect param sort (possibly multiple values)
-expect a prepended + for ascending
-expect a prepended - for descending
-default, nothing prepended will mean ascending
-
-=cut
-
-sub build_sort_opts {
-    my $self        = shift;
-    my $href        = shift;
-    my $request     = $href->{request};
-    my $params      = $request->{params} // $request->{json};;
-    my $sortaref    = $params->{sort};
-    my %sort        = ();
-    my $log         = $self->env->log;
-
-    $log->debug("Sorting based on ",{filter=>\&Dumper, value=>$sortaref});
-
-    if ( defined $sortaref ) {
-
-        if ( ref($sortaref) ne "ARRAY" ) {
-            #if ( $sortaref =~ /\{.+\}/ ) {
-            #    $log->debug("old style sort detected");
-            #    # to support either way
-            #    return $self->build_sort_opts_json($href);
-            #}
-            if ( ref($sortaref) eq "HASH" ) {
-                return $sortaref;
-            }
-            $sortaref = [ $sortaref ];
-        }
-        foreach my $sterm (@$sortaref) {
-            if ( $sterm =~ /^\-(\S+)$/ ) {
-                $sort{$1} = -1;
-            }
-            elsif ( $sterm =~ /^\+(\S+)$/ ) {
-                $sort{$1} = 1;
-            }
-            else {
-                $sort{$sterm} = 1;
-            }
-        }
-    }
-    return \%sort;
-}
-
-
-=item B<build_sort_opts($href)>
-
-Get sort options from the request
-$href->{sorts} = [
-    { column => 1},
-    { column2 => -1}
-]
-
-=cut
-
-sub build_sort_opts_json {
+sub id_is_invalid {
     my $self    = shift;
     my $href    = shift;
-    my $request = $href->{request};
-    my $params  = $request->{params};
-    my $json    = $request->{json};
-    my $sorthref	= {};
-    try {
-        $sorthref    = decode_json($params->{sort} // $json->{sort});
+    my $id      = $href->{id};
+    if ($id =~ /^\d+$/) {
+        return undef;
     }
-    catch {
-        $self->env->log->error("Invalid SORT json! $sorthref");
-        return {};
-    };
-    $self->env->log->debug(" sorthref is ",{ filter=>\&Dumper, value=> $sorthref});
-    return $sorthref;
-
+    return 1;
 }
 
-=item B<build_limit($href)>
 
-Get the limit value
-
-=cut
-
-sub build_limit {
+sub mq_obj_update {
     my $self    = shift;
-    my $href    = shift;
-    my $request = $href->{request};
-    my $params  = $request->{params};
-    my $json    = $request->{json};
-    my $log     = $self->env->log;
+    my $target  = shift;
+    my $mq      = $self->env->mq;
 
-
-    my $limit   = $params->{limit} // $json->{limit};
-    if ( defined $limit ) {
-        $log->debug("LIMIT of $limit detected");
-        return $limit;
-    }
-    else {
-        $self->env->log->debug("limit is undefined");
-    }
-
-    return undef;
-}
-
-=item B<build_offset($href)>
-
-get the offset value
-
-=cut
-
-sub build_offset {
-    my $self        = shift;
-    my $href        = shift;
-    my $request     = $href->{request};
-    my $params      = $request->{params};
-    my $json        = $request->{json};
-    return $params->{offset} // $json->{offset};
-}
-
-=item B<build_fields($href)>
-
-set the fields that you wish to return
-
-=cut
-
-sub build_fields {
-    my $self        = shift;
-    my $href        = shift;
-    my $params      = $href->{request}->{params};
-    my $aref        = $params->{columns};
-    my $log         = $self->env->log;
-    my %fields;
-
-    $log->debug("Looking for field limit in params:",{filter=>\&Dumper, value=>$params});
-    $log->debug("column filter is ",{filter=>\&Dumper, value=>$aref});
-
-    if (defined $aref) {
-        if ( ref $aref ne "ARRAY" ) {
-            $aref = [ $aref ];
+    $mq->send("scot", {
+        action  => "updated",
+        data    => {
+            who     => $self->session('user'),
+            type    => $target->get_collection_name,
+            id      => $target->id,
         }
-    }
-
-    foreach my $f (@$aref) {
-        $log->debug("Limit field to $f");
-        $fields{$f} = 1;
-    }
-
-    if ( scalar(keys %fields) > 0 ) {
-        $log->debug("only want these fields:",{filter=>\&Dumper, value=>\%fields});
-        return \%fields;
-    }
-    return undef;
+    });
 }
 
-=item B<get_request_params>
+sub add_history {
+    my $self        = shift;
+    my $message     = shift;
+    my $object      = shift;
+    my $colname     = $object->get_collection_name;
+    my $collection  = $self->env->mongo->collection('History');
+    my $user        = $self->session('user');
 
-Examine the request from the webserver and stuff the params and json
-into an HREF = {
-    collection  => "collection name",
-    id          => $int_id,
-    subthing    => $if_it_exists,
-    user        => $username,
-    request     => {
-        params  => $href_of_params_from_web_request,
-        json    => $href_of_json_submitted
-    }
-
-json for a get many looks like
-{
-    match: {
-        '$or' : [
-            {
-                col1: { '$in': [ val1, val2, ... ] },
-                col2: "foobar"
-            },
-            {
-                col3: "boombaz"
-            }
-        ]
-    },
-    sort: { 
-        updated => -1,
-    }
-    limit: 10,
-    offset: 200
+    $collection->add_history_entry({
+        who     => $user,
+        what    => $message,
+        when    => $self->env->now,
+        target  => { id => $object->id, type => $colname },
+    });
 }
+    
 
+sub get_collection_req {
+    my $self        = shift;
+    my $req_href    = shift;
+    my $log         = $self->env->log;
+    my $thing       = $req_href->{collection};
+    my $colname     = ucfirst($thing);
+    my $mongo       = $self->env->mongo;
 
-=cut 
+    if ( ! defined $colname ) {
+        die "Undefined Collection Name";
+    }
+
+    my $collection = $mongo->collection($colname);
+
+    if ( defined $collection ) {
+        return $collection;
+    }
+    die "Failed to get Collection object";
+}
 
 sub get_request_params  {
     my $self    = shift;
@@ -2216,13 +1454,13 @@ sub get_request_params  {
                         {filter=>\&Dumper, value => $params->{$key}});
 
             my $parsedjson;
-            eval {
+            try {
                 $parsedjson = decode_json($params->{$key});
-            };
-            if ($@) {
+            }
+            catch {
                 $log->debug("no json detected, keeping data...");
                 $parsedjson = $params->{$key}; # not really json!
-            }
+            };
             $params->{$key} = $parsedjson;
         }
     }
@@ -2239,8 +1477,32 @@ sub get_request_params  {
             json    => $json,
         },
     );
+    if ( $request{collection} eq "task" ) {
+        $request{collection} = "entry";
+        $request{task_search} = 1;
+    }
     $log->debug("Request is ",{ filter => \&Dumper, value => \%request } );
     return wantarray ? %request : \%request;
+}
+
+sub do_render {
+    my $self    = shift;
+    my $code    = 200;
+    my $href    = shift;
+    $self->render(
+        status  => $code,
+        json    => $href,
+    );
+}
+
+sub render_error {
+    my $self    = shift;
+    my $code    = shift;
+    my $href    = shift;
+    $self->render(
+        status  => $code,
+        json    => $href,
+    );
 }
 
 sub thread_entries {
@@ -2248,11 +1510,11 @@ sub thread_entries {
     my $cursor  = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $mygroups    = $self->session('groups');
+    my $mygroups    = $self->get_groups;
     my $user        = $self->session('user');
 
     $log->debug("Threading ". $cursor->count . " entries...");
-    # $log->debug("users groups are: ".join(',',@$mygroups));
+    $log->debug("users groups are: ", {filter=>\&Dumper, value=>$mygroups});
 
     my @threaded    = ();
     my %where       = ();
@@ -2290,6 +1552,16 @@ sub thread_entries {
             next ENTRY;
         }
 
+        if ( $href->{body} =~ /class=\"fileinfo\"/ ) {
+            # we have a file entry so we need to "enrich" the data
+            # so that the UI can build sendto buttons
+            # actions defined in the config file
+            if ( defined $self->env->{entry_actions}->{fileinfo} ) {
+                my $action  = $env->{entry_actions}->{fileinfo};
+                $href->{actions} = [ $action->($href) ];
+            }
+        }
+
         if ( $entry->parent == 0 ) {
             # add this href to threaded array
             $threaded[$rindex]  = $href;
@@ -2324,115 +1596,10 @@ sub thread_entries {
 
     unshift @threaded, @summaries;
 
+    $log->debug("ready to return threaded entries");
+
     return wantarray ? @threaded : \@threaded;
 }
-
-
-=head2 Special Routes
-
-=cut
-
-
-sub get_alertgroup_subject {
-    my $self    = shift;
-    my $alert   = shift;
-    my $mongo   = $self->env->mongo;
-    my $col     = $mongo->collection('Alertgroup');
-    my $obj     = $col->find_iid($alert->alertgroup);
-    if ( $obj ) {
-        return $obj->subject;
-    }
-    $self->env->log->error("Did not find Alertgroup ".$alert->alertgroup);
-    return "please create a subject";
-}
-
-
-sub html_alert_data {
-    my $self    = shift;
-    my $alert   = shift;
-    my $data    =  $alert->data_with_flair;
-    my $columns = $alert->columns;
-    my $html    = qq|<table class="alert_data_table"><tr>|;
-    foreach my $col (@$columns) {
-        $html .= qq| <th>$col</th> |;
-    }
-    $html .= "</tr><tr>";
-    foreach my $col (@$columns) {
-        $html .= qq| <td>$data->{$col}</td> |;
-    }
-    $html .= "</tr></table>";
-    return $html;
-}
-
-=item B<audit($what, $data)>
-
-this function creates an audity entry
-
-=cut
-
-sub audit {
-    my $self        = shift;
-    my $what        = shift;
-    my $data        = shift;
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $col         = $mongo->collection('Audit');
-    my $log         = $env->log;
-    $log->debug("creating audit record");
-    $log->debug("from what = $what and data = ",{filter=>\&Dumper, value=>$data});
-    try {
-        my $audit       = $col->create({
-            who     => $self->session('user') // 'unknown',
-            when    => $env->now(),
-            what    => $what,
-            data    => $data,
-        });
-    }
-    catch {
-        $log->warn("error trying to create audit record! $_");
-    };
-}
-
-sub mypack {
-    my $self    = shift;
-    my $thing   = shift;
-    
-    if ( ref($thing) =~ /Scot::Model/ ) {
-        my $href    = $thing->pack;
-        return $href;
-    }
-    if ( ref($thing) eq "HASH" ) {
-        return $thing;
-    }
-}
-
-sub is_epoch_column {
-    my $self    = shift;
-    my $col     = shift;
-    my $env     = $self->env;
-    my $log     = $self->env->log;
-
-    my $count   = grep { /$col/ } $env->get_epoch_cols;
-
-    if ( $count and $count > 0 ) {
-        return 1;
-    }
-    return undef;
-}
-
-sub is_int_column {
-    my $self    = shift;
-    my $col     = shift;
-    my $env     = $self->env;
-    
-    my $count   = grep { /$col/ } $env->get_int_cols;
-
-    if ( $count and $count > 0 ) {
-        return 1;
-    }
-    return undef;
-}
-
 
 # one reason for this is how to handle actions on multi-clicked rows
 # another, some things are hard to shoehorn into the REST paradigm. (e.g. send msg to queue )
@@ -2471,7 +1638,7 @@ sub wall {
         action  => "wall",
         data    => {
             message => $msg,
-            user    => $user,
+            who     => $user,
             when    => $now,
         }
     });
@@ -2481,286 +1648,33 @@ sub wall {
     });
 }
 
-
-sub get_req_value {
-    my $self    = shift;
-    my $req     = shift;
-    my $param   = shift;
-
-    return $req->{request}->{param}->{$param} // $req->{request}->{json}->{$param};
-}
-
-# alertgroups are weird, and some analysts want to view multiple alerts from multiple alertgroups
-# experimental: no route to this exists currently in Scot.pm
-
-sub supertable {
-    my $self    = shift;
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
-    my $log     = $env->log;
-
-    $log->debug("Creating Supertable of Alertgroups");
-
-    # tb assumes alertgroup=1&aplertgroup=2
-    # rj assume alertgroup={alergroup:[1,2]}
-
-    my $req_json    = $self->req->json;
-    my $req_params  = $self->get_request_params; 
-
-    $log->debug("req_params are: ",{filter=>\&Dumper,value=>$req_params});
-    $log->debug("req_json   are: ",{filter=>\&Dumper,value=>$req_json});
-
-    # We need to build an array of alertgroup ids that will search for in the
-    # alert collection based on the values passed into either via the tb
-    # or rj methods above
-
-    my @alertgroup_ids  = ();
-
-    if ( $req_json ) {
-        my @json_ids    = @{$req_json->{alertgroup}};
-        $log->debug("JSON ids are ",{filter=>\&Dumper, value=>\@json_ids});
-        push @alertgroup_ids, @json_ids;
-    }
-
-    if ( $req_params->{request}->{params}->{alertgroup} ) {
-        my @param_ids   = @{$req_params->{request}->{params}->{alertgroup}};
-        $log->debug("PARAM ids are ", {filter=>\&Dumper, value=>\@param_ids});
-        push @alertgroup_ids, @param_ids;
-    }
-
-    @alertgroup_ids = map { $_ + 0 } @alertgroup_ids;   # prevent strings
-
-    $log->debug("alertgroup_ids are ", {filter=>\&Dumper, value=>\@alertgroup_ids});
-
-    my %cols    = ();
-    my @columns = (qw(id alertgroup when status));
-    my @rows    = ();
-
-    my $alertcol    = $mongo->collection('Alert');
-    my $match_ref   = { alertgroup   => { '$in'  => \@alertgroup_ids } };
-    my $cursor      = $alertcol->find($match_ref);
-    
-    my $limit  = $self->build_limit($req_params);
-    if ( defined($limit) ) {
-        $cursor->limit($limit);
-    }
-    else {
-        $cursor->limit(50);
-    }
-
-    if ( my $offset = $self->build_offset($req_params) ) {
-        $cursor->skip($offset);
-    }
-    while ( my $alert = $cursor->next ) {
-        # $log->debug("Alert ", {filter=>\&Dumper, value=>$alert});
-
-        my $href    = {
-            when        => $alert->when,
-            alertgroup  => $alert->alertgroup,
-	        status 	    => $alert->status,
-	        id		    => $alert->id,
-        };
-        
-        my $data    = $alert->data_with_flair // $alert->data;
-
-        unless ($data) {
-            $log->error("Alert has no data!");
-        }
-
-        foreach my $key (keys %$data) {
-            $cols{$key}++;
-            $href->{$key}   = $data->{$key};
-        }
-        push @rows, $href;
-    }
-    push @columns, sort keys %cols;
-
-    $self->do_render({
-        records             => \@rows,
-        columns             => \@columns,
-        queryRecordCount    => scalar(@rows),
-        totalRecordCount    => $cursor->count,
-    });
-}
-
-sub build_match_ref {
-    my $self    = shift;
-    my $req     = shift;
-    my $params  = $req->{params};
-
-    my $match   = $self->env->mongoquerymaker->build_match_ref($params);
-    return $match;
-}
-
-
-sub build_match_ref_old {
-    my $self	        = shift;
-    my $filter_ref      = shift;     
-    my $env   	        = $self->env;
-    my $log             = $env->log;
-    my $match           = {};
-    my $store;
-    my @datefields      = qw(updated created occurred discovered reported);
-    my @numfields       = qw(views entry_count); 
-
-    while (my ($k, $v)  = each %{$filter_ref}) {
-        $log->debug("k = $k, v = $v");
-        if($k =~ /^id$/) {
-            $log->debug("id field");
-            if(ref ($v) eq "ARRAY" ) {
-                @$v = map {$_} @$v;
-                if(grep(m/!/, @$v) || grep(m/Not/i, @$v)) {
-                    for(@$v) {
-                        s/\Not//gi;
-                        s/\!//g;
-                        s/\s+//;
-                    }
-                    @$store = map {$_ + 0} @$v;
-                    $match->{$k}  = { '$nin' => $v};
-                }
-                else {
-                    @$store = map {$_ + 0} @$v;
-                    $match->{$k} = {'$in' => $v};
-                }
-            }
-            if ( ref($v) eq "HASH" ) {
-                $match->{$k} = $v;
-            }
-        }
-        elsif ( $k eq "parsed" ) {
-            $match->{$k} = $v + 0;
-        }
-        elsif ( grep {/$k/}  @numfields) {
-            $log->debug("numeric field");
-            if ( ref($v) ne "ARRAY") {
-                $v  = [ $v ];
-            }
-            @$v = map {$_} @$v;
-            if(grep(m/!/, @$v) || grep(m/Not/i, @$v)) {
-                for(@$v){
-                    s/\Not//gi;
-                    s/\!//g;
-                    s/\s+//;
-                }
-                @$store = map {$_ + 0} @$v;
-                $match->{views}  = { '$nin' => $v};
-            }
-            else {
-                @$store = map {$_ + 0} @$v;
-                    $match->{views} = {'$in' => $v};
-            }
-        }
-        elsif($k eq "tags") {
-            $log->debug("tag field");
-            $match->{$k}  = {'$all' => $v };
-        }
-        elsif($k eq "source"){
-            $log->debug("source field");
-            $match->{$k} = {'$all' => $v};
-        }
-        elsif ( grep { /$k/ } @datefields ) {
-            $log->debug("datefield!");
-            if($v =~ m/!/ || $v =~ m/Not/i) {
-                $v  =~ s/\!//g;
-                $v  =~ s/\Not//gi;
-                $v  =~ s/\s+//;
-                my $epoch_href = $v;
-                my $begin      = $epoch_href->{begin};
-                my $end        = $epoch_href->{end};
-                    $match->{$k}   = { '$ne' => '$gte'  => $begin, '$lte' => $end };
-            }
-            else {
-                my $epoch_href = $v;
-                my $begin      = $epoch_href->{begin};
-                my $end        = $epoch_href->{end};
-                $match->{$k}   = { '$gte'  => $begin, '$lte' => $end };
-            }
-        }
-        else {
-            $log->debug('default case!');
-            if($v =~ m/!/ || $v =~ m/Not/i) {
-                $v  =~ s/\!//g;
-                $v  =~ s/\Not//gi;
-                $v  =~ s/\s+//;
-                $match->{$k} = {'$ne' => lc $v };
-            }
-            else {
-                $match->{$k} = qr/$v/i;
-            }
-        }
-    }
-    $log->debug("match is ", {filter=>\&Dumper, value => $match});
-	return $match;
-}
-
 sub autocomplete {
     my $self    = shift;
     my $env     = $self->env;
     my $mongo   = $env->mongo;
     my $log     = $env->log;
     my $thing   = $self->stash('thing');
-    my $search  = $self->stash('search');
+    my $fragment = $self->stash('search');
 
-    $log->debug("Autocomplete Request for $thing : $search");
+    $log->debug("Autocompleting $thing against $fragment fragment");
 
-    my $collection;
-    
     try {
-        $collection  = $mongo->collection(ucfirst($thing));
+        my @values  = $mongo->collection(ucfirst($thing))
+                            ->autocomplete($fragment);
+        # @values = (
+        #    { id => x, key => keythatwascompletedon },...
+        # )
+        $self->do_render({
+            records             => \@values,
+            queryRecordCount    => scalar(@values),
+            totalRecordCount    => scalar(@values),
+        });
     }
     catch {
-        $log->error("Failed to get collection $thing");
-        $self->do_error(400, { error_msg => "missing or invalid collection"});
-        return;
+        $log->error("In API autocomplete, Error: $_");
+        $log->error(longmess);
+        $self->render_error(400, { error_msg => $_ } );
     };
-
-    unless (defined $collection) {
-        $self->do_error(400, {
-            error_msg => "No collection matching $thing" });
-        return;
-    }
-
-    my %keymap  = (
-        'source'    => 'value',
-        'tag'       => 'value',
-        'event'     => 'subject',
-        'user'      => 'username',
-        'incident'  => 'subject',
-        'intel'     => 'subject',
-        'guide'     => 'subject',
-        'entity'    => 'value',
-        'checklist' => 'subject',
-        'file'      => 'filename',
-        'group'     => 'name',
-    );
-    my $key = $keymap{$thing};
-
-    unless ($key) {
-        $log->error("Autocomplete not suported on $thing");
-        $self->do_error(400, { error_msg => "Autocomplete not supported on $thing" });
-        return;
-
-    }
-
-    my @values  = ();
-    my $match   = { $key => qr/$search/i };
-
-    $log->debug("Matching: ",{filter=>\&Dumper,value=>$match});
-
-    my $cursor  = $collection->find($match);
-
-    unless ($cursor) {
-        $log->error("no matching autocomplete");
-    }
-    else {
-        @values  = map { { id => $_->{id}, $key => $_->{$key} } } $cursor->all;
-    }
-
-    $self->do_render({
-        records             => \@values,
-        queryRecordCount    => scalar(@values),
-        totalRecordCount    => scalar(@values),
-    });
 }
 
 sub whoami {
@@ -2775,6 +1689,11 @@ sub whoami {
     if ( defined ( $userobj )  ) {
         $userobj->update_set(lastvisit => $env->now);
         my $user_href   = $userobj->as_hash;
+        my $group_aref  = $self->get_groups;
+        $log->debug("groups aref: ",{filter=>\&Dumper,value=>$group_aref});
+        if ( $env->is_admin($user_href->{username}, $group_aref)){
+            $user_href->{is_admin} = 1;
+        }
         # TODO:  move this to config file?
         # placed here initially for convenience but not very logical
         # since it has nothing to do with the user
@@ -2802,194 +1721,33 @@ sub whoami {
     }
 }
 
-sub get_entity_count {
-    my $self    = shift;
-    my $entity  = shift;
-    my $value   = $entity->value;
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
-    my $col     = $mongo->collection('Link');
-    my $timer   = $env->get_timer("get_entity_count");
-    #my $count   = $col->get_total_appearances($entity);
-    my $count   = $col->get_display_count($entity);
-    &$timer;
-    return $count;
-}
-
-sub get_entry_count {
-    my $self    = shift;
-    my $entity  = shift;
-    my $value   = $entity->value;
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
-    my $timer   = $env->get_timer("get_entry_count");
-    my $col     = $mongo->collection('Entry');
-    my $cursor  = $col->get_entries(
-        target_id   => $entity->id,
-        target_type => "entity",
-    );
-    &$timer;
-    return $cursor->count;
-}
-
-sub get_max_id {
-    my $self    = shift;
-    my $col     = shift;
-    my $env     = $self->env;
-    my $mongo   = $env->mongo;
-    my $timer   = $env->get_timer("get_max_id");
-    my $c       = $mongo->collection(ucfirst($col));
-    my $cursor  = $c->find({});
-    $cursor->sort({id => -1});
-    my $obj     = $cursor->next;
-    return $obj->id;
-}
-
-sub get_game_data {
+sub get_cidr_matches {
     my $self    = shift;
     my $env     = $self->env;
-    my $mongo   = $env->mongo;
     my $log     = $env->log;
-    my $user    = $self->session('user');
-    my $tt      = {
-        teacher     => "Most Guide Entries Authored",
-        tattler     => "Most Incidents Promoted",
-        alarmist    => "Most Alerts Promoted",
-        closer      => "Most Closed things",
-        cleaner     => "Most Deleted Things",
-        fixer       => "Most Edited Entries",
-        operative   => "Most Intel Entries",
-    };
-
-    my $col = $mongo->collection('Game');
-    my $cur = $col->find();
-    my %res = ();
-
-    while ( my $gobj = $cur->next ) {
-        my $results_aref    = $gobj->results;
-        my $name            = $gobj->game_name;
-        my $tip             = $gobj->tooltip;
-        my $updated         = $gobj->lastupdate;
-
-        $res{$name} = [
-            { username => $results_aref->[0]->{_id},
-              count    => $results_aref->[0]->{total}, 
-              tooltip   => $tip, 
-            },
-            { username => $results_aref->[1]->{_id},   
-              count    => $results_aref->[1]->{total},
-              tooltip   => $tip, 
-            },
-            { username => $results_aref->[2]->{_id},   
-              count    => $results_aref->[2]->{total},
-              tooltip   => $tip, 
-            },
-        ];
-    }
-
-    $self->do_render(\%res);
-
-}
-
-sub get_status {
-    my $self    = shift;
-    my $env     = $self->env;
     my $mongo   = $env->mongo;
-    my $log     = $env->log;
 
-    my $status  = {
-        'Scot Flair Daemon'         => $self->get_daemon_status('scfd'),
-        'Scot Elastic Push Daemon'  => $self->get_daemon_status('scepd'),
-        'System Uptime'             => `uptime`,
-        'MongoDB'                   => $self->get_daemon_status('mongod'),
-    };
-    $self->do_render($status);
-}
-
-sub get_daemon_status {
-    my $self    = shift;
-    my $daemon  = shift;
-    my $log     = $self->env->log;
-
-    my $systemd = `systemctl | grep "\-.mount"`;
-
-    if ( $systemd =~ /-\.mount/ ) {
-        $log->debug("systemd style services!");
-        my $result  = `service $daemon status`;
-        my @statuses  = ();
-        foreach my $line (split(/\n/,$result)) {
-            next unless ( $line =~ / +\S+:/ );
-            my ($type, $data) = split(/: /,$line);
-            if ( $type =~ /Active/ ) {
-                push @statuses, $data;
-            }
-            if ( $type =~ /Main PID/ ) {
-                push @statuses, $data;
-            }
-        }
-        return join(' ',reverse @statuses);
-    }
-
-    my $result  = `service $daemon status`;
-    $log->debug("DAEMON status is $result");
-    my ($status)=  $result =~ /.*\[(.*)\]/; 
-    $log->debug("plucked $status");
-    return $result;
-}
-
-sub get_who_online {
-    my $self    = shift;
-    my $env     = $self->env;
-    my $now     = $env->now;
-    my $ago     = 30 * 60;   # activity in last 30 minutes
-    my $col     = $env->mongo->collection('User');
-    my $cur     = $col->find({ lastvisit => { '$gte' => $now - $ago }});
-    $cur->sort({lastvisit => -1});
-    my $total   = $cur->count;
-    my @results = ();
-
-    while (my $user = $cur->next ) {
-        push @results, {
-            username        => $user->username,
-            last_activity   => $now - $user->lastvisit,
+    try {
+        my $req_href= $self->get_request_params;
+        my $cidr    = $req_href->{request}->{params}->{cidr};
+        my ($cidrbase,$cidrbits) = split(/\//,$cidr);
+        my $ipobj   = Net::IP->new($cidr);
+        my $mask    = substr($ipobj->binip, 0, $cidrbits);
+        
+        my @records = $mongo->collection('Entity')->get_cidr_ipaddrs($mask);    
+        my $count   = scalar(@records);
+        my $return_href = {
+            records             => \@records,
+            queryRecordCount    => scalar(@records),
+            totalRecordCount    => $count,
         };
+        $self->do_render($return_href);
+
     }
-    $self->do_render({
-        records             => \@results,
-        queryRecordCount    => scalar(@results),
-        totalRecordCount    => $total
-
-    });
-}
-
-sub get_apikey {
-    my $self    = shift;
-    my $user    = $self->session('user');
-    my $groups  = $self->session('groups');
-    my $log     = $self->env->log;
-
-    unless (defined $user) {
-        $log->error("unauthenticated user trying to get apikey!");
-        $self->do_error(400, { error_msg => "missing user" });
-        return;
-    }
-
-    my $ug  = Data::UUID->new;
-    my $key = $ug->create_str();
-
-    my $record  = {
-        apikey      => $key,
-        groups      => $groups,
-        username    => $user,
+    catch {
+        $log->error("in API cidr, Error: $_");
+        $self->render_error(400, { error_msg => $_ } );
     };
-
-    my $collection  = $self->env->mongo->collection('Apikey');
-    my $apikey      = $collection->create_from_api($record);
-
-    $self->do_render({
-        status  => 'ok',
-        apikey  => $apikey->apikey,
-    });
 }
 
 1;

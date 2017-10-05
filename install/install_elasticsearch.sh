@@ -58,9 +58,9 @@ EOF
 
 function create_se_init {
     ES_SYSD=/etc/systemd/system/elasticsearch.service
-    ES_SYSD_SRC=$DEVDIR/src/systemd/elasticsearch.service
+    ES_SYSD_SRC=$SCOT_CONFIG_SRC/systemd/elasticsearch.service
     ES_INIT=/etc/init.d/elasticsearch
-    ES_INIT_SRC=$DEVDIR/src/elasticsearch/elasticsearch
+    ES_INIT_SRC=$SCOT_CONFIG_SRC/elasticsearch/elasticsearch
 
     echo "-- installing init scripts"
 
@@ -146,7 +146,7 @@ function install_elasticsearch {
 
     if [[ $ES_RESET_DB == "yes" ]]; then
         echo "-- creating elasticsearch mappings..."
-        . $DEVDIR/install/src/elasticsearch/mapping.sh
+        . $SCOT_CONFIG_SRC/elasticsearch/mapping.sh
     fi
 
 }

@@ -50,7 +50,7 @@ var ListViewDataEach = React.createClass({
                 }
             }
         }
-        this.props.selected(type,rowid,taskid)
+        this.props.selected(type,rowid, undefined, taskid)
         
     },
     render: function() {
@@ -159,7 +159,7 @@ var ListViewStatus = React.createClass({
             classStatus = 'alertgroup_promoted'
             color = 'orange'
         };
-        if (this.props.type == 'alertgroup') {
+        if (this.props.type == 'alertgroup' || this.props.type == 'alert') {
             open = this.props.dataOneRow.open_count;
             closed = this.props.dataOneRow.closed_count;
             promoted = this.props.dataOneRow.promoted_count;

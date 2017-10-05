@@ -25,6 +25,7 @@ with    qw(
     Scot::Role::Permission
     Scot::Role::Target
     Scot::Role::Times
+    Scot::Role::TLP
 );
 
 =head1 Attributes
@@ -39,6 +40,7 @@ The "type" of entry.
 "entry"     => normal user entered
 "task"      => a task entry
 "file"      => holder of files uploaded entries
+"json"      => json data
 
 =cut
 

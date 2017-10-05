@@ -143,8 +143,8 @@ sub _build_ldap_connection {
     }
     delay_exp { 3, 1e5 }
     catch {
-        $log->error("Failed to Connect to IMAP Server: $_");
-        die "Failed to Connect to IMAP server";
+        $log->error("Failed to Connect to LDAP Server: $_");
+        die "Failed to Connect to LDAP server";
     };
     return $ldap;
 }
@@ -216,6 +216,15 @@ sub do_bind {
 
     my $msg;
 
+#    $msg = $ldap->bind($dn, 'password' => $pass);
+#
+#    if ( $msg->is_error ) {
+#        $log->error("LDAP error: ",{filter=>\&Dumper, value=>$msg});
+#        return undef;
+#    }
+#    $log->debug("Ldap return ",{filter=>\&Dumper, value=>$msg});
+#    return 1;
+
     retry {
         $msg    = $ldap->bind($dn, 'password' => $pass);
         if ( $msg->is_error ) {
@@ -230,8 +239,12 @@ sub do_bind {
     }
     catch {
         $log->error("Failed to bind for $dn");
-        return 0;
+        return undef;
     };
+    if ( ! defined $msg ) {
+        $log->warn("message not defined");
+        return undef;
+    }
     return 1;
 }
 

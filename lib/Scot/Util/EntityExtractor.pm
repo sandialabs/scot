@@ -70,6 +70,11 @@ sub _build_suffixfile {
     return $self->get_config_value($attr, $default, $envname);
 }
 
+Readonly my $CVE_REGEX  => qr{
+    \b
+    (CVE-(\d{4})-(\d{4,}))
+    \b
+}xms;
 
 Readonly my $DOMAIN_REGEX_2 => qr{
     \b                                  # word boundary
@@ -194,8 +199,13 @@ Readonly my $IP_REGEX   => qr{
         # last octet
         (?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)
     )
-    (?!\.)\b
+    (?!\.[0-9a-zA-Z])\b
+    # this is how it was, but there is a bug
+    # ipaddrs at the end of a sentance can have a period like 10.1.1.1. 
+    # above is an attempt to fix and needs testing 
+    # (?!\.)\b
 }xms;
+
 
 Readonly my $LAT_LONG_REGEX => qr{
     \b
@@ -208,6 +218,7 @@ sub _build_regexes {
     my $self    = shift;
     return [
         { type  => "ipaddr",    regex  => $IP_REGEX },
+        { type  => "ipv6",      regex  => $self->build_ipv6_regex },
         { type  => "email",     regex  => $EMAIL_REGEX_2 },
         { type  => "md5",       regex  => $MD5_REGEX },
         { type  => "sha1",      regex  => $SHA1_REGEX },
@@ -215,9 +226,30 @@ sub _build_regexes {
         { type  => "domain",    regex  => $DOMAIN_REGEX_2 },
         { type  => "file",      regex  => $FILE_REGEX },
         { type  => "snumber",   regex => $SNUMBER_REGEX },
+        { type  => "cve",       regex  => $CVE_REGEX },
     ];
 }
 
+sub build_ipv6_regex {
+    my $self    = shift;
+    my $ipv4 = "((25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))";
+    my $hex = "[0-9a-fA-F]{1,4}";
+
+    my @tail = ( ":",
+              "(:($hex)?|$ipv4)",
+              ":($ipv4|$hex(:$hex)?|)",
+              "(:$ipv4|:$hex(:$ipv4|(:$hex){0,2})|:)",
+              "((:$hex){0,2}(:$ipv4|(:$hex){1,2})|:)",
+              "((:$hex){0,3}(:$ipv4|(:$hex){1,2})|:)",
+              "((:$hex){0,4}(:$ipv4|(:$hex){1,2})|:)" );
+
+    my $ipv6_re = $hex;
+    $ipv6_re = "$hex:($ipv6_re|$_)" for @tail;
+    $ipv6_re = qq/:(:$hex){0,5}((:$hex){1,2}|:$ipv4)|$ipv6_re/;
+    $ipv6_re =~ s/\(/(?:/g;
+    $ipv6_re = qr/$ipv6_re/;
+    return $ipv6_re;
+}
 
 =item C<process_html>
 
@@ -385,7 +417,7 @@ sub process_words {
             my $regex   = $re->{regex};
 
             $log->debug(" "x$level."Looking for $type");
-            $log->debug(" "x$level." regex ",
+            $log->trace(" "x$level." regex ",
                         { filter => \&Dumper, value => $regex });
 
             if ( $word  =~ m/$regex/ ) {

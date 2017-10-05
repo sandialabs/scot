@@ -8,14 +8,15 @@ var Inspector               = require('react-inspector');
 var SelectedEntry           = require('../detail/selected_entry.jsx');
 var AddEntry                = require('../components/add_entry.jsx');
 var Draggable               = require('react-draggable');
+var DetailDataStatus        = require('../components/detail_data_status.jsx');
 var Link                    = require('react-router-dom').Link;
 var Store                   = require('../activemq/store.jsx');
+var Marker                  = require('../components/marker.jsx').default;
 
 var startX;
 var startY;
 var startWidth;
 var startHeight;
-
 
 var EntityDetail = React.createClass({
     getInitialState: function() {
@@ -53,44 +54,56 @@ var EntityDetail = React.createClass({
             $.ajax({
                 type: 'GET',
                 url: 'scot/api/v2/' + this.props.entitytype + '/byname',
-                data: {name:valueClicked}
-            }).success(function(result) {
-                var entityid = result.id;
-                if (this.isMounted()) {
-                    this.setState({entityid:entityid});
-                    $.ajax({
-                        type: 'GET',
-                        url: 'scot/api/v2/' + this.props.entitytype + '/' + entityid 
-                    }).success(function(result) {
-                        //this.setState({entityData:result})
-                        var newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype, valueClicked:result.value}
-                        currentTabArray.push(newTab);
-                        if (this.isMounted()) {
-                            var entityidsarray = [];
-                            entityidsarray.push(entityid);
-                            this.setState({tabs:currentTabArray,currentKey:entityid,initialLoad:true,processedIds:entityidsarray});
-                            Store.storeKey(entityid);
-                            Store.addChangeListener(this.updated);
-                        }
-                    }.bind(this));
-                }
-            }.bind(this))
+                data: {name:valueClicked},
+                success: function(result) {
+                    var entityid = result.id;
+                    if (this.isMounted()) {
+                        this.setState({entityid:entityid});
+                        $.ajax({
+                            type: 'GET',
+                            url: 'scot/api/v2/' + this.props.entitytype + '/' + entityid,
+                            success: function(result) {
+                                //this.setState({entityData:result})
+                                var newTab = {data:result, entityid:entityid, entitytype:this.props.entitytype, valueClicked:result.value}
+                                currentTabArray.push(newTab);
+                                if (this.isMounted()) {
+                                    var entityidsarray = [];
+                                    entityidsarray.push(entityid);
+                                    this.setState({tabs:currentTabArray,currentKey:entityid,initialLoad:true,processedIds:entityidsarray});
+                                    Store.storeKey(entityid);
+                                    Store.addChangeListener(this.updated);
+                                }
+                            }.bind(this),
+                            error: function(data) {
+                                this.props.errorToggle('failed to get entity detail information', data)
+                            }.bind(this)
+                        })
+                    }
+                }.bind(this),
+                error: function(data) {
+                    this.props.errorToggle('failed to get entity detail id information ', data)
+                }.bind(this)
+            })
         } else {
             $.ajax({
                 type: 'GET',
-                url: 'scot/api/v2/' + this.props.entitytype + '/' + this.state.entityid
-            }).success(function(result) {
-                //this.setState({entityData:result})
-                var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:result.value}
-                currentTabArray.push(newTab);
-                if (this.isMounted()) {
-                    var entityidsarray = [];
-                    entityidsarray.push(result.id);
-                    this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true, processedIds:entityidsarray});
-                    Store.storeKey(this.props.entityid);
-                    Store.addChangeListener(this.updated);
-                }
-            }.bind(this));
+                url: 'scot/api/v2/' + this.props.entitytype + '/' + this.state.entityid,
+                success: function(result) {
+                    //this.setState({entityData:result})
+                    var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:result.value}
+                    currentTabArray.push(newTab);
+                    if (this.isMounted()) {
+                        var entityidsarray = [];
+                        entityidsarray.push(result.id);
+                        this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true, processedIds:entityidsarray});
+                        Store.storeKey(this.props.entityid);
+                        Store.addChangeListener(this.updated);
+                    }
+                }.bind(this),
+                error: function(data) {
+                    this.props.errorToggle('failed to get entity detail information', data)
+                }.bind(this)
+            })
         }
         //Esc key closes popup
         function escHandler(event){
@@ -130,38 +143,50 @@ var EntityDetail = React.createClass({
                             $.ajax({
                                 type: 'GET',
                                 url: 'scot/api/v2/' + nextProps.entitytype + '/byname',
-                                data: {name:nextProps.entityvalue}
-                            }).success(function(result) {
-                                var entityid = result.id;
-                                if (this.isMounted()) {
-                                    this.setState({entityid:entityid});
-                                    $.ajax({
-                                        type: 'GET',
-                                        url: 'scot/api/v2/' + nextProps.entitytype + '/' + entityid
-                                    }).success(function(result) {
-                                        var newTab = {data:result, entityid:entityid, entitytype:nextProps.entitytype, valueClicked:nextProps.entityvalue}
-                                        currentTabArray.push(newTab);
-                                        if (this.isMounted()) {
-                                            this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
-                                            Store.storeKey(nextProps.entityid);
-                                            Store.addChangeListener(this.updated);
-                                        }
-                                    }.bind(this));
-                                }
-                            }.bind(this))
+                                data: {name:nextProps.entityvalue},
+                                success: function(result) {
+                                    var entityid = result.id;
+                                    if (this.isMounted()) {
+                                        this.setState({entityid:entityid});
+                                        $.ajax({
+                                            type: 'GET',
+                                            url: 'scot/api/v2/' + nextProps.entitytype + '/' + entityid,
+                                            success: function(result) {
+                                                var newTab = {data:result, entityid:entityid, entitytype:nextProps.entitytype, valueClicked:nextProps.entityvalue}
+                                                currentTabArray.push(newTab);
+                                                if (this.isMounted()) {
+                                                    this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
+                                                    Store.storeKey(nextProps.entityid);
+                                                    Store.addChangeListener(this.updated);
+                                                }
+                                            }.bind(this),
+                                            error: function(data) {
+                                                this.props.errorToggle('failed to get entity detail information', data);
+                                            }.bind(this)
+                                        })
+                                    }
+                                }.bind(this),
+                                error: function(data) {
+                                    this.props.errorToggle('failed to get entity id detail information', data)
+                                }.bind(this)
+                            })
                         } else {
                             $.ajax({
                                 type: 'GET',
-                                url: 'scot/api/v2/' + nextProps.entitytype + '/' + nextProps.entityid
-                            }).success(function(result) {
-                                var newTab = {data:result, entityid:nextProps.entityid, entitytype:nextProps.entitytype, valueClicked:nextProps.entityvalue}
-                                currentTabArray.push(newTab);
-                                if (this.isMounted()) {
-                                    this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
-                                    Store.storeKey(nextProps.entityid);
-                                    Store.addChangeListener(this.updated);
-                                }
-                            }.bind(this));
+                                url: 'scot/api/v2/' + nextProps.entitytype + '/' + nextProps.entityid,
+                                success: function(result) {
+                                    var newTab = {data:result, entityid:nextProps.entityid, entitytype:nextProps.entitytype, valueClicked:nextProps.entityvalue}
+                                    currentTabArray.push(newTab);
+                                    if (this.isMounted()) {
+                                        this.setState({tabs:currentTabArray,currentKey:nextProps.entityid})
+                                        Store.storeKey(nextProps.entityid);
+                                        Store.addChangeListener(this.updated);
+                                    }
+                                }.bind(this),
+                                error: function(data) {
+                                    this.props.errorToggle('failed to get entity detail information', data)
+                                }.bind(this)
+                            })
                         }
                     }.bind(this)
                 }
@@ -210,16 +235,20 @@ var EntityDetail = React.createClass({
                 $.ajax({
                     type: 'GET',
                     url: 'scot/api/v2/' + this.props.entitytype + '/' + currentTabArray[j].entityid,
-                }).success(function(result) {
-                    //this.setState({entityData:result})
-                    var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:result.value}
-                    currentTabArray[currentTabArrayIndex] = newTab;
-                    if (this.isMounted()) {
-                        var entityidsarray = [];
-                        entityidsarray.push(result.id);
-                        this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true, processedIds:entityidsarray});
-                    }
-                }.bind(this));
+                    success: function(result) {
+                        //this.setState({entityData:result})
+                        var newTab = {data:result, entityid:result.id, entitytype:this.props.entitytype, valueClicked:result.value}
+                        currentTabArray[currentTabArrayIndex] = newTab;
+                        if (this.isMounted()) {
+                            var entityidsarray = [];
+                            entityidsarray.push(result.id);
+                            this.setState({tabs:currentTabArray,currentKey:result.id,initialLoad:true, processedIds:entityidsarray});
+                        }
+                    }.bind(this),
+                    error: function(data) {
+                        this.props.errorToggle('failed to get updated entity detail information', data)
+                    }.bind(this)
+                })
             }
         }
     },
@@ -375,7 +404,7 @@ var TabContents = React.createClass({
             return (
                 <div className='tab-content'>
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
-                        <h4 id="myModalLabel">{this.props.data != null ? <EntityValue value={this.props.valueClicked} data={this.props.data}/> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>
+                        <h4 id="myModalLabel">{this.props.data != null ? <EntityValue value={this.props.valueClicked} data={this.props.data} errorToggle={this.props.errorToggle} /> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4>
                     </div>
                     <div style={{height:'100%',display:'flex', flex:'1 1 auto', marginLeft:'10px', flexFlow:'inherit', minHeight:'1px'}}>
                     {this.props.data != null ? <EntityBody data={this.props.data} entityid={this.props.entityid} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle} linkWarningToggle={this.props.linkWarningToggle}/> : <div>Loading...</div>}
@@ -387,7 +416,7 @@ var TabContents = React.createClass({
             return (
                 <div className='tab-content'> 
                     <div style={{flex: '0 1 auto',marginLeft: '10px'}}>
-                        <Link to={guideurl} target="_blank"><h4 id="myModalLabel">{this.props.data != null ? <span><span><EntityValue value={this.props.entityid} /></span><div><EntityValue value={this.props.data.applies_to} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4></Link>
+                        <Link to={guideurl} target="_blank"><h4 id="myModalLabel">{this.props.data != null ? <span><span><EntityValue value={this.props.entityid} errorToggle={this.props.errorToggle} /></span><div><EntityValue value={this.props.data.applies_to} errorToggle={this.props.errorToggle} /></div></span> : <div style={{display:'inline-flex',position:'relative'}}>Loading...</div> }</h4></Link>
                     </div>
                     <div style={{overflow:'auto',flex:'1 1 auto', marginLeft:'10px'}}>
                     {this.props.data != null ? <GuideBody entityid={this.props.entityid} entitytype={this.props.entitytype}/> : <div>Loading...</div>}
@@ -402,25 +431,23 @@ var EntityValue = React.createClass({
     render: function() {
         if (this.props.data != undefined) {  //Entity Detail Popup showing the entity type
             var entityurl = '/' + 'entity/' + this.props.data.id;
-            var statusClass = '';
-            if (this.props.data.status == 'untracked') {
-                statusClass = 'entity-untracked';
-            } else if (this.props.data.status == 'tracked') {
-                statusClass = 'entity-tracked';
-            }
+            
             return (
                 <div className='flair_header'>
-                    <Link to={entityurl} target="_blank">
-                        Entity {this.props.data.id} 
-                    </Link> 
-                    <div style={{display:'flex'}}>
-                        <div className={statusClass}>
-                            {this.props.data.status}
-                        </div>
+                    <div>
+                        <Link to={entityurl} target="_blank">
+                            Entity {this.props.data.id}
+                        </Link>
                         <span>&nbsp;</span>
+                        <DetailDataStatus status={this.props.data.status} id={this.props.data.id} type={'entity'} errorToggle={this.props.errorToggle} /> 
+                        <span>&nbsp;</span>   
+                        <Marker type='entity' id={this.props.data.id} string={this.props.value} />
+                    </div>
+                    <div style={{display: 'flex'}}>
+                        
                         <div style={{display:'flex'}}>
-                            {this.props.data.type}: {this.props.value} 
-                        </div>
+                            {this.props.data.type}: {this.props.value}
+                        </div> 
                     </div>
                 </div>
             )
@@ -501,7 +528,7 @@ var EntityBody = React.createClass({
                     {entityEnrichmentLinkArr}
                     </div>
                     <div style={{maxHeight: '30vh', overflowY: 'auto'}}>
-                        <span><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><Link to={href} style={{color:'#c400ff'}} target='_blank'>List truncated due to large amount of references. Click to view the whole entity</Link></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton}/><br/>
+                        <span><b>Appears: {this.state.appearances} times</b></span>{this.state.showFullEntityButton == true ? <span style={{paddingLeft:'5px'}}><Link to={href} style={{color:'#c400ff'}} target='_blank'>List truncated due to large amount of references. Click to view the whole entity</Link></span> : null}<br/><EntityReferences entityid={this.props.entityid} updateAppearances={this.updateAppearances} type={this.props.type} showFullEntityButton={this.showFullEntityButton} errorToggle={this.props.errorToggle}/><br/>
                     </div>
                     <hr style={{marginTop:'.5em', marginBottom:'.5em'}}/>
                     <div style={{maxHeight:'50vh', overflowY:'auto'}}>
@@ -594,18 +621,13 @@ var EntityReferences = React.createClass({
             entityDataEvent:null,
             entityDataIncident:null,
             entityDataIntel:null,
-            entityDataAlertGroupLoading:true,
-            entityDataEventLoading:true,
-            entityDataIncidentLoading:true,
-            entityDataIntelLoading:true,
-            navigateType: '',
-            navigateId: null,
-            selected:{},
+            entityDataSignature: null,
             maxRecords: maxRecords,
             loadingAlerts: true,
             loadingEvents: true,
             loadingIncidents: true,
             loadingIntel: true,
+            loadingSignature: true,
             loading: true,
         }
     },
@@ -615,153 +637,258 @@ var EntityReferences = React.createClass({
             url: 'scot/api/v2/entity/' + this.props.entityid + '/alert',
             data: {sort:JSON.stringify({'id':-1})},
             traditional:true,
-        }).then(function(result) {
-            var result = result.records
-            var arr = [];
-            var arrPromoted = [];
-            var arrClosed = [];
-            var arrOpen = [];
-            var recordNumber = this.state.maxRecords;
-            if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
-            for(var i=0; i < recordNumber; i++) {
-                if (result[i] != null) {
-                    if (result[i].status == 'promoted'){
-                        arrPromoted.push(<ReferencesBody type={'alert'} data={result[i]} index={i}/>)
-                    } else if (result[i].status == 'closed') {
-                        arrClosed.push(<ReferencesBody type={'alert'} data={result[i]} index={i}/>)
-                    } else {
-                        arrOpen.push(<ReferencesBody type={'alert'} data={result[i]} index={i}/>)
+            success: function(result) {
+                var result = result.records
+                var arr = [];
+                var arrPromoted = [];
+                var arrClosed = [];
+                var arrOpen = [];
+                var recordNumber = this.state.maxRecords;
+                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+                for(var i=0; i < recordNumber; i++) {
+                    if (result[i] != null) {
+                        if (result[i].status == 'promoted'){
+                            arrPromoted.push(<ReferencesBody type={'alert'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else if (result[i].status == 'closed') {
+                            arrClosed.push(<ReferencesBody type={'alert'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else {
+                            arrOpen.push(<ReferencesBody type={'alert'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        }
                     }
                 }
-            }
-            arr.push(arrPromoted);
-            arr.push(arrClosed);
-            arr.push(arrOpen);
-            if (this.isMounted()) {
-                if (result.length >= 100) {
-                    this.props.showFullEntityButton();
+                arr.push(arrPromoted);
+                arr.push(arrClosed);
+                arr.push(arrOpen);
+                if (this.isMounted()) {
+                    if (result.length >= 100) {
+                        this.props.showFullEntityButton();
+                    }
+                    this.props.updateAppearances(result.length);
+                    this.setState({entityDataAlertGroup:arr,loadingAlerts:false})
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false  && this.state.loadingSignature == false) {
+                        this.setState({loading:false});
+                    }
                 }
-                this.props.updateAppearances(result.length);
-                this.setState({entityDataAlertGroup:arr,loadingAlerts:false})
-                if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
-                    this.setState({loading:false});
-                }
-            }
-        }.bind(this));
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get entity references for alerts', data) 
+            }.bind(this)
+        })
+
         this.eventRequest = $.ajax({
             type: 'get',
             url: 'scot/api/v2/entity/' + this.props.entityid + '/event',
             data: {sort:JSON.stringify({'id':-1})},
             traditional: true,
-        }).then(function(result) {
-            var result = result.records
-            var arr = [];
-            var arrPromoted = [];
-            var arrClosed = [];
-            var arrOpen = [];
-            var recordNumber = this.state.maxRecords;
-            if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
-            for(var i=0; i < recordNumber; i++) {
-                if (result[i] != null) {
-                    if (result[i].status == 'promoted'){
-                        arrPromoted.push(<ReferencesBody type={'event'} data={result[i]} index={i}/>)
-                    } else if (result[i].status == 'closed') {
-                        arrClosed.push(<ReferencesBody type={'event'} data={result[i]} index={i}/>)
-                    } else {
-                        arrOpen.push(<ReferencesBody type={'event'} data={result[i]} index={i}/>)
+            success: function(result) {
+                var result = result.records
+                var arr = [];
+                var arrPromoted = [];
+                var arrClosed = [];
+                var arrOpen = [];
+                var recordNumber = this.state.maxRecords;
+                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+                for(var i=0; i < recordNumber; i++) {
+                    if (result[i] != null) {
+                        if (result[i].status == 'promoted'){
+                            arrPromoted.push(<ReferencesBody type={'event'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else if (result[i].status == 'closed') {
+                            arrClosed.push(<ReferencesBody type={'event'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else {
+                            arrOpen.push(<ReferencesBody type={'event'} data={result[i]} index={i} errorToggle={this.props.errorToggle} />)
+                        }
                     }
                 }
-            }
-            arr.push(arrPromoted);
-            arr.push(arrClosed);
-            arr.push(arrOpen);
-            if (this.isMounted()) {
-                if (result.length >= 100) {
-                    this.props.showFullEntityButton();
+                arr.push(arrPromoted);
+                arr.push(arrClosed);
+                arr.push(arrOpen);
+                if (this.isMounted()) {
+                    if (result.length >= 100) {
+                        this.props.showFullEntityButton();
+                    }
+                    this.props.updateAppearances(result.length);
+                    this.setState({entityDataEvent:arr,loadingEvents:false})
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false && this.state.loadingSignature ) {
+                        this.setState({loading:false});
+                    }
                 }
-                this.props.updateAppearances(result.length);
-                this.setState({entityDataEvent:arr,loadingEvents:false})
-                if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
-                    this.setState({loading:false});
-                }
-            }
-        }.bind(this));   
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get entity reference for events', data);
+            }.bind(this)
+        })
+
         this.incidentRequest = $.ajax({
             type: 'get',
             url: 'scot/api/v2/entity/' + this.props.entityid + '/incident',
             data: {sort:JSON.stringify({'id':-1})},
             traditional: true,
-        }).then(function(result) {
-            var result = result.records
-            var arr = [];
-            var arrPromoted = [];
-            var arrClosed = [];
-            var arrOpen = [];
-            var recordNumber = this.state.maxRecords;
-            if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
-            for(var i=0; i < recordNumber; i++) {
-                if (result[i] != null) {
-                    if (result[i].status == 'promoted'){
-                        arrPromoted.push(<ReferencesBody type={'incident'} data={result[i]} index={i}/>)
-                    } else if (result[i].status == 'closed') {
-                        arrClosed.push(<ReferencesBody type={'incident'} data={result[i]} index={i}/>)
-                    } else {
-                        arrOpen.push(<ReferencesBody type={'incident'} data={result[i]} index={i}/>)
+            success: function(result) {
+                var result = result.records
+                var arr = [];
+                var arrPromoted = [];
+                var arrClosed = [];
+                var arrOpen = [];
+                var recordNumber = this.state.maxRecords;
+                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+                for(var i=0; i < recordNumber; i++) {
+                    if (result[i] != null) {
+                        if (result[i].status == 'promoted'){
+                            arrPromoted.push(<ReferencesBody type={'incident'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else if (result[i].status == 'closed') {
+                            arrClosed.push(<ReferencesBody type={'incident'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else {
+                            arrOpen.push(<ReferencesBody type={'incident'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        }
                     }
                 }
-            }
-            arr.push(arrPromoted);
-            arr.push(arrClosed);
-            arr.push(arrOpen);
-            if (this.isMounted()) {
-                if (result.length >= 100) {
-                    this.props.showFullEntityButton();
+                arr.push(arrPromoted);
+                arr.push(arrClosed);
+                arr.push(arrOpen);
+                if (this.isMounted()) {
+                    if (result.length >= 100) {
+                        this.props.showFullEntityButton();
+                    }
+                    this.props.updateAppearances(result.length);
+                    this.setState({entityDataIncident:arr, loadingIncidents:false})
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false && this.state.loadingSignature == false) {
+                        this.setState({loading:false});
+                    }
                 }
-                this.props.updateAppearances(result.length);
-                this.setState({entityDataIncident:arr, loadingIncidents:false})
-                if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
-                    this.setState({loading:false});
-                }
-            }
-        }.bind(this));  
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get entity references for incidents', data)
+            }.bind(this)
+        })
+
         this.intelRequest = $.ajax({
             type: 'get',
             url: 'scot/api/v2/entity/' + this.props.entityid + '/intel',
             data: {sort:JSON.stringify({'id':-1})},
             traditional: true,
-        }).then(function(result) {
-            var result = result.records
-            var arr = [];
-            var arrPromoted = [];
-            var arrClosed = [];
-            var arrOpen = [];
-            var recordNumber = this.state.maxRecords;
-            if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
-            for(var i=0; i < recordNumber; i++) {
-                if (result[i] != null) {
-                    if (result[i].status == 'promoted'){
-                        arrPromoted.push(<ReferencesBody type={'intel'} data={result[i]} index={i}/>)
-                    } else if (result[i].status == 'closed') {
-                        arrClosed.push(<ReferencesBody type={'intel'} data={result[i]} index={i}/>)
-                    } else {
-                        arrOpen.push(<ReferencesBody type={'intel'} data={result[i]} index={i}/>)
+            success: function(result) {
+                var result = result.records
+                var arr = [];
+                var arrPromoted = [];
+                var arrClosed = [];
+                var arrOpen = [];
+                var recordNumber = this.state.maxRecords;
+                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+                for(var i=0; i < recordNumber; i++) {
+                    if (result[i] != null) {
+                        if (result[i].status == 'promoted'){
+                            arrPromoted.push(<ReferencesBody type={'intel'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else if (result[i].status == 'closed') {
+                            arrClosed.push(<ReferencesBody type={'intel'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else {
+                            arrOpen.push(<ReferencesBody type={'intel'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        }
                     }
                 }
-            }
-            arr.push(arrPromoted);
-            arr.push(arrClosed);
-            arr.push(arrOpen);
-            if (this.isMounted()) {
-                if (result.length >= 100) {
-                    this.props.showFullEntityButton();
+                arr.push(arrPromoted);
+                arr.push(arrClosed);
+                arr.push(arrOpen);
+                if (this.isMounted()) {
+                    if (result.length >= 100) {
+                        this.props.showFullEntityButton();
+                    }
+                    this.props.updateAppearances(result.length);
+                    this.setState({entityDataIntel:arr, loadingIntel:false})
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false && this.state.loadingSignature == false) {
+                        this.setState({loading:false});
+                    }
                 }
-                this.props.updateAppearances(result.length);
-                this.setState({entityDataIntel:arr, loadingIntel:false})
-                if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
-                    this.setState({loading:false});
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get entity references for intel') 
+            }.bind(this)
+        })
+        
+        this.signatureRequest = $.ajax({
+            type: 'get',
+            url: 'scot/api/v2/entity/' + this.props.entityid + '/signature',
+            data: {sort:JSON.stringify({'id':-1})},
+            traditional: true,
+            success: function(result) {
+                var result = result.records
+                var arr = [];
+                var arrPromoted = [];
+                var arrClosed = [];
+                var arrOpen = [];
+                var recordNumber = this.state.maxRecords;
+                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+                for(var i=0; i < recordNumber; i++) {
+                    if (result[i] != null) {
+                        if (result[i].status == 'promoted'){
+                            arrPromoted.push(<ReferencesBody type={'signature'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else if (result[i].status == 'closed') {
+                            arrClosed.push(<ReferencesBody type={'signature'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else {
+                            arrOpen.push(<ReferencesBody type={'signature'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        }
+                    }
                 }
-            }
-        }.bind(this));   
+                arr.push(arrPromoted);
+                arr.push(arrClosed);
+                arr.push(arrOpen);
+                if (this.isMounted()) {
+                    if (result.length >= 100) {
+                        this.props.showFullEntityButton();
+                    }
+                    this.props.updateAppearances(result.length);
+                    this.setState({entityDataSignature:arr, loadingSignature:false})
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false  && this.state.loadingIntel == false && this.state.loadingSignature == false) {
+                        this.setState({loading:false});
+                    }
+                }
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get entity references for signature') 
+            }.bind(this)
+        })
+        /*
+        this.entityRequest = $.ajax({
+            type: 'get',
+            url: 'scot/api/v2/entity/' + this.props.entityid + '/entity',
+            data: {sort:JSON.stringify({'id':-1})},
+            traditional: true,
+            success: function(result) {
+                var result = result.records
+                var arr = [];
+                var arrPromoted = [];
+                var arrClosed = [];
+                var arrOpen = [];
+                var recordNumber = this.state.maxRecords;
+                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+                for(var i=0; i < recordNumber; i++) {
+                    if (result[i] != null) {
+                        if (result[i].status == 'promoted'){
+                            arrPromoted.push(<ReferencesBody type={'entity'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else if (result[i].status == 'closed') {
+                            arrClosed.push(<ReferencesBody type={'entity'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        } else {
+                            arrOpen.push(<ReferencesBody type={'entity'} data={result[i]} index={i} errorToggle={this.props.errorToggle}/>)
+                        }
+                    }
+                }
+                arr.push(arrPromoted);
+                arr.push(arrClosed);
+                arr.push(arrOpen);
+                if (this.isMounted()) {
+                    if (result.length >= 100) {
+                        this.props.showFullEntityButton();
+                    }
+                    this.props.updateAppearances(result.length);
+                    this.setState({entityDataIntel:arr, loadingIntel:false})
+                    if (this.state.loadingAlerts == false && this.state.loadingEvents == false && this.state.loadingIncidents == false && this.state.loadingIntel == false) {
+                        this.setState({loading:false});
+                    }
+                }
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to get entity references for entity') 
+            }.bind(this)
+        })*/
         $('#sortableentitytable'+this.props.entityid).tablesorter();
     },
     componentDidUpdate: function() {
@@ -774,7 +901,7 @@ var EntityReferences = React.createClass({
         var id = 'sortableentitytable' + this.props.entityid;
         return (
             <div className='entityTableWrapper'>
-            {this.state.loading ? <span>Loading: {this.state.loadingAlerts ? <span>Alerts </span> : null}{this.state.loadingEvents ? <span>Events </span> : null}{this.state.loadingIncidents ? <span>Incidents </span> : null}{this.state.loadingIntel ? <span>Intel </span> : null}</span>: null}
+            {this.state.loading ? <span>Loading: {this.state.loadingAlerts ? <span>Alerts </span> : null}{this.state.loadingEvents ? <span>Events </span> : null}{this.state.loadingIncidents ? <span>Incidents </span> : null}{this.state.loadingIntel ? <span>Intel </span> : null}{this.state.loadingSignature ? <span>Signature </span> : null}</span>: null}
             <table className="tablesorter entityTableHorizontal" id={id} width='100%'>
                 <thead>
                     <tr>
@@ -788,6 +915,7 @@ var EntityReferences = React.createClass({
                     </tr>
                 </thead>
                 <tbody>
+                    {this.state.entityDataSignature}
                     {this.state.entityDataIntel}
                     {this.state.entityDataIncident}
                     {this.state.entityDataEvent}
@@ -839,8 +967,8 @@ var ReferencesBody = React.createClass({
                     });
                 } 
             }.bind(this),
-            error: function() {
-                console.log('no summary found for: ' + this.props.type + ':' + this.props.data.id);
+            error: function(data) {
+                this.props.errorToggle('Summary Query failed for: ' + this.props.type + ':' + this.props.data.id, data);
             }.bind(this)
         })
     },
@@ -867,9 +995,9 @@ var ReferencesBody = React.createClass({
         if (this.props.type == 'alert') {
             aHref = '/' + this.props.type + '/' + this.props.data.id;
             //aHref = '/#/alertgroup/' + this.props.data.alertgroup;
-            promotedHref = '/event/' + this.props.data.promotion_id;
+            promotedHref = '/#/event/' + this.props.data.promotion_id;
         } else if (this.props.type == 'event') {
-            promotedHref = '/incident/' + this.props.data.promotion_id;
+            promotedHref = '/#/incident/' + this.props.data.promotion_id;
             aHref = '/' + this.props.type + '/' + this.props.data.id;
         }
         else {

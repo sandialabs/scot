@@ -7,7 +7,7 @@ var Store                   = require('../activemq/store.jsx')
 var notificationStyle = {
     Containers: {
         DefaultStyle: {
-            height: '100%', width:'98%', overflowY: 'auto', left: 'null', marginLeft: 'null', position: 'relative'
+            height: '85vh', width:'98%', overflowY: 'auto', left: 'null', marginLeft: 'null', position: 'relative'
         },
     },
     NotificationItem: {
@@ -53,10 +53,6 @@ module.exports = React.createClass({
                 action: {
                     label: 'View',
                     callback: function(){
-                        if(activemqtype == 'entry' || activemqtype == 'alert'){
-                            activemqid = activemqsetentry
-                            activemqtype = activemqsetentrytype
-                        } 
                         window.open('#/' + activemqtype + '/' + activemqid)
                     }
                 } 

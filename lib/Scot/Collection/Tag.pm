@@ -13,7 +13,7 @@ with    qw(
 # tags can be created from a post to /scot/v2/tag
 # ( also "put"ting a tag on a thing will create one but not in this function
 
-sub create_from_api {
+override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
@@ -24,7 +24,7 @@ sub create_from_api {
 
     my $json    = $request->{request}->{json};
 
-    my $value       = $json->{value};
+    my $value       = lc($json->{value});
     my $note        = $json->{note};
 
     unless ( defined $value ) {
@@ -50,16 +50,20 @@ sub create_from_api {
 
     return $tag_obj;
 
-}
+};
 
-sub get_tag_completion { 
+sub autocomplete { 
     my $self    = shift;
     my $string  = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    $log->debug("Tag autocomplete! $string");
     my @results = ();
     my $cursor  = $self->find({
-        value    => /$string/
+        value    => qr/$string/i
     });
-    @results    = map { $_->value } $cursor->all;
+    @results    = map { $_->{value} } $cursor->all;
     return wantarray ? @results : \@results;
 }
 
@@ -78,7 +82,7 @@ sub add_tag_to {
         $tags   = [ $tags ];
     }
 
-    $log->debug("Add_tag_to $thing:$id => ".join(',',@$tags));
+    $log->debug("Add_tag_to     $thing:$id => ".join(',',@$tags));
 
     $thing = lc($thing);
 
@@ -126,26 +130,6 @@ sub syncro_tags {
     
 }
 
-override get_subthing => sub {
-    my $self        = shift;
-    my $thing       = shift;
-    my $id          = shift;
-    my $subthing    = shift;
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $log         = $env->log;
-
-    $id += 0;
-
-    my $col = $mongo->collection("Appearance");
-    my $cur = $col->find({
-        type    => "tag",
-        apid    => $id,
-        'target.type'   => $subthing,
-    });
-
-    return $cur;
-};
 
 
 

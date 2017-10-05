@@ -160,7 +160,7 @@ var ListViewHeaderEach = React.createClass({
                         :
                         null}
                     </div> 
-                    <TagSourceFilter columnsOne={columnsOne} handleFilter={this.handleFilter} defaultValue={filterValue}/>
+                    <TagSourceFilter columnsOne={columnsOne} handleFilter={this.handleFilter} defaultValue={filterValue} errorToggle={this.props.errorToggle} />
                 </th>
             )
         } else if (columnsOne == 'status'){

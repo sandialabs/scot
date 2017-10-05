@@ -16,6 +16,8 @@ my $env  = Scot::Env->new({
     config_file => $config_file,
 });
 
+my $curl    = "curl -s";
+
 # $env has
 #   
 #   pidfile  = the pid file for runnign dump
@@ -76,12 +78,18 @@ system("cd $dumpdir/.. && $cmd");
 
 
 # now backup elasticsearch
+print "Restoring ElasticSearch...\n";
 
-#print "Restoring ElasticSearch...\n";
+system( "/opt/scot/install/src/elasticsearch/mapping.sh");
+my $closestat = `$curl -XPOST "http://localhost:9200/_all/_close"`;
+print ("attempting to close open ES instances. Returned: $closestat");
 
+my $restorestat = `$curl -XPOST "http://localhost:9200/_snapshot/scot_backup/snapshot_1/_restore"`;
+print ("restore status is: $restorestat");
 
 # back up cached images
 print "Restoring Cached images...\n";
+
 my $ciloc = $env->cacheimg;
 system("cp -r $ciloc/ /opt/scot/public/");
 

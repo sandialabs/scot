@@ -30,6 +30,7 @@ extends 'Scot::Model';
 with    qw(
     Meerkat::Role::Document
     Scot::Role::Body
+    Scot::Role::Entriable
     Scot::Role::Hashable
     Scot::Role::Historable
     Scot::Role::Permission
@@ -39,6 +40,7 @@ with    qw(
     Scot::Role::Sources
     Scot::Role::Tags
     Scot::Role::Times
+    Scot::Role::TLP
     Scot::Role::Views
 );
 
@@ -55,6 +57,7 @@ with    qw(
     Scot::Role::Sources
     Scot::Role::Tags
     Scot::Role::Times
+    Scot::Role::TLP
     Scot::Role::Views
 
 =head1 Attributes
@@ -178,6 +181,21 @@ has firstview => (
     default     => -1, # means not viewed
 );
 
+=item B<ahrefs>
+
+Some email messages contain HREFs back to the detection system
+that may be helpful to analysts evaluating the alert.
+This array will contain the <a href="xxx">xxx</a> for each one detected.
+
+=cut
+
+has ahrefs  => (
+    is          => 'ro',
+    isa         => 'ArrayRef',
+    required    => 1,
+    default     => sub { [] },
+    traits      => [qw(Array)],
+);
 
 
 =back
