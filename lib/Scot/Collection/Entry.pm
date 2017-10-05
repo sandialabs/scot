@@ -306,7 +306,7 @@ override api_create => sub {
     $json->{owner}  = $user;
     if ( $json->{class} eq "json" ) {
         # we need to create body from json in metadata
-        $json->{body}   = $self->create_json_html($json->metadata);
+        $json->{body}   = $self->create_json_html($json->{metadata});
     }
     return $self->create($json);
 };
@@ -343,9 +343,9 @@ sub build_hash_element {
 
     foreach my $key ( sort keys %$data ) {
         my $li  = HTML::Element->new("li");
-        my $key = HTML::Element->new("span", "class" => "key");
-        $key->push_content('"'.$key.'": ');
-        $li->push_content($key);
+        my $key2 = HTML::Element->new("span", "class" => "key");
+        $key2->push_content('"'.$key.'": ');
+        $li->push_content($key2);
         my $value   = $data->{$key};
         $self->build_tree($li, $value);
         $element->push_content($li);
