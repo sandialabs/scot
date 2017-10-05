@@ -75,6 +75,19 @@ Valid Statuses for Events
 
 enum 'event_status', [ qw(open closed monitored) ];
 
+=item B<TLP_color>
+
+unset   = the absense of a TLP marking
+white   = Unlimited Release
+green   = sector wide release
+amber   = distro limited to local parties/trusted partners
+red     = do not share without permission from author
+black   = do not share and "you didn't hear this from me"
+
+=cut
+
+enum 'TLP_color', [qw(unset white green amber red black)];
+
 1;
 
 

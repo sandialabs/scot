@@ -1,6 +1,7 @@
 package Scot::Collection::Event;
 use lib '../../../lib';
 use Moose 2;
+use Data::Dumper;
 
 extends 'Scot::Collection';
 
@@ -21,14 +22,13 @@ Custom collection operations for Events
 
 =over 4
 
-=item B<create_from_api($api_ref)>
+=item B<api_create($api_ref)>
 
 Create an event and from a POST to the handler
 
 =cut
 
-
-sub create_from_api {
+override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
@@ -74,7 +74,8 @@ sub create_from_api {
     }
 
     return $event;
-}
+};
+
 
 sub process_alerts {
     my $self    = shift;
@@ -239,7 +240,7 @@ sub create_promotion {
     my $self    = shift;
     my $object  = shift;
     my $req     = shift;
-    my $user    = shift;
+    my $user    = $req->{user};
     my $subject =   $self->get_subject($object) //
                     $self->get_value_from_request($req, "subject");
 
@@ -247,6 +248,7 @@ sub create_promotion {
         subject => $subject, 
         status  => 'open',
         owner   => $user,
+        promoted_from => [ $object->id ],
     });
 }
 
@@ -270,96 +272,148 @@ override 'has_computed_attributes' => sub {
     return undef;
 };
 
-override get_subthing => sub {
-    my $self        = shift;
-    my $thing       = shift;
-    my $id          = shift;
-    my $subthing    = shift;
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $log         = $env->log;
+sub api_subthing {
+    my $self    = shift;
+    my $req     = shift;
+    my $mongo   = $self->env->mongo;
+    my $log     = $self->env->log;
 
-    $id += 0;
+    my $thing       = $req->{collection};
+    my $subthing    = $req->{subthing};
+    my $id          = $req->{id}+0;
 
-    if ( $subthing  eq "alert" ) {
-        my $event = $self->find_iid($id);
-        my $col = $mongo->collection('Alert');
-        my $cur = $col->find({ id => { '$in' => $event->promoted_from }});
-        return $cur;
+    if ( $subthing eq "alert" ) {
+        $log->debug("getting alert subthing");
+        my $event   = $self->find_iid($id);
+        $log->debug("event type is ".ref($event));
+        my $ehash = $event->as_hash;
+        $log->debug("event is ",{filter=>\&Dumper, value=>$ehash});
+        return $mongo->collection('Alert')->find({
+            id => { '$in' => $event->promoted_from }
+        });
     }
-    elsif ( $subthing eq "incident" ) {
-        my $col = $mongo->collection('Incident');
-        my $cur = $col->find({promoted_from => $id});
-        return $cur;
+
+    if ($subthing eq "incident" ) {
+        return $mongo->collection('Incident')->find({promoted_from => $id});
     }
-    elsif ( $subthing eq "entry" ) {
-        my $col = $mongo->collection('Entry');
-        my $cur = $col->get_entries_by_target({
+
+    if ( $subthing eq "entry" ) {
+        return $mongo->collection('Entry')->get_entries_by_target({
             id      => $id,
-            type    => 'event'
+            type    => 'event',
         });
-        return $cur;
     }
-    elsif ( $subthing eq "entity" ) {
-        my $timer  = $env->get_timer("fetching links");
-        my $col    = $mongo->collection('Link');
-        my $ft  = $env->get_timer('find actual timer');
-        my $cur    = $col->get_links_by_target({ 
-            id => $id, type => 'event' 
-        });
-        &$ft;
-        my @lnk = map { $_->{entity_id} } $cur->all;
-        &$timer;
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
+    }
 
-        $timer  = $env->get_timer("generating entity cursor");
-        $col    = $mongo->collection('Entity');
-        $cur    = $col->find({id => {'$in' => \@lnk }});
-        &$timer;
-        return $cur;
+    if ( $subthing eq "entity" ) {
+        return $mongo->collection('Link')
+                     ->get_linked_objects_cursor(
+                        { id => $id, type => 'event' },
+                        'entity' );
     }
-    elsif ( $subthing eq "tag" ) {
-        my $col = $mongo->collection('Appearance');
-        my $cur = $col->find({
-            type            => 'tag',
-            'target.type'   => 'event',
-            'target.id'     => $id,
+
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
+    }
+
+    if ( $subthing eq "tag" ) {
+        my @appearances = map { $_->{apid} }
+            $mongo->collection('Appearance')->find({
+                type            => 'tag',
+                'target.type'   => 'event',
+                'target.id'     => $id,
+            })->all;
+        return $mongo->collection('Tag')->find({
+            id  => { '$in' => \@appearances }
         });
-        my @ids = map { $_->{apid} } $cur->all;
-        $col    = $mongo->collection('Tag');
-        $cur    = $col->find({ id => {'$in' => \@ids }});
-        return $cur;
     }
-    elsif ( $subthing eq "source" ) {
-        my $col = $mongo->collection('Appearance');
-        my $cur = $col->find({
-            type            => 'source',
-            'target.type'   => 'event',
-            'target.id'     => $id,
+    if ( $subthing eq "source" ) {
+        my @appearances = map { $_->{apid} }
+            $mongo->collection('Appearance')->find({
+                type            => 'source',
+                'target.type'   => 'event',
+                'target.id'     => $id,
+            })->all;
+        return $mongo->collection('Source')->find({
+            id  => { '$in' => \@appearances }
         });
-        my @ids = map { $_->{apid} } $cur->all;
-        $col    = $mongo->collection('Source');
-        $cur    = $col->find({ id => {'$in' => \@ids }});
-        return $cur;
     }
-    elsif ( $subthing eq "history" ) {
-        my $col = $mongo->collection('History');
-        my $cur = $col->find({'target.id'   => $id,
-                              'target.type' => 'event',});
-        return $cur;
+
+    if ( $subthing eq "history" ) {
+        return $mongo->collection('History')->find({
+            'target.id'   => $id,
+            'target.type' => 'event'
+        });
     }
-    elsif ( $subthing eq "file" ) {
-        my $col = $mongo->collection('File');
-        my $cur = $col->find({
+
+    if ( $subthing eq "file" ) {
+        return $mongo->collection('File')->find({
             'entry_target.id'     => $id,
             'entry_target.type'   => 'event',
         });
-        return $cur;
     }
-    else {
-        $log->error("unsupported subthing $subthing!");
-    }
-};
 
+    die "Unsupported subthing $subthing";
+
+}
+
+## issue 401 requests that if the analyst tries to promote to a non-existant
+## event, that it should error instead of create the non-existant object
+sub get_promotion_obj {
+    my $self    = shift;
+    my $object  = shift;
+    my $req     = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $promotion_id    = $req->{request}->{json}->{promote} 
+                          // $req->{request}->{params}->{promote};
+
+    $log->debug("Getting promotion object: $promotion_id from ",
+                {filter => \&Dumper, value => $req});
+    $log->debug("The object being promoted is a ".ref($object));
+
+    my $event;
+
+    if ( $promotion_id =~ /\d+/ ) { 
+        $event = $self->find_iid($promotion_id);
+        if ( defined $event and ref($event) eq "Scot::Model::Event" ) {
+            return $event;
+        }
+        else {
+            die "Event $promotion_id does not exists.  Can not promote to non-existant event!";
+        }
+    }
+
+    if ( $promotion_id eq "new" or ! defined $promotion_id ) {
+        # no promotion id provided, so let's create the event
+        $event   = $self->create_promotion($object, $req);
+        return $event;
+    }
+
+    die "Invalid promotion id";
+}
+
+sub autocomplete {
+    my $self    = shift;
+    my $frag    = shift;
+    my $cursor  = $self->find({
+        subject => /$frag/
+    });
+    my @records = map { {
+        id  => $_->{id}, key => $_->{subject}
+    } } $cursor->all;
+    return wantarray ? @records : \@records;
+}
 
 
 1;

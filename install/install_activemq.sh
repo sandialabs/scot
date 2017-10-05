@@ -51,7 +51,7 @@ function install_activemq {
     else
         if [[ ! -e /tmp/$AMQTAR ]]; then
             echo "-- activemq tar file not present, attemping download"
-            wget -P /tmp $AMQURL
+            wget --no-check-certificate -P /tmp $AMQURL
 
             if [[ ! -e /tmp/$AMQTAR ]]; then
                 echo "-- download may have failed! trying packaged tar"

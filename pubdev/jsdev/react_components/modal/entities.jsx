@@ -29,7 +29,7 @@ var Entities = React.createClass({
                         <img src="/images/close_toolbar.png" className="close_toolbar" onClick={this.props.entitiesToggle} />
                         <h3 id="myModalLabel">List of Entities</h3>
                     </div>                        
-                    <div className="modal-body" style={{height:'600px', overflowY:'auto'}}>
+                    <div className="modal-body" style={{maxHeight:'50vh', overflowY:'auto'}}>
                         {this.state.entitiesBody ? <EntitiesData data={this.props.entityData} flairToolbarToggle={this.props.flairToolbarToggle}/> :null}
                     </div>
                     <div className="modal-footer">

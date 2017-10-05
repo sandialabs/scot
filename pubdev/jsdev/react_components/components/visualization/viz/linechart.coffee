@@ -51,7 +51,7 @@ class Linechart
                 .map (data) ->
                     lc = new Linechart (document.querySelector "#revl-vizbox")
                     lc.render data
-                .map_err (e) -> Result.err ("linechart: "+e)
+                .map_err (e) ->  ("linechart: "+e)
                 
     @formatData: (d) ->
         switch

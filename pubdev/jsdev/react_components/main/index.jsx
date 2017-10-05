@@ -18,7 +18,6 @@ var BrowserRouter   = require('react-router-dom').BrowserRouter;
 var Listener        = require('../activemq/listener.jsx')
 var Store           = require('../activemq/store.jsx');
 var SelectedContainer = require('../detail/selected_container.jsx')
-var EntityDetail      = require('../modal/entity_detail.jsx')
 var AMQ             = require('../debug-components/amq.jsx');
 var Wall            = require('../debug-components/wall.jsx');
 var Search          = require('../components/esearch.jsx');
@@ -28,7 +27,8 @@ var Status          = require('../components/dashboard/status.jsx');
 var Online          = require('../components/dashboard/online.jsx');
 var Report          = require('../components/dashboard/report.jsx');
 var Notification    = require('react-notification-system');
-var isalert = false
+var Login           = require('../modal/login.jsx').default;
+
 {
 	window.React = React;	
 	var $ = window.$;
@@ -39,15 +39,13 @@ var App = React.createClass({
 
     getInitialState: function(){
         Listener.activeMq();   //register for amq updates
-        return{handler: "Scot", viewMode:'default', notificationSetting: 'on', eestring: ''}	
+        return{handler: undefined, viewMode:'default', notificationSetting: 'on', eestring: '', login: false, csrf: '', origurl: '', sensitivity: '', whoami: undefined, }	
     },
+
     componentDidMount: function() {
-	    $.ajax({
-	        type: 'get',
-	        url: '/scot/api/v2/handler?current=1'
-	    }).success(function(response){
-	        this.setState({handler: response.records[0].username})
-	    }.bind(this))
+        this.GetHandler();
+        this.WhoAmIQuery();    
+        
         Store.storeKey('wall');
         Store.addChangeListener(this.wall);
         Store.storeKey('notification');
@@ -60,6 +58,7 @@ var App = React.createClass({
             }.bind(this))   
         }
     },
+
     componentWillReceiveProps: function (nextProps) {
         var viewModeSetting = checkCookie('viewMode');
         var notificationSetting = checkCookie('notification');
@@ -71,8 +70,18 @@ var App = React.createClass({
         if (notificationSetting == undefined) {
             notificationSetting = 'on';
         }
+        
+        if ( !this.state.handler ) { 
+            this.GetHandler();
+        }
+        
+        if ( !this.state.whoami ) {
+            this.WhoAmIQuery();
+        }
+
         this.setState({viewMode:viewModeSetting, notificationSetting:notificationSetting, listViewFilter:listViewFilterSetting,listViewSort:listViewSortSetting, listViewPage:listViewPageSetting})
     },
+
     ee: function(e) {
         var ee = '837279877769847269697171';
         if (ee.includes(this.state.eestring)) {
@@ -90,14 +99,21 @@ var App = React.createClass({
             this.setState({eestring: ''});
         }
     },
+
     eedraw: function() {
         $('#content').css('transform','rotateX(20deg)');
         $(document.body).prepend('<span id="ee">Lbh sbhaq gur egg. Cbfg gb gur jnyy "V sbhaq gur rtt, pna lbh?"</span>');
     },
+
     eeremove: function() {
         $('#content').css('transform','rotateX(0deg)');
         $('#ee').remove();
     },
+
+    componentWillUnmount: function() {
+        removeSessionStorage('whoami');
+    },
+
     componentWillMount: function() {
         //Get landscape/portrait view if the cookie exists
         var viewModeSetting = checkCookie('viewMode');
@@ -116,7 +132,7 @@ var App = React.createClass({
         //Notification display in update as it will run on every amq message matching 'main'.
         var notification = this.refs.notificationSystem
         //not showing notificaiton on entity due to "flooding" on an entry update that has many entities causing a storm of AMQ messages
-        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && activemqwho!= 'scot-flair' && whoami != activemqwho && notification != undefined && activemqwho != "" &&  activemqwho != 'api' && activemqwall != true && activemqtype != 'entity' && this.state.notificationSetting == 'on'){  
+        if(activemqwho != 'scot-alerts' && activemqwho != 'scot-admin' && activemqwho!= 'scot-flair' && notification != undefined && activemqwho != this.state.whoami &&activemqwho != "" &&  activemqwho != 'api' && activemqwall != true && activemqtype != 'entity' && this.state.notificationSetting == 'on'){  
             notification.addNotification({
                 message: activemqwho + activemqmessage + activemqid,
                 level: 'info',
@@ -124,10 +140,6 @@ var App = React.createClass({
                 action: activemqstate != 'delete' ? {
                     label: 'View',
                     callback: function(){
-                        if(activemqtype == 'entry' || activemqtype == 'alert'){
-                            activemqid = activemqsetentry
-                            activemqtype = activemqsetentrytype
-                        }
                         window.open('/#/' + activemqtype + '/' + activemqid)
                     }
                 } : null
@@ -147,10 +159,23 @@ var App = React.createClass({
             activemqwall = false;
         }
     },
-    errorToggle: function(string) {
+    errorToggle: function(string, result) {
+        let errorString = string;
+        if ( result ) {
+            if ( result.responseJSON ) {
+                if ( result.responseJSON.error === 'Authentication Required') {
+                    this.setState({csrf: result.responseJSON.csrf}); //set csrf here since it can change after the login prompt loads
+                    this.loginToggle( result.responseJSON.csrf );
+                    return;
+                }
+            } else if ( result.statusText == 'Service Unavailable' ) {
+                errorString = result.statusText;  //Use server error message if available.
+            }
+        } 
+
         var notification = this.refs.notificationSystem
         notification.addNotification({
-            message: string,
+            message: errorString,
             level: 'error',
             autoDismiss: 0,
         });
@@ -165,8 +190,69 @@ var App = React.createClass({
             setCookie('notification','off',1000);
         } 
     },
-   render: function() {
+
+    loginToggle: function( csrf, loggedin ) {
+        //Only open modal once - if other requests come in to open the modal just bypass since the login page is active
+        if ( !this.state.login && loggedin != true ) {
+            let origurl = this.props.location.pathname;;
+            this.props.history.push( '/' );
+            this.setState({login: true, origurl: origurl}); 
+        } else if ( this.state.login && loggedin == true ) {
+            this.setState({login: false}); 
+            this.props.history.push( this.state.origurl );
+        }
+    },
+    
+    LogOut: function() {
+        //Logs out of SCOT
+        $.ajax({ 
+            type: 'get',
+            url: '/logout',
+            success: function(data) {
+                this.setState({login: true})
+                console.log('Successfully logged out');
+            }.bind(this), 
+            error: function(data) {
+                this.error('Failed to log out', data);
+            }.bind(this)
+        })
+    },
+
+    WhoAmIQuery: function() {
+
+        $.ajax({
+            type:'get',
+            url:'scot/api/v2/whoami',
+            success: function (result) {
+                setSessionStorage( 'whoami', result.user );
+                if ( result.data ) {
+                    this.setState({sensitivity: result.data.sensitivity, whoami: result.user});
+                }
+            }.bind(this),
+            error: function(data) {
+                this.errorToggle('Failed to get current user', data);
+            }.bind(this)
+        })
+ 
+    },
+    
+    GetHandler: function() {
+        $.ajax({
+            type: 'get',
+            url: '/scot/api/v2/handler?current=1'
+        }).success(function(response){
+            this.setState({handler: response.records[0].username})
+        }.bind(this))
+    },   
+
+    render: function() {
         var IH = 'Incident Handler: ' + this.state.handler;
+        let type;
+        
+        if ( this.props.match.params.value ) {
+            type = this.props.match.params.value.toLowerCase();   
+        }
+
         return (
             <div>
                 <Navbar inverse fixedTop={true} fluid={true}>
@@ -197,7 +283,7 @@ var App = React.createClass({
                                 <LinkContainer to='/guide' activeClassName='active'>
                                     <MenuItem>Guide</MenuItem>
                                 </LinkContainer>
-                                <MenuItem href='/revl.html/#/visualization'>Visualization</MenuItem>
+                                <MenuItem href='/revl.html#/visualization'>Visualization</MenuItem>
                                 <LinkContainer to='/signature' activeClassName='active'>
                                     <MenuItem>Signature</MenuItem>
                                 </LinkContainer>
@@ -210,75 +296,96 @@ var App = React.createClass({
                                 <MenuItem divider />
                                 <MenuItem href='/admin/index.html'>Administration</MenuItem>
                                 <MenuItem href='/docs/index.html'>Documentation</MenuItem>
+                                <MenuItem divider />
+                                <MenuItem href='/#/' onClick={this.LogOut} >Log Out</MenuItem>
                             </NavDropdown>
                             <NavItem href='/incident_handler.html'>{IH}</NavItem>
                         </Nav>
-                        <span id='ouo_warning' className='ouo-warning'>{sensitivity}</span>
+                        <span id='ouo_warning' className='ouo-warning'>{this.state.sensitivity}</span>
                         <Search errorToggle={this.errorToggle} />
                     </Navbar.Collapse>
                 </Navbar>
                 <div className='mainNavPadding'>
+                    <Login csrf={this.state.csrf} modalActive={this.state.login} loginToggle={this.loginToggle} WhoAmIQuery={this.WhoAmIQuery} GetHandler={this.GetHandler} errorToggle={this.errorToggle} />
                     <Notification ref='notificationSystem' />
-                    {!this.props.match.params.value || this.props.match.params.value == 'home' ? 
+                    {!type || type == 'home' ? 
                     <div className="homePageDisplay">
                         <div className='col-md-4'>
                             <img src='/images/scot-600h.png' style={{maxWidth:'350px',width:'100%',marginLeft:'auto', marginRight:'auto', display: 'block'}}/>
                             <h1>Sandia Cyber Omni Tracker 3.5</h1>
-                            <h1>{sensitivity}</h1>
-                            <Status />
+                            <h1>{this.state.sensitivity}</h1>
+                            { !this.state.login ? 
+                                <Status errorToggle={this.errorToggle} />
+                            :
+                                null
+                            }
                         </div>
-                        <Gamification />
-                        <Online />
-                        <Report frontPage={true} />
+                        { !this.state.login ? 
+                            <div>
+                                <Gamification errorToggle={this.errorToggle} />
+                                <Online errorToggle={this.errorToggle} />
+                                <Report frontPage={true} errorToggle={this.errorToggle}/>
+                            </div>
+                        :
+                            null
+                        }
                     </div>
                     :
                     null}
-                    { this.props.match.params.value == 'alert' || this.props.match.params.value == 'alertgroup' ? 
-                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    { type == 'alert' ? 
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                     :
                     null}
-                    {this.props.match.params.value == 'event' ?
-                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    { type == 'alertgroup' ? 
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                     :
                     null}
-                    {this.props.match.params.value == 'incident' ?
-                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    { type == 'entry' ?
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    :
+                    null}
+                    {type == 'event' ?
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    :
+                    null}
+                    {type == 'incident' ?
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                     :
                     null} 
-                    {this.props.match.params.value == 'task' ?
-                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    {type == 'task' ?
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                     :
                     null}
-                    {this.props.match.params.value == 'guide' ?
-                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    {type == 'guide' ?
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                     :
                     null}
-                    {this.props.match.params.value == 'intel' ?
-                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    {type == 'intel' ?
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                     :
                     null}
-                    {this.props.match.params.value == 'signature' ?
-                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    {type == 'signature' ?
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                     :
                     null}
-                    {this.props.match.params.value == 'entity' ?
-                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                    {type == 'entity' ?
+                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                     :
                     null}
-                    {this.props.match.params.value == 'visualization' ?
-                        <Revl value={this.props.match.params.value} type={this.props.match.params.id} id={this.props.match.params.type} depth={this.props.match.params.typeid} viewMode={this.state.viewMode} Notification={this.state.Notification} />
+                    {type == 'visualization' ?
+                        <Revl value={type} type={this.props.match.params.id} id={this.props.match.params.type} depth={this.props.match.params.typeid} viewMode={this.state.viewMode} Notification={this.state.Notification} />
                     :
                     null}
-                    {this.props.match.params.value == 'report' ?
-                        <Report id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={this.props.match.params.value} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
+                    {type == 'report' ?
+                        <Report id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
                     :
                     null}
-                    {this.props.match.params.value == 'amq' ?
-                        <AMQ type='amq' />
+                    {type == 'amq' ?
+                        <AMQ type='amq' errorToggle={this.errorToggle} />
                     :
                     null}
-                    {this.props.match.params.value == 'wall' ?
-                        <Wall />
+                    {type == 'wall' ?
+                        <Wall errorToggle={this.errorToggle} />
                     :
                     null}
                 </div>

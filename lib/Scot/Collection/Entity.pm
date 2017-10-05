@@ -9,42 +9,6 @@ with    qw(
     Scot::Role::GetTargeted
 );
 
-sub create_from_api {
-    my $self    = shift;
-    my $href    = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $mq      = $env->mq;
-
-    $log->trace("Creating Entity via API");
-
-    my $request = $href->{request}->{json};
-    my $value   = $request->{value};
-    my $type    = $request->{type};
-
-    if ( $self->entity_exists($value, $type) ) {
-        $log->error("Error! Entity already exists");
-        return undef;
-    }
-
-    my $entity  = $self->create($request);
-
-    unless ( defined $entity ) {
-        $log->error("Error! Failed to create Entity with data ",
-                    { filter => \&Dumper, value => $request } );
-        return undef;
-    }
-    # Api.pm should do this
-    #$env->mq->send("scot", {
-    #    action  => "created",
-    #    data    => {
-    #        type    => "entity",
-    #        id      => $entity->id,
-    #    }
-    #});
-    return $entity;
-}
-
 sub entity_exists {
     my $self    = shift;
     my $value   = shift;
@@ -67,8 +31,9 @@ sub update_entities {
     my $log     = $env->log;
     my $mongo   = $env->mongo;
 
+    my $thash = $target->as_hash;
     $self->env->log->debug("updating entities on target ",
-                            { filter =>\&Dumper, value => $target});
+                            { filter =>\&Dumper, value => $thash});
 
     $log->debug("earef is ",{filter=>\&Dumper, value=>$earef});
 
@@ -79,49 +44,22 @@ sub update_entities {
     $log->debug("[$type $id] Updating associated entities");
     $log->debug("[$type $id] ", {filter=>\&Dumper, value=>$earef});
     
-    # find entity or create it.
-    # NOTE: this is a cool way to get MongoDB to do everything in one
-    # fell swoop, BUT, it will not create an iid for us when creating
-    # a new entity.  Bummer, so we are going to have to query and then
-    # update or create
-    #foreach my $entity (@$earef) {
-    #    my @command    = (
-    #        findAndModify   => "entity",
-    #        query           => { 
-    #            value   => $entity->{value}, 
-    #            type    => $entity->{type},
-    #        },
-    #        update          => {
-    #            '$setOnInsert'  => {
-    #                value   => $entity->{value},
-    #                type    => $entity->{type},
-    #            }
-    #        },
-    #        new     => 1,
-    #        upsert  => 1,
-    #    );
-    #
-    #    $log->trace("Attempting: ", {filter=>\&Dumper, value=>\@command});
-    #
-    #    my $return = $self->_try_mongo_op(
-    #        find_or_create => sub {
-    #            my $dbname  = $self->meerkat->database_name;
-    #            my $db      = $self->meerkat->_mongo_database($dbname);
-    #            my $job     = $db->run_command(\@command);
-    #            return $job;
-    #        }
-    #    );
-    #    $log->debug("FindAndModify returned: ",
-    #                { filter =>\&Dumper, value => $return });
-    #    my $entity_id    = $return->{id};
-
     my @created_ids = ();
     my @updated_ids = ();
+    my %seen        = ();
 
+    ENTITY:
     foreach my $entity (@$earef) {
 
         my $value   = $entity->{value};
         my $etype   = $entity->{type};
+
+        if ( defined $seen{$etype.$value} ) {
+            next ENTITY;
+        }
+
+        $seen{$etype.$value}++;
+
         my $entity  = $self->find_one({
             value   => $value,
             type    => $etype
@@ -130,7 +68,7 @@ sub update_entities {
         if ($entity) {
             my $entity_status   = $entity->status;
             if ( $entity_status eq "untracked" ) {
-                next;
+                next ENTITY;
             }
             $log->debug("Found matching $type entity $value");
             push @updated_ids, $entity->id;
@@ -143,87 +81,124 @@ sub update_entities {
             });
             push @created_ids, $entity->id;
         }
-        # $log->trace("entity is ",{filter=>\&Dumper, value=>$entity});
-        my $entity_id  = $entity->id;
-
-
-        my $link    = $linkcol->create_link(
-            $entity, { type => $type, id   => $id, }
-        );
-
-        if ( $type eq "entry" ) {
-            my $target_id   = $target->target->{id};
-            my $target_type = $target->target->{type};
-
-            my $addlink = $linkcol->create_link(
-                $entity, { type => $target_type, id => $target_id, }
-            );
-        }
-
-        if ( $type eq "alert" ) {
-            my $addlink = $linkcol->create_link(
-                $entity, { type => "alertgroup", id => $target->{alertgroup} }
-            );
-        }
+        $self->create_entity_links($entity, $target);
     }
     return \@created_ids, \@updated_ids;
 }
 
-override get_subthing => sub {
-    my $self        = shift;
-    my $thing       = shift;
-    my $id          = shift;
-    my $subthing    = shift;
-    my $env         = $self->env;
-    my $mongo       = $env->mongo;
-    my $log         = $env->log;
+sub upsert_link {
+    my $self    = shift;
+    my $entity  = shift; # object
+    my $target  = shift; # href
 
-    $id += 0;
+    my $linkcol = $self->env->mongo->collection('Link');
+    my $v1 = {
+        id     => $target->{id},
+        type   => $target->{type},
+    };
+
+    if ( $linkcol->link_exists($entity,$v1) ) {
+        $self->env->log->debug("Entity already linked to target");
+        return;
+    }
+
+    $self->env->log->debug("Link does not exist, creating...");
+
+    my $linkobj    = $linkcol->link_objects(
+        $entity, { 
+            type    => $target->{type},
+            id      => $target->{id}, 
+        }
+    );
+    return $linkobj;
+}
+
+sub create_entity_links {
+    my $self    = shift;
+    my $entity  = shift; # object
+    my $target  = shift; # object
+
+    $self->upsert_link($entity, {
+        id      => $target->id,
+        type    => $target->get_collection_name,
+    });
+
+    if ( $target->get_collection_name eq "entry" ) {
+        my $additional_link = $self->upsert_link(
+            $entity, {
+                type    => $target->target->{type},
+                id      => $target->target->{id},
+            }
+        );
+    }
+    if ( $target->get_collection_name eq "alert" ) {
+        my $additional_link = $self->upsert_link(
+            $entity, {
+                type    => "alertgroup",
+                id      => $target->alertgroup,
+            }
+        );
+    }
+}
+
+sub api_subthing {
+    my $self    = shift;
+    my $req     = shift;
+    my $thing   = $req->{collection};
+    my $id      = $req->{id} + 0;
+    my $subthing= $req->{subthing};
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
 
     if ( $subthing  eq "alert" or
          $subthing  eq "event" or
          $subthing  eq "intel" or
+         $subthing  eq "signature" or
          $subthing  eq "incident" ) {
-        my $timer   = $env->get_timer("getting links");
-        my $col = $mongo->collection('Link');
-        my $cur = $col->find({entity_id     => $id,
-                              'target.type' => $subthing,});
-        my @ids         = map { $_->{target}->{id} } $cur->all;
-        my $subcursor   = $mongo->collection(ucfirst($subthing))->find({
-            id  => { '$in' => \@ids }
-        });
-        &$timer;
-        return $subcursor;
+        return $mongo->collection('Link')
+                     ->get_linked_objects_cursor(
+                        { id => $id, type => 'entity' },
+                        $subthing);
     }
-    elsif ( $subthing eq "entity" ) {
-        my $lc  = $mongo->collection('Link');
-        my $cc  = $lc->get_links_by_target({
-            id  => $id, type => 'entity'
-        });
-        my @lnk = map { $_->{id} } $cc->all;
-        my $cur = $self->find({id => {'$in' => \@lnk}});
-        return $cur;
+
+    if ( $subthing eq "entity" ) {
+        # entities linking to entities, oh my, what could go wrong
+        return $mongo->collection('Link')
+                     ->get_linked_objects_cursor(
+                        { id => $id, type => 'entity' },
+                        'entity' );
     }
-    elsif ( $subthing eq "entry" ) {
-        my $col = $mongo->collection('Entry');
-        my $cur = $col->get_entries_by_target({
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
+    }
+    if ( $subthing eq "entry" ) {
+        return $mongo->collection('Entry')->get_entries_by_target({
             id  => $id,
             type    => 'entity',
         });
-        return $cur;
     }
-    elsif ( $subthing eq "file" ) {
-        my $col = $mongo->collection('File');
-        my $cur = $col->find({
+    if ( $subthing eq "file" ) {
+        return $mongo->collection('File')->find({
             'entry_target.type' => 'entity',
             'entry_target.id'   => $id,
         });
-        return $cur;
     }
-    else {
-        $log->error("unsupported subthing $subthing!");
+
+    if ( $subthing eq "history" ) {
+        return $mongo->collection('History')->find({
+            'target.type'   => "entity",
+            'target.id'     => $id,
+        });
     }
-};
+
+    die "Unsupported subthing request ($subthing) for Entity";
+
+}
 
 sub get_by_value {
     my $self    = shift;
@@ -236,6 +211,44 @@ sub get_by_value {
         }
     }
     return $object;
+}
+
+sub autocomplete {
+    my $self    = shift;
+    my $frag    = shift;
+    my $cursor  = $self->find({
+        value => /$frag/
+    });
+    my @records = map { {
+        id  => $_->{id}, key => $_->{value}
+    } } $cursor->all;
+    return wantarray ? @records : \@records;
+}
+
+sub get_cidr_ipaddrs {
+    my $self    = shift;
+    my $mask    = shift;
+    my $mongo   = $self->env->mongo;
+    my @records = ();
+
+    my $cursor = $self->find({
+        'data.binip'    => qr/^$mask/
+    });
+
+    while ( my $entity = $cursor->next ) {
+        my $linkcursor = $mongo->collection('Link')->
+            get_object_links_of_type($entity, undef);
+
+        push my @final, map { $_->{vertices} } $linkcursor->all;
+        my $href = {
+            id      => $entity->id,
+            value   => $entity->value,
+            targets => \@final,
+        };
+        push @records, $href;
+    }
+    return wantarray ? @records : \@records;
+
 }
 
 
