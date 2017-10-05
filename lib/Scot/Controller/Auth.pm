@@ -322,7 +322,7 @@ sub ldap_authenticates {
     my $pass    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $ldap    = $env->ldap;
+    my $ldap    = $env->get_handle('ldap');
 
     $log->debug("seeing if ldap will authenticate");
 
@@ -337,7 +337,7 @@ sub ldap_authenticates {
         }
     }
     else {
-        $log->error("ldap not loaded in env.  Config file problem?");
+        $log->error("ldap not loaded in env.  Assuming no LDAP configured.");
         return undef;
     }
 }
