@@ -295,8 +295,8 @@ override api_create => sub {
     }
 
     my $default_groups = $self->get_default_permissions($target_type, $target_id);
-    $json->{groups}->{read} = $
-        default_groups->{read} if (!defined $req->{readgroups});
+    $json->{groups}->{read} = 
+        $default_groups->{read} if (!defined $req->{readgroups});
     $json->{groups}->{modify} = 
         $default_groups->{modify} if (!defined $req->{modifygroups});
     $json->{target} = {
@@ -314,10 +314,74 @@ override api_create => sub {
 sub create_json_html {
     my $self    = shift;
     my $data    = shift;
-    my $tree    = HTML::Element->new('div',class=>"json_view");
-    $self->build_tree($tree,$data);
+    my $tree    = HTML::Element->new('div',"class" => "json-container");
+    my $ul      = HTML::Element->new("ul", "class" => "json-container");
+    $tree->push_content($ul);
+    $self->build_tree($ul,$data);
     return $tree->as_HTML(undef, "    ", {});
 }
+
+sub build_scalar_element {
+    my $self    = shift;
+    my $data    = shift;
+    my $element = HTML::Element->new("span", "class" => "string");
+    $element->push_content('"'.$data.'"');
+    return $element;
+}
+
+sub build_hash_element {
+    my $self    = shift;
+    my $data    = shift;
+    my $element = HTML::Element->new("li");
+    my $expand  = HTML::Element->new("span", "class" => "expanded");
+    $element->push_content($expand);
+    my $open    = HTML::Element->new("span", "class" => "open");
+    $open->push_content('{');
+    $element->push_content($open);
+    my $ul      = HTML::Element->new("ul", "class" => "object");
+    $element->push_content($ul);
+
+    foreach my $key ( sort keys %$data ) {
+        my $li  = HTML::Element->new("li");
+        my $key = HTML::Element->new("span", "class" => "key");
+        $key->push_content('"'.$key.'": ');
+        $li->push_content($key);
+        my $value   = $data->{$key};
+        $self->build_tree($li, $value);
+        $element->push_content($li);
+    }
+    my $close   = HTML::Element->new("span", "class" => "close");
+    $close->push_content('}');
+    $element->push_content($close);
+    return $element;
+}
+
+sub build_array_element {
+    my $self    = shift;
+    my $data    = shift;
+    my $element = HTML::Element->new("li");
+    my $expand  = HTML::Element->new("span", "class" => "expanded");
+    $element->push_content($expand);
+    my $open    = HTML::Element->new("span", "class" => "open");
+    $open->push_content('[');
+    $element->push_content($open);
+    my $ul      = HTML::Element->new("ul", "class" => "object");
+    $element->push_content($ul);
+
+    foreach my $value (@$data ) {
+        my $li  = HTML::Element->new("li");
+        $self->build_tree($li,$value);
+        $element->push_content($li);
+    }
+    my $close   = HTML::Element->new("span", "class" => "close");
+    $close->push_content(']');
+    $element->push_content($close);
+    return $element;
+}
+
+
+
+
 
 sub build_tree {
     my $self    = shift;
@@ -327,53 +391,15 @@ sub build_tree {
     my $element;
 
     if ( $nodetype eq '' ) {
-        $element    = HTML::Element->new("span");
-        $element->push_content($data);
-        return;
+        $element    = $self->build_scalar_element($data);
     }
 
     if ( $nodetype eq "ARRAY" ) {
-        $element = HTML::Element->new("ol","role" => "group",);
-        foreach my $item (@$data) {
-            my $li  = HTML::Element->new(
-                "li",
-                "role"  => "treeitem",
-                "aria-expanded" => "true",
-            );
-            $self->build_tree($li, $item);
-            $element->push_content($li);
-        }
+        $element    = $self->build_array_element($data);
     }
 
     if ( $nodetype eq "HASH" ) {
-        $element    = HTML::Element->new(
-            "li",
-            "role"  => "treeitem",
-            "aria-expanded" => "true",
-        );
-        my $div     = HTML::Element->new('div');
-        my $span    = HTML::Element->new('span');
-        $span->push_content('Object');
-        $div->push_content($span);
-        $element->push_content($div);
-        my $ol  = HTML::Element->new(
-            "ol",
-            "role"  => "group",
-        );
-        foreach my $key ( sort keys %$data ) {
-            my $value   = $data->{$key};
-            my $li      = HTML::Element->new(
-                "li",
-                "role"  => "treeitem",
-                "aria-expanded" => "false",
-            );
-            my $keyspan = HTML::Element->new("span");
-            $keyspan->push_content($key);
-            $li->push_content($keyspan);
-            $self->build_tree($li, $value);
-            $ol->push_content($li);
-        }
-        $element->push_content($ol);
+        $element    = $self->build_hash_element($data);
     }
 
     $stem->push_content($element);
