@@ -189,36 +189,52 @@ sub response_avg_last_x_days {
     else {
         $dt = DateTime->today();
     }
+    my $json    = {};
 
     my $averages = $self->get_alltime_alert_responsetime_avg;
+    ## want-> json = {
+    ##     lines: [ { name: " ", value: x },...], 
+    ##     dates: [ { date: " ",name:" ", value: x }...]
+    ## }
+    push @{$json->{lines}}, 
+        { name => "All Avg", value => $averages->{all} // 0 },
+        { name => "Promoted Avg", value => $averages->{promoted} // 0},
+        { name => "Incident Avg", value => $averages->{incident} // 0};
 
-    my @results = ();
-    for (my $i = $x-1; $i >= 0; $i--) {
-        my $nsdt     = $dt->clone();
-        $nsdt->subtract(days => $i);
-        my $nedt    = $nsdt->clone();
-        $nedt->set(hour => 23, minute => 59, second => 59);
-        my $req = {
-            range   => [ $nsdt, $nedt ],
+
+
+    for ( my $i = $x-1; $i >= 0; $i-- ) {
+        my $next_start_dt   = $dt->clone();
+        $next_start_dt->subtract(days => $i);
+        my $next_end_dt     = $next_start_dt->clone();
+        $next_end_dt->set(hour=>23, minute=>59, second=>59);
+        my $request = {
+            range   => [ $next_start_dt, $next_end_dt ]
         };
-        $req->{limit} = $limit if ( defined $limit);
-        my $dayresult = $self->response_time($req);
-        $log->debug("dayresult = ",{filter=>\&Dumper, value=>$dayresult});
-        push @results, {
-            Date        => $nsdt->ymd('-'),
-            Categories => [
-                {Name    => "All Alerts", Value => $dayresult->{all}->{avg}//0 },
-                {Name    => "Promoted Alerts", Value => $dayresult->{promoted}->{avg}//0 },
-                {Name    => "Incident Alerts", Value => $dayresult->{incident}->{avg}//0 },
+        if ( defined $limit ) {
+            $request->{limit} = $limit;
+        }
+        my $dayresult   = $self->response_time($request);
+        push @{$json->{dates}}, {
+            date    => $next_start_dt->ymd('-'),
+            values  => [
+                { 
+                    name  => 'All', 
+                    value => $dayresult->{all}->{avg} // 0
+                },
+                { 
+                    name  => 'Promoted', 
+                    value => $dayresult->{promoted}->{avg} // 0
+                },
+                { 
+                    name  => 'Incident', 
+                    value => $dayresult->{incident}->{avg} // 0
+                },
             ],
-            LineCategory => [
-                {Name   => "All Avg", Value => $averages->{all}//0 },   
-                {Name   => "Promoted Avg", Value => $averages->{promoted}//0 },   
-                {Name   => "Incident Avg", Value => $averages->{incident}//0 },   
-            ]
         };
     }
-    return \@results;
+    return $json;
+
 }
         
 
@@ -245,14 +261,14 @@ sub response_time {
                     
         my $metric  = $stat->metric;
         my @w       = split(/ /,$metric);
-        my $type    = $w[0]; # Sum or Count
-        my $subtype = $w[2]; # all, promoted, incident
+        my $type    = lc($w[0]); # Sum or Count
+        my $subtype = lc($w[2]); # all, promoted, incident
         my $value   = $stat->value;
         next if ($value == 0);
 
         $log->debug("pushing $value onto \$results{$subtype}");
 
-        push @{$results{$subtype}}, $stat->value;
+        push @{$results{$subtype}{$type}}, $stat->value;
     }
 
     my $json    = {
@@ -266,12 +282,26 @@ sub response_time {
 
 sub get_statistics {
     my $self    = shift;
-    my $aref    = shift;
-    return {} unless (defined $aref);
-    my $log     = $self->env->log;
-    $log->debug("Aref has ".scalar(@$aref)." elements");
+    my $href    = shift; # { sum => [ x,y,z...], count => [a,b,c...] }
+    my @values  = ();
+
+    unless (defined $href) {
+        return {};
+    }
+
+    $self->env->log->debug("HREF for stats = ",{filter=>\&Dumper, value=>$href});
+
+    for ( my $i = 0; $i < scalar(@{$href->{sum}}); $i++ ) {
+        my $sum = $href->{sum}->[$i];
+        my $cnt = $href->{count}->[$i];
+        if ( ! defined $cnt or $cnt == 0 ) {
+            $cnt = 1;
+        }
+        my $avg = $sum/$cnt;
+        push @values, $avg;
+    } 
     my $util    = Statistics::Descriptive::Sparse->new();
-       $util->add_data(@$aref);
+       $util->add_data(@values);
     return {
         avg     => $util->mean,
         min     => $util->min,
@@ -280,6 +310,7 @@ sub get_statistics {
         count   => $util->count,
     };
 }
+
 
 sub creation_bullet {
     my $self    = shift;
@@ -404,7 +435,7 @@ sub alert_power {
     my @results = ();
     foreach my $at (keys %$sums) {
         push @results, {
-            date        => $at,
+            name        => $at,
             open        => $sums->{$at}->{open},
             promoted    => $sums->{$at}->{promoted},
             incident    => $sums->{$at}->{incident},
@@ -419,14 +450,11 @@ sub alert_power {
 
     $log->debug("sorted results: ",{filter=>\&Dumper,value=>\@sorted});
 
-    my @filtered = map { my $s = delete $_->{score}; $_->{date} .= " ($s)"; $_ } @sorted;
 
-    my @slice = splice(@filtered, 0, 20);
-
-    $log->debug("Slice is ",{filter=>\&Dumper, value=>\@slice});
-
-    return \@slice;
-#     return \@sorted;
+    # my @slice = splice(@sorted, 0, 20);
+    # $log->debug("Slice is ",{filter=>\&Dumper, value=>\@slice});
+    # return \@slice;
+    return \@sorted;
 }
 
 
@@ -468,7 +496,7 @@ sub alert_power_sums {
     while ( my $href = $aggcursor->next ) {
         my $score   = $self->calculate_score($href);
         $r{$href->{_id}} = {
-            open        => $href->{open },
+            open        => $href->{open},
             promoted    => $href->{promoted},
             incident    => $href->{incident},
             score       => $score,
@@ -489,9 +517,126 @@ sub calculate_score {
 #    if ( $total > 0 ) {
 #        $score = (($href->{promoted} + ($multiple * $href->{incident}) )/$total);
 #    }
-    $score  = $href->{promoted} + $multiple*$href->{incident} - $href->{open};
+    $score  = $href->{promoted} + $multiple*$href->{incident};# - $href->{open};
     # return int($score * 1000);
     return $score;
+}
+
+sub get_game_data {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+    my $user    = $self->session('user');
+    my $tt      = {
+        teacher     => "Most Guide Entries Authored",
+        tattler     => "Most Incidents Promoted",
+        alarmist    => "Most Alerts Promoted",
+        closer      => "Most Closed things",
+        cleaner     => "Most Deleted Things",
+        fixer       => "Most Edited Entries",
+        operative   => "Most Intel Entries",
+    };
+
+    my $col = $mongo->collection('Game');
+    my $cur = $col->find();
+    my %res = ();
+
+    while ( my $gobj = $cur->next ) {
+        my $results_aref    = $gobj->results;
+        my $name            = $gobj->game_name;
+        my $tip             = $gobj->tooltip;
+        my $updated         = $gobj->lastupdate;
+
+        $res{$name} = [
+            { username => $results_aref->[0]->{_id},
+              count    => $results_aref->[0]->{total}, 
+              tooltip   => $tip, 
+            },
+            { username => $results_aref->[1]->{_id},   
+              count    => $results_aref->[1]->{total},
+              tooltip   => $tip, 
+            },
+            { username => $results_aref->[2]->{_id},   
+              count    => $results_aref->[2]->{total},
+              tooltip   => $tip, 
+            },
+        ];
+    }
+
+    $self->do_render(\%res);
+
+}
+
+sub get_status {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
+
+    my $status  = {
+        'Scot Flair Daemon'         => $self->get_daemon_status('scfd'),
+        'Scot Elastic Push Daemon'  => $self->get_daemon_status('scepd'),
+        'System Uptime'             => `uptime`,
+        'MongoDB'                   => $self->get_daemon_status('mongod'),
+    };
+    $self->do_render($status);
+}
+
+sub get_daemon_status {
+    my $self    = shift;
+    my $daemon  = shift;
+    my $log     = $self->env->log;
+
+    my $systemd = `systemctl | grep "\-.mount"`;
+
+    if ( $systemd =~ /-\.mount/ ) {
+        $log->debug("systemd style services!");
+        my $result  = `service $daemon status`;
+        my @statuses  = ();
+        foreach my $line (split(/\n/,$result)) {
+            next unless ( $line =~ / +\S+:/ );
+            my ($type, $data) = split(/: /,$line);
+            if ( $type =~ /Active/ ) {
+                push @statuses, $data;
+            }
+            if ( $type =~ /Main PID/ ) {
+                push @statuses, $data;
+            }
+        }
+        return join(' ',reverse @statuses);
+    }
+
+    my $result  = `service $daemon status`;
+    $log->debug("DAEMON status is $result");
+    my ($status)=  $result =~ /.*\[(.*)\]/; 
+    $log->debug("plucked $status");
+    return $result;
+}
+
+sub get_who_online {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $now     = $env->now;
+    my $ago     = 30 * 60;   # activity in last 30 minutes
+    my $col     = $env->mongo->collection('User');
+    my $cur     = $col->find({ lastvisit => { '$gte' => $now - $ago }});
+    $cur->sort({lastvisit => -1});
+    my $total   = $cur->count;
+    my @results = ();
+
+    while (my $user = $cur->next ) {
+        push @results, {
+            username        => $user->username,
+            last_activity   => $now - $user->lastvisit,
+        };
+    }
+    $self->do_render({
+        records             => \@results,
+        queryRecordCount    => scalar(@results),
+        totalRecordCount    => $total
+
+    });
 }
 
 1;

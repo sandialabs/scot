@@ -1,5 +1,6 @@
 @entry_border_rounded: 5px;
 @entry_header_background_color: #DDD;
+@detail_header_background_color: #292929;
 @body_background_color: #EEE;
 //@import "/css/bootstrap.css";
 
@@ -105,7 +106,7 @@ input[type=text]:not(.form-control) {
 
 .entry-header-info-null {
     color:#ECECEC;
-    background-color:#292929;
+    background-color: @detail_header_background_color;
     padding-right: 5px;
     padding-bottom: 2px;
     width: 100%;
@@ -114,7 +115,7 @@ input[type=text]:not(.form-control) {
 
 .entry-header-info-absolute {
     color:#ECECEC;
-    background-color:#292929;
+    background-color: @detail_header_background_color;
     padding-right: 5px;
     padding-bottom: 2px;
     width: 100%;
@@ -125,7 +126,7 @@ input[type=text]:not(.form-control) {
 
 .entry-header-info-fixed {
     color:#ECECEC;
-    background-color:#292929;
+    background-color: @detail_header_background_color;
     padding-right: 5px;
     padding-bottom: 2px;
     width: 100%;
@@ -1193,16 +1194,28 @@ html>body tbody.fixedContent {
 
 #printable { display: none; }
 
+/*
 @media print
 {
     .detail-buttons { display: none; }
+    .entry-header-info-null {
+        background-color: #292929;
+        color:#ECECEC;
+    }
     .entry-header {
         background-color: @entry_header_background_color;
         box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.9);
         border-radius: @entry_border_rounded @entry_border_rounded 0px 0px;
     }
+    .entry-wrapper-main {
+        width: auto;
+        height: auto;
+        //  position: relative;
+        overflow: visible;
+        display: block;
+    }
 }
-
+*/
 /*{
    #TopPane { display: none; }
    #filters { display: none; }

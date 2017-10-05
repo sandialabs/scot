@@ -17,8 +17,7 @@
         VERSION:     '3.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -26,6 +25,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="SCOT 3.5.1 documentation" href="index.html" />
     <link rel="next" title="Developing For SCOT" href="devguide.html" />
     <link rel="prev" title="User Guide" href="userguide.html" /> 
   </head>
@@ -121,7 +121,7 @@ $ tar czvf /another/dir/scot-prod.tgz ./dump</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">tar</span> <span class="n">xzvf</span> <span class="n">scotback</span><span class="o">.</span><span class="mf">201701211832.</span><span class="n">tgz</span>
 </pre></div>
 </div>
-<p>This will create a directory &#8221;./dump/scot-prod&#8221;.  Restore the MondoDB with:</p>
+<p>This will create a directory &#8221;./dump/scot-prod&#8221;.  Restore the MongoDB with:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mongorestore</span> <span class="o">--</span><span class="n">dropdatabase</span> <span class="o">--</span><span class="n">db</span> <span class="n">scot</span><span class="o">-</span><span class="n">prod</span> <span class="o">./</span><span class="n">dump</span><span class="o">/</span><span class="n">scot</span><span class="o">-</span><span class="n">prod</span>
 </pre></div>
 </div>
@@ -211,7 +211,7 @@ downloaded directory, run:</p>
 <p>A properly functioning SCOT has the following services running:</p>
 <ul class="simple">
 <li>ActiveMQ</li>
-<li>MondoDB</li>
+<li>MongoDB</li>
 <li>Apache2</li>
 <li>Scot</li>
 <li>scfd   (scot flairing daemon)</li>
@@ -223,37 +223,6 @@ downloaded directory, run:</p>
 <h2>Logging<a class="headerlink" href="#logging" title="Permalink to this headline">¶</a></h2>
 <p>SCOT is a prolific logger.  All logs are stored in /var/log/scot.  It is highly recommended to set
 up logrotate to avoid filling you disk.  Create a /etc/logrotate.d/scot like</p>
-<div class="highlight-default"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="n">scot</span><span class="o">.*.</span><span class="n">log</span> <span class="p">{</span>
-    <span class="n">daily</span>
-    <span class="n">missingok</span>
-    <span class="n">rotate</span> <span class="mi">5</span>
-    <span class="n">compress</span>
-    <span class="n">notifempty</span>
-    <span class="n">copytruncate</span>
-<span class="p">}</span>
-<span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">log</span><span class="o">/</span><span class="n">scot</span><span class="o">/</span><span class="n">error</span><span class="o">.*.</span><span class="n">log</span> <span class="p">{</span>
-    <span class="n">daily</span>
-    <span class="n">missingok</span>
-    <span class="n">rotate</span> <span class="mi">5</span>
-    <span class="n">compress</span>
-    <span class="n">notifempty</span>
-<span class="p">}</span>
-</pre></div>
-</td></tr></table></div>
 </div>
 </div>
 
@@ -293,7 +262,7 @@ up logrotate to avoid filling you disk.  Create a /etc/logrotate.d/scot like</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/adminguide.rst.txt"
+      <li><a href="_sources/adminguide.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>

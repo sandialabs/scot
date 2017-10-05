@@ -18,13 +18,13 @@ Custom collection operations on signatures
 
 =over 4
 
-=item B<create_from_api>
+=item B<api_create>
 
 Create Signature from POST to API
 
 =cut
 
-sub create_from_api {
+override api_create => sub {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
@@ -61,7 +61,8 @@ sub create_from_api {
     }
 
     return $signature;
-}
+};
+
 
 sub get_bundled_sigbody {
     my $self    = shift;
@@ -79,5 +80,93 @@ sub get_bundled_sigbody {
     }
     return $href;
 }
+
+sub get_sigbodies {
+    my $self    = shift;
+    my $object  = shift;
+    my $id      = $object->id + 0;
+    my $col     = $self->meerkat->collection('Sigbody');
+    my $cur     = $col->find({signature_id => $id});
+    my $bodies  = {};
+    $cur->sort({created => -1});
+    while ( my $body = $cur->next ) {
+        $bodies->{$body->revision} = $body->as_hash;
+    }
+    return $bodies;
+}
+
+sub api_subthing {
+    my $self    = shift;
+    my $req     = shift;
+    my $thing   = $req->{collection};
+    my $id      = $req->{id} + 0;
+    my $subthing= $req->{subthing};
+    my $mongo   = $self->env->mongo;
+
+    $self->env->log->debug("api_subthing /$thing/$id/$subthing");
+
+    if ($subthing eq "entry") {
+        return $mongo->collection('Entry')->get_entries_by_target({
+            id      => $id,
+            type    => 'signature',
+        });
+    }
+
+    if ($subthing eq "entity") {
+        return $mongo->collection('Link')
+                     ->get_linked_objects_cursor(
+                        { id => $id, type => 'signature' },
+                        'entity' );
+    }
+    if ( $subthing eq "link" ) {
+        return $mongo->collection('Link')
+                    ->get_links_by_target({
+                        id      => $id,
+                        type    => $thing,
+                    });
+    }
+
+    if ( $subthing eq "tag" ) {
+        my @appearances = map { $_->{apid} } 
+            $mongo->collection('Appearance')->find({
+                type    => 'tag', 
+                'target.type'   => 'signature',
+                'target.id'     => $id,
+            })->all;
+        return $mongo->collection('Tag')->find({
+            id => {'$in' => \@appearances}
+        });
+    }
+
+    if ( $subthing eq "source" ) {
+        my @appearances = map { $_->{apid} } 
+            $mongo->collection('Appearance')->find({
+                type    => 'source', 
+                'target.type'   => 'signature',
+                'target.id'     => $id,
+            })->all;
+        return $mongo->collection('Source')->find({
+            id => {'$in' => \@appearances}
+        });
+    }
+
+    if ( $subthing eq "history" ) {
+        return $mongo->collection('History')->find({
+            'target.id'   => $id,
+            'target.type' => 'signature'
+        });
+    }
+
+    if ( $subthing eq "file" ) {
+        return $mongo->collection('File')->find({
+            'entry_target.id'     => $id,
+            'entry_target.type'   => 'signature',
+        });
+    }
+
+    die "unsupported signature subthing $subthing";
+
+}
+
 
 1;

@@ -19,14 +19,13 @@ Custom collection operations for Files
 
 =over 4
 
-=item B<create_from_api($request)>
+=item B<api_create($request)>
 
 Create an handler and from a POST to the handler
 
 =cut
 
-
-sub create_from_api {
+override api_create => sub {
     my $self    = shift;
     my $href    = shift;
     my $env     = $self->env;
@@ -45,7 +44,51 @@ sub create_from_api {
     my $handler   = $self->create($build_href);
 
     return $handler;
-}
+};
+
+override api_list => sub {
+    my $self    = shift;
+    my $href    = shift;
+    my $user    = shift;
+    my $groups  = shift;
+
+    my $match   = $self->build_match_ref($href->{request});
+    my $current = $href->{request}->{params}->{current};
+
+    if ( defined $current ) {
+        my @records;
+        my $cursor  = $self->get_handler($current);
+        return ($cursor, $cursor->count);
+    }
+
+    $self->env->log->debug("match is ",{filter=>\&Dumper, value=>$match});
+
+    my $cursor  = $self->find($match);
+    my $total   = $cursor->count;
+
+    my $limit   = $self->build_limit($href);
+    if ( defined $limit ) {
+        $cursor->limit($limit);
+    }
+    else {
+        # TODO: accept a default out of env/config?
+        $cursor->limit(50);
+    }
+
+    if ( my $sort   = $self->build_sort($href) ) {
+        $cursor->sort($sort);
+    }
+    else {
+        $cursor->sort({id   => -1});
+    }
+
+    if ( my $offset  = $self->build_offset($href) ) {
+        $cursor->skip($offset);
+    }
+
+    return ($cursor,$total);
+
+};
 
 sub get_handler {
     my $self    = shift;

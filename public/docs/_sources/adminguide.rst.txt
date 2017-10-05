@@ -69,7 +69,7 @@ Extract the timestamped SCOT backup tar file::
 
     tar xzvf scotback.201701211832.tgz
 
-This will create a directory "./dump/scot-prod".  Restore the MondoDB with::
+This will create a directory "./dump/scot-prod".  Restore the MongoDB with::
 
     mongorestore --dropdatabase --db scot-prod ./dump/scot-prod
 
@@ -159,7 +159,7 @@ Daemons
 A properly functioning SCOT has the following services running:
 
 * ActiveMQ
-* MondoDB
+* MongoDB
 * Apache2
 * Scot
 * scfd   (scot flairing daemon)

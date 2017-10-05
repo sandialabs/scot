@@ -24,7 +24,7 @@ Create an event and from a POST to the handler
 
 =cut
 
-sub create_from_api {
+override api_create => sub  {
     my $self    = shift;
     my $request = shift;
     my $env     = $self->env;
@@ -61,6 +61,57 @@ sub create_from_api {
     }
 
     return $guide;
+};
+
+sub api_subthing {
+    my $self        = shift;
+    my $req         = shift;
+    my $thing       = $req->{collection};
+    my $id          = $req->{id}+0;
+    my $subthing    = $req->{subthing};
+    my $mongo       = $self->env->mongo;
+
+    if ( $subthing eq "entry" ) {
+        return $mongo->collection('Entry')->get_entries_by_target({
+            id      => $id,
+            type    => 'guide',
+        });
+    }
+
+    if ( $subthing eq "entity" )  {
+        return $mongo->collection('Link')
+                     ->get_linked_objects_cursor(
+                        { id => $id, type => 'guide' },
+                        'entity' );
+    }
+
+    if ( $subthing eq "history" ) {
+        return $mongo->collection('History')->find({
+            'target.id'   => $id,
+            'target.type' => 'guide'
+        });
+    }
+
+    if ( $subthing eq "file" ) {
+        return $mongo->collection('File')->find({
+            'entry_target.id'     => $id,
+            'entry_target.type'   => 'guide',
+        });
+    }
+
+    die "unsupported guide subthing $subthing";
+}
+
+sub autocomplete {
+    my $self    = shift;
+    my $frag    = shift;
+    my $cursor  = $self->find({
+        subject => /$frag/
+    });
+    my @records = map { {
+        id  => $_->{id}, key => $_->{subject}
+    } } $cursor->all;
+    return wantarray ? @records : \@records;
 }
 
 

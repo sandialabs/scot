@@ -119,8 +119,8 @@ var SignatureTable = React.createClass({
                 if (data.revision == undefined) {viewVersionid = this.state.viewVersionid} else {viewVersionid = data.revision} 
                 this.setState({readOnly:true, cursorEnabledDisabled: 'cursorDisabled', ajaxType:null, viewVersionid:viewVersionid, viewSigBodyid:data.id});
             }.bind(this),
-            error: function() {
-                this.props.errorToggle('Failed to create/update sigbody');
+            error: function(data) {
+                this.props.errorToggle('Failed to create/update sigbody', data);
             }.bind(this)
         })
     },
@@ -347,8 +347,8 @@ var SignatureMetaData = React.createClass({
             success: function(data) {
                 console.log('successfully changed signature data');
             }.bind(this),
-            error: function() {
-                this.props.errorToggle('Failed to update signature metadata')
+            error: function(data) {
+                this.props.errorToggle('Failed to update signature metadata', data)
             }.bind(this)
         }) 
     },
@@ -506,8 +506,8 @@ var SignatureGroup = React.createClass({
                 console.log('success: signature_group added');
                 this.setState({signatureGroupValue: ''});
             }.bind(this),
-            error: function() {
-                this.props.errorToggle('Failed to add signature_group');
+            error: function(data) {
+                this.props.errorToggle('Failed to add signature_group', data);
             }.bind(this)
         });
     },
@@ -535,11 +535,12 @@ var SignatureGroup = React.createClass({
             type: 'put',
             url: 'scot/api/v2/signature/' + this.props.id,
             data: JSON.stringify({'signature_group':newSignatureGroupArr}),
+            contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('deleted signature_group success: ' + data);
             }.bind(this),
-            error: function() {
-                this.props.updated('error','Failed to delete signature_group');
+            error: function(data) {
+                this.props.errorToggle('Failed to delete signature_group', data);
             }.bind(this)
         });
     },
