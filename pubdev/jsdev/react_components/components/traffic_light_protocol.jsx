@@ -6,23 +6,21 @@ var DropdownToggle          = require("react-bootstrap/lib/DropdownToggle");
 var DropdownMenu            = require("react-bootstrap/lib/DropdownMenu");
 var TrafficLightProtocol = React.createClass({
     
-    getInitialState: function() {
-        return {
-            color: 'transparent',
-            notset: true,
-        }
-    },
-
-    componentDidMount: function() {
-        /*this.serverRequest = $.get('/scot/api/v2/'+ this.props.type + '/' + this.props.id + '/history', function (result) {
-            var result = result.records;
-            this.setState({historyBody:true, data:result})
-        }.bind(this));*/
-        this.setState({ color: 'green', notset: false });
-    },
-
     selectColor: function(e) {
-        this.setState({color: e});
+        let data  = { 'tlp': e }
+        this.serverRequest = $.ajax({
+            type: 'put',
+            url: '/scot/api/v2/' + this.props.type + '/' + this.props.id + '/',
+            data: JSON.stringify(data),
+            contentType: 'application/json; charset=UTF-8',
+            success: function(data) {
+                console.log('set tlp');
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('Failed to set TLP', data);
+            }.bind(this),
+        });
+        //this.setState({ color: e });
     },
 
     render: function() {
@@ -31,20 +29,20 @@ var TrafficLightProtocol = React.createClass({
                 <Dropdown bsSize='xsmall'>
                     <DropdownToggle>
                         <svg id='trafficlight1' style={{width: '20px', height: '20px'}}>
-                            <circle id="circle1" r="10" cx="10" cy="10" style={{fill: ((this.state.color == 'red' || this.state.color == 'white')  ? this.state.color : 'gray'), stroke: 'black', strokeWidth: '2'}} />
+                            <circle id="circle1" r="10" cx="10" cy="10" style={{fill: ((this.props.tlp == 'red' || this.props.tlp == 'white')  ? this.props.tlp : 'gray'), stroke: 'black', strokeWidth: '2'}} />
                         </svg>    
                         <svg id='trafficlight2' style={{width: '20px', height: '20px'}}>
-                            <circle id="circle2" r="10" cx="10" cy="10" style={{fill: ((this.state.color == 'yellow' || this.state.color == 'white') ? this.state.color : 'gray') , stroke: 'black', strokeWidth: '2'}} />
+                            <circle id="circle2" r="10" cx="10" cy="10" style={{fill: ((this.props.tlp == 'amber' || this.props.tlp == 'white') ? this.props.tlp : 'gray') , stroke: 'black', strokeWidth: '2'}} />
                         </svg>
                         <svg id='trafficlight2' style={{width: '20px', height: '20px'}}>
-                            <circle id="circle3" r="10" cx="10" cy="10" style={{fill: ((this.state.color == 'green' || this.state.color == 'white') ? this.state.color : 'gray'), stroke: 'black', strokeWidth: '2'}} />
+                            <circle id="circle3" r="10" cx="10" cy="10" style={{fill: ((this.props.tlp == 'green' || this.props.tlp == 'white') ? this.props.tlp : 'gray'), stroke: 'black', strokeWidth: '2'}} />
                         </svg>
                     </DropdownToggle>
                     <DropdownMenu>
                         <MenuItem header>Traffic Light Protocol (TLP) Color</MenuItem>
-                        <MenuItem eventKey='notset' onSelect={this.selectColor}>Unset</MenuItem>
+                        <MenuItem eventKey='unset' onSelect={this.selectColor}>Unset</MenuItem>
                         <MenuItem eventKey='red' onSelect={this.selectColor}>Red</MenuItem>
-                        <MenuItem eventKey='yellow' onSelect={this.selectColor}>Yellow</MenuItem>
+                        <MenuItem eventKey='amber' onSelect={this.selectColor}>Amber</MenuItem>
                         <MenuItem eventKey='green' onSelect={this.selectColor}>Green</MenuItem>
                         <MenuItem eventKey='white' onSelect={this.selectColor}>White</MenuItem>
                         <MenuItem divider/>
