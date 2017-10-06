@@ -314,6 +314,15 @@ override api_create => sub {
 sub create_json_html {
     my $self    = shift;
     my $data    = shift;
+    my $html    = '<pre>\n';
+    $html       .= JSON::XS->new->utf8->pretty->allow_nonref->encode($data);
+    $html       .= '</pre>\n';
+    return $html;
+}
+
+sub create_json_html_as_elements {
+    my $self    = shift;
+    my $data    = shift;
     my $tree    = HTML::Element->new('div',"class" => "json-container");
     my $ul      = HTML::Element->new("ul", "class" => "json-container");
     $tree->push_content($ul);
@@ -348,8 +357,9 @@ sub build_hash_element {
         $li->push_content($key2);
         my $value   = $data->{$key};
         $self->build_tree($li, $value);
-        $element->push_content($li);
+        $ul->push_content($li);
     }
+    $element->push_content($ul);
     my $close   = HTML::Element->new("span", "class" => "close");
     $close->push_content('}');
     $element->push_content($close);
@@ -371,8 +381,9 @@ sub build_array_element {
     foreach my $value (@$data ) {
         my $li  = HTML::Element->new("li");
         $self->build_tree($li,$value);
-        $element->push_content($li);
+        $ul->push_content($li);
     }
+    $element->push_content($ul);
     my $close   = HTML::Element->new("span", "class" => "close");
     $close->push_content(']');
     $element->push_content($close);
