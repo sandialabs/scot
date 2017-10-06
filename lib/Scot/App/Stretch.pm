@@ -221,7 +221,7 @@ sub process_message {
     my $cleanser = Data::Clean::FromJSON->get_cleanser;
     my $record  = $self->get_document($type, $id);
     $cleanser->clean_in_place($record);
-    $es->index($type, $record, 'scot');
+    $es->index('scot', $type, $record);
     $self->put_stat("elastic doc inserted", 1);
 }
 
@@ -330,7 +330,7 @@ sub process_all {
 
             delete $href->{_id};
             try {
-                $es->index($collection, $href, 'scot');
+                $es->index('scot',$collection, $href');
             }
             catch {
                 say "Error: Failed to index $collection : ". $href->{id};
