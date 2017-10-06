@@ -164,7 +164,8 @@ sub extract_splunk_tags {
     my $regex = qr{
         (sourcetype=.*?)\ |
         (index=.*?)\ |
-        (tag=.*?)\ 
+        (tag=.*?)\ |
+        (source=.*?)\  
     }xms;
 
     foreach my $m ($search =~ m/$regex/g) {
