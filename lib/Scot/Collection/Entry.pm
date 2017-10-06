@@ -314,6 +314,15 @@ override api_create => sub {
 sub create_json_html {
     my $self    = shift;
     my $data    = shift;
+    my $html    = '<pre>\n';
+    $html       .= JSON::XS->new->utf8->pretty->allow_nonref->encode($data);
+    $html       .= '</pre>\n';
+    return $html;
+}
+
+sub create_json_html_as_elements {
+    my $self    = shift;
+    my $data    = shift;
     my $tree    = HTML::Element->new('div',"class" => "json-container");
     my $ul      = HTML::Element->new("ul", "class" => "json-container");
     $tree->push_content($ul);
