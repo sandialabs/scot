@@ -330,7 +330,7 @@ sub process_all {
 
             delete $href->{_id};
             try {
-                $es->index('scot',$collection, $href');
+                $es->index('scot',$collection, $href);
             }
             catch {
                 say "Error: Failed to index $collection : ". $href->{id};
