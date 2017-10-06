@@ -104,10 +104,6 @@ services:
      context: ./
    volumes:
     - "/var/log/scot:/var/log/scot/"
-#Need to fix below stuff (GROSS!)
-#    - "/opt/scot/lib/Scot:/opt/scot/lib/Scot/"
-#    - "/opt/scot/lib:/opt/scot/lib/" 
-#    - "/opt/scot/install/src/scot:/opt/scot/etc/"
    depends_on:
     - mongodb
     - activemq
@@ -116,7 +112,22 @@ services:
      scot-docker-net:
       ipv4_address: 172.18.0.8
       aliases:
-       - scot-docker 
+       - flair-docker
+  stretch:
+   build:
+     dockerfile: Dockerfile-Stretch
+     context: ./
+   volumes:
+    - "/var/log/scot:/var/log/scot/"
+   depends_on:
+    - mongodb
+    - activemq
+    - scot
+   networks:
+     scot-docker-net:
+      ipv4_address: 172.18.0.9
+      aliases:
+       - stretch-docker 
 networks:
   scot-docker-net:
     driver: bridge
