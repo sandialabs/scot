@@ -39,7 +39,9 @@ RUN apt-get update && \
     apt-get clean && \ 
     rm -rf /var/lib/apt/lists/*, /tmp/*, /var/tmp/*
 #install nettools -REMOVE
-RUN apt-get install -qy net-tools
+RUN apt-get update && \
+    apt-get -qy upgrade && \
+    apt-get install -qy net-tools vim
 
 
 #Install CPAN modules
@@ -72,7 +74,7 @@ COPY bin/ /opt/scot/bin/
 COPY templates/ /opt/scot/templates/ 
 COPY docker-configs/scot/scot.cfg.pl /opt/scot/etc/
 COPY docker-configs/scot/Scot.pm /opt/scot/lib/
-
+COPY docker-configs/scot/Search.pm /opt/scot/lib/Scot/Controller/
 
 #Sandia - May need to remove
 #COPY Sidd.pm /opt/scot/lib/Scot/Util/
