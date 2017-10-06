@@ -348,8 +348,9 @@ sub build_hash_element {
         $li->push_content($key2);
         my $value   = $data->{$key};
         $self->build_tree($li, $value);
-        $element->push_content($li);
+        $ul->push_content($li);
     }
+    $element->push_content($ul);
     my $close   = HTML::Element->new("span", "class" => "close");
     $close->push_content('}');
     $element->push_content($close);
@@ -371,8 +372,9 @@ sub build_array_element {
     foreach my $value (@$data ) {
         my $li  = HTML::Element->new("li");
         $self->build_tree($li,$value);
-        $element->push_content($li);
+        $ul->push_content($li);
     }
+    $element->push_content($ul);
     my $close   = HTML::Element->new("span", "class" => "close");
     $close->push_content(']');
     $element->push_content($close);
