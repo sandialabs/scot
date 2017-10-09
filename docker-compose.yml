@@ -23,6 +23,7 @@ services:
     build:
       dockerfile: Dockerfile-Activemq
       context: ./
+    #image: https://baltig.sandia.gov:4567/scot-activemq
     ports:
      - "8161:8161"
      - "61613:61613"
