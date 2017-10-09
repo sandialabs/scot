@@ -158,7 +158,7 @@ sub upload {
 sub create_file_upload_entry {
     my $self        = shift;
     my $fileobj     = shift;
-    my $entry_id    = shift;
+    my $parent_id    = shift;
     my $target_type = shift;
     my $target_id   = shift;
     my $fid         = $fileobj->id;
@@ -168,14 +168,14 @@ sub create_file_upload_entry {
     my $col         = $mongo->collection('Entry');
     $log->debug("going to entry collection to create entry");
     my $entry       = $col->create_from_file_upload($fileobj,
-                                                    $entry_id,
+                                                    $parent_id,
                                                     $target_type,
                                                     $target_id);
     $env->mq->send("scot", {
         action  => "created",
         data    => {
             type    => "entry",
-            id      => $entry_id,
+            id      => $entry->id,
             who     => $self->session('user'),
             what    => "file_uploaded",
         }
