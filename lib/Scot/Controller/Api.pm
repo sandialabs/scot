@@ -1558,7 +1558,8 @@ sub thread_entries {
             # actions defined in the config file
             if ( defined $self->env->{entry_actions}->{fileinfo} ) {
                 my $action  = $env->{entry_actions}->{fileinfo};
-                my $servername = $self->req->url->host;
+                my $servername = `hostname`;
+                chomp($servername);
                 $log->debug("SERVERNAME is $servername");
                 $href->{actions} = [ $action->($href,$servername) ];
             }
