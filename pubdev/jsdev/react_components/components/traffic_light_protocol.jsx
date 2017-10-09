@@ -36,7 +36,7 @@ var TrafficLightProtocol = React.createClass({
                                 <circle id="circle1" r="10" cx="10" cy="10" style={{fill: ((this.props.tlp == 'red' || this.props.tlp == 'white')  ? this.props.tlp : 'gray'), stroke: 'black', strokeWidth: '2'}} />
                             </svg>    
                             <svg id='trafficlight2' style={{width: '20px', height: '20px'}}>
-                                <circle id="circle2" r="10" cx="10" cy="10" style={{fill: ((this.props.tlp == 'amber' || this.props.tlp == 'white') ? this.props.tlp : 'gray') , stroke: 'black', strokeWidth: '2'}} />
+                                <circle id="circle2" r="10" cx="10" cy="10" style={{fill: ((this.props.tlp == 'amber' && this.props.tlp != 'white' ? 'orange' : this.props.tlp == 'white' ? 'white' : 'gray' )) , stroke: 'black', strokeWidth: '2'}} />
                             </svg>
                             <svg id='trafficlight2' style={{width: '20px', height: '20px'}}>
                                 <circle id="circle3" r="10" cx="10" cy="10" style={{fill: ((this.props.tlp == 'green' || this.props.tlp == 'white') ? this.props.tlp : 'gray'), stroke: 'black', strokeWidth: '2'}} />
