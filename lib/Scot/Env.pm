@@ -316,7 +316,7 @@ sub get_config_item {
     my $name    = shift;
     my $log     = $self->log;
 
-    $log->trace("grabbing config item $name");
+    $log->debug("grabbing config item $name");
 
     my $meta    = $self->meta;
     my $method  = $meta->get_method($name);
