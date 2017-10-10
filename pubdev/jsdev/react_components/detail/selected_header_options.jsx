@@ -5,6 +5,7 @@ var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
 var DropdownButton  = require('react-bootstrap/lib/DropdownButton.js');
 var Promote         = require('../components/promote.jsx');
 var Marker          = require('../components/marker.jsx').default;
+var TrafficLightProtocol = require('../components/traffic_light_protocol.jsx');
 
 var SelectedHeaderOptions = React.createClass({
     getInitialState: function() {
@@ -383,6 +384,7 @@ var SelectedHeaderOptions = React.createClass({
                     {type == 'alertgroup' || type == 'event' || type == 'intel' ? <Button eventKey="4" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button> : null}
                     <Button eventKey="5" onClick={this.props.changeHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> {subjectType} History</Button>
                     {type != 'entity' ? <Button eventKey="6" onClick={this.props.permissionsToggle} bsSize='xsmall'><i className="fa fa-users" aria-hidden="true"></i> Permissions</Button> : null } 
+                    <TrafficLightProtocol type={type} id={id} tlp={this.props.headerData.tlp} />
                     <Button eventKey="7" onClick={this.props.entitiesToggle} bsSize='xsmall'><span className='entity'>__</span> View Entities</Button>
                     {type == 'guide' ? <Button eventKey='8' onClick={this.props.guideRedirectToAlertListWithFilter} bsSize='xsmall'><i className="fa fa-table" aria-hidden='true'></i> View Related Alerts</Button> : null}
                     <Button onClick={this.props.linksModalToggle} bsSize='xsmall'><i className='fa fa-link' aria-hidden='true'></i> Links</Button>
