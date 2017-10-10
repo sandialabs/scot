@@ -900,13 +900,30 @@ var EntryParent = React.createClass({
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(<EntryParent  items = {childobj} id={id} type={type} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={isPopUp} errorToggle={errorToggle}/>));  
+                        subitemarr.push(new Array(<EntryParent items = {childobj} id={id} type={type} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={isPopUp} errorToggle={errorToggle}/>));  
                     });
                 }
             }
             childfunc(prop);
         };
         itemarr.push(subitemarr);
+
+        let entryActions = [];
+        if ( this.props.items ) {
+            if ( this.props.items.actions ) {
+                for ( let i = 0; i < this.props.items.actions.length; i++ ) {
+                    if ( this.props.items.actions[i].send_to_name && this.props.items.actions[i].send_to_url ) {
+                        entryActions.push(<EntryAction 
+                            id={this.props.items.actions[i].send_to_name} 
+                            datahref={this.props.items.actions[i].send_to_url} 
+                            errorToggle={this.props.errorToggle}
+                            />
+                        )
+                    }
+                }
+            }
+        }
+
         var header1 = '[' + items.id + '] ';
         var header2 = ' by ' + items.owner + ' ' + taskOwner + '(updated on '; 
         var header3 = ')'; 
@@ -923,6 +940,7 @@ var EntryParent = React.createClass({
                                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
                                     { type != 'entity' ? <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem> : null}
+                                    {entryActions}
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} errorToggle={this.props.errorToggle}/></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items} errorToggle={this.props.errorToggle} /></MenuItem>
                                     <Marker type={'entry'} id={items.id} string={items.body_plain} />
@@ -941,8 +959,53 @@ var EntryParent = React.createClass({
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} errorToggle={this.props.errorToggle} /> : null}     
             </div>
         );
+    },
+
+});
+
+let EntryAction = React.createClass({
+    getInitialState: function() {
+
+        return {
+            [this.props.id] : false,
+            disabled: false,
+        }        
+    },
+
+    submit: function() {
+        let url = this.props.datahref;
+        let id = this.props.id;
+        
+        $.ajax({
+            type: 'post',
+            url: url,
+            success: function(response) {
+                this.setState({ [id]: true, disabled: false });
+                console.log('submitted the entry action');
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to submit the entry action', data);
+                this.setState({ disabled: false });
+            }.bind(this),
+        });
+        this.setState({ disabled: true });
+    },
+    
+    render: function() {
+        return (
+            <MenuItem disabled={this.state.disabled} >
+                <span id={this.props.id} data-href={this.props.datahref} onClick={this.submit} style={{display:'block'}}>{this.props.id} { 
+                    this.state[this.props.id] ? 
+                        <span style={{color: 'green'}}>success</span> 
+                    : 
+                        null
+                    }
+                </span>
+            </MenuItem> 
+        )
     }
 });
+
 var EntryData = React.createClass({ 
     getInitialState: function() {
         /*if (this.props.type == 'entity' || this.props.isPopUp == 1) {
@@ -964,6 +1027,9 @@ var EntryData = React.createClass({
                     if (!$(ifrContentsHead).find('link')) {
                         ifrContentsHead.append($("<link/>", {rel: "stylesheet", href: 'css/sandbox.css', type: "text/css"}))
                     }
+                    if (!$(ifrContentsHead).find('script')) {
+                        ifrContentsHead.append($("<script/>", {src: "js/json-viewer.js", type: "text/javascript" }))
+                    } 
                 }
                 //if (this.props.type != 'entity') {
                     setTimeout(function() {
@@ -999,7 +1065,7 @@ var EntryData = React.createClass({
             <div id={entry_body_id} key={this.props.id} className={'row-fluid entry-body'}>
                 <div id={entry_body_inner_id} className={'row-fluid entry-body-inner'} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
                     {this.props.editEntryToolbar ? <AddEntry entryAction={'Edit'} type={this.props.type} targetid={this.props.targetid} id={id} addedentry={this.props.editEntryToggle} parent={this.props.subitem.parent} errorToggle={this.props.errorToggle} /> : 
-                    <Frame frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-same-origin'} styleSheets={['/css/sandbox.css']} style={{width:'100%',height:this.state.height}}> 
+                    <Frame frameBorder={'0'} id={'iframe_' + id} sandbox={'allow-same-origin'} styleSheets={['/css/sandbox.css', '/css/json-viewer.css']} style={{width:'100%',height:this.state.height}}> 
                         <div dangerouslySetInnerHTML={{ __html: rawMarkup}}/>
                     </Frame>}
                 </div>

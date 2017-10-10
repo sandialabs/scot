@@ -46,9 +46,9 @@ class PromotedData extends Component {
         }
         //makes large array for modal
         for (let i=0; i < this.props.data.length; i++) {
-            if (i > 0) {fullarr.push(<div> , </div>)}
+            if (i > 0) {fullarr.push(<span> , </span>)}
             let link = '/' + promotedFromType + '/' + this.props.data[i];
-            fullarr.push(<div key={this.props.data[i]}><Link to={link}>{this.props.data[i]}</Link></div>)
+            fullarr.push(<span key={this.props.data[i]}><Link to={link}>{this.props.data[i]}</Link></span>)
         }
         //makes small array for quick display in header
         if (this.props.data.length < 3 ) {
@@ -61,8 +61,8 @@ class PromotedData extends Component {
         }
         if (this.props.data.length > 3) {shortarr.push(<div onClick={this.showAllPromotedDataToggle}>,<a href='javascript:;'>...more</a></div>)}
         return (
-            <MenuItem onClick={this.showAllPromotedDataToggle}>
-                Promoted From
+            <td>
+            <span id='promoted_from' style={{display:'flex'}}>{shortarr}</span>
                 {this.state.showAllPromotedDataToolbar ? <Modal isOpen={true} onRequestClose={this.showAllPromotedDataToggle} style={customStyles}>
                     <div className='modal-header'>
                         <img src='images/close_toolbar.png' className='close_toolbar' onClick={this.showAllPromotedDataToggle} />
@@ -75,7 +75,7 @@ class PromotedData extends Component {
                         <Button id='cancel-modal' onClick={this.showAllPromotedDataToggle}>Close</Button>
                     </div>
                 </Modal> : null }
-            </MenuItem>
+            </td>
         )
     }
 };
