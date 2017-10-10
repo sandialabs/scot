@@ -434,6 +434,10 @@ sub flair_record {
                 $log->debug("A File attachment Column detected!");
                 $log->debug("value = ",{filter=>\&Dumper, value=>$value});
 
+                if ( $value eq "" || $value eq " " ) {
+                    next VALUE;
+                }
+                
                 my ($eref, $flair) = $self->process_cell($value, "filename");
                 if ( ! defined $seen{$eref->{value}} ) {
                     push @entity, $eref;
