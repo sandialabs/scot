@@ -156,7 +156,6 @@ sub get_isp_data {
             };
             return $href;
         }
-        $log->debug("fuck this");
     };
     return $href;
 }
