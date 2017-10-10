@@ -28,18 +28,18 @@ var TrafficLightProtocol = React.createClass({
 
     render: function() {
         return (
-            <div>
+            <span style={{ padding: (this.props.type == 'entry' ? '3px 20px' : null) }}>
                 <OverlayTrigger placement="top" overlay={<Tooltip id='tlp-tooltip'>{this.props.tlp}</Tooltip>}>
-                    <Dropdown bsSize='xsmall'>
+                    <Dropdown bsSize='xsmall' bsStyle={{ padding: (this.props.type == 'entry' ? '3px 20px' : null) }} >
                         <DropdownToggle>
-                            <svg id='trafficlight1' style={{width: '20px', height: '20px'}}>
-                                <circle id="circle1" r="10" cx="10" cy="10" style={{fill: ((this.props.tlp == 'red' || this.props.tlp == 'white')  ? this.props.tlp : 'gray'), stroke: 'black', strokeWidth: '2'}} />
+                            <svg id='trafficlight1' style={{width: '12px', height: '12px'}}>
+                                <circle id="circle1" r="5" cx="6" cy="6" style={{fill: ((this.props.tlp == 'red' || this.props.tlp == 'white')  ? this.props.tlp : 'gray'), stroke: 'black', strokeWidth: '2'}} />
                             </svg>    
-                            <svg id='trafficlight2' style={{width: '20px', height: '20px'}}>
-                                <circle id="circle2" r="10" cx="10" cy="10" style={{fill: ((this.props.tlp == 'amber' && this.props.tlp != 'white' ? 'orange' : this.props.tlp == 'white' ? 'white' : 'gray' )) , stroke: 'black', strokeWidth: '2'}} />
+                            <svg id='trafficlight2' style={{width: '12px', height: '12px'}}>
+                                <circle id="circle2" r="5" cx="6" cy="6" style={{fill: ((this.props.tlp == 'amber' && this.props.tlp != 'white' ? 'orange' : this.props.tlp == 'white' ? 'white' : 'gray' )) , stroke: 'black', strokeWidth: '2'}} />
                             </svg>
-                            <svg id='trafficlight2' style={{width: '20px', height: '20px'}}>
-                                <circle id="circle3" r="10" cx="10" cy="10" style={{fill: ((this.props.tlp == 'green' || this.props.tlp == 'white') ? this.props.tlp : 'gray'), stroke: 'black', strokeWidth: '2'}} />
+                            <svg id='trafficlight2' style={{width: '12px', height: '12px'}}>
+                                <circle id="circle3" r="5" cx="6" cy="6" style={{fill: ((this.props.tlp == 'green' || this.props.tlp == 'white') ? this.props.tlp : 'gray'), stroke: 'black', strokeWidth: '2'}} />
                             </svg>
                         </DropdownToggle>
                         <DropdownMenu>
@@ -54,7 +54,7 @@ var TrafficLightProtocol = React.createClass({
                         </DropdownMenu>
                     </Dropdown> 
                 </OverlayTrigger>
-            </div>
+            </span>
         )
     }
 });
