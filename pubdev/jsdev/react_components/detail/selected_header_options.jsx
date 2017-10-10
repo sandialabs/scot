@@ -294,7 +294,7 @@ var SelectedHeaderOptions = React.createClass({
     },
 
     createGuide: function() {
-       var data = JSON.stringify({subject: 'ENTER A GUIDE NAME',applies_to:[this.props.headerData.subjectName],entry:[]})
+       var data = JSON.stringify({subject: 'ENTER A GUIDE NAME',applies_to:[this.props.subjectName]})
         $.ajax({
             type: 'POST',
             url: '/scot/api/v2/guide',
