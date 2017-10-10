@@ -433,6 +433,10 @@ sub flair_record {
                 # each link in this field is a <div>filename</div>, 
                 $log->debug("A File attachment Column detected!");
                 $log->debug("value = ",{filter=>\&Dumper, value=>$value});
+                
+                if ( $value eq "" || $value eq " " ) {
+                    next VALUE;
+                }
 
                 if ( $value eq "" || $value eq " " ) {
                     next VALUE;
