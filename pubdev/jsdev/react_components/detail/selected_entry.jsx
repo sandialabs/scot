@@ -19,6 +19,7 @@ var LinkWarning             = require('../modal/link_warning.jsx');
 var Link                    = require('react-router-dom').Link;
 var IncidentTable           = require('../components/incident_table.jsx');
 var SignatureTable          = require('../components/signature_table.jsx');
+var TrafficLightProtocol    = require('../components/traffic_light_protocol.jsx');
 var Marker                  = require('../components/marker.jsx').default;
 
 var SelectedEntry = React.createClass({
@@ -928,6 +929,8 @@ var EntryParent = React.createClass({
                                     <Marker type={'entry'} id={items.id} string={items.body_plain} />
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
                                     <MenuItem onClick={this.reparseFlair}>Reparse Flair</MenuItem>
+                                    <TrafficLightProtocol type={'entry'} id={items.id} tlp={items.tlp} errorToggle={this.props.errorToggle} />
+                                    <MenuItem divider />
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
                                 </SplitButton>
                                 <Button bsSize='xsmall' onClick={this.editEntryToggle}>Edit</Button>
