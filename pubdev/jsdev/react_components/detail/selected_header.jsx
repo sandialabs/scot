@@ -1,7 +1,6 @@
 var React                   = require('react');
 var ReactTime               = require('react-time').default;
 var SelectedHeaderOptions   = require('./selected_header_options.jsx');
-var TrafficLightProtocol    = require('../components/traffic_light_protocol.jsx');
 var DeleteEvent             = require('../modal/delete.jsx').DeleteEvent;
 var Owner                   = require('../modal/owner.jsx');
 var Entities                = require('../modal/entities.jsx');
@@ -587,7 +586,6 @@ var SelectedHeader = React.createClass({
                                             :
                                                 null
                                             }
-                                            {this.state.showEventData ? <td><span><TrafficLightProtocol type={this.props.type} id={this.props.id} tlp={this.state.headerData.tlp} errorToggle={this.props.errorToggle}/></span></td> : null }
                                             {(type == 'event' || type == 'incident') && this.state.showEventData ? <th>Promoted From:</th> : null}
                                             {(type == 'event' || type == 'incident') && this.state.showEventData ? <PromotedData data={this.state.headerData.promoted_from} type={type} id={id} /> : null}
                                             {(type != 'entity') && this.state.showEventData ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated} errorToggle={this.props.errorToggle} /> : null}
