@@ -314,9 +314,9 @@ override api_create => sub {
 sub create_json_html {
     my $self    = shift;
     my $data    = shift;
-    my $html    = '<pre>\n';
+    my $html    = '<pre>';
     $html       .= JSON::XS->new->utf8->pretty->allow_nonref->encode($data);
-    $html       .= '</pre>\n';
+    $html       .= '</pre>';
     return $html;
 }
 
