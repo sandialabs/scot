@@ -277,7 +277,7 @@ module.exports = React.createClass({
                                             <Button eventKey='1' onClick={this.props.notificationToggle} bsSize='xsmall'>Mute Notifications</Button> :
                                             <Button eventKey='2' onClick={this.props.notificationToggle} bsSize='xsmall'>Turn On Notifications</Button>
                                         }
-                                        {this.props.type == 'event' || this.props.type == 'intel' || this.props.type == 'incident' || this.props.type == 'signature' ? <Button onClick={this.createNewThing} eventKey='6' bsSize='xsmall'>Create {this.state.typeCapitalized}</Button> : null}
+                                        {this.props.type == 'event' || this.props.type == 'intel' || this.props.type == 'incident' || this.props.type == 'signature' || this.props.type == 'guide' ? <Button onClick={this.createNewThing} eventKey='6' bsSize='xsmall'>Create {this.state.typeCapitalized}</Button> : null}
                                         <Button eventKey='5' bsSize='xsmall' onClick={this.exportCSV}>Export to CSV</Button> 
                                         <Button bsSize='xsmall' onClick={this.toggleView}>Full Screen Toggle (f)</Button>
                                         {showClearFilter ? <Button onClick={this.clearAll} eventKey='3' bsSize='xsmall' bsStyle={'info'}>Clear All Filters</Button> : null}
@@ -722,6 +722,8 @@ module.exports = React.createClass({
         var data;
         if (this.props.type == 'signature') {
             data = JSON.stringify({name:'Name your Signature', status: 'disabled'});   
+        } else if ( this.props.type == 'guide' ) { 
+            data = JSON.stringify({ subject: 'ENTER A GUIDE NAME', applies_to: ['documentation']}) 
         } else {
             data = JSON.stringify({subject: 'No Subject'});
         }
