@@ -41,6 +41,7 @@ services:
      - "/var/log/mongodb/mongod.log:/var/log/mongodb/mongod.log"
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
+     - "/data/db:/data/db/"
     networks:
      scot-docker-net:
       ipv4_address: 172.18.0.4
@@ -128,7 +129,8 @@ services:
      scot-docker-net:
       ipv4_address: 172.18.0.9
       aliases:
-       - stretch-docker 
+       - stretch-docker
+
 networks:
   scot-docker-net:
     driver: bridge
