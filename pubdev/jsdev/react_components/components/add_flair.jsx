@@ -1,7 +1,11 @@
 var AddFlair = {
     entityUpdate: function(entityData,flairToolbarToggle,type,linkWarningToggle,id,scrollTo) {
         setTimeout(function() {
-            var entityResult = entityData;
+            let entityResult = {}; 
+            for ( let key in entityData ) {
+                entityResult[$('<span />', {html : key}).html()] = entityData[key];
+            }
+
             if (type != 'alertgroup') {
                 $('iframe').each(function(index,ifr) {
                     //requestAnimationFrame waits for the frame to be rendered (allowing the iframe to fully render before excuting the next bit of code!!!
@@ -19,7 +23,8 @@ var AddFlair = {
                             //$(ifr.contentDocument.body).find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
                             ifrContents.find('.entity').each(function(index,entity){
                                 if ($(entity).find('.extras')[0] == null) {
-                                    var currentEntityValue = $(entity).attr('data-entity-value');
+                                    //var currentEntityValue = $(entity).attr('data-entity-value');
+                                    var currentEntityValue = $('<span />', {html : $(entity).attr('data-entity-value')}).html();
                                     if (currentEntityValue != undefined && entityResult != undefined) {
                                         
                                         let entityMatched = entityResult;
@@ -103,7 +108,8 @@ var AddFlair = {
                         var subtable = $(document.body).find('.alertTableHorizontal');
                         subtable.find('a').attr('target','_blank');
                         subtable.find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
-                        var currentEntityValue = $(entity).attr('data-entity-value');
+                        //var currentEntityValue = $(entity).attr('data-entity-value');
+                        var currentEntityValue = $('<span />', {html : $(entity).attr('data-entity-value')}).html();
                         if (currentEntityValue != undefined && entityResult != undefined) {
                             
                             let entityMatched = entityResult;
