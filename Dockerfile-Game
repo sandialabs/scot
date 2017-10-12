@@ -1,5 +1,5 @@
 FROM gitlab.sandia.gov:3434/docker/ubuntu
-#FROM Ubuntu:16.04
+#FROM ubuntu:16.04
 
 RUN apt-get update && \
     apt-get -qy upgrade && \
@@ -38,11 +38,6 @@ RUN apt-get update && \
     libplack-perl libcurses-perl libfile-libmagic-perl libnet-xmpp-perl && \
     apt-get clean && \ 
     rm -rf /var/lib/apt/lists/*, /tmp/*, /var/tmp/*
-#install nettools -REMOVE
-RUN apt-get update && \
-    apt-get -qy upgrade && \
-    apt-get install -qy net-tools vim
-
 
 #Install CPAN modules
 
@@ -62,21 +57,12 @@ RUN cpanm Array::Split Data::Dumper Data::Dumper::HTML Data::Dumper::Concise Dat
 RUN mkdir -p /var/log/scot
 RUN mkdir -p /opt/scot
 
-#copy config files
-COPY install/src/scot/ /opt/scot/etc/  
-COPY install/src/scot/scot.service /etc/systemd/system/scot.service
-COPY script/ /opt/scot/script/
-COPY public/ /opt/scot/public
-COPY pubdev/node_modules/ /opt/scot/node_modules
-COPY t/ /opt/scot/t/
+COPY install/src/scot/ /opt/scot/etc/
+#COPY bin/watch_amq.pl /opt/scot/bin/
+COPY docker-configs/game/game.pl /opt/scot/bin/
 COPY lib/ /opt/scot/lib/
-COPY bin/ /opt/scot/bin/
-COPY templates/ /opt/scot/templates/ 
-COPY docker-configs/scot/scot.cfg.pl /opt/scot/etc/
-COPY docker-configs/scot/Scot.pm /opt/scot/lib/
-COPY docker-configs/scot/Search.pm /opt/scot/lib/Scot/Controller/
+COPY lib/Scot/App/Game.pm /opt/scot/lib/
+COPY install/src/scot /opt/scot/etc/
+COPY docker-configs/game/game.cfg.pl /opt/scot/etc/
 
-
-EXPOSE 3000 
-
-ENTRYPOINT /usr/local/bin/hypnotoad -f /opt/scot/script/Scot
+CMD ["/usr/bin/perl", "/opt/scot/bin/game.pl"]
