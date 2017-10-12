@@ -25,7 +25,7 @@ var Revl            = require('../components/visualization/revl.coffee');
 var Gamification    = require('../components/dashboard/gamification.jsx');
 var Status          = require('../components/dashboard/status.jsx');
 var Online          = require('../components/dashboard/online.jsx');
-var Report          = require('../components/dashboard/report.jsx');
+import { ReportDashboard, ReportPage, SingleReport } from '../components/dashboard/report';
 var Notification    = require('react-notification-system');
 var Login           = require('../modal/login.jsx').default;
 
@@ -290,8 +290,8 @@ var App = React.createClass({
                                 <LinkContainer to='/entity' activeClassName='active'>
                                     <MenuItem>Entity</MenuItem>
                                 </LinkContainer>
-                                <LinkContainer to='/report' activeClassName='active'>
-                                    <MenuItem>Report</MenuItem>
+                                <LinkContainer to='/reports' activeClassName='active'>
+                                    <MenuItem>Reports</MenuItem>
                                 </LinkContainer>
                                 <MenuItem divider />
                                 <MenuItem href='/admin/index.html'>Administration</MenuItem>
@@ -324,7 +324,7 @@ var App = React.createClass({
                             <div>
                                 <Gamification errorToggle={this.errorToggle} />
                                 <Online errorToggle={this.errorToggle} />
-                                <Report frontPage={true} errorToggle={this.errorToggle}/>
+                                <ReportDashboard />
                             </div>
                         :
                             null
@@ -376,10 +376,12 @@ var App = React.createClass({
                         <Revl value={type} type={this.props.match.params.id} id={this.props.match.params.type} depth={this.props.match.params.typeid} viewMode={this.state.viewMode} Notification={this.state.Notification} />
                     :
                     null}
-                    {type == 'report' ?
-                        <Report id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle}/>
-                    :
-                    null}
+                    {type === 'reports' && !this.props.match.params.id &&
+                        <ReportPage />
+                    }
+					{type === 'reports' && this.props.match.params.id &&
+						<SingleReport reportType={this.props.match.params.id} />
+					}
                     {type == 'amq' ?
                         <AMQ type='amq' errorToggle={this.errorToggle} />
                     :
