@@ -25,7 +25,7 @@ gulp.task('watch', ['build'], function () {
 gulp.task( 'scripts', function() {
   return browserify({entries: './jsdev/react_components/main/index.jsx', extensions: ['.jsx','.coffee'], debug: true})
     .transform('coffeeify', {only: './jsdev/react_components/components/visualization'})
-    .transform('babelify', {presets: ['es2015', 'react']})
+    .transform('babelify', {presets: ['es2015', 'react', 'stage-2', 'stage-0']})
     .bundle()
     .pipe(source('scot-3.5.js'))
     .pipe(gulp.dest( paths.build ),{overwrite:true});
@@ -33,7 +33,7 @@ gulp.task( 'scripts', function() {
 
 gulp.task('buildadmin', function() {
     return browserify({entries: './jsdev/react_components/administration/api.jsx', extensions: ['.jsx'], debug: true})
-    .transform('babelify', {presets: ['es2015', 'react']})
+    .transform('babelify', {presets: ['es2015', 'react', 'stage-2', 'stage-0']})
     .bundle()
     .pipe(source('api.js'))
     .pipe(gulp.dest('../public/admin/'),{overwrite:true});
