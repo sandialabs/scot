@@ -15,6 +15,8 @@ var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 var ListViewHeader          = require('./list-view-header.jsx');
 var ListViewData            = require('./list-view-data.jsx');
+import ReactTable           from 'react-table';
+import tableSettings, { buildTypeColumns, defaultTypeTableSettings } from './tableConfig';
 var datasource
 var height;
 var width;
@@ -67,6 +69,7 @@ module.exports = React.createClass({
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
             viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, };
     },
+
     componentWillMount: function() {
         if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
             this.Landscape();
@@ -81,6 +84,7 @@ module.exports = React.createClass({
         //if the type is entry, convert the id and type to the actual type and id
         this.ConvertEntryIdToType( this.props.id );
     },
+
     componentDidMount: function(){
         var height = this.state.scrollheight
         var sortBy = this.state.sort;
@@ -264,7 +268,27 @@ module.exports = React.createClass({
         }
         if (checkCookie('listViewFilter'+this.props.type) != null || checkCookie('listViewSort'+this.props.type) != null || checkCookie('listViewPage'+this.props.type) != null) {
             showClearFilter = true
-        } 
+        }
+/*
+        const columns = [
+            {
+                Header: 'id',
+                accessor: 'id',
+                maxWidth: 100,
+                sortable: true,
+                filterable: true
+            },
+            {
+                Header: 'subject',
+                accessor: 'subject',
+                maxWidth: 800,
+                sortable: true,
+                filterable: true
+            }
+        ]
+*/
+        let columns = buildTypeColumns ( this.props.type );
+        
         return (
             <div> 
                 {this.state.type != 'entry' ?
@@ -272,7 +296,7 @@ module.exports = React.createClass({
                         <div className="black-border-line">
                             <div className='mainview'>
                                 <div>
-                                <div className='list-buttons' style={{display: 'inline-flex'}}>
+                                    <div className='list-buttons' style={{display: 'inline-flex'}}>
                                         {this.props.notificationSetting == 'on'?
                                             <Button eventKey='1' onClick={this.props.notificationToggle} bsSize='xsmall'>Mute Notifications</Button> :
                                             <Button eventKey='2' onClick={this.props.notificationToggle} bsSize='xsmall'>Turn On Notifications</Button>
@@ -282,26 +306,16 @@ module.exports = React.createClass({
                                         <Button bsSize='xsmall' onClick={this.toggleView}>Full Screen Toggle (f)</Button>
                                         {showClearFilter ? <Button onClick={this.clearAll} eventKey='3' bsSize='xsmall' bsStyle={'info'}>Clear All Filters</Button> : null}
                                     </div>
-                                        <div id='list-view-container' style={{display:this.state.listViewContainerDisplay, height:listViewContainerHeight, opacity:this.state.loading ? '.2' : '1'}} tabIndex='1'>
-                                            <div id={this.state.listViewOrientation} tabIndex='2'>
-                                                <div className='tableview' style={{display: 'flex'}}>
-                                                    <div id='fluid2' className="container-fluid2" style={{width:'100%', maxHeight: this.state.maxheight, marginLeft: '0px',height: this.state.scrollheight, 'overflow': 'hidden',paddingLeft:'5px', display:'flex', flexFlow: 'column'}}>                 
-                                                        <table style={{width:'100%'}}>
-                                                            <ListViewHeader data={this.state.objectarray} columns={this.state.columns} columnsDisplay={this.state.columnsDisplay} columnsClassName={this.state.columnsClassName} handleSort={this.handleSort} sort={this.state.sort} filter={this.state.filter} handleFilter={this.handleFilter} startepoch={this.state.startepoch} endepoch={this.state.endepoch} type={this.props.type} errorToggle={this.props.errorToggle}/>
-                                                        </table>
-                                                        <div id='list-view-data-div' style={{height:this.state.scrollheight}} className='list-view-overflow'>
-                                                            <div className='list-view-data-div' style={{display:'block'}}>
-                                                                <table style={{width:'100%'}}>
-                                                                    <ListViewData data={this.state.objectarray} columns={this.state.columns} columnsClassName={this.state.columnsClassName} type={this.state.type} selected={this.selected} selectedId={this.state.id}/>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <Page pagefunction={this.getNewData} defaultPageSize={50} count={this.state.totalcount} pagination={true} type={this.props.type} defaultpage={this.state.activepage.page}/>
-                                            <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
-                                        </div>
+                                    <ReactTable
+                                        columns = { columns } 
+                                        data = { this.state.objectarray }
+                                        defaultPageSize = { 10 }
+                                        noDataText = "No Items"
+                                        onFilteredChange = { this.handleFilter }
+                                        onSortedChange = { this.handleSort }
+                                        {...tableSettings}
+                                    />
+                                    <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
                                     {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter} errorToggle={this.props.errorToggle} history={this.props.history}/> : null}
                                 </div>
                             </div>
@@ -313,6 +327,7 @@ module.exports = React.createClass({
             </div>
         )
     },
+
     AutoScrollToId: function() {
         //auto scrolls to selected id
         if ($('#'+this.state.id).offset() != undefined && $('.list-view-table-data').offset() != undefined) {
@@ -331,6 +346,7 @@ module.exports = React.createClass({
             this.setState({initialAutoScrollToId: true});
         }
     },
+
     componentDidUpdate: function(prevProps, prevState) {
         //auto scrolls to selected id
         for (var i=0; i < this.state.objectarray.length; i++){          //Iterate through all of the items in the list to verify that the current id still matches the rows in the list. If not, don't scroll
@@ -340,6 +356,7 @@ module.exports = React.createClass({
             }
         }
     },
+
     componentWillReceiveProps: function(nextProps) {
         if ( nextProps.id == undefined ) {
             this.setState({type: nextProps.type, id:null, showSelectedContainer: false, scrollheight: $(window).height() - 170});
@@ -396,6 +413,7 @@ module.exports = React.createClass({
         }) 
         document.onmousemove = null
     },
+
     dragdiv: function(e){
         var elem = document.getElementById('fluid2');
         listStartX = e.clientX;
@@ -438,6 +456,7 @@ module.exports = React.createClass({
         this.setState({listViewOrientation: 'portrait-list-view'})
         setCookie('viewMode',"portrait",1000);
     },
+
     Landscape: function(){
         document.onmousemove = null
         document.onmousedown = null
@@ -451,6 +470,7 @@ module.exports = React.createClass({
         this.setState({listViewOrientation: 'landscape-list-view'});
         setCookie('viewMode',"landscape",1000);
     },
+
     clearAll: function(){
         /*sortarray['id'] = -1
         filter = {}
@@ -466,6 +486,7 @@ module.exports = React.createClass({
         deleteCookie('listViewSort'+this.props.type) //clear sort cookie
         deleteCookie('listViewPage'+this.props.type) //clear page cookie
     },
+
     selected: function(type,rowid, subid, taskid){
         if ( taskid == null && subid == null ) {
             //window.history.pushState('Page', 'SCOT', '/#/' + type +'/'+rowid)  
@@ -485,6 +506,7 @@ module.exports = React.createClass({
         }
         this.setState({alertPreSelectedId: 0, scrollheight: this.state.scrollheight, showSelectedContainer: true })
     },
+
     getNewData: function(page, sort, filter){
         this.setState({loading:true}); //display loading opacity
         var sortBy = sort;
@@ -621,38 +643,39 @@ module.exports = React.createClass({
 	    var data_uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
 	    window.open(data_uri)		
     },
-    handleSort : function(column, clearall){
+
+    handleSort : function(sortObj, clearall){
         var currentSort = this.state.sort;
-        var intDirection;
-        if (clearall == true) {
+        let newObj = {};
+        if (clearall === true) {
             this.setState({sort:{'id':-1}});
-        } else{
-            if(Object.keys(currentSort).length === 0 && currentSort.constructor === Object) {
-                currentSort[column] = direction;
-            } else {
+        } /*else{
+            for ( let sortObjOne of sortObj ) {
+                
+                
                 var obj = Object.keys(currentSort);
-                if (obj[0] == column) {
-                    var direction = currentSort[obj];
-                    if (direction == -1) { 
-                        intDirection = 1;
+                if (obj[0] == sortObjOne.id) {
+                    let newDirection;
+                    var descending = currentSort[obj];
+                    if ( descending == 'true' ) { 
+                        newDirection = 1;
                     } else {
-                        intDirection = -1;
+                        newDirection = -1;
                     }
-                    currentSort[column] = intDirection;
+                    currentSort[sortObjOne] = newDirection;
                 } else {
                     currentSort = {};
-                    currentSort[column] = 1;
+                    currentSort[sortObjOne] = 'false';
                 }
-            }
-            this.setState({sort:currentSort}); 
-            this.getNewData(null, currentSort, null)   
-	        var cookieName = 'listViewSort' + this.props.type;
-            setCookie(cookieName,JSON.stringify(currentSort),1000);
-        }
+            }*/
+            this.setState({sort:sortObj}); 
+            this.getNewData(null, sortObj, null)   
+            var cookieName = 'listViewSort' + this.props.type;
+            setCookie(cookieName,JSON.stringify(sortObj),1000);
+        
     },
 
-
-    handleFilter: function(column,string,clearall,type){
+    handleFilter: function(filterObj,string,clearall,type){
         var currentFilter = this.state.filter;
         var newFilterObj = {};
         var _type;
@@ -661,47 +684,51 @@ module.exports = React.createClass({
         } else {
             _type = this.props.type;
         }
-        if (clearall == true) {
+        if (clearall === true) {
             this.setState({filter:newFilterObj})
         } else { 
-            if (string.length == 0 || string.length == null) { //check if string is blank
-                if (currentFilter != null) {
-                    if (currentFilter[column]) {
-                        delete currentFilter[column];
-                    }
-                }
-                for (var prop in currentFilter) { newFilterObj[prop] = currentFilter[prop]}; // combine current filter with new one
-            } else {
-                var array;
-                if (typeof(string) == 'string') {
-                    array = string.split(',');
-                } else {
-                    array = string; //this is used if string is an array of strings to search (tags/source)
-                }
-                var inProgressFilter = [];
-                var newFilter = [];
-                //if no filter applied
-                if (currentFilter == undefined) {
-                    for (var i=0; i < array.length; i++) {
-                        inProgressFilter.push(array[i]);
-                    }
-                    newFilterObj[column] = inProgressFilter;
-                //filter is applied
-                } else {
-                    //already filtered column being modified
-                    if (currentFilter[column] != undefined) {
-                        for (var i=0; i < array.length; i++) {
-                            inProgressFilter.push(array[i]);
+            //iterate array
+            for ( let filterObjOne of filterObj ) {
+            
+                if (filterObjOne.value.length == 0 || filterObjOne.value.length == null) { //check if string is blank
+                    if (currentFilter != null) {
+                        if (currentFilter[filterObjOne.id]) {
+                            delete currentFilter[filterObjOne.id];
                         }
-                        delete currentFilter[column]
-                        newFilterObj[column] = inProgressFilter;
-                    } else {  //column not yet filtered, so append it to the existing filters
-                        for (var i=0; i < array.length; i++) {
-                            inProgressFilter.push(array[i]);
-                        }
-                        newFilterObj[column] = inProgressFilter;
                     }
                     for (var prop in currentFilter) { newFilterObj[prop] = currentFilter[prop]}; // combine current filter with new one
+                } else {
+                    var array;
+                    if (typeof(filterObjOne.value) == 'string') {
+                        array = filterObjOne.value.split(',');
+                    } else {
+                        array = filterObjOne.value; //this is used if string is an array of strings to search (tags/source)
+                    }
+                    var inProgressFilter = [];
+                    var newFilter = [];
+                    //if no filter applied
+                    if (currentFilter == undefined) {
+                        for (var i=0; i < array.length; i++) {
+                            inProgressFilter.push(array[i]);
+                        }
+                        newFilterObj[filterObjOne.id] = inProgressFilter;
+                    //filter is applied
+                    } else {
+                        //already filtered column being modified
+                        if (currentFilter[filterObjOne.id] != undefined) {
+                            for (var i=0; i < array.length; i++) {
+                                inProgressFilter.push(array[i]);
+                            }
+                            delete currentFilter[filterObjOne.id]
+                            newFilterObj[filterObjOne.id] = inProgressFilter;
+                        } else {  //column not yet filtered, so append it to the existing filters
+                            for (var i=0; i < array.length; i++) {
+                                inProgressFilter.push(array[i]);
+                            }
+                            newFilterObj[filterObjOne.id] = inProgressFilter;
+                        }
+                        for (var prop in currentFilter) { newFilterObj[prop] = currentFilter[prop]}; // combine current filter with new one
+                    }
                 }
             }
             this.setState({filter:newFilterObj});
@@ -712,12 +739,14 @@ module.exports = React.createClass({
             setCookie(cookieName,JSON.stringify(newFilterObj),1000);
         }
     },
+
     titleCase: function(string) {
         var newstring = string.charAt(0).toUpperCase() + string.slice(1)
         return (
             newstring
         )
     },
+    
     createNewThing: function(){
         var data;
         if (this.props.type == 'signature') {
