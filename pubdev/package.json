@@ -21,6 +21,7 @@
     "gulp-sass-bulk-import": "^1.0.1",
     "gulp-sourcemaps": "^2.6.0",
     "mark.js": "github:julmot/mark.js",
+    "react-transition-group": "^2.2.1",
     "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
