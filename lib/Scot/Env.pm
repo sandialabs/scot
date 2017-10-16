@@ -321,8 +321,8 @@ sub get_config_item {
     my $meta    = $self->meta;
     my $method  = $meta->get_method($name);
 
-    if ( defined $method ) {
-        return $self->$method;
+    if ( defined $method && ref($method) eq "Class::MOP::Class") {
+        return $method->execute;
     }
 
     $log->error("The env obj does not have an accessor for $name");
