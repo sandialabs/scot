@@ -148,7 +148,7 @@ sub download_image {
         env_proxy   => 1,
         timeout     => 10,
     );
-    $agent->ssl_opts( SSL_verify_mode => 0 );
+    $agent->ssl_opts( SSL_verify_mode => 0, verify_hostname => 0 );
     $agent->proxy(['http','https'], 'http://wwwproxy.sandia.gov:80');
 
     my $request     = HTTP::Request->new('GET', $link);
