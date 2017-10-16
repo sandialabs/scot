@@ -560,6 +560,7 @@ module.exports = React.createClass({
                 data[key] = value;
             })
         }
+
         var newarray = []
         
         $.ajax({
@@ -644,17 +645,21 @@ module.exports = React.createClass({
 	    window.open(data_uri)		
     },
 
-    handleSort : function(sortObj, clearall){
+    handleSort : function(sortArr, clearall){
         var currentSort = this.state.sort;
         let newObj = {};
         if (clearall === true) {
             this.setState({sort:{'id':-1}});
-        } /*else{
-            for ( let sortObjOne of sortObj ) {
-                
-                
-                var obj = Object.keys(currentSort);
-                if (obj[0] == sortObjOne.id) {
+        } else{
+            for ( let sortArrOne in sortArr ) {
+                let key = sortArr[sortArrOne].id;
+                let directionInt = -1; //assume descending is true, unless its declared false;
+                if ( sortArr[sortArrOne].desc == false ) {
+                    directionInt = 1;
+                };
+                newObj[key] = directionInt; 
+                /*var obj = Object.keys(currentSort);
+                if (obj[0] == sortArrOne.id) {
                     let newDirection;
                     var descending = currentSort[obj];
                     if ( descending == 'true' ) { 
@@ -662,16 +667,17 @@ module.exports = React.createClass({
                     } else {
                         newDirection = -1;
                     }
-                    currentSort[sortObjOne] = newDirection;
+                    currentSort[sortArrOne] = newDirection;
                 } else {
                     currentSort = {};
-                    currentSort[sortObjOne] = 'false';
-                }
-            }*/
-            this.setState({sort:sortObj}); 
-            this.getNewData(null, sortObj, null)   
+                    currentSort[sortArrOne] = 'false';
+                }*/
+            }
+        }
+            this.setState({sort:newObj}); 
+            this.getNewData(null, newObj, null)   
             var cookieName = 'listViewSort' + this.props.type;
-            setCookie(cookieName,JSON.stringify(sortObj),1000);
+            setCookie(cookieName,JSON.stringify(newObj),1000);
         
     },
 
