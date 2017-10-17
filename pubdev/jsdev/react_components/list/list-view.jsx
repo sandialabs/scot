@@ -4,7 +4,6 @@
 var React                   = require('react')
 var SelectedContainer       = require('../detail/selected_container.jsx')
 var Store                   = require('../activemq/store.jsx')
-var Page                    = require('../components/paging.jsx')
 var Popover                 = require('react-bootstrap/lib/Popover')
 var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger')
 var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar')
@@ -17,6 +16,7 @@ var ListViewHeader          = require('./list-view-header.jsx');
 var ListViewData            = require('./list-view-data.jsx');
 import ReactTable           from 'react-table';
 import tableSettings, { buildTypeColumns, defaultTypeTableSettings } from './tableConfig';
+let LoadingContainer        = require('./LoadingContainer/index.jsx').default;
 var datasource
 var height;
 var width;
@@ -24,6 +24,9 @@ var listStartX;
 var listStartY;
 var listStartWidth;
 var listStartHeight;
+
+
+
 module.exports = React.createClass({
 
     getInitialState: function(){
@@ -31,8 +34,8 @@ module.exports = React.createClass({
         var typeCapitalized = this.titleCase(this.props.type);
         var id = this.props.id;
         var alertPreSelectedId = null;
-        var scrollHeight = $(window).height() - 170
-        var scrollWidth  = '650px'  
+        var scrollHeight = $(window).height() - 170 + 'px';
+        var scrollWidth  = '650px';
         var columnsDisplay = [];
         var columns = [];
         var columnsClassName = [];
@@ -60,7 +63,7 @@ module.exports = React.createClass({
         return {
             splitter: true, 
             selectedColor: '#AEDAFF',
-            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: activepage,
+            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalCount: 0, activepage: activepage,
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             alldetail : true, viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
             resize: 'horizontal',createdarrow: [0, 0], sourcearrow:[0, 0],tagsarrow: [0, 0],
@@ -116,11 +119,7 @@ module.exports = React.createClass({
         }
 
         //get page number
-        if  (pageNumber != 0){
-            newPage = (pageNumber - 1) * pageLimit
-        } else {
-            newPage = 0;
-        } 
+        newPage =  pageNumber * pageLimit
         var data = {limit:pageLimit, offset: newPage, sort: JSON.stringify(sortBy)}
         //add filter to the data object
         if (filterBy != undefined) {
@@ -172,7 +171,10 @@ module.exports = React.createClass({
                         finalarray[key]["classname"] = 'table-row rowodd'
                     }
                 }.bind(this))
-                this.setState({scrollheight:height, objectarray: finalarray, totalcount: response.totalRecordCount, loading:false, idsarray:idsarray});
+                
+                let totalPages = this.getPages(response.totalRecordCount); //get pages for list view
+
+                this.setState({scrollheight:height, objectarray: finalarray, totalCount: response.totalRecordCount, loading:false, idsarray:idsarray, totalPages: totalPages});
                 if (this.props.type == 'alert' && this.state.showSelectedContainer == false) {
                     this.setState({showSelectedContainer:false})
                 } else if (this.state.id == undefined) {
@@ -239,13 +241,15 @@ module.exports = React.createClass({
         $('iframe').each(function(index,ifr){
             $(ifr).addClass('pointerEventsOff')
         })
-        height = $(window).height() - 170
-        if(e != null){
+        //height = $(window).height() - 170 + 'px';
+        /*if(e != null){
             $('.container-fluid2').css('height', listStartHeight + e.clientY - listStartY)
             $('#list-view-data-div').css('height', listStartHeight + e.clientY - listStartY)
             this.forceUpdate();
-        }
+        }*/
+        this.setState({ scrollheight: listStartHeight + e.clientY - listStartY + 'px' })
     },
+
     launchEvent: function(type,rowid,entryid){
         if(this.state.display == 'block'){
             this.state.scrollheight = '25vh'
@@ -253,6 +257,7 @@ module.exports = React.createClass({
         this.setState({alertPreSelectedId: 0, scrollheight: this.state.scrollheight, id:rowid, showSelectedContainer: true, queryType:type, entryid:entryid})
 
     },
+
     render: function() {
         var listViewContainerHeight;
         var showClearFilter = false;
@@ -269,24 +274,7 @@ module.exports = React.createClass({
         if (checkCookie('listViewFilter'+this.props.type) != null || checkCookie('listViewSort'+this.props.type) != null || checkCookie('listViewPage'+this.props.type) != null) {
             showClearFilter = true
         }
-/*
-        const columns = [
-            {
-                Header: 'id',
-                accessor: 'id',
-                maxWidth: 100,
-                sortable: true,
-                filterable: true
-            },
-            {
-                Header: 'subject',
-                accessor: 'subject',
-                maxWidth: 800,
-                sortable: true,
-                filterable: true
-            }
-        ]
-*/
+
         let columns = buildTypeColumns ( this.props.type );
         
         return (
@@ -309,11 +297,27 @@ module.exports = React.createClass({
                                     <ReactTable
                                         columns = { columns } 
                                         data = { this.state.objectarray }
-                                        defaultPageSize = { 10 }
-                                        noDataText = "No Items"
+                                        style= {{
+                                            height: this.state.scrollheight 
+                                        }}
+                                        page = { this.state.activepage.page }
+                                        pages = { this.state.totalPages }
+                                        defaultPageSize = { 50 }
+                                        onPageChange = { this.handlePageChange }
+                                        onPageSizeChange = { this.handlePageSizeChange }
+                                        pageSize = { this.state.activepage.limit }
                                         onFilteredChange = { this.handleFilter }
                                         onSortedChange = { this.handleSort }
-                                        {...tableSettings}
+                                        manual = { true }
+                                        sortable = { true }
+                                        filterable = { true }
+                                        resizable = { true }
+                                        styleName = 'styles.ReactTable'
+                                        className = '-striped -highlight'
+                                        minRows = { 0 } 
+                                        LoadingComponent = { this.CustomTableLoader }
+                                        loading = { this.state.loading }  
+                                        getTrProps = { this.handleRowSelection }
                                     />
                                     <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
                                     {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter} errorToggle={this.props.errorToggle} history={this.props.history}/> : null}
@@ -324,6 +328,14 @@ module.exports = React.createClass({
                 :
                     null
                 }
+            </div>
+        )
+    },
+    
+    CustomTableLoader: function() {
+    return (
+            <div className={'-loading'+ ( this.state.loading ? ' -active' : '' )}>
+                <LoadingContainer loading={this.state.loading} />
             </div>
         )
     },
@@ -359,7 +371,7 @@ module.exports = React.createClass({
 
     componentWillReceiveProps: function(nextProps) {
         if ( nextProps.id == undefined ) {
-            this.setState({type: nextProps.type, id:null, showSelectedContainer: false, scrollheight: $(window).height() - 170});
+            this.setState({type: nextProps.type, id:null, showSelectedContainer: false, scrollheight: $(window).height() - 170 + 'px'});
         } else if (nextProps.id != this.props.id) {
             if (this.props.type == 'alert') {
                 this.ConvertAlertIdToAlertgroupId(nextProps.id);        
@@ -415,14 +427,15 @@ module.exports = React.createClass({
     },
 
     dragdiv: function(e){
-        var elem = document.getElementById('fluid2');
+        var elem = document.getElementsByClassName('ReactTable');
         listStartX = e.clientX;
         listStartY = e.clientY;
-        listStartWidth = parseInt(document.defaultView.getComputedStyle(elem).width,10)
-        listStartHeight = parseInt(document.defaultView.getComputedStyle(elem).height,10) 
-        document.onmousemove = this.reloadItem
-        document.onmouseup  = this.stopdrag
+        listStartWidth = parseInt(document.defaultView.getComputedStyle(elem[0]).width,10);
+        listStartHeight = parseInt(document.defaultView.getComputedStyle(elem[0]).height,10); 
+        document.onmousemove = this.reloadItem;
+        document.onmouseup  = this.stopdrag;
     },
+
     toggleView: function(){
         if(this.state.id.length != 0 && this.state.showSelectedContainer == true  && this.state.listViewContainerDisplay != 'none' ){
             this.setState({listViewContainerDisplay: 'none', scrollheight:'0px'})
@@ -440,18 +453,18 @@ module.exports = React.createClass({
             this.setState({alldetail: false})
         } */
     },
+
     Portrait: function(){
         document.onmousemove = null
         document.onmousedown = null
         document.onmouseup = null
         $('.container-fluid2').css('width', '650px')
         width = 650
-        $('.paging').css('width', width)
         $('.splitter').css('width', '5px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170 + 'px', maxheight: $(window).height() - 170 + 'px', resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
         this.setState({listViewOrientation: 'portrait-list-view'})
         setCookie('viewMode',"portrait",1000);
@@ -462,11 +475,10 @@ module.exports = React.createClass({
         document.onmousedown = null
         document.onmouseup = null
         width = 650
-        $('.paging').css('width', '100%')
         $('.splitter').css('width', '100%')
         $('.mainview').show()
         this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
-        scrollheight: this.state.id != null ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', resize: 'vertical'})
+        scrollheight: this.state.id != null ? '300px' : $(window).height()  - 170 + 'px', maxwidth: '', minwidth: '',scrollwidth: '100%', resize: 'vertical'})
         this.setState({listViewOrientation: 'landscape-list-view'});
         setCookie('viewMode',"landscape",1000);
     },
@@ -539,12 +551,7 @@ module.exports = React.createClass({
             }
         }
         var newPage;
-        if  (pageNumber != 0){
-            newPage = (pageNumber - 1) * pageLimit
-        } else {
-            //page.limit = pageLimit;
-            newPage = 0;
-        }
+        newPage =  pageNumber * pageLimit
         //sort check
         if (sortBy == undefined) {
             sortBy = this.state.sort;
@@ -613,8 +620,11 @@ module.exports = React.createClass({
                     else {
                         newarray[key]['classname'] = 'table-row rowodd'
                     }
-                }.bind(this)),
-                this.setState({totalcount: response.totalRecordCount, activepage: {page:pageNumber, limit:pageLimit}, objectarray: newarray, loading:false, idsarray:newidsarray})
+                }.bind(this))
+                
+                let totalPages = this.getPages(response.totalRecordCount); //get pages for list view
+                
+                this.setState({totalCount: response.totalRecordCount, activepage: {page:pageNumber, limit:pageLimit}, objectarray: newarray, loading:false, idsarray:newidsarray, totalPages: totalPages})
             }.bind(this),
             error: function(data) {
                 this.props.errorToggle('failed to get list data', data); 
@@ -745,7 +755,7 @@ module.exports = React.createClass({
             setCookie(cookieName,JSON.stringify(newFilterObj),1000);
         }
     },
-
+    
     titleCase: function(string) {
         var newstring = string.charAt(0).toUpperCase() + string.slice(1)
         return (
@@ -773,6 +783,46 @@ module.exports = React.createClass({
                 this.props.errorToggle('failed to create new thing', data);
             }.bind(this)
         })
-    }, 
+    },
+
+    handlePageChange: function( pageIndex ) {
+        this.getNewData({page: pageIndex});
+        let cookieName = 'listViewPage' + this.props.type;
+        setCookie(cookieName, JSON.stringify({page: pageIndex, limit: this.state.activepage.limit}));
+    },
+
+    handlePageSizeChange: function( pageSize, pageIndex ) {
+        this.getNewData({limit: pageSize, page: pageIndex});
+        let cookieName = 'listViewPage' + this.props.type;
+        setCookie(cookieName, JSON.stringify({page: pageIndex, limit: this.state.pageSize}));
+    },
+
+    getPages: function(count) {
+        let totalPages = Math.ceil(( count || 1 ) / this.state.activepage.limit);
+        return( totalPages );
+    },
+
+    handleRowSelection( state, rowInfo, column, instance ) {
+        console.log( state );
+        console.log( rowInfo );
+        console.log( column );
+        console.log( instance );
+        return {
+            onClick: event => {
+                if ( this.state.id === rowInfo.row.id ) {
+                    return;
+                }       
+
+                let scrollheight = this.state.scrollheight;
+                if( this.state.display == 'block' ){
+                    scrollheight = '25vh';
+                }
+
+                this.props.history.push( '/' + this.state.type + '/' + rowInfo.row.id );
+                this.setState({alertPreSelectedId: 0, scrollheight: scrollheight, showSelectedContainer: true })
+                return; 
+            },
+        }
+    }
 });
 
