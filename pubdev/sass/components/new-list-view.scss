@@ -1,0 +1,71 @@
+//$selectedRow: rgb( 174, 218, 255 );
+
+.ReactTable {
+	flex: 1;
+	max-height: 100%;
+	transition: all .3s ease;
+
+	.rt-thead {
+		// Hack to force header to line up with columns on desktop
+		// Should be removed after react-table fixes issue
+		overflow-y: scroll;
+	}
+
+	.rt-tbody {
+		// Setting position so that tbody becomes offset parent for the rows
+		// This is required for scrolling to selected rows
+		position: relative;
+	}
+
+	.rt-th {
+		overflow: visible;
+	}
+
+	.rt-td {
+		white-space: normal;
+		display: flex;
+		align-items: center;
+	}
+
+	.-loading.-active {
+		background: none;
+
+		div {
+			transform: none;
+			top: 0;
+		}
+	}
+
+	.rt-tr-group {
+		flex: 0 0 auto;
+		cursor: pointer;
+
+		//:global .rt-tr.selected {
+		//	background: $selectedRow !important;
+		//}
+	}
+
+	.alertStatusCell {
+		text-align: center;
+		font-weight: bold;
+		height: 100%;
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		&.promoted {
+			box-sizing: border-box;
+			background: none;
+			border-width: 4px;
+			border-style: solid;
+			border-radius: 4px;
+			color: black;
+		}
+
+		&.open {
+			border-radius: 10px;
+		}
+	}
+			
+}
