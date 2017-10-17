@@ -28,7 +28,6 @@ class LoadingContainer extends PureComponent {
 						</div>
 					</CSSTransitionGroup>
 				}
-				{this.props.children}
 			</div>
 		)
 	}
