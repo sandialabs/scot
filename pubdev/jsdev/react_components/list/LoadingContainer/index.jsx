@@ -2,8 +2,6 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { CSSTransitionGroup } from 'react-transition-group';
 
-import Icon from '../Icon';
-
 class LoadingContainer extends PureComponent {
 	static propTypes = {
 		loading: PropTypes.bool,
@@ -12,22 +10,11 @@ class LoadingContainer extends PureComponent {
 	render() {
 		return (
 			<div styleName='LoadingContainer'>
-				{ this.props.loading &&
-					<CSSTransitionGroup
-						transitionName='fade'
-						transitionAppear={true}
-						transitionLeave={true}
-						transitionAppearTimeout={0}
-						transitionEnterTimeout={0}
-						transitionLeaveTimeout={0}
-					>
-						<div key={0} styleName='loading'>
-							<span styleName='helper'></span>
-							<Icon icon='refresh' />
-						</div>
-					</CSSTransitionGroup>
-				}
-				{this.props.children}
+				{ this.props.loading ?
+				    <i className='fa fa-spinner fa-spin fa-2x' aria-hidden='true' />	
+				:
+                    null
+                }
 			</div>
 		)
 	}
