@@ -2,8 +2,9 @@ package Scot::Collection::User;
 
 use lib '../../../lib';
 use Crypt::PBKDF2;
-
+use HTML::Entities;
 use Moose 2;
+
 extends 'Scot::Collection';
 with    qw(
     Scot::Role::GetByAttr
@@ -16,14 +17,23 @@ override api_create => sub {
     my $env     = $self->env;
     my $mongo   = $env->mongo;
     my $log     = $env->log;
+
+    $log->debug("in users api-create");
     
     my $request = $href->{request}->{json};
+
+    if (! $env->is_admin($href->{user})) {
+        die "Only Admin Users can create new Users";
+    };
 
     my $password    = delete $request->{password};
     unless ($password) {
         $log->warn("Empty Password!");
         $password = '';
     }
+
+    $request->{fullname} = encode_entities($request->{fullname});
+    $request->{username} = encode_entities($request->{username});
 
     my $pbkdf2  = Crypt::PBKDF2->new(
         hash_class  => 'HMACSHA2',
@@ -44,6 +54,7 @@ override api_create => sub {
 
     return $user;
 };
+
 
 sub autocomplete {
     my $self    = shift;
