@@ -6,6 +6,7 @@ use MIME::Base64;
 use Crypt::PBKDF2;
 use Data::Dumper;
 use Data::UUID;
+use Try::Tiny;
 use strict;
 use warnings;
 
@@ -725,7 +726,7 @@ sub update_user_sucess {
     }
     else {
         $log->error("User $user not in DB.  Assuming New User");
-        eval {
+        try {
             $userobj    = $collection->create(
                 username    => $user,
                 lastvisit   => $self->env->now,
@@ -734,10 +735,10 @@ sub update_user_sucess {
                 display_orientation => 'horizontal',
                 attempts    => 0,
             );
-        };
-        if ($@) {
-            $log->error("Failed to create User $user! $@");
         }
+        catch {
+            $log->error("Failed to create User $user! $_");
+        };
     }
 }
 
