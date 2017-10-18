@@ -16,7 +16,7 @@ use Data::Dumper;
 use Scot::Util::LoggerFactory;
 use Scot::Util::Date;
 use namespace::autoclean;
-use CGI::IDS;
+# use CGI::IDS;
 
 use Moose;
 use MooseX::Singleton;
@@ -80,19 +80,19 @@ sub _build_config_href {
     return $self->read_config_file;
 }
 
-has cgi_ids => (
-    is          => 'ro',
-    isa         => 'CGI::IDS',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_cgi_ids',
-);
+# has cgi_ids => (
+#     is          => 'ro',
+#     isa         => 'CGI::IDS',
+#     required    => 1,
+#     lazy        => 1,
+#     builder     => '_build_cgi_ids',
+# );
 
-sub _build_cgi_ids {
-    my $self    = shift;
-    my $conf    = $self->config_href->{cgi_ids_config};
-    return CGI::IDS->new(%$conf);
-}
+# sub _build_cgi_ids {
+#     my $self    = shift;
+#     my $conf    = $self->config_href->{cgi_ids_config};
+#     return CGI::IDS->new(%$conf);
+# }
 
 sub BUILD {
     my $self    = shift;
