@@ -75,6 +75,7 @@ sub create {
     try {
         my $req_href    = $self->get_request_params;
         my $collection  = $self->get_collection_req($req_href);
+        $req_href->{groups} = $self->session('groups');
         my @objects     = $collection->api_create($req_href);
         my @returnjson  = ();
 
