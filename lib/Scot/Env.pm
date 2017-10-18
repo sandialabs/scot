@@ -357,6 +357,11 @@ sub is_admin {
     my $user        = shift;
     my $groups      = shift;
     my $admin_group = $self->admin_group;
+    my $log         = $self->log;
+
+    $log->debug("Checking Admin status of $user");
+    $log->debug("admin_group = $admin_group");
+    $log->debug("users groups are ",{filter=>&Dumper, value=>$groups});
 
     return undef if (! defined $admin_group);
     return grep { /$admin_group/ } @$groups;
