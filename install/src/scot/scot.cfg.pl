@@ -63,6 +63,11 @@
         log_level       => 'DEBUG',
     },
 
+    cgi_ids_config  => {
+        whitelist_file  => '',
+        disable_filters => [],
+    },
+
     # modules to instantiate at Env.pm startup. will be done in 
     # order of the array
     modules => [

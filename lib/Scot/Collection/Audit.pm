@@ -31,7 +31,7 @@ sub create_audit_rec {
         groups  => $handler->session('groups'),
         when    => $self->env->now,
         method  => $req->method,
-        url     => $req->url->to_abs,
+        url     => $req->url->to_abs->to_string,
         from    => $handler->tx->remote_address,
         agent   => $req->headers->user_agent,
         params  => $req->params->to_hash,
