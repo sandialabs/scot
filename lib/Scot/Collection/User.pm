@@ -22,7 +22,7 @@ override api_create => sub {
     
     my $request = $href->{request}->{json};
 
-    if (! $env->is_admin($href->{user})) {
+    if (! $env->is_admin($href->{user},$href->{groups})) {
         die "Only Admin Users can create new Users";
     };
 
