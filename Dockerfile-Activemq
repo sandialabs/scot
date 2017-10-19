@@ -3,13 +3,6 @@
 FROM gitlab.sandia.gov:3434/docker/ubuntu
 #FROM ubuntu:16.04 
 
-#jdk
-ENV JDK_VERSION="8" \
-    JDK_UPDATE="144" \
-    JDK_BUILD="01" \
-    JDK_HASH="090f390dda5b47b9b721c7dfaa008135"
-ENV JAVA_HOME="/opt/jdk1.${JDK_VERSION}.0_${JDK_UPDATE}" \
-    JRE_HOME="/opt/jdk1.${JDK_VERSION}.0_${JDK_UPDATE}/jre"
 
 #AMQ
 ENV ACTIVEMQ_VERSION 5.14.3
@@ -17,12 +10,15 @@ ENV ACTIVEMQ apache-activemq-$ACTIVEMQ_VERSION
 ENV ACTIVEMQ_TCP=61616 ACTIVEMQ_AMQP=5672 ACTIVEMQ_STOMP=61613 ACTIVEMQ_MQTT=1883 ACTIVEMQ_WS=61614 ACTIVEMQ_UI=8161
 ENV ACTIVEMQ_HOME /opt/activemq
 
-#install jdk
+ENV DEBIAN_FRONTEND=noninteractive \
+    JDK_VERSION="8" \
+    JDK_UPDATE="144"
+ENV JAVA_HOME="/opt/jdk1.${JDK_VERSION}.0_${JDK_UPDATE}" \
+    JRE_HOME="/opt/jdk1.${JDK_VERSION}.0_${JDK_UPDATE}/jre"
+
 RUN apt-get update && apt-get dist-upgrade -y && \
-  curl --silent --location --retry 3 --cacert \
-  /usr/local/share/ca-certificates/https-interception.sandia.gov.crt \
-  --header "Cookie: oraclelicense=accept-securebackup-cookie;" \
-  http://download.oracle.com/otn-pub/java/jdk/8u144-b01/090f390dda5b47b9b721c7dfaa008135/jdk-8u144-linux-x64.tar.gz \
+  curl --silent --location --retry 3 \
+   http://tfx.sandia.gov/image_repo/jdk/jdk-"${JDK_VERSION}"u"${JDK_UPDATE}"-linux-x64.tar.gz \
   | tar xz -C /opt && \
   ${JAVA_HOME}/bin/keytool --import -trustcacerts -file \
   /usr/local/share/ca-certificates/https-interception.sandia.gov.crt \
