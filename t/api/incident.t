@@ -18,7 +18,16 @@ $ENV{'scot_config_file'}    = '../../../Scot-Internal-Modules/etc/scot.test.cfg.
 print "Resetting test db...\n";
 system("mongo scot-testing <../../install/src/mongodb/reset.js 2>&1 > /dev/null");
 
-my @defgroups       = ( 'wg-scot-ir', 'testing' );
+use Safe;
+no strict 'refs';
+my $container	= new Safe 'MCONFIG';
+my $result	= $container->rdo($ENV{scot_config_file});
+my $hashname	= 'MCONFIG::environment';
+my %copy	= %$hashname;
+my $config_href = \%copy;
+use strict 'refs';
+
+my $defgroups       = $config_href->{default_groups};
 
 my $t   = Test::Mojo->new('Scot');
 
@@ -26,10 +35,7 @@ $t  ->post_ok  ('/scot/api/v2/event'  => json => {
         subject => "Test Event 1",
         source  => ["firetest"],
         status  => 'open',
-        groups      => {
-            read    => \@defgroups,
-            modify  => \@defgroups,
-        },
+        groups      => $defgroups,
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
@@ -44,10 +50,7 @@ $t  ->post_ok('/scot/api/v2/incident' => json => {
         sensitivity => 'very',
         occurred    => 1444309925,
         discovered    => 1444319925,
-        groups      => {
-            read    => \@defgroups,
-            modify  => \@defgroups,
-        },
+        groups      => $defgroups,
     })
     ->status_is(200)
     ->json_is('/status' => 'ok');
