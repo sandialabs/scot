@@ -16,6 +16,7 @@ use Data::Dumper;
 use Scot::Util::LoggerFactory;
 use Scot::Util::Date;
 use namespace::autoclean;
+# use CGI::IDS;
 
 use Moose;
 use MooseX::Singleton;
@@ -78,6 +79,20 @@ sub _build_config_href {
     my $file    = $self->config_file; # trigger lazy
     return $self->read_config_file;
 }
+
+# has cgi_ids => (
+#     is          => 'ro',
+#     isa         => 'CGI::IDS',
+#     required    => 1,
+#     lazy        => 1,
+#     builder     => '_build_cgi_ids',
+# );
+
+# sub _build_cgi_ids {
+#     my $self    = shift;
+#     my $conf    = $self->config_href->{cgi_ids_config};
+#     return CGI::IDS->new(%$conf);
+# }
 
 sub BUILD {
     my $self    = shift;
@@ -321,8 +336,8 @@ sub get_config_item {
     my $meta    = $self->meta;
     my $method  = $meta->get_method($name);
 
-    if ( defined $method ) {
-        return $self->$method;
+    if ( defined $method && ref($method) eq "Class::MOP::Class") {
+        return $method->execute;
     }
 
     $log->error("The env obj does not have an accessor for $name");
@@ -342,6 +357,11 @@ sub is_admin {
     my $user        = shift;
     my $groups      = shift;
     my $admin_group = $self->admin_group;
+    my $log         = $self->log;
+
+    $log->debug("Checking Admin status of $user");
+    $log->debug("admin_group = $admin_group");
+    $log->debug("users groups are ",{filter=>&Dumper, value=>$groups});
 
     return undef if (! defined $admin_group);
     return grep { /$admin_group/ } @$groups;
