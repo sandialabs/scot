@@ -59,7 +59,7 @@
 					SCOT Version: 3.5.1 - Donner Party &nbsp; &nbsp;
 					<button class="btn" style="display:none;" disabled>Check for SCOT update</button>&nbsp;&nbsp;
 					<button class="btn" style='display:none;' disabled>Offline SCOT update</button>
-					<div id="offline_upload_input" style="display:none;"><hr><b>Select SCOT Update File</b><br><input type="file" id="update_file" name="update_file" onchange="upload_file_changed()" style="margin-bottom:0px;"><button class="btn btn-warning" id="update_warn_btn" style="display:none;" onclick="update_warn()" >Apply Update</button>
+					<div id="offline_upload_input" style="display:none;"><hr><b>Select SCOT Update File</b><br><input type="file" id="update_file" name="update_file" style="margin-bottom:0px;"><button class="btn btn-warning" id="update_warn_btn" style="display:none;" >Apply Update</button>
 						<div id="progress_uploading" style="display:none;">
 							<h4>Upload Progess: <span id="progressNumber"></span><div style="border:0px solid transparent;" id="updateProgressbar"></div></h4>
 						</div>
@@ -74,7 +74,7 @@
 				<h3>Backup</h3>
 				Download a copy of all your SCOT data
 				<div class="nwell">
-					<button class="btn btn-primary" style="width:100%; margin-bottom:10px;" onclick="create_backup()" id="create_btn">Create On-Demand Backup</button><br>
+					<button class="btn btn-primary" style="width:100%; margin-bottom:10px;" id="create_backup_btn">Create On-Demand Backup</button><br>
 					<div style="display:table; margin:auto;" id="backups" >
 					</div>
 				</div>
@@ -82,8 +82,8 @@
 				<h3>Restore</h3>
 				Restore your SCOT data from a backup file
 				<div class="nwell comming_soon">
-					<input type="file" id="restore_file" name="restore" onchange="restore_selected()"></input><br>
-					<button class="btn btn-warning" id="restore_btn" style="display:none" onclick="restore_warn()">Restore</button>
+					<input type="file" id="restore_file" name="restore"></input><br>
+					<button class="btn btn-warning" id="restore_backup_btn" style="display:none">Restore</button>
 					<div id="progress_restoring" style="display:none;">
 						<h4>Upload Progess: <span id="restoreProgressNumber"></span><div style="border:0px solid transparent;" id="restoreProgressbar"></div></h4>
 					</div>
@@ -114,7 +114,7 @@
 								<input type="checkbox" name="enable_backups" id="enable_backups" ></input>
 							</div>
 						</div>
-						<button type="button" id="schedule_btn" class="btn btn-primary" onclick="update_backup_schedule()" style="margin-left:50px; width:calc(60% - 50px);" >Save Changes</button>
+						<button type="button" id="schedule_backup_btn" class="btn btn-primary" style="margin-left:50px; width:calc(60% - 50px);" >Save Changes</button>
 					</form>
 				</div>
 			</div>
@@ -134,7 +134,7 @@
 						<div class="tab-pane active" id="local" >
 							<div  style="float:left; margin-right:17px; margin-bottom:10px;" >
 								<b>Users</b>
-								<button class="btn" style="width:100%; margin-top:5px;" onclick="new_user()"><img src="/images/add.png"></img>New User</button>
+								<button class="btn" id="new_user_btn" style="width:100%; margin-top:5px;"><img src="/images/add.png"></img>New User</button>
 								<div  class="hwell">
 									<table id="users_table" style="display:block; overflow-y:auto; padding-right:15px;">
 										<tr><th></th><th></th><th>Username</th><th>Full Name</th><th>Active</th></tr>
@@ -144,7 +144,7 @@
 						</div>
 						<div style="float:left;">
 							<b>Groups</b>
-							<button class="btn" style="width:100%; margin-top:5px;" onclick="new_group()"><img src="/images/add.png"></img>New Group</button>
+							<button class="btn" id="new_group_btn" style="width:100%; margin-top:5px;"><img src="/images/add.png"></img>New Group</button>
 							<div class="hwell">
 								<table  id="groups_table" style="display:block;  overflow-y:auto; padding-right:15px;">
 									<tr><th></th><th></th><th>Group Name</th></tr>
@@ -157,7 +157,7 @@
 					<div id="ldap" class="tab-pane" style="padding-top:20px;">
 						<form name="ldap_form" id="ldap_form" class="form-horizontal" role="form">
 							<div class="form-group">
-								<label class="control-label" for="scheme">LDAP Server:<img src="/images/question.png" onclick="help(this)"></img></label>
+								<label class="control-label" for="scheme">LDAP Server:<img src="/images/question.png"></img></label>
 								<div class="controls">
 									<select name="ldap_type">
 										<option value="ldaps">LDAPS://</option>
@@ -169,42 +169,42 @@
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="control-label" for="scheme">Base Domain:<img src="/images/question.png" onclick="help(this)"></img></label>
+								<label class="control-label" for="scheme">Base Domain:<img src="/images/question.png"></img></label>
 								<div class="controls">
 									<input type="text" name="basedn" placeholder="" style="width:365px;"></input>
 									<div class="details">Where in Active Directory or LDAP to search for users.<br>e.x. 'ou=accounts,ou=org,dc=yourCompany,dc=parentCompany,dc=com</div>
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="control-label" for="scheme">User ID Attribute:<img src="/images/question.png" onclick="help(this)"></img></label>
+								<label class="control-label" for="scheme">User ID Attribute:<img src="/images/question.png"></img></label>
 								<div class="controls">
 									<input type="text" name="uid" placeholder="" style="width:365px;"></input>
 									<div class="details">Where in Active Directory or LDAP to search for users/groups.<br>e.x. 'ou=accounts,ou=org,dc=yourCompany,dc=parentCompany,dc=com</div>
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="control-label" for="attr">Membership Attr:<img src="/images/question.png" onclick="help(this)"></img></label>
+								<label class="control-label" for="attr">Membership Attr:<img src="/images/question.png"></img></label>
 								<div class="controls">
 									<input type="text" name="attr" placeholder="" style="width:365px;"></input>
 									<div class="details">What attribute in the LDAP user object do we check for a list of their groups?<br>This is usually 'memberOf'.</div>
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="control-label" for="scheme">Bind DN:<img src="/images/question.png" onclick="help(this)"></img></label>
+								<label class="control-label" for="scheme">Bind DN:<img src="/images/question.png"></img></label>
 								<div class="controls">
 									<input type="text" name="binddn" placeholder="" style="width:365px;"></input>
 									<div class="details">This is the full path for the user used to search the domain.  This is also referred to as the 'Bind Domain' or 'BindDN'<br>e.x. '<span style="color:red;">uid</span>=<span style="color:green;">usernameHere</span>,<span style="color:blue;">ou=accounts,ou=org,dc=yourCompany,dc=parentCompany,dc=com</span><br>This is usually constructed from 3 parts, <span style="color:red;">the User ID Attribute</span>, the <span style="color:green;">Username of Active Directory / LDAP user authorized to perform searches</span> and the <span style="color: blue;">Base Domain</span></div>
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="control-label" for="scheme">Bind Password:<img src="/images/question.png" onclick="help(this)"></img></label>
+								<label class="control-label" for="scheme">Bind Password:<img src="/images/question.png"></img></label>
 								<div class="controls">
 									<input type="text" name="bindpassword" placeholder="" style="width:365px;"></input>
 									<div class="details">(optional) password used in conjunction with 'Account' to login and search for users/groups.</div>
 								</div>
 							</div>
 							<div class="form-group">
-								<label class="control-label" for="scheme">Test User:<img src="/images/question.png" onclick="help(this)"></img></label>
+								<label class="control-label" for="scheme">Test User:<img src="/images/question.png"></img></label>
 								<div class="controls">
 									<input type="text" name="testuser" placeholder="" style="width:365px;"></input>
 									<div class="details">Enter username of valid LDAP user who is in one or more groups.<br> This is used in testing of the BaseDN e.x. kphall</div>
@@ -212,8 +212,8 @@
 							</div>
 							<br>
 							<br>
-							<button class="btn btn-primary" type="button" id="test_ldap_btn"  onclick="test_ldap()" style="width:50%; display:block; margin:auto;">Test LDAP Settings</button>
-							<button class="btn btn-success" type="button" id="save_ldap_btn" onclick="save_ldap()" style="display:none; width:50%; margin:auto;">SAVE LDAP Settings</button>
+							<button class="btn btn-primary" type="button" id="test_ldap_btn" style="width:50%; display:block; margin:auto;">Test LDAP Settings</button>
+							<button class="btn btn-success" type="button" id="save_ldap_btn" style="display:none; width:50%; margin:auto;">SAVE LDAP Settings</button>
 						</form>
 					</div>
 				</div>
@@ -226,7 +226,7 @@
 			<hr>
 			<form id="collector_form" name="collector_form" class="form-horizontal" role="form">
 				<div class="form-group">
-					<label class="control-label" for="email">Email<img src="/images/question.png" onclick="help(this)"></img></label>
+					<label class="control-label" for="email">Email<img src="/images/question.png"></img></label>
 					<div class="controls">
 						<input type="checkbox" name="email"></input>
 						<div class="details">SCOT will periodically login to an email account of your choice and retrieve emails.  <br>Only IMAP is supported currently</div>
@@ -251,15 +251,15 @@
 							<input type="password" name="password" placeholder="" style="width:318px;"></input>
 						</div>
 						<div>
-							<button class="btn btn-warning" type="button" onclick="email_settings('test')" style="display:none; width:335px;" id="test_email_btn">Test Email Settings</button>
-							<button class="btn btn-primary" type="button" onclick="email_settings('set')" style="display:none; width:335px;" id="set_email_btn">Set Email Settings</button>
+							<button class="btn btn-warning" type="button" style="display:none; width:335px;" id="test_email_btn">Test Email Settings</button>
+							<button class="btn btn-primary" type="button" style="display:none; width:335px;" id="set_email_btn">Set Email Settings</button>
 						</div>
 						<label for="permitted_senders">Permitted Senders</label>
 						<div>
 							<table id="permitted_senders" >
 								<tr>
 									<th>
-										<button type="button" class="btn sender_btn" onclick="add_permitted_sender()">
+										<button type="button" class="btn sender_btn" id="sender_email_btn">
 											<img src="/images/add.png"></img>
 										</button>
 									</th>
@@ -280,7 +280,7 @@
 				</div>
 				<hr>
 				<div class="form-group">
-					<label class="control-label" for="syslog">Syslog<img src="/images/question.png" onclick="help(this)"></img></label>
+					<label class="control-label" for="syslog">Syslog<img src="/images/question.png"></img></label>
 					<div class="controls">
 						<input type="checkbox" name="syslog"></input>
 					</div>
@@ -292,7 +292,7 @@
 				</div>
 				<hr>
 				<div class="form-group collector_on">
-					<label class="control-label" for="http">HTTP<img src="/images/question.png" onclick="help(this)"></img></label>
+					<label class="control-label" for="http">HTTP<img src="/images/question.png"></img></label>
 					<div class="controls">
 						<input type="checkbox" name="http" checked disabled></input>
 						<div class="details">The SCOT web interface can take new alerts in JSON format via an HTTP POST	<br><b>Example</b>
@@ -368,7 +368,7 @@
 				</div>
 				<div class="form-group">
 					<div class="controls">
-						<button class="btn btn-primary" onclick="ssl_upload_warn()">Update SSL Cert</button>
+						<button class="btn btn-primary" id="upload_ssl_btn">Update SSL Cert</button>
 					</div>
 				</div>
 			</form>
@@ -424,7 +424,7 @@
 	</div>
 	<div class="modal-footer">
 		<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-		<button class="btn btn-danger"  onclick="ssl_upload_confirm(this)">Proceed</button>
+		<button class="btn btn-danger" id="confirm_ssl_btn">Proceed</button>
 	</div>
 </div>
 
@@ -438,7 +438,7 @@
 	</div>
 	<div class="modal-footer">
 		<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-		<button class="btn btn-danger" data-dismiss="modal"  onclick="restore_confirm(this)">Proceed</button>
+		<button class="btn btn-danger" id="restore_backup_confirm_btn" data-dismiss="modal">Proceed</button>
 	</div>
 </div>
 
@@ -452,21 +452,7 @@
 	</div>
 	<div class="modal-footer">
 		<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-		<button class="btn btn-danger" data-dismiss="modal"  onclick="update_confirm(this)">Proceed</button>
-	</div>
-</div>
-
-<div id="restore_warn_modal" class="modal hide " tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-	<div class="modal-header">
-		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-		<h3 id="group_label">Restore Confirm</h3>
-	</div>
-	<div class="modal-body">
-		WARNING: The restore process will delete all data currently in SCOT.<br>Are you sure you want to proceed?
-	</div>
-	<div class="modal-footer">
-		<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-		<button class="btn btn-danger"  onclick="restore_confirm(this)">Proceed</button>
+		<button class="btn btn-danger" id="update_confirm_btn" data-dismiss="modal" >Proceed</button>
 	</div>
 </div>
 
@@ -495,13 +481,13 @@
 					</div>
 					<table style="margin:auto;">
 						<tr><th>Group Members</th><th></th><th>Available Users</th></tr>
-						<tr><td><select name="users" class="select_swap" id="users" multiple></select></td><td><span style="display:block;"><button type="button" style="font-size:150%;" onclick="add_users()">&larr;</button><br><button type="button" style="font-size:150%;" onclick="remove_users()">&rarr;</button></span></td><td><select name="all_users" style="width:inherit;" class="select_swap" id="all_users" multiple></select></td></tr>
+						<tr><td><select name="users" class="select_swap" id="users" multiple></select></td><td><span style="display:block;"><button type="button" id="add_user_group_btn" style="font-size:150%;">&larr;</button><br><button type="button" id="remove_user_group_btn" style="font-size:150%;">&rarr;</button></span></td><td><select name="all_users" style="width:inherit;" class="select_swap" id="all_users" multiple></select></td></tr>
 					</table>
 				</form>
 			</div>
 			<div class="modal-footer">
 				<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-				<button class="btn btn-primary" id="save_changes_btn" onclick="save_group_changes(this)">Save</button>
+				<button class="btn btn-primary" id="save_group_btn">Save</button>
 			</div>
 		</div>
 	</div>
@@ -549,13 +535,13 @@
 					</div>
 					<table style="margin:auto;">
 						<tr><th>User's groups</th><th></th><th>Available Groups</th></tr>
-						<tr><td><select class="select_swap" name="groups" id="groups" multiple></select></td><td><span style="display:block;"><button type="button" style="font-size:150%;" onclick="add_groups()">&larr;</button><br><button type="button" style="font-size:150%;" onclick="remove_groups()">&rarr;</button></span></td><td><select class="select_swap" id="all_groups" multiple></select></td></tr>
+						<tr><td><select class="select_swap" name="groups" id="groups" multiple></select></td><td><span style="display:block;"><button type="button" id="add_group_user_btn" style="font-size:150%;">&larr;</button><br><button type="button" id="remove_group_user_btn" style="font-size:150%;">&rarr;</button></span></td><td><select class="select_swap" id="all_groups" multiple></select></td></tr>
 					</table>
 				</form>
 			</div>
 			<div class="modal-footer">
 				<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-				<button class="btn btn-primary" id="save_changes_btn" onclick="save_user_changes(this)">Save</button>
+				<button class="btn btn-primary" id="save_user_btn">Save</button>
 			</div>
 		</div>
 	</div>
