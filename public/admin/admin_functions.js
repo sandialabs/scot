@@ -829,3 +829,8 @@ $.ajax({
  alert('error, could not ' + type + ' email settings, check that the SCOT server is running');
       });
     }
+
+// Register click handlers on document ready
+$(document).ready( function() {
+	console.log( "Test" );
+})
