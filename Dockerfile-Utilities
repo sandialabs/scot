@@ -57,18 +57,14 @@ RUN cpanm Array::Split Data::Dumper Data::Dumper::HTML Data::Dumper::Concise Dat
     Mojolicious::Plugin::TagHelpers XML::Smart Config::Auto Data::GUID File::LibMagic List::Uniq Domain::PublicSuffix Mozilla::PublicSuffix \
     Crypt::PBKDF2 Config::Crontab Test::JSON Math::Int128 GeoIP2  Search::Elasticsearch Term::ANSIColor Courriel Statistics::Descriptive Net::SSH::Perl Net::SFTP
 
-RUN apt-get update && apt-get -y install openssh-client
 
-
-ENV SCRIPT = ${SCRIPT} \
-    no_proxy='172.18.0.4'   
+ENV SCRIPT = ${SCRIPT} 
 
 COPY docker-scripts/ /scot
 COPY docker-configs /scot
 
 RUN mkdir -p /tmp/foo/
+RUN mkdir -p /opt/scot/public/
 
 WORKDIR /scot/
 CMD perl $SCRIPT
-#CMD perl restore_remote_scotdb.pl 
-#CMD /bin/bash 
