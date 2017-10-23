@@ -408,6 +408,7 @@ sub flair_record {
 
             if ( $column =~ /^message[_-]id$/i ) {
                 # the data is telling us that this is a email message_id, so flair
+                $value =~ s/[\<\>//g;   # cut out the < > brackets if they exist
                 my ($eref, $flair) = $self->process_cell($value, "message_id");
                 if ( ! defined $seen{$eref->{value}} ) {
                     push @entity, $eref;
