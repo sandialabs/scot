@@ -138,12 +138,12 @@ module.exports = React.createClass({
                 $.each(datasource.records, function(key, value){
                     finalarray[key] = {}
                     $.each(value, function(num, item){
-                        if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
+                        /*if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
                         {
                             var date = new Date(1000 * item)
                             finalarray[key][num] = date.toLocaleString()
-                        }
-                        else if (num == 'sources' || num == 'source'){
+                        }*/
+                        if (num == 'sources' || num == 'source'){
                             if (item != undefined) {
                                 var sourcearr = item.join(', ')
                                 finalarray[key]["source"] = sourcearr;
@@ -580,12 +580,12 @@ module.exports = React.createClass({
                 $.each(datasource.records, function(key, value){
                     newarray[key] = {}
                     $.each(value, function(num, item){
-                        if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
+                        /*if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
                         {
                             var date = new Date(1000 * item)
                             newarray[key][num] = date.toLocaleString()
-                        }
-                        else if (num == 'sources' || num == 'source'){
+                        }*/
+                        if (num == 'sources' || num == 'source'){
                             if (item != undefined) {
                                 var sourcearr = item.join(', ')
                                 newarray[key]["source"] = sourcearr;
@@ -803,10 +803,6 @@ module.exports = React.createClass({
     },
 
     handleRowSelection( state, rowInfo, column, instance ) {
-        console.log( state );
-        console.log( rowInfo );
-        console.log( column );
-        console.log( instance );
         return {
             onClick: event => {
                 if ( this.state.id === rowInfo.row.id ) {
@@ -822,6 +818,7 @@ module.exports = React.createClass({
                 this.setState({alertPreSelectedId: 0, scrollheight: scrollheight, showSelectedContainer: true })
                 return; 
             },
+            className: rowInfo.row.id === parseInt(this.props.id) ? 'selected' : null,
         }
     }
 });
