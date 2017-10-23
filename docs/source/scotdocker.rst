@@ -1,5 +1,4 @@
-
-cker-SCOT
+Docker-SCOT
 ***************
 
 **Overview** 
