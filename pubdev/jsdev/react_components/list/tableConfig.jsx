@@ -73,9 +73,9 @@ const customFilters = {
 			<input type='text' value={filter ? epochRangeToString( filter.value ) : ''} readOnly style={{width: '100%', cursor: 'pointer'}} />
 		</OverlayTrigger>
 	),
-	/*tagFilter: ( type = 'tag' ) => ( {filter, onChange} ) => (
+	tagFilter: ( type = 'tag' ) => ( {filter, onChange} ) => (
 		<TagInput type={type} onChange={onChange} value={filter ? filter.value : []} />
-	),*/
+	),
 }
 
 const customCellRenderers = {
@@ -209,9 +209,9 @@ const columnDefinitions = {
 		Cell: customCellRenderers.dateFormater,
 	},
 
-	/*Sources: {
+	Sources: {
 		Header: 'Sources',
-		accessor: d => d.source ? d.source.join( ', ' ) : '',
+		accessor: 'source', //d => d.source ? d.source.join( ', ' ) : '',
 		column: 'source',
 		id: 'source',
 		minWidth: 120,
@@ -221,13 +221,13 @@ const columnDefinitions = {
 
 	Tags: {
 		Header: 'Tags',
-		accessor: d => d.tag ? d.tag.join( ', ' ) : '',
+		accessor: 'tag', //d => d.tag ? d.tag.join( ', ' ) : '',
 		column: 'tag',
 		id: 'tag',
 		minWidth: 120,
 		maxWidth: 150,
 		//Filter: customFilters.tagFilter( 'tag' ),
-	},*/
+	},
 
 	Owner: {
 		Header: 'Owner',
