@@ -23,7 +23,7 @@ done
 
 set='$set'
 mongo scot-prod /opt/scot/install/src/mongodb/admin_user.js
-mongo scot-prod --eval "db.user.update({username:'admin'}, {$set:{pwhash:'$HASH'}})"
+mongo scot-prod --eval "db.user.update({username:'admin'}, {$set:{pwhash:'$HASH'}}, {multi:true})"
 
 sleep 3
 

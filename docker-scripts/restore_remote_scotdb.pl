@@ -65,7 +65,7 @@ system("cd $downdir; tar xzvf $file");
 my $dbname = prompt("Enter Database Name to restore to > ", -d => "scot-prod" );
 #my $cmd = "/usr/bin/mongorestore --db $dbname --dir $downdir/opt/scotbackup/mongo/scot-prod --drop";
 
-my $cmd = "mongorestore  -d $dbname --dir $downdir --host 172.18.0.4:27017 --drop";
+my $cmd = "mongorestore  -d $dbname --dir $downdir/opt/scotbackup/mongo/scot-prod --host=172.18.0.4:27017 --drop";
 
 say "Executing $cmd...";
 system($cmd);
