@@ -1,4 +1,3 @@
-//$selectedRow: rgb( 174, 218, 255 );
 
 .ReactTable {
 	flex: 1;
@@ -40,9 +39,9 @@
 		flex: 0 0 auto;
 		cursor: pointer;
 
-		//:global .rt-tr.selected {
-		//	background: $selectedRow !important;
-		//}
+		.rt-tr.selected {
+			background: rgb( 174, 218, 255 ) !important;
+		}
 	}
 
 	.alertStatusCell {
