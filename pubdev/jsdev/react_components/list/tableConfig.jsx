@@ -215,7 +215,7 @@ const columnDefinitions = {
 		column: 'source',
 		id: 'source',
 		minWidth: 120,
-		maxWidth: 150,
+		//maxWidth: 150,
 		//Filter: customFilters.tagFilter( 'source' ),
 	},
 
@@ -225,7 +225,7 @@ const columnDefinitions = {
 		column: 'tag',
 		id: 'tag',
 		minWidth: 120,
-		maxWidth: 150,
+		//maxWidth: 150,
 		//Filter: customFilters.tagFilter( 'tag' ),
 	},
 
