@@ -9,7 +9,7 @@
         log_level       => 'DEBUG',
     },
     default_owner   => 'scot-admin',
-    stomp_host  => "172.18.0.3",
+    stomp_host  => "activemq",
     stomp_port  => 61613,
     modules => [
         {
@@ -23,7 +23,7 @@
             attr    => 'scot',
             class   => 'Scot::Util::ScotClient',
             config  => {
-                servername  => "172.18.0.7",
+                servername  => "scot",
                 username    => "scot-alerts",
                 password    => "changemenow",
                 auth_type    => "basic",
@@ -34,7 +34,7 @@
             class   => 'Scot::Util::MongoFactory',
             config  => {
                 db_name         => 'scot-prod',
-                host            => 'mongodb://172.18.0.4',
+                host            => 'mongodb://mongodb',
                 write_safety    => 1,
                 find_master     => 1,
             },

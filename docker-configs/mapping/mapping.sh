@@ -1,12 +1,12 @@
 no_proxy=localhost
 
-until $(curl -vvv --noproxy 172.18.0.5 --output /dev/null --fail --silent --head -u elastic:changeme http://172.18.0.5:9200/); do    printf '.';     sleep 5; done
+until $(curl -vvv --noproxy elastic --output /dev/null --fail --silent --head -u elastic:changeme http://elastic:9200/); do    printf '.';     sleep 5; done
 
 echo "Deleting Existing SCOT index";
-curl --noproxy 172.18.0.5 -u elastic:changeme -XDELETE 172.18.0.5:9200/scot
+curl --noproxy elastic -u elastic:changeme -XDELETE elastic:9200/scot
 
 echo "Creating SCOT index";
-curl --noproxy 172.18.0.5 -u elastic:changeme -XPUT 172.18.0.5:9200/scot?pretty=1 -d '
+curl --noproxy elastic -u elastic:changeme -XPUT elastic:9200/scot?pretty=1 -d '
 {
     "settings": 
         {"analysis": 

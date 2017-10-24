@@ -1,8 +1,8 @@
 FROM gitlab.sandia.gov:3434/docker/ubuntu
 #FROM ubuntu:16.04
 
-ENV no_proxy 172.18.0.5,sso.sandia.gov
-ENV NO_PROXY 172.18.0.5,sso.sandia.gov,127.0.0.1,localhost,*.sandia.gov
+ENV no_proxy 172.19.0.3,172.19.0.7,172.19.0.4,sso.sandia.gov,127.0.0.1,localhost,*.sandia.gov
+ENV NO_PROXY 172.18.0.3,172.19.0.7,172.19.0.4,sso.sandia.gov,127.0.0.1,localhost,*.sandia.gov
 RUN apt-get update && \
   apt-get install -y apache2 libldap2-dev libsasl2-dev libssl-dev apache2 libapache2-mod-wsgi \
   # libapache2-mod-shib2 libapache2-mod-auth-cas  && apt-get clean && \

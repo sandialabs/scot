@@ -10,7 +10,7 @@ use Scot::Env;
 use DateTime;
 use Mojo::JSON qw(decode_json);
 
-my $config_file = $ENV{'scot_backup_config_file'} // '/opt/scot/etc/backup.cfg.pl';
+#my $config_file = $ENV{'scot_backup_config_file'} // '/opt/scot/etc/backup.cfg.pl';
 my $config_file = $ENV{'scot_backup_config_file'} // '../docker-configs/backup.cfg.pl';
 
 my $env  = Scot::Env->new({
@@ -101,76 +101,76 @@ if ( $repo_status !~ /$repo_loc/ ) {
 ##
 $repo_status = `curl -XGET $repo_cmd`;
 
-#if ( $repo_status =~ /repository_missing_exception/ ) {
-#    print "Missing Repo, creating scot_backup repo...\n";
-#
-#    my $create_repo_template = <<'EOF';
-#%s/_snapshot/scot_backup -d '{
-#    "type": "fs",
-#    "settings": {
-#        "compress": "true",
-#        "location": "%s"
-#    }
-#}'
-#EOF
-#
-#    my $create_repo_string = sprintf($create_repo_template, 
-#                                    $env->es_server,
-#                                    $env->es_backup_location);
-#
-#    print "Creating Repo with: $create_repo_string\n";
-#    my $repocreatestat = `$curl -XPUT $create_repo_string`;
-#}
-#
-#my $escmd   = $env->es_server."/_snapshot/scot_backup/snapshot_1";
-#
-#print "Deleting existing snapshot...\n";
-#my $del_stat = `$curl -XDELETE $escmd`;
-#
-#sleep 2;
-#
-#print "Request new snapshot...\n";
-#my $snap_stat   = `$curl -XPUT $escmd`;
-#
-#unless ( $snap_stat =~ /accepted\":true/ ) {
-#    warn "Failed to create a snapshot! $snap_stat";
-#}
-#else {
-#    print "Waiting for Snapshot to complete...\n";
-#    my $this_stat = `$curl -XGET $escmd`;
-#    my $count     = 0;
-#    while ( $this_stat !~ /SUCCESS/ and $count < 100 ) {
-#        print ".";
-#        sleep 5;
-#        $this_stat = `$curl -XGET $escmd`;
-#        $count++;
-#    }
-#}
-#
-#my $esdir   = $env->es_backup_location;
-#my $cacheimgdir = $env->cacheimg;
-#my $dt  = DateTime->now();
-## my $ts  = $dt->year . $dt->month . $dt->day . $dt->hour . $dt->minute;
-#my $ts  = $dt->strftime("%Y%m%d%H%M");
-#
-## back up cached images
-#system("cp -r /opt/scot/public/cached_images $cacheimgdir");
-#
-#print "TARing up backups to $tarloc.$ts.tgz\n";
-#system("tar cvzf $tarloc.$ts.tgz $dumpdir $esdir $cacheimgdir");
-#
-#if ( $env->cleanup ) {
-#    print "Cleaning up...\n";
-#    system("rm -rf $dumpdir/*");
-#    my $status = `curl -XDELETE $escmd`;
-#    unless ( $status =~ /acknowledged\":true/ ) {
-#        die "Failed to delete repo snapshot for ES backup: $status\n";
-#    }
-#    system("rm -rf $esdir/*");
-#}
-#system("find $env->location -ctime 7 -print0 | xargs -0 /bin/rm -f");
-#system("rm -f $pidfile");
-#
-#END{
-#    system("rm -f $pidfile");
-#}
+if ( $repo_status =~ /repository_missing_exception/ ) {
+    print "Missing Repo, creating scot_backup repo...\n";
+
+    my $create_repo_template = <<'EOF';
+%s/_snapshot/scot_backup -d '{
+    "type": "fs",
+    "settings": {
+        "compress": "true",
+        "location": "%s"
+    }
+}'
+EOF
+
+    my $create_repo_string = sprintf($create_repo_template, 
+                                    $env->es_server,
+                                    $env->es_backup_location);
+
+    print "Creating Repo with: $create_repo_string\n";
+    my $repocreatestat = `$curl -XPUT $create_repo_string`;
+}
+
+my $escmd   = $env->es_server."/_snapshot/scot_backup/snapshot_1";
+
+print "Deleting existing snapshot...\n";
+my $del_stat = `$curl -XDELETE $escmd`;
+
+sleep 2;
+
+print "Request new snapshot...\n";
+my $snap_stat   = `$curl -XPUT $escmd`;
+
+unless ( $snap_stat =~ /accepted\":true/ ) {
+    warn "Failed to create a snapshot! $snap_stat";
+}
+else {
+    print "Waiting for Snapshot to complete...\n";
+    my $this_stat = `$curl -XGET $escmd`;
+    my $count     = 0;
+    while ( $this_stat !~ /SUCCESS/ and $count < 100 ) {
+        print ".";
+        sleep 5;
+        $this_stat = `$curl -XGET $escmd`;
+        $count++;
+    }
+}
+
+my $esdir   = $env->es_backup_location;
+my $cacheimgdir = $env->cacheimg;
+my $dt  = DateTime->now();
+# my $ts  = $dt->year . $dt->month . $dt->day . $dt->hour . $dt->minute;
+my $ts  = $dt->strftime("%Y%m%d%H%M");
+
+# back up cached images
+system("cp -r /opt/scot/public/cached_images $cacheimgdir");
+
+print "TARing up backups to $tarloc.$ts.tgz\n";
+system("tar cvzf $tarloc.$ts.tgz $dumpdir $esdir $cacheimgdir");
+
+if ( $env->cleanup ) {
+    print "Cleaning up...\n";
+    system("rm -rf $dumpdir/*");
+    my $status = `curl -XDELETE $escmd`;
+    unless ( $status =~ /acknowledged\":true/ ) {
+        die "Failed to delete repo snapshot for ES backup: $status\n";
+    }
+    system("rm -rf $esdir/*");
+}
+system("find $env->location -ctime 7 -print0 | xargs -0 /bin/rm -f");
+system("rm -f $pidfile");
+
+END{
+    system("rm -f $pidfile");
+}
