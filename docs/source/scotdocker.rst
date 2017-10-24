@@ -73,7 +73,7 @@ The docker-scripts directory contains scripts for backing up the data contained 
 
 And then run:: 
 
-    sudo docker run -it --rm --name docker-util  docker-util
+    sudo docker run -it --rm --name docker-util -e SCRIPT=restore_remote_scotdb.pl --net scot_scot-docker-net --ip 172.18.0.11  docker-util
 
 This will execute the script and close the container once it completes. 
 
