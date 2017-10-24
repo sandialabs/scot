@@ -71,7 +71,7 @@
             class   => 'Scot::Util::MongoFactory',
             config  => {
                 db_name         => 'scot-prod',
-                host            => 'mongodb://172.18.0.4',
+                host            => 'mongodb://mongodb',
                 write_safety    => 1,
                 find_master     => 1,
             },
@@ -80,10 +80,10 @@
             attr    => 'es',
             class   => 'Scot::Util::ESProxy',
             config  => {
-                nodes       => [ qw(172.18.0.5:9200) ],
+                nodes       => [ qw(elastic:9200) ],
                 max_workers => 1,
                 proto       => 'http',
-                servername  => '172.18.0.5',
+                servername  => 'elastic',
                 serverport  => 9200,
                 username    => 'elastic',
                 password    => 'changeme',
@@ -100,7 +100,7 @@
             class   => 'Scot::Util::Messageq',
             config  => {
                 destination => "scot",
-                stomp_host  => "172.18.0.3",
+                stomp_host  => "activemq",
                 stomp_port  => 61613,
             },
         },

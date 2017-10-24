@@ -1,7 +1,7 @@
 #!/bin/bash
 set -m
 
-mongodb_cmd="mongod --setParameter failIndexKeyTooLong=false"
+mongodb_cmd="mongod --setParameter failIndexKeyTooLong=false --dbpath=/var/lib/mongodb/"
 cmd="$mongodb_cmd"
 
 if [ "$AUTH" == "yes" ]; then

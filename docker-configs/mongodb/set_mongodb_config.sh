@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# delete all admin accounts
+mongo scot-prod --eval "db.user.deleteMany({username:'admin'})"
+
+
 #admin User
 MONGODB_ADMIN_USER=${MONGODB_ADMIN_USER:-"admin"}
 MONGODB_ADMIN_PASS=${MONGODB_ADMIN_PASS:-"admin"}
