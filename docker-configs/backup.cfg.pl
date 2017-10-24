@@ -15,7 +15,7 @@
     cacheimg    => '/opt/scotbackup/cached_images',
     tarloc      => '/opt/scotbackup/scotback',
     cleanup     => 1,
-    es_server   => '172.18.0.5:9200',
+    es_server   => 'elastic:9200',
     es_backup_location  => '/opt/scotbackup/elastic',
     auth        => {
         # user => "username", # if needed

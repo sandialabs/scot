@@ -1,7 +1,7 @@
 %environment = (
     time_zone   => 'America/Denver',
     # server name of the SCOT server
-    servername  => '172.18.0.7',
+    servername  => 'scot',
     # username with sufficient scot perms to create alert(groups)
     username    => 'scot-alerts',
     # the password for that user
@@ -20,7 +20,7 @@
         logfile         => '/var/log/scot/scot.flair.log',
         log_level       => 'DEBUG',
     },
-    stomp_host  => "172.18.0.3",
+    stomp_host  => "activemq",
     stomp_port  => 61613,
 
     # modules used by flair app
@@ -42,7 +42,7 @@
             attr    => 'scot',
             class   => 'Scot::Util::ScotClient',
             config  => {
-                servername  => '172.18.0.7',
+                servername  => 'scot',
                 # username with sufficient scot perms to create alert(groups)
                 username    => 'scot-alerts',
                 # the password for that user
@@ -56,7 +56,7 @@
             class   => 'Scot::Util::MongoFactory',
             config  => {
                 db_name         => 'scot-prod',
-                host            => 'mongodb://172.18.0.4',
+                host            => 'mongodb://mongodb',
                 write_safety    => 1,
                 find_master     => 1,
             },
@@ -66,7 +66,7 @@
             class   => 'Scot::Util::Messageq',
             config  => {
                 destination => "scot",
-                stomp_host  => "172.18.0.3",
+                stomp_host  => "activemq",
                 stomp_port  => 61613,
             },
         },

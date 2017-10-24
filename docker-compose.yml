@@ -12,10 +12,7 @@ services:
      - "443:443"
      - "80:80"
     networks:
-     scot-docker-net:
-      ipv4_address: 172.18.0.2
-      aliases:
-       - apache-docker
+     - scot-docker-net
   activemq:
     volumes:
      - "/var/log/activemq:/var/log/activemq/log/"
@@ -27,10 +24,7 @@ services:
      - "8161:8161"
      - "61613:61613"
     networks:
-     scot-docker-net:
-      ipv4_address: 172.18.0.3
-      aliases:
-       - activemq-docker
+     - scot-docker-net
   
   mongodb:
     build:
@@ -42,10 +36,7 @@ services:
      - "/etc/localtime:/etc/localtime:ro"
      - "/var/lib/mongodb:/var/lib/mongodb/"
     networks:
-     scot-docker-net:
-      ipv4_address: 172.18.0.4
-      aliases:
-       - mongodb-docker
+     - scot-docker-net
     ports:
      - "27017:27017"
   
@@ -56,11 +47,9 @@ services:
    volumes:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
+     - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/"
    networks:
-    scot-docker-net:
-     ipv4_address: 172.18.0.5
-     aliases:
-      - elastic-docker
+    - scot-docker-net
    ports:
     - "9200:9200"
 
@@ -71,10 +60,7 @@ services:
     depends_on:
      - elastic
     networks:
-     scot-docker-net:
-      ipv4_address: 172.18.0.6
-      aliases:
-       - mapping-docker
+     - scot-docker-net
 
   scot:
     build:
@@ -85,17 +71,22 @@ services:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
      - "/opt/scotfiles:/opt/scotfiles/"
+     - "/opt/scot/public/cached_images:/opt/scot/public/cached_images/"
     depends_on:
+     - perl
      - mapping
      - mongodb
      - activemq
     networks:
-     scot-docker-net:
-      ipv4_address: 172.18.0.7
-      aliases:
-       - scot-docker
+     - scot-docker-net
     ports:
      - "3000:3000"
+  perl:
+    build: 
+      dockerfile: Dockerfile-Perl
+      context: ./
+    image: scot_perl
+
 
   flair:
    build:
@@ -108,10 +99,7 @@ services:
     - activemq
     - scot
    networks:
-     scot-docker-net:
-      ipv4_address: 172.18.0.8
-      aliases:
-       - flair-docker
+     - scot-docker-net
 
   stretch:
    build:
@@ -124,10 +112,7 @@ services:
     - activemq
     - scot
    networks:
-     scot-docker-net:
-      ipv4_address: 172.18.0.9
-      aliases:
-       - stretch-docker
+    - scot-docker-net
   
   game:
    build:
@@ -139,15 +124,8 @@ services:
     - mongodb
     - scot
    networks:
-     scot-docker-net:
-      ipv4_address: 172.18.0.10
-      aliases:
-       - game-docker
+     - scot-docker-net
 
 networks:
   scot-docker-net:
     driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.18.0.0/16
