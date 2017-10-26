@@ -8,11 +8,7 @@ import { epochRangeToString, epochRangeToMoment, momentRangeToEpoch } from '../u
 import * as constants from '../utils/constants';
 
 import LoadingContainer from './LoadingContainer';
-//import TagInput from './TagInput';
-
-let _type;
-let _filter;
-let _defaultStringCheckRan = false;
+import TagInput from './TagInput';
 
 const customFilters = {
 	numberFilter: ( {filter, onChange} ) => (
@@ -25,24 +21,15 @@ const customFilters = {
 			style={{width: '100%'}}
 		/>
 	),
-	stringFilter: ( placeholder ) => ( {filter, onChange} ) => {   
-            
-            let _default = '';
-            if ( _defaultStringCheckRan == false ) {
-                if ( globalFilter ) { if ( globalFilter[placeholder] ) { _default = globalFilter[placeholder][0] } };
-                _defaultStringCheckRan = true;
-            }
-
-            return (  
-                <DebounceInput
-                    debounceTimeout={200}
-                    minLength={1} 
-                    value={filter && filter.value.length >= 0 ? filter.value : _default }
-                    onChange={ e => onChange( e.target.value ) }
-                    style={{width: '100%'}}
-                />
-            )
-    },
+	stringFilter: ( {filter, onChange} ) => (   
+        <DebounceInput
+            debounceTimeout={200}
+            minLength={1} 
+            value={filter ? filter.value : '' }
+            onChange={ e => onChange( e.target.value ) }
+            style={{width: '100%'}}
+        />
+    ),
 	dropdownFilter: ( options = [ 'open', 'closed', 'promoted' ], align ) => ( {filter, onChange} ) => (
 		<OverlayTrigger trigger='focus' placement='bottom' overlay={
 			<Popover id='status_popover' style={{maxWidth: '400px'}}>
@@ -192,7 +179,7 @@ const columnDefinitions = {
 		accessor: 'subject',
 		minWidth: 400,
 		maxWidth: 5000,
-		Filter: customFilters.stringFilter('subject'),
+		Filter: customFilters.stringFilter,
 	},
 
 	Created: {
@@ -229,7 +216,7 @@ const columnDefinitions = {
 		id: 'source',
 		minWidth: 120,
 		//maxWidth: 150,
-		//Filter: customFilters.tagFilter( 'source' ),
+		Filter: customFilters.tagFilter( 'source' ),
 	},
 
 	Tags: {
@@ -239,14 +226,14 @@ const columnDefinitions = {
 		id: 'tag',
 		minWidth: 120,
 		//maxWidth: 150,
-		//Filter: customFilters.tagFilter( 'tag' ),
+		Filter: customFilters.tagFilter( 'tag' ),
 	},
 
 	Owner: {
 		Header: 'Owner',
 		accessor: 'owner',
 		maxWidth: 80,
-		Filter: customFilters.stringFilter('owner'),
+		Filter: customFilters.stringFilter,
 	},
 
 	Entries: {
@@ -406,17 +393,17 @@ const typeColumns = {
 	default: [ 'Id', 'AlertStatus', 'Subject', 'Created', 'Sources', 'Tags', 'Views', ],
 }
 
-export const buildTypeColumns = ( type, filter ) => {
+export const buildTypeColumns = ( type ) => {
 	if ( !typeColumns.hasOwnProperty( type ) ) {
 		// throw new Error( 'No columns defined for type: '+ type );
 		type = 'default';
 	}
-    _type = type;
-    _filter = filter;
-	let columns = [];
+	
+    let columns = [];
 	for ( let col of typeColumns[ type ] ) {
         let colOptions = {};
-		if ( typeof col === 'object' ) {
+		
+        if ( typeof col === 'object' ) {
 			colOptions = {
 				...columnDefinitions[ col.title ],
 				...col.options,
