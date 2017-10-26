@@ -123,6 +123,9 @@ var App = React.createClass({
             var listViewFilterSetting = checkCookie('listViewFilter'+this.props.match.params.value.toLowerCase());
             var listViewSortSetting = checkCookie('listViewSort'+this.props.match.params.value.toLowerCase());
             var listViewPageSetting = checkCookie('listViewPage'+this.props.match.params.value.toLowerCase());
+            globalFilter = listViewFilterSetting;
+            globalPage = listViewPageSetting;
+            globalSort = listViewSortSetting;
         }
         if (notificationSetting == undefined) {
             notificationSetting = 'on';
