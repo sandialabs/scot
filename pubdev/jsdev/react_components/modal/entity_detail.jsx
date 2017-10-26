@@ -443,12 +443,10 @@ var EntityValue = React.createClass({
                         <span>&nbsp;</span>   
                         <Marker type='entity' id={this.props.data.id} string={this.props.value} />
                     </div>
-                    <div style={{display: 'flex'}}>
-                        <div style={{display:'flex'}}>
-                            <span>{this.props.data.type}:</span>
-                            &nbsp;
-                            <span>{this.props.value}</span>
-                        </div> 
+                    <div>
+                        <span>{this.props.data.type}:</span>
+                        &nbsp;
+                        <span>{this.props.value}</span>
                     </div>
                 </div>
             )
