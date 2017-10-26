@@ -1,9 +1,48 @@
 // Styles for Main Component
 
 .homePageDisplay {
-    div {
-        h1 {
-            text-align: center;
-        }
-    }
+	display: grid;
+	padding: 10px;
+	grid-template-columns: 1fr 1fr 1fr;
+	grid-template-rows: minmax(200px, 25%) 40px auto;
+	grid-gap: 15px;
+	
+	grid-template-areas:
+		"status title game"
+		"activity activity activity"
+		"chart chart chart";
+
+	.title {
+		display: inline-grid;
+		grid-area: title;
+
+		background: url('/images/scot-600h.png') no-repeat center;
+		background-size: contain;
+
+		text-align: center;
+
+		h3 {
+			justify-self: center;
+			align-self: end;
+		}
+	}
+
+	.status {
+		grid-area: status;
+		overflow: hidden;
+	}
+
+	.game {
+		grid-area: game;
+		overflow: hidden;
+	}
+
+	.activity {
+		grid-area: activity;
+		margin-bottom: 0;
+	}
+
+	.charts {
+		grid-area: chart;
+	}
 }
