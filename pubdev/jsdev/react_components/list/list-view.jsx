@@ -24,13 +24,10 @@ var listStartX;
 var listStartY;
 var listStartWidth;
 var listStartHeight;
-let _type;
-
 
 module.exports = React.createClass({
 
     getInitialState: function(){
-        _type = this.props.type;
         var type = this.props.type;
         var typeCapitalized = this.titleCase(this.props.type);
         var id = this.props.id;
@@ -43,7 +40,7 @@ module.exports = React.createClass({
         var showSelectedContainer = false;
         var sort = {'id':-1};
         var activepage = {page:0, limit:50};
-        var filter;
+        var filter = [];
         width = 650
         
         columnsDisplay = listColumnsJSON.columnsDisplay[this.props.type];
@@ -58,8 +55,6 @@ module.exports = React.createClass({
         }
         if (this.props.listViewFilter != null) {
             filter = JSON.parse(this.props.listViewFilter);
-            globalFilter = JSON.parse(this.props.listViewFilter);
-
         }
         if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; alertPreSelectedId=id;};
         
@@ -124,10 +119,19 @@ module.exports = React.createClass({
         //get page number
         newPage =  pageNumber * pageLimit
         var data = {limit:pageLimit, offset: newPage, sort: JSON.stringify(sortBy)}
+        
         //add filter to the data object
-        if (filterBy != undefined) {
+        if (this.state.filter != undefined) {
             $.each(filterBy, function(key,value) {
-                data[key] = value;
+                if ( value.id == 'source' || value.id == 'tag' ) {
+                    let stringArr = [];
+                    for ( let each of value.value ) {
+                        stringArr.push(each.name);
+                    }
+                    data[value.id] = JSON.stringify(stringArr);    
+                } else {
+                    data[value.id] = JSON.stringify(value.value);
+                }
             })
         }
 
@@ -278,7 +282,7 @@ module.exports = React.createClass({
             showClearFilter = true
         }
 
-        let columns = buildTypeColumns ( this.props.type, this.state.filter );
+        let columns = buildTypeColumns ( this.props.type );
         
         return (
             <div> 
@@ -310,6 +314,7 @@ module.exports = React.createClass({
                                         onPageSizeChange = { this.handlePageSizeChange }
                                         pageSize = { this.state.activepage.limit }
                                         onFilteredChange = { this.handleFilter }
+                                        filtered = { this.state.filter }
                                         onSortedChange = { this.handleSort }
                                         manual = { true }
                                         sortable = { true }
@@ -565,11 +570,20 @@ module.exports = React.createClass({
         }
         var data = {limit: pageLimit, offset: newPage, sort: JSON.stringify(sortBy)}
         //add filter to the data object
-        if (filterBy != undefined) {
-            $.each(filterBy, function(key,value) {
-                data[key] = value;
+        //add filter to the data object
+        if ( filterBy != undefined ) {
+            $.each( filterBy, function(key,value) {
+                if ( value.id == 'source' || value.id == 'tag' ) {
+                    let stringArr = [];
+                    for ( let each of value.value ) {
+                        stringArr.push(each.name);
+                    }
+                    data[value.id] = JSON.stringify(stringArr);
+                } else {
+                    data[value.id] = JSON.stringify(value.value);
+                }  
             })
-        }
+        }   
 
         var newarray = []
         
@@ -696,7 +710,7 @@ module.exports = React.createClass({
 
     handleFilter: function(filterObj,string,clearall,type){
         var currentFilter = this.state.filter;
-        var newFilterObj = {};
+        var newFilterArr = [];
         var _type;
         if (type != undefined) {
             _type = type;
@@ -704,58 +718,23 @@ module.exports = React.createClass({
             _type = this.props.type;
         }
         if (clearall === true) {
-            this.setState({filter:newFilterObj})
+            this.setState({filter:newFilterArr})
         } else { 
-            //iterate array
-            for ( let filterObjOne of filterObj ) {
             
-                if (filterObjOne.value.length == 0 || filterObjOne.value.length == null) { //check if string is blank
-                    if (currentFilter != null) {
-                        if (currentFilter[filterObjOne.id]) {
-                            delete currentFilter[filterObjOne.id];
-                        }
-                    }
-                    for (var prop in currentFilter) { newFilterObj[prop] = currentFilter[prop]}; // combine current filter with new one
-                } else {
-                    var array;
-                    if (typeof(filterObjOne.value) == 'string') {
-                        array = filterObjOne.value.split(',');
-                    } else {
-                        array = filterObjOne.value; //this is used if string is an array of strings to search (tags/source)
-                    }
-                    var inProgressFilter = [];
-                    var newFilter = [];
-                    //if no filter applied
-                    if (currentFilter == undefined) {
-                        for (var i=0; i < array.length; i++) {
-                            inProgressFilter.push(array[i]);
-                        }
-                        newFilterObj[filterObjOne.id] = inProgressFilter;
-                    //filter is applied
-                    } else {
-                        //already filtered column being modified
-                        if (currentFilter[filterObjOne.id] != undefined) {
-                            for (var i=0; i < array.length; i++) {
-                                inProgressFilter.push(array[i]);
-                            }
-                            delete currentFilter[filterObjOne.id]
-                            newFilterObj[filterObjOne.id] = inProgressFilter;
-                        } else {  //column not yet filtered, so append it to the existing filters
-                            for (var i=0; i < array.length; i++) {
-                                inProgressFilter.push(array[i]);
-                            }
-                            newFilterObj[filterObjOne.id] = inProgressFilter;
-                        }
-                        for (var prop in currentFilter) { newFilterObj[prop] = currentFilter[prop]}; // combine current filter with new one
-                    }
+            for ( let filterEach of filterObj ) {
+                if ( filterEach.id ) {
+                    newFilterArr.push( filterEach );
                 }
             }
-            this.setState({filter:newFilterObj});
+
+            this.setState({ filter: newFilterArr });
+            
             if (type == this.props.type || type == undefined) {    //Check if the type passed in matches the type displayed. If not, it's updating the filter for a future query in a different type. Undefined implies its the same type, so update 
-                this.getNewData({page:0},null,newFilterObj)
+                this.getNewData({page:0},null,newFilterArr)
             }
+
             var cookieName = 'listViewFilter' + _type;
-            setCookie(cookieName,JSON.stringify(newFilterObj),1000);
+            setCookie(cookieName,JSON.stringify(newFilterArr),1000);
         }
     },
     
