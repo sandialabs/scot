@@ -23,7 +23,7 @@
 				"title title title";
 		}
 
-		.title {
+		.title-area {
 			display: inline-grid;
 			grid-area: title;
 
@@ -31,29 +31,36 @@
 			background-size: contain;
 
 			text-align: center;
+			text-shadow: 1px 2px 10px rgba( 0, 0, 0, 0.5 );
 
 			h1, h3 {
 				justify-self: center;
 				align-self: end;
 			}
+
+			.sensitivity {
+				justify-self: center;
+				align-self: start;
+				margin: 0;
+			}
 		}
 
-		.status {
+		.status-area {
 			grid-area: status;
 			overflow: hidden;
 		}
 
-		.game {
+		.game-area {
 			grid-area: game;
 			overflow: hidden;
 		}
 
-		.activity {
+		.activity-area {
 			grid-area: activity;
 			margin-bottom: 0;
 		}
 
-		.charts {
+		.charts-area {
 			grid-area: chart;
 		}
 	}

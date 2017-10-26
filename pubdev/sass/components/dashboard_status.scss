@@ -1,0 +1,7 @@
+// Styles for Dashboard Status component
+
+.Status {
+	display: inline-grid;
+	grid-template-columns: 1fr 1fr;
+	grid-template-rows: auto;
+}
