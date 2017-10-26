@@ -26,8 +26,9 @@ let Gamification    = require( '../components/dashboard/gamification.jsx' );
 let Status          = require( '../components/dashboard/status.jsx' );
 let Online          = require( '../components/dashboard/online.jsx' );
 import { ReportDashboard, ReportPage, SingleReport } from '../components/dashboard/report';
-let Notification    = require( 'react-notification-system' );
-let Login           = require( '../modal/login.jsx' ).default;
+var Notification    = require('react-notification-system');
+var Login           = require('../modal/login.jsx').default;
+import Home from './home';
 
 {
     window.React = React;	
@@ -313,30 +314,10 @@ let App = React.createClass( {
                 <div className='mainNavPadding'>
                     <Login csrf={this.state.csrf} modalActive={this.state.login} loginToggle={this.loginToggle} WhoAmIQuery={this.WhoAmIQuery} GetHandler={this.GetHandler} errorToggle={this.errorToggle} origurl={this.state.origurl} />
                     <Notification ref='notificationSystem' />
-                    {!type || type == 'home' ? 
-                        <div className="homePageDisplay">
-                            <div className='col-md-4'>
-                                <img src='/images/scot-600h.png' style={{maxWidth:'350px',width:'100%',marginLeft:'auto', marginRight:'auto', display: 'block'}}/>
-                                <h1>Sandia Cyber Omni Tracker 3.5</h1>
-                                <h1>{this.state.sensitivity}</h1>
-                                { !this.state.login ? 
-                                    <Status errorToggle={this.errorToggle} />
-                                    :
-                                    null
-                                }
-                            </div>
-                            { !this.state.login ? 
-                                <div>
-                                    <Gamification errorToggle={this.errorToggle} />
-                                    <Online errorToggle={this.errorToggle} />
-                                    <ReportDashboard />
-                                </div>
-                                :
-                                null
-                            }
-                        </div>
-                        :
-                        null}
+					{/* Home Page Dashboard */}
+					<Route exact path='/' render={ props => (
+						<Home loggedIn={!this.state.login} {...props} />
+					) } />
                     { type == 'alert' ? 
                         <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                         :
