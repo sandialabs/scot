@@ -15,3 +15,7 @@ var entityPopUpHeight = '';
 var entityPopUpWidth = '';
 var changeKey;
 var amqdebug = false;
+
+let globalFilter;
+let globalSort;
+let globalPage;
