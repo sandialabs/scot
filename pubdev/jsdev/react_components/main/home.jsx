@@ -15,12 +15,10 @@ class HomeDashboard extends PureComponent {
 		};
 	}
 
-	/* Current build tools can't handle this, but is preferred
 	static propTypes = {
 		loggedIn: PropTypes.bool.isRequired,
 		sensitivity: PropTypes.string,
 	}
-	*/
 
 	render() {
 		/*
@@ -82,11 +80,5 @@ class HomeDashboard extends PureComponent {
 		)
 	}
 }
-
-HomeDashboard.propTypes = {
-	loggedIn: PropTypes.bool.isRequired,
-	sensitivity: PropTypes.string,
-}
-
 
 export default HomeDashboard;

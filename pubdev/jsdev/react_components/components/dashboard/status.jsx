@@ -37,7 +37,7 @@ class Status extends PureComponent {
 
 		let services = [];
 		for ( let service in this.state.statusData ) {
-			services.push( <div key={service}>{service}</div> );
+			services.push( <Service name={service} status="running" /> );
 		}
 
 
@@ -48,5 +48,11 @@ class Status extends PureComponent {
 		)
 	}
 }
+
+const Service = ( { name, status } ) => (
+	<div className="service" key={name}>
+		{name} - {status}
+	</div>
+)
 
 export default Status;
