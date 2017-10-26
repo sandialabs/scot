@@ -45,24 +45,37 @@ class HomeDashboard extends PureComponent {
 		*/
 		return (
 			<div className="homePageDisplay">
-				<div className="title">
-					<h3>Sandia Cyber Omni Tracker
-						<br />
-						3.5
-					</h3>
-				</div>
-				<div className="status">
-					<Status />
-				</div>
-				<div className="game">
-					<Gamification />
-				</div>
-				<Well bsSize="small" className="activity">
-					Activity
-				</Well>
-				<div className="charts">
-					Charts
-				</div>
+				{ this.props.loggedIn ? 
+					<div className="home-grid">
+						<div className="title">
+							<h3>Sandia Cyber Omni Tracker
+								<br />
+								3.5
+							</h3>
+						</div>
+						<div className="status">
+							<Status />
+						</div>
+						<div className="game">
+							<Gamification />
+						</div>
+						<Well bsSize="small" className="activity">
+							Activity
+						</Well>
+						<div className="charts">
+							Charts
+						</div>
+					</div>
+					:
+					<div className="home-grid loggedOut">
+						<div className="title">
+							<h1>Sandia Cyber Omni Tracker
+								<br />
+								3.5
+							</h1>
+						</div>
+					</div>
+				}
 			</div>
 		)
 	}

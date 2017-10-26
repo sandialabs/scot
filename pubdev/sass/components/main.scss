@@ -1,48 +1,60 @@
 // Styles for Main Component
 
 .homePageDisplay {
-	display: grid;
-	padding: 10px;
-	grid-template-columns: 1fr 1fr 1fr;
-	grid-template-rows: minmax(200px, 25%) 40px auto;
-	grid-gap: 15px;
-	
-	grid-template-areas:
-		"status title game"
-		"activity activity activity"
-		"chart chart chart";
+	.home-grid {
+		display: grid;
+		height: 100%;
+		padding: 10px;
+		grid-template-columns: 1fr 1fr 1fr;
+		grid-template-rows: minmax(200px, 1fr) 40px 1fr 1fr;
+		grid-gap: 15px;
+		
+		grid-template-areas:
+			"status title game"
+			"activity activity activity"
+			"chart chart notifications"
+			"chart chart notifications";
 
-	.title {
-		display: inline-grid;
-		grid-area: title;
-
-		background: url('/images/scot-600h.png') no-repeat center;
-		background-size: contain;
-
-		text-align: center;
-
-		h3 {
-			justify-self: center;
-			align-self: end;
+		&.loggedOut {
+			grid-template-areas:
+				"title title title"
+				"title title title"
+				"title title title"
+				"title title title";
 		}
-	}
 
-	.status {
-		grid-area: status;
-		overflow: hidden;
-	}
+		.title {
+			display: inline-grid;
+			grid-area: title;
 
-	.game {
-		grid-area: game;
-		overflow: hidden;
-	}
+			background: url('/images/scot-600h.png') no-repeat center;
+			background-size: contain;
 
-	.activity {
-		grid-area: activity;
-		margin-bottom: 0;
-	}
+			text-align: center;
 
-	.charts {
-		grid-area: chart;
+			h1, h3 {
+				justify-self: center;
+				align-self: end;
+			}
+		}
+
+		.status {
+			grid-area: status;
+			overflow: hidden;
+		}
+
+		.game {
+			grid-area: game;
+			overflow: hidden;
+		}
+
+		.activity {
+			grid-area: activity;
+			margin-bottom: 0;
+		}
+
+		.charts {
+			grid-area: chart;
+		}
 	}
 }
