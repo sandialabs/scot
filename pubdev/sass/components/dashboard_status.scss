@@ -4,4 +4,12 @@
 	display: inline-grid;
 	grid-template-columns: 1fr 1fr;
 	grid-template-rows: auto;
+
+	.service {
+		justify-self: center;
+		align-self: center;
+
+		height: 20px;
+		width: 80%;
+	}
 }
