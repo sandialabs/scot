@@ -24,12 +24,13 @@ var listStartX;
 var listStartY;
 var listStartWidth;
 var listStartHeight;
-
+let _type;
 
 
 module.exports = React.createClass({
 
     getInitialState: function(){
+        _type = this.props.type;
         var type = this.props.type;
         var typeCapitalized = this.titleCase(this.props.type);
         var id = this.props.id;
@@ -50,13 +51,15 @@ module.exports = React.createClass({
         columnsClassName = listColumnsJSON.columnsClassName[this.props.type];
         
         if (this.props.listViewSort != null) {
-            sort = JSON.parse(this.props.listViewSort)
+            sort = JSON.parse(this.props.listViewSort);
         } 
         if (this.props.listViewPage != null) {
             activepage = JSON.parse(this.props.listViewPage);
         }
         if (this.props.listViewFilter != null) {
             filter = JSON.parse(this.props.listViewFilter);
+            globalFilter = JSON.parse(this.props.listViewFilter);
+
         }
         if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; alertPreSelectedId=id;};
         
@@ -275,7 +278,7 @@ module.exports = React.createClass({
             showClearFilter = true
         }
 
-        let columns = buildTypeColumns ( this.props.type );
+        let columns = buildTypeColumns ( this.props.type, this.state.filter );
         
         return (
             <div> 
