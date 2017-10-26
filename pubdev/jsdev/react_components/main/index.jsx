@@ -316,7 +316,7 @@ let App = React.createClass( {
                     <Notification ref='notificationSystem' />
 					{/* Home Page Dashboard */}
 					<Route exact path='/' render={ props => (
-						<Home loggedIn={!this.state.login} {...props} />
+						<Home loggedIn={!this.state.login} sensitivity={this.state.sensitivity} {...props} />
 					) } />
                     { type == 'alert' ? 
                         <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
