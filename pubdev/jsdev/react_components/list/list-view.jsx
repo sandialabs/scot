@@ -213,7 +213,7 @@ module.exports = React.createClass({
             }.bind(this)
         })
         
-        $('#list-view-container').keydown(function(e){
+        /*$('#list-view-container').keydown(function(e){
             if ($('input').is(':focus')) {return};
             if (e.ctrlKey != true && e.metaKey != true) {
                 var up = $('#list-view-data-div').find('.list-view-data-div').find('#'+this.state.id).prevAll('.table-row')
@@ -233,7 +233,10 @@ module.exports = React.createClass({
                     }
                 } 
             }    
-        }.bind(this))
+        }.bind(this))*/
+        
+        document.addEventListener( 'keydown', this.keyNavigate );
+
         $(document.body).keydown(function(e) {
             if ($('input').is(':focus')) {return};
             if ($('textarea').is(':focus')) {return};
@@ -242,7 +245,53 @@ module.exports = React.createClass({
             }
         }.bind(this));
     },
+
+    componentWillUnmount: function() {
+        document.removeEventListener( 'keydown' , this.keyNavigate );
+    },
     
+    keyNavigate: function(event) {
+        if ( event.type !== 'click' ) {
+            if ( ![ 'j', 'k', 'ArrowUp', 'ArrowDown' ].includes( event.key ) ) {
+                return;
+            }
+
+            let target = event.target || event.srcElement;
+            let targetType = target.tagName.toLowerCase();
+            if ( targetType === 'input' || targetType === 'textarea' ) {
+                return;
+            }
+        }
+
+        let curRow = document.querySelector( '.ReactTable .rt-tbody .rt-tr.selected' );
+        if ( !curRow ) {
+            return;
+        }
+        let nextRow = null;
+
+        switch( event.key ) {
+            case 'j':
+            case 'ArrowDown':
+            default:
+                nextRow = curRow.parentElement.nextElementSibling;
+                break;
+            case 'k':
+            case 'ArrowUp':
+                nextRow = curRow.parentElement.previousElementSibling;
+                break;
+        }
+
+        if ( !nextRow ) {
+            return;
+        }
+        let nextId = nextRow.children[0].children[0].innerHTML;
+
+        this.props.history.push( `/${this.state.type}/${nextId}` );
+
+        event.preventDefault();
+        event.stopPropagation();
+    },
+
     //Callback for AMQ updates
     reloadactive: function(){    
         this.getNewData() 
@@ -334,21 +383,20 @@ module.exports = React.createClass({
 
     AutoScrollToId: function() {
         //auto scrolls to selected id
-        if ($('#'+this.state.id).offset() != undefined && $('.list-view-table-data').offset() != undefined) {
-            var cParentTop =  $('.list-view-table-data').offset().top;
-            var cTop = $('#'+this.state.id).offset().top - cParentTop;
-            var cHeight = $('#'+this.state.id).outerHeight(true);
-            var windowTop = $('#list-view-data-div').offset().top;
-            var visibleHeight = $('#list-view-data-div').height();
+        let row = document.querySelector( '.ReactTable .rt-tbody .rt-tr.selected' );
+        let tbody = document.querySelector( '.ReactTable .rt-tbody' );
 
-            var scrolled = $('#list-view-data-div').scrollTop();
-            if (cTop < (scrolled)) {
-                $('#list-view-data-div').animate({'scrollTop': cTop-(visibleHeight/2)}, 'fast', '');
-            } else if (cTop + cHeight + cParentTop> windowTop + visibleHeight) {
-                $('#list-view-data-div').animate({'scrollTop': (cTop + cParentTop) - visibleHeight + scrolled + cHeight}, 'fast', 'swing');
-            }
-            this.setState({initialAutoScrollToId: true});
+        if ( !row ) {
+            tbody.scrollTop = 0;
+            return;
         }
+
+        if ( tbody.scrollTop + tbody.offsetHeight - row.offsetHeight < row.offsetTop || row.offsetTop < tbody.scrollTop ) {
+            tbody.scrollTop = row.offsetTop - tbody.offsetHeight / 2 + row.offsetHeight / 2;
+        }   
+
+        this.setState({initialAutoScrollToId: true});
+        
     },
 
     componentDidUpdate: function(prevProps, prevState) {
