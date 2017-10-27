@@ -986,9 +986,11 @@ sub process_task_commands {
     if ( $action ne '' ) {
         delete $json->{$action}; # not an attribute in model
         $json->{metadata}   = {  # but this is
-            who     => $self->session('user'),
-            when    => $self->env->now,
-            status  => $status,
+            task    => {
+                who     => $self->session('user'),
+                when    => $self->env->now,
+                status  => $status,
+            },
         };
         $self->env->mongo->collection('Stat')->put_stat(
             "task $status", 1
