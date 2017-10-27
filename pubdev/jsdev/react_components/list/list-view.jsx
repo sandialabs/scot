@@ -248,15 +248,6 @@ module.exports = React.createClass({
         this.getNewData() 
     },
 
-    //This is used for the dragging portrait and landscape views
-    reloadItem: function(e){
-        $('iframe').each(function(index,ifr){
-            $(ifr).addClass('pointerEventsOff')
-        })
-        
-        this.setState({ scrollheight: listStartHeight + e.clientY - listStartY + 'px' })
-    },
-
     render: function() {
         var listViewContainerHeight;
         var showClearFilter = false;
@@ -421,10 +412,20 @@ module.exports = React.createClass({
             })
         };   
     },
+    
+    //This is used for the dragging portrait and landscape views
+    startdrag: function(e){
+        e.preventDefault();
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
+        
+        this.setState({ scrollheight: listStartHeight + e.clientY - listStartY + 'px' })
+    },
 
     stopdrag: function(e){
         $('iframe').each(function(index,ifr){
-        $(ifr).removeClass('pointerEventsOff')
+            $(ifr).removeClass('pointerEventsOff')
         }) 
         document.onmousemove = null
     },
@@ -435,7 +436,7 @@ module.exports = React.createClass({
         listStartY = e.clientY;
         listStartWidth = parseInt(document.defaultView.getComputedStyle(elem[0]).width,10);
         listStartHeight = parseInt(document.defaultView.getComputedStyle(elem[0]).height,10); 
-        document.onmousemove = this.reloadItem;
+        document.onmousemove = this.startdrag;
         document.onmouseup  = this.stopdrag;
     },
 
