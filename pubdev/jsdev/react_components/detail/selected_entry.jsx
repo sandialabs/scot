@@ -879,15 +879,15 @@ var EntryParent = React.createClass({
             summary = 1;
         }
         if (itemsClass == 'task') {
-            if (items.metadata.status == 'open' || items.metadata.status == 'assigned') {
-                taskOwner = '-- Task Owner ' + items.metadata.who + ' ';
+            if (items.metadata.task.status == 'open' || items.metadata.task.status == 'assigned') {
+                taskOwner = '-- Task Owner ' + items.metadata.task.who + ' ';
                 outerClassName += ' todo_open_outer';
                 innerClassName += ' todo_open';
-            } else if ((items.metadata.status == 'closed' || items.metadata.status == 'completed') && items.metadata.who != null ) {
-                taskOwner = '-- Task Owner ' + items.metadata.who + ' ';
+            } else if ((items.metadata.task.status == 'closed' || items.metadata.task.status == 'completed') && items.metadata.task.who != null ) {
+                taskOwner = '-- Task Owner ' + items.metadata.task.who + ' ';
                 outerClassName += ' todo_completed_outer';
                 innerClassName += ' todo_completed';
-            } else if (items.metadata.status == 'closed' || items.metadata.status == 'completed') {
+            } else if (items.metadata.task.status == 'closed' || items.metadata.task.status == 'completed') {
                 outerClassName += ' todo_undefined_outer';
                 innerClassName += ' todo_undefined';
             }
