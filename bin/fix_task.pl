@@ -43,10 +43,10 @@ while (my $task = $cursor->next) {
                 metadata    => $meta
             };
 
-#            $collection->update_one(
-#                {id => $id},
-#                {'$set' => $set }
-#            );
+            $collection->update_one(
+                {id => $id},
+                {'$set' => $set }
+            );
             say  "Update == ".Dumper($set);
         }
     }
