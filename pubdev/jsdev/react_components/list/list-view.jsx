@@ -49,12 +49,15 @@ module.exports = React.createClass({
         if (this.props.listViewSort != null) {
             sort = JSON.parse(this.props.listViewSort);
         } 
+        
         if (this.props.listViewPage != null) {
             activepage = JSON.parse(this.props.listViewPage);
         }
+        
         if (this.props.listViewFilter != null) {
             filter = JSON.parse(this.props.listViewFilter);
         }
+
         if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; alertPreSelectedId=id;};
         
         if (this.props.type === 'task') { type = 'task'; queryType = this.props.queryType; }
@@ -101,7 +104,7 @@ module.exports = React.createClass({
                 array = this.props.id
                 //scrolled = $('.container-fluid2').scrollTop()    
                 if(this.state.viewMode == 'landscape'){
-                    height = '25vh'
+                    height = '30vh'
                 }
             }
         }
@@ -490,7 +493,7 @@ module.exports = React.createClass({
         if(this.state.id.length != 0 && this.state.showSelectedContainer == true  && this.state.listViewContainerDisplay != 'none' ){
             this.setState({listViewContainerDisplay: 'none', scrollheight:'0px'})
         } else {
-            this.setState({listViewContainerDisplay: null, scrollheight:'25vh'})
+            this.setState({listViewContainerDisplay: null, scrollheight:'30vh'})
         }
     },
 
@@ -545,7 +548,7 @@ module.exports = React.createClass({
         }
         //scrolled = $('.list-view-data-div').scrollTop()
         if(this.state.display == 'block'){
-            this.state.scrollheight = '25vh'
+            this.state.scrollheight = '30vh'
         }
         this.setState({alertPreSelectedId: 0, scrollheight: this.state.scrollheight, showSelectedContainer: true })
     },
@@ -818,7 +821,7 @@ module.exports = React.createClass({
 
                 let scrollheight = this.state.scrollheight;
                 if( this.state.display == 'block' ){
-                    scrollheight = '25vh';
+                    scrollheight = '30vh';
                 }
                 
                 if ( this.state.type === 'task' ) { 
