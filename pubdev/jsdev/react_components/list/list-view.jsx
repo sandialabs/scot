@@ -528,7 +528,7 @@ module.exports = React.createClass({
 
     clearAll: function(){
         var newListViewKey = this.state.listViewKey + 1;
-        this.setState({listViewKey:newListViewKey, activepage: {page:0}, sort:[{ id:'id', desc: true }], filter: [] });  
+        this.setState({listViewKey:newListViewKey, activepage: {page:0, limit: this.state.activepage.limit}, sort:[{ id:'id', desc: true }], filter: [] });  
         this.getNewData({page:0}, [{ id:'id', desc: true}], {})
         deleteCookie('listViewFilter'+this.props.type) //clear filter cookie
         deleteCookie('listViewSort'+this.props.type) //clear sort cookie
