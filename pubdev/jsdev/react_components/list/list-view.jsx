@@ -12,8 +12,6 @@ var Button                  = require('react-bootstrap/lib/Button')
 var SplitButton             = require('react-bootstrap/lib/SplitButton.js');
 var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
-var ListViewHeader          = require('./list-view-header.jsx');
-var ListViewData            = require('./list-view-data.jsx');
 import ReactTable           from 'react-table';
 import tableSettings, { buildTypeColumns, defaultTypeTableSettings } from './tableConfig';
 let LoadingContainer        = require('./LoadingContainer/index.jsx').default;
