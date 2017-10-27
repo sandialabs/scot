@@ -405,7 +405,7 @@ module.exports = React.createClass({
         for (var i=0; i < this.state.objectarray.length; i++){          //Iterate through all of the items in the list to verify that the current id still matches the rows in the list. If not, don't scroll
             var idReference = this.state.objectarray[i].id;
             if (this.state.id != null && this.state.id == idReference && this.state.id != prevState.id || this.state.id != null && this.state.id == idReference && prevState.initialAutoScrollToId == false ) {     //Checks that the id is present, is on the screen, and will not be kicked off again if its already been scrolled to before. The || statement handles the initial load since the id hasn't been scrolled to before.
-               this.AutoScrollToId(); 
+               setTimeout(this.AutoScrollToId, 300); 
             }
         }
     },
@@ -546,7 +546,6 @@ module.exports = React.createClass({
             //window.history.pushState('Page', 'SCOT', '/#/' + type + '/' + taskid + '/' + rowid)
             this.props.history.push( '/' + type + '/' + taskid + '/' + rowid + '/'  );
         }
-        //scrolled = $('.list-view-data-div').scrollTop()
         if(this.state.display == 'block'){
             this.state.scrollheight = '30vh'
         }
