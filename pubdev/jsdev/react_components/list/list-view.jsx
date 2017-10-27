@@ -24,13 +24,14 @@ var listStartX;
 var listStartY;
 var listStartWidth;
 var listStartHeight;
+let listQuery;
 
 module.exports = React.createClass({
 
     getInitialState: function(){
         var type = this.props.type;
-        var typeCapitalized = this.titleCase(this.props.type);
         var id = this.props.id;
+        let queryType = this.props.type;
         var alertPreSelectedId = null;
         var scrollHeight = $(window).height() - 170 + 'px';
         var scrollWidth  = '650px';
@@ -38,7 +39,7 @@ module.exports = React.createClass({
         var columns = [];
         var columnsClassName = [];
         var showSelectedContainer = false;
-        var sort = {'id':-1};
+        var sort = [{ id:'id', desc: true }];
         var activepage = {page:0, limit:50};
         var filter = [];
         width = 650
@@ -58,6 +59,9 @@ module.exports = React.createClass({
         }
         if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; alertPreSelectedId=id;};
         
+        if (this.props.type === 'task') { type = 'task'; queryType = this.props.queryType; }
+
+        var typeCapitalized = this.titleCase(this.props.type);
         return {
             splitter: true, 
             selectedColor: '#AEDAFF',
@@ -68,7 +72,7 @@ module.exports = React.createClass({
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, };
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: queryType, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, };
     },
 
     componentWillMount: function() {
@@ -118,8 +122,19 @@ module.exports = React.createClass({
 
         //get page number
         newPage =  pageNumber * pageLimit
-        var data = {limit:pageLimit, offset: newPage, sort: JSON.stringify(sortBy)}
-        
+        var data = {limit:pageLimit, offset: newPage}
+                       
+        //add sort to the data object 
+        if ( sortBy != undefined ) { 
+            let sortObj = {};
+            $.each(sortBy, function(key, value) {
+                let sortInt = -1;
+                if ( !value.desc ) { sortInt = 1 };
+                sortObj[value.id] = sortInt;
+            })
+            data['sort'] = JSON.stringify( sortObj );
+        }
+ 
         //add filter to the data object
         if (this.state.filter != undefined) {
             $.each(filterBy, function(key,value) {
@@ -139,8 +154,8 @@ module.exports = React.createClass({
                 }
             })
         }
-
-        $.ajax({
+        
+        listQuery = $.ajax({
 	        type: 'GET',
 	        url: url,
 	        data: data,
@@ -150,11 +165,6 @@ module.exports = React.createClass({
                 $.each(datasource.records, function(key, value){
                     finalarray[key] = {}
                     $.each(value, function(num, item){
-                        /*if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
-                        {
-                            var date = new Date(1000 * item)
-                            finalarray[key][num] = date.toLocaleString()
-                        }*/
                         if (num == 'sources' || num == 'source'){
                             if (item != undefined) {
                                 var sourcearr = item.join(', ')
@@ -197,7 +207,9 @@ module.exports = React.createClass({
                 
             }.bind(this),
             error: function(data) {
-                this.props.errorToggle('failed to get list data', data)
+                if ( !data.statusText == 'abort' ) {
+                    this.props.errorToggle('failed to get list data', data)
+                }
             }.bind(this)
         })
         
@@ -212,12 +224,6 @@ module.exports = React.createClass({
                     if (e.keyCode == 40) {
                         e.preventDefault();
                     }
-                    //var array = []
-                    //array.push($(set).attr('id'))
-                    //window.history.pushState('Page', 'SCOT', '/#/' + this.state.type+ '/'+ this.state.id)
-                    //$('.container-fluid2').scrollTop(scrolled)
-                    //scrolled = scrolled + $('#list-view-data-div').find('.list-view-data-div').find('#'+this.state.id).height()
-                    //this.setState({id: })
                 }
                 else if((e.keyCode == 75 && up.length != 0) || (e.keyCode == 38 && up.length != 0)){
                     var set;
@@ -225,12 +231,6 @@ module.exports = React.createClass({
                     if (e.keyCode == 38) {
                         e.preventDefault();
                     }
-                    //var array = []
-                    //array.push($(set).attr('id'))
-                    //window.history.pushState('Page', 'SCOT', '/#/'+this.state.type +'/'+$(set).attr('id'))
-                    //$('.container-fluid2').scrollTop(scrolled)
-                    //scrolled = scrolled -  $('#list-view-data-div').find('.list-view-data-div').find('#'+this.state.id).height()
-                    //this.setState({idsarray: array})
                 } 
             }    
         }.bind(this))
@@ -253,21 +253,8 @@ module.exports = React.createClass({
         $('iframe').each(function(index,ifr){
             $(ifr).addClass('pointerEventsOff')
         })
-        //height = $(window).height() - 170 + 'px';
-        /*if(e != null){
-            $('.container-fluid2').css('height', listStartHeight + e.clientY - listStartY)
-            $('#list-view-data-div').css('height', listStartHeight + e.clientY - listStartY)
-            this.forceUpdate();
-        }*/
+        
         this.setState({ scrollheight: listStartHeight + e.clientY - listStartY + 'px' })
-    },
-
-    launchEvent: function(type,rowid,entryid){
-        if(this.state.display == 'block'){
-            this.state.scrollheight = '25vh'
-        }
-        this.setState({alertPreSelectedId: 0, scrollheight: this.state.scrollheight, id:rowid, showSelectedContainer: true, queryType:type, entryid:entryid})
-
     },
 
     render: function() {
@@ -321,6 +308,7 @@ module.exports = React.createClass({
                                         onFilteredChange = { this.handleFilter }
                                         filtered = { this.state.filter }
                                         onSortedChange = { this.handleSort }
+                                        sorted = { this.state.sort }
                                         manual = { true }
                                         sortable = { true }
                                         filterable = { true }
@@ -390,6 +378,8 @@ module.exports = React.createClass({
                 this.ConvertAlertIdToAlertgroupId(nextProps.id);        
                 this.ConvertEntryIdToType(nextProps.id);        
                 this.setState({ type : nextProps.type, alertPreSelectedId: nextProps.id });    
+            } else if ( this.props.type == 'task' ) {
+                this.setState({ type: nextProps.type, queryType: nextProps.queryType, id: nextProps.id, entryid: nextProps.id2});
             } else {
                 this.setState({type: nextProps.type, id: nextProps.id});
             }        
@@ -455,16 +445,6 @@ module.exports = React.createClass({
         } else {
             this.setState({listViewContainerDisplay: null, scrollheight:'25vh'})
         }
-        /*var t2 = document.getElementById('fluid2')
-        $(t2).resize(function(){
-            this.reloadItem()
-        }.bind(this))
-         if(!this.state.alldetail) {
-            this.setState({alldetail: true})
-        }
-        else {
-            this.setState({alldetail: false})
-        } */
     },
 
     Portrait: function(){
@@ -497,16 +477,9 @@ module.exports = React.createClass({
     },
 
     clearAll: function(){
-        /*sortarray['id'] = -1
-        filter = {}
-        this.setState({tags: [], sourcetags: [], startepoch: '', endepoch: '', idtext: '',
-            upstartepoch: '', upendepoch: '', statustext: '', subjecttext: '', entriestext: '', ownertext: '',
-            viewstext: ''})
-            this.getNewData({page: 0, limit: pageSize})*/
         var newListViewKey = this.state.listViewKey + 1;
-        this.setState({listViewKey:newListViewKey, activePage: {page:0, limit:50}, sort:{'id':-1}});  
-        this.handleFilter(null,null,true); //clear filters
-        this.getNewData({page:0, limit:50}, {'id':-1}, {})
+        this.setState({listViewKey:newListViewKey, activepage: {page:0}, sort:[{ id:'id', desc: true }], filter: [] });  
+        this.getNewData({page:0}, [{ id:'id', desc: true}], {})
         deleteCookie('listViewFilter'+this.props.type) //clear filter cookie
         deleteCookie('listViewSort'+this.props.type) //clear sort cookie
         deleteCookie('listViewPage'+this.props.type) //clear page cookie
@@ -516,14 +489,12 @@ module.exports = React.createClass({
         if ( taskid == null && subid == null ) {
             //window.history.pushState('Page', 'SCOT', '/#/' + type +'/'+rowid)  
             this.props.history.push( '/' + type + '/' + rowid );
-            //this.launchEvent(type, rowid)
         } else if ( taskid == null && subid != null ) {
             this.props.history.push( '/' + type + '/' + rowid + '/' + subid );
         } else {
             //If a task, swap the rowid and the taskid
             //window.history.pushState('Page', 'SCOT', '/#/' + type + '/' + taskid + '/' + rowid)
             this.props.history.push( '/' + type + '/' + taskid + '/' + rowid + '/'  );
-            //this.launchEvent(type, taskid, rowid);
         }
         //scrolled = $('.list-view-data-div').scrollTop()
         if(this.state.display == 'block'){
@@ -573,7 +544,19 @@ module.exports = React.createClass({
         if (filterBy == undefined){
             filterBy = this.state.filter;
         }
-        var data = {limit: pageLimit, offset: newPage, sort: JSON.stringify(sortBy)}
+        var data = {limit: pageLimit, offset: newPage }
+        
+        //add sort to the data object
+        if ( sortBy != undefined ) {
+            let sortObj = {};
+            $.each(sortBy, function(key, value) {
+                let sortInt = -1;
+                if ( !value.desc ) { sortInt = 1 };
+                sortObj[value.id] = sortInt;
+            })
+            data['sort'] = JSON.stringify( sortObj );
+        }  
+        
         //add filter to the data object
         if ( filterBy != undefined ) {
             $.each( filterBy, function(key,value) {
@@ -596,7 +579,9 @@ module.exports = React.createClass({
 
         var newarray = []
         
-        $.ajax({
+        if ( this.state.loading == true ) { listQuery.abort(); }
+        
+        listQuery = $.ajax({
 	        type: 'GET',
 	        url: '/scot/api/v2/'+this.state.type,
 	        data: data,
@@ -606,11 +591,6 @@ module.exports = React.createClass({
                 $.each(datasource.records, function(key, value){
                     newarray[key] = {}
                     $.each(value, function(num, item){
-                        /*if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
-                        {
-                            var date = new Date(1000 * item)
-                            newarray[key][num] = date.toLocaleString()
-                        }*/
                         if (num == 'sources' || num == 'source'){
                             if (item != undefined) {
                                 var sourcearr = item.join(', ')
@@ -653,7 +633,9 @@ module.exports = React.createClass({
                 this.setState({totalCount: response.totalRecordCount, activepage: {page:pageNumber, limit:pageLimit}, objectarray: newarray, loading:false, idsarray:newidsarray, totalPages: totalPages})
             }.bind(this),
             error: function(data) {
-                this.props.errorToggle('failed to get list data', data); 
+                if ( !data.statusText == 'abort' ) {
+                    this.props.errorToggle('failed to get list data', data); 
+                }
             }.bind(this)
         });
 
@@ -683,51 +665,38 @@ module.exports = React.createClass({
 
     handleSort : function(sortArr, clearall){
         var currentSort = this.state.sort;
-        let newObj = {};
+        let newSortArr = [];
+        
         if (clearall === true) {
-            this.setState({sort:{'id':-1}});
-        } else{
-            for ( let sortArrOne in sortArr ) {
-                let key = sortArr[sortArrOne].id;
-                let directionInt = -1; //assume descending is true, unless its declared false;
-                if ( sortArr[sortArrOne].desc == false ) {
-                    directionInt = 1;
-                };
-                newObj[key] = directionInt; 
-                /*var obj = Object.keys(currentSort);
-                if (obj[0] == sortArrOne.id) {
-                    let newDirection;
-                    var descending = currentSort[obj];
-                    if ( descending == 'true' ) { 
-                        newDirection = 1;
-                    } else {
-                        newDirection = -1;
-                    }
-                    currentSort[sortArrOne] = newDirection;
-                } else {
-                    currentSort = {};
-                    currentSort[sortArrOne] = 'false';
-                }*/
+            this.setState({sort:[{ id:'id' , desc:true }]});
+        } else {
+            for ( let sortEach of sortArr ) {
+                if ( sortEach.id ) {
+                    newSortArr.push( sortEach );
+                }
             }
         }
-            this.setState({sort:newObj}); 
-            this.getNewData(null, newObj, null)   
-            var cookieName = 'listViewSort' + this.props.type;
-            setCookie(cookieName,JSON.stringify(newObj),1000);
-        
+
+        this.setState({sort:newSortArr}); 
+        this.getNewData(null, newSortArr, null)   
+        var cookieName = 'listViewSort' + this.props.type;
+        setCookie(cookieName,JSON.stringify(newSortArr),1000);
     },
 
     handleFilter: function(filterObj,string,clearall,type){
         var currentFilter = this.state.filter;
         var newFilterArr = [];
-        var _type;
+        var _type = this.props.type;
+        
         if (type != undefined) {
             _type = type;
-        } else {
-            _type = this.props.type;
         }
+
         if (clearall === true) {
+        
             this.setState({filter:newFilterArr})
+            return;
+        
         } else { 
             
             for ( let filterEach of filterObj ) {
@@ -785,7 +754,7 @@ module.exports = React.createClass({
     handlePageSizeChange: function( pageSize, pageIndex ) {
         this.getNewData({limit: pageSize, page: pageIndex});
         let cookieName = 'listViewPage' + this.props.type;
-        setCookie(cookieName, JSON.stringify({page: pageIndex, limit: this.state.pageSize}));
+        setCookie(cookieName, JSON.stringify({page: pageIndex, limit: pageSize}));
     },
 
     getPages: function(count) {
@@ -804,8 +773,12 @@ module.exports = React.createClass({
                 if( this.state.display == 'block' ){
                     scrollheight = '25vh';
                 }
-
-                this.props.history.push( '/' + this.state.type + '/' + rowInfo.row.id );
+                
+                if ( this.state.type === 'task' ) { 
+                    this.props.history.push( '/task/' + rowInfo.row.target_type + '/' + rowInfo.row.target_id + '/' + rowInfo.row.id );
+                } else {
+                    this.props.history.push( '/' + this.state.type + '/' + rowInfo.row.id );
+                }
                 this.setState({alertPreSelectedId: 0, scrollheight: scrollheight, showSelectedContainer: true })
                 return; 
             },
