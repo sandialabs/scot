@@ -60,7 +60,7 @@ $t  ->get_ok("/scot/api/v2/entry/$entry1" => {},
     "Seeing if Entry $entry1 is now a task" )
     ->status_is(200)
     ->json_is('/class'        => 'task')
-    ->json_is('/metadata/status'    => 'open');
+    ->json_is('/metadata/task/status'    => 'open');
 
 # print Dumper($t->tx->res->json);
 # done_testing();
@@ -74,7 +74,7 @@ $t  ->get_ok("/scot/api/v2/entry/$entry1" => {},
     "Seeing if Entry $entry1 is now a task" )
     ->status_is(200)
     ->json_is('/class'        => 'task')
-    ->json_is('/metadata/status'    => 'assigned');
+    ->json_is('/metadata/task/status'    => 'assigned');
 
 $t  ->put_ok("/scot/api/v2/entry/$entry1" => json => {
     close_task => 1 })
@@ -84,7 +84,7 @@ $t  ->get_ok("/scot/api/v2/entry/$entry1" => {},
     "Seeing if Entry $entry1 is now a task" )
     ->status_is(200)
     ->json_is('/class'        => 'task')
-    ->json_is('/metadata/status'    => 'closed');
+    ->json_is('/metadata/task/status'    => 'closed');
 
 $t  ->put_ok("/scot/api/v2/entry/$entry1" => json => {
     close_task => 1 })
