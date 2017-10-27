@@ -129,6 +129,11 @@ module.exports = React.createClass({
                         stringArr.push(each.name);
                     }
                     data[value.id] = JSON.stringify(stringArr);    
+                } else if ( value.id == 'created' || value.id == 'updated' ) {
+                    let arr = [];
+                    arr.push(value.value.start);
+                    arr.push(value.value.end);
+                    data[value.id] = JSON.stringify(arr);
                 } else {
                     data[value.id] = JSON.stringify(value.value);
                 }
@@ -570,7 +575,6 @@ module.exports = React.createClass({
         }
         var data = {limit: pageLimit, offset: newPage, sort: JSON.stringify(sortBy)}
         //add filter to the data object
-        //add filter to the data object
         if ( filterBy != undefined ) {
             $.each( filterBy, function(key,value) {
                 if ( value.id == 'source' || value.id == 'tag' ) {
@@ -579,9 +583,14 @@ module.exports = React.createClass({
                         stringArr.push(each.name);
                     }
                     data[value.id] = JSON.stringify(stringArr);
+                } else if ( value.id == 'created' || value.id == 'updated' || value.id == 'occurred' ) {
+                    let arr = [];
+                    arr.push(value.value.start);
+                    arr.push(value.value.end);
+                    data[value.id] = JSON.stringify(arr);
                 } else {
                     data[value.id] = JSON.stringify(value.value);
-                }  
+                }    
             })
         }   
 
