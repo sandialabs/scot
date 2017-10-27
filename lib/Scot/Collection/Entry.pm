@@ -67,7 +67,7 @@ sub create_from_promoted_alert {
     #XXX
 
     $log->debug("creating the promoted alert entry");
-    $json->{metadata}          = $alert->as_hash;
+    $json->{metadata}          = { alert => $alert->as_hash};
     my $entry_obj              = $self->create($json);
 
     $log->debug("Created Entry : ".$entry_obj->id);
@@ -291,7 +291,7 @@ override api_create => sub {
 
     if (my $task = $self->validate_task($req) ) {
         $json->{class}      = "task";
-        $json->{metadata}   = $task;
+        $json->{metadata}   = { task => $task};
     }
 
     my $default_groups = $self->get_default_permissions($target_type, $target_id);
@@ -638,7 +638,7 @@ sub tasks_not_completed_count {
         'target.type'   => $type,
         'target.id'     => $id,
         'class'         => "task",
-        'metadata.status'   => { '$nin' => ['completed','closed'] }
+        'metadata.task.status'   => { '$nin' => ['completed','closed'] }
     };
 
     my $cursor  = $self->find($match);
