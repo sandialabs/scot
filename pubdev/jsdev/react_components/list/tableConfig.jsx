@@ -167,7 +167,7 @@ const columnDefinitions = {
 
 	TaskStatus: {
 		Header: 'Status',
-		accessor: d => d.metadata.status,
+		accessor: d => d.metadata.task.status,
 		id: 'status',
 		column: 'metadata',
 		Cell: customCellRenderers.textStatus,
@@ -320,14 +320,22 @@ const columnDefinitions = {
 		id: 'target_type',
 		Filter: customFilters.stringFilter,
 	},
-
-	TargetId: {
+	
+    TargetId: {
 		Header: 'Target Id',
 		accessor: d => d.target.id,
 		column: 'target',
 		id: 'target_id',
 		Filter: customFilters.numberFilter,
 	},
+
+	OpenTasks: {
+		Header: 'Open Tasks',
+		accessor: 'has_tasks',
+		Filter: customFilters.numberFilter,
+	    maxWidth: 90,
+        filterable: false,
+    },
 }
 
 const defaultTableSettings = {
@@ -360,8 +368,8 @@ const defaultColumnSettings = {
 }
 
 const typeColumns = {
-	alertgroup: [ 'Id', 'AlertStatus', 'Subject', 'Created', 'Sources', 'Tags', 'Views', ],
-	event: [ 'Id', 'EventStatus', 'Subject', 'Created', 'Updated', 'Sources', 'Tags', 'Owner', 'Entries', 'Views', ],
+	alertgroup: [ 'Id', 'AlertStatus', 'Subject', 'Created', 'Sources', 'Tags', 'Views', 'OpenTasks' ],
+	event: [ 'Id', 'EventStatus', 'Subject', 'Created', 'Updated', 'Sources', 'Tags', 'Owner', 'Entries', 'Views', 'OpenTasks' ],
 	incident: [ 'Id', 'DOE', 'IncidentStatus', 'Owner', 'Subject', 'Occurred', 'IncidentType',
 		{
 			title: 'Tags',
