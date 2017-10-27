@@ -56,9 +56,11 @@ has class   => (
 data about the entry.
 if entry is task then it is a 
 hash of {
-    when    => seconds_epoch,
-    who     => username,
-    status  => open|assigned|completed
+    task => {
+        when    => seconds_epoch,
+        who     => username,
+        status  => open|assigned|completed
+    }
 }
 
 =cut
