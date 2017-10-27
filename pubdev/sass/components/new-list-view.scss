@@ -7,18 +7,25 @@
 	.rt-thead {
 		// Hack to force header to line up with columns on desktop
 		// Should be removed after react-table fixes issue
-		overflow-y: scroll;
-	}
+		//overflow-y: scroll;
+	    padding-right: 10px !important;
+        overflow: unset !important;
+    }
 
 	.rt-tbody {
 		// Setting position so that tbody becomes offset parent for the rows
 		// This is required for scrolling to selected rows
 		position: relative;
 	}
+    
+    .rt-tr {
+        overflow: unset !important;
+    }
 
 	.rt-th {
-		overflow: visible;
-	}
+		//overflow: visible;
+	    overflow: unset !important;
+    }
 
 	.rt-td {
 		white-space: normal !important;
