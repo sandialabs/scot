@@ -9,7 +9,7 @@ class LoadingContainer extends PureComponent {
 
 	render() {
 		return (
-			<div styleName='LoadingContainer'>
+			<div className='LoadingContainer'>
 				{ this.props.loading ?
 				    <i className='fa fa-spinner fa-spin fa-2x' aria-hidden='true' />	
 				:
