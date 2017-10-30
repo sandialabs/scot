@@ -27,7 +27,7 @@ $spinnerSize: 8em;
 		}
 	}
 	
-	:global .fade-appear {
+	.fade-appear {
 		opacity: 0.1;
 
 		&.fade-appear-active {
@@ -36,7 +36,7 @@ $spinnerSize: 8em;
 		}
 	}
 
-	:global .fade-leave {
+	.fade-leave {
 		opacity: 1;
 
 		&.fade-enter-leave {
