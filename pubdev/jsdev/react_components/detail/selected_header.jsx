@@ -504,7 +504,7 @@ var SelectedHeader = React.createClass({
         };
         //column, string, clearall (bool), type
         this.props.handleFilter(null,null,true,'alertgroup');
-        this.props.handleFilter('subject', RegExp.escape(this.state.headerData.applies_to[0]), false, "alertgroup");
+        this.props.handleFilter([{id:'subject', value: RegExp.escape(this.state.headerData.applies_to[0])}], null, false, "alertgroup");
         window.open('#/alertgroup/');
     },
     showSignatureOptionsToggle: function() {
