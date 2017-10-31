@@ -10,8 +10,8 @@ use Scot::Env;
 use DateTime;
 use Mojo::JSON qw(decode_json);
 
-#my $config_file = $ENV{'scot_backup_config_file'} // '/opt/scot/etc/backup.cfg.pl';
-my $config_file = $ENV{'scot_backup_config_file'} // '../docker-configs/backup.cfg.pl';
+my $config_file = $ENV{'scot_backup_config_file'} // '/opt/scot/etc/backup.cfg.pl';
+#my $config_file = $ENV{'scot_backup_config_file'} // '/backup.cfg.pl';
 
 my $env  = Scot::Env->new({
     config_file => $config_file,
@@ -66,7 +66,7 @@ else {
 $cmd .= "-o $dumpdir ";
 
 #add host for docker
-$cmd .= "--host 172.18.0.4:27017'";
+$cmd .= "--host mongodb:27017";
 
 print "Executing: $cmd\n";
 
@@ -81,14 +81,20 @@ if ( $env->tarloc ) {
     $tarloc = $env->tarloc;
 }
 
+##
+print "!!!!!here is \$env->es_server";
+print "$env->es_server";
+
+
 ## now backup elasticsearch
+
 
 print "Backing up ElasticSearch...\n";
 
-my $curl    = "curl -s";
+my $curl    = "curl --noproxy '*' -s";
 #
 my $repo_cmd        = $env->es_server . "/_snapshot/scot_backup";
-my $repo_status     = `curl -XGET $repo_cmd`;
+my $repo_status     = `curl --noproxy '*' -XGET $repo_cmd`;
 my $repo_loc        = "location\":\"".$env->es_backup_location;
 #
 if ( $repo_status !~ /$repo_loc/ ) {
@@ -99,7 +105,7 @@ if ( $repo_status !~ /$repo_loc/ ) {
     my $stat    = `$curl -XDELETE $repo_cmd`;
 }
 ##
-$repo_status = `curl -XGET $repo_cmd`;
+$repo_status = `curl --noproxy '*' -XGET $repo_cmd`;
 
 if ( $repo_status =~ /repository_missing_exception/ ) {
     print "Missing Repo, creating scot_backup repo...\n";
@@ -130,6 +136,9 @@ my $del_stat = `$curl -XDELETE $escmd`;
 sleep 2;
 
 print "Request new snapshot...\n";
+print "!!!!!!!!!!!!!!! Here is escmd\n";
+print "$curl -XPUT $escmd \n";
+
 my $snap_stat   = `$curl -XPUT $escmd`;
 
 unless ( $snap_stat =~ /accepted\":true/ ) {
@@ -162,15 +171,9 @@ system("tar cvzf $tarloc.$ts.tgz $dumpdir $esdir $cacheimgdir");
 if ( $env->cleanup ) {
     print "Cleaning up...\n";
     system("rm -rf $dumpdir/*");
-    my $status = `curl -XDELETE $escmd`;
+    my $status = `curl --noproxy '*' -XDELETE $escmd`;
     unless ( $status =~ /acknowledged\":true/ ) {
         die "Failed to delete repo snapshot for ES backup: $status\n";
     }
     system("rm -rf $esdir/*");
-}
-system("find $env->location -ctime 7 -print0 | xargs -0 /bin/rm -f");
-system("rm -f $pidfile");
-
-END{
-    system("rm -f $pidfile");
 }
