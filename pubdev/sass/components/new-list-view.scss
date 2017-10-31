@@ -31,7 +31,9 @@
 		white-space: normal !important;
 		display: flex;
 		align-items: center;
-	}
+	    font-size: 12px;
+        line-height: 13px;
+    }
 
 	.-loading.-active {
 		//background: none;
@@ -53,12 +55,12 @@
 
 	.alertStatusCell {
 		text-align: center;
-		font-weight: bold;
 		height: 100%;
 		width: 100%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+        padding: 1px 5px;
 
 		&.promoted {
 			box-sizing: border-box;
