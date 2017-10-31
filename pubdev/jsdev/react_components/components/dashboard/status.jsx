@@ -14,6 +14,16 @@ class Status extends PureComponent {
 	}
 
 	componentDidMount() {
+		/*
+		 * Expected structure:
+		 * [
+		 *		{ name: "SERVICE", status: "STATUS" },
+		 *		...
+		 * ]
+		 *
+		 * Service: name of service
+		 * Status: [ "ok", "error", "unknown" ]
+		 */
 		$.ajax( {
 			type: 'get',
 			url: 'scot/api/v2/status',
@@ -35,14 +45,22 @@ class Status extends PureComponent {
 	render() {
 		let { className = "" } = this.props;
 
+		let statuses = [ "ok", "error", "unknown" ];
+
 		let services = [];
 		for ( let service in this.state.statusData ) {
-			services.push( <Service name={service} status="running" /> );
+			let i = Math.floor( statuses.length * Math.random() );
+			let status = statuses[i];
+			services.push( <Service name={service} status={status} /> );
 		}
 
+		let classes = [ "Status", className ];
+		if ( services.length > 4 ) {
+			classes.push( 'cols-2' );
+		}
 
 		return (
-			<div className={"Status "+ className}>
+			<div className={classes.join(' ')}>
 				{services}
 			</div>
 		)
@@ -50,8 +68,8 @@ class Status extends PureComponent {
 }
 
 const Service = ( { name, status } ) => (
-	<div className="service" key={name}>
-		{name} - {status}
+	<div className={`service status-${status}`} key={name}>
+		{name}
 	</div>
 )
 
