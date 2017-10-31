@@ -96,7 +96,7 @@ var SelectedEntry = React.createClass({
         } 
     this.containerHeightAdjust();
     window.addEventListener('resize',this.containerHeightAdjust);
-    $("#fluid2").resize(function(){ this.containerHeightAdjust}.bind(this));
+    $("#ReactTable").resize(function(){ this.containerHeightAdjust}.bind(this));
     },
     componentWillReceiveProps: function() {
         this.containerHeightAdjust();
@@ -257,18 +257,23 @@ var SelectedEntry = React.createClass({
         } 
     },  
     containerHeightAdjust: function() {
-        var scrollHeight;
-        if ($('#list-view-container')[0]) {
-            scrollHeight = $(window).height() - $('#list-view-container').height() - $('#header').height() - 70 
-            scrollHeight = scrollHeight + 'px'
-        } else {
-            scrollHeight = $(window).height() - $('#header').height() - 70 
-            scrollHeight = scrollHeight + 'px'
-        }
-        //$('#detail-container').css('height',scrollHeight);
-        if (this.isMounted()) {
-            this.setState({height:scrollHeight});
-        }
+        //Using setTimeout so full screen toggle animation has time to finish before resizing detail section
+        setTimeout( function() {
+            var scrollHeight;
+            let ListViewTableHeight = parseInt(document.defaultView.getComputedStyle(document.getElementsByClassName('ReactTable')[0]).height, 10);
+            if (ListViewTableHeight !== 0) {
+                scrollHeight = $(window).height() - ListViewTableHeight - $('#header').height() - 70 
+                scrollHeight = scrollHeight + 'px'
+            } else {
+                scrollHeight = $(window).height() - $('#header').height() - 70 
+                scrollHeight = scrollHeight + 'px'
+            }
+            //$('#detail-container').css('height',scrollHeight);
+            if (this.isMounted()) {
+                this.setState({height:scrollHeight});
+            }
+        }.bind(this), 500);
+        
     },
     render: function() { 
         var divid = 'detail-container';
