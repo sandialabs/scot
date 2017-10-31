@@ -504,7 +504,7 @@ var SelectedHeader = React.createClass({
         };
         //column, string, clearall (bool), type
         this.props.handleFilter(null,null,true,'alertgroup');
-        this.props.handleFilter('subject', RegExp.escape(this.state.headerData.applies_to[0]), false, "alertgroup");
+        this.props.handleFilter([{id:'subject', value: RegExp.escape(this.state.headerData.applies_to[0])}], null, false, "alertgroup");
         window.open('#/alertgroup/');
     },
     showSignatureOptionsToggle: function() {
@@ -689,7 +689,7 @@ var EntryDataSubject = React.createClass({
             isDisabled = true;
         }
         return (
-            <div>{this.props.subjectType} {this.props.id}: <input type='text' defaultValue={this.state.value} onKeyPress={this.handleEnterKey} onBlur={this.handleChange} style={{width:this.state.width,lineHeight:'normal'}} disabled={isDisabled} /></div>
+            <div>{this.props.subjectType} {this.props.id}: <input type='text' defaultValue={this.state.value} onKeyPress={this.handleEnterKey} onBlur={this.handleChange} style={{width:this.state.width,lineHeight:'normal'}} className='detail-header-input' disabled={isDisabled} /></div>
         )
     }
 });

@@ -166,7 +166,7 @@ class ReportHeatmap extends PureComponent {
             <div className="dashboard">
                 <h1>Day of Week, Hour of Day Heatmap</h1>
                 <label htmlFor="year" style={{display: "inline-block", width: "240px", textAlign:"right"}}>Year = <span id="year-value"></span>
-                    <input type="number" min="2013" step="1" value={this.state.year} id="year" onChange={this.yearChange}/>
+                    <input className='report_input' type="number" min="2013" step="1" value={this.state.year} id="year" onChange={this.yearChange}/>
                 </label>
                 <label htmlFor="collection" style={{display: "inline-block", width: "240px", textAlign:"right"}}>Collection = <span id="year-value"></span>
                     <select id="collection" value={this.state.collection} onChange={this.collectionChange}>
