@@ -8,6 +8,7 @@ var NavDropdown     = require('react-bootstrap/lib/NavDropdown.js');
 var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
 var LinkContainer   = require('react-router-bootstrap/lib/LinkContainer.js');
 var ListView        = require('../list/list-view.jsx');
+//var ListView        = require('../ListView/index.jsx').default;
 var Router	        = require('react-router-dom').Router
 var Route	        = require('react-router-dom').Route
 var Link	        = require('react-router-dom').Link
@@ -122,6 +123,9 @@ var App = React.createClass({
             var listViewFilterSetting = checkCookie('listViewFilter'+this.props.match.params.value.toLowerCase());
             var listViewSortSetting = checkCookie('listViewSort'+this.props.match.params.value.toLowerCase());
             var listViewPageSetting = checkCookie('listViewPage'+this.props.match.params.value.toLowerCase());
+            globalFilter = listViewFilterSetting;
+            globalPage = listViewPageSetting;
+            globalSort = listViewSortSetting;
         }
         if (notificationSetting == undefined) {
             notificationSetting = 'on';
@@ -353,7 +357,7 @@ var App = React.createClass({
                     :
                     null} 
                     {type == 'task' ?
-                        <ListView id={this.props.match.params.id} id2={this.props.match.params.id2} viewMode={this.state.viewMode} type={type} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
+                        <ListView isTask={true} queryType={this.props.match.params.type} viewMode={this.state.viewMode} type={this.props.match.params.value} id={this.props.match.params.id} id2={this.props.match.params.id2} notificationToggle={this.notificationToggle} notificationSetting={this.state.notificationSetting} listViewFilter={this.state.listViewFilter} listViewSort={this.state.listViewSort} listViewPage={this.state.listViewPage} errorToggle={this.errorToggle} history={this.props.history}/>
                     :
                     null}
                     {type == 'guide' ?
@@ -373,7 +377,7 @@ var App = React.createClass({
                     :
                     null}
                     {type == 'visualization' ?
-                        <Revl value={type} type={this.props.match.params.id} id={this.props.match.params.type} depth={this.props.match.params.typeid} viewMode={this.state.viewMode} Notification={this.state.Notification} />
+                        <Revl value={type} type={this.props.match.params.type} id={this.props.match.params.id} depth={this.props.match.params.id2} viewMode={this.state.viewMode} Notification={this.state.Notification} />
                     :
                     null}
                     {type === 'reports' && !this.props.match.params.id &&
@@ -403,7 +407,7 @@ var App = React.createClass({
                 <Route exact path = '/:value' component = {App} />
                 <Route exact path = '/:value/:id' component = {App} />
                 <Route exact path = '/:value/:id/:id2' component = {App} />
-                <Route path = '/:value/:id/:type/:typeid' component = {App} />
+                <Route path = '/:value/:type/:id/:id2' component = {App} />
             </Switch>
         </HashRouter>
     ), document.getElementById('content'))
