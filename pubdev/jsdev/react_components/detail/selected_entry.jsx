@@ -540,7 +540,8 @@ var AlertParent = React.createClass({
 
             for ( let y = 0; y < this.props.headerData.ahrefs.length; y++ ) {
                 for ( let x in this.props.headerData.ahrefs[y] ) {
-                    linkToSearch.push( <Link to={ this.props.headerData.ahrefs[y][x] }>{x}</Link>);
+                    linkToSearch.push( <a href={ this.props.headerData.ahrefs[y][x] }>{x}</a>);
+                    linkToSearch.push( <br/> );
                 }
             }
 
