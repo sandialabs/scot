@@ -341,7 +341,8 @@ class ReportArt extends PureComponent {
                 <h1>Alert Response Time</h1>
 				<label htmlFor="date" style={{display: "inline-block", textAlign: "right"}}>Initial Date =&nbsp;
 					<input
-						type="date"
+						className='report_input'
+                        type="date"
 						value={this.state.date}
 						onChange={this.dateChange}
 						placeholder='yyyy-mm-dd'
@@ -349,7 +350,7 @@ class ReportArt extends PureComponent {
 					/>
 				</label>
                 <label htmlFor="length" style={{display: "inline-block", textAlign:"right"}}>Length =&nbsp;
-                    <input type="number" min="1" step="1" value={this.state.length} id="length" onChange={this.lengthChange} />
+                    <input className='report_name' type="number" min="1" step="1" value={this.state.length} id="length" onChange={this.lengthChange} />
                 </label>
                 <label htmlFor="unit" style={{display: "inline-block", width: "240px", textAlign:"right"}}>Unit =&nbsp;
                     <select id="unit" value={this.state.unit} onChange={this.unitChange} disabled>
