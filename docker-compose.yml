@@ -11,6 +11,7 @@ services:
     ports:
      - "443:443"
      - "80:80"
+    image: baltig.sandia.gov:4567/scot/scot/scot-apache-default
     networks:
      - scot-docker-net
   activemq:
@@ -19,7 +20,7 @@ services:
     build:
       dockerfile: Dockerfile-Activemq
       context: ./
-    #image: https://baltig.sandia.gov:4567/scot-activemq
+    image: baltig.sandia.gov:4567/scot/scot/scot-activemq-default
     ports:
      - "8161:8161"
      - "61613:61613"
@@ -35,11 +36,13 @@ services:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
      - "/var/lib/mongodb:/var/lib/mongodb/"
+     - "/opt/scotbackup/mongo/scot-prod:/opt/scotbackup/mongo/scot-prod/"
+    image: baltig.sandia.gov:4567/scot/scot/scot-mongodb-default
     networks:
      - scot-docker-net
     ports:
      - "27017:27017"
-  
+
   elastic:
    build:
      dockerfile: Dockerfile-Elastic
@@ -47,12 +50,13 @@ services:
    volumes:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
-     - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/"
+    # - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/"
+     - esdata:/opt/scotbackup/elastic
    networks:
     - scot-docker-net
    ports:
     - "9200:9200"
-
+   image: baltig.sandia.gov:4567/scot/scot/scot-elastic-default
   mapping:
     build:
       dockerfile: Dockerfile-Mapping
@@ -61,7 +65,7 @@ services:
      - elastic
     networks:
      - scot-docker-net
-
+    
   scot:
     build:
       dockerfile: Dockerfile-Scot
@@ -81,13 +85,14 @@ services:
      - scot-docker-net
     ports:
      - "3000:3000"
+    image: baltig.sandia.gov:4567/scot/scot/scot-scot-default
+  
   perl:
     build: 
       dockerfile: Dockerfile-Perl
       context: ./
-    image: scot_perl
-
-
+    image: baltig.sandia.gov:4567/scot/scot/scot-perl-default 
+  
   flair:
    build:
      dockerfile: Dockerfile-Flair
@@ -100,6 +105,7 @@ services:
     - scot
    networks:
      - scot-docker-net
+   image: baltig.sandia.gov:4567/scot/scot/scot-flair-default
 
   stretch:
    build:
@@ -113,6 +119,7 @@ services:
     - scot
    networks:
     - scot-docker-net
+   image: baltig.sandia.gov:4567/scot/scot/scot-flair-default
   
   game:
    build:
@@ -125,7 +132,11 @@ services:
     - scot
    networks:
      - scot-docker-net
+   image: baltig.sandia.gov:4567/scot/scot/scot-game-default
 
+volumes:
+  esdata:
+    driver: local
 networks:
   scot-docker-net:
     driver: bridge
