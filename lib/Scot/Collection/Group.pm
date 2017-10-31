@@ -50,4 +50,26 @@ override get_subthing => sub {
 
 };
 
+sub api_subthing {
+    my $self        = shift;
+    my $req         = shift;
+    my $thing       = $req->{collection};
+    my $id          = $req->{id} + 0;
+    my $subthing    = $req->{subthing};
+    my $mongo       = $self->env->mongo;
+    my $log         = $self->env->log;
+
+    $log->debug("api_subthing /$thing/$id/$subthing");
+
+    if ( $subthing eq "user" ) {
+        my $group = $mongo->collection('Group')->find_iid($id);
+        return $mongo->collection('User')->find({
+            group   => $group->name,
+        });
+    }
+
+    die "unsupported subthing: $subthing";
+}
+
+
 1;
