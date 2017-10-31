@@ -415,7 +415,8 @@ class ReportAlertpower extends PureComponent {
 				<form onSubmit={this.preventSubmit}>
 					<label>Filter =&nbsp;
 						<input
-							type='text'
+							className='report_input'
+                            type='text'
 							style={{background: 'initial', border: '1px solid #ccc'}}
 							name='chartFilter'
 							value={this.state.chartFilter}
@@ -447,7 +448,8 @@ class ReportAlertpower extends PureComponent {
 					</label>
 					<label>Results =&nbsp;
 						<input
-							type='number'
+							className='report_input'
+                            type='number'
 							min={1}
 							max={50}
 							name='chartResults'
@@ -458,13 +460,15 @@ class ReportAlertpower extends PureComponent {
 				</form>
 				<form>
 					<label><input
-						type='radio'
+						className='report_input'
+                        type='radio'
 						name='mode'
 						value='grouped'
 						checked={this.state.displayMode === 'grouped'}
 						onChange={this.displayModeChange}
 					/> Grouped</label>&nbsp;
 					<label><input
+                        className='report_input'
 						type='radio'
 						name='mode'
 						value='stacked'
