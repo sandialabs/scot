@@ -444,7 +444,7 @@ var SelectedHeader = React.createClass({
                     var thing = index.target;
                     if ($(thing)[0].className == 'extras') { thing = $(thing)[0].parentNode}; //if an extra is clicked reference the parent element
                     if ($(thing).attr('url')) {  //link clicked
-                        var url = $(a).attr('url');
+                        var url = $(thing).attr('url');
                         this.linkWarningToggle(url);
                     } else { //entity clicked
                         var entityid = $(thing).attr('data-entity-id');
