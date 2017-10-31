@@ -108,6 +108,11 @@ var AddFlair = {
                         var subtable = $(document.body).find('.alertTableHorizontal');
                         subtable.find('a').attr('target','_blank');
                         subtable.find('a').find('.entity').wrap("<a href='about:blank' target='targ'></a>");
+                        //Copies href to a new attribute, url, before we make href an anchor (so it doesn't go anywhere when clicked)
+                        subtable.find('a').each(function(index,a) {
+                            var url = $(a).attr('href');
+                            $(a).attr('url',url);
+                        }.bind(this)) 
                         //var currentEntityValue = $(entity).attr('data-entity-value');
                         var currentEntityValue = $('<span />', {html : $(entity).attr('data-entity-value')}).html();
                         if (currentEntityValue != undefined && entityResult != undefined) {
