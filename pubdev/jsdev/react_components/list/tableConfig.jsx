@@ -15,7 +15,8 @@ const customFilters = {
 		<DebounceInput
 			debounceTimeout={200}
 			type='number'
-			minLength={1} 
+			minLength={1}
+            min = {0}
 			value={filter ? filter.value : ''}
 			onChange={ e => onChange( e.target.value ) }
 			style={{width: '100%'}}
