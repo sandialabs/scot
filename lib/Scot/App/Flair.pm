@@ -408,6 +408,7 @@ sub flair_record {
 
             if ( $column =~ /^message[_-]id$/i ) {
                 # the data is telling us that this is a email message_id, so flair
+                $value =~ s/[\<\>]//g;   # cut out the < > brackets if they exist
                 my ($eref, $flair) = $self->process_cell($value, "message_id");
                 if ( ! defined $seen{$eref->{value}} ) {
                     push @entity, $eref;
@@ -433,7 +434,15 @@ sub flair_record {
                 # each link in this field is a <div>filename</div>, 
                 $log->debug("A File attachment Column detected!");
                 $log->debug("value = ",{filter=>\&Dumper, value=>$value});
+                
+                if ( $value eq "" || $value eq " " ) {
+                    next VALUE;
+                }
 
+                if ( $value eq "" || $value eq " " ) {
+                    next VALUE;
+                }
+                
                 my ($eref, $flair) = $self->process_cell($value, "filename");
                 if ( ! defined $seen{$eref->{value}} ) {
                     push @entity, $eref;
