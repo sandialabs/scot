@@ -4,7 +4,6 @@
 var React                   = require('react')
 var SelectedContainer       = require('../detail/selected_container.jsx')
 var Store                   = require('../activemq/store.jsx')
-var Page                    = require('../components/paging.jsx')
 var Popover                 = require('react-bootstrap/lib/Popover')
 var OverlayTrigger          = require('react-bootstrap/lib/OverlayTrigger')
 var ButtonToolbar           = require('react-bootstrap/lib/ButtonToolbar')
@@ -13,8 +12,9 @@ var Button                  = require('react-bootstrap/lib/Button')
 var SplitButton             = require('react-bootstrap/lib/SplitButton.js');
 var DropdownButton          = require('react-bootstrap/lib/DropdownButton.js');
 var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
-var ListViewHeader          = require('./list-view-header.jsx');
-var ListViewData            = require('./list-view-data.jsx');
+import ReactTable           from 'react-table';
+import tableSettings, { buildTypeColumns, defaultTypeTableSettings } from './tableConfig';
+let LoadingContainer        = require('./LoadingContainer/index.jsx').default;
 var datasource
 var height;
 var width;
@@ -22,22 +22,24 @@ var listStartX;
 var listStartY;
 var listStartWidth;
 var listStartHeight;
+let listQuery;
+
 module.exports = React.createClass({
 
     getInitialState: function(){
         var type = this.props.type;
-        var typeCapitalized = this.titleCase(this.props.type);
         var id = this.props.id;
+        let queryType = this.props.type;
         var alertPreSelectedId = null;
-        var scrollHeight = $(window).height() - 170
-        var scrollWidth  = '650px'  
+        var scrollHeight = $(window).height() - 170 + 'px';
+        var scrollWidth  = '650px';
         var columnsDisplay = [];
         var columns = [];
         var columnsClassName = [];
         var showSelectedContainer = false;
-        var sort = {'id':-1};
+        var sort = [{ id:'id', desc: true }];
         var activepage = {page:0, limit:50};
-        var filter;
+        var filter = [];
         width = 650
         
         columnsDisplay = listColumnsJSON.columnsDisplay[this.props.type];
@@ -45,28 +47,35 @@ module.exports = React.createClass({
         columnsClassName = listColumnsJSON.columnsClassName[this.props.type];
         
         if (this.props.listViewSort != null) {
-            sort = JSON.parse(this.props.listViewSort)
+            sort = JSON.parse(this.props.listViewSort);
         } 
+        
         if (this.props.listViewPage != null) {
             activepage = JSON.parse(this.props.listViewPage);
         }
+        
         if (this.props.listViewFilter != null) {
             filter = JSON.parse(this.props.listViewFilter);
         }
-        if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; alertPreSelectedId=id;};
+
+        if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; queryType= 'alertgroup'; alertPreSelectedId=id;};
         
+        if (this.props.type === 'task') { type = 'task'; queryType = this.props.queryType; }
+
+        var typeCapitalized = this.titleCase(this.props.type);
         return {
             splitter: true, 
             selectedColor: '#AEDAFF',
-            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalcount: 0, activepage: activepage,
+            sourcetags: [], tags: [], startepoch:'', endepoch: '', idtext: '', totalCount: 0, activepage: activepage,
             statustext: '', subjecttext:'', idsarray: [], classname: [' ', ' ',' ', ' '],
             alldetail : true, viewsarrow: [0,0], idarrow: [-1,-1], subjectarrow: [0, 0], statusarrow: [0, 0],
             resize: 'horizontal',createdarrow: [0, 0], sourcearrow:[0, 0],tagsarrow: [0, 0],
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: type, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, };
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: queryType, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, };
     },
+
     componentWillMount: function() {
         if (this.props.viewMode == undefined || this.props.viewMode == 'default') {
             this.Landscape();
@@ -81,6 +90,7 @@ module.exports = React.createClass({
         //if the type is entry, convert the id and type to the actual type and id
         this.ConvertEntryIdToType( this.props.id );
     },
+
     componentDidMount: function(){
         var height = this.state.scrollheight
         var sortBy = this.state.sort;
@@ -94,7 +104,7 @@ module.exports = React.createClass({
                 array = this.props.id
                 //scrolled = $('.container-fluid2').scrollTop()    
                 if(this.state.viewMode == 'landscape'){
-                    height = '25vh'
+                    height = '30vh'
                 }
             }
         }
@@ -112,20 +122,41 @@ module.exports = React.createClass({
         }
 
         //get page number
-        if  (pageNumber != 0){
-            newPage = (pageNumber - 1) * pageLimit
-        } else {
-            newPage = 0;
-        } 
-        var data = {limit:pageLimit, offset: newPage, sort: JSON.stringify(sortBy)}
+        newPage =  pageNumber * pageLimit
+        var data = {limit:pageLimit, offset: newPage}
+                       
+        //add sort to the data object 
+        if ( sortBy != undefined ) { 
+            let sortObj = {};
+            $.each(sortBy, function(key, value) {
+                let sortInt = -1;
+                if ( !value.desc ) { sortInt = 1 };
+                sortObj[value.id] = sortInt;
+            })
+            data['sort'] = JSON.stringify( sortObj );
+        }
+ 
         //add filter to the data object
-        if (filterBy != undefined) {
+        if (this.state.filter != undefined) {
             $.each(filterBy, function(key,value) {
-                data[key] = value;
+                if ( value.id == 'source' || value.id == 'tag' ) {
+                    let stringArr = [];
+                    for ( let each of value.value ) {
+                        stringArr.push(each.name);
+                    }
+                    data[value.id] = JSON.stringify(stringArr);    
+                } else if ( value.id == 'created' || value.id == 'updated' ) {
+                    let arr = [];
+                    arr.push(value.value.start);
+                    arr.push(value.value.end);
+                    data[value.id] = JSON.stringify(arr);
+                } else {
+                    data[value.id] = JSON.stringify(value.value);
+                }
             })
         }
-
-        $.ajax({
+        
+        listQuery = $.ajax({
 	        type: 'GET',
 	        url: url,
 	        data: data,
@@ -135,12 +166,7 @@ module.exports = React.createClass({
                 $.each(datasource.records, function(key, value){
                     finalarray[key] = {}
                     $.each(value, function(num, item){
-                        if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
-                        {
-                            var date = new Date(1000 * item)
-                            finalarray[key][num] = date.toLocaleString()
-                        }
-                        else if (num == 'sources' || num == 'source'){
+                        if (num == 'sources' || num == 'source'){
                             if (item != undefined) {
                                 var sourcearr = item.join(', ')
                                 finalarray[key]["source"] = sourcearr;
@@ -168,7 +194,10 @@ module.exports = React.createClass({
                         finalarray[key]["classname"] = 'table-row rowodd'
                     }
                 }.bind(this))
-                this.setState({scrollheight:height, objectarray: finalarray, totalcount: response.totalRecordCount, loading:false, idsarray:idsarray});
+                
+                let totalPages = this.getPages(response.totalRecordCount); //get pages for list view
+
+                this.setState({scrollheight:height, objectarray: finalarray, totalCount: response.totalRecordCount, loading:false, idsarray:idsarray, totalPages: totalPages});
                 if (this.props.type == 'alert' && this.state.showSelectedContainer == false) {
                     this.setState({showSelectedContainer:false})
                 } else if (this.state.id == undefined) {
@@ -179,11 +208,13 @@ module.exports = React.createClass({
                 
             }.bind(this),
             error: function(data) {
-                this.props.errorToggle('failed to get list data', data)
+                if ( !data.statusText == 'abort' ) {
+                    this.props.errorToggle('failed to get list data', data)
+                }
             }.bind(this)
         })
         
-        $('#list-view-container').keydown(function(e){
+        /*$('#list-view-container').keydown(function(e){
             if ($('input').is(':focus')) {return};
             if (e.ctrlKey != true && e.metaKey != true) {
                 var up = $('#list-view-data-div').find('.list-view-data-div').find('#'+this.state.id).prevAll('.table-row')
@@ -194,12 +225,6 @@ module.exports = React.createClass({
                     if (e.keyCode == 40) {
                         e.preventDefault();
                     }
-                    //var array = []
-                    //array.push($(set).attr('id'))
-                    //window.history.pushState('Page', 'SCOT', '/#/' + this.state.type+ '/'+ this.state.id)
-                    //$('.container-fluid2').scrollTop(scrolled)
-                    //scrolled = scrolled + $('#list-view-data-div').find('.list-view-data-div').find('#'+this.state.id).height()
-                    //this.setState({id: })
                 }
                 else if((e.keyCode == 75 && up.length != 0) || (e.keyCode == 38 && up.length != 0)){
                     var set;
@@ -207,15 +232,12 @@ module.exports = React.createClass({
                     if (e.keyCode == 38) {
                         e.preventDefault();
                     }
-                    //var array = []
-                    //array.push($(set).attr('id'))
-                    //window.history.pushState('Page', 'SCOT', '/#/'+this.state.type +'/'+$(set).attr('id'))
-                    //$('.container-fluid2').scrollTop(scrolled)
-                    //scrolled = scrolled -  $('#list-view-data-div').find('.list-view-data-div').find('#'+this.state.id).height()
-                    //this.setState({idsarray: array})
                 } 
             }    
-        }.bind(this))
+        }.bind(this))*/
+        
+        document.addEventListener( 'keydown', this.keyNavigate );
+
         $(document.body).keydown(function(e) {
             if ($('input').is(':focus')) {return};
             if ($('textarea').is(':focus')) {return};
@@ -224,31 +246,58 @@ module.exports = React.createClass({
             }
         }.bind(this));
     },
+
+    componentWillUnmount: function() {
+        document.removeEventListener( 'keydown' , this.keyNavigate );
+    },
     
+    keyNavigate: function(event) {
+        if ( event.type !== 'click' ) {
+            if ( ![ 'j', 'k', 'ArrowUp', 'ArrowDown' ].includes( event.key ) ) {
+                return;
+            }
+
+            let target = event.target || event.srcElement;
+            let targetType = target.tagName.toLowerCase();
+            if ( targetType === 'input' || targetType === 'textarea' ) {
+                return;
+            }
+        }
+
+        let curRow = document.querySelector( '.ReactTable .rt-tbody .rt-tr.selected' );
+        if ( !curRow ) {
+            return;
+        }
+        let nextRow = null;
+
+        switch( event.key ) {
+            case 'j':
+            case 'ArrowDown':
+            default:
+                nextRow = curRow.parentElement.nextElementSibling;
+                break;
+            case 'k':
+            case 'ArrowUp':
+                nextRow = curRow.parentElement.previousElementSibling;
+                break;
+        }
+
+        if ( !nextRow ) {
+            return;
+        }
+        let nextId = nextRow.children[0].children[0].innerHTML;
+
+        this.props.history.push( `/${this.state.type}/${nextId}` );
+
+        event.preventDefault();
+        event.stopPropagation();
+    },
+
     //Callback for AMQ updates
     reloadactive: function(){    
         this.getNewData() 
     },
 
-    //This is used for the dragging portrait and landscape views
-    reloadItem: function(e){
-        $('iframe').each(function(index,ifr){
-            $(ifr).addClass('pointerEventsOff')
-        })
-        height = $(window).height() - 170
-        if(e != null){
-            $('.container-fluid2').css('height', listStartHeight + e.clientY - listStartY)
-            $('#list-view-data-div').css('height', listStartHeight + e.clientY - listStartY)
-            this.forceUpdate();
-        }
-    },
-    launchEvent: function(type,rowid,entryid){
-        if(this.state.display == 'block'){
-            this.state.scrollheight = '25vh'
-        }
-        this.setState({alertPreSelectedId: 0, scrollheight: this.state.scrollheight, id:rowid, showSelectedContainer: true, queryType:type, entryid:entryid})
-
-    },
     render: function() {
         var listViewContainerHeight;
         var showClearFilter = false;
@@ -264,7 +313,10 @@ module.exports = React.createClass({
         }
         if (checkCookie('listViewFilter'+this.props.type) != null || checkCookie('listViewSort'+this.props.type) != null || checkCookie('listViewPage'+this.props.type) != null) {
             showClearFilter = true
-        } 
+        }
+
+        let columns = buildTypeColumns ( this.props.type );
+        
         return (
             <div> 
                 {this.state.type != 'entry' ?
@@ -272,36 +324,44 @@ module.exports = React.createClass({
                         <div className="black-border-line">
                             <div className='mainview'>
                                 <div>
-                                <div className='list-buttons' style={{display: 'inline-flex'}}>
+                                    <div className='list-buttons' style={{display: 'inline-flex'}}>
                                         {this.props.notificationSetting == 'on'?
                                             <Button eventKey='1' onClick={this.props.notificationToggle} bsSize='xsmall'>Mute Notifications</Button> :
                                             <Button eventKey='2' onClick={this.props.notificationToggle} bsSize='xsmall'>Turn On Notifications</Button>
                                         }
-                                        {this.props.type == 'event' || this.props.type == 'intel' || this.props.type == 'incident' || this.props.type == 'signature' ? <Button onClick={this.createNewThing} eventKey='6' bsSize='xsmall'>Create {this.state.typeCapitalized}</Button> : null}
+                                        {this.props.type == 'event' || this.props.type == 'intel' || this.props.type == 'incident' || this.props.type == 'signature' || this.props.type == 'guide' ? <Button onClick={this.createNewThing} eventKey='6' bsSize='xsmall'>Create {this.state.typeCapitalized}</Button> : null}
                                         <Button eventKey='5' bsSize='xsmall' onClick={this.exportCSV}>Export to CSV</Button> 
                                         <Button bsSize='xsmall' onClick={this.toggleView}>Full Screen Toggle (f)</Button>
                                         {showClearFilter ? <Button onClick={this.clearAll} eventKey='3' bsSize='xsmall' bsStyle={'info'}>Clear All Filters</Button> : null}
                                     </div>
-                                        <div id='list-view-container' style={{display:this.state.listViewContainerDisplay, height:listViewContainerHeight, opacity:this.state.loading ? '.2' : '1'}} tabIndex='1'>
-                                            <div id={this.state.listViewOrientation} tabIndex='2'>
-                                                <div className='tableview' style={{display: 'flex'}}>
-                                                    <div id='fluid2' className="container-fluid2" style={{width:'100%', maxHeight: this.state.maxheight, marginLeft: '0px',height: this.state.scrollheight, 'overflow': 'hidden',paddingLeft:'5px', display:'flex', flexFlow: 'column'}}>                 
-                                                        <table style={{width:'100%'}}>
-                                                            <ListViewHeader data={this.state.objectarray} columns={this.state.columns} columnsDisplay={this.state.columnsDisplay} columnsClassName={this.state.columnsClassName} handleSort={this.handleSort} sort={this.state.sort} filter={this.state.filter} handleFilter={this.handleFilter} startepoch={this.state.startepoch} endepoch={this.state.endepoch} type={this.props.type} errorToggle={this.props.errorToggle}/>
-                                                        </table>
-                                                        <div id='list-view-data-div' style={{height:this.state.scrollheight}} className='list-view-overflow'>
-                                                            <div className='list-view-data-div' style={{display:'block'}}>
-                                                                <table style={{width:'100%'}}>
-                                                                    <ListViewData data={this.state.objectarray} columns={this.state.columns} columnsClassName={this.state.columnsClassName} type={this.state.type} selected={this.selected} selectedId={this.state.id}/>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <Page pagefunction={this.getNewData} defaultPageSize={50} count={this.state.totalcount} pagination={true} type={this.props.type} defaultpage={this.state.activepage.page}/>
-                                            <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
-                                        </div>
+                                    <ReactTable
+                                        columns = { columns } 
+                                        data = { this.state.objectarray }
+                                        style= {{
+                                            height: this.state.scrollheight 
+                                        }}
+                                        page = { this.state.activepage.page }
+                                        pages = { this.state.totalPages }
+                                        defaultPageSize = { 50 }
+                                        onPageChange = { this.handlePageChange }
+                                        onPageSizeChange = { this.handlePageSizeChange }
+                                        pageSize = { this.state.activepage.limit }
+                                        onFilteredChange = { this.handleFilter }
+                                        filtered = { this.state.filter }
+                                        onSortedChange = { this.handleSort }
+                                        sorted = { this.state.sort }
+                                        manual = { true }
+                                        sortable = { true }
+                                        filterable = { true }
+                                        resizable = { true }
+                                        styleName = 'styles.ReactTable'
+                                        className = '-striped -highlight'
+                                        minRows = { 0 } 
+                                        LoadingComponent = { this.CustomTableLoader }
+                                        loading = { this.state.loading }  
+                                        getTrProps = { this.handleRowSelection }
+                                    />
+                                    <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
                                     {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter} errorToggle={this.props.errorToggle} history={this.props.history}/> : null}
                                 </div>
                             </div>
@@ -313,41 +373,53 @@ module.exports = React.createClass({
             </div>
         )
     },
+    
+    CustomTableLoader: function() {
+    return (
+            <div className={'-loading'+ ( this.state.loading ? ' -active' : '' )}>
+                <LoadingContainer loading={this.state.loading} />
+            </div>
+        )
+    },
+
     AutoScrollToId: function() {
         //auto scrolls to selected id
-        if ($('#'+this.state.id).offset() != undefined && $('.list-view-table-data').offset() != undefined) {
-            var cParentTop =  $('.list-view-table-data').offset().top;
-            var cTop = $('#'+this.state.id).offset().top - cParentTop;
-            var cHeight = $('#'+this.state.id).outerHeight(true);
-            var windowTop = $('#list-view-data-div').offset().top;
-            var visibleHeight = $('#list-view-data-div').height();
+        let row = document.querySelector( '.ReactTable .rt-tbody .rt-tr.selected' );
+        let tbody = document.querySelector( '.ReactTable .rt-tbody' );
 
-            var scrolled = $('#list-view-data-div').scrollTop();
-            if (cTop < (scrolled)) {
-                $('#list-view-data-div').animate({'scrollTop': cTop-(visibleHeight/2)}, 'fast', '');
-            } else if (cTop + cHeight + cParentTop> windowTop + visibleHeight) {
-                $('#list-view-data-div').animate({'scrollTop': (cTop + cParentTop) - visibleHeight + scrolled + cHeight}, 'fast', 'swing');
-            }
-            this.setState({initialAutoScrollToId: true});
+        if ( !row ) {
+            tbody.scrollTop = 0;
+            return;
         }
+
+        if ( tbody.scrollTop + tbody.offsetHeight - row.offsetHeight < row.offsetTop || row.offsetTop < tbody.scrollTop ) {
+            tbody.scrollTop = row.offsetTop - tbody.offsetHeight / 2 + row.offsetHeight / 2;
+        }   
+
+        this.setState({initialAutoScrollToId: true});
+        
     },
+
     componentDidUpdate: function(prevProps, prevState) {
         //auto scrolls to selected id
         for (var i=0; i < this.state.objectarray.length; i++){          //Iterate through all of the items in the list to verify that the current id still matches the rows in the list. If not, don't scroll
             var idReference = this.state.objectarray[i].id;
             if (this.state.id != null && this.state.id == idReference && this.state.id != prevState.id || this.state.id != null && this.state.id == idReference && prevState.initialAutoScrollToId == false ) {     //Checks that the id is present, is on the screen, and will not be kicked off again if its already been scrolled to before. The || statement handles the initial load since the id hasn't been scrolled to before.
-               this.AutoScrollToId(); 
+               setTimeout(this.AutoScrollToId, 300); 
             }
         }
     },
+
     componentWillReceiveProps: function(nextProps) {
         if ( nextProps.id == undefined ) {
-            this.setState({type: nextProps.type, id:null, showSelectedContainer: false, scrollheight: $(window).height() - 170});
+            this.setState({type: nextProps.type, id:null, showSelectedContainer: false, scrollheight: $(window).height() - 170 + 'px'});
         } else if (nextProps.id != this.props.id) {
             if (this.props.type == 'alert') {
                 this.ConvertAlertIdToAlertgroupId(nextProps.id);        
                 this.ConvertEntryIdToType(nextProps.id);        
                 this.setState({ type : nextProps.type, alertPreSelectedId: nextProps.id });    
+            } else if ( this.props.type == 'task' ) {
+                this.setState({ type: nextProps.type, queryType: nextProps.queryType, id: nextProps.id, entryid: nextProps.id2});
             } else {
                 this.setState({type: nextProps.type, id: nextProps.id});
             }        
@@ -389,102 +461,97 @@ module.exports = React.createClass({
             })
         };   
     },
+    
+    //This is used for the dragging portrait and landscape views
+    startdrag: function(e){
+        e.preventDefault();
+        $('iframe').each(function(index,ifr){
+            $(ifr).addClass('pointerEventsOff')
+        })
+        
+        this.setState({ scrollheight: listStartHeight + e.clientY - listStartY + 'px' })
+    },
 
     stopdrag: function(e){
         $('iframe').each(function(index,ifr){
-        $(ifr).removeClass('pointerEventsOff')
+            $(ifr).removeClass('pointerEventsOff')
         }) 
         document.onmousemove = null
     },
+
     dragdiv: function(e){
-        var elem = document.getElementById('fluid2');
+        var elem = document.getElementsByClassName('ReactTable');
         listStartX = e.clientX;
         listStartY = e.clientY;
-        listStartWidth = parseInt(document.defaultView.getComputedStyle(elem).width,10)
-        listStartHeight = parseInt(document.defaultView.getComputedStyle(elem).height,10) 
-        document.onmousemove = this.reloadItem
-        document.onmouseup  = this.stopdrag
+        listStartWidth = parseInt(document.defaultView.getComputedStyle(elem[0]).width,10);
+        listStartHeight = parseInt(document.defaultView.getComputedStyle(elem[0]).height,10); 
+        document.onmousemove = this.startdrag;
+        document.onmouseup  = this.stopdrag;
     },
+
     toggleView: function(){
         if(this.state.id.length != 0 && this.state.showSelectedContainer == true  && this.state.listViewContainerDisplay != 'none' ){
             this.setState({listViewContainerDisplay: 'none', scrollheight:'0px'})
         } else {
-            this.setState({listViewContainerDisplay: null, scrollheight:'25vh'})
+            this.setState({listViewContainerDisplay: null, scrollheight:'30vh'})
         }
-        /*var t2 = document.getElementById('fluid2')
-        $(t2).resize(function(){
-            this.reloadItem()
-        }.bind(this))
-         if(!this.state.alldetail) {
-            this.setState({alldetail: true})
-        }
-        else {
-            this.setState({alldetail: false})
-        } */
     },
+
     Portrait: function(){
         document.onmousemove = null
         document.onmousedown = null
         document.onmouseup = null
         $('.container-fluid2').css('width', '650px')
         width = 650
-        $('.paging').css('width', width)
         $('.splitter').css('width', '5px')
         $('.mainview').show()
         var array = []
         array = ['dates-small', 'status-owner-small', 'module-reporter-small']
-                        this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170, maxheight: $(window).height() - 170, resize: 'horizontal',differentviews: '',
+                        this.setState({splitter: true, display: 'flex', alldetail: true, scrollheight: $(window).height() - 170 + 'px', maxheight: $(window).height() - 170 + 'px', resize: 'horizontal',differentviews: '',
                         maxwidth: '', minwidth: '',scrollwidth: '650px', sizearray: array})
         this.setState({listViewOrientation: 'portrait-list-view'})
         setCookie('viewMode',"portrait",1000);
     },
+
     Landscape: function(){
         document.onmousemove = null
         document.onmousedown = null
         document.onmouseup = null
         width = 650
-        $('.paging').css('width', '100%')
         $('.splitter').css('width', '100%')
         $('.mainview').show()
         this.setState({classname: [' ', ' ', ' ', ' '],splitter: false, display: 'block', maxheight: '', alldetail: true, differentviews: '100%',
-        scrollheight: this.state.id != null ? '300px' : $(window).height()  - 170, maxwidth: '', minwidth: '',scrollwidth: '100%', resize: 'vertical'})
+        scrollheight: this.state.id != null ? '300px' : $(window).height()  - 170 + 'px', maxwidth: '', minwidth: '',scrollwidth: '100%', resize: 'vertical'})
         this.setState({listViewOrientation: 'landscape-list-view'});
         setCookie('viewMode',"landscape",1000);
     },
+
     clearAll: function(){
-        /*sortarray['id'] = -1
-        filter = {}
-        this.setState({tags: [], sourcetags: [], startepoch: '', endepoch: '', idtext: '',
-            upstartepoch: '', upendepoch: '', statustext: '', subjecttext: '', entriestext: '', ownertext: '',
-            viewstext: ''})
-            this.getNewData({page: 0, limit: pageSize})*/
         var newListViewKey = this.state.listViewKey + 1;
-        this.setState({listViewKey:newListViewKey, activePage: {page:0, limit:50}, sort:{'id':-1}});  
-        this.handleFilter(null,null,true); //clear filters
-        this.getNewData({page:0, limit:50}, {'id':-1}, {})
+        this.setState({listViewKey:newListViewKey, activepage: {page:0, limit: this.state.activepage.limit}, sort:[{ id:'id', desc: true }], filter: [] });  
+        this.getNewData({page:0}, [{ id:'id', desc: true}], {})
         deleteCookie('listViewFilter'+this.props.type) //clear filter cookie
         deleteCookie('listViewSort'+this.props.type) //clear sort cookie
         deleteCookie('listViewPage'+this.props.type) //clear page cookie
     },
+
     selected: function(type,rowid, subid, taskid){
         if ( taskid == null && subid == null ) {
             //window.history.pushState('Page', 'SCOT', '/#/' + type +'/'+rowid)  
             this.props.history.push( '/' + type + '/' + rowid );
-            //this.launchEvent(type, rowid)
         } else if ( taskid == null && subid != null ) {
             this.props.history.push( '/' + type + '/' + rowid + '/' + subid );
         } else {
             //If a task, swap the rowid and the taskid
             //window.history.pushState('Page', 'SCOT', '/#/' + type + '/' + taskid + '/' + rowid)
             this.props.history.push( '/' + type + '/' + taskid + '/' + rowid + '/'  );
-            //this.launchEvent(type, taskid, rowid);
         }
-        //scrolled = $('.list-view-data-div').scrollTop()
         if(this.state.display == 'block'){
-            this.state.scrollheight = '25vh'
+            this.state.scrollheight = '30vh'
         }
         this.setState({alertPreSelectedId: 0, scrollheight: this.state.scrollheight, showSelectedContainer: true })
     },
+
     getNewData: function(page, sort, filter){
         this.setState({loading:true}); //display loading opacity
         var sortBy = sort;
@@ -517,12 +584,7 @@ module.exports = React.createClass({
             }
         }
         var newPage;
-        if  (pageNumber != 0){
-            newPage = (pageNumber - 1) * pageLimit
-        } else {
-            //page.limit = pageLimit;
-            newPage = 0;
-        }
+        newPage =  pageNumber * pageLimit
         //sort check
         if (sortBy == undefined) {
             sortBy = this.state.sort;
@@ -531,16 +593,44 @@ module.exports = React.createClass({
         if (filterBy == undefined){
             filterBy = this.state.filter;
         }
-        var data = {limit: pageLimit, offset: newPage, sort: JSON.stringify(sortBy)}
-        //add filter to the data object
-        if (filterBy != undefined) {
-            $.each(filterBy, function(key,value) {
-                data[key] = value;
+        var data = {limit: pageLimit, offset: newPage }
+        
+        //add sort to the data object
+        if ( sortBy != undefined ) {
+            let sortObj = {};
+            $.each(sortBy, function(key, value) {
+                let sortInt = -1;
+                if ( !value.desc ) { sortInt = 1 };
+                sortObj[value.id] = sortInt;
             })
-        }
+            data['sort'] = JSON.stringify( sortObj );
+        }  
+        
+        //add filter to the data object
+        if ( filterBy != undefined ) {
+            $.each( filterBy, function(key,value) {
+                if ( value.id == 'source' || value.id == 'tag' ) {
+                    let stringArr = [];
+                    for ( let each of value.value ) {
+                        stringArr.push(each.name);
+                    }
+                    data[value.id] = JSON.stringify(stringArr);
+                } else if ( value.id == 'created' || value.id == 'updated' || value.id == 'occurred' ) {
+                    let arr = [];
+                    arr.push(value.value.start);
+                    arr.push(value.value.end);
+                    data[value.id] = JSON.stringify(arr);
+                } else {
+                    data[value.id] = JSON.stringify(value.value);
+                }    
+            })
+        }   
+
         var newarray = []
         
-        $.ajax({
+        if ( this.state.loading == true ) { listQuery.abort(); }
+        
+        listQuery = $.ajax({
 	        type: 'GET',
 	        url: '/scot/api/v2/'+this.state.type,
 	        data: data,
@@ -550,12 +640,7 @@ module.exports = React.createClass({
                 $.each(datasource.records, function(key, value){
                     newarray[key] = {}
                     $.each(value, function(num, item){
-                        if(num == 'created' || num == 'updated' || num == 'discovered' || num == 'occurred' || num == 'reported')
-                        {
-                            var date = new Date(1000 * item)
-                            newarray[key][num] = date.toLocaleString()
-                        }
-                        else if (num == 'sources' || num == 'source'){
+                        if (num == 'sources' || num == 'source'){
                             if (item != undefined) {
                                 var sourcearr = item.join(', ')
                                 newarray[key]["source"] = sourcearr;
@@ -590,11 +675,16 @@ module.exports = React.createClass({
                     else {
                         newarray[key]['classname'] = 'table-row rowodd'
                     }
-                }.bind(this)),
-                this.setState({totalcount: response.totalRecordCount, activepage: {page:pageNumber, limit:pageLimit}, objectarray: newarray, loading:false, idsarray:newidsarray})
+                }.bind(this))
+                
+                let totalPages = this.getPages(response.totalRecordCount); //get pages for list view
+                
+                this.setState({totalCount: response.totalRecordCount, activepage: {page:pageNumber, limit:pageLimit}, objectarray: newarray, loading:false, idsarray:newidsarray, totalPages: totalPages})
             }.bind(this),
             error: function(data) {
-                this.props.errorToggle('failed to get list data', data); 
+                if ( !data.statusText == 'abort' ) {
+                    this.props.errorToggle('failed to get list data', data); 
+                }
             }.bind(this)
         });
 
@@ -621,107 +711,73 @@ module.exports = React.createClass({
 	    var data_uri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv)
 	    window.open(data_uri)		
     },
-    handleSort : function(column, clearall){
+
+    handleSort : function(sortArr, clearall){
         var currentSort = this.state.sort;
-        var intDirection;
-        if (clearall == true) {
-            this.setState({sort:{'id':-1}});
-        } else{
-            if(Object.keys(currentSort).length === 0 && currentSort.constructor === Object) {
-                currentSort[column] = direction;
-            } else {
-                var obj = Object.keys(currentSort);
-                if (obj[0] == column) {
-                    var direction = currentSort[obj];
-                    if (direction == -1) { 
-                        intDirection = 1;
-                    } else {
-                        intDirection = -1;
-                    }
-                    currentSort[column] = intDirection;
-                } else {
-                    currentSort = {};
-                    currentSort[column] = 1;
+        let newSortArr = [];
+        
+        if (clearall === true) {
+            this.setState({sort:[{ id:'id' , desc:true }]});
+        } else {
+            for ( let sortEach of sortArr ) {
+                if ( sortEach.id ) {
+                    newSortArr.push( sortEach );
                 }
             }
-            this.setState({sort:currentSort}); 
-            this.getNewData(null, currentSort, null)   
-	        var cookieName = 'listViewSort' + this.props.type;
-            setCookie(cookieName,JSON.stringify(currentSort),1000);
         }
+
+        this.setState({sort:newSortArr}); 
+        this.getNewData(null, newSortArr, null)   
+        var cookieName = 'listViewSort' + this.props.type;
+        setCookie(cookieName,JSON.stringify(newSortArr),1000);
     },
 
-
-    handleFilter: function(column,string,clearall,type){
+    handleFilter: function(filterObj,string,clearall,type){
         var currentFilter = this.state.filter;
-        var newFilterObj = {};
-        var _type;
+        var newFilterArr = [];
+        var _type = this.props.type;
+        
         if (type != undefined) {
             _type = type;
-        } else {
-            _type = this.props.type;
         }
-        if (clearall == true) {
-            this.setState({filter:newFilterObj})
+
+        if (clearall === true) {
+        
+            this.setState({filter:newFilterArr})
+            return;
+        
         } else { 
-            if (string.length == 0 || string.length == null) { //check if string is blank
-                if (currentFilter != null) {
-                    if (currentFilter[column]) {
-                        delete currentFilter[column];
-                    }
-                }
-                for (var prop in currentFilter) { newFilterObj[prop] = currentFilter[prop]}; // combine current filter with new one
-            } else {
-                var array;
-                if (typeof(string) == 'string') {
-                    array = string.split(',');
-                } else {
-                    array = string; //this is used if string is an array of strings to search (tags/source)
-                }
-                var inProgressFilter = [];
-                var newFilter = [];
-                //if no filter applied
-                if (currentFilter == undefined) {
-                    for (var i=0; i < array.length; i++) {
-                        inProgressFilter.push(array[i]);
-                    }
-                    newFilterObj[column] = inProgressFilter;
-                //filter is applied
-                } else {
-                    //already filtered column being modified
-                    if (currentFilter[column] != undefined) {
-                        for (var i=0; i < array.length; i++) {
-                            inProgressFilter.push(array[i]);
-                        }
-                        delete currentFilter[column]
-                        newFilterObj[column] = inProgressFilter;
-                    } else {  //column not yet filtered, so append it to the existing filters
-                        for (var i=0; i < array.length; i++) {
-                            inProgressFilter.push(array[i]);
-                        }
-                        newFilterObj[column] = inProgressFilter;
-                    }
-                    for (var prop in currentFilter) { newFilterObj[prop] = currentFilter[prop]}; // combine current filter with new one
+            
+            for ( let filterEach of filterObj ) {
+                if ( filterEach.id ) {
+                    newFilterArr.push( filterEach );
                 }
             }
-            this.setState({filter:newFilterObj});
+
+            this.setState({ filter: newFilterArr });
+            
             if (type == this.props.type || type == undefined) {    //Check if the type passed in matches the type displayed. If not, it's updating the filter for a future query in a different type. Undefined implies its the same type, so update 
-                this.getNewData({page:0},null,newFilterObj)
+                this.getNewData({page:0},null,newFilterArr)
             }
+
             var cookieName = 'listViewFilter' + _type;
-            setCookie(cookieName,JSON.stringify(newFilterObj),1000);
+            setCookie(cookieName,JSON.stringify(newFilterArr),1000);
         }
     },
+    
     titleCase: function(string) {
         var newstring = string.charAt(0).toUpperCase() + string.slice(1)
         return (
             newstring
         )
     },
+    
     createNewThing: function(){
         var data;
         if (this.props.type == 'signature') {
             data = JSON.stringify({name:'Name your Signature', status: 'disabled'});   
+        } else if ( this.props.type == 'guide' ) { 
+            data = JSON.stringify({ subject: 'ENTER A GUIDE NAME', applies_to: ['documentation']}) 
         } else {
             data = JSON.stringify({subject: 'No Subject'});
         }
@@ -736,6 +792,47 @@ module.exports = React.createClass({
                 this.props.errorToggle('failed to create new thing', data);
             }.bind(this)
         })
-    }, 
+    },
+
+    handlePageChange: function( pageIndex ) {
+        this.getNewData({page: pageIndex});
+        let cookieName = 'listViewPage' + this.props.type;
+        setCookie(cookieName, JSON.stringify({page: pageIndex, limit: this.state.activepage.limit}));
+    },
+
+    handlePageSizeChange: function( pageSize, pageIndex ) {
+        this.getNewData({limit: pageSize, page: pageIndex});
+        let cookieName = 'listViewPage' + this.props.type;
+        setCookie(cookieName, JSON.stringify({page: pageIndex, limit: pageSize}));
+    },
+
+    getPages: function(count) {
+        let totalPages = Math.ceil(( count || 1 ) / this.state.activepage.limit);
+        return( totalPages );
+    },
+
+    handleRowSelection( state, rowInfo, column, instance ) {
+        return {
+            onClick: event => {
+                if ( this.state.id === rowInfo.row.id ) {
+                    return;
+                }       
+
+                let scrollheight = this.state.scrollheight;
+                if( this.state.display == 'block' ){
+                    scrollheight = '30vh';
+                }
+                
+                if ( this.state.type === 'task' ) { 
+                    this.props.history.push( '/task/' + rowInfo.row.target_type + '/' + rowInfo.row.target_id + '/' + rowInfo.row.id );
+                } else {
+                    this.props.history.push( '/' + this.state.type + '/' + rowInfo.row.id );
+                }
+                this.setState({alertPreSelectedId: 0, scrollheight: scrollheight, showSelectedContainer: true })
+                return; 
+            },
+            className: rowInfo.row.id === parseInt(this.props.id) ? 'selected' : null,
+        }
+    }
 });
 

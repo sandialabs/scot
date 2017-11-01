@@ -105,6 +105,7 @@ var AddEntryModal = React.createClass({
                                         theme:'modern', 
                                         content_css:'/css/entryeditor.css', 
                                         height:250,
+                                        verify_html: false,
                                         setup: function(editor) {
                                             
                                             function blockquote() {
