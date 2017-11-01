@@ -381,6 +381,14 @@ sub process_words {
     my $offset  = $index + 0; 
     my $log     = $self->log;
 
+## need better algo here
+## spaces in <pre> are gobbled up
+## ruins formating
+## idea: treat spaces as a word
+
+## my @words = ( $text =~ m/( |\w+)/g );
+## then treat word[i] = " " as special case
+
     my @words   = split(/\s+/, $text);
     my @spaces  = ( $text =~ m/(\s+)/g );
 
