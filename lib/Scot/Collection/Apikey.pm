@@ -40,10 +40,11 @@ override api_list => sub {
     my $req     = shift;
     my $user    = shift;
     my $groups  = shift;
+    my $env     = $self->env;
 
     my $match   = $self->build_match_ref($req->{request});
     
-    if (! $self->env->is_admin($user,$groups) ) {
+    if (! $env->is_admin($user,$groups) ) {
         $match->{username}  = $user;
     }
     my $cursor  = $self->find($match);
