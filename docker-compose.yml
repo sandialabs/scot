@@ -11,7 +11,6 @@ services:
     ports:
      - "443:443"
      - "80:80"
-    image: baltig.sandia.gov:4567/scot/scot/scot-apache-default
     networks:
      - scot-docker-net
   activemq:
@@ -20,7 +19,6 @@ services:
     build:
       dockerfile: Dockerfile-Activemq
       context: ./
-    image: baltig.sandia.gov:4567/scot/scot/scot-activemq-default
     ports:
      - "8161:8161"
      - "61613:61613"
@@ -37,7 +35,6 @@ services:
      - "/etc/localtime:/etc/localtime:ro"
      - "/var/lib/mongodb:/var/lib/mongodb/"
      - "/opt/scotbackup/mongo/scot-prod:/opt/scotbackup/mongo/scot-prod/"
-    image: baltig.sandia.gov:4567/scot/scot/scot-mongodb-default
     networks:
      - scot-docker-net
     ports:
@@ -50,13 +47,12 @@ services:
    volumes:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
-    # - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/"
-     - esdata:/opt/scotbackup/elastic
+     - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/"
+    # - esdata:/opt/scotbackup/elastic
    networks:
     - scot-docker-net
    ports:
     - "9200:9200"
-   image: baltig.sandia.gov:4567/scot/scot/scot-elastic-default
   mapping:
     build:
       dockerfile: Dockerfile-Mapping
@@ -85,13 +81,12 @@ services:
      - scot-docker-net
     ports:
      - "3000:3000"
-    image: baltig.sandia.gov:4567/scot/scot/scot-scot-default
   
   perl:
     build: 
       dockerfile: Dockerfile-Perl
       context: ./
-    image: baltig.sandia.gov:4567/scot/scot/scot-perl-default 
+    image: scot_perl 
   
   flair:
    build:
@@ -105,7 +100,6 @@ services:
     - scot
    networks:
      - scot-docker-net
-   image: baltig.sandia.gov:4567/scot/scot/scot-flair-default
 
   stretch:
    build:
@@ -119,7 +113,6 @@ services:
     - scot
    networks:
     - scot-docker-net
-   image: baltig.sandia.gov:4567/scot/scot/scot-flair-default
   
   game:
    build:
@@ -132,7 +125,15 @@ services:
     - scot
    networks:
      - scot-docker-net
-   image: baltig.sandia.gov:4567/scot/scot/scot-game-default
+ mail: 
+   build:
+     dockerfile: Dockerfile-Mail
+     context: ./
+   volumes: 
+     - "/var/log/scot:/var/log/scot/"
+   depends_on:
+    - mongodb
+    - scot
 
 volumes:
   esdata:
