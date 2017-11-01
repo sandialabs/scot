@@ -64,7 +64,7 @@ sub api_subthing {
     if ( $subthing eq "user" ) {
         my $group = $mongo->collection('Group')->find_iid($id);
         return $mongo->collection('User')->find({
-            group   => $group->name,
+            groups   => $group->name,
         });
     }
 
