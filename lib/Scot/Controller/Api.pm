@@ -717,7 +717,7 @@ sub update_permitted {
     ## but a user can only modify their password and Full name
     ## 
     if ( ref($object) eq "Scot::Model::User" ) {
-        if ( $env->is_admin ) {
+        if ( $env->is_admin($self->session('user'),$self->session('groups')) ) {
             return 1;
         }
         if ( $req->{request}->{username} eq $self->session('user') ) {
@@ -733,7 +733,7 @@ sub update_permitted {
     ## but a user can not do it 
     ## 
     if ( ref($object) eq "Scot::Model::Group" ) {
-        if ( $env->is_admin ) {
+        if ( $env->is_admin($self->session('user'),$self->session('groups'))) {
             return 1;
         }
         return undef;

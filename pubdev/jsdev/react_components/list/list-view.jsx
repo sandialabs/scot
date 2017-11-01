@@ -58,7 +58,7 @@ module.exports = React.createClass({
             filter = JSON.parse(this.props.listViewFilter);
         }
 
-        if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; alertPreSelectedId=id;};
+        if (this.props.type == 'alert') {showSelectedContainer = false; typeCapitalized = 'Alertgroup'; type='alertgroup'; queryType= 'alertgroup'; alertPreSelectedId=id;};
         
         if (this.props.type === 'task') { type = 'task'; queryType = this.props.queryType; }
 
