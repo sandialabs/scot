@@ -75,6 +75,7 @@ sub create {
     try {
         my $req_href    = $self->get_request_params;
         my $collection  = $self->get_collection_req($req_href);
+        $req_href->{groups} = $self->session('groups');
         my @objects     = $collection->api_create($req_href);
         my @returnjson  = ();
 
@@ -985,9 +986,11 @@ sub process_task_commands {
     if ( $action ne '' ) {
         delete $json->{$action}; # not an attribute in model
         $json->{metadata}   = {  # but this is
-            who     => $self->session('user'),
-            when    => $self->env->now,
-            status  => $status,
+            task    => {
+                who     => $self->session('user'),
+                when    => $self->env->now,
+                status  => $status,
+            },
         };
         $self->env->mongo->collection('Stat')->put_stat(
             "task $status", 1
@@ -1558,7 +1561,10 @@ sub thread_entries {
             # actions defined in the config file
             if ( defined $self->env->{entry_actions}->{fileinfo} ) {
                 my $action  = $env->{entry_actions}->{fileinfo};
-                $href->{actions} = [ $action->($href) ];
+                my $servername = `hostname`;
+                chomp($servername);
+                $log->debug("SERVERNAME is $servername");
+                $href->{actions} = [ $action->($href,$servername) ];
             }
         }
 

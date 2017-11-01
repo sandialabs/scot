@@ -19,6 +19,7 @@ var LinkWarning             = require('../modal/link_warning.jsx');
 var Link                    = require('react-router-dom').Link;
 var IncidentTable           = require('../components/incident_table.jsx');
 var SignatureTable          = require('../components/signature_table.jsx');
+var TrafficLightProtocol    = require('../components/traffic_light_protocol.jsx');
 var Marker                  = require('../components/marker.jsx').default;
 
 var SelectedEntry = React.createClass({
@@ -95,7 +96,7 @@ var SelectedEntry = React.createClass({
         } 
     this.containerHeightAdjust();
     window.addEventListener('resize',this.containerHeightAdjust);
-    $("#fluid2").resize(function(){ this.containerHeightAdjust}.bind(this));
+    $("#ReactTable").resize(function(){ this.containerHeightAdjust}.bind(this));
     },
     componentWillReceiveProps: function() {
         this.containerHeightAdjust();
@@ -209,7 +210,7 @@ var SelectedEntry = React.createClass({
                     var thing = index.target;
                    if ($(thing)[0].className == 'extras') { thing = $(thing)[0].parentNode}; //if an extra is clicked reference the parent element
                     if ($(thing).attr('url')) {  //link clicked
-                        var url = $(a).attr('url');
+                        var url = $(thing).attr('url');
                         this.linkWarningToggle(url);
                     } else { //entity clicked
                         var entityid = $(thing).attr('data-entity-id');
@@ -256,18 +257,23 @@ var SelectedEntry = React.createClass({
         } 
     },  
     containerHeightAdjust: function() {
-        var scrollHeight;
-        if ($('#list-view-container')[0]) {
-            scrollHeight = $(window).height() - $('#list-view-container').height() - $('#header').height() - 70 
-            scrollHeight = scrollHeight + 'px'
-        } else {
-            scrollHeight = $(window).height() - $('#header').height() - 70 
-            scrollHeight = scrollHeight + 'px'
-        }
-        //$('#detail-container').css('height',scrollHeight);
-        if (this.isMounted()) {
-            this.setState({height:scrollHeight});
-        }
+        //Using setTimeout so full screen toggle animation has time to finish before resizing detail section
+        setTimeout( function() {
+            var scrollHeight;
+            let ListViewTableHeight = parseInt(document.defaultView.getComputedStyle(document.getElementsByClassName('ReactTable')[0]).height, 10);
+            if (ListViewTableHeight !== 0) {
+                scrollHeight = $(window).height() - ListViewTableHeight - $('#header').height() - 70 
+                scrollHeight = scrollHeight + 'px'
+            } else {
+                scrollHeight = $(window).height() - $('#header').height() - 70 
+                scrollHeight = scrollHeight + 'px'
+            }
+            //$('#detail-container').css('height',scrollHeight);
+            if (this.isMounted()) {
+                this.setState({height:scrollHeight});
+            }
+        }.bind(this), 500);
+        
     },
     render: function() { 
         var divid = 'detail-container';
@@ -463,6 +469,7 @@ var AlertParent = React.createClass({
         var header = [];
         var columns = false;
         var dataColumns = false;
+        let linkToSearch = [];
         if (items[0] != undefined){
             var col_names;
             //checking two locations for columns. Will make this a single location in future revision
@@ -522,12 +529,22 @@ var AlertParent = React.createClass({
                 
                 body.push(<AlertBody key={z} index={z} data={items[z]} dataFlair={dataFlair} headerData={this.props.headerData} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected} alertPreSelectedId={this.props.alertPreSelectedId} activeId={this.state.activeId} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle} />)
             }
+            
             var search = null;
             if (items[0].data_with_flair != undefined) {
                 search = items[0].data_with_flair.search;
             } else {
                 search = items[0].data.search;
             }
+
+
+            for ( let y = 0; y < this.props.headerData.ahrefs.length; y++ ) {
+                for ( let x in this.props.headerData.ahrefs[y] ) {
+                    linkToSearch.push( <a href={ this.props.headerData.ahrefs[y][x] }>{x}</a>);
+                    linkToSearch.push( <br/> );
+                }
+            }
+
         } else if (this.props.headerData != undefined){
             if (this.props.headerData.body != undefined) {
                 return (
@@ -550,7 +567,14 @@ var AlertParent = React.createClass({
                             {body}
                     </table>
                 </div>
-                {search != undefined ? <div className='alertTableHorizontal' dangerouslySetInnerHTML={{ __html: search}}/> : null}
+                {search != undefined ? 
+                    <div className='alertTableHorizontal'>
+                        {linkToSearch}
+                        <div dangerouslySetInnerHTML={{ __html: search}}/>
+                    </div> 
+                : 
+                    null
+                }
             </div>
         )
     }
@@ -878,15 +902,15 @@ var EntryParent = React.createClass({
             summary = 1;
         }
         if (itemsClass == 'task') {
-            if (items.metadata.status == 'open' || items.metadata.status == 'assigned') {
-                taskOwner = '-- Task Owner ' + items.metadata.who + ' ';
+            if (items.metadata.task.status == 'open' || items.metadata.task.status == 'assigned') {
+                taskOwner = '-- Task Owner ' + items.metadata.task.who + ' ';
                 outerClassName += ' todo_open_outer';
                 innerClassName += ' todo_open';
-            } else if ((items.metadata.status == 'closed' || items.metadata.status == 'completed') && items.metadata.who != null ) {
-                taskOwner = '-- Task Owner ' + items.metadata.who + ' ';
+            } else if ((items.metadata.task.status == 'closed' || items.metadata.task.status == 'completed') && items.metadata.task.who != null ) {
+                taskOwner = '-- Task Owner ' + items.metadata.task.who + ' ';
                 outerClassName += ' todo_completed_outer';
                 innerClassName += ' todo_completed';
-            } else if (items.metadata.status == 'closed' || items.metadata.status == 'completed') {
+            } else if (items.metadata.task.status == 'closed' || items.metadata.task.status == 'completed') {
                 outerClassName += ' todo_undefined_outer';
                 innerClassName += ' todo_undefined';
             }
@@ -900,13 +924,30 @@ var EntryParent = React.createClass({
                 if (prop == "children") {
                     var childobj = items[prop];
                     items[prop].forEach(function(childobj) {
-                        subitemarr.push(new Array(<EntryParent  items = {childobj} id={id} type={type} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={isPopUp} errorToggle={errorToggle}/>));  
+                        subitemarr.push(new Array(<EntryParent items = {childobj} id={id} type={type} editEntryToolbar={editEntryToolbar} editEntryToggle={editEntryToggle} isPopUp={isPopUp} errorToggle={errorToggle}/>));  
                     });
                 }
             }
             childfunc(prop);
         };
         itemarr.push(subitemarr);
+
+        let entryActions = [];
+        if ( this.props.items ) {
+            if ( this.props.items.actions ) {
+                for ( let i = 0; i < this.props.items.actions.length; i++ ) {
+                    if ( this.props.items.actions[i].send_to_name && this.props.items.actions[i].send_to_url ) {
+                        entryActions.push(<EntryAction 
+                            id={this.props.items.actions[i].send_to_name} 
+                            datahref={this.props.items.actions[i].send_to_url} 
+                            errorToggle={this.props.errorToggle}
+                            />
+                        )
+                    }
+                }
+            }
+        }
+
         var header1 = '[' + items.id + '] ';
         var header2 = ' by ' + items.owner + ' ' + taskOwner + '(updated on '; 
         var header3 = ')'; 
@@ -923,11 +964,14 @@ var EntryParent = React.createClass({
                                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} /> : null}
                                 <SplitButton bsSize='xsmall' title="Reply" key={items.id} id={'Reply '+items.id} onClick={this.replyEntryToggle} pullRight> 
                                     { type != 'entity' ? <MenuItem eventKey='1' onClick={this.fileUploadToggle}>Upload File</MenuItem> : null}
+                                    {entryActions}
                                     <MenuItem eventKey='3'><Summary type={type} id={id} entryid={items.id} summary={summary} errorToggle={this.props.errorToggle}/></MenuItem>
                                     <MenuItem eventKey='4'><Task type={type} id={id} entryid={items.id} taskData={items} errorToggle={this.props.errorToggle} /></MenuItem>
                                     <Marker type={'entry'} id={items.id} string={items.body_plain} />
                                     <MenuItem onClick={this.permissionsToggle}>Permissions</MenuItem>
                                     <MenuItem onClick={this.reparseFlair}>Reparse Flair</MenuItem>
+                                    <TrafficLightProtocol type={'entry'} id={items.id} tlp={items.tlp} errorToggle={this.props.errorToggle} />
+                                    <MenuItem divider />
                                     <MenuItem eventKey='2' onClick={this.deleteToggle}>Delete</MenuItem>
                                 </SplitButton>
                                 <Button bsSize='xsmall' onClick={this.editEntryToggle}>Edit</Button>
@@ -941,8 +985,53 @@ var EntryParent = React.createClass({
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} errorToggle={this.props.errorToggle} /> : null}     
             </div>
         );
+    },
+
+});
+
+let EntryAction = React.createClass({
+    getInitialState: function() {
+
+        return {
+            [this.props.id] : false,
+            disabled: false,
+        }        
+    },
+
+    submit: function() {
+        let url = this.props.datahref;
+        let id = this.props.id;
+        
+        $.ajax({
+            type: 'post',
+            url: url,
+            success: function(response) {
+                this.setState({ [id]: true, disabled: false });
+                console.log('submitted the entry action');
+            }.bind(this),
+            error: function(data) {
+                this.props.errorToggle('failed to submit the entry action', data);
+                this.setState({ disabled: false });
+            }.bind(this),
+        });
+        this.setState({ disabled: true });
+    },
+    
+    render: function() {
+        return (
+            <MenuItem disabled={this.state.disabled} >
+                <span id={this.props.id} data-href={this.props.datahref} onClick={this.submit} style={{display:'block'}}>{this.props.id} { 
+                    this.state[this.props.id] ? 
+                        <span style={{color: 'green'}}>success</span> 
+                    : 
+                        null
+                    }
+                </span>
+            </MenuItem> 
+        )
     }
 });
+
 var EntryData = React.createClass({ 
     getInitialState: function() {
         /*if (this.props.type == 'entity' || this.props.isPopUp == 1) {

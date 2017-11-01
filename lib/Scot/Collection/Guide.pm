@@ -35,8 +35,15 @@ override api_create => sub  {
     my $json    = $request->{request}->{json};
     my $user    = $request->{user};
 
-    my @entries = @{$json->{entry}};
-    delete $json->{entry};
+    # my @entries = @{$json->{entry}};
+    my @entries;
+    if ( defined $json->{entry} and ref($json->{entry}) eq "ARRAY" ) {
+        @entries    = @{$json->{entry}};
+        delete $json->{entry};
+    }
+    else {
+        @entries    = ();
+    }
 
     unless ( $json->{group}->{read} ) {
         $json->{group}->{read}   = $env->default_groups->{read};
