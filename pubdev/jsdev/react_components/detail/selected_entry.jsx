@@ -210,7 +210,7 @@ var SelectedEntry = React.createClass({
                     var thing = index.target;
                    if ($(thing)[0].className == 'extras') { thing = $(thing)[0].parentNode}; //if an extra is clicked reference the parent element
                     if ($(thing).attr('url')) {  //link clicked
-                        var url = $(a).attr('url');
+                        var url = $(thing).attr('url');
                         this.linkWarningToggle(url);
                     } else { //entity clicked
                         var entityid = $(thing).attr('data-entity-id');
@@ -469,6 +469,7 @@ var AlertParent = React.createClass({
         var header = [];
         var columns = false;
         var dataColumns = false;
+        let linkToSearch = [];
         if (items[0] != undefined){
             var col_names;
             //checking two locations for columns. Will make this a single location in future revision
@@ -528,12 +529,22 @@ var AlertParent = React.createClass({
                 
                 body.push(<AlertBody key={z} index={z} data={items[z]} dataFlair={dataFlair} headerData={this.props.headerData} activeIndex={this.state.activeIndex} rowClicked={this.rowClicked} alertSelected={this.props.alertSelected} allSelected={this.state.allSelected} alertPreSelectedId={this.props.alertPreSelectedId} activeId={this.state.activeId} aID={this.props.aID} aType={this.props.aType} entryToggle={this.props.entryToggle} entryToolbar={this.props.entryToolbar} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle} />)
             }
+            
             var search = null;
             if (items[0].data_with_flair != undefined) {
                 search = items[0].data_with_flair.search;
             } else {
                 search = items[0].data.search;
             }
+
+
+            for ( let y = 0; y < this.props.headerData.ahrefs.length; y++ ) {
+                for ( let x in this.props.headerData.ahrefs[y] ) {
+                    linkToSearch.push( <a href={ this.props.headerData.ahrefs[y][x] }>{x}</a>);
+                    linkToSearch.push( <br/> );
+                }
+            }
+
         } else if (this.props.headerData != undefined){
             if (this.props.headerData.body != undefined) {
                 return (
@@ -556,7 +567,14 @@ var AlertParent = React.createClass({
                             {body}
                     </table>
                 </div>
-                {search != undefined ? <div className='alertTableHorizontal' dangerouslySetInnerHTML={{ __html: search}}/> : null}
+                {search != undefined ? 
+                    <div className='alertTableHorizontal'>
+                        {linkToSearch}
+                        <div dangerouslySetInnerHTML={{ __html: search}}/>
+                    </div> 
+                : 
+                    null
+                }
             </div>
         )
     }
