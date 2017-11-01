@@ -82,6 +82,12 @@ This will execute the script and close the container once it completes.
 The docker-configs directory contains modified config files, perl modules, scripts, etc. that allow SCOT to function properly in a containerized environment. Most changes are references to localhost in the standard SCOT codebase where we modify those addresses to reference the ip addresses on the scot_docker subnet. 
 
 
+**MongoDB Default password**
+
+MongoDB default password (also used for logging in to SCOT if local auth is enabled (by default)), is: 
+
+* Username: admin
+* Password: admin
 
 
 
