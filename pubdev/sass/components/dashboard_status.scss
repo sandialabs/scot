@@ -3,6 +3,8 @@
 .Status {
 	display: inline-grid;
 	justify-content: center;
+	align-content: center;
+	grid-gap: 10px;
 
 	grid-auto-columns: minmax(auto, 200px);
 	

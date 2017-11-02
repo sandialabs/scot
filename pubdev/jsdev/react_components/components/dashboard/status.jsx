@@ -7,6 +7,7 @@ class Status extends PureComponent {
 
 		this.state = {
 			statusData: {},
+			error: null,
 		};
 
 		this.updateData = this.updateData.bind( this );
@@ -39,7 +40,9 @@ class Status extends PureComponent {
 	}
 
 	fetchError( error ) {
-		// Show error
+		this.setState( {
+			error: error,
+		} );
 	}
 
 	render() {
@@ -61,6 +64,9 @@ class Status extends PureComponent {
 
 		return (
 			<div className={classes.join(' ')}>
+				{ this.state.error &&
+					<Panel bsStyle="danger" header="Error">{this.state.error}</Panel>
+				}
 				{services}
 			</div>
 		)
