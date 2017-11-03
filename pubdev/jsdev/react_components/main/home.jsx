@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Well } from 'react-bootstrap';
 
 import Status from '../components/dashboard/status';
-let Gamification = require( '../components/dashboard/gamification.jsx' );
+import Gamification from '../components/dashboard/gamification';
 let Online = require( '../components/dashboard/online.jsx' );
 import { ReportDashboard } from '../components/dashboard/report';
 
@@ -62,8 +62,20 @@ class HomeDashboard extends PureComponent {
 						<Well bsSize="small" className="activity-area">
 							Activity
 						</Well>
-						<div className="charts-area">
-							Charts
+						<div className="notifications-area">
+							Notifications
+						</div>
+						<div>
+							Chart1
+						</div>
+						<div>
+							Chart2
+						</div>
+						<div>
+							Chart3
+						</div>
+						<div>
+							Chart4
 						</div>
 					</div>
 					:

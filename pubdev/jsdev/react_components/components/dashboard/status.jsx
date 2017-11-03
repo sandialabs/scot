@@ -54,7 +54,7 @@ class Status extends PureComponent {
 		for ( let service in this.state.statusData ) {
 			let i = Math.floor( statuses.length * Math.random() );
 			let status = statuses[i];
-			services.push( <Service name={service} status={status} /> );
+			services.push( <Service key={service} name={service} status={status} /> );
 		}
 
 		let classes = [ "Status", className ];
@@ -74,7 +74,7 @@ class Status extends PureComponent {
 }
 
 const Service = ( { name, status } ) => (
-	<div className={`service status-${status}`} key={name}>
+	<div className={`service status-${status}`}>
 		{name}
 	</div>
 )
