@@ -231,6 +231,7 @@ sub list {
         my $req_href        = $self->get_request_params;
         my $collection      = $self->get_collection_req($req_href);
         my ($cursor,$count) = $collection->api_list($req_href, $user, $groups);
+        $log->debug("list request return $count records");
         my @records         = $self->post_list_process( $cursor, $req_href);
         my $return_href = {
             records             => \@records,
