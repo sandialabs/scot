@@ -43,7 +43,7 @@
 			top: 0;
 		}
 	}
-
+    
 	.rt-tr-group {
 		flex: 0 0 auto;
 		cursor: pointer;
@@ -52,7 +52,18 @@
 			background: rgb( 174, 218, 255 ) !important;
 		}
 	}
+    
+    .pagination-bottom {
+        .-pagination {
+            height: 30px;
+            padding: 0px;
 
+            .-btn {
+                padding: 0px;
+            }   
+        }
+    }
+    
 	.alertStatusCell {
 		text-align: center;
 		height: 100%;
@@ -76,4 +87,12 @@
 		}
 	}
 			
+}
+
+.ReactTable input, .ReactTable select {
+    padding: 2px 0px 2px 0px !important;
+}
+
+.ReactTable .select-wrap select {
+    padding: 0px 15px 0px 7px !important;
 }
