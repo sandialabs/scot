@@ -15,7 +15,7 @@ var DetailDataStatus = React.createClass({
     componentDidMount: function() {
         //Adds open/close hot keys for alertgroup
         if (this.props.type == 'alertgroup') {
-            $('#landscape-list-view').keydown(function(event){
+            $('#list-view').keydown(function(event){
                 //prevent from working when in input
                 if ($('input').is(':focus')) {return};
                 //check for character "o" for 79 or "c" for 67
