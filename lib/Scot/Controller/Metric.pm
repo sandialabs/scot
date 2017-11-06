@@ -80,7 +80,8 @@ sub apply_prod_hour_filter {
     my $log     = $self->env->log;
 
 
-    if ( $limit ne "production" ) {
+    if ( defined $limit and $limit ne "production" ) {
+        $log->warn("limit not set or not production");
         return undef;
     }
     $log->debug("limit is set to production");
