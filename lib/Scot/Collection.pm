@@ -627,7 +627,13 @@ sub api_find {
         my $obj = $self->find_iid($id);
         return $obj;
     }
-    my $id  = defined $href->{id} ? $href->{id} + 0 : 0;
+    my $id  = $href->{id};
+    if ( $id eq "undefined" ) {
+        $id = 0;
+    }
+    else {
+        $id += 0;
+    }
     my $obj = $self->find_iid($id);
     return $obj;
 
