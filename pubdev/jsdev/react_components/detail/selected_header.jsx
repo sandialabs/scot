@@ -78,7 +78,8 @@ var SelectedHeader = React.createClass({
             showSignatureOptions: false,        
             showMarkModal: false,
             showLinksModal: false,
-            isDeleted: false,       
+            isDeleted: false,     
+            flairOff: false,
         }
     },
     componentWillMount: function() {
@@ -531,6 +532,15 @@ var SelectedHeader = React.createClass({
         this.setState({ showLinksModal: showLinksModal });
     },
 
+    toggleFlair: function() {
+        if ( this.state.flairOff ) {
+            this.setState({ flairOff: false});
+            setTimeout(function(){AddFlair.entityUpdate(this.state.entityData,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+        } else {
+            this.setState({ flairOff: true});
+        }
+    },
+
     render: function() {
         var headerData = this.state.headerData;         
         var viewedby = this.viewedbyfunc(headerData);
@@ -608,10 +618,10 @@ var SelectedHeader = React.createClass({
                     {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} errorToggle={this.props.errorToggle} history={this.props.history}/> :null}
                     {this.state.showMarkModal ? <Mark modalActive={true} type={type} id={id} string={string} errorToggle={this.props.errorToggle} markModalToggle={this.markModalToggle} /> : null }
                     {this.state.showLinksModal ? <Links modalActive={true} type={type} id={id} errorToggle={this.props.errorToggle} linksModalToggle={this.linksModalToggle} /> : null }
-                    {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} headerData={this.state.headerData} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} guideRedirectToAlertListWithFilter={this.guideRedirectToAlertListWithFilter} showSignatureOptionsToggle={this.showSignatureOptionsToggle} markModalToggle={this.markModalToggle} linksModalToggle={this.linksModalToggle} ToggleProcessingMessage={this.ToggleProcessingMessage} errorToggle={this.props.errorToggle} /> : null} 
+                    {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} headerData={this.state.headerData} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} guideRedirectToAlertListWithFilter={this.guideRedirectToAlertListWithFilter} showSignatureOptionsToggle={this.showSignatureOptionsToggle} markModalToggle={this.markModalToggle} linksModalToggle={this.linksModalToggle} ToggleProcessingMessage={this.ToggleProcessingMessage} errorToggle={this.props.errorToggle} toggleFlair={this.toggleFlair}/> : null} 
                     {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated} errorToggle={this.props.errorToggle}/> : null}
                 </div>
-                {this.state.showEventData && type != 'entity' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.props.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} showSignatureOptions={this.state.showSignatureOptions}/> : null}
+                {this.state.showEventData && type != 'entity' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.props.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} showSignatureOptions={this.state.showSignatureOptions} flairOff={this.state.flairOff}/> : null}
                 {this.state.showEventData && type == 'entity' ? <EntityDetail entityid={id} entitytype={'entity'} id={id} type={'entity'} fullScreen={true} errorToggle={this.props.errorToggle} linkWarningToggle={this.linkWarningToggle}/> : null} 
                 {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj} linkWarningToggle={this.linkWarningToggle}/> : null}    
                 </div>
