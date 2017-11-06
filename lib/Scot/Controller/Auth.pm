@@ -60,7 +60,7 @@ sub check {
         $self->update_lastvisit($user);
         my $groups = $self->set_group_membership($user);
         if (defined $groups) {
-            $log->info("User $user (".join(',',@$groups).") Authenticated via Mojo session");
+            $log->info("Authenticated (mojo) User $user (".join(',',@$groups).")");
             $log->level($loglevel);
             return 1;
         }
