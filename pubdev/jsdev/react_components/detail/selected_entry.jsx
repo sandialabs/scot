@@ -262,10 +262,10 @@ var SelectedEntry = React.createClass({
             var scrollHeight;
             let ListViewTableHeight = parseInt(document.defaultView.getComputedStyle(document.getElementsByClassName('ReactTable')[0]).height, 10);
             if (ListViewTableHeight !== 0) {
-                scrollHeight = $(window).height() - ListViewTableHeight - $('#header').height() - 70 
+                scrollHeight = $(window).height() - ListViewTableHeight - $('#header').height() - 78 
                 scrollHeight = scrollHeight + 'px'
             } else {
-                scrollHeight = $(window).height() - $('#header').height() - 70 
+                scrollHeight = $(window).height() - $('#header').height() - 78 
                 scrollHeight = scrollHeight + 'px'
             }
             //$('#detail-container').css('height',scrollHeight);
