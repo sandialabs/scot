@@ -22,6 +22,7 @@ db.signature.drop();
 db.sigbody.drop();
 db.apikey.drop();
 db.handler.drop();
+db.stat.drop();
 
 print ("Creating indexes...");
 load("./src/mongodb/indexes.js");
