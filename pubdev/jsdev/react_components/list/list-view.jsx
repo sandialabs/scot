@@ -214,29 +214,7 @@ module.exports = React.createClass({
             }.bind(this)
         })
         
-        /*$('#list-view-container').keydown(function(e){
-            if ($('input').is(':focus')) {return};
-            if (e.ctrlKey != true && e.metaKey != true) {
-                var up = $('#list-view-data-div').find('.list-view-data-div').find('#'+this.state.id).prevAll('.table-row')
-                var down = $('#list-view-data-div').find('.list-view-data-div').find('#'+this.state.id).nextAll('.table-row')
-                if((e.keyCode == 74 && down.length != 0) || (e.keyCode == 40 && down.length != 0)){
-                    var set;
-                    set  = down[0].click()
-                    if (e.keyCode == 40) {
-                        e.preventDefault();
-                    }
-                }
-                else if((e.keyCode == 75 && up.length != 0) || (e.keyCode == 38 && up.length != 0)){
-                    var set;
-                    set  = up[0].click()
-                    if (e.keyCode == 38) {
-                        e.preventDefault();
-                    }
-                } 
-            }    
-        }.bind(this))*/
-        
-        document.addEventListener( 'keydown', this.keyNavigate );
+        $('#list-view-container').keydown( this.keyNavigate );
 
         $(document.body).keydown(function(e) {
             if ($('input').is(':focus')) {return};
@@ -334,33 +312,37 @@ module.exports = React.createClass({
                                         <Button bsSize='xsmall' onClick={this.toggleView}>Full Screen Toggle (f)</Button>
                                         {showClearFilter ? <Button onClick={this.clearAll} eventKey='3' bsSize='xsmall' bsStyle={'info'}>Clear All Filters</Button> : null}
                                     </div>
-                                    <ReactTable
-                                        columns = { columns } 
-                                        data = { this.state.objectarray }
-                                        style= {{
-                                            height: this.state.scrollheight 
-                                        }}
-                                        page = { this.state.activepage.page }
-                                        pages = { this.state.totalPages }
-                                        defaultPageSize = { 50 }
-                                        onPageChange = { this.handlePageChange }
-                                        onPageSizeChange = { this.handlePageSizeChange }
-                                        pageSize = { this.state.activepage.limit }
-                                        onFilteredChange = { this.handleFilter }
-                                        filtered = { this.state.filter }
-                                        onSortedChange = { this.handleSort }
-                                        sorted = { this.state.sort }
-                                        manual = { true }
-                                        sortable = { true }
-                                        filterable = { true }
-                                        resizable = { true }
-                                        styleName = 'styles.ReactTable'
-                                        className = '-striped -highlight'
-                                        minRows = { 0 } 
-                                        LoadingComponent = { this.CustomTableLoader }
-                                        loading = { this.state.loading }  
-                                        getTrProps = { this.handleRowSelection }
-                                    />
+                                        <div id='list-view-container' tabIndex='1'>
+                                            <div id='list-view' tabIndex='2'>
+                                                <ReactTable
+                                                    columns = { columns } 
+                                                    data = { this.state.objectarray }
+                                                    style= {{
+                                                        height: this.state.scrollheight 
+                                                    }}
+                                                    page = { this.state.activepage.page }
+                                                    pages = { this.state.totalPages }
+                                                    defaultPageSize = { 50 }
+                                                    onPageChange = { this.handlePageChange }
+                                                    onPageSizeChange = { this.handlePageSizeChange }
+                                                    pageSize = { this.state.activepage.limit }
+                                                    onFilteredChange = { this.handleFilter }
+                                                    filtered = { this.state.filter }
+                                                    onSortedChange = { this.handleSort }
+                                                    sorted = { this.state.sort }
+                                                    manual = { true }
+                                                    sortable = { true }
+                                                    filterable = { true }
+                                                    resizable = { true }
+                                                    styleName = 'styles.ReactTable'
+                                                    className = '-striped -highlight'
+                                                    minRows = { 0 } 
+                                                    LoadingComponent = { this.CustomTableLoader }
+                                                    loading = { this.state.loading }  
+                                                    getTrProps = { this.handleRowSelection }
+                                                />
+                                            </div>
+                                        </div>
                                     <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
                                     {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter} errorToggle={this.props.errorToggle} history={this.props.history}/> : null}
                                 </div>
