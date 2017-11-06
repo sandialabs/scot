@@ -71,7 +71,8 @@ sub parse_message {
         my $text    = join(' ',@content);
         my $href    = $anchor->attr('href');
         push @splunklinks, {
-            $text   => $href
+            subject => $text,
+            link    => $href,
         };
     }
 
