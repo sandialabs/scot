@@ -542,7 +542,7 @@ var AlertParent = React.createClass({
             }
             
             var search = null;
-            if (items[0].data_with_flair != undefined) {
+            if (items[0].data_with_flair != undefined && !this.props.flairOff ) {
                 search = items[0].data_with_flair.search;
             } else {
                 search = items[0].data.search;
@@ -791,10 +791,18 @@ var AlertRow = React.createClass({
         var data = this.props.data;
         var dataFlair = this.props.dataFlair;
         var value = this.props.value;
-        var rowReturn=[];
+        
+        let rowContent = dataFlair[value];
+        
+        if ( Array.isArray( dataFlair[value] )) {
+            for ( let i = 0; i < dataFlair[value].length; i++ ) {
+                rowContent = $('<div>').text(dataFlair[value][i]).html();
+            }
+        };
+
         return (
             <td style={{marginRight:'4px'}}>
-                <div className='alert_data_cell' dangerouslySetInnerHTML={{ __html: dataFlair[value]}}/>
+                <div className='alert_data_cell' dangerouslySetInnerHTML={{ __html: rowContent}}/>
             </td>
         )
     }
