@@ -157,17 +157,20 @@ var SelectedEntry = React.createClass({
             }); 
         }
     },
+
     flairToolbarToggle: function(id,value,type,entityoffset,entityobj) {
         if (this.isMounted()) {
             this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type,entityoffset:entityoffset,entityobj:entityobj})
         }
     },
+
     flairToolbarOff: function() {
         if (this.isMounted()) {
             var newEntityDetailKey = this.state.entityDetailKey + 1;
             this.setState({flairToolbar:false,entityDetailKey:newEntityDetailKey});
         }
     },
+
     linkWarningToggle: function(href) {
         if (this.isMounted()) {
             if (this.state.linkWarningToolbar == false) {
@@ -177,6 +180,7 @@ var SelectedEntry = React.createClass({
             }
         }
     },
+
     Watcher: function() {
         var containerid = '#' + this.props.type + '-detail-container';
         if(this.props.type != 'alertgroup') {
@@ -223,6 +227,7 @@ var SelectedEntry = React.createClass({
             }.bind(this));
         }
     },
+
     checkFlairHover: function(ifr) {
         function returnifr() {
             return ifr;
@@ -255,7 +260,8 @@ var SelectedEntry = React.createClass({
                 }.bind(this));
             }
         } 
-    },  
+    }, 
+
     containerHeightAdjust: function() {
         //Using setTimeout so full screen toggle animation has time to finish before resizing detail section
         setTimeout( function() {
@@ -275,6 +281,7 @@ var SelectedEntry = React.createClass({
         }.bind(this), 500);
         
     },
+
     render: function() { 
         var divid = 'detail-container';
         var height = this.state.height;
@@ -350,8 +357,8 @@ var EntryIterator = React.createClass({
             )
         }
     }
-})
-;
+});
+
 var AlertParent = React.createClass({
     getInitialState: function() {
         var arr = [];
@@ -393,12 +400,14 @@ var AlertParent = React.createClass({
     componentWillUnmount: function() {
         $('#main-detail-container').unbind('keydown');
     },
+    
     componentDidUpdate: function() {
         //update the table, but not if a tinymce editor window is open as it will break the editing window
-        if (!$('.mce-tinymce')[0]) {
+        if (!$('.mce-tinymce')[0] && window.getSelection().toString() == '' ) {
             $('#sortabletable').trigger('update');
         }
     },
+
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();
         var activeIdArray = this.state.activeId.slice();
