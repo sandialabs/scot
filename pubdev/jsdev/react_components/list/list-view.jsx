@@ -446,7 +446,6 @@ module.exports = React.createClass({
     
     //This is used for the dragging portrait and landscape views
     startdrag: function(e){
-        e.preventDefault();
         $('iframe').each(function(index,ifr){
             $(ifr).addClass('pointerEventsOff')
         })
@@ -462,6 +461,8 @@ module.exports = React.createClass({
     },
 
     dragdiv: function(e){
+        if (e.preventDefault) {e.preventDefault();}
+        if (e.stopPropagation) {e.stopPropagation();}
         var elem = document.getElementsByClassName('ReactTable');
         listStartX = e.clientX;
         listStartY = e.clientY;
