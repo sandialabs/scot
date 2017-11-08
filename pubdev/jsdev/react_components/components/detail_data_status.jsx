@@ -30,7 +30,7 @@ var DetailDataStatus = React.createClass({
         }
     },
     componentWillUnmount: function() {
-        $('#landscape-list-view').unbind('keydown');
+        $('#list-view').unbind('keydown');
     },
     /*eventStatusToggle: function () {
         if (this.props.status == 'open') {
