@@ -53,7 +53,7 @@ var App = React.createClass({
         Store.addChangeListener(this.notification);
        
         //ee
-        if (this.props.match.params.value == '') {
+        if (this.props.match.url == '/') {
             $(document.body).keydown(function(e) {
                 this.ee(e);
             }.bind(this))   
@@ -103,7 +103,7 @@ var App = React.createClass({
 
     eedraw: function() {
         $('#content').css('transform','rotateX(20deg)');
-        $(document.body).prepend('<span id="ee">Lbh sbhaq gur egg. Cbfg gb gur jnyy "V sbhaq gur rtt, pna lbh?"</span>');
+        $(document.body).prepend('<span id="ee">Lbh sbhaq gur rtt. Cbfg gb gur jnyy "V sbhaq gur rtt, pna lbh?"</span>');
     },
 
     eeremove: function() {

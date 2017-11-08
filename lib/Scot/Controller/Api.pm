@@ -231,6 +231,7 @@ sub list {
         my $req_href        = $self->get_request_params;
         my $collection      = $self->get_collection_req($req_href);
         my ($cursor,$count) = $collection->api_list($req_href, $user, $groups);
+        $log->debug("list request return $count records");
         my @records         = $self->post_list_process( $cursor, $req_href);
         my $return_href = {
             records             => \@records,
@@ -717,7 +718,7 @@ sub update_permitted {
     ## but a user can only modify their password and Full name
     ## 
     if ( ref($object) eq "Scot::Model::User" ) {
-        if ( $env->is_admin ) {
+        if ( $env->is_admin($self->session('user'),$self->session('groups')) ) {
             return 1;
         }
         if ( $req->{request}->{username} eq $self->session('user') ) {
@@ -733,7 +734,7 @@ sub update_permitted {
     ## but a user can not do it 
     ## 
     if ( ref($object) eq "Scot::Model::Group" ) {
-        if ( $env->is_admin ) {
+        if ( $env->is_admin($self->session('user'),$self->session('groups'))) {
             return 1;
         }
         return undef;
