@@ -305,7 +305,7 @@ var SelectedEntry = React.createClass({
             <div id={divid} key={id} className={divClass} style={{height:height}}> 
                 {(type == 'incident' && this.props.headerData != null) ? <IncidentTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle}/> : null}
                 {(type == 'signature' && this.props.headerData != null) ? <SignatureTable type={type} id={id} headerData={this.props.headerData} errorToggle={this.props.errorToggle} showSignatureOptions={this.props.showSignatureOptions} /> : null}
-                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar}/> : <span>Loading...</span>} 
+                {showEntryData ? <EntryIterator data={data} type={type} id={id} alertSelected={this.props.alertSelected} headerData={this.props.headerData} alertPreSelectedId={this.props.alertPreSelectedId} isPopUp={this.props.isPopUp} entryToggle={this.props.entryToggle} updated={this.updatedCB} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} errorToggle={this.props.errorToggle} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} flairOff={this.props.flairOff}/> : <span>Loading...</span>} 
                 {this.props.entryToolbar ? <div>{this.props.isAlertSelected == false ? <AddEntry entryAction={'Add'} type={this.props.type} targetid={this.props.id} id={null} addedentry={this.props.entryToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
                 {this.props.fileUploadToolbar ? <div>{this.props.isAlertSelected == false ? <FileUpload type={this.props.type} targetid={this.props.id} id={'file_upload'} fileUploadToggle={this.props.fileUploadToggle} updated={this.updatedCB} errorToggle={this.props.errorToggle}/> : null}</div> : null}
                 {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} aID={this.props.aID} aType={this.props.aType} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj} linkWarningToggle={this.linkWarningToggle} errorToggle={this.props.errorToggle}/>: null}
@@ -314,6 +314,7 @@ var SelectedEntry = React.createClass({
         );
     }
 });
+
 var EntryIterator = React.createClass({
     render: function() {
         var rows = [];
@@ -340,7 +341,7 @@ var EntryIterator = React.createClass({
                     rows.push(<EntryParent key={data.id} items={data} type={type} id={id} isPopUp={this.props.isPopUp} errorToggle={this.props.errorToggle}/>);
                 }.bind(this));
             } else {
-                rows.push(<AlertParent key={id} items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} alertPreSelectedId={this.props.alertPreSelectedId} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} entryToggle={this.props.entryToggle} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle}/>);
+                rows.push(<AlertParent key={id} items={data} type={type} id={id} headerData={this.props.headerData} alertSelected={this.props.alertSelected} alertPreSelectedId={this.props.alertPreSelectedId} aType={this.props.aType} aID={this.props.aID} entryToolbar={this.props.entryToolbar} entryToggle={this.props.entryToggle} updated={this.props.updated} fileUploadToggle={this.props.fileUploadToggle} fileUploadToolbar={this.props.fileUploadToolbar} errorToggle={this.props.errorToggle} flairOff={this.props.flairOff}/>);
             }
             return (
                 <div>
@@ -349,7 +350,8 @@ var EntryIterator = React.createClass({
             )
         }
     }
-});
+})
+;
 var AlertParent = React.createClass({
     getInitialState: function() {
         var arr = [];
@@ -521,7 +523,7 @@ var AlertParent = React.createClass({
             }
             for (var z=0; z < items.length; z++) {
                 var dataFlair = null;
-                if (Object.getOwnPropertyNames(items[z].data_with_flair).length != 0) {
+                if (Object.getOwnPropertyNames(items[z].data_with_flair).length != 0 && !this.props.flairOff ) {
                     dataFlair = items[z].data_with_flair;
                 } else {
                     dataFlair = items[z].data;
@@ -539,10 +541,8 @@ var AlertParent = React.createClass({
 
 
             for ( let y = 0; y < this.props.headerData.ahrefs.length; y++ ) {
-                for ( let x in this.props.headerData.ahrefs[y] ) {
-                    linkToSearch.push( <a href={ this.props.headerData.ahrefs[y][x] }>{x}</a>);
-                    linkToSearch.push( <br/> );
-                }
+                linkToSearch.push( <a href={ this.props.headerData.ahrefs[y].link }>{this.props.headerData.ahrefs[y].subject}</a>);
+                linkToSearch.push( <br/> );
             }
 
         } else if (this.props.headerData != undefined){

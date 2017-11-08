@@ -15,6 +15,7 @@ var SelectedHeaderOptions = React.createClass({
         }
     },
     toggleFlair: function() { 
+        this.props.toggleFlair();
         $('iframe').each(function(index, ifr) {
             if(ifr.contentDocument != null) {
                 var ifrContents = $(ifr).contents();
@@ -27,6 +28,7 @@ var SelectedHeaderOptions = React.createClass({
                         $(entity).addClass('entity');
                         $(entity).removeClass('entity-off');
                     });
+                    this.setState({ globalFlairState: true });
                 } else {
                     ifrContents.find('.extras').hide();
                     ifrContents.find('.flair-off').show();
@@ -34,12 +36,12 @@ var SelectedHeaderOptions = React.createClass({
                         $(entity).addClass('entity-off');
                         $(entity).removeClass('entity');
                     });
-
+                    this.setState({ globalFlairState: false });
                 }
 
             }
         }.bind(this));
-        var off = $('.entity-off');
+        /*var off = $('.entity-off');
         var on = $('.entity');
         if (!this.state.globalFlairState) {
             this.setState({globalFlairState:true});
@@ -57,7 +59,7 @@ var SelectedHeaderOptions = React.createClass({
                 $(entity).addClass('entity-off');
                 $(entity).removeClass('entity');
             });
-        }
+        }*/
     },
     //All methods containing alert are only used by selected_entry when viewing an alertgroupand interacting with an alert.
     alertOpenSelected: function() {
