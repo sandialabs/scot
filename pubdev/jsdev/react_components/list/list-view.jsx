@@ -295,9 +295,9 @@ module.exports = React.createClass({
             showClearFilter = true
         }
         
-        if ( this.state.manualScrollHeight ) {
+        /*if ( this.state.manualScrollHeight ) {
             scrollheight = this.state.manualScrollHeight;
-        }
+        }*/
 
         let columns = buildTypeColumns ( this.props.type );
         
@@ -456,7 +456,7 @@ module.exports = React.createClass({
             $(ifr).addClass('pointerEventsOff')
         })
         
-        this.setState({ manualScrollHeight: listStartHeight + e.clientY - listStartY + 'px' })
+        this.setState({ manualScrollHeight: listStartHeight + e.clientY - listStartY + 'px', scrollheight: listStartHeight + e.clientY - listStartY + 'px'})
     },
 
     stopdrag: function(e){
