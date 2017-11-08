@@ -48,7 +48,6 @@ services:
      - "/etc/timezone:/etc/timezone:ro"
      - "/etc/localtime:/etc/localtime:ro"
      - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/"
-    # - esdata:/opt/scotbackup/elastic
    networks:
     - scot-docker-net
    ports:
@@ -125,19 +124,16 @@ services:
     - scot
    networks:
      - scot-docker-net
- mail: 
-   build:
-     dockerfile: Dockerfile-Mail
-     context: ./
-   volumes: 
-     - "/var/log/scot:/var/log/scot/"
-   depends_on:
-    - mongodb
-    - scot
+# mail: 
+#   build:
+#     dockerfile: Dockerfile-Mail
+#     context: ./
+#   volumes: 
+#     - "/var/log/scot:/var/log/scot/"
+#   depends_on:
+#    - mongodb
+#    - scot
 
-volumes:
-  esdata:
-    driver: local
 networks:
   scot-docker-net:
     driver: bridge
