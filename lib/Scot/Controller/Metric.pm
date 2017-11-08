@@ -80,7 +80,8 @@ sub apply_prod_hour_filter {
     my $log     = $self->env->log;
 
 
-    if ( $limit ne "production" ) {
+    if ( defined $limit and $limit ne "production" ) {
+        $log->warn("limit not set or not production");
         return undef;
     }
     $log->debug("limit is set to production");
@@ -430,7 +431,7 @@ sub alert_power {
     my $request = $self->get_request_params;
 
     my $report  = $request->{report}; # all, top10, bottom10
-    my $sums    = $self->alert_power_sums($request->{target});
+    my $sums    = $self->alert_power_sums($request);
 
     my @results = ();
     foreach my $at (keys %$sums) {
@@ -460,7 +461,8 @@ sub alert_power {
 
 sub alert_power_sums {
     my $self    = shift;
-    my $target  = shift;
+    my $request = shift;
+    my $target  = $request->{target};
     my $env     = $self->env;
     my $log     = $env->log;
     my $mongo   = $env->mongo;
@@ -474,8 +476,12 @@ sub alert_power_sums {
     }
 
 
-    my @range   = $env->date_util->get_time_range({range=>"lastyear"}, $tdt);
+    my @range   = $env->date_util->get_time_range({range=>"thisyear"}, $tdt);
     my $match   = $self->generate_range_match(\@range, undef);
+    my $stype   = $request->{sort};
+    my $sort    = $request->{dir} eq "asc" ? 1 : -1;
+    my $limit   = $request->{count} // 10;
+    $limit += 0;
     my @agg     = (
         {
             '$match'    => $match,
@@ -487,7 +493,15 @@ sub alert_power_sums {
                 promoted    => { '$sum' => '$promoted' },
                 incident    => { '$sum' => '$incident' },
             },
-        }
+        },
+        {
+            '$sort' => {
+                $stype  => $sort
+            },
+        },
+        {
+            '$limit'    => $limit
+        },
     );
     $log->debug("running agg command: ",{filter=>\&Dumper, value=>\@agg});
     my $collection  = $mongo->collection('Atmetric');

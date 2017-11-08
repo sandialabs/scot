@@ -28,6 +28,7 @@ var Links                   = require('../modal/links.jsx').default;
 var DetailDataStatus        = require('../components/detail_data_status.jsx');
 var Mark                    = require('../modal/mark.jsx').default;
 var DetailHeaderMoreOptions = require('../components/detail_header_more_options').default;
+var PromotedData            = require('../modal/promoted_data.jsx').default;
 var InitialAjaxLoad;
 
 var SelectedHeader = React.createClass({
@@ -77,7 +78,8 @@ var SelectedHeader = React.createClass({
             showSignatureOptions: false,        
             showMarkModal: false,
             showLinksModal: false,
-            isDeleted: false,       
+            isDeleted: false,     
+            flairOff: false,
         }
     },
     componentWillMount: function() {
@@ -443,7 +445,7 @@ var SelectedHeader = React.createClass({
                     var thing = index.target;
                     if ($(thing)[0].className == 'extras') { thing = $(thing)[0].parentNode}; //if an extra is clicked reference the parent element
                     if ($(thing).attr('url')) {  //link clicked
-                        var url = $(a).attr('url');
+                        var url = $(thing).attr('url');
                         this.linkWarningToggle(url);
                     } else { //entity clicked
                         var entityid = $(thing).attr('data-entity-id');
@@ -503,7 +505,7 @@ var SelectedHeader = React.createClass({
         };
         //column, string, clearall (bool), type
         this.props.handleFilter(null,null,true,'alertgroup');
-        this.props.handleFilter('subject', RegExp.escape(this.state.headerData.applies_to[0]), false, "alertgroup");
+        this.props.handleFilter([{id:'subject', value: RegExp.escape(this.state.headerData.applies_to[0])}], null, false, "alertgroup");
         window.open('#/alertgroup/');
     },
     showSignatureOptionsToggle: function() {
@@ -528,6 +530,15 @@ var SelectedHeader = React.createClass({
     linksModalToggle: function() {
         let showLinksModal = !this.state.showLinksModal;
         this.setState({ showLinksModal: showLinksModal });
+    },
+
+    toggleFlair: function() {
+        if ( this.state.flairOff ) {
+            this.setState({ flairOff: false});
+            setTimeout(function(){AddFlair.entityUpdate(this.state.entityData,this.flairToolbarToggle,this.props.type,this.linkWarningToggle,this.props.id)}.bind(this));
+        } else {
+            this.setState({ flairOff: true});
+        }
     },
 
     render: function() {
@@ -586,8 +597,8 @@ var SelectedHeader = React.createClass({
                                             :
                                                 null
                                             }
-                                            {(type == 'event' || type == 'incident') && this.state.showEventData ? <th>Promoted From:</th> : null}
-                                            {(type == 'event' || type == 'incident') && this.state.showEventData ? <PromotedData data={this.state.headerData.promoted_from} type={type} id={id} /> : null}
+                                            {(type == 'event' || type == 'incident') && this.state.showEventData && this.state.headerData.promoted_from.length > 0 ? <th>Promoted From:</th> : null}
+                                            {(type == 'event' || type == 'incident') && this.state.showEventData && this.state.headerData.promoted_from.length > 0 ? <PromotedData data={this.state.headerData.promoted_from} type={type} id={id} /> : null}
                                             {(type != 'entity') && this.state.showEventData ? <Tag data={this.state.tagData} id={id} type={type} updated={this.updated} errorToggle={this.props.errorToggle} /> : null}
                                             {(type != 'entity') && this.state.showEventData ? <Source data={this.state.sourceData} id={id} type={type} updated={this.updated} errorToggle={this.props.errorToggle}/> : null }
                                         </tr>
@@ -607,10 +618,10 @@ var SelectedHeader = React.createClass({
                     {this.state.deleteToolbar ? <DeleteEvent subjectType={subjectType} type={type} id={id} deleteToggle={this.deleteToggle} updated={this.updated} errorToggle={this.props.errorToggle} history={this.props.history}/> :null}
                     {this.state.showMarkModal ? <Mark modalActive={true} type={type} id={id} string={string} errorToggle={this.props.errorToggle} markModalToggle={this.markModalToggle} /> : null }
                     {this.state.showLinksModal ? <Links modalActive={true} type={type} id={id} errorToggle={this.props.errorToggle} linksModalToggle={this.linksModalToggle} /> : null }
-                    {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} headerData={this.state.headerData} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} guideRedirectToAlertListWithFilter={this.guideRedirectToAlertListWithFilter} showSignatureOptionsToggle={this.showSignatureOptionsToggle} markModalToggle={this.markModalToggle} linksModalToggle={this.linksModalToggle} ToggleProcessingMessage={this.ToggleProcessingMessage} errorToggle={this.props.errorToggle} /> : null} 
+                    {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} headerData={this.state.headerData} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} guideRedirectToAlertListWithFilter={this.guideRedirectToAlertListWithFilter} showSignatureOptionsToggle={this.showSignatureOptionsToggle} markModalToggle={this.markModalToggle} linksModalToggle={this.linksModalToggle} ToggleProcessingMessage={this.ToggleProcessingMessage} errorToggle={this.props.errorToggle} toggleFlair={this.toggleFlair}/> : null} 
                     {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated} errorToggle={this.props.errorToggle}/> : null}
                 </div>
-                {this.state.showEventData && type != 'entity' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.props.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} showSignatureOptions={this.state.showSignatureOptions}/> : null}
+                {this.state.showEventData && type != 'entity' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.props.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} showSignatureOptions={this.state.showSignatureOptions} flairOff={this.state.flairOff}/> : null}
                 {this.state.showEventData && type == 'entity' ? <EntityDetail entityid={id} entitytype={'entity'} id={id} type={'entity'} fullScreen={true} errorToggle={this.props.errorToggle} linkWarningToggle={this.linkWarningToggle}/> : null} 
                 {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj} linkWarningToggle={this.linkWarningToggle}/> : null}    
                 </div>
@@ -688,79 +699,9 @@ var EntryDataSubject = React.createClass({
             isDisabled = true;
         }
         return (
-            <div>{this.props.subjectType} {this.props.id}: <input type='text' defaultValue={this.state.value} onKeyPress={this.handleEnterKey} onBlur={this.handleChange} style={{width:this.state.width,lineHeight:'normal'}} disabled={isDisabled} /></div>
+            <div>{this.props.subjectType} {this.props.id}: <input type='text' defaultValue={this.state.value} onKeyPress={this.handleEnterKey} onBlur={this.handleChange} style={{width:this.state.width,lineHeight:'normal'}} className='detail-header-input' disabled={isDisabled} /></div>
         )
     }
-});
-
-const customStyles = {
-    content : {
-        top     : '50%',
-        left    : '50%',
-        right   : 'auto',
-        bottom  : 'auto',
-        marginRight: '-50%',
-        transform:  'translate(-50%, -50%)'
-    }
-}
-
-var PromotedData = React.createClass({
-    getInitialState: function() {
-        return {
-            showAllPromotedDataToolbar: false
-        }
-    },
-    showAllPromotedDataToggle: function() {
-        if (this.state.showAllPromotedDataToolbar == false) {
-            this.setState({showAllPromotedDataToolbar: true});  
-        } else {
-            this.setState({showAllPromotedDataToolbar: false});
-        }
-    },
-    render: function() {
-        var promotedFromType = null;
-        var fullarr = [];
-        var shortarr = [];
-        var shortforlength = 3;
-        if (this.props.type == 'event') {
-            promotedFromType = 'alert'
-        } else if (this.props.type == 'incident') {
-            promotedFromType = 'event'
-        }
-        //makes large array for modal
-        for (var i=0; i < this.props.data.length; i++) {
-            if (i > 0) {fullarr.push(<div> , </div>)}
-            var link = '/' + promotedFromType + '/' + this.props.data[i];
-            fullarr.push(<div key={this.props.data[i]}><Link to={link}>{this.props.data[i]}</Link></div>)
-        }
-        //makes small array for quick display in header
-        if (this.props.data.length < 3 ) {
-            shortforlength = this.props.data.length;
-        }
-        for (var i=0; i < shortforlength; i++) {
-            if (i > 0) {shortarr.push(<div> , </div>)}
-            var link = '/' + promotedFromType + '/' + this.props.data[i];
-            shortarr.push(<div key={this.props.data[i]}><Link to={link}>{this.props.data[i]}</Link></div>)
-        } 
-        if (this.props.data.length > 3) {shortarr.push(<div onClick={this.showAllPromotedDataToggle}>,<a href='javascript:;'>...more</a></div>)}
-        return (
-            <td>
-                <span id='promoted_from' style={{display:'flex'}}>{shortarr}</span> 
-                {this.state.showAllPromotedDataToolbar ? <Modal isOpen={true} onRequestClose={this.showAllPromotedDataToggle} style={customStyles}>
-                    <div className='modal-header'>
-                        <img src='images/close_toolbar.png' className='close_toolbar' onClick={this.showAllPromotedDataToggle} />
-                        <h3 id='myModalLabel'>Promoted From</h3>
-                    </div>
-                    <div className='modal-body promoted-from-full'>
-                        {fullarr}    
-                    </div>
-                    <div className='modal-footer'>
-                        <Button id='cancel-modal' onClick={this.showAllPromotedDataToggle}>Close</Button>
-                    </div>
-                </Modal> : null }
-            </td>
-        )
-    }   
 });
 
 

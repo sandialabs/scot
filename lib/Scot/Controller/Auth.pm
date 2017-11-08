@@ -6,6 +6,7 @@ use MIME::Base64;
 use Crypt::PBKDF2;
 use Data::Dumper;
 use Data::UUID;
+use Try::Tiny;
 use strict;
 use warnings;
 
@@ -59,7 +60,7 @@ sub check {
         $self->update_lastvisit($user);
         my $groups = $self->set_group_membership($user);
         if (defined $groups) {
-            $log->info("User $user (".join(',',@$groups).") Authenticated via Mojo session");
+            $log->info("Authenticated (mojo) User $user (".join(',',@$groups).")");
             $log->level($loglevel);
             return 1;
         }
@@ -322,7 +323,7 @@ sub ldap_authenticates {
     my $pass    = shift;
     my $env     = $self->env;
     my $log     = $env->log;
-    my $ldap    = $env->ldap;
+    my $ldap    = $env->get_handle('ldap');
 
     $log->debug("seeing if ldap will authenticate");
 
@@ -337,7 +338,7 @@ sub ldap_authenticates {
         }
     }
     else {
-        $log->error("ldap not loaded in env.  Config file problem?");
+        $log->error("ldap not loaded in env.  Assuming no LDAP configured.");
         return undef;
     }
 }
@@ -725,7 +726,7 @@ sub update_user_sucess {
     }
     else {
         $log->error("User $user not in DB.  Assuming New User");
-        eval {
+        try {
             $userobj    = $collection->create(
                 username    => $user,
                 lastvisit   => $self->env->now,
@@ -734,10 +735,10 @@ sub update_user_sucess {
                 display_orientation => 'horizontal',
                 attempts    => 0,
             );
-        };
-        if ($@) {
-            $log->error("Failed to create User $user! $@");
         }
+        catch {
+            $log->error("Failed to create User $user! $_");
+        };
     }
 }
 

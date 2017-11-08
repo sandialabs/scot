@@ -73,24 +73,29 @@ var Task = React.createClass({
     render: function () {
         var taskDisplay = 'Task Loading...';
         var onClick; 
-        if (this.props.taskData.metadata.status === undefined || this.props.taskData.metadata.status === null || this.props.taskData.class != 'task') {
-            taskDisplay = 'Make Task';
+        if ( this.props.taskData.class == 'task' ) {
+            if (this.props.taskData.metadata.task.status === undefined || this.props.taskData.metadata.task.status === null || this.props.taskData.class != 'task') {
+                taskDisplay = 'Make Task';
+                onClick = this.makeTask;
+            } else if (this.state.whoami != this.props.taskData.metadata.task.who && this.props.taskData.metadata.task.status == 'open') {
+                taskDisplay = 'Assign task to me';
+                onClick = this.takeTask;
+            } else if (this.state.whoami == this.props.taskData.metadata.task.who && this.props.taskData.metadata.task.status == 'open') {
+                taskDisplay = 'Close Task';
+                onClick = this.closeTask;
+            } else if (this.props.taskData.metadata.task.status == 'closed' || this.props.taskData.metadata.task.status == 'completed') {
+                taskDisplay = 'Reopen Task';
+                onClick = this.makeTask;
+            } else if (this.state.whoami == this.props.taskData.metadata.task.who && this.props.taskData.metadata.task.status == 'assigned') {
+                taskDisplay = 'Close Task';
+                onClick = this.closeTask;
+            } else if (this.state.whoami != this.props.taskData.metadata.task.who && this.props.taskData.metadata.task.status == 'assigned') {
+                taskDisplay = 'Assign task to me';
+                onClick = this.takeTask;
+            }
+        } else {
+            taskDisplay = 'Mask Task';
             onClick = this.makeTask;
-        } else if (this.state.whoami != this.props.taskData.metadata.who && this.props.taskData.metadata.status == 'open') {
-            taskDisplay = 'Assign task to me';
-            onClick = this.takeTask;
-        } else if (this.state.whoami == this.props.taskData.metadata.who && this.props.taskData.metadata.status == 'open') {
-            taskDisplay = 'Close Task';
-            onClick = this.closeTask;
-        } else if (this.props.taskData.metadata.status == 'closed' || this.props.taskData.metadata.status == 'completed') {
-            taskDisplay = 'Reopen Task';
-            onClick = this.makeTask;
-        } else if (this.state.whoami == this.props.taskData.metadata.who && this.props.taskData.metadata.status == 'assigned') {
-            taskDisplay = 'Close Task';
-            onClick = this.closeTask;
-        } else if (this.state.whoami != this.props.taskData.metadata.who && this.props.taskData.metadata.status == 'assigned') {
-            taskDisplay = 'Assign task to me';
-            onClick = this.takeTask;
         }
         return (
             <span style={{display:'block'}} onClick={onClick}>{taskDisplay}</span>

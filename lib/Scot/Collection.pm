@@ -24,6 +24,8 @@ has env => (
     default     => sub { Scot::Env->instance; },
 );
 
+
+
 =item B<create(%args)>
 
 replacing Meerkat's create with one that will generate a integer id.
@@ -518,7 +520,8 @@ sub api_list {
 
     if ( $href->{task_search} ) {
         # $match->{'task.status'}     = {'$exists'    => 1};
-        $match->{'metadata.status'} = {'$exists'    => 1};
+        # $match->{'metadata.status'} = {'$exists'    => 1};
+        $match->{class} = "task";
     }
 
     $self->env->log->debug("match is ",{filter=>\&Dumper, value=>$match});
@@ -624,7 +627,13 @@ sub api_find {
         my $obj = $self->find_iid($id);
         return $obj;
     }
-    my $id  = $href->{id} + 0;
+    my $id  = $href->{id};
+    if ( $id eq "undefined" ) {
+        $id = 0;
+    }
+    else {
+        $id += 0;
+    }
     my $obj = $self->find_iid($id);
     return $obj;
 
