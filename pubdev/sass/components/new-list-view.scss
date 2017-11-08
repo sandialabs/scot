@@ -37,6 +37,7 @@
 
 	.-loading.-active {
 		//background: none;
+        pointer-events: none !important;
 
 		div {
 			transform: none;
