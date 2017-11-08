@@ -63,7 +63,18 @@ sub parse_message {
     }
 
     my @ahrefs = $tree->look_down('_tag',"a");
-    @ahrefs = map { $_->as_HTML; } @ahrefs;
+    # @ahrefs = map { $_->as_HTML; } @ahrefs;
+    my @splunklinks = ();
+
+    foreach my $anchor (@ahrefs) {
+        my @content = $anchor->content_list;
+        my $text    = join(' ',@content);
+        my $href    = $anchor->attr('href');
+        push @splunklinks, {
+            subject => $text,
+            link    => $href,
+        };
+    }
 
     my ($alertname, $search, $tagaref) = $self->get_splunk_report_info($tree);
 
@@ -121,7 +132,8 @@ sub parse_message {
     $json{data}     = \@results;
     $json{columns}  = \@columns;
     $json{tag}      = $tagaref;
-    $json{ahrefs}   = \@ahrefs;
+    # $json{ahrefs}   = \@ahrefs;
+    $json{ahrefs}   = \@splunklinks;
 
     if ( length($json{body}) > 1000000 ) {
         $json{body}         = qq|Email Body too large.  View in Email client.|;
@@ -164,7 +176,8 @@ sub extract_splunk_tags {
     my $regex = qr{
         (sourcetype=.*?)\ |
         (index=.*?)\ |
-        (tag=.*?)\ 
+        (tag=.*?)\ |
+        (source=.*?)\  
     }xms;
 
     foreach my $m ($search =~ m/$regex/g) {

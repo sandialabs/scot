@@ -75,6 +75,7 @@ sub create {
     try {
         my $req_href    = $self->get_request_params;
         my $collection  = $self->get_collection_req($req_href);
+        $req_href->{groups} = $self->session('groups');
         my @objects     = $collection->api_create($req_href);
         my @returnjson  = ();
 
@@ -126,6 +127,14 @@ sub post_create_process {
 
     if ( ref($object) eq "Scot::Model::Sigbody" ) {
         $json->{revision} = $object->revision;
+        $self->env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                who     => $self->session('user'),
+                type    => "signature",
+                id      => $object->signature_id,
+            }
+        });
     }
 
     if ( $object->meta->does_role("Scot::Role::Tags") ) {
@@ -230,6 +239,7 @@ sub list {
         my $req_href        = $self->get_request_params;
         my $collection      = $self->get_collection_req($req_href);
         my ($cursor,$count) = $collection->api_list($req_href, $user, $groups);
+        $log->debug("list request return $count records");
         my @records         = $self->post_list_process( $cursor, $req_href);
         my $return_href = {
             records             => \@records,
@@ -716,7 +726,7 @@ sub update_permitted {
     ## but a user can only modify their password and Full name
     ## 
     if ( ref($object) eq "Scot::Model::User" ) {
-        if ( $env->is_admin ) {
+        if ( $env->is_admin($self->session('user'),$self->session('groups')) ) {
             return 1;
         }
         if ( $req->{request}->{username} eq $self->session('user') ) {
@@ -732,7 +742,7 @@ sub update_permitted {
     ## but a user can not do it 
     ## 
     if ( ref($object) eq "Scot::Model::Group" ) {
-        if ( $env->is_admin ) {
+        if ( $env->is_admin($self->session('user'),$self->session('groups'))) {
             return 1;
         }
         return undef;
@@ -985,9 +995,11 @@ sub process_task_commands {
     if ( $action ne '' ) {
         delete $json->{$action}; # not an attribute in model
         $json->{metadata}   = {  # but this is
-            who     => $self->session('user'),
-            when    => $self->env->now,
-            status  => $status,
+            task    => {
+                who     => $self->session('user'),
+                when    => $self->env->now,
+                status  => $status,
+            },
         };
         $self->env->mongo->collection('Stat')->put_stat(
             "task $status", 1
@@ -1558,7 +1570,10 @@ sub thread_entries {
             # actions defined in the config file
             if ( defined $self->env->{entry_actions}->{fileinfo} ) {
                 my $action  = $env->{entry_actions}->{fileinfo};
-                $href->{actions} = [ $action->($href) ];
+                my $servername = `hostname`;
+                chomp($servername);
+                $log->debug("SERVERNAME is $servername");
+                $href->{actions} = [ $action->($href,$servername) ];
             }
         }
 

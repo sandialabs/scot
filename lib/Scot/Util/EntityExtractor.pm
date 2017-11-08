@@ -10,6 +10,7 @@ use List::Uniq ':all';
 use HTML::TreeBuilder 5 -weak;
 use HTML::FormatText;
 use HTML::Element;
+use HTML::Entities;
 use Domain::PublicSuffix;
 use Mozilla::PublicSuffix qw(public_suffix);
 use Data::Dumper;
@@ -380,6 +381,14 @@ sub process_words {
     my $offset  = $index + 0; 
     my $log     = $self->log;
 
+## need better algo here
+## spaces in <pre> are gobbled up
+## ruins formating
+## idea: treat spaces as a word
+
+## my @words = ( $text =~ m/( |\w+)/g );
+## then treat word[i] = " " as special case
+
     my @words   = split(/\s+/, $text);
     my @spaces  = ( $text =~ m/(\s+)/g );
 
@@ -613,13 +622,15 @@ sub do_span {
     my $log     = $self->log;
     my $class   = "entity $type";
 
+    my $etext = encode_entities($text);
+
     my $element = HTML::Element->new(
         'span',
         'class'     => $class,
         'data-entity-type'  => $type,
         'data-entity-value' => $text,
     );
-    $element->push_content($text);
+    $element->push_content($etext);
     return $element;
 }
 

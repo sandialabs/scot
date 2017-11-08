@@ -5,6 +5,7 @@ var MenuItem        = require('react-bootstrap/lib/MenuItem.js');
 var DropdownButton  = require('react-bootstrap/lib/DropdownButton.js');
 var Promote         = require('../components/promote.jsx');
 var Marker          = require('../components/marker.jsx').default;
+var TrafficLightProtocol = require('../components/traffic_light_protocol.jsx');
 
 var SelectedHeaderOptions = React.createClass({
     getInitialState: function() {
@@ -14,6 +15,7 @@ var SelectedHeaderOptions = React.createClass({
         }
     },
     toggleFlair: function() { 
+        this.props.toggleFlair();
         $('iframe').each(function(index, ifr) {
             if(ifr.contentDocument != null) {
                 var ifrContents = $(ifr).contents();
@@ -26,6 +28,7 @@ var SelectedHeaderOptions = React.createClass({
                         $(entity).addClass('entity');
                         $(entity).removeClass('entity-off');
                     });
+                    this.setState({ globalFlairState: true });
                 } else {
                     ifrContents.find('.extras').hide();
                     ifrContents.find('.flair-off').show();
@@ -33,12 +36,12 @@ var SelectedHeaderOptions = React.createClass({
                         $(entity).addClass('entity-off');
                         $(entity).removeClass('entity');
                     });
-
+                    this.setState({ globalFlairState: false });
                 }
 
             }
         }.bind(this));
-        var off = $('.entity-off');
+        /*var off = $('.entity-off');
         var on = $('.entity');
         if (!this.state.globalFlairState) {
             this.setState({globalFlairState:true});
@@ -56,7 +59,7 @@ var SelectedHeaderOptions = React.createClass({
                 $(entity).addClass('entity-off');
                 $(entity).removeClass('entity');
             });
-        }
+        }*/
     },
     //All methods containing alert are only used by selected_entry when viewing an alertgroupand interacting with an alert.
     alertOpenSelected: function() {
@@ -294,7 +297,7 @@ var SelectedHeaderOptions = React.createClass({
     },
 
     createGuide: function() {
-       var data = JSON.stringify({subject: 'ENTER A GUIDE NAME',applies_to:[this.props.headerData.subjectName],entry:[]})
+       var data = JSON.stringify({subject: 'ENTER A GUIDE NAME',applies_to:[this.props.subjectName]})
         $.ajax({
             type: 'POST',
             url: '/scot/api/v2/guide',
@@ -383,6 +386,7 @@ var SelectedHeaderOptions = React.createClass({
                     {type == 'alertgroup' || type == 'event' || type == 'intel' ? <Button eventKey="4" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button> : null}
                     <Button eventKey="5" onClick={this.props.changeHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> {subjectType} History</Button>
                     {type != 'entity' ? <Button eventKey="6" onClick={this.props.permissionsToggle} bsSize='xsmall'><i className="fa fa-users" aria-hidden="true"></i> Permissions</Button> : null } 
+                    <TrafficLightProtocol type={type} id={id} tlp={this.props.headerData.tlp} />
                     <Button eventKey="7" onClick={this.props.entitiesToggle} bsSize='xsmall'><span className='entity'>__</span> View Entities</Button>
                     {type == 'guide' ? <Button eventKey='8' onClick={this.props.guideRedirectToAlertListWithFilter} bsSize='xsmall'><i className="fa fa-table" aria-hidden='true'></i> View Related Alerts</Button> : null}
                     <Button onClick={this.props.linksModalToggle} bsSize='xsmall'><i className='fa fa-link' aria-hidden='true'></i> Links</Button>
@@ -409,7 +413,7 @@ var SelectedHeaderOptions = React.createClass({
                         <Button eventKey='5' onClick={this.props.entitiesToggle} bsSize='xsmall'><span className='entity'>__</span> View Entities</Button>
                         {type == 'alertgroup' || type == 'event' || type == 'intel' ? <Button eventKey="6" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button> : null}
                         <Button eventKey='7' onClick={this.props.changeHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> {subjectType} History</Button>
-                        
+                        <TrafficLightProtocol type={type} id={id} tlp={this.props.headerData.tlp} />
                         <Button eventKey='8' onClick={this.alertOpenSelected} bsSize='xsmall' bsStyle='danger'><img src='/images/open.png'/> Open Selected</Button>
                         <Button eventKey='9' onClick={this.alertCloseSelected} bsSize='xsmall' bsStyle='success'><i className="fa fa-flag-checkered" aria-hidden="true"></i> Close Selected</Button>
                         <Button eventKey='10' onClick={this.alertPromoteSelected} bsSize='xsmall' bsStyle='warning'><img src='/images/megaphone.png'/> Promote Selected</Button> 
@@ -439,6 +443,7 @@ var SelectedHeaderOptions = React.createClass({
                         <Button eventKey='5' onClick={this.props.entitiesToggle} bsSize='xsmall'><span className='entity'>__</span> View Entities</Button>
                         {type == 'alertgroup' || type == 'event' || type == 'intel' ? <Button eventKey="6" onClick={this.props.viewedByHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> Viewed By History</Button> : null}
                         <Button eventKey='7' onClick={this.props.changeHistoryToggle} bsSize='xsmall'><img src='/images/clock.png'/> {subjectType} History</Button>
+                        <TrafficLightProtocol type={type} id={id} tlp={this.props.headerData.tlp} />
                         <Button onClick={this.props.linksModalToggle} bsSize='xsmall'><i className='fa fa-link' aria-hidden='true'></i> Links</Button>
                         <Button bsSize='xsmall' onClick={this.createLinkSignature}><i className="fa fa-pencil" aria-hidden="true"></i> Create & Link Signature</Button>
                         <Button bsStyle='danger' eventKey="8" onClick={this.props.deleteToggle} bsSize='xsmall'><i className="fa fa-trash" aria-hidden="true"></i> Delete {subjectType}</Button>

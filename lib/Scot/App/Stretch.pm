@@ -95,6 +95,37 @@ sub _get_max_workers {
     return $self->get_config_value($attr, $default, $envname);
 }
 
+has stomp_host  => (
+    is          => 'ro',
+    isa         => 'Str',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_stomp_host',
+);
+
+sub _build_stomp_host {
+    my $self    = shift;
+    my $attr    = "stomp_host";
+    my $default = "localhost";
+    my $envname = "scot_util_stomphost";
+    return $self->get_config_value($attr, $default, $envname);
+}
+has stomp_port  => (
+    is          => 'ro',
+    isa         => 'Int',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_stomp_port',
+);
+
+sub _build_stomp_port {
+    my $self    = shift;
+    my $attr    = "stomp_port";
+    my $default = 61613;
+    my $envname = "scot_util_stompport";
+    return $self->get_config_value($attr, $default, $envname);
+}
+
 =head2 Autonomous
 
 $stretch->run();
@@ -112,7 +143,15 @@ sub run {
     $log->debug("Starting STOMP watcher");
     $log->debug("SCOT access mode is ".$self->scot_get_method);
 
-    my $stomp   = AnyEvent::STOMP::Client->new();
+    my $stomp;
+
+    if ( $self->stomp_host eq "localhost" ) {
+        $stomp   = AnyEvent::STOMP::Client->new();
+    }
+    else {
+        $stomp   = AnyEvent::STOMP::Client->new($self->stomp_host, $self->stomp_port);
+    }
+
     my $pm      = AnyEvent::ForkManager->new( 
         max_workers => $self->max_workers 
     );
@@ -182,7 +221,7 @@ sub process_message {
     my $cleanser = Data::Clean::FromJSON->get_cleanser;
     my $record  = $self->get_document($type, $id);
     $cleanser->clean_in_place($record);
-    $es->index($type, $record, 'scot');
+    $es->index('scot', $type, $record);
     $self->put_stat("elastic doc inserted", 1);
 }
 
@@ -291,7 +330,7 @@ sub process_all {
 
             delete $href->{_id};
             try {
-                $es->index($collection, $href, 'scot');
+                $es->index('scot',$collection, $href);
             }
             catch {
                 say "Error: Failed to index $collection : ". $href->{id};
