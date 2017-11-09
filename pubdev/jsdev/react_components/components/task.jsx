@@ -93,6 +93,9 @@ var Task = React.createClass({
                 taskDisplay = 'Assign task to me';
                 onClick = this.takeTask;
             }
+        } else {
+            taskDisplay = 'Mask Task';
+            onClick = this.makeTask;
         }
         return (
             <span style={{display:'block'}} onClick={onClick}>{taskDisplay}</span>
