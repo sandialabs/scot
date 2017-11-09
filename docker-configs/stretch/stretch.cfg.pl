@@ -16,7 +16,7 @@
             attr    => 'es',
             class   => 'Scot::Util::ElasticSearch',
             config  => {
-                nodes   => [ qw(172.18.0.5:9200) ],
+                nodes   => [ qw(elastic:9200) ],
             },
         },
         {

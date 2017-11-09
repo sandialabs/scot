@@ -1,6 +1,7 @@
 version: '3'
 services:
   apache:
+   # hostname: apache
     build:
       dockerfile: Dockerfile-Apache
       context: ./
