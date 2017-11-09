@@ -55,7 +55,7 @@ To stop a specific service::
 
     sudo docker-compose stop name_of_of_service
     
-To restart a specific service and build in any particular changes you have made to source: 
+To restart a specific service and build in any particular changes you have made to source:: 
 
     sudo docker-compose up -d --build name_of_service
     
