@@ -53,7 +53,13 @@ To start a specific service::
 
 To stop a specific service::
 
-    sudo docker-compose stop name_of_service
+    sudo docker-compose stop name_of_of_service
+    
+To restart a specific service and build in any particular changes you have made to source: 
+
+    sudo docker-compose up -d --build name_of_service
+    
+
 
 
 Configuration
@@ -73,7 +79,7 @@ The docker-scripts directory contains scripts for backing up the data contained 
 
 And then run:: 
 
-    sudo docker run -it --rm --name docker-util -e SCRIPT=restore_remote_scotdb.pl --net scot_scot-docker-net --ip 172.18.0.11  docker-util
+    sudo docker run -it --rm --name docker-util -e SCRIPT=name_of_script_that_exists_in_docker_scripts_directory --net scot_scot-docker-net --ip 172.18.0.11  docker-util
 
 This will execute the script and close the container once it completes. 
 
@@ -88,6 +94,12 @@ MongoDB default password (also used for logging in to SCOT if local auth is enab
 
 * Username: admin
 * Password: admin
+
+** Persisted Data ** 
+
+You can view which data is being persisted by viewing the docker-compose.yml script and referring to the various 'Volumes'. With regard to MongoDB (where SCOT records are persisted), those directories are mapped to your Host's: /var/lib/mongodb directory. 
+
+
 
 
 
