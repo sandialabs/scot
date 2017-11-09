@@ -95,7 +95,7 @@ MongoDB default password (also used for logging in to SCOT if local auth is enab
 * Username: admin
 * Password: admin
 
-** Persisted Data ** 
+**Persisted Data** 
 
 You can view which data is being persisted by viewing the docker-compose.yml script and referring to the various 'Volumes'. With regard to MongoDB (where SCOT records are persisted), those directories are mapped to your Host's: /var/lib/mongodb directory. 
 
