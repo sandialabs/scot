@@ -127,6 +127,14 @@ sub post_create_process {
 
     if ( ref($object) eq "Scot::Model::Sigbody" ) {
         $json->{revision} = $object->revision;
+        $self->env->mq->send("scot", {
+            action  => "updated",
+            data    => {
+                who     => $self->session('user'),
+                type    => "signature",
+                id      => $object->signature_id,
+            }
+        });
     }
 
     if ( $object->meta->does_role("Scot::Role::Tags") ) {
