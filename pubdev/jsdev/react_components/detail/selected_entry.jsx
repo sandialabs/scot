@@ -157,17 +157,20 @@ var SelectedEntry = React.createClass({
             }); 
         }
     },
+
     flairToolbarToggle: function(id,value,type,entityoffset,entityobj) {
         if (this.isMounted()) {
             this.setState({flairToolbar:true,entityid:id,entityvalue:value,entitytype:type,entityoffset:entityoffset,entityobj:entityobj})
         }
     },
+
     flairToolbarOff: function() {
         if (this.isMounted()) {
             var newEntityDetailKey = this.state.entityDetailKey + 1;
             this.setState({flairToolbar:false,entityDetailKey:newEntityDetailKey});
         }
     },
+
     linkWarningToggle: function(href) {
         if (this.isMounted()) {
             if (this.state.linkWarningToolbar == false) {
@@ -177,6 +180,7 @@ var SelectedEntry = React.createClass({
             }
         }
     },
+
     Watcher: function() {
         var containerid = '#' + this.props.type + '-detail-container';
         if(this.props.type != 'alertgroup') {
@@ -223,6 +227,7 @@ var SelectedEntry = React.createClass({
             }.bind(this));
         }
     },
+
     checkFlairHover: function(ifr) {
         function returnifr() {
             return ifr;
@@ -255,17 +260,18 @@ var SelectedEntry = React.createClass({
                 }.bind(this));
             }
         } 
-    },  
+    }, 
+
     containerHeightAdjust: function() {
         //Using setTimeout so full screen toggle animation has time to finish before resizing detail section
         setTimeout( function() {
             var scrollHeight;
             let ListViewTableHeight = parseInt(document.defaultView.getComputedStyle(document.getElementsByClassName('ReactTable')[0]).height, 10);
             if (ListViewTableHeight !== 0) {
-                scrollHeight = $(window).height() - ListViewTableHeight - $('#header').height() - 70 
+                scrollHeight = $(window).height() - ListViewTableHeight - $('#header').height() - 78 
                 scrollHeight = scrollHeight + 'px'
             } else {
-                scrollHeight = $(window).height() - $('#header').height() - 70 
+                scrollHeight = $(window).height() - $('#header').height() - 78 
                 scrollHeight = scrollHeight + 'px'
             }
             //$('#detail-container').css('height',scrollHeight);
@@ -275,6 +281,7 @@ var SelectedEntry = React.createClass({
         }.bind(this), 500);
         
     },
+
     render: function() { 
         var divid = 'detail-container';
         var height = this.state.height;
@@ -350,8 +357,8 @@ var EntryIterator = React.createClass({
             )
         }
     }
-})
-;
+});
+
 var AlertParent = React.createClass({
     getInitialState: function() {
         var arr = [];
@@ -393,12 +400,14 @@ var AlertParent = React.createClass({
     componentWillUnmount: function() {
         $('#main-detail-container').unbind('keydown');
     },
+    
     componentDidUpdate: function() {
         //update the table, but not if a tinymce editor window is open as it will break the editing window
-        if (!$('.mce-tinymce')[0]) {
+        if (!$('.mce-tinymce')[0] && window.getSelection().toString() == '' ) {
             $('#sortabletable').trigger('update');
         }
     },
+
     rowClicked: function(id,index,clickType,status) {
         var array = this.state.activeIndex.slice();
         var activeIdArray = this.state.activeId.slice();
@@ -533,7 +542,7 @@ var AlertParent = React.createClass({
             }
             
             var search = null;
-            if (items[0].data_with_flair != undefined) {
+            if (items[0].data_with_flair != undefined && !this.props.flairOff ) {
                 search = items[0].data_with_flair.search;
             } else {
                 search = items[0].data.search;
@@ -782,10 +791,18 @@ var AlertRow = React.createClass({
         var data = this.props.data;
         var dataFlair = this.props.dataFlair;
         var value = this.props.value;
-        var rowReturn=[];
+        
+        let rowContent = dataFlair[value];
+        
+        if ( Array.isArray( dataFlair[value] )) {
+            for ( let i = 0; i < dataFlair[value].length; i++ ) {
+                rowContent = $('<div>').text(dataFlair[value][i]).html();
+            }
+        };
+
         return (
             <td style={{marginRight:'4px'}}>
-                <div className='alert_data_cell' dangerouslySetInnerHTML={{ __html: dataFlair[value]}}/>
+                <div className='alert_data_cell' dangerouslySetInnerHTML={{ __html: rowContent}}/>
             </td>
         )
     }

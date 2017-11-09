@@ -73,7 +73,7 @@ module.exports = React.createClass({
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: queryType, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, };
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: queryType, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, manualScrollHeight: null, };
     },
 
     componentWillMount: function() {
@@ -279,7 +279,8 @@ module.exports = React.createClass({
     render: function() {
         var listViewContainerHeight;
         var showClearFilter = false;
-        
+        let scrollheight = this.state.scrollheight;
+
         if (this.state.listViewContainerDisplay == null) {
             listViewContainerHeight = null;
         } else {
@@ -289,9 +290,14 @@ module.exports = React.createClass({
         if (this.state.id != null && this.state.typeCapitalized != null) {
             document.title = this.state.typeCapitalized.charAt(0) + '-' + this.state.id
         }
+
         if (checkCookie('listViewFilter'+this.props.type) != null || checkCookie('listViewSort'+this.props.type) != null || checkCookie('listViewPage'+this.props.type) != null) {
             showClearFilter = true
         }
+        
+        /*if ( this.state.manualScrollHeight ) {
+            scrollheight = this.state.manualScrollHeight;
+        }*/
 
         let columns = buildTypeColumns ( this.props.type );
         
@@ -318,7 +324,7 @@ module.exports = React.createClass({
                                                     columns = { columns } 
                                                     data = { this.state.objectarray }
                                                     style= {{
-                                                        height: this.state.scrollheight 
+                                                        height: scrollheight 
                                                     }}
                                                     page = { this.state.activepage.page }
                                                     pages = { this.state.totalPages }
@@ -446,12 +452,11 @@ module.exports = React.createClass({
     
     //This is used for the dragging portrait and landscape views
     startdrag: function(e){
-        e.preventDefault();
         $('iframe').each(function(index,ifr){
             $(ifr).addClass('pointerEventsOff')
         })
         
-        this.setState({ scrollheight: listStartHeight + e.clientY - listStartY + 'px' })
+        this.setState({ manualScrollHeight: listStartHeight + e.clientY - listStartY + 'px', scrollheight: listStartHeight + e.clientY - listStartY + 'px'})
     },
 
     stopdrag: function(e){
@@ -462,6 +467,8 @@ module.exports = React.createClass({
     },
 
     dragdiv: function(e){
+        if (e.preventDefault) {e.preventDefault();}
+        if (e.stopPropagation) {e.stopPropagation();}
         var elem = document.getElementsByClassName('ReactTable');
         listStartX = e.clientX;
         listStartY = e.clientY;
@@ -518,6 +525,7 @@ module.exports = React.createClass({
     },
 
     selected: function(type,rowid, subid, taskid){
+        let scrollheight;
         if ( taskid == null && subid == null ) {
             //window.history.pushState('Page', 'SCOT', '/#/' + type +'/'+rowid)  
             this.props.history.push( '/' + type + '/' + rowid );
@@ -528,10 +536,12 @@ module.exports = React.createClass({
             //window.history.pushState('Page', 'SCOT', '/#/' + type + '/' + taskid + '/' + rowid)
             this.props.history.push( '/' + type + '/' + taskid + '/' + rowid + '/'  );
         }
+
         if(this.state.display == 'block'){
-            this.state.scrollheight = '30vh'
+            scrollheight = '30vh'
         }
-        this.setState({alertPreSelectedId: 0, scrollheight: this.state.scrollheight, showSelectedContainer: true })
+
+        this.setState({alertPreSelectedId: 0, scrollheight: scrollheight, showSelectedContainer: true })
     },
 
     getNewData: function(page, sort, filter){
