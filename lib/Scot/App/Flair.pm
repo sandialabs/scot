@@ -602,6 +602,7 @@ sub update_entry {
         $self->log->debug("putting entry: ",{filter=>\&Dumper,value=>$newdata});
 
         my $entity_aref = delete $newdata->{entities};
+        my $user_aref   = delete $newdata->{userdef};
 
         if ( $obj->update({ '$set' => $newdata }) ){
             $self->log->debug("success updating");
@@ -612,9 +613,12 @@ sub update_entry {
             $self->log->error("failed update, I think");
         }
 
+        my $ecol    = $mongo->collection('Entity');
+
         if ( defined($entity_aref) ) {
             if ( scalar(@$entity_aref) > 0 ) {
-                my ($create_aref, $update_aref) = $mongo->collection('Entity')->update_entities($obj, $entity_aref);
+                my ( $create_aref, 
+                     $update_aref) = $ecol->update_entities($obj, $entity_aref);
                 $log->debug("created entities: ",join(',',@$create_aref));
                 foreach my $id (@$create_aref) {
                     $self->env->mq->send("scot", {
@@ -639,6 +643,9 @@ sub update_entry {
                     });
                 }
                 $self->put_stat("entity updated", scalar(@$update_aref));
+            }
+            else {
+                $log->debug("no entities present");
             }
         }
 
