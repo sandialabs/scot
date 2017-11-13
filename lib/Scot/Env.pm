@@ -80,20 +80,6 @@ sub _build_config_href {
     return $self->read_config_file;
 }
 
-# has cgi_ids => (
-#     is          => 'ro',
-#     isa         => 'CGI::IDS',
-#     required    => 1,
-#     lazy        => 1,
-#     builder     => '_build_cgi_ids',
-# );
-
-# sub _build_cgi_ids {
-#     my $self    = shift;
-#     my $conf    = $self->config_href->{cgi_ids_config};
-#     return CGI::IDS->new(%$conf);
-# }
-
 sub BUILD {
     my $self    = shift;
     my $meta    = $self->meta;
@@ -154,6 +140,7 @@ sub BUILD {
         my $instance_vars = {
             log         => $log,
             config      => $config,
+            env         => $self,
         };
         my $instance    = $class->new($instance_vars);
 
