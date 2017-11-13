@@ -5,6 +5,7 @@ use Test::Deep;
 use Data::Dumper;
 use Scot::Env;
 use Try::Tiny;
+use Scot::App::Reflair;
 use v5.18;
 
 
@@ -17,7 +18,7 @@ my $env = Scot::Env->new({config_file=>$ENV{'scot_config_file'}});
 
 use_ok('Scot::App::ReFlair');
 
-my $reflair = Scot::App::ReFlair->new( env => $env );
+my $reflair = Scot::App::Reflair->new( env => $env );
 my $es      = $env->es;
 
 my $index   = "reflair_test";
