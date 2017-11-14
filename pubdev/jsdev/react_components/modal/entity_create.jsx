@@ -20,6 +20,7 @@ class EntityCreateModal extends Component {
         this.HasSpacesCheck = this.HasSpacesCheck.bind(this);
         this.Confirmation = this.Confirmation.bind(this);
         this.OnChange = this.OnChange.bind(this);
+        this.AddMatchInput = this.AddMatchInput.bind(this);
     }
 
     componentWillMount() {
@@ -67,10 +68,10 @@ class EntityCreateModal extends Component {
             this.setState({confirmation: false, value: '' }) 
         }
     }
-
-    AddMatch() {
-        this.setState({ match: 'match here'});
-        this.HasSpacesCheck('match here');
+    
+    AddMatchInput(e) {
+        this.setState({ match: e.target.value})
+        this.HasSpacesCheck(e.target.value);
     }
 
     Submit() {
@@ -114,7 +115,7 @@ class EntityCreateModal extends Component {
                 <Modal.Body>
                 {!this.state.confirmation ?  
                     <span>
-                        Entity Name: <b>{this.state.match}</b>
+                        Entity Name: <input onChange={this.AddMatchInput} value={this.state.match}/>
                         <br />
                         <span style={{display: 'flex'}}>
                             <span style={{minWidth: '75px'}}>   
