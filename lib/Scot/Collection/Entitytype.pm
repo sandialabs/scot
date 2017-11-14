@@ -33,7 +33,7 @@ override api_create => sub {
             status  => $status,
         };
         $log->debug("creating entitytype with ",{filter=>\&Dumper, value=>$href});
-        $et_obj = $self->create($href);
+        $et_obj = $self->create(%$href);
         # TODO: add history?
     }
     return $et_obj;
