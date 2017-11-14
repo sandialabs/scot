@@ -3,6 +3,7 @@ use lib '../../../lib';
 use Moose 2;
 use Data::Dumper;
 extends 'Scot::Collection';
+
 with    qw(
     Scot::Role::GetByAttr
     Scot::Role::GetTagged
@@ -17,9 +18,11 @@ override api_create => sub {
 
     my $json    = $request->{request}->{json};
     my $value   = lc($json->{value});
+    my $opts    = delete $json->{options};
     my $match   = $json->{match};
-    my $opts    = $json->{options};
-    my $status  = $json->{status};
+    my $multi   = $opts->{multiword};
+
+
 
     $value =~ s/ /-/g; # replace spaces in value
 
@@ -27,6 +30,9 @@ override api_create => sub {
 
     unless (defined $et_obj) {
         $json->{value} = $value;
+        $json->{options} = {
+            multiword   => $multi
+        };
         $log->debug("creating entitytype with ",{filter=>\&Dumper, value=>$json});
         $et_obj = $self->create($json);
         # TODO: add history?
