@@ -31,10 +31,24 @@ class EntityCreateModal extends Component {
     }        
     
     componentDidMount() {
+       $(document).keypress(function(event){
+            if($('input').is(':focus')) {return}
+            
+            if (event.keyCode == 13) {
+                if ( this.state.confirmation == false ) {
+                    this.Confirmation();
+                } else {
+                    this.Submit();
+                }
+            }
+            return
+        }.bind(this)).bind(this) 
+        
         this.HasSpacesCheck( this.props.match );
     }
 
     componentWillUnmount() {
+        $(document).unbind('keypress')
         this.mounted = false;
     }
     
@@ -68,6 +82,7 @@ class EntityCreateModal extends Component {
             contentType: 'application/json; charset=UTF-8',
             success: function(data) {
                 console.log('success: ' + data);
+                this.props.ToggleCreateEntity();            
             }.bind(this),
             error: function(data) {
                 this.props.errorToggle('failed to create user defined entity', data);
@@ -83,17 +98,6 @@ class EntityCreateModal extends Component {
         }
     }
     
-    handleKeyPress(target) {
-        if ($('input').is(':focus')) { return };
-        if (target.charCode == 13 ) {
-            if ( this.state.confirmation == false ) {
-                this.Confirmation();
-            } else {
-                this.Submit();
-            }
-        }
-    }
-
     render() {
         
         return (
@@ -112,8 +116,12 @@ class EntityCreateModal extends Component {
                     <span>
                         Entity Name: <b>{this.state.match}</b>
                         <br />
-                        Entity Type:
-                        <TagInput type='tag' onChange={this.OnChange} maxTags={1} errorToggle={this.props.errorToggle}/>
+                        <span style={{display: 'flex'}}>
+                            <span style={{minWidth: '75px'}}>   
+                                Entity Type:
+                            </span>
+                            <TagInput type='userdef' onChange={this.OnChange} maxTags={1} errorToggle={this.props.errorToggle}/>
+                        </span>    
                     </span>
                 :
                     <span>
@@ -127,7 +135,7 @@ class EntityCreateModal extends Component {
                     {!this.state.confirmation ? 
                         <span>
                             {this.state.value.length >= 1 ? 
-                                <Button onClick={this.Confirmation} bsStyle={'primary'} type={'submit'}>Continue</Button> 
+                                <Button onClick={this.Confirmation} bsStyle={'primary'} type={'submit'} active={true}>Continue</Button> 
                             :
                                 null
                             }
@@ -139,7 +147,7 @@ class EntityCreateModal extends Component {
                                 You are about to create a user defined entity which will flair all matches of this entity in SCOT. This WILL put a heavy load on the server. Verify your request above before submitting.
                             </div>
                             <div>
-                                <Button onClick={this.Submit} bsStyle={'success'} type={'submit'}>Submit</Button>
+                                <Button onClick={this.Submit} bsStyle={'success'}>Submit</Button>
                                 <Button onClick={this.Confirmation}>Go Back</Button>
                             </div>
                         </span>
