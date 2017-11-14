@@ -89,7 +89,7 @@ typically { multiword => yes|no }
 
 has options => (
     is          => 'ro',
-    isa         => 'Hashref',
+    isa         => 'HashRef',
     required    => 1,
     default     => sub { { multiword => "no" } },
 );
