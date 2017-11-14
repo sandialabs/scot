@@ -9,6 +9,35 @@ with    qw(
     Scot::Role::GetTargeted
 );
 
+override api_create => sub {
+    my $self    = shift;
+    my $request = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+
+    my $json    = $request->{request}->{json};
+    my $value   = lc($json->{value});
+    my $match   = $json->{match};
+    my $opts    = $json->{options};
+    my $status  = $json->{status};
+
+    $value =~ s/ /-/g; # replace spaces in value
+
+    my $et_obj  = $self->find_one({match => $match});
+
+    unless (defined $et_obj) {
+        my $href    = {
+            value   => $value,
+            match   => $match,
+            options => $opts,
+            status  => $status,
+        };
+        $et_obj = $self->create($href);
+        # TODO: add history?
+    }
+    return $et_obj;
+}
+
 sub entity_type_exists {
     my $self    = shift;
     my $value   = shift;
@@ -49,7 +78,41 @@ sub autocomplete {
     my @records = map { {
         id  => $_->{id}, key => $_->{value}
     } } $cursor->all;
+    push @records, $self->matching_predef($frag);
+
     return wantarray ? @records : \@records;
 }
+
+sub matching_predef {
+    my $self    = shift;
+    my $frag    = shift;
+
+    # hard coded for now, move to scot.cfg.pl later
+    my @predef  = (qw(
+        ipaddr
+        cve
+        md5
+        sha1
+        sha256
+        ipv6
+        domain
+        email
+        attack-pattern
+        campain
+        course-of-action
+        identity
+        indicator
+        intrusion-set
+        malware
+        observed-data
+        report
+        threat-actor
+        tool
+        vulnerability
+    ));
+    my @records = map { { id => 0, key => $_ } } grep { /$frag/i } @predef;
+    return wantarray ? @records : \@records;
+}
+
 
 1;

@@ -29,13 +29,13 @@ with    qw(
 =over 4
 
 
-=item B<type>
+=item B<value>
 
 The name of the EntityType, e.g. "ipaddr", "threat_group", etc.
 
 =cut
 
-has type  => (
+has value  => (
     is          => 'ro',
     isa         => 'Str',
     required    => 1,
