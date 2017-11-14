@@ -64,7 +64,6 @@ class Gamification extends PureComponent {
 	}
 
 	render() {
-
 		return (
 			<Well className="Gamification">
 				<h3>Leaders</h3>
@@ -78,15 +77,13 @@ class Gamification extends PureComponent {
 }
 
 const Category = ( { category, data } ) => (
-	<OverlayTrigger placement="bottom" overlay={<Tooltip id='tooltip'>{data[0].tooltip}</Tooltip>}>
-		<Panel header={titleCase(category)} className="category">
-			<div>
-				<div>{data[0].username} <Badge>{data[0].count}</Badge></div>
-				<div>{data[1].username} <Badge>{data[1].count}</Badge></div>
-				<div>{data[2].username} <Badge>{data[2].count}</Badge></div>
-			</div>
-		</Panel>
-	</OverlayTrigger>
+	<Panel header={`${titleCase(category)} - ${data[0].tooltip}`} className="category">
+		<div>
+			<div>{data[0].username} <Badge>{data[0].count}</Badge></div>
+			<div>{data[1].username} <Badge>{data[1].count}</Badge></div>
+			<div>{data[2].username} <Badge>{data[2].count}</Badge></div>
+		</div>
+	</Panel>
 )
 
 export default Gamification;
