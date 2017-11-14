@@ -26,14 +26,9 @@ override api_create => sub {
     my $et_obj  = $self->find_one({match => $match});
 
     unless (defined $et_obj) {
-        my $href    = {
-            value   => $value,
-            match   => $match,
-            options => $opts,
-            status  => $status,
-        };
-        $log->debug("creating entitytype with ",{filter=>\&Dumper, value=>$href});
-        $et_obj = $self->create(%$href);
+        $json->{value} = $value;
+        $log->debug("creating entitytype with ",{filter=>\&Dumper, value=>$json});
+        $et_obj = $self->create($json);
         # TODO: add history?
     }
     return $et_obj;
