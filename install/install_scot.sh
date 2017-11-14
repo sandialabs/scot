@@ -133,7 +133,7 @@ function configure_startup {
     echo "--"
     echo "-- configuring SCOT startup"
     echo "--"
-    SCOTSERVICES='scot scfd scepd'
+    SCOTSERVICES='scot scfd scrfd scepd'
     SRCDIR="$SCOT_CONFIG_SRC/scot"
 
     for service in $SCOTSERVICES; do
@@ -342,13 +342,16 @@ function restart_daemons {
             if [[ $OS == "Ubuntu" ]]; then
                 if [[ $OSVERSION == "14" ]]; then
                     service scfd restart
+                    service scrfd restart
                     service scepd restart
                 else
                     systemctl restart scfd.service
+                    systemctl restart scrfd.service
                     systemctl restart scepd.service
                 fi
             else
                 systemctl restart scfd.service
+                systemctl restart scrfd.service
                 systemctl restart scepd.service
             fi
     fi
