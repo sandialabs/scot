@@ -80,6 +80,7 @@ var SelectedHeader = React.createClass({
             showLinksModal: false,
             isDeleted: false,     
             flairOff: false,
+            highlightedText: '',
         }
     },
     componentWillMount: function() {
@@ -423,16 +424,21 @@ var SelectedHeader = React.createClass({
                         var arr = [];
                         //arr.push(this.props.type);
                         arr.push(this.checkFlairHover);
+                        arr.push(this.checkHighlight);
                         $(ifr).off('mouseenter');
                         $(ifr).off('mouseleave');
                         $(ifr).on('mouseenter', function(v,type) {
                             var intervalID = setInterval(this[0], 50, ifr);// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
+                            var intervalID1 = setInterval(this[1], 50, ifr);// this.flairToolbarToggle, type, this.props.linkWarningToggle, this.props.id);
                             $(ifr).data('intervalID', intervalID);
+                            $(ifr).data('intervalID1', intervalID1);
                             console.log('Now watching iframe ' + intervalID);
                         }.bind(arr));
                         $(ifr).on('mouseleave', function() {
                             var intervalID = $(ifr).data('intervalID');
+                            var intervalID1 = $(ifr).data('intervalID1');
                             window.clearInterval(intervalID);
+                            window.clearInterval(intervalID1);
                             console.log('No longer watching iframe ' + intervalID);
                         }); 
                     }
@@ -458,6 +464,20 @@ var SelectedHeader = React.createClass({
             }.bind(this))
         };
     },
+
+    checkHighlight: function(ifr) {
+        let content;
+        if ( ifr ) {
+            content = ifr.contentWindow.getSelection().toString();
+            if ( this.state.highlightedText != content ) {
+                //this only tells the lower components to run their componentWIllReceiveProps methods to check for highlighted text.
+                this.setState({highlightedText: content });
+            } else {
+                return;
+            }
+        }
+    },
+ 
     checkFlairHover: function(ifr) {
         function returnifr() {
             return ifr;
@@ -491,9 +511,11 @@ var SelectedHeader = React.createClass({
             }
         } 
     },
+
     summaryUpdate: function() {
         this.forceUpdate();
     },
+
     scrollTo: function() {
         if (this.props.taskid != undefined) { 
             $('.entry-wrapper').scrollTop($('.entry-wrapper').scrollTop() + $('#iframe_'+this.props.taskid).position().top -30)
@@ -621,7 +643,7 @@ var SelectedHeader = React.createClass({
                     {this.state.showEventData ? <SelectedHeaderOptions type={type} subjectType={subjectType} id={id} headerData={this.state.headerData} status={this.state.headerData.status} promoteToggle={this.promoteToggle} permissionsToggle={this.permissionsToggle} entryToggle={this.entryToggle} entitiesToggle={this.entitiesToggle} changeHistoryToggle={this.changeHistoryToggle} viewedByHistoryToggle={this.viewedByHistoryToggle} deleteToggle={this.deleteToggle} updated={this.updated} alertSelected={this.state.alertSelected} aIndex={this.state.aIndex} aType={this.state.aType} aStatus={this.state.aStatus} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} sourceToggle={this.sourceToggle} guideID={this.state.guideID} subjectName={this.state.headerData.subject} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} guideRedirectToAlertListWithFilter={this.guideRedirectToAlertListWithFilter} showSignatureOptionsToggle={this.showSignatureOptionsToggle} markModalToggle={this.markModalToggle} linksModalToggle={this.linksModalToggle} ToggleProcessingMessage={this.ToggleProcessingMessage} errorToggle={this.props.errorToggle} toggleFlair={this.toggleFlair}/> : null} 
                     {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={id} type={type} permissionData={this.state.headerData} permissionsToggle={this.permissionsToggle} updated={this.updated} errorToggle={this.props.errorToggle}/> : null}
                 </div>
-                {this.state.showEventData && type != 'entity' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.props.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} showSignatureOptions={this.state.showSignatureOptions} flairOff={this.state.flairOff}/> : null}
+                {this.state.showEventData && type != 'entity' ? <SelectedEntry id={id} type={type} entryToggle={this.entryToggle} updated={this.updated} entryData={this.state.entryData} entityData={this.state.entityData} headerData={this.state.headerData} showEntryData={this.state.showEntryData} showEntityData={this.state.showEntityData} alertSelected={this.alertSelected} summaryUpdate={this.summaryUpdate} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} linkWarningToggle={this.linkWarningToggle} entryToolbar={this.state.entryToolbar} isAlertSelected={this.state.alertSelected} aType={this.state.aType} aID={this.state.aID} alertPreSelectedId={this.props.alertPreSelectedId} errorToggle={this.props.errorToggle} fileUploadToggle={this.fileUploadToggle} fileUploadToolbar={this.state.fileUploadToolbar} showSignatureOptions={this.state.showSignatureOptions} flairOff={this.state.flairOff} highlightedText={this.state.highlightedText} /> : null}
                 {this.state.showEventData && type == 'entity' ? <EntityDetail entityid={id} entitytype={'entity'} id={id} type={'entity'} fullScreen={true} errorToggle={this.props.errorToggle} linkWarningToggle={this.linkWarningToggle}/> : null} 
                 {this.state.flairToolbar ? <EntityDetail key={this.state.entityDetailKey} flairToolbarToggle={this.flairToolbarToggle} flairToolbarOff={this.flairToolbarOff} entityid={this.state.entityid} entityvalue={this.state.entityvalue} entitytype={this.state.entitytype} type={this.props.type} id={this.props.id} errorToggle={this.props.errorToggle} entityoffset={this.state.entityoffset} entityobj={this.state.entityobj} linkWarningToggle={this.linkWarningToggle}/> : null}    
                 </div>
