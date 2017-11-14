@@ -78,7 +78,7 @@ sub autocomplete {
         value => /$frag/
     });
     my @records = map { {
-        id  => $_->{id}, key => $_->{value}
+        $_->{value}
     } } $cursor->all;
     push @records, $self->matching_predef($frag);
 
@@ -112,7 +112,7 @@ sub matching_predef {
         tool
         vulnerability
     ));
-    my @records = map { { id => 0, key => $_ } } grep { /$frag/i } @predef;
+    my @records = grep { /$frag/i } @predef;
     return wantarray ? @records : \@records;
 }
 
