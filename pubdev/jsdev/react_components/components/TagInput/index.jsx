@@ -20,7 +20,9 @@ class TagInput extends Component {
 		this.handleDelete = this.handleDelete.bind( this );
 		this.handleAdd = this.handleAdd.bind( this );
 		this.handleInputChange = this.handleInputChange.bind( this );
-	}
+		this.showHideInput = this.showHideInput.bind( this );
+	
+    }
 
 	static propTypes = {
 		onChange: PropTypes.func.isRequired,
@@ -55,6 +57,10 @@ class TagInput extends Component {
             this.setState({tags : tags, placeholder: ''});
 	    }
     }
+    
+    componentDidUpdate() {
+        this.showHideInput();
+    }
 
 	handleInputChange( input ) {
 		if ( input && input.length >= 2 ) {
@@ -78,6 +84,14 @@ class TagInput extends Component {
             })	
         }
 	}
+
+    showHideInput() {
+        if ( this.props.type == 'userdef' && this.props.maxTags && this.state.tags.length >= this.props.maxTags ) {
+            $('.react-tags__search').hide();   
+        } else {
+            $('.react-tags__search').show();
+        }
+    }
 
 	render() {
 		return (
