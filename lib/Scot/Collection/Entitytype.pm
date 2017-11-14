@@ -36,7 +36,7 @@ override api_create => sub {
         # TODO: add history?
     }
     return $et_obj;
-}
+};
 
 sub entity_type_exists {
     my $self    = shift;
