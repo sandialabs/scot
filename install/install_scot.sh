@@ -76,6 +76,7 @@ function get_config_files {
         scot
         scot.test
         stretch
+        reflair
     '
     for file in $CFGFILES; do
         CFGDEST="$SCOTDIR/etc/${file}.cfg.pl"
