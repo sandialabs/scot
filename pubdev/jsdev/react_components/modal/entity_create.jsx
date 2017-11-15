@@ -88,8 +88,8 @@ class EntityCreateModal extends Component {
     }
     
     OnChangeMatch(e) {
-        this.setState({match: e});
-        this.HasSpacesCheck(e);
+        this.setState({match: e.target.value});
+        this.HasSpacesCheck(e.target.value);
     }
 
     OnChangeValue(e) {
@@ -113,10 +113,22 @@ class EntityCreateModal extends Component {
                 <Modal.Body>
                 {!this.state.confirmation ?  
                     <span>
-                        <b>New Entity Name:</b>
-                        <AutoCompleteInput type={'tag'} OnChange={this.OnChangeMatch} value={this.state.match} />
-                        <b>Entity Type:</b>
-                        <AutoCompleteInput type={'tag'} OnChange={this.OnChangeValue} value={this.state.value} />
+                        <span style={{display: 'flex'}}>
+                            <span style={{width: '150px'}}>
+                                <b>New Entity Name:</b>
+                            </span>
+                            <span style={{width:'300px'}}>
+                                <input type={'tag'} onChange={this.OnChangeMatch} value={this.state.match} style={{width:'100%'}}/>
+                            </span>
+                        </span>
+                        <span style={{display: 'flex'}}>
+                            <span style={{width: '150px'}}>
+                                <b>Entity Type:</b>
+                            </span>
+                            <span>
+                                <AutoCompleteInput type={'entitytype'} OnChange={this.OnChangeValue} value={this.state.value} />
+                            </span>
+                        </span>
                     </span>
                 :
                     <span>

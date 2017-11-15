@@ -84,6 +84,8 @@ class AutoCompleteInput extends Component {
                         overflow: 'auto',
                         maxHeight: '200px', // TODO: don't cheat, let it flow to the bottom
                     }}
+                    inputProps={{style: {width: '100%'}}}
+                    wrapperProps={{style: {width: '300px'}}}
                 />
             </div>
 		)
