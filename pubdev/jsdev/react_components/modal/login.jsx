@@ -72,6 +72,7 @@ class Login extends Component {
         $.ajax({
             type: 'get',
             url: 'sso',
+            crossDomain: true,
             data: data,
             success: function(data) {
                 console.log('success logging in');
