@@ -172,7 +172,7 @@ sub out {
 sub run {
     my $self    = shift;
     my $log     = $self->log;
-    my $pm      = AnyEvent::ForkManager->new(max_workers => $self->max_workers);
+#    my $pm      = AnyEvent::ForkManager->new(max_workers => $self->max_workers);
     my $stomp;
 
     if ( $self->stomp_host ne "localhost" ) {
@@ -190,21 +190,21 @@ sub run {
         $log->debug("Subcribed to /topic/scot");
     });
 
-    $pm->on_start(sub {
-        my ($pm, $pid, $action, $type, $id) = @_;
-        $self->out("------ Worker $pid handling $action on $type $id");
-        $log->debug("Worker $pid handling $action on $type $id started");
-    });
-
-    $pm->on_finish(sub {
-        my ($pm, $pid, $status, $action, $type, $id) = @_;
-        $self->out("------ Worker $pid finished $action on $type $id: $status");
-        $log->debug("Worker $pid handling $action on $type $id finished");
-    });
-
-    $pm->on_error(sub {
-        $self->out("FORKMGR ERROR: ".Dumper(\@_));
-    });
+#    $pm->on_start(sub {
+#        my ($pm, $pid, $action, $type, $id) = @_;
+#        $self->out("------ Worker $pid handling $action on $type $id");
+#        $log->debug("Worker $pid handling $action on $type $id started");
+#    });
+#
+#    $pm->on_finish(sub {
+#        my ($pm, $pid, $status, $action, $type, $id) = @_;
+#        $self->out("------ Worker $pid finished $action on $type $id: $status");
+#        $log->debug("Worker $pid handling $action on $type $id finished");
+#    });
+#
+#    $pm->on_error(sub {
+#        $self->out("FORKMGR ERROR: ".Dumper(\@_));
+#    });
 
 
     $stomp->on_message(sub {
