@@ -1,7 +1,8 @@
 import React, { PureComponent, Component } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, Button, ButtonGroup } from 'react-bootstrap';
-import TagInput from '../components/TagInput';
+//import TagInput from '../components/TagInput';
+import AutoCompleteInput from '../components/autocomplete_input.jsx';
 
 class EntityCreateModal extends Component {
     constructor( props ) { 
@@ -19,8 +20,8 @@ class EntityCreateModal extends Component {
         this.Submit = this.Submit.bind(this);
         this.HasSpacesCheck = this.HasSpacesCheck.bind(this);
         this.Confirmation = this.Confirmation.bind(this);
-        this.OnChange = this.OnChange.bind(this);
-        this.AddMatchInput = this.AddMatchInput.bind(this);
+        this.OnChangeValue = this.OnChangeValue.bind(this);
+        this.OnChangeMatch = this.OnChangeMatch.bind(this);
     }
 
     componentWillMount() {
@@ -35,7 +36,7 @@ class EntityCreateModal extends Component {
        $(document).keypress(function(event){
             if($('input').is(':focus')) {return}
             
-            if (event.keyCode == 13) {
+            if (event.keyCode == 13 && this.state.match.length >=1 && this.state.value >= 1) {
                 if ( this.state.confirmation == false ) {
                     this.Confirmation();
                 } else {
@@ -69,11 +70,6 @@ class EntityCreateModal extends Component {
         }
     }
     
-    AddMatchInput(e) {
-        this.setState({ match: e.target.value})
-        this.HasSpacesCheck(e.target.value);
-    }
-
     Submit() {
         let json = {'value': this.state.value, 'match': this.state.match, 'status': 'active', 'options': { 'multiword': this.state.multiword }}
         $.ajax({
@@ -91,12 +87,14 @@ class EntityCreateModal extends Component {
         })
     }
     
-    OnChange(e) {
-        if ( e[0] != undefined ) {
-            this.setState({value: e[0].name});
-        } else {
-            this.setState({value: ''});
-        }
+    OnChangeMatch(e) {
+        this.setState({match: e});
+        this.HasSpacesCheck(e);
+    }
+
+    OnChangeValue(e) {
+        this.setState({value: e});
+        this.HasSpacesCheck(e);
     }
     
     render() {
@@ -115,14 +113,10 @@ class EntityCreateModal extends Component {
                 <Modal.Body>
                 {!this.state.confirmation ?  
                     <span>
-                        Entity Name: <input onChange={this.AddMatchInput} value={this.state.match}/>
-                        <br />
-                        <span style={{display: 'flex'}}>
-                            <span style={{minWidth: '75px'}}>   
-                                Entity Type:
-                            </span>
-                            <TagInput type='userdef' onChange={this.OnChange} maxTags={1} errorToggle={this.props.errorToggle}/>
-                        </span>    
+                        <b>New Entity Name:</b>
+                        <AutoCompleteInput type={'tag'} OnChange={this.OnChangeMatch} value={this.state.match} />
+                        <b>Entity Type:</b>
+                        <AutoCompleteInput type={'tag'} OnChange={this.OnChangeValue} value={this.state.value} />
                     </span>
                 :
                     <span>
@@ -135,7 +129,7 @@ class EntityCreateModal extends Component {
                 <Modal.Footer>
                     {!this.state.confirmation ? 
                         <span>
-                            {this.state.value.length >= 1 ? 
+                            {this.state.value.length >= 1 && this.state.match.length >=1 ? 
                                 <Button onClick={this.Confirmation} bsStyle={'primary'} type={'submit'} active={true}>Continue</Button> 
                             :
                                 null
