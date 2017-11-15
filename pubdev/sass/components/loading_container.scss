@@ -31,13 +31,13 @@ $spinnerSize: 8em;
 		opacity: 0.1;
 
 		&.fade-appear-active {
-			opacity: 1;
+			opacity: .3;
 			transition: all 500ms linear;
 		}
 	}
 
 	.fade-leave {
-		opacity: 1;
+		opacity: .3;
 
 		&.fade-enter-leave {
 			opacity: 0.1;
