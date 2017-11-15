@@ -3,12 +3,10 @@
 .homePageDisplay {
 	.home-grid {
 		display: grid;
-		height: 100%;
 		padding: 10px;
 		grid-template-columns: 1fr 1fr 1fr;
-		grid-template-rows: minmax(200px, 1fr) 40px 1fr 1fr;
+		grid-template-rows: 200px 40px auto auto;
 		grid-gap: 15px;
-		align-items: center;
 		
 		grid-template-areas:
 			"status title game"
