@@ -197,6 +197,7 @@ sub run {
     $stomp->on_message(sub {
         my ($stomp, $header, $body) = @_;
 
+        $log->debug("---- Received Message ----");
         $log->debug("Header: ",{filter=>\&Dumper, value => $header});
 
         my $href = decode_json $body;
@@ -206,7 +207,7 @@ sub run {
         my $type    = $href->{data}->{type};
         my $id      = $href->{data}->{id};
         my $who     = $href->{data}->{who};
-        my $opts    = $href->{data}->{opts};
+        my $opts    = $href->{data}->{opts} // '';
         $log->debug("STOMP: $action : $type : $id : $who : $opts");
 
         # return if ($who eq "scot-flair");
@@ -237,7 +238,7 @@ sub process_message {
 
     $self->log->debug("Processing Message: $action $type $id");
 
-    if ( $action eq "created user defined entity" ) {
+    if ( $action eq "created" and $type eq "entitytype" ) {
         # get instances from elastic search
         my @appearances = $self->find_appearances($id);        
         # iterate and reflair
@@ -252,10 +253,14 @@ sub find_appearances {
     my $self    = shift;
     my $id      = shift;                # id of the entity we are looking for
     my $index   = shift;
-    my $es      = $self->env->es;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $es      = $env->es;
     my $entity  = $self->get_entity($id);
     my $query   = $self->build_es_query($entity);
     my $json    = $es->search($index, undef, $query);
+
+    $log->debug("Finding appearances of ".$entity->value);
 
     # parse out the returned objects of form [ {type,id}, ... ]
     my @results = $self->parse_results($json);
@@ -279,8 +284,13 @@ sub cause_reflair {
 sub get_entity {
     my $self    = shift;
     my $id      = shift;
-    my $mongo   = $self->env->mongo;
+    my $env     = $self->env;
+    my $mongo   = $env->mongo;
+    my $log     = $env->log;
     my $col     = $mongo->collection('Entity');
+
+    $log->debug("looking for entiry id $id");
+
     my $obj     = $col->find_iid($id);
     return $obj;
 }
@@ -288,6 +298,7 @@ sub get_entity {
 sub build_es_query {
     my $self    = shift;
     my $entity  = shift;
+    my $log     = $self->env->log;
     my $value   = $entity->value;
     my $id      = $entity->id;
     my $json    = {
@@ -297,6 +308,7 @@ sub build_es_query {
             }
         }
     };
+    $log->debug("build es query ",{filter=>\&Dumper,value=>$json});
     return $json;
 }
 
@@ -306,34 +318,44 @@ sub send_notification {
     my $type    = $href->{type};
     my $id      = $href->{id};
     my $mq      = $self->env->mq;
-
-    $mq->send("scot", {
+    my $log     = $self->env->log;
+    my $msg     = {
         action  => "updated",
         data    => {
             who     => "reflairer",
             type    => $type,
             id      => $id,
         }
-    });
+    };
+
+    $log->debug("Sending Notification: ", {filter=>\&Dumper, value=>$msg});
+    $mq->send("scot", $msg);
 }
 
 sub parse_results {
     my $self    = shift;
     my $json    = shift;
+    my $log     = $self->env->log;
     my @hits    = @{$json->{hits}->{hits}};
     my @results = ();
     my %seen    = ();
 
+    $log->debug("parsing results");
+
     foreach my $hit (@hits) {
         my $type    = $hit->{_type};
+        $log->debug("found hit type $type");
 
         if ( defined $type ) {
             if ( $type eq "alert" or $type eq "entry" ) {
                 my $id = $hit->{_source}->{id};
+                $log->debug("$type id is $id");
                 if ( defined $seen{$type}{$id} ) {
+                    $log->debug("$type $id already seend");
                     next;
                 }
                 $seen{$type}{$id}++;
+                $log->debug("$type $id being added to results");
                 push @results, {
                     id      => $id,
                     type    => $type,
