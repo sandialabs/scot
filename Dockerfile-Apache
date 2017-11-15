@@ -20,10 +20,6 @@ RUN mkdir -p /etc/apache2/ssl/ && \
 
 COPY docker-configs/apache/scot-revproxy-Ubuntu.conf /etc/apache2/sites-enabled
 
-
-#SANDIA
-#COPY shibby.conf /etc/apache2/conf-enabled
-#COPY CA.txt /etc/ssl/certs/
 EXPOSE 443 80
 
 CMD apachectl -D FOREGROUND
