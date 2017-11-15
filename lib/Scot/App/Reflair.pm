@@ -16,51 +16,19 @@ profit
 
 =cut
 
-use Data::Dumper;
-use JSON;
-use Try::Tiny;
-use Mojo::UserAgent;
-use Scot::Env;
-use Scot::App;
 use AnyEvent::STOMP::Client;
 use AnyEvent::ForkManager;
-use HTML::Entities;
-use Module::Runtime qw(require_module);
-use Sys::Hostname;
+use Data::Dumper;
+use Try::Tiny;
+use JSON;
+use Scot::Env;
+use Scot::App;
 use strict;
 use warnings;
 use v5.18;
 
 use Moose;
 extends 'Scot::App';
-
-has get_method  => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    default     => 'mongo',
-);
-
-has thishostname    =>  (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    default     => sub { hostname; },
-);
-
-has extractor   => (
-    is          => 'ro',
-    isa         => 'Scot::Extractor::Processor',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_get_entity_extractor',
-);
-
-sub _get_entity_extractor {
-    my $self    = shift;
-    my $env     = $self->env;
-    return $env->extractor;
-};
 
 has stomp_host  => (
     is          => 'ro',
@@ -93,36 +61,6 @@ sub _build_stomp_port {
     return $self->get_config_value($attr, $default, $envname);
 }
 
-has interactive => (
-    is          => 'ro',
-    isa         => 'Int',
-    required    => 1,
-    lazy        => 1,
-    default     => 0,
-);
-
-sub _build_interactive {
-    my $self    = shift;
-    my $attr    = "interactive";
-    my $default = 0;
-    my $envname = "scot_util_entityextractor_interactive";
-    return $self->get_config_value($attr, $default, $envname);
-}
-
-has enrichers   => (
-    is              => 'ro',
-    isa             => 'Scot::Util::Enrichments',
-    required        => 1,
-    lazy            => 1,
-    builder         => '_get_enrichers',
-);
-
-sub _get_enrichers {
-    my $self    = shift;
-    my $env     = $self->env;
-    return $env->enrichments;
-}
-
 has max_workers => (
     is          => 'ro',
     isa         => 'Int',
@@ -134,18 +72,9 @@ has max_workers => (
 sub _build_max_workers {
     my $self    = shift;
     my $attr    = "max_workers";
-    my $default = 20;
+    my $default = 5;
     my $envname = "scot_util_max_workers";
     return $self->get_config_value($attr, $default, $envname);
-}
-
-sub out {
-    my $self    = shift;
-    my $msg     = shift;
-
-    if ( $self->interactive ) {
-        say $msg;
-    }
 }
 
 has mode    => (
@@ -155,139 +84,224 @@ has mode    => (
     default     => 'message', # other supported mode is "test"
 );
 
+has procmgr => (
+    is          => 'rw',
+    isa         => 'AnyEvent::ForkManager',
+    required    => 1,
+    builder     => '_build_procmgr',
+);
+
+sub _build_procmgr {
+    my $self    = shift;
+    my $workers = $self->max_workers;
+    return AnyEvent::ForkManager->new(max_workers => 3);
+}
+
+has stomp   => (
+    is          => 'rw',
+    isa         => 'AnyEvent::STOMP::Client',
+    required    => 1,
+    builder     => '_build_stomp',
+);
+
+sub _build_stomp {
+    my $self    = shift;
+    my $host    = $self->stomp_host;
+    my $port    = $self->stomp_port;
+    return AnyEvent::STOMP::Client->new($host,$port);
+}
+
+has topic   => (
+    is      => 'rw',
+    isa     => 'Str',
+    required    => 1,
+    builder     => '_build_topic',
+);
+
+sub _build_topic {
+    my $self    = shift;
+    my $attr    = "topic";
+    my $default = "/topic/scot";
+    my $envname = "scot_reflair_topic";
+    return $self->get_config_value($attr, $default, $envname);
+}
+
 sub run {
     my $self    = shift;
     my $log     = $self->log;
-    my $pm      = AnyEvent::ForkManager->new(max_workers => $self->max_workers);
-    my $stomp;
+    my $stomp   = $self->stomp;
+    my $pm      = $self->procmgr;
+    my $topic   = $self->topic;
 
-    if ( $self->stomp_host ne "localhost" ) {
-        $stomp   = 
-            AnyEvent::STOMP::Client->new($self->stomp_host, $self->stomp_port);
-    }
-    else {
-        $stomp = AnyEvent::STOMP::Client->new;
-    }
+    $log->debug("Starting REFLAIR daemon");
 
     $stomp->connect();
     $stomp->on_connected(sub {
-        my $s   = shift;
-        $s->subscribe('/topic/scot');
-        $self->out("---- subcribed to /topic/scot via STOMP ---");
-        $log->debug("Subcribed to /topic/scot");
+        my $stomp    = shift;
+        $stomp->subscribe($topic);
+        $log->debug("subscribed to $topic");
     });
 
     $pm->on_start(sub {
-        my ($pm, $pid, $action, $type, $id) = @_;
-        $self->out("------ Worker $pid handling $action on $type $id");
-        $log->debug("Worker $pid handling $action on $type $id started");
-    });
-
-    $pm->on_finish(sub {
-        my ($pm, $pid, $status, $action, $type, $id) = @_;
-        $self->out("------ Worker $pid finished $action on $type $id: $status");
-        $log->debug("Worker $pid handling $action on $type $id finished");
-    });
-
-    $pm->on_error(sub {
-        $self->out("FORKMGR ERROR: ".Dumper(\@_));
-    });
-
-
-    $stomp->on_message(sub {
-        my ($stomp, $header, $body) = @_;
-
-        $log->debug("---- Received Message ----");
-        $log->debug("Header: ",{filter=>\&Dumper, value => $header});
-
-        my $href = decode_json $body;
-        $log->debug("Body: ",{filter=>\&Dumper, value => $href});
-
+        my $pm      = shift;
+        my $pid     = shift;
+        my $href    = shift;
         my $action  = $href->{action};
         my $type    = $href->{data}->{type};
         my $id      = $href->{data}->{id};
-        my $who     = $href->{data}->{who};
-        my $opts    = $href->{data}->{opts} // '';
-        $log->debug("STOMP: $action : $type : $id : $who : $opts");
 
-        # return if ($who eq "scot-flair");
+        $log->debug(" +++ worker $pid started to handle $action on $type $id");
+    });
+
+    $pm->on_finish(sub {
+        my $pm      = shift;
+        my $pid     = shift;
+        my $status  = shift;
+        my $href    = shift;
+        my $action  = $href->{action};
+        my $type    = $href->{data}->{type};
+        my $id      = $href->{data}->{id};
+
+        $log->debug(" +++ worker $pid finished handling $action on $type $id. STATUS = $status");
+    });
+
+    $pm->on_error(sub {
+        my $pm = shift;
+        my $pid     = shift;
+        my $href    = shift;
+        my $action  = $href->{action};
+        my $type    = $href->{data}->{type};
+        my $id      = $href->{data}->{id};
+
+        $log->debug(" !!! worker $pid handling $action on $type $id (ERROR)");
+    });
+
+    $pm->on_working_max(sub {
+        my $pm = shift;
+        my $href    = shift;
+        my $action  = $href->{action};
+        my $type    = $href->{data}->{type};
+        my $id      = $href->{data}->{id};
+
+        $log->debug(" MAX worker $$ handling $action on $type $id (ON MAX)");
+    });
+
+    $pm->on_enqueue(sub {
+        my $pm = shift;
+        my $href    = shift;
+        my $action  = $href->{action};
+        my $type    = $href->{data}->{type};
+        my $id      = $href->{data}->{id};
+
+        $log->debug(" ~~~ manager $$ handling $action on $type $id (QUEUED)");
+    });
+
+    $pm->on_dequeue(sub {
+        my $pm = shift;
+        my $href    = shift;
+        my $action  = $href->{action};
+        my $type    = $href->{data}->{type};
+        my $id      = $href->{data}->{id};
+
+        $log->debug(" ### manager $$ handling $action on $type $id (DEQUEUED)");
+    });
+
+    $stomp->on_message(sub {
+        my $stomp   = shift;
+        my $header  = shift;
+        my $body    = shift;
+        my $href    = decode_json $body;
+
+        $log->debug("STOMP HEADER: ",{filter=>\&Dumper, value=>$header});
+        $log->debug("STOMP BODY  : ",{filter=>\&Dumper, value=>$href});
 
         $pm->start(
-            cb      => sub {
-                my ($pm, $action, $type, $id) = @_;
-                $self->process_message($action, $type, $id, $opts);
+            cb  => sub {
+                my $procmgr = shift;
+                my $href    = shift;
+                my $action  = $href->{action};
+                my $type    = $href->{data}->{type};
+                my $id      = $href->{data}->{id};
+
+                try { 
+                    my $stat = $self->process_message($procmgr, $action, $type, $id);
+                    $log->debug("=== worker $$ status is $stat");
+                }
+                catch {
+                    $log->error("^^^");
+                    $log->error("^^^ ERROR CAUGHT");
+                    $log->error("^^^ worker $$");
+                    $log->error("^^^ $action $type $id:");
+                    $log->error("^^^ ".chomp($_));
+                    $log->error("^^^");
+                };
+
             },
-            args    => [ $action, $type, $id ],
+            args    =>  [ $href ],
         );
-        
     });
 
     my $cv  = AnyEvent->condvar;
     $cv->recv;
-
 }
 
 sub process_message {
-    my $self    = shift;
-    my $action  = lc(shift);
-    my $type    = lc(shift);
-    my $id      = shift;
-    my $opts    = shift;
-
-    $id += 0;
-
-    $self->log->debug("Processing Message: $action $type $id");
-
-    if ( $action eq "created" and $type eq "entitytype" ) {
-        # get instances from elastic search
-        my @appearances = $self->find_appearances($id);        
-        # iterate and reflair
-        $self->cause_reflair(@appearances);
-    } 
-    else {
-        $self->out("action $action not processed");
-    }
-}
-
-sub find_appearances {
-    my $self    = shift;
-    my $id      = shift;                # id of the entity we are looking for
-    my $index   = shift;
-    my $env     = $self->env;
-    my $log     = $env->log;
-    my $es      = $env->es;
-    my $entity  = $self->get_entity($id);
-    my $query   = $self->build_es_query($entity);
-    my $json    = $es->search($index, undef, $query);
-
-    $log->debug("Finding appearances of ".$entity->value);
-
-    # parse out the returned objects of form [ {type,id}, ... ]
-    my @results = $self->parse_results($json);
-    return wantarray ? @results : \@results;
-}
-
-sub cause_reflair {
     my $self        = shift;
-    my @appearances  = @_;
+    my $pm          = shift;
+    my $action      = shift;
+    my $type        = shift;
+    my $id          = shift;
+    my $log         = $self->log;
 
-    foreach my $appearance (@appearances) {
-        if ( $self->mode eq "message" ) {
-            $self->send_notification($appearance);
-        }
-        else {
-            say "Appearance: ".Dumper($appearance);
+    $log->debug("[Wkr $$] Processing Message $action $type $id");
+
+    if ( $action eq "created" ) {
+        $log->debug("--- created message ---");
+        if ( $type eq "entitytype" ) {
+            $log->debug("--- entitytype ---");
+            return $self->process_new_entitytype($id);
         }
     }
+    $log->debug("That Message was not for me :-(");
 }
 
-sub get_entity {
+sub process_new_entitytype {
+    my $self    = shift;
+    my $id      = shift;
+    my $log     = $self->log;
+    my $es      = $self->env->es;
+
+    my $entitytype  = $self->get_entitytype($id);
+    unless (defined $entitytype) {
+        $log->error("Entitytype id was not found!");
+        return "unknown entitytype";
+    }
+    my $query       = $self->build_es_query($entitytype);
+    unless (defined $query) {
+        $log->error("Query was not defined!");
+        return "failed to build query";
+    }
+    my $json        = $es->search("scot", ['entry','alert'], $query);
+    unless (defined $json) {
+        $log->error("elasticsearch search failed");
+        return "elasticsearch failed";
+    }
+    my @results     = $self->parse_results($json);
+
+    foreach my $appearance (@results) {
+        $log->debug("Sending message for ",{filter=>\&Dumper, value=>$appearance});
+        $self->send_message($appearance);
+    }
+    return $id;
+}
+
+sub get_entitytype {
     my $self    = shift;
     my $id      = shift;
     my $env     = $self->env;
     my $mongo   = $env->mongo;
     my $log     = $env->log;
-    my $col     = $mongo->collection('Entity');
+    my $col     = $mongo->collection('Entitytype');
 
     $log->debug("looking for entiry id $id");
 
@@ -296,15 +310,17 @@ sub get_entity {
 }
 
 sub build_es_query {
-    my $self    = shift;
-    my $entity  = shift;
+    my $self        = shift;
+    my $entitytype  = shift;
+
     my $log     = $self->env->log;
-    my $value   = $entity->value;
-    my $id      = $entity->id;
+    my $value   = $entitytype->value;
+    my $match   = $entitytype->match;
+    my $id      = $entitytype->id;
     my $json    = {
         query   => {
             match   => {
-                _all    => $value
+                _all    => $match
             }
         }
     };
@@ -312,7 +328,7 @@ sub build_es_query {
     return $json;
 }
 
-sub send_notification {
+sub send_message {
     my $self    = shift;
     my $href    = shift;
     my $type    = $href->{type};
@@ -365,6 +381,7 @@ sub parse_results {
     }
     return wantarray ? @results : \@results;
 }
+
 
 
 1;
