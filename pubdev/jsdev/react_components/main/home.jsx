@@ -7,6 +7,8 @@ import Gamification from '../components/dashboard/gamification';
 let Online = require( '../components/dashboard/online.jsx' );
 import { ReportDashboard } from '../components/dashboard/report';
 
+const dashboardReports = ReportDashboard();
+
 class HomeDashboard extends PureComponent {
 	constructor( props ) {
 		super( props );
@@ -65,18 +67,7 @@ class HomeDashboard extends PureComponent {
 						<div className="notifications-area">
 							Notifications
 						</div>
-						<div>
-							Chart1
-						</div>
-						<div>
-							Chart2
-						</div>
-						<div>
-							Chart3
-						</div>
-						<div>
-							Chart4
-						</div>
+						{dashboardReports}
 					</div>
 					:
 					<div className="home-grid loggedOut">

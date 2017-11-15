@@ -51,23 +51,15 @@ const reportPanelHeader = ( type, expandButton = false, backButton = false ) => 
     </div>
 );
 
-export const ReportDashboard = () => (
-    <div id='report' className='dashboard'>
-        <div style={{textAlign:'center'}}>
-            <h2>Reports</h2>
-        </div>
-        <div id='heatmap' className="dashboard col-md-4">
-            <div>
-                <Panel header='Heatmap'>
-                    <ReportHeatmap />
-                </Panel>
-                <Panel header='Alert Response Time'>
-                    <ReportArt />
-                </Panel>
-            </div>
-        </div>
-    </div>
-);
+export const ReportDashboard = () => {
+	let dashboardReports = [];
+	dashboardReports.push( reportComponentByType( 'heatmap' ) );
+	dashboardReports.push( reportComponentByType( 'art' ) );
+	dashboardReports.push( reportComponentByType( 'alertpower' ) );
+	dashboardReports.push( reportComponentByType( 'created' ) );
+
+	return dashboardReports.map( (Report, i) => (<div key={i}>{Report}</div>) );
+}
 
 //<Panel header={reportPanelHeader( reportTitleByType( 'heatmap' ), '/heatmap' )}>
 
