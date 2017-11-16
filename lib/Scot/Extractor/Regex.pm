@@ -88,7 +88,7 @@ sub BUILD {
     my $etcol   = $mongo->collection('Entitytype');
     my $etcur   = $etcol->find({});
     while ( my $etype = $etcur->next ) {
-        my $attrname    = "regex_".$etype->type;
+        my $attrname    = "regex_".$etype->value;
         $meta->add_attribute(
             $attrname   => (
                 is      => 'rw',
@@ -96,7 +96,7 @@ sub BUILD {
             )
         );
         $self->$attrname({
-            type    => $etype->type,
+            type    => $etype->value,
             regex   => $self->build_re($etype->match),
             order   => $etype->order,
             options => $etype->options,
@@ -109,9 +109,18 @@ sub BUILD {
 sub build_re {
     my $self    = shift;
     my $text    = shift;
+    my $log     = $self->env->log;
+    my $re;
 
-    my ($pre,$match,$post) = split(/\//,$text);
-    my $re  = qr/(?$post)$match/;
+    $log->debug("building re from $text");
+
+    if ( $text =~ /\// ) {
+        my ($pre,$match,$post) = split(/\//,$text);
+        $re  = qr/(?$post)$match/;
+    }
+    else {
+        $re = qr/$text/i;
+    }
 
     return $re;
 }
