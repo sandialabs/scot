@@ -8,13 +8,36 @@ use Data::Dumper;
 use Scot::Env;
 use Safe;
 
+print "Resetting test db...\n";
+system("mongo scot-testing <../../install/src/mongodb/reset.js 2>&1 > /dev/null");
+
 $ENV{'scot_config_file'}    = './extractor.cfg.pl';
 my $config_file = $ENV{'scot_config_file'};
 my $env = Scot::Env->new({
     config_file => $config_file
 });
+
+my $mongo   = $env->mongo;
+my $etcol   = $mongo->collection('Entitytype');
+my @ets     = map { $etcol->create($_); } ( 
+    { value => "userdef-1", match => "Testing Foo", options => { multiword => "yes" } },
+    { value => "userdef-2", match => "Zoo Kachoo", options => { multiword => "yes" } },
+);
+
+$env->regex->load_entitytypes();
+
 my $log         = $env->log;
 my $extractor   = $env->extractor;
+my $etcur       = $etcol->find({});
+
+is ($etcur->count, 2, "Found correct number of entitytypes");
+
+while ( my $et = $etcur->next ) {
+    say ref($et);
+    say $et->value . " matches " . $et->match;
+}
+
+
 
 no strict 'refs';
 my $container   = new Safe 'Examples';
