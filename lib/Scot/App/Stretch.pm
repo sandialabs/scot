@@ -9,6 +9,8 @@ Scot::App::Stretch
 
 =head1 Description
 
+deprecated:  moving to Scot::App::Responder::Stretch once tested
+
 Listen for data changes in SCOT, submit that data to ElasticSearch
 
 or 
