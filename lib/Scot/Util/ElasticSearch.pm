@@ -174,6 +174,27 @@ sub start_snapshot {
 
 }
 
+sub update {
+    my $self    = shift;
+    my $index   = shift;
+    my $type    = shift;
+    my $id      = shift;
+    my $body    = shift;
+    my $es      = $self->es;
+
+    my $results = $es->update(
+        index   => $index,
+        type    => $type,
+        id      => $id,
+        body    => {
+            doc => $body
+        },
+    );
+    return $results;
+}
+
+
+
 sub delete_repo {
 
 }
