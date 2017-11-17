@@ -623,4 +623,27 @@ EOF
         userdef => [],
     },
 
+    {
+        testname    => "user defined entitytype 1",
+        testgroup   => "multiword",
+        testnumber  => 26,
+        source      => <<'EOF',
+<html>the group Testing Foo is at it again</html>
+EOF
+        plain       => <<'EOF',
+the group Testing Foo is at it again
+EOF
+        flair       => <<'EOF',
+<div>the group <span class="entity userdef-1" data-entity-type="userdef-1" data-entity-value="testing foo">Testing Foo</span> is at it again</div>
+EOF
+        entities    => [
+            {
+                value   => 'testing foo',
+                type    => 'userdef-1',
+            }
+        ],
+        userdef => [
+        ],
+    },
+
 );

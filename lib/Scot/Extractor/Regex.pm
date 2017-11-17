@@ -85,9 +85,23 @@ sub BUILD {
 #    }
 
     # finally load from EntityTypes (prefered location)
+
+    $self->load_entitytypes($meta);
+
+}
+
+sub load_entitytypes {
+    my $self    = shift;
+    my $meta    = $self->meta;
+    my $log     = $self->env->log;
+    my $mongo   = $self->env->mongo;
     my $etcol   = $mongo->collection('Entitytype');
     my $etcur   = $etcol->find({});
+
+    $meta->make_mutable;
+
     while ( my $etype = $etcur->next ) {
+        next if ( $etype->status ne "active" );
         my $attrname    = "regex_".$etype->value;
         $meta->add_attribute(
             $attrname   => (
@@ -101,10 +115,11 @@ sub BUILD {
             order   => $etype->order,
             options => $etype->options,
         });
+        $log->debug("created $attrname");
     }
-
     $meta->make_immutable;
 }
+
 
 sub build_re {
     my $self    = shift;
