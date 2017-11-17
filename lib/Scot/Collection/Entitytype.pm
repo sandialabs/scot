@@ -22,7 +22,10 @@ override api_create => sub {
     my $match   = $json->{match};
     my $multi   = $opts->{multiword};
 
-
+    if ( $match =~ / / ) {
+        $log->debug("user defined entitytype has a space, setting multiword = yes");
+        $multi  = "yes";
+    }
 
     $value =~ s/ /-/g; # replace spaces in value
 
@@ -74,8 +77,9 @@ sub api_subthing {
 sub autocomplete {
     my $self    = shift;
     my $frag    = shift;
+    my $re      = qr/$frag/i;
     my $cursor  = $self->find({
-        value => /$frag/
+        value => $re,
     });
     my @records = map { {
         $_->{value}
