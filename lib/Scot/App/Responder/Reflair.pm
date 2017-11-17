@@ -1,5 +1,6 @@
 package Scot::App::Responder::Reflair;
 
+use Try::Tiny;
 use Data::Dumper;
 use Moose;
 extends 'Scot::App::Responder';
