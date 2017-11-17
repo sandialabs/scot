@@ -23,6 +23,7 @@ db.sigbody.drop();
 db.apikey.drop();
 db.handler.drop();
 db.stat.drop();
+db.entitytype.drop();
 
 print ("Creating indexes...");
 load("./src/mongodb/indexes.js");

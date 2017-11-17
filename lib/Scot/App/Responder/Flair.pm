@@ -1,6 +1,7 @@
 package Scot::App::Responder::Flair;
 
 use Data::Dumper;
+use Try::Tiny;
 use Moose;
 extends 'Scot::App::Responder';
 
@@ -59,23 +60,33 @@ sub process_message {
     my $href    = shift;
     my $log     = $self->log;
 
+    $log->debug("refreshing entitytypes");
+    $self->env->regex->load_entitytypes;
+
     my $action  = lc($href->{action});
     my $type    = lc($href->{data}->{type});
     my $id      = $href->{data}->{id} + 0;
+    my $who     = $href->{data}->{who};
     my $opts    = $href->{data}->{opts};
 
+    $log->debug("[Wkr $$] Processing message $action $type $id from $who");
 
-    $log->debug("[Wkr $$] Processing message $action $type $id");
+    if ( $who eq "scot-flair" ) {
+        $log->debug("I guess I sent this message, skipping...");
+        return "skipping self message";
+    }
 
     if ( $action eq "created" or $action eq "updated" ) {
         $log->debug("--- $action message ---");
         if ( $type eq "alertgroup" ) {
             $self->process_alertgroup($id,$opts);
             $self->put_stat("alertgroup flaired", 1);
+            return 1;
         }
         elsif ( $type eq "entry" ) {
             $self->process_entry($id,$opts);
             $self->put_stat("entry flaired", 1);
+            return 1;
         }
         else {
             $log->error("Non processed type $type, skipping");
@@ -139,7 +150,6 @@ sub process_alertgroup {
 
     my $response = $self->update_alertgroup($putdata);
 
-    $self->out("-------- done processing alertgroup $id");
     $log->debug("Done processing alertgroup $id");
 }
 
@@ -385,7 +395,7 @@ sub process_entry {
     };
     $log->debug("Entry Put Data: ",{filter=>\&Dumper, value=>$putdata});
     $self->update_entry($putdata);
-    $self->out("-------- done processing entry $id");
+    $log->debug("-------- done processing entry $id");
 }
 
 
