@@ -10,15 +10,15 @@ Docker-SCOT containers
 ----------------------
 Docker-SCOT is comprised of the following services: 
 
-* SCOT API
-* MongoDB - Storage for SCOT
-* ActiveMQ - Message broker for servies interested in SCOT data
-* Apache - Proxy for traffic between some services
-* ElasticSearch - Search engine
-* Flair Engine - 'Entities' found within SCOT are highlighted with a count of the number of times SCOT has 'seen' them before
-* Game Engine - Used for homepage statistics
-* Stretch - Used for adding data to ElasticSearch
-* Mail - Used as a reslient mechanism for importing data to SCOT (not enabled by default - See configuration section)
+* **SCOT API**
+* **MongoDB** - Storage for SCOT
+* **ActiveMQ** - Message broker for servies interested in SCOT data
+* **Apache** - Proxy for traffic between some services
+* **ElasticSearch** - Search engine
+* **Flair Engine** - 'Entities' found within SCOT are highlighted with a count of the number of times SCOT has 'seen' them before
+* **Game Engine** - Used for homepage statistics
+* **Stretch** - Used for adding data to ElasticSearch
+* **Mail** - Used as a reslient mechanism for importing data to SCOT (not enabled by default - See configuration section)
 
 Docker-SCOT also runs the following ephemeral containers on demand or on startup:
 
