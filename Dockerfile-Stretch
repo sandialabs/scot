@@ -1,13 +1,6 @@
 FROM scot_perl
 
 
-ENV http_proxy="" \
-    https_proxy="" \
-    no_proxy="" \
-    HTTP_PROXY="" \
-    HTTPS_PROXY="" \
-    NO_PROXY=""
-
 RUN mkdir -p /var/log/scot
 RUN mkdir -p /opt/scot
 
