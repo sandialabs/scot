@@ -1,6 +1,9 @@
 FROM gitlab.sandia.gov:3434/docker/ubuntu
 #FROM Ubuntu:16.04
 
+ENV no_proxy="elastic,mongodb,scot,activemq"
+ENV NO_PROXY="elastic,mongodb,scot,activemq"
+
 RUN apt-get update && \
     apt-get -qy upgrade && \
     apt-get install -qy perl build-essential cpanminus perl-doc perl-base perl-modules \ 
@@ -53,3 +56,5 @@ RUN cpanm Array::Split Data::Dumper Data::Dumper::HTML Data::Dumper::Concise Dat
     Mojolicious::Plugin::TagHelpers XML::Smart Config::Auto Data::GUID File::LibMagic List::Uniq Domain::PublicSuffix Mozilla::PublicSuffix \
     Crypt::PBKDF2 Config::Crontab Test::JSON Math::Int128 GeoIP2  Search::Elasticsearch Term::ANSIColor Courriel Statistics::Descriptive Net::SSH::Perl Net::SFTP
 
+COPY lib/ /opt/scot/lib/
+COPY bin/ /opt/scot/bin/
