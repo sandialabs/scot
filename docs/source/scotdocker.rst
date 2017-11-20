@@ -19,7 +19,7 @@ Docker-SCOT is comprised of the following services:
 * Game Engine
 * Mail Engine
 * Stretch
-* Mail (not enabled by default)
+* Mail (not enabled by default - See configuration section)
 
 Docker-SCOT also runs the following ephemeral containers on demand or on startup:
 
