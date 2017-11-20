@@ -10,8 +10,9 @@ fi
 
 $cmd &
 
-if [ ! -f /data/db/.mongodb_password_set ]; then
-    /set_mongodb_config.sh >> /tmp/wow.txt
+
+if [ ! -f /var/lib/mongodb/.mongodb_password_set ]; then
+    /set_mongodb_config.sh 
 fi
 
 fg

@@ -23,6 +23,10 @@ ADD install/src/mongodb/ /opt/scot/install/src/mongodb/
 ADD docker-configs/mongodb/run.sh /run.sh
 ADD docker-configs/mongodb/set_mongodb_config.sh /set_mongodb_config.sh
 
+#Create /var/lib/mongodb directory
+RUN mkdir -p /var/lib/mongodb/
+
+
 RUN chmod +x /run.sh
 RUN chmod +x /set_mongodb_config.sh
 # Set /usr/bin/mongod as the dockerized entry-point application

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # delete all admin accounts
-mongo scot-prod --eval "db.user.deleteMany({username:'admin'})"
+mongo scot-prod --host mongodb --eval "db.user.deleteMany({username:'admin'})"
 
 
 #admin User
@@ -26,8 +26,8 @@ while [[ RET -ne 0 ]]; do
 done
 
 set='$set'
-mongo scot-prod /opt/scot/install/src/mongodb/admin_user.js
-mongo scot-prod --eval "db.user.update({username:'admin'}, {$set:{pwhash:'$HASH'}}, {multi:true})"
+mongo --host mongodb scot-prod /opt/scot/install/src/mongodb/admin_user.js
+mongo --host mongodb scot-prod --eval "db.user.update({username:'admin'}, {$set:{pwhash:'$HASH'}}, {multi:true})"
 
 sleep 3
 
@@ -40,6 +40,6 @@ sleep 3
 
 # If everything went well, add a file as a flag so we know in the future to not re-create the
 # users if we're recreating the container (provided we're using some persistent storage)
-touch /data/db/.mongodb_password_set
+echo "hello" > /var/lib/mongodb/.mongodb_password_set
 
 echo "MongoDB configured successfully. You may now connect to the DB."
