@@ -37,6 +37,9 @@ To get started, refer to the Docker Community Edition documentation for installi
 
 Next, Docker-SCOT relies on docker-compose to build, run and manage services. Docker-compose does not ship with Docker engine, so you will need to refer to the following documentation for installation of Docker-Compose: https://docs.docker.com/compose/install/
 
+Getting Started
+---------------
+
 Once you have Docker engine and Docker-Compose installed, cd into the root of the SCOT software directory and run::
 
     sudo docker-compose up --build
