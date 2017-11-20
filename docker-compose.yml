@@ -1,7 +1,6 @@
 version: '3'
 services:
   apache:
-   # hostname: apache
     build:
       dockerfile: Dockerfile-Apache
       context: ./
@@ -23,7 +22,6 @@ services:
       context: ./
     ports:
      - "8161:8161"
-     - "61613:61613"
     networks:
      - scot-docker-net
   
@@ -39,8 +37,6 @@ services:
      - "/opt/scotbackup/mongo/scot-prod:/opt/scotbackup/mongo/scot-prod/"
     networks:
      - scot-docker-net
-    ports:
-     - "27017:27017"
 
   elastic:
    build:
@@ -52,8 +48,7 @@ services:
      - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/"
    networks:
     - scot-docker-net
-   ports:
-    - "9200:9200"
+ 
   mapping:
     build:
       dockerfile: Dockerfile-Mapping
@@ -80,8 +75,6 @@ services:
      - activemq
     networks:
      - scot-docker-net
-    ports:
-     - "3000:3000"
   
   perl:
     build: 
@@ -95,6 +88,7 @@ services:
      context: ./
    volumes:
     - "/var/log/scot:/var/log/scot/"
+    - "/etc/localtime:/etc/localtime:ro"
    depends_on:
     - mongodb
     - activemq
@@ -109,6 +103,7 @@ services:
    image: scot_stretch
    volumes:
     - "/var/log/scot:/var/log/scot/"
+    - "/etc/localtime:/etc/localtime:ro"
    depends_on:
     - mongodb
     - activemq
@@ -122,6 +117,7 @@ services:
      context: ./
    volumes:
     - "/var/log/scot:/var/log/scot/"
+    - "/etc/localtime:/etc/localtime:ro"
    depends_on:
     - mongodb
     - scot
