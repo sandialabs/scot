@@ -106,7 +106,7 @@ Note: If by chance you ever go to wipe your mongo database and would like to sta
 
 You can view which data is being persisted by viewing the docker-compose.yml script and referring to the various 'Volumes'. With regard to MongoDB (where SCOT records are persisted), those directories are mapped to your Host's: /var/lib/mongodb directory. 
 
-** Mail ** 
+**Mail** 
 
 To begin using mail, you will need to uncomment the 'mail' service in the docker-compose.yml file and also add any of your organization's mail configurations into the 
 docker-configs/mail/alert.cfg.pl file. 
