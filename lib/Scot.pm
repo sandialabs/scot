@@ -187,6 +187,8 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-search#search')
             ->name  ('search');
 
+    # /api/v2/hitsearch?match=foo%20bar
+
     $scot   ->route ('/api/v2/hitsearch')
             ->to    ('controller-search#hitsearch')
             ->name  ('hitsearch');
