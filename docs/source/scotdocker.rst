@@ -10,17 +10,17 @@ Docker-SCOT containers
 ----------------------
 Docker-SCOT is comprised of the following services: 
 
-* SCOT API
-* MongoDB
-* ActiveMQ
-* Apache
-* ElasticSearch
-* Flair Engine
-* Game Engine
-* Mail Engine
-* Stretch
+* **SCOT API**
+* **MongoDB** - Storage for SCOT
+* **ActiveMQ** - Message broker for servies interested in SCOT data
+* **Apache** - Proxy for traffic between some services
+* **ElasticSearch** - Search engine
+* **Flair Engine** - 'Entities' found within SCOT are highlighted with a count of the number of times SCOT has 'seen' them before
+* **Game Engine** - Used for homepage statistics
+* **Stretch** - Used for adding data to ElasticSearch
+* **Mail** - Used as a reslient mechanism for importing data to SCOT (not enabled by default - See configuration section)
 
-Docker-SCOT also runs the following epheemeral containers on demand or on startup:
+Docker-SCOT also runs the following ephemeral containers on demand or on startup:
 
 * Mapping - Creates index mapping for Elastic
 * Docker-Utilities - A container that can be built and run on demand for executing scripts against Mongo, Scot, Elastic, etc. For instance, if a user wants to run the restore_remote_db.pl script to restore the database for MongoDB from a remote source, they can do so by: 
@@ -35,6 +35,9 @@ Installation
 To get started, refer to the Docker Community Edition documentation for installing the Docker engine on your respective OS: `https://docs.docker.com/engine/installation/ <https://docs.docker.com/engine/installation/>`_
 
 Next, Docker-SCOT relies on docker-compose to build, run and manage services. Docker-compose does not ship with Docker engine, so you will need to refer to the following documentation for installation of Docker-Compose: https://docs.docker.com/compose/install/
+
+Getting Started
+---------------
 
 Once you have Docker engine and Docker-Compose installed, cd into the root of the SCOT software directory and run::
 
@@ -95,9 +98,18 @@ MongoDB default password (also used for logging in to SCOT if local auth is enab
 * Username: admin
 * Password: admin
 
+Note: If by chance you ever go to wipe your mongo database and would like to start fresh, you would need to delete the file /var/lib/mongodb/.mongodb_password_set. 
+
+
 **Persisted Data** 
 
 You can view which data is being persisted by viewing the docker-compose.yml script and referring to the various 'Volumes'. With regard to MongoDB (where SCOT records are persisted), those directories are mapped to your Host's: /var/lib/mongodb directory. 
+
+**Mail** 
+
+To begin using mail, you will need to uncomment the 'mail' service in the docker-compose.yml file and also add any of your organization's mail configurations into the 
+docker-configs/mail/alert.cfg.pl file. 
+
 
 
 
