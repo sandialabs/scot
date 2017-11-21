@@ -46,9 +46,11 @@ class AutoCompleteInput extends Component {
                 success: function (result) {
                     var result = result.records;
                     for (var i=0; i < result.length; i++) {
-                        let obj = {};
-                        obj.label = result[i];
-                        arr.push(obj)
+                        if (typeof(result[i]) == 'string') {
+                            let obj = {};
+                            obj.label = result[i];
+                            arr.push(obj)
+                        }
                     }
 
                     this.setState({suggestions:arr})
@@ -75,7 +77,6 @@ class AutoCompleteInput extends Component {
                     onChange={this.HandleInputChange}
                     onSelect={this.HandleAdd}
 			        menuStyle= {{
-                        position: 'unset',
                         borderRadius: '3px',
                         boxShadow: '0 2px 12px rgba(0, 0, 0, 0.1)',
                         background: 'rgba(255, 255, 255, 0.9)',
@@ -83,6 +84,9 @@ class AutoCompleteInput extends Component {
                         fontSize: '90%',
                         overflow: 'auto',
                         maxHeight: '200px', // TODO: don't cheat, let it flow to the bottom
+                        top: 'unset',
+                        left: 'unset',
+                        position: 'absolute',
                     }}
                     inputProps={{style: {width: '100%'}}}
                     wrapperProps={{style: {width: '300px'}}}
