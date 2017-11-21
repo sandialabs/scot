@@ -187,6 +187,10 @@ relies on the browser BasicAuth popup.
             ->to    ('controller-search#search')
             ->name  ('search');
 
+    $scot   ->route ('/api/v2/hitsearch')
+            ->to    ('controller-search#hitsearch')
+            ->name  ('hitsearch');
+
 =pod
 
 @api {get} /scot/api/v2/game SCOT Gamefication
