@@ -1,13 +1,13 @@
 
 #ActiveMQ dockerfile
-FROM gitlab.sandia.gov:3434/docker/ubuntu
-#FROM ubuntu:16.04 
+FROM ubuntu:16.04 
 
 
 #AMQ
 ENV ACTIVEMQ_VERSION 5.14.3
 ENV ACTIVEMQ apache-activemq-$ACTIVEMQ_VERSION
-ENV ACTIVEMQ_TCP=61616 ACTIVEMQ_AMQP=5672 ACTIVEMQ_STOMP=61613 ACTIVEMQ_MQTT=1883 ACTIVEMQ_WS=61614 ACTIVEMQ_UI=8161
+ENV ACTIVEMQ_STOMP=61613 
+ENV ACTIVEMQ_UI=8161
 ENV ACTIVEMQ_HOME /opt/activemq
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -16,14 +16,11 @@ ENV DEBIAN_FRONTEND=noninteractive \
 ENV JAVA_HOME="/opt/jdk1.${JDK_VERSION}.0_${JDK_UPDATE}" \
     JRE_HOME="/opt/jdk1.${JDK_VERSION}.0_${JDK_UPDATE}/jre"
 
+#install Java 1.8
 RUN apt-get update && apt-get dist-upgrade -y && \
   curl --silent --location --retry 3 \
    http://tfx.sandia.gov/image_repo/jdk/jdk-"${JDK_VERSION}"u"${JDK_UPDATE}"-linux-x64.tar.gz \
   | tar xz -C /opt && \
-  ${JAVA_HOME}/bin/keytool --import -trustcacerts -file \
-  /usr/local/share/ca-certificates/https-interception.sandia.gov.crt \
-  -alias Sandia -keystore ${JAVA_HOME}/jre/lib/security/cacerts \
-  -storepass changeit -noprompt && \
   update-alternatives --install "/usr/bin/java" "java" "${JRE_HOME}/bin/java" 1 && \
   update-alternatives --install "/usr/bin/javac" "javac" "${JAVA_HOME}/bin/javac" 1 && \
   update-alternatives --set java "${JRE_HOME}/bin/java" && \
@@ -44,15 +41,12 @@ RUN set -x && \
 
 #Copy over SCOTAQ config stuffs    
 COPY install/src/ActiveMQ/amq/scotaq/ /opt/activemq/webapps/scot
-
-
 COPY install/src/ActiveMQ/amq/scotamq.xml /opt/activemq/conf/
 COPY install/src/ActiveMQ/amq/jetty.xml /opt/activemq/conf/
 
 USER activemq
 WORKDIR $ACTIVEMQ_HOME
 EXPOSE $ACTIVEMQ_TCP $ACTIVEMQ_AMQP $ACTIVEMQ_STOMP $ACTIVEMQ_MQTT $ACTIVEMQ_WS $ACTIVEMQ_UI
-
 
 
 CMD ["/bin/sh", "-c", "bin/activemq console"]
