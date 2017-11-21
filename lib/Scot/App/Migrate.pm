@@ -47,7 +47,6 @@ sub _get_es {
     return $env->es;
 }
 
-
 has extractor   => (
     is       => 'ro',
     isa      => 'Scot::Util::EntityExtractor',
