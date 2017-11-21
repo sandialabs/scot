@@ -5,9 +5,7 @@ RUN mkdir -p /var/log/scot
 RUN mkdir -p /opt/scot
 
 COPY install/src/scot/ /opt/scot/etc/
-#COPY bin/watch_amq.pl /opt/scot/bin/
 COPY bin/flairer.pl /opt/scot/bin/
-COPY lib/ /opt/scot/lib/
 COPY install/src/scot /opt/scot/etc/
 COPY docker-configs/flair/flair.cfg.pl /opt/scot/etc/
 

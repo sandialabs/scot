@@ -1,5 +1,4 @@
-FROM gitlab.sandia.gov:3434/docker/ubuntu
-#FROM Ubuntu:16.04
+FROM Ubuntu:16.04
 
 ENV no_proxy="elastic,mongodb,scot,activemq"
 ENV NO_PROXY="elastic,mongodb,scot,activemq"

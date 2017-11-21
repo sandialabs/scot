@@ -1,16 +1,7 @@
 FROM docker.elastic.co/elasticsearch/elasticsearch:5.6.3
 
 
-ENV http_proxy=http://wwwproxy.sandia.gov:80 \
-    https_proxy=http://wwwproxy.sandia.gov:80 \
-    no_proxy='localhost,.sandia.gov'
-
 USER root
-RUN yum update -y \
-    && yum install -y ca-certificates update-ca-trust force-enable git \
-    && yum clean all \
-    && /usr/bin/update-ca-trust enable \
-    && /usr/bin/update-ca-trust extract
 
 RUN mkdir -p /opt/scotbackup/elastic
 RUN chown elasticsearch:elasticsearch config/elasticsearch.yml
@@ -19,7 +10,6 @@ RUN chown -R elasticsearch:elasticsearch /opt/scotbackup/elastic
 USER elasticsearch
 
 ADD docker-configs/elastic/elasticsearch.yml /usr/share/elasticsearch/config/
-COPY docker-configs/bc.pem  /etc/pki/ca-trust/source/anchors/ssl-interception.pem
 
 EXPOSE 9200 9300
 

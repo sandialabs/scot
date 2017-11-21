@@ -1,9 +1,7 @@
-FROM gitlab.sandia.gov:3434/docker/ubuntu
-#FROM ubuntu:16.04
+FROM ubuntu:16.04
 
 RUN apt-get update && \
   apt-get install -y apache2 libldap2-dev libsasl2-dev libssl-dev apache2 libapache2-mod-wsgi \
-  # libapache2-mod-shib2 libapache2-mod-auth-cas  && apt-get clean && \
   apache2 libapache2-mod-authnz-external libapache2-mod-rpaf && \
   a2enmod proxy_http && a2enmod proxy && \
   a2enmod ssl && \
@@ -12,7 +10,7 @@ RUN apt-get update && \
   a2enmod proxy_html && \
   a2enmod headers 
 
-
+#If you want to use your own SSL certificates, remove the below RUN line and simply add a data volume to the docker-compose file for your certs (i.e. /etc/apache2/ssl/yourcerts)
 RUN mkdir -p /etc/apache2/ssl/ && \
     openssl genrsa 2048 > /etc/apache2/ssl/scot.key && \
     openssl req -new -key /etc/apache2/ssl/scot.key -out /tmp/scot.csr -subj '/CN=localhost/O=SCOT Default Cert/C=US' && \

@@ -12,14 +12,13 @@ ENV SCRIPT = ${SCRIPT}
 
 RUN mkdir -p /opt/scot/etc
 
-COPY lib/ /opt/scot/lib/
 COPY install/src/scot /opt/scot/etc/
 COPY docker-scripts/ /opt/scot/etc/
 
 
-COPY docker-configs/backup.cfg.pl /opt/scot/etc
-COPY docker-configs/restore.cfg.pl /opt/scot/etc
-COPY docker-configs/mapping/mapping.sh /opt/scot/install/src/elasticsearch/mapping.sh
+#COPY docker-configs/backup.cfg.pl /opt/scot/etc
+#COPY docker-configs/restore.cfg.pl /opt/scot/etc
+#COPY docker-configs/mapping/mapping.sh /opt/scot/install/src/elasticsearch/mapping.sh
 
 RUN mkdir -p /tmp/foo/
 RUN mkdir -p /opt/scot/public/
@@ -27,4 +26,3 @@ RUN mkdir -p /opt/scotbackup/mongo/scot-prod
 
 WORKDIR /opt/scot/etc/
 CMD perl $SCRIPT
-#CMD /bin/bash
