@@ -1,6 +1,7 @@
 package Scot::App::Responder::Flair;
 
 use Data::Dumper;
+use HTML::Entities;
 use Try::Tiny;
 use Moose;
 extends 'Scot::App::Responder';
@@ -59,6 +60,9 @@ sub process_message {
     my $pm      = shift;
     my $href    = shift;
     my $log     = $self->log;
+
+    $log->debug("pm : ",{filter=>\&Dumper, value=>$pm});
+    $log->debug("processing message: ",{filter=>\&Dumper, value=>$href});
 
     $log->debug("refreshing entitytypes");
     $self->env->regex->load_entitytypes;
