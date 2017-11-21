@@ -2,6 +2,7 @@ package Scot::Collection::Entitytype;
 use lib '../../../lib';
 use Moose 2;
 use Data::Dumper;
+use Lingua::EN::StopWords qw(%StopWords);
 extends 'Scot::Collection';
 
 with    qw(
@@ -36,12 +37,36 @@ override api_create => sub {
         $json->{options} = {
             multiword   => $multi
         };
-        $log->debug("creating entitytype with ",{filter=>\&Dumper, value=>$json});
-        $et_obj = $self->create($json);
+        if ( $self->sane_match($json->{match})) {
+            $log->debug("creating entitytype with ",{filter=>\&Dumper, value=>$json});
+            $et_obj = $self->create($json);
+        }
+        else {
+            $log->error("Insane user defined flair attempted. ".$json->{match});
+            die "Unsupported user defined flair attempt";
+        }
         # TODO: add history?
     }
     return $et_obj;
 };
+
+sub sane_match {
+    my $self    = shift;
+    my $match   = shift;
+
+    if ( $match eq " " ) {
+        return undef;
+    }
+
+    if ( defined $StopWords{$match} ) {
+        return undef;    
+    }
+
+    # i'm sure our users will help educate us on further 
+    # sets of words to disallow!
+
+    return 1;
+}
 
 sub entity_type_exists {
     my $self    = shift;
