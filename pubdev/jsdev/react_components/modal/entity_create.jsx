@@ -15,6 +15,7 @@ class EntityCreateModal extends Component {
             status: 'tracked',
             multiword: 'yes', 
             confirmation: false,
+            countLoading: false,
         }
         
         this.Submit = this.Submit.bind(this);
@@ -56,14 +57,31 @@ class EntityCreateModal extends Component {
     
     HasSpacesCheck(match) {
         if ( /\s/g.test(match) == true ) {
+            
             this.setState({multiword: 'yes'});   
         } else {
             this.setState({multiword: 'no'});
         }
     }
 
+    GetCount() {
+        this.setState({countLoading: true});
+        let match = encodeURIComponent(this.state.match);
+        $.ajax({
+            type: 'get',
+            url: '/scot/api/v2/hitsearch?match=' + match,
+            success: function(data) {
+                this.setState({count: data.count, countLoading: false});
+            }.bind(this),
+            error: function(data) {
+                this.setState({count: 'unable to get count', countLoading: false});
+            }.bind(this)
+        })
+    }
+
     Confirmation() {
         if ( this.state.confirmation == false ) {
+            this.GetCount();
             this.setState({confirmation: true});
         } else {
             this.setState({confirmation: false, value: '' }) 
@@ -82,7 +100,11 @@ class EntityCreateModal extends Component {
                 this.props.ToggleCreateEntity();            
             }.bind(this),
             error: function(data) {
-                this.props.errorToggle('failed to create user defined entity', data);
+                if (data.responseJSON.error_msg) {
+                    this.props.errorToggle('failed to create user defined entity: error_message: ' + data.responseJSON.error_msg, data);
+                } else {
+                    this.props.errorToggle('failed to create user defined entity', data);
+                }
             }.bind(this)
         })
     }
@@ -150,7 +172,7 @@ class EntityCreateModal extends Component {
                     : 
                         <span>
                             <span style={{color: 'red', float: 'left'}}>
-                               Count: (holding place).  
+                               {this.state.countLoading ? <span>Count: is loading...</span> : <span>Count: {this.state.count}</span>}  
                             </span>
                             <span>
                                 <Button onClick={this.Submit} bsStyle={'success'}>Submit</Button>
