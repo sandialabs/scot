@@ -412,6 +412,7 @@ function install_perl_modules {
         Statistics::Descriptive
         Net::SSH::Perl
         Net::SFTP
+        Lingua::EN::StopWords
     '
 
     # install_cpanm

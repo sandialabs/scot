@@ -76,6 +76,7 @@ sub create {
         my $req_href    = $self->get_request_params;
         my $collection  = $self->get_collection_req($req_href);
         $req_href->{groups} = $self->session('groups');
+        $self->pre_create_process($req_href);
         my @objects     = $collection->api_create($req_href);
         my @returnjson  = ();
 
@@ -106,6 +107,19 @@ sub create {
         $log->error(longmess);
         $self->render_error(400, { error_msg => $_ } );
     };
+}
+
+sub pre_create_process {
+    my $self        = shift;
+    my $req_href    = shift;
+    my $req         = $req_href->{request};
+    my $json        = $req->{json};
+    my $collection  = $req_href->{collection};
+
+    if ($collection eq "entitytype") {
+        # place data cleansing here for creation of entitytype
+        # clean both entity name and type
+    }
 }
 
 sub post_create_process {
