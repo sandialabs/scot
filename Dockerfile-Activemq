@@ -1,6 +1,6 @@
 
 #ActiveMQ dockerfile
-FROM ubuntu:16.04 
+FROM openjdk:8 
 
 
 #AMQ
@@ -10,23 +10,8 @@ ENV ACTIVEMQ_STOMP=61613
 ENV ACTIVEMQ_UI=8161
 ENV ACTIVEMQ_HOME /opt/activemq
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    JDK_VERSION="8" \
-    JDK_UPDATE="144"
-ENV JAVA_HOME="/opt/jdk1.${JDK_VERSION}.0_${JDK_UPDATE}" \
-    JRE_HOME="/opt/jdk1.${JDK_VERSION}.0_${JDK_UPDATE}/jre"
+ENV DEBIAN_FRONTEND=noninteractive 
 
-#install Java 1.8
-RUN apt-get update && apt-get dist-upgrade -y && \
-  curl --silent --location --retry 3 \
-   http://tfx.sandia.gov/image_repo/jdk/jdk-"${JDK_VERSION}"u"${JDK_UPDATE}"-linux-x64.tar.gz \
-  | tar xz -C /opt && \
-  update-alternatives --install "/usr/bin/java" "java" "${JRE_HOME}/bin/java" 1 && \
-  update-alternatives --install "/usr/bin/javac" "javac" "${JAVA_HOME}/bin/javac" 1 && \
-  update-alternatives --set java "${JRE_HOME}/bin/java" && \
-  update-alternatives --set javac "${JAVA_HOME}/bin/javac" && \
-  apt-get autoclean && apt-get --purge -y autoremove && \
-  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 #install amq
 
