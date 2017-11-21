@@ -1,5 +1,4 @@
-FROM gitlab.sandia.gov:3434/docker/ubuntu
-#FROM ubuntu:16.04 
+FROM ubuntu:16.04 
 
 # Installation:
 # Import MongoDB public GPG key AND create a MongoDB list file

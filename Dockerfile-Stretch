@@ -1,13 +1,11 @@
 FROM scot_perl
 
-
 RUN mkdir -p /var/log/scot
 RUN mkdir -p /opt/scot
 
 COPY install/src/scot/ /opt/scot/etc/
 
 COPY bin/stretch.pl /opt/scot/bin/
-COPY lib/ /opt/scot/lib/
 COPY install/src/scot /opt/scot/etc/
 COPY docker-configs/stretch/stretch.cfg.pl /opt/scot/etc/
 
