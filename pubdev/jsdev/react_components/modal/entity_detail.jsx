@@ -613,7 +613,7 @@ var EntityReferences = React.createClass({
         var maxRecords = 100;
         //if type == entity then the url is looking for a full screen entity view with all records.
         if (this.props.type == 'entity') {
-            maxRecords = 'result.length'
+            maxRecords = undefined;
         }
         return {
             entityDataAlertGroup:null,
@@ -637,13 +637,13 @@ var EntityReferences = React.createClass({
             data: {sort:JSON.stringify({'id':-1})},
             traditional:true,
             success: function(result) {
-                var result = result.records
+                var result = result.records;
+                var recordNumber = result.length; 
                 var arr = [];
                 var arrPromoted = [];
                 var arrClosed = [];
                 var arrOpen = [];
-                var recordNumber = this.state.maxRecords;
-                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+                if ( this.state.maxRecords ) { recordNumber = this.state.maxRecords }
                 for(var i=0; i < recordNumber; i++) {
                     if (result[i] != null) {
                         if (result[i].status == 'promoted'){
@@ -680,13 +680,13 @@ var EntityReferences = React.createClass({
             data: {sort:JSON.stringify({'id':-1})},
             traditional: true,
             success: function(result) {
-                var result = result.records
+                var result = result.records;
+                var recordNumber = result.length;
                 var arr = [];
                 var arrPromoted = [];
                 var arrClosed = [];
                 var arrOpen = [];
-                var recordNumber = this.state.maxRecords;
-                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+                if ( this.state.maxRecords ) { recordNumber = this.state.maxRecords } 
                 for(var i=0; i < recordNumber; i++) {
                     if (result[i] != null) {
                         if (result[i].status == 'promoted'){
@@ -723,13 +723,13 @@ var EntityReferences = React.createClass({
             data: {sort:JSON.stringify({'id':-1})},
             traditional: true,
             success: function(result) {
-                var result = result.records
+                var result = result.records;
+                var recordNumber = result.length;
                 var arr = [];
                 var arrPromoted = [];
                 var arrClosed = [];
                 var arrOpen = [];
-                var recordNumber = this.state.maxRecords;
-                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+                if ( this.state.maxRecords ) { recordNumber = this.state.maxRecords }
                 for(var i=0; i < recordNumber; i++) {
                     if (result[i] != null) {
                         if (result[i].status == 'promoted'){
@@ -766,13 +766,13 @@ var EntityReferences = React.createClass({
             data: {sort:JSON.stringify({'id':-1})},
             traditional: true,
             success: function(result) {
-                var result = result.records
+                var result = result.records;
+                var recordNumber = result.length;
                 var arr = [];
                 var arrPromoted = [];
                 var arrClosed = [];
                 var arrOpen = [];
-                var recordNumber = this.state.maxRecords;
-                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+                if ( this.state.maxRecords ) { recordNumber = this.state.maxRecords }
                 for(var i=0; i < recordNumber; i++) {
                     if (result[i] != null) {
                         if (result[i].status == 'promoted'){
@@ -809,13 +809,13 @@ var EntityReferences = React.createClass({
             data: {sort:JSON.stringify({'id':-1})},
             traditional: true,
             success: function(result) {
-                var result = result.records
+                var result = result.records;
+                var recordNumber = result.length;
                 var arr = [];
                 var arrPromoted = [];
                 var arrClosed = [];
                 var arrOpen = [];
-                var recordNumber = this.state.maxRecords;
-                if (isNaN(this.state.maxRecords) == true) { recordNumber = eval(this.state.maxRecords) }
+                if ( this.state.maxRecords ) { recordNumber = this.state.maxRecords }
                 for(var i=0; i < recordNumber; i++) {
                     if (result[i] != null) {
                         if (result[i].status == 'promoted'){
