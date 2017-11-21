@@ -94,7 +94,6 @@ class EntityCreateModal extends Component {
 
     OnChangeValue(e) {
         this.setState({value: e});
-        this.HasSpacesCheck(e);
     }
     
     render() {
@@ -150,13 +149,13 @@ class EntityCreateModal extends Component {
                         </span>
                     : 
                         <span>
-                            <div style={{color: 'red', textAlign: 'left'}}>
-                                You are about to create a user defined entity which will flair all matches of this entity in SCOT. This WILL put a heavy load on the server. Verify your request above before submitting.
-                            </div>
-                            <div>
+                            <span style={{color: 'red', float: 'left'}}>
+                               Count: (holding place).  
+                            </span>
+                            <span>
                                 <Button onClick={this.Submit} bsStyle={'success'}>Submit</Button>
                                 <Button onClick={this.Confirmation}>Go Back</Button>
-                            </div>
+                            </span>
                         </span>
                     }
                 </Modal.Footer>
