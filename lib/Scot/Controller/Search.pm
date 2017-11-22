@@ -116,7 +116,7 @@ sub newsearch {
     my $log     = $env->log;
     my $mongo   = $env->mongo;
     my $user    = $self->session('user');
-    my $esua    = $env->es;
+    my $esua    = $env->esproxy;
 
     $log->trace("----NEW-----");
     $log->trace("Handler is processing a POST (search) from $user");
