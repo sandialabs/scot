@@ -1,7 +1,8 @@
 
 #ActiveMQ dockerfile
 FROM openjdk:8 
-
+ARG proxy
+ENV proxy=${proxy} 
 
 #AMQ
 ENV ACTIVEMQ_VERSION 5.14.3
@@ -12,11 +13,10 @@ ENV ACTIVEMQ_HOME /opt/activemq
 
 ENV DEBIAN_FRONTEND=noninteractive 
 
-
 #install amq
 
 RUN set -x && \
-    curl -s -S https://archive.apache.org/dist/activemq/$ACTIVEMQ_VERSION/$ACTIVEMQ-bin.tar.gz | tar xvz -C /opt && \
+    curl -k -x ${proxy} -s -S https://archive.apache.org/dist/activemq/$ACTIVEMQ_VERSION/$ACTIVEMQ-bin.tar.gz | tar xvz -C /opt && \
     ln -s /opt/$ACTIVEMQ $ACTIVEMQ_HOME && \
     useradd -r -M -d $ACTIVEMQ_HOME activemq && \
     chown -R activemq:activemq /opt/$ACTIVEMQ && \
