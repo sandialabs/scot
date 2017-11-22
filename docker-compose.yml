@@ -20,6 +20,8 @@ services:
     build:
       dockerfile: Dockerfile-Activemq
       context: ./
+      args:
+       proxy: "" 
     ports:
      - "8161:8161"
     networks:
