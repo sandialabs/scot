@@ -973,7 +973,7 @@ var EntryParent = React.createClass({
         var header3 = ')'; 
         var createdTime = items.created;
         var updatedTime = items.updated; 
-        let entryHeaderInnerId = 'entry-header-inner-' + this.props.id;
+        let entryHeaderInnerId = 'entry-header-inner-' + this.props.id + ' entry-header-inner';
 
         return (
             <div> 
