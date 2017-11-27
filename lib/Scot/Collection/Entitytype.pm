@@ -115,9 +115,12 @@ sub autocomplete {
         if ( defined $cursor ) {
             my @temp    = $cursor->all;
             if ( scalar(@temp) > 0 ) {
-                @records = map { 
-                    $_->{value}
-                } @temp;
+                my %seen;
+                foreach my $h (@temp) {
+                    my $v = $h->{value};
+                    $seen{$v}++;
+                }
+                @records = keys %seen;
             }
         }
         push @records, $self->matching_predef($frag);
