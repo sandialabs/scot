@@ -113,11 +113,14 @@ sub autocomplete {
             value => $re,
         });
         if ( defined $cursor ) {
-            @records = map { {
-                $_->{value}
-            } } $cursor->all;
-            push @records, $self->matching_predef($frag);
+            my @temp    = $cursor->all;
+            if ( scalar(@temp) > 0 ) {
+                @records = map { 
+                    $_->{value}
+                } @temp;
+            }
         }
+        push @records, $self->matching_predef($frag);
     }
     catch {
         $log->error("Autocomplete failed: $_ ");
