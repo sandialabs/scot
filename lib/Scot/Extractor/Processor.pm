@@ -187,6 +187,156 @@ sub parse {
     my $self    = shift;
     my $text    = shift;
     my $dbhref  = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $reutil  = $env->regex;
+    my $splitre = $self->splitre;
+
+    my @new = ();   # hold the new element list
+    
+    $log->debug("Parsing $text.");
+
+    return @new if ( $text =~ /^[\t\n ]$/); # short circuit useless text
+
+    push @new, $self->do_multiword_matches($text, $dbhref);
+
+    if ( scalar(@new) > 0 ) {
+        $log->debug("Skipping single word regex search since multi word found");
+    }
+    else {
+        push @new, $self->do_singleword_matches($text, $dbhref);
+    }
+    return wantarray ? @new : \@new;
+}
+
+sub do_multiword_matches {
+    my $self    = shift;
+    my $text    = shift;
+    my $dbhref  = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $reutil  = $env->regex;
+    my @new     = ();
+
+    $log->debug("looking for multi word matches");
+
+    REGEX:
+    foreach my $href ($reutil->list_multiword_regexes) {
+
+        my $regex   = $href->{regex};
+        my $type    = $href->{type};
+
+        $log->debug("Looking for $type match");
+
+        if ( $text =~ m/$regex/ ) {
+
+            $log->debug(" $type matches!");
+
+            my $pre     = substr($text, 0, $-[0]);
+            my $match   = substr($text, $-[0], $+[0] - $-[0]);
+            my $post    = substr($text, $+[0]);
+
+            push @new, $self->parse($pre, $dbhref); #look for matches in pre
+            push @new, $self->span ($match, $type); # span what we found
+            push @new, $self->parse($post, $dbhref); #look in post
+
+            # add found match to the entity list
+            push @{$dbhref->{entities}}, {
+                type    => $type,
+                value   => lc($match),
+            };
+            last REGEX;
+        }
+    }
+    return wantarray ? @new : \@new;
+}
+
+sub do_singleword_matches {
+    my $self    = shift;
+    my $text    = shift;
+    my $dbhref  = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $reutil  = $env->regex;
+    my $splitre = $self->splitre;
+    my @new     = ();
+
+    $log->debug("looking for single word matches");
+
+    my @words = ( $text =~ m/$splitre/g );
+
+    WORD:
+    foreach my $word (@words) {
+        $log->debug("examining word $word");
+        my $foundmatch = 0;
+
+        REGEX:
+        foreach my $href ($reutil->list_singleword_regexes) {
+
+            my $regex   = $href->{regex};
+            my $type    = $href->{type};
+
+            $log->debug("Looking for $type match");
+
+            if ( $word =~ m/$regex/ ) {
+
+                $log->debug("potential match found for $type");
+
+                my $pre     = substr($word, 0, $-[0]);
+                my $match   = substr($word, $-[0], $+[0] - $-[0]);
+                my $post    = substr($word, $+[0]);
+
+                my $span    = undef;
+                if ( $type eq "domain" ) {
+                    $span   = $self->domain_action($match, $dbhref);
+                    if ( ! defined $span ) {
+                        $log->warn("false match of domain");
+                        next REGEX;
+                    }
+                }
+                elsif ( $type eq "ipaddr" ) {
+                    $span   = $self->ipaddr_action($match, $dbhref);
+                    if ( ! defined $span ) {
+                        $log->warn("false match of ipaddr");
+                        next REGEX;
+                    }
+                }
+                elsif ( $type eq "email" ) {
+                    $span   = $self->email_action($match, $dbhref);
+                    if ( ! defined $span ) {
+                        $log->warn("false match of email");
+                        next REGEX;
+                    }
+                }
+                else {
+                    $span = $self->span($match, $type);
+                    push @{$dbhref->{entities}},{
+                        type    => $type,
+                        value   => lc($match),
+                    };
+                }
+                # getting here means a valid match, i hope
+                push @new, $pre if ( $pre ne '' );
+                push @new, $span;
+                push @new, $post if ( $post ne '' );
+                $foundmatch++;
+                last REGEX;
+            }
+            else {
+                $log->debug("did not match $type");
+            }
+        }
+        if ($foundmatch == 0) {
+            $log->debug("no matches, placing unchanged $word on stack");
+            push @new, $word;
+        }
+    }
+    return wantarray ? @new : \@new;
+}
+sub parse_old {
+    my $self    = shift;
+    my $text    = shift;
+    my $dbhref  = shift;
     my $reutil  = $self->env->regex;
     my @new     = ();
     my $splitre = $self->splitre;
@@ -249,21 +399,23 @@ sub parse {
         WORD:
         foreach my $word (@words) {
 
-            $log->trace("examining word $word");
+            $log->debug("examining word $word");
             my $wordmatch;
         
             # check word against each single word regex
             SWREGEX:
             foreach my $sw ($reutil->list_singleword_regexes) {
+
                 my $s_regex = $sw->{regex};
                 my $s_type  = $sw->{type};
 
-                $log->trace("   type $s_type");
+                $log->debug("   type $s_type");
 
                 if ( $word =~ m/$s_regex/ ) {
-                    # we have a match so let's flair it
-                    $wordmatch++;
-                    $log->debug("    matched!");
+
+                    # we have a potential match 
+                    my $falsematch = undef;
+                    $log->debug("    potential $s_type match!");
 
                     my $pre     = substr($word, 0, $-[0]);
                     $log->trace("    pre = $pre");
@@ -271,6 +423,7 @@ sub parse {
                     $log->trace("  match = $match");
                     my $post    = substr($word, $+[0]);
                     $log->trace("   post = $post");
+
 
                     # if there is a fragment prior to the match, add it
                     push @new, $pre  if ($pre  ne '');
@@ -282,7 +435,7 @@ sub parse {
                             push @new, $dspan;
                         }
                         else {
-                            push @new, $word;
+                            $falsematch++;
                         }
                     }   
                     # ipaddr special handling
@@ -302,12 +455,17 @@ sub parse {
                         };
                     }
 
+                    if ( defined $falsematch ) {
+                        $log->warn("falsely matched $s_type, retrying");
+                    }
+
                     # add any post match fragments
                     push @new, $post if ($post ne '');
 
                     $log->trace("at this point \@new is ",{filter=>\&Dumper,value=>\@new});
 
                     # stop after the first matching regex.
+                    $wordmatch++;
                     last SWREGEX;
                 }
                 else {
