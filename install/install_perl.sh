@@ -364,6 +364,7 @@ function install_perl_modules {
         AnyEvent
         AnyEvent::STOMP::Client
         AnyEvent::ForkManager
+        Async::Interrupt
         Number::Bytes::Human
         Sys::RunAlone
         Encode

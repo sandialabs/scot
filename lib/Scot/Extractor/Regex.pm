@@ -90,6 +90,21 @@ sub BUILD {
 
 }
 
+sub get_nonconflict_attrname {
+    my $self    = shift;
+    my $meta    = shift;
+    my $suffix  = shift;
+    my $prefix  = "regex_";
+    my $post    = "";
+
+    my $attrname    = $prefix . $suffix . $post;
+    while ( $meta->has_attribute( $attrname ) ) {
+        $post       += 1;
+        $attrname   = $prefix . $suffix . $post;
+    }
+    return $attrname;
+}
+
 sub load_entitytypes {
     my $self    = shift;
     my $meta    = $self->meta;
@@ -102,7 +117,7 @@ sub load_entitytypes {
 
     while ( my $etype = $etcur->next ) {
         next if ( $etype->status ne "active" );
-        my $attrname    = "regex_".$etype->value;
+        my $attrname    = $self->get_nonconflict_attrname($meta,$etype->value);
         $meta->add_attribute(
             $attrname   => (
                 is      => 'rw',
