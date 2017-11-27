@@ -3,6 +3,7 @@ use lib '../../../lib';
 use Moose 2;
 use Data::Dumper;
 use Lingua::EN::StopWords qw(%StopWords);
+use Try::Tiny;
 extends 'Scot::Collection';
 
 with    qw(
@@ -102,14 +103,25 @@ sub api_subthing {
 sub autocomplete {
     my $self    = shift;
     my $frag    = shift;
-    my $re      = qr/$frag/i;
-    my $cursor  = $self->find({
-        value => $re,
-    });
-    my @records = map { {
-        $_->{value}
-    } } $cursor->all;
-    push @records, $self->matching_predef($frag);
+    my $log     = $self->env->log;
+    my @records = ();
+
+    my $mm = quotemeta($frag);
+    try {
+        my $re      = qr/$mm/i;
+        my $cursor  = $self->find({
+            value => $re,
+        });
+        if ( defined $cursor ) {
+            @records = map { {
+                $_->{value}
+            } } $cursor->all;
+            push @records, $self->matching_predef($frag);
+        }
+    }
+    catch {
+        $log->error("Autocomplete failed: $_ ");
+    };
 
     return wantarray ? @records : \@records;
 }
