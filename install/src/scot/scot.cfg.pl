@@ -82,7 +82,14 @@
             },
         },
         {
-            attr    => 'es',
+            attr    => "es",
+            class   => "Scot::Util::ElasticSearch",
+            config  => {
+                nodes   => [qw(localhost:9200)],
+            },
+        },
+        {
+            attr    => 'esproxy',
             class   => 'Scot::Util::ESProxy',
             config  => {
                 nodes       => [ qw(localhost:9200) ],
@@ -134,6 +141,7 @@
                 # for a entity type
                 mappings    => {
                     ipaddr      => [ qw(splunk geoip robtex_ip ) ],
+                    ipv6        => [ qw(splunk geoip robtex_ip ) ],
                     email       => [ qw(splunk ) ],
                     md5         => [ qw(splunk ) ],
                     sha1        => [ qw(splunk ) ],
@@ -194,4 +202,5 @@
             }, # end ldap config
         }, # end ldap
     ],
+    entity_regexex  => [],
 );
