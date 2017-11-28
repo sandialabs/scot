@@ -97,6 +97,20 @@ services:
     - scot
    networks:
      - scot-docker-net
+  
+  reflair:
+   build:
+     dockerfile: Dockerfile-Reflair
+     context: ./
+   volumes:
+    - "/var/log/scot:/var/log/scot/"
+    - "/etc/localtime:/etc/localtime:ro"
+   depends_on:
+    - mongodb
+    - activemq
+    - scot
+   networks:
+     - scot-docker-net
 
   stretch:
    build:
