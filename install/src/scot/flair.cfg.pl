@@ -34,7 +34,7 @@
         },
         {
             attr    => 'extractor',
-            class   => 'Scot::Util::EntityExtractor',
+            class   => 'Scot::Extractor::Processor',
             config  => {
                 suffixfile  => '/opt/scot/etc/effective_tld_names.dat',
             },
