@@ -23,6 +23,7 @@
     stomp_host  => "localhost",
     stomp_port  => 61613,
     topic       => "/topic/scot",
+    default_owner   => "scot-admin",
     # modules used by flair app
     modules => [
         {
