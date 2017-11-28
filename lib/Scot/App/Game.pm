@@ -20,7 +20,6 @@ use Mojo::UserAgent;
 use Scot::Env;
 use Scot::App;
 use Scot::Util::ScotClient;
-use Scot::Util::EntityExtractor;
 use Scot::Util::ImgMunger;
 use Scot::Util::Enrichments;
 use AnyEvent::STOMP::Client;
