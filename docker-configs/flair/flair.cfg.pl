@@ -22,7 +22,8 @@
     },
     stomp_host  => "activemq",
     stomp_port  => 61613,
-
+    topic       => "/topic/scot",
+    default_owner   => "scot-admin",
     # modules used by flair app
     modules => [
         {
@@ -33,7 +34,7 @@
         },
         {
             attr    => 'extractor',
-            class   => 'Scot::Util::EntityExtractor',
+            class   => 'Scot::Extractor::Processor',
             config  => {
                 suffixfile  => '/opt/scot/etc/effective_tld_names.dat',
             },
@@ -42,7 +43,7 @@
             attr    => 'scot',
             class   => 'Scot::Util::ScotClient',
             config  => {
-                servername  => 'scot',
+                servername  => 'localhost',
                 # username with sufficient scot perms to create alert(groups)
                 username    => 'scot-alerts',
                 # the password for that user
