@@ -92,8 +92,10 @@ const customCellRenderers = {
 		if ( promoted ) {
 			className = 'promoted btn-warning';
 		} else if ( closed ) {
-			className = 'closed btn-success';
-		}
+			if ( !open ) {
+                className = 'closed btn-success';
+		    }
+        }
 
 		return (
 			<div className={`alertStatusCell ${className}`}>{row.value}</div>
