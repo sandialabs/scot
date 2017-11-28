@@ -7,7 +7,7 @@ use lib '../../lib';
 use lib '../../Scot-Internal-Modules/lib';
 use lib '/opt/scot/lib';
 use v5.18;
-use Scot::App::Flair;
+use Scot::App::Responder::Flair;
 use Data::Dumper;
 
 my $config_file = $ENV{'scot_app_flair_config_file'} //
@@ -29,7 +29,7 @@ END {
 
 
 
-my $loop    = Scot::App::Flair->new({ 
+my $loop    = Scot::App::Responder::Flair->new({ 
     env => $env,
 });
 $loop->run();
