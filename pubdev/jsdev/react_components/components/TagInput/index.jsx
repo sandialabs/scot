@@ -8,40 +8,59 @@ class TagInput extends Component {
 
         let tags = [];
         if ( this.props.value ) { tags = this.props.value };
+        
+        let maxTags = undefined;
+        if ( this.props.maxTags ) { maxTags = this.props.maxTags }
         this.state = {
             suggestions: [],
             tags: tags,
+            maxTags: maxTags,
+            placeholder: '',
         }
 		this.handleDelete = this.handleDelete.bind( this );
 		this.handleAdd = this.handleAdd.bind( this );
 		this.handleInputChange = this.handleInputChange.bind( this );
-	}
+		this.showHideInput = this.showHideInput.bind( this );
+	
+    }
 
 	static propTypes = {
 		onChange: PropTypes.func.isRequired,
-		type: PropTypes.oneOf( [ 'source', 'tag' ] ).isRequired,
+		type: PropTypes.oneOf( [ 'source', 'tag', 'userdef' ] ).isRequired,
 		value: PropTypes.array.isRequired,
 		suggestions: PropTypes.array.isRequired,
 	}
 
 	handleDelete( i ) {
-		const tags = [...this.props.value];
-		tags.splice( i, 1 );
-		if ( tags.length === 0 ) {
-			this.props.onChange( '' );
-            this.setState({tags: tags });
-			return;
-		}
+        const tags = this.state.tags;
+        
+        tags.splice( i, 1 );
+        if ( tags.length === 0 ) {
+            this.props.onChange( '' );
+            this.setState({tags: tags, placeholder: '' });
+            return;
+        }
+
 		this.props.onChange( tags );
-        this.setState({tags: tags });
+        this.setState({tags: tags, placeholder: '' });
 	}
 
 	handleAdd( tag ) {
-		const tags = [...this.props.value];
-		tags.push( tag );
-		this.props.onChange( tags );
-        this.setState({tags : tags});
-	}
+        const tags = this.state.tags;
+
+        if ( this.state.maxTags && tags.length >= this.state.maxTags ) {
+            this.setState({placeholder: 'Only ' + this.state.maxTags + ' allowed. Please delete a tag to add another one' });
+            return;
+        } else {
+            tags.push( tag );
+            this.props.onChange( tags );
+            this.setState({tags : tags, placeholder: ''});
+	    }
+    }
+    
+    componentDidUpdate() {
+        this.showHideInput();
+    }
 
 	handleInputChange( input ) {
 		if ( input && input.length >= 2 ) {
@@ -66,6 +85,14 @@ class TagInput extends Component {
         }
 	}
 
+    showHideInput() {
+        if ( this.props.type == 'userdef' && this.props.maxTags && this.state.tags.length >= this.props.maxTags ) {
+            $('.react-tags__search').hide();   
+        } else {
+            $('.react-tags__search').show();
+        }
+    }
+
 	render() {
 		return (
 			<div className='TagInput'>
@@ -78,7 +105,8 @@ class TagInput extends Component {
 					autoresize={false}
 					autofocus={false}
 					allowBackspace={false}
-					placeholder=''
+					allowNew={true}
+                    placeholder={this.state.placeholder}
 					tagComponent={Tag}
 				/>
 			</div>
