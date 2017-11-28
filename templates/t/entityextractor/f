@@ -1,0 +1,60 @@
+use Data::Dumper;
+use HTML::Element;
+use v5.18;
+
+
+my $element = HTML::Element->new('p');
+$element->push_content("foo bar bam zuzz");
+my $subelement = HTML::Element->new("div", "class" => "sub");
+$subelement->push_content("boom");
+$element->push_content($subelement);
+$element->push_content("that is all");
+
+say $element->as_HTML;
+
+my @new = ();
+my @children    = $element->content_list();
+say "Children ".Dumper(@children);
+
+foreach my $child ( @children ) {
+
+    if ( ref($child) ) {
+        say "ELEMENT!";
+        push @new, $child;
+    }
+    else {
+        # text
+
+        say "    TEXT NODE";
+
+        my @words   = split(/\s+/, $child);
+        say "words = ",join(',',@words);
+        my @spaces  = ($child =~ m/(\s+)/g);
+        say "spaces = ",join('_',@spaces);
+
+        foreach my $word (@words) {
+
+            say "         Word = $word";
+
+            if ( $word eq "bam" ) {
+                say "             match! flairing!";
+                my $flair = HTML::Element->new('span', class => 'boom');
+                $flair->push_content($word);
+                push @new, $flair;
+                say "                   new = ".join(',',@new);
+            }
+            else {
+                say "             passthrough";
+                push @new, $word;
+                say "                   new = ".join(',',@new);
+            }
+            push @new, shift @spaces;
+        }
+    }
+    say "new = ".join(',',@new);
+}
+
+my @removed = $element->splice_content(0, scalar(@children), @new);
+
+say $element->as_HTML;
+
