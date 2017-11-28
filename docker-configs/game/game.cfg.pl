@@ -7,7 +7,6 @@
         log_level       => 'DEBUG',
     },
     days_ago    => 30,
-
     modules => [
         {
             attr    => 'mongo',
