@@ -82,7 +82,14 @@
             },
         },
         {
-            attr    => 'es',
+            attr    => "es",
+            class   => "Scot::Util::ElasticSearch",
+            config  => {
+                nodes   => [qw(localhost:9200)],
+            },
+        },
+        {
+            attr    => 'esproxy',
             class   => 'Scot::Util::ESProxy',
             config  => {
                 nodes       => [ qw(localhost:9200) ],
@@ -194,4 +201,5 @@
             }, # end ldap config
         }, # end ldap
     ],
+    entity_regexex  => [],
 );
