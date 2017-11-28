@@ -63,6 +63,11 @@
         log_level       => 'DEBUG',
     },
 
+    cgi_ids_config  => {
+        whitelist_file  => '',
+        disable_filters => [],
+    },
+
     # modules to instantiate at Env.pm startup. will be done in 
     # order of the array
     modules => [
@@ -77,7 +82,14 @@
             },
         },
         {
-            attr    => 'es',
+            attr    => "es",
+            class   => "Scot::Util::ElasticSearch",
+            config  => {
+                nodes   => [qw(elastic:9200)],
+            },
+        },
+        {
+            attr    => 'esproxy',
             class   => 'Scot::Util::ESProxy',
             config  => {
                 nodes       => [ qw(elastic:9200) ],
@@ -85,8 +97,8 @@
                 proto       => 'http',
                 servername  => 'elastic',
                 serverport  => 9200,
-                username    => 'elastic',
-                password    => 'changeme',
+                username    => ' ',
+                password    => ' ',
             },
         },
         {
@@ -129,6 +141,7 @@
                 # for a entity type
                 mappings    => {
                     ipaddr      => [ qw(splunk geoip robtex_ip ) ],
+                    ipv6        => [ qw(splunk geoip robtex_ip ) ],
                     email       => [ qw(splunk ) ],
                     md5         => [ qw(splunk ) ],
                     sha1        => [ qw(splunk ) ],
@@ -167,26 +180,27 @@
                     },
                 }, # end enrichment module enrichers
             }, # end ennrichmenst config stanza
-        } # end enrichments stanza
-        #{
-        #    attr    => 'ldap',
-        #    class   => 'Scot::Util::Ldap',
-        #    config  => {
-        #        servername  => 'ldap.domain.tld',
-        #        dn          => 'cn=cn_name,ou=local config,dc=tld',
-        #        password    => 'changemenow',
-        #        scheme      => 'ldap',
-        #        group_search    => {
-        #            base    => 'ou=groups,ou=orgname1,dc=dcname1,dc=dcname2,dc=dcname3',
-        #            filter  => '(| (cn=wg-scot*))',
-        #            attrs   => [ 'cn' ],
-        #        },
-        #        user_groups => {
-        #            base    => 'ou=accounts,ou=ouname,dc=dcname1,dc=dcname1,dc=dcname1',
-        #            filter  => 'uid=%s',
-        #            attrs   => ['memberOf'],
-        #        }
-        #    }, # end ldap config
-        #}, # end ldap
+        }, # end enrichments stanza
+        {
+            attr    => 'ldap',
+            class   => 'Scot::Util::Ldap',
+            config  => {
+                servername  => 'ldap.domain.tld',
+                dn          => 'cn=cn_name,ou=local config,dc=tld',
+                password    => 'changemenow',
+                scheme      => 'ldap',
+                group_search    => {
+                    base    => 'ou=groups,ou=orgname1,dc=dcname1,dc=dcname2,dc=dcname3',
+                    filter  => '(| (cn=wg-scot*))',
+                    attrs   => [ 'cn' ],
+                },
+                user_groups => {
+                    base    => 'ou=accounts,ou=ouname,dc=dcname1,dc=dcname1,dc=dcname1',
+                    filter  => 'uid=%s',
+                    attrs   => ['memberOf'],
+                }
+            }, # end ldap config
+        }, # end ldap
     ],
+    entity_regexex  => [],
 );
