@@ -364,6 +364,7 @@ function install_perl_modules {
         AnyEvent
         AnyEvent::STOMP::Client
         AnyEvent::ForkManager
+        Async::Interrupt
         Number::Bytes::Human
         Sys::RunAlone
         Encode
@@ -412,6 +413,7 @@ function install_perl_modules {
         Statistics::Descriptive
         Net::SSH::Perl
         Net::SFTP
+        Lingua::EN::StopWords
     '
 
     # install_cpanm

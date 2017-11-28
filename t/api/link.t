@@ -14,7 +14,7 @@ use Data::Dumper;
 use Scot::Env;
 use Parallel::ForkManager;
 use Mojo::JSON qw(decode_json encode_json);
-use Scot::App::Flair;
+use Scot::App::Responder::Flair;
 
 $ENV{'scot_mode'}           = "testing";
 $ENV{'scot_auth_type'}      = "Testing";
@@ -33,7 +33,7 @@ foreach my $k (keys %ENV) {
 
 my $t       = Test::Mojo->new('Scot');
 my $env     = Scot::Env->instance;
-my $flairer = Scot::App::Flair->new({env=>$env});
+my $flairer = Scot::App::Responder::Flair->new({env=>$env});
 
 $t  ->post_ok  ('/scot/api/v2/event'  => json => {
         subject => "Test Event 1",
@@ -61,7 +61,13 @@ $t  ->post_ok('/scot/api/v2/entry'    => json => {
     ->json_is('/status' => 'ok');
 
 my $entry2  = $t->tx->res->json->{id};
-$flairer->process_message("created", "entry", $entry2);
+$flairer->process_message(undef, {
+    action  => "created", 
+    data    => {
+        type    => "entry", 
+        id      => $entry2
+    }
+});
 
 $t  ->post_ok('/scot/api/v2/entry'    => json => {
         body        => qq| 
@@ -79,7 +85,13 @@ $t  ->post_ok('/scot/api/v2/entry'    => json => {
     ->json_is('/status' => 'ok');
 
 my $entry3  = $t->tx->res->json->{id};
-$flairer->process_message("created", "entry", $entry3);
+$flairer->process_message(undef, {
+    action  => "created", 
+    data    => {
+        type    => "entry", 
+        id      => $entry3
+    }
+});
 
 # set up complete now check links
 
