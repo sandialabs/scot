@@ -87,12 +87,12 @@ const customCellRenderers = {
 		);
 	},
 	alertStatus: row => {
-		let [ open, , promoted ] = row.value.split( '/' ).map( value => parseInt( value.trim(), 10 ) );
-		let className = 'closed btn-success';
+		let [ open, closed, promoted ] = row.value.split( '/' ).map( value => parseInt( value.trim(), 10 ) );
+		let className = 'open btn-danger';
 		if ( promoted ) {
 			className = 'promoted btn-warning';
-		} else if ( open ) {
-			className = 'open btn-danger';
+		} else if ( closed ) {
+			className = 'closed btn-success';
 		}
 
 		return (
