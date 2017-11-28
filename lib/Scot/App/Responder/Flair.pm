@@ -1,63 +1,21 @@
-package Scot::App::Flair;
-
-use lib '../../../lib';
-use lib '/opt/scot/lib';
-
-=head1 Name
-
-Scot::App::Flair
-
-=head1 Description
-
-Perform flairing of SCOT data
-
-1.  Listen to the SCOT queue
-2.  When a new entry or alert is posted
-    a.  parse thing for entities
-    b.  store entities, update data, update record
-3.  profit
-
-=cut
+package Scot::App::Responder::Flair;
 
 use Data::Dumper;
-use JSON;
-use Try::Tiny;
-use Mojo::UserAgent;
-use Scot::Env;
-use Scot::App;
-use Scot::Util::ScotClient;
-use Scot::Util::EntityExtractor;
-use Scot::Util::ImgMunger;
-use Scot::Util::Enrichments;
-use AnyEvent::STOMP::Client;
-use AnyEvent::ForkManager;
 use HTML::Entities;
-use Module::Runtime qw(require_module);
-use Sys::Hostname;
-use strict;
-use warnings;
-use v5.18;
-
+use Try::Tiny;
 use Moose;
-extends 'Scot::App';
+extends 'Scot::App::Responder';
 
-has get_method  => (
-    is          => 'ro',
-    isa         => 'Str',
+has name    => (
+    is      => 'ro',
+    isa     => 'Str',
     required    => 1,
-    default     => 'mongo',
-);
-
-has thishostname    =>  (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    default     => sub { hostname; },
+    default => 'Flair',
 );
 
 has extractor   => (
     is          => 'ro',
-    isa         => 'Scot::Util::EntityExtractor',
+    isa         => 'Scot::Extractor::Processor',
     required    => 1,
     lazy        => 1,
     builder     => '_get_entity_extractor',
@@ -83,53 +41,6 @@ sub _get_img_munger {
     return $env->img_munger;
 };
 
-has stomp_host  => (
-    is          => 'ro',
-    isa         => 'Str',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_stomp_host',
-);
-
-sub _build_stomp_host {
-    my $self    = shift;
-    my $attr    = "stomp_host";
-    my $default = "localhost";
-    my $envname = "scot_util_stomphost";
-    return $self->get_config_value($attr, $default, $envname);
-}
-has stomp_port  => (
-    is          => 'ro',
-    isa         => 'Int',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_stomp_port',
-);
-
-sub _build_stomp_port {
-    my $self    = shift;
-    my $attr    = "stomp_port";
-    my $default = 61613;
-    my $envname = "scot_util_stompport";
-    return $self->get_config_value($attr, $default, $envname);
-}
-
-has interactive => (
-    is          => 'ro',
-    isa         => 'Int',
-    required    => 1,
-    lazy        => 1,
-    default     => 0,
-);
-
-sub _build_interactive {
-    my $self    = shift;
-    my $attr    = "interactive";
-    my $default = 0;
-    my $envname = "scot_util_entityextractor_interactive";
-    return $self->get_config_value($attr, $default, $envname);
-}
-
 has enrichers   => (
     is              => 'ro',
     isa             => 'Scot::Util::Enrichments',
@@ -144,143 +55,57 @@ sub _get_enrichers {
     return $env->enrichments;
 }
 
-has max_workers => (
-    is          => 'ro',
-    isa         => 'Int',
-    required    => 1,
-    lazy        => 1,
-    builder     => '_build_max_workers',
-);
-
-sub _build_max_workers {
-    my $self    = shift;
-    my $attr    = "max_workers";
-    my $default = 20;
-    my $envname = "scot_util_max_workers";
-    return $self->get_config_value($attr, $default, $envname);
-}
-
-sub out {
-    my $self    = shift;
-    my $msg     = shift;
-
-    if ( $self->interactive ) {
-        say $msg;
-    }
-}
-
-sub run {
-    my $self    = shift;
-    my $log     = $self->log;
-    my $pm      = AnyEvent::ForkManager->new(max_workers => $self->max_workers);
-    my $stomp;
-
-    if ( $self->stomp_host ne "localhost" ) {
-        $stomp   = AnyEvent::STOMP::Client->new($self->stomp_host, $self->stomp_port);
-    }
-    else {
-        $stomp = AnyEvent::STOMP::Client->new;
-    }
-
-    $stomp->connect();
-    $stomp->on_connected(sub {
-        my $s   = shift;
-        $s->subscribe('/topic/scot');
-        $self->out("---- subcribed to /topic/scot via STOMP ---");
-        $log->debug("Subcribed to /topic/scot");
-    });
-
-    $pm->on_start(sub {
-        my ($pm, $pid, $action, $type, $id) = @_;
-        $self->out("------ Worker $pid handling $action on $type $id");
-        $log->debug("Worker $pid handling $action on $type $id started");
-    });
-
-    $pm->on_finish(sub {
-        my ($pm, $pid, $status, $action, $type, $id) = @_;
-        $self->out("------ Worker $pid finished $action on $type $id: $status");
-        $log->debug("Worker $pid handling $action on $type $id finished");
-    });
-
-    $pm->on_error(sub {
-        $self->out("FORKMGR ERROR: ".Dumper(\@_));
-    });
-
-
-    $stomp->on_message(sub {
-        my ($stomp, $header, $body) = @_;
-
-        $log->debug("Header: ",{filter=>\&Dumper, value => $header});
-
-        my $href = decode_json $body;
-        $log->debug("Body: ",{filter=>\&Dumper, value => $href});
-
-        my $action  = $href->{action};
-        my $type    = $href->{data}->{type};
-        my $id      = $href->{data}->{id};
-        my $who     = $href->{data}->{who};
-        my $opts    = $href->{data}->{opts};
-        $log->debug("STOMP: $action : $type : $id : $who : $opts");
-
-        return if ($who eq "scot-flair");
-
-        #$pm->start(
-        #    cb      => sub {
-        #        my ($pm, $action, $type, $id) = @_;
-                $self->process_message($action, $type, $id, $opts);
-        #    },
-        #    args    => [ $action, $type, $id ],
-        #);
-        
-    });
-
-    my $cv  = AnyEvent->condvar;
-    $cv->recv;
-
-}
-
 sub process_message {
     my $self    = shift;
-    my $action  = lc(shift);
-    my $type    = lc(shift);
-    my $id      = shift;
-    my $opts    = shift;
+    my $pm      = shift;
+    my $href    = shift;
+    my $log     = $self->log;
 
-    $id += 0;
+    $log->debug("pm : ",{filter=>\&Dumper, value=>$pm});
+    $log->debug("processing message: ",{filter=>\&Dumper, value=>$href});
 
-    $self->log->debug("Processing Message: $action $type $id");
+    $log->debug("refreshing entitytypes");
+    $self->env->regex->load_entitytypes;
+
+    my $action  = lc($href->{action});
+    my $type    = lc($href->{data}->{type});
+    my $id      = $href->{data}->{id} + 0;
+    my $who     = $href->{data}->{who};
+    my $opts    = $href->{data}->{opts};
+
+    $log->debug("[Wkr $$] Processing message $action $type $id from $who");
+
+    if ( $who eq "scot-flair" ) {
+        $log->debug("I guess I sent this message, skipping...");
+        return "skipping self message";
+    }
 
     if ( $action eq "created" or $action eq "updated" ) {
+        $log->debug("--- $action message ---");
         if ( $type eq "alertgroup" ) {
             $self->process_alertgroup($id,$opts);
             $self->put_stat("alertgroup flaired", 1);
+            return 1;
         }
         elsif ( $type eq "entry" ) {
             $self->process_entry($id,$opts);
             $self->put_stat("entry flaired", 1);
+            return 1;
         }
         else {
-            $self->out("Non-processed type: $type");
+            $log->error("Non processed type $type, skipping");
         }
     } else {
-        $self->out("action $action not processed");
+        $log->error("action $action not processed");
     }
 }
 
 sub get_alertgroup {
-    my $self    = shift;
-    my $id      = shift;
-    my $href;
-    
-    if ( $self->get_method eq "scot_api" ) {
-#        my $scot    = $self->scot;
-#        $href       = $scot->get({ type => "alertgroup/$id/alert" } );
-    }
-    else {
-        my $mongo       = $self->env->mongo;
-        my $collection  = $mongo->collection("Alertgroup");
-        $href           = $collection->get_bundled_alertgroup($id);
-    }
+    my $self        = shift;
+    my $id          = shift;
+    my $mongo       = $self->env->mongo;
+    my $collection  = $mongo->collection("Alertgroup");
+    my $href        = $collection->get_bundled_alertgroup($id);
     return $href;
 }
 
@@ -291,7 +116,7 @@ sub process_alertgroup {
     my @update  = ();
     my $log     = $self->log;
 
-    $self->out("-------- processing alertgroup $id");
+    $log->debug("processing alertgroup $id");
 
     if (defined($opts) && $opts eq "noreflair") {
         $log->debug("noflair option received, short circuiting out...");
@@ -301,8 +126,9 @@ sub process_alertgroup {
     $log->debug("asking scot for /alertgroup/$id/alert");
 
     my $alertgroup_href = $self->get_alertgroup($id);
-    $log->debug("Alerts in AG:",
-                {filter=>\&Dumper, value=>$alertgroup_href->{alerts}});
+
+    $log->debug("Alerts in AG:", {filter=>\&Dumper, value=>$alertgroup_href->{alerts}});
+
     my $alerts_aref     = $alertgroup_href->{alerts};
 
     if ( ref($alerts_aref) ne "ARRAY" ) {
@@ -328,26 +154,26 @@ sub process_alertgroup {
 
     my $response = $self->update_alertgroup($putdata);
 
-    $self->out("-------- done processing alertgroup $id");
     $log->debug("Done processing alertgroup $id");
 }
 
 sub update_alertgroup {
     my $self    = shift;
     my $putdata = shift;
+    my $log     = $self->log;
 
-    $self->log->debug("update alertgroup");
+    $log->debug("update alertgroup");
 
     if ( $self->get_method eq "scot_api" ) {
 #        my $response = $self->scot->put($putdata);
     }
     else {
-        $self->log->debug("doing mongo update");
+        $log->debug("doing mongo update");
         my $agid       = $putdata->{id}; # this get blown away in agcol->
         my $mongo      = $self->env->mongo;
         my $agcol      = $mongo->collection("Alertgroup");
         $agcol->update_alertgroup_with_bundled_alert($putdata);
-        $self->log->debug("after alertgroup update");
+        $log->debug("after alertgroup update");
         $self->env->mq->send("scot", {
             action  => "updated",
             data    => {
@@ -573,7 +399,7 @@ sub process_entry {
     };
     $log->debug("Entry Put Data: ",{filter=>\&Dumper, value=>$putdata});
     $self->update_entry($putdata);
-    $self->out("-------- done processing entry $id");
+    $log->debug("-------- done processing entry $id");
 }
 
 
@@ -602,6 +428,7 @@ sub update_entry {
         $self->log->debug("putting entry: ",{filter=>\&Dumper,value=>$newdata});
 
         my $entity_aref = delete $newdata->{entities};
+        my $user_aref   = delete $newdata->{userdef};
 
         if ( $obj->update({ '$set' => $newdata }) ){
             $self->log->debug("success updating");
@@ -612,9 +439,12 @@ sub update_entry {
             $self->log->error("failed update, I think");
         }
 
+        my $ecol    = $mongo->collection('Entity');
+
         if ( defined($entity_aref) ) {
             if ( scalar(@$entity_aref) > 0 ) {
-                my ($create_aref, $update_aref) = $mongo->collection('Entity')->update_entities($obj, $entity_aref);
+                my ( $create_aref, 
+                     $update_aref) = $ecol->update_entities($obj, $entity_aref);
                 $log->debug("created entities: ",join(',',@$create_aref));
                 foreach my $id (@$create_aref) {
                     $self->env->mq->send("scot", {
@@ -639,6 +469,9 @@ sub update_entry {
                     });
                 }
                 $self->put_stat("entity updated", scalar(@$update_aref));
+            }
+            else {
+                $log->debug("no entities present");
             }
         }
 

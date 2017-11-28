@@ -21,6 +21,7 @@ var IncidentTable           = require('../components/incident_table.jsx');
 var SignatureTable          = require('../components/signature_table.jsx');
 var TrafficLightProtocol    = require('../components/traffic_light_protocol.jsx');
 var Marker                  = require('../components/marker.jsx').default;
+var EntityCreateModal       = require('../modal/entity_create.jsx').default;
 
 var SelectedEntry = React.createClass({
     getInitialState: function() {
@@ -838,6 +839,8 @@ var EntryParent = React.createClass({
             deleteToolbar:false,
             permissionsToolbar:false,
             fileUploadToolbar: false,
+            showEntityCreateModal: false,
+            highlightedText: null,
         }
     }, 
     componentDidMount: function() {
@@ -970,12 +973,16 @@ var EntryParent = React.createClass({
         var header3 = ')'; 
         var createdTime = items.created;
         var updatedTime = items.updated; 
+        let entryHeaderInnerId = 'entry-header-inner-' + this.props.id + ' entry-header-inner';
+
         return (
             <div> 
+                { this.state.showEntityCreateModal ? <EntityCreateModal match={this.state.highlightedText} modalActive={this.state.showEntityCreateModal} ToggleCreateEntity = {this.ToggleCreateEntity} errorToggle={this.props.errorToggle}/> : null }
                 <div className={outerClassName} style={{marginLeft: 'auto', marginRight: 'auto', width:'99.3%'}}>
                     <span className="anchor" id={"/"+ type + '/' + id + '/' + items.id}/>
                     <div className={innerClassName}>
-                        <div className="entry-header-inner">[<Link style={{color:'black'}} to={'/' + type + '/' + id + '/' + items.id}>{items.id}</Link>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
+                        <div id={entryHeaderInnerId} className={entryHeaderInnerId}>[<Link style={{color:'black'}} to={'/' + type + '/' + id + '/' + items.id}>{items.id}</Link>] <ReactTime value={items.created * 1000} format="MM/DD/YYYY hh:mm:ss a" /> by {items.owner} {taskOwner}(updated on <ReactTime value={items.updated * 1000} format="MM/DD/YYYY hh:mm:ss a" />)
+                            { this.state.highlightedText != '' && this.state.highlightedText != null ? <Button bsSize='xsmall' bsStyle='success' onClick={this.ToggleCreateEntity}>Create Entity</Button> : null }
                             { this.props.items.body_flair != '' && this.props.items.parsed == 0 ? <span style={{color: 'green', fontWeight: 'bold' }}> Entry awaiting flair engine. Content may be inaccurate.</span> : null }
                             <span className='pull-right' style={{display:'inline-flex',paddingRight:'3px'}}>
                                 {this.state.permissionsToolbar ? <SelectedPermission updateid={id} id={items.id} type={'entry'} permissionData={items} permissionsToggle={this.permissionsToggle} /> : null}
@@ -1002,6 +1009,28 @@ var EntryParent = React.createClass({
                 {this.state.deleteToolbar ? <DeleteEntry type={type} id={id} deleteToggle={this.deleteToggle} entryid={items.id} errorToggle={this.props.errorToggle} /> : null}     
             </div>
         );
+    },
+
+    componentWillReceiveProps: function() {
+        this.checkHighlight();
+    },
+
+    checkHighlight: function() {
+        let content;
+        let iframe = document.getElementById('iframe_' + this.props.items.id);
+        if ( iframe ) {
+            content = iframe.contentWindow.getSelection().toString();
+            if ( this.state.highlightedText != content ) {
+                console.log(iframe + ' has highlighted text: ' + content);
+                this.setState({highlightedText: content });
+            } else {
+                return;
+            }
+        }
+    },
+
+    ToggleCreateEntity: function() {
+        this.setState({ showEntityCreateModal: !this.state.showEntityCreateModal });
     },
 
 });

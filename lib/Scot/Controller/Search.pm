@@ -34,7 +34,7 @@ sub search {
     my $log     = $env->log;
     my $mongo   = $env->mongo;
     my $user    = $self->session('user');
-    my $esua    = $env->es;
+    my $esua    = $env->esproxy;
 
     $log->trace("------------");
     $log->trace("Handler is processing a POST (search) from $user");
@@ -70,8 +70,34 @@ sub search {
     $log->debug("Got Response: ", {filter=>\&Dumper, value=>$response});
     $self->put_stat("search initiated", 1);
     $self->do_render($response);
+}
 
+sub hitsearch {
+    my $self    = shift;
+    my $env     = $self->env;
+    my $log     = $env->log;
+    my $mongo   = $env->mongo;
+    my $es      = $env->es;
+    my $request = $self->req;
+    my $body    = $request->body;
+    my $params  = $request->params->to_hash;
+    my $match   = $params->{match};
+    my $query   = {
+        query   => {
+            match   => {
+                _all    => $match
+            }
+        }
+    };
 
+    $log->debug("Looking for hitsearch: ",{filter=>\&Dumper, value=>$query});
+    my $results = $es->search("scot", [ 'alert','entry' ], $query);
+    $log->debug("hitsearch got: ",{filter=>\&Dumper, value=>$results});
+    my $hits    = {
+        count   => $results->{hits}->{total},
+    };
+    $self->put_stat("hitsearch initiated",1);
+    $self->do_render($hits);
 }
 
 sub put_stat {
@@ -90,7 +116,7 @@ sub newsearch {
     my $log     = $env->log;
     my $mongo   = $env->mongo;
     my $user    = $self->session('user');
-    my $esua    = $env->es;
+    my $esua    = $env->esproxy;
 
     $log->trace("----NEW-----");
     $log->trace("Handler is processing a POST (search) from $user");

@@ -513,6 +513,7 @@ sub api_list {
     my $match   = $self->build_match_ref($href->{request});
 
     if (  ref($self) ne "Scot::Collection::Group" 
+       && ref($self) ne "Scot::Collection::Entitytype" 
        && ref($self) ne "Scot::Collection::Entity" 
        && ref($self) ne "Scot::Collection::Link" ) {
         $match->{'groups.read'} = { '$in' => $groups };

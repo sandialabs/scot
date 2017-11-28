@@ -8,7 +8,7 @@ import { epochRangeToString, epochRangeToMoment, momentRangeToEpoch } from '../u
 import * as constants from '../utils/constants';
 
 import LoadingContainer from './LoadingContainer';
-import TagInput from './TagInput';
+import TagInput from '../components/TagInput';
 
 const customFilters = {
 	numberFilter: ( {filter, onChange} ) => (
