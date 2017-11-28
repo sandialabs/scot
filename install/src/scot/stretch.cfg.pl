@@ -8,6 +8,9 @@
         logfile         => '/var/log/scot/scot.stretch.log',
         log_level       => 'DEBUG',
     },
+    max_workers     => 2,
+    stomp_host      => 'localhost',
+    stomp_port      => 61613,
     default_owner   => 'scot-admin',
     modules => [
         {
