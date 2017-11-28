@@ -141,6 +141,7 @@
                 # for a entity type
                 mappings    => {
                     ipaddr      => [ qw(splunk geoip robtex_ip ) ],
+                    ipv6        => [ qw(splunk geoip robtex_ip ) ],
                     email       => [ qw(splunk ) ],
                     md5         => [ qw(splunk ) ],
                     sha1        => [ qw(splunk ) ],
