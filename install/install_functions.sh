@@ -167,6 +167,7 @@ function start_services {
             systemctl restart scot.service
             systemctl restart apache2.service
             systemctl restart scfd.service
+            systemctl restart scrfd.service
             systemctl restart scepd.service
         else 
             service mongod restart
@@ -174,6 +175,7 @@ function start_services {
             service scot restart
             service apache2 restart
             service scfd restart
+            service scrfd restart
             service scepd restart
         fi
     else
@@ -184,6 +186,7 @@ function start_services {
         systemctl restart scot.service
         systemctl restart httpd.service
         systemctl restart scfd.service
+        systemctl restart scrfd.service
         systemctl restart scepd.service
     fi
 }

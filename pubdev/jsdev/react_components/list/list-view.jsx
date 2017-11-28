@@ -15,6 +15,7 @@ var MenuItem                = require('react-bootstrap/lib/MenuItem.js');
 import ReactTable           from 'react-table';
 import tableSettings, { buildTypeColumns, defaultTypeTableSettings } from './tableConfig';
 let LoadingContainer        = require('./LoadingContainer/index.jsx').default;
+let EntityCreateModal       = require('../modal/entity_create.jsx').default;
 var datasource
 var height;
 var width;
@@ -73,7 +74,7 @@ module.exports = React.createClass({
             viewstext: '', entriestext: '', scrollheight: scrollHeight, display: 'flex',
             differentviews: '',maxwidth: '915px', maxheight: scrollHeight,  minwidth: '650px',
             suggestiontags: [], suggestionssource: [], sourcetext: '', tagstext: '', scrollwidth: scrollWidth, reload: false, 
-            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: queryType, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, manualScrollHeight: null, };
+            viewfilter: false, viewevent: false, showevent: true, objectarray:[], csv:true,fsearch: '', listViewOrientation: 'landscape-list-view', columns:columns, columnsDisplay:columnsDisplay, columnsClassName:columnsClassName, typeCapitalized: typeCapitalized, type: type, queryType: queryType, id: id, showSelectedContainer: showSelectedContainer, listViewContainerDisplay: null, viewMode:this.props.viewMode, offset: 0, sort: sort, filter: filter, match: null, alertPreSelectedId: alertPreSelectedId, entryid: this.props.id2, listViewKey:1, loading: true, initialAutoScrollToId: false, manualScrollHeight: null, showEntityCreateModal: false, };
     },
 
     componentWillMount: function() {
@@ -276,6 +277,10 @@ module.exports = React.createClass({
         this.getNewData() 
     },
 
+    ToggleCreateEntity: function() {
+        this.setState({ showEntityCreateModal: !this.state.showEntityCreateModal });
+    },
+
     render: function() {
         var listViewContainerHeight;
         var showClearFilter = false;
@@ -313,7 +318,7 @@ module.exports = React.createClass({
                                             <Button eventKey='1' onClick={this.props.notificationToggle} bsSize='xsmall'>Mute Notifications</Button> :
                                             <Button eventKey='2' onClick={this.props.notificationToggle} bsSize='xsmall'>Turn On Notifications</Button>
                                         }
-                                        {this.props.type == 'event' || this.props.type == 'intel' || this.props.type == 'incident' || this.props.type == 'signature' || this.props.type == 'guide' ? <Button onClick={this.createNewThing} eventKey='6' bsSize='xsmall'>Create {this.state.typeCapitalized}</Button> : null}
+                                        {this.props.type == 'event' || this.props.type == 'intel' || this.props.type == 'incident' || this.props.type == 'signature' || this.props.type == 'guide' || this.props.type == 'entity' ? <Button onClick={this.createNewThing} eventKey='6' bsSize='xsmall'>Create {this.state.typeCapitalized}</Button> : null}
                                         <Button eventKey='5' bsSize='xsmall' onClick={this.exportCSV}>Export to CSV</Button> 
                                         <Button bsSize='xsmall' onClick={this.toggleView}>Full Screen Toggle (f)</Button>
                                         {showClearFilter ? <Button onClick={this.clearAll} eventKey='3' bsSize='xsmall' bsStyle={'info'}>Clear All Filters</Button> : null}
@@ -351,6 +356,7 @@ module.exports = React.createClass({
                                         </div>
                                     <div onMouseDown={this.dragdiv} className='splitter' style={{display:'block', height:'5px', backgroundColor:'black', borderTop:'1px solid #AAA', borderBottom:'1px solid #AAA', cursor: 'row-resize', overflow:'hidden'}}/>
                                     {this.state.showSelectedContainer ? <SelectedContainer id={this.state.id} type={this.state.queryType} alertPreSelectedId={this.state.alertPreSelectedId} taskid={this.state.entryid} handleFilter={this.handleFilter} errorToggle={this.props.errorToggle} history={this.props.history}/> : null}
+                                    {this.state.showEntityCreateModal ? <EntityCreateModal match={''} modalActive={this.state.showEntityCreateModal} ToggleCreateEntity={this.ToggleCreateEntity} errorToggle={this.props.errorToggle}/> : null }
                                 </div>
                             </div>
                         </div>
@@ -766,13 +772,18 @@ module.exports = React.createClass({
     
     createNewThing: function(){
         var data;
+
         if (this.props.type == 'signature') {
             data = JSON.stringify({name:'Name your Signature', status: 'disabled'});   
         } else if ( this.props.type == 'guide' ) { 
             data = JSON.stringify({ subject: 'ENTER A GUIDE NAME', applies_to: ['documentation']}) 
+        } else if ( this.props.type == 'entity' ) {
+            this.ToggleCreateEntity();
+            return;
         } else {
             data = JSON.stringify({subject: 'No Subject'});
         }
+
         $.ajax({
             type: 'POST',
             url: '/scot/api/v2/'+this.props.type,

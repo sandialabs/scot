@@ -20,6 +20,9 @@
         logfile         => '/var/log/scot/scot.flair.log',
         log_level       => 'DEBUG',
     },
+    stomp_host  => "localhost",
+    stomp_port  => 61613,
+    topic       => "/topic/scot",
     # modules used by flair app
     modules => [
         {
