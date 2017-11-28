@@ -15,7 +15,6 @@ to a SCOT 3.5 database
 
 use Scot::Env;
 use Scot::App;
-use Scot::Util::EntityExtractor;
 use Scot::Util::ElasticSearch;
 use MongoDB;
 use Data::Dumper;
@@ -49,7 +48,7 @@ sub _get_es {
 
 has extractor   => (
     is       => 'ro',
-    isa      => 'Scot::Util::EntityExtractor',
+    isa      => 'Scot::Extractor::Processor',
     required => 1,
     lazy     => 1,
     builder  => '_get_ee',
