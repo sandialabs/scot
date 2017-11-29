@@ -606,15 +606,16 @@ sub email_action {
     };
 
     my $email = $user . '@' . $domain;
+    my $lcemail = lc($email);
     my $espan = HTML::Element->new(
         'span',
         'class' => 'entity email',
         'data-entity-type'  => 'email',
-        'data-entity-value' => $email,
+        'data-entity-value' => $lcemail,
     );
     $espan->push_content($user, '@', $dspan);
     push @{$dbhref->{entities}}, {
-        value   => lc($email),
+        value   => $lcemail,
         type    => "email",
     };
     return $espan;
