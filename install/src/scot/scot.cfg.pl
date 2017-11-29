@@ -151,6 +151,7 @@
                     ganalytics  => [ qw(splunk  ) ],
                     snumber     => [ qw(splunk ) ],
                     message_id  => [ qw(splunk ) ],
+                    cve         => [ qw(cve_lookup ) ],
                 },
 
                 # foreach enrichment listed above place any 
@@ -177,6 +178,12 @@
                         url     => 'https://splunk.domain.tld/en-US/app/search/search?q=search%%20%s',
                         field   => 'value',
                         title   => 'Search on Splunk',
+                    },
+                    cve_lookup  => {
+                        type    => 'external_link',
+                        url     => "https://cve.mitre.org/cgi-bin/cvename.cgi?name=%s",
+                        field   => "value",
+                        title   => "Lookup CVE description",
                     },
                 }, # end enrichment module enrichers
             }, # end ennrichmenst config stanza
