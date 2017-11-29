@@ -13,7 +13,6 @@ COPY t/ /opt/scot/t/
 COPY templates/ /opt/scot/templates/ 
 COPY docker-configs/scot/scot.cfg.pl /opt/scot/etc/
 COPY docker-configs/scot/Scot.pm /opt/scot/lib/
-COPY docker-configs/scot/Search.pm /opt/scot/lib/Scot/Controller/
 
 EXPOSE 3000 
 
