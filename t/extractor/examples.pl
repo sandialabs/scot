@@ -645,5 +645,49 @@ EOF
         userdef => [
         ],
     },
+    {
+        testname    => "LaikaBoss signature flair 1",
+        testgroup   => "LaikaBoss",
+        testnumber  => 27,
+        source      => <<'EOF',
+<html>yr:misc_google_amp_link_s75_1</html>
+EOF
+        plain       => <<'EOF',
+yr:misc_google_amp_link_s75_1
+EOF
+        flair       => <<'EOF',
+<div><span class="entity lbsig" data-entity-type="lbsig" data-entity-value="yr:misc_google_amp_link_s75_1">yr:misc_google_amp_link_s75_1</span></div>
+EOF
+        entities    => [
+            {
+                value   => 'yr:misc_google_amp_link_s75_1',
+                type    => 'lbsig',
+            }
+        ],
+        userdef => [
+        ],
+    },
+    {
+        testname    => "LaikaBoss signature flair 2",
+        testgroup   => "LaikaBoss",
+        testnumber  => 28,
+        source      => <<'EOF',
+<html>yr:misc_vbaproj_codepage_foreign_s63_1</html>
+EOF
+        plain       => <<'EOF',
+yr:misc_vbaproj_codepage_foreign_s63_1
+EOF
+        flair       => <<'EOF',
+<div><span class="entity lbsig" data-entity-type="lbsig" data-entity-value="yr:misc_vbaproj_codepage_foreign_s63_1">yr:misc_vbaproj_codepage_foreign_s63_1</span></div>
+EOF
+        entities    => [
+            {
+                value   => 'yr:misc_vbaproj_codepage_foreign_s63_1',
+                type    => 'lbsig',
+            }
+        ],
+        userdef => [
+        ],
+    },
 
 );

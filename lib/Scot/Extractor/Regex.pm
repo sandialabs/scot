@@ -506,7 +506,7 @@ sub _build_LBSIG {
         regex   => $regex,
         type    => "lbsig",
         order   => 10,
-        options => { multiword => "no" },
+        options => { multiword => "yes" },
     };
 }
 
