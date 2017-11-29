@@ -202,5 +202,5 @@
             }, # end ldap config
         }, # end ldap
     ],
-    entity_regexex  => [],
+    entity_regexes  => [],
 );
