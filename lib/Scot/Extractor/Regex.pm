@@ -144,13 +144,15 @@ sub build_re {
 
     $log->debug("building re from $text");
 
-    if ( $text =~ /\// ) {
-        my ($pre,$match,$post) = split(/\//,$text);
-        $re  = qr/(?$post)$match/;
-    }
-    else {
-        $re = qr/$text/i;
-    }
+    my $quoted  = quotemeta($text);
+
+#    if ( $text =~ /\// ) {
+#        my ($pre,$match,$post) = split(/\//,$text);
+#        $re  = qr/(?$post)$match/;
+#    }
+#    else {
+        $re = qr/$quoted/i;
+#    }
 
     return $re;
 }
