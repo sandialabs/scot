@@ -8,9 +8,10 @@
         logfile         => '/var/log/scot/scot.stretch.log',
         log_level       => 'DEBUG',
     },
+    max_workers     => 2,
+    stomp_host      => 'activemq',
+    stomp_port      => 61613,
     default_owner   => 'scot-admin',
-    stomp_host  => "activemq",
-    stomp_port  => 61613,
     modules => [
         {
             attr    => 'es',
@@ -23,7 +24,7 @@
             attr    => 'scot',
             class   => 'Scot::Util::ScotClient',
             config  => {
-                servername  => "scot",
+                servername  => "localhost",
                 username    => "scot-alerts",
                 password    => "changemenow",
                 auth_type    => "basic",

@@ -1,18 +1,22 @@
 FROM scot_perl
 
+ENV no_proxy "elastic,mongodb,activemq"
+ENV no_proxy "elastic,mongodb,activemq"
+
 #Create log directory
 RUN mkdir -p /var/log/scot
 RUN mkdir -p /opt/scot
 
 #copy config files
 COPY install/src/scot/ /opt/scot/etc/  
-COPY install/src/scot/scot.service /etc/systemd/system/scot.service
 COPY script/ /opt/scot/script/
 COPY public/ /opt/scot/public
 COPY t/ /opt/scot/t/
 COPY templates/ /opt/scot/templates/ 
 COPY docker-configs/scot/scot.cfg.pl /opt/scot/etc/
-COPY docker-configs/scot/Scot.pm /opt/scot/lib/
+COPY docker-configs/scot/Scot.pm /opt/scot/lib/ 
+COPY docker-configs/scot/ElasticSearch.pm /opt/scot/lib/Scot/Controller/
+COPY docker-configs/scot/Search.pm /opt/scot/lib/Scot/Controller/
 
 EXPOSE 3000 
 
