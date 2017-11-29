@@ -1001,10 +1001,11 @@ sub process_task_commands {
         $action         = "take_task";
         $status         = "assigned";
     }
-    else {
+    elsif ( defined $json->{close_task} ) {
         $action         = "close_task";
         $status         = "closed";
     }
+    
 
     if ( $action ne '' ) {
         delete $json->{$action}; # not an attribute in model
