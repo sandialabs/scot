@@ -144,13 +144,15 @@ sub build_re {
 
     $log->debug("building re from $text");
 
-    if ( $text =~ /\// ) {
-        my ($pre,$match,$post) = split(/\//,$text);
-        $re  = qr/(?$post)$match/;
-    }
-    else {
-        $re = qr/$text/i;
-    }
+    my $quoted  = quotemeta($text);
+
+#    if ( $text =~ /\// ) {
+#        my ($pre,$match,$post) = split(/\//,$text);
+#        $re  = qr/(?$post)$match/;
+#    }
+#    else {
+        $re = qr/$quoted/i;
+#    }
 
     return $re;
 }
@@ -189,7 +191,7 @@ sub list_regexes {
 
 sub list_multiword_regexes {
     my $self    = shift;
-    my @regexes = grep { 
+    my @regexes = sort { $a->{order} <=> $b->{order} } grep { 
         defined( $_->{options}->{multiword} ) and
         $_->{options}->{multiword} eq "yes" 
     } $self->list_regexes;
@@ -198,7 +200,7 @@ sub list_multiword_regexes {
 
 sub list_singleword_regexes {
     my $self    = shift;
-    my @regexes = grep { 
+    my @regexes = sort { $a->{order} <=> $b->{order} } grep { 
         (
             defined( $_->{options}->{multiword} ) 
             and
@@ -484,6 +486,29 @@ sub _build_EMAIL {
         type    => "email",
         order   => 5,
         options => { multiword => "no" },
+    };
+}
+
+has regex_lbsig => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_LBSIG',
+);
+
+sub _build_LBSIG {
+    my $self    = shift;
+    my $regex   = qr{
+        \b
+        (yr:[a-z\_]+_s[0-9]+)_[0-9]+
+        \b
+    }xims;
+    return {
+        regex   => $regex,
+        type    => "lbsig",
+        order   => 10,
+        options => { multiword => "yes" },
     };
 }
 

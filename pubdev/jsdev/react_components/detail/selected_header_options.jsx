@@ -272,7 +272,7 @@ var SelectedHeaderOptions = React.createClass({
 
     componentDidMount: function() {
         //open, close SELECTED alerts
-       if (this.props.type == 'alertgroup' || this.props.type == 'alert') { 
+        if (this.props.type == 'alertgroup' || this.props.type == 'alert') { 
             $('#main-detail-container').keydown(function(event){
                 if($('input').is(':focus')) {return}
                 if (event.keyCode == 79 && (event.ctrlKey != true && event.metaKey != true)) {
@@ -282,7 +282,13 @@ var SelectedHeaderOptions = React.createClass({
                     this.alertCloseSelected();
                 }
             }.bind(this))
-       }
+        }
+        $('#main-detail-container').keydown(function(event){
+            if($('input').is(':focus')) {return}
+            if (event.keyCode == 84 && (event.ctrlKey != true && event.metaKey != true)) {
+                this.toggleFlair();
+            }
+        }.bind(this))
     },
 
     componentWillUnmount: function() {

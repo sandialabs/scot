@@ -22,6 +22,7 @@ my $etcol   = $mongo->collection('Entitytype');
 my @ets     = map { $etcol->create($_); } ( 
     { value => "userdef-1", match => "Testing Foo", options => { multiword => "yes" } },
     { value => "userdef-2", match => "Zoo Kachoo", options => { multiword => "yes" } },
+    { value => "jrock1",    match => "bcdedit /set", options => { multiword => "yes" } },
 );
 
 $env->regex->load_entitytypes();
