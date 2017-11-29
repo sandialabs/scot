@@ -499,7 +499,7 @@ sub _build_LBSIG {
     my $self    = shift;
     my $regex   = qr{
         \b
-        (yr:[a-z\_]+;s:[0-9]+;)v:[0-9]+
+        (yr:[a-z\_]+_s[0-9]+)_[0-9]+
         \b
     }xims;
     return {
