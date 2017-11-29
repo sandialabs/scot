@@ -487,6 +487,29 @@ sub _build_EMAIL {
     };
 }
 
+has regex_lbsig => (
+    is          => 'ro',
+    isa         => 'HashRef',
+    required    => 1,
+    lazy        => 1,
+    builder     => '_build_LBSIG',
+);
+
+sub _build_LBSIG {
+    my $self    = shift;
+    my $regex   = qr{
+        \b
+        (yr:[a-z\_]+_s[0-9]+)_[0-9]+
+        \b
+    }xims;
+    return {
+        regex   => $regex,
+        type    => "lbsig",
+        order   => 10,
+        options => { multiword => "yes" },
+    };
+}
+
 sub find_all_matches {
     my $self    = shift;
     my $word    = shift;
