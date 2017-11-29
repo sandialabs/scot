@@ -191,7 +191,7 @@ sub list_regexes {
 
 sub list_multiword_regexes {
     my $self    = shift;
-    my @regexes = grep { 
+    my @regexes = sort { $a->{order} <=> $b->{order} } grep { 
         defined( $_->{options}->{multiword} ) and
         $_->{options}->{multiword} eq "yes" 
     } $self->list_regexes;
@@ -200,7 +200,7 @@ sub list_multiword_regexes {
 
 sub list_singleword_regexes {
     my $self    = shift;
-    my @regexes = grep { 
+    my @regexes = sort { $a->{order} <=> $b->{order} } grep { 
         (
             defined( $_->{options}->{multiword} ) 
             and
