@@ -292,9 +292,7 @@ var SelectedHeaderOptions = React.createClass({
     },
 
     componentWillUnmount: function() {
-        if (this.props.type == 'alertgroup' || this.props.type == 'alert') {
-            $('#main-detail-container').unbind('keydown');
-        }
+        $('#main-detail-container').unbind('keydown');
     },
 
     guideToggle: function() {
