@@ -53,7 +53,7 @@ sub _build_es {
     push @noproxy, '127.0.0.1';
     $ENV{'no_proxy'} = join ',', @noproxy;
 
-    log->debug("NODES : "{filter=>\&Dumper, value=>$self->config->{nodes}});
+    log->debug("NODES : ",{filter=>\&Dumper, value=>$self->config->{nodes}});
 
     my %conparams   = (
         nodes   => $self->config->{nodes},
