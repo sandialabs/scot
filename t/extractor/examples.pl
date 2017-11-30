@@ -732,5 +732,27 @@ EOF
         ],
 
     },
+    {
+        testname    => "JRock fun with user def",
+        testgroup   => "jcjaroc",
+        testnumber  => 30,
+        source      => <<'EOF',
+<html>cmd.exe /c bcdedit /set {default} recoveryenabled No</html>
+EOF
+        plain       => <<'EOF',
+cmd.exe /c bcdedit /set {default} recoveryenabled No
+EOF
+        flair       => <<'EOF',
+<div>cmd.exe /c <span class="entity jrock1" data-entity-type="jrock1" data-entity-value="bcdedit /set">bcdedit /set</span> {default} recoveryenabled No</div>
+EOF
+        entities    => [
+            {
+                value   => 'bcdedit /set',
+                type    => 'jrock1',
+            }
+        ],
+        userdef => [
+        ],
+    },
 
 );
