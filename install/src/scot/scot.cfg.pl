@@ -52,7 +52,16 @@
         default_expiration  => 14400,
 
         # hypnotoad workers, 50-100 heavy use, 20 - 50 light
-        hypnotoad_workers   => 75,
+        # hypnotoad_workers   => 75,
+        hypnotoad => {
+            listen  => [ 'http://localhost:3000?reuse=1' ],
+            workers => 20,
+            clients => 1,
+            proxy   => 1,
+            pidfile => '/var/run/hypno.pid',
+            heartbeat_timeout   => 40,
+        },
+
     },
 
     log_config => {
