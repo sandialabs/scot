@@ -52,7 +52,16 @@
         default_expiration  => 14400,
 
         # hypnotoad workers, 50-100 heavy use, 20 - 50 light
-        hypnotoad_workers   => 75,
+        # hypnotoad_workers   => 75,
+        hypnotoad => {
+            listen  => [ 'http://0.0.0.0:3000?reuse=1' ],
+            workers => 20,
+            clients => 1,
+            proxy   => 1,
+            pidfile => '/var/run/hypno.pid',
+            heartbeat_timeout   => 40,
+        },
+
     },
 
     log_config => {
@@ -151,6 +160,7 @@
                     ganalytics  => [ qw(splunk  ) ],
                     snumber     => [ qw(splunk ) ],
                     message_id  => [ qw(splunk ) ],
+                    cve         => [ qw(cve_lookup ) ],
                 },
 
                 # foreach enrichment listed above place any 
@@ -178,6 +188,12 @@
                         field   => 'value',
                         title   => 'Search on Splunk',
                     },
+                    cve_lookup  => {
+                        type    => 'external_link',
+                        url     => "https://cve.mitre.org/cgi-bin/cvename.cgi?name=%s",
+                        field   => "value",
+                        title   => "Lookup CVE description",
+                    },
                 }, # end enrichment module enrichers
             }, # end ennrichmenst config stanza
         }, # end enrichments stanza
@@ -202,5 +218,5 @@
             }, # end ldap config
         }, # end ldap
     ],
-    entity_regexex  => [],
+    entity_regexes  => [],
 );
