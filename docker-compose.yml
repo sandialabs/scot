@@ -13,7 +13,8 @@ services:
      - "80:80"
     networks:
      - scot-docker-net
- 
+    container_name: apache  
+
   activemq:
     volumes:
      - "/var/log/activemq:/var/log/activemq/log/"
@@ -26,6 +27,7 @@ services:
      - "8161:8161"
     networks:
      - scot-docker-net
+    container_name: activemq
   
   mongodb:
     build:
@@ -39,6 +41,7 @@ services:
      - "/opt/scotbackup/mongo/scot-prod:/opt/scotbackup/mongo/scot-prod/"
     networks:
      - scot-docker-net
+    container_name: mongodb
 
   elastic:
    build:
@@ -50,6 +53,7 @@ services:
      - "/opt/scotbackup/elastic:/opt/scotbackup/elastic/"
    networks:
     - scot-docker-net
+   container_name: elastic
  
   mapping:
     build:
@@ -59,6 +63,7 @@ services:
      - elastic
     networks:
      - scot-docker-net
+    container_name: mapping
     
   scot:
     build:
@@ -77,6 +82,7 @@ services:
      - activemq
     networks:
      - scot-docker-net
+    container_name: scot
   
   perl:
     build: 
@@ -97,6 +103,7 @@ services:
     - scot
    networks:
      - scot-docker-net
+   container_name: flair
   
   reflair:
    build:
@@ -111,6 +118,8 @@ services:
     - scot
    networks:
      - scot-docker-net
+   container_name: reflair
+     
 
   stretch:
    build:
@@ -126,6 +135,7 @@ services:
     - scot
    networks:
     - scot-docker-net
+   container_name: stretch
   
   game:
    build:
@@ -139,6 +149,7 @@ services:
     - scot
    networks:
      - scot-docker-net
+   container_name: game
 # mail: 
 #   build:
 #     dockerfile: Dockerfile-Mail
